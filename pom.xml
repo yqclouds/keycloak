@@ -1675,7 +1675,7 @@
                 </property>
             </activation>
             <modules>
-                <module>testsuite</module>
+
             </modules>
         </profile>
 
