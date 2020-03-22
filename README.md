@@ -40,12 +40,6 @@ For more details refer to the [Keycloak Documentation](https://www.keycloak.org/
 
 To build from source refer to the [building and working with the code base](docs/building.md) guide.
 
-
-### Testing
-
-To run tests refer to the [running tests](docs/tests.md) guide.
-
-
 ### Writing Tests
 
 To write tests refer to the [writing tests](docs/tests-development.md) guide.
