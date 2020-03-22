@@ -34,7 +34,6 @@
         <module>adapter-core</module>
         <module>installed</module>
         <module>jaxrs-oauth-client</module>
-        <module>jetty</module>
         <module>osgi-adapter</module>
         <module>servlet-filter</module>
         <module>spring-boot</module>
