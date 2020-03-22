@@ -21,9 +21,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.keycloak.migration.ModelVersion;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.keycloak.migration.MigrationModelManager.*;
 
 /**
@@ -105,7 +103,7 @@ public class MigrationVersionTest {
         Assert.assertThat(convertRHSSOVersionToKeycloakVersion("7.0.0.GA"), is(equalTo(RHSSO_VERSION_7_0_KEYCLOAK_VERSION)));
         Assert.assertThat(convertRHSSOVersionToKeycloakVersion("7.0.1.GA"), is(equalTo(RHSSO_VERSION_7_0_KEYCLOAK_VERSION)));
         Assert.assertThat(convertRHSSOVersionToKeycloakVersion("7.0.2.GA"), is(equalTo(RHSSO_VERSION_7_0_KEYCLOAK_VERSION)));
-        
+
         Assert.assertThat(convertRHSSOVersionToKeycloakVersion("7.1.0.GA"), is(equalTo(RHSSO_VERSION_7_1_KEYCLOAK_VERSION)));
         Assert.assertThat(convertRHSSOVersionToKeycloakVersion("7.1.1.GA"), is(equalTo(RHSSO_VERSION_7_1_KEYCLOAK_VERSION)));
         Assert.assertThat(convertRHSSOVersionToKeycloakVersion("7.1.2.GA"), is(equalTo(RHSSO_VERSION_7_1_KEYCLOAK_VERSION)));

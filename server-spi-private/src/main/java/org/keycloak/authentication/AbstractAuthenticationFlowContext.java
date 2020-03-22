@@ -86,6 +86,7 @@ public interface AbstractAuthenticationFlowContext {
     KeycloakSession getSession();
 
     HttpRequest getHttpRequest();
+
     BruteForceProtector getProtector();
 
 
@@ -124,7 +125,6 @@ public interface AbstractAuthenticationFlowContext {
 
     /**
      * Mark the current execution as successful.  The flow will then continue
-     *
      */
     void success();
 
@@ -172,7 +172,6 @@ public interface AbstractAuthenticationFlowContext {
     /**
      * There was no failure or challenge.  The authenticator was attempted, but not fulfilled.  If the current execution
      * requirement is alternative or optional, then this status is ignored by the flow.
-     *
      */
     void attempted();
 

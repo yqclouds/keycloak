@@ -48,7 +48,7 @@ public class CredentialModelBackwardsCompatibilityTest {
         credential.setValue("foo");
         credential.setDevice("foo-device");
         credential.setAlgorithm("foo-algorithm");
-        credential.setSalt(new byte[] { 1, 2, 3});
+        credential.setSalt(new byte[]{1, 2, 3});
         credential.setCounter(15);
         credential.setHashIterations(20);
         credential.setDigits(25);
@@ -56,7 +56,7 @@ public class CredentialModelBackwardsCompatibilityTest {
 
         Assert.assertEquals("foo", credential.getValue());
         Assert.assertEquals("foo-device", credential.getDevice());
-        Assert.assertTrue(Arrays.areEqual(new byte[] { 1, 2, 3 }, credential.getSalt()));
+        Assert.assertTrue(Arrays.areEqual(new byte[]{1, 2, 3}, credential.getSalt()));
         Assert.assertEquals(15, credential.getCounter());
         Assert.assertEquals(20, credential.getHashIterations());
         Assert.assertEquals(25, credential.getDigits());
@@ -111,7 +111,7 @@ public class CredentialModelBackwardsCompatibilityTest {
 
     @Test
     public void testCredentialModelPassword() {
-        byte[] salt = { 1, 2, 3 };
+        byte[] salt = {1, 2, 3};
         CredentialModel password = PasswordCredentialModel.createFromValues("foo", salt, 1000, "pass");
 
         Assert.assertEquals("pass", password.getValue());

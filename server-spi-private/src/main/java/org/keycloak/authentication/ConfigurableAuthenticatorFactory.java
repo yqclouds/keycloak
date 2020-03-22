@@ -60,10 +60,8 @@ public interface ConfigurableAuthenticatorFactory extends ConfiguredProvider {
     AuthenticationExecutionModel.Requirement[] getRequirementChoices();
 
     /**
-     *
      * Does this authenticator have required actions that can set if the user does not have
      * this authenticator set up?
-     *
      *
      * @return
      */

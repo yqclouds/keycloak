@@ -45,7 +45,7 @@ public interface ClientAuthenticationFlowContext extends AbstractAuthenticationF
     /**
      * Return the map where the authenticators can put some additional state related to authenticated client and the context how was
      * client authenticated (ie. attributes from client certificate etc). Map is writable, so you can add/remove items from it as needed.
-     *
+     * <p>
      * After successful authentication will be those state data put into UserSession notes. This allows you to configure
      * UserSessionNote protocol mapper for your client, which will allow to map those state data into the access token available in the application
      *
