@@ -45,7 +45,7 @@ public class CliUsernamePasswordAuthenticator extends AbstractUsernameFormAuthen
     @Override
     public void authenticate(AuthenticationFlowContext context) {
         String header = getHeader(context);
-        Response response  = context.form()
+        Response response = context.form()
                 .setStatus(Response.Status.UNAUTHORIZED)
                 .setMediaType(MediaType.TEXT_PLAIN_TYPE)
                 .setResponseHeader(HttpHeaders.WWW_AUTHENTICATE, header)
@@ -67,7 +67,7 @@ public class CliUsernamePasswordAuthenticator extends AbstractUsernameFormAuthen
     @Override
     protected Response challenge(AuthenticationFlowContext context, String error) {
         String header = getHeader(context);
-        Response response  = Response.status(401)
+        Response response = Response.status(401)
                 .type(MediaType.TEXT_PLAIN_TYPE)
                 .header(HttpHeaders.WWW_AUTHENTICATE, header)
                 .entity("\n" + context.form().getMessage(error) + "\n")
@@ -79,7 +79,7 @@ public class CliUsernamePasswordAuthenticator extends AbstractUsernameFormAuthen
     protected Response setDuplicateUserChallenge(AuthenticationFlowContext context, String eventError, String loginFormError, AuthenticationFlowError authenticatorError) {
         context.getEvent().error(eventError);
         String header = getHeader(context);
-        Response challengeResponse  = Response.status(401)
+        Response challengeResponse = Response.status(401)
                 .type(MediaType.TEXT_PLAIN_TYPE)
                 .header(HttpHeaders.WWW_AUTHENTICATE, header)
                 .entity("\n" + context.form().getMessage(loginFormError) + "\n")

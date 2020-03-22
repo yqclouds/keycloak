@@ -18,10 +18,10 @@ package org.keycloak.saml.processing.core.parsers.saml.protocol;
 
 import org.keycloak.saml.common.parsers.AbstractStaxParser;
 import org.keycloak.saml.processing.core.parsers.util.QNameEnumLookup;
+
 import javax.xml.namespace.QName;
 
 /**
- *
  * @author hmlnarik
  */
 public abstract class AbstractStaxSamlProtocolParser<T> extends AbstractStaxParser<T, SAMLProtocolQNames> {

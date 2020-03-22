@@ -17,14 +17,14 @@
 
 package org.keycloak.models;
 
+import org.keycloak.provider.Provider;
+
 import java.util.Map;
 import java.util.UUID;
 
-import org.keycloak.provider.Provider;
-
 /**
  * Provides single-use cache for OAuth2 code parameter. Used to ensure that particular value of code parameter is used once.
- *
+ * <p>
  * For now, it is separate provider as it's a bit different use-case than {@link ActionTokenStoreProvider}, however it may reuse some components (eg. same infinispan cache)
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -33,6 +33,7 @@ public interface CodeToTokenStoreProvider extends Provider {
 
     /**
      * Stores the given data and guarantees that data should be available in the store for at least the time specified by {@param lifespanSeconds} parameter
+     *
      * @param codeId
      * @param lifespanSeconds
      * @param codeData

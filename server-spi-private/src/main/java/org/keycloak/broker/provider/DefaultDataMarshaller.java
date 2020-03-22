@@ -56,7 +56,7 @@ public class DefaultDataMarshaller implements IdentityProviderDataMarshaller {
                     return JsonSerialization.readValue(bytes, clazz);
                 }
             }
-        }  catch (IOException ioe) {
+        } catch (IOException ioe) {
             throw new RuntimeException(ioe);
         }
     }

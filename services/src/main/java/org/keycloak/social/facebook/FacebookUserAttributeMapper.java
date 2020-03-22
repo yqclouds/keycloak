@@ -20,21 +20,21 @@ import org.keycloak.broker.oidc.mappers.AbstractJsonUserAttributeMapper;
 
 /**
  * User attribute mapper.
- * 
+ *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class FacebookUserAttributeMapper extends AbstractJsonUserAttributeMapper {
 
-	private static final String[] cp = new String[] { FacebookIdentityProviderFactory.PROVIDER_ID };
+    private static final String[] cp = new String[]{FacebookIdentityProviderFactory.PROVIDER_ID};
 
-	@Override
-	public String[] getCompatibleProviders() {
-		return cp;
-	}
+    @Override
+    public String[] getCompatibleProviders() {
+        return cp;
+    }
 
-	@Override
-	public String getId() {
-		return "facebook-user-attribute-mapper";
-	}
+    @Override
+    public String getId() {
+        return "facebook-user-attribute-mapper";
+    }
 
 }

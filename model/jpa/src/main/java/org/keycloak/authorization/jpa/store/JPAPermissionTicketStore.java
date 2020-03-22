@@ -16,23 +16,6 @@
  */
 package org.keycloak.authorization.jpa.store;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import javax.persistence.EntityManager;
-import javax.persistence.FlushModeType;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.jpa.entities.PermissionTicketEntity;
 import org.keycloak.authorization.model.PermissionTicket;
@@ -41,7 +24,13 @@ import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.authorization.store.PermissionTicketStore;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.models.utils.KeycloakModelUtils;
-import javax.persistence.LockModeType;
+
+import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.util.*;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -143,7 +132,7 @@ public class JPAPermissionTicketStore implements PermissionTicketStore {
 
     @Override
     public List<PermissionTicket> findByScope(String scopeId, String resourceServerId) {
-        if (scopeId==null) {
+        if (scopeId == null) {
             return Collections.emptyList();
         }
 
@@ -267,17 +256,17 @@ public class JPAPermissionTicketStore implements PermissionTicketStore {
 
     @Override
     public List<Resource> findGrantedResources(String requester, String name, int first, int max) {
-        TypedQuery<String> query = name == null ? 
+        TypedQuery<String> query = name == null ?
                 entityManager.createNamedQuery("findGrantedResources", String.class) :
                 entityManager.createNamedQuery("findGrantedResourcesByName", String.class);
 
         query.setFlushMode(FlushModeType.COMMIT);
         query.setParameter("requester", requester);
-        
+
         if (name != null) {
             query.setParameter("resourceName", "%" + name.toLowerCase() + "%");
         }
-        
+
         if (first > -1 && max > -1) {
             query.setFirstResult(first);
             query.setMaxResults(max);
@@ -294,7 +283,7 @@ public class JPAPermissionTicketStore implements PermissionTicketStore {
                 list.add(resource);
             }
         }
-        
+
         return list;
     }
 

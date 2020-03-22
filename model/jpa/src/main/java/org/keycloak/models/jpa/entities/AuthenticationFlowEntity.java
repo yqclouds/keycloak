@@ -19,19 +19,7 @@ package org.keycloak.models.jpa.entities;
 
 import org.hibernate.annotations.Nationalized;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -39,37 +27,39 @@ import java.util.Collection;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@Table(name="AUTHENTICATION_FLOW")
+@Table(name = "AUTHENTICATION_FLOW")
 @Entity
 public class AuthenticationFlowEntity {
     @Id
-    @Column(name="ID", length = 36)
-    @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
+    @Column(name = "ID", length = 36)
+    @Access(AccessType.PROPERTY)
+    // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
     protected String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REALM_ID")
     protected RealmEntity realm;
 
-    @Column(name="ALIAS")
+    @Column(name = "ALIAS")
     protected String alias;
 
-    @Column(name="PROVIDER_ID")
+    @Column(name = "PROVIDER_ID")
     protected String providerId;
 
     @Nationalized
-    @Column(name="DESCRIPTION")
+    @Column(name = "DESCRIPTION")
     protected String description;
 
-    @Column(name="TOP_LEVEL")
+    @Column(name = "TOP_LEVEL")
     protected boolean topLevel;
 
-    @Column(name="BUILT_IN")
+    @Column(name = "BUILT_IN")
     protected boolean builtIn;
 
 
-    @OneToMany(fetch = FetchType.LAZY, cascade ={CascadeType.REMOVE}, orphanRemoval = true, mappedBy = "parentFlow")
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE}, orphanRemoval = true, mappedBy = "parentFlow")
     Collection<AuthenticationExecutionEntity> executions = new ArrayList<AuthenticationExecutionEntity>();
+
     public String getId() {
         return id;
     }

@@ -33,7 +33,8 @@ import java.util.List;
 public class DefaultKeycloakTransactionManager implements KeycloakTransactionManager {
 
     private static final Logger logger = Logger.getLogger(DefaultKeycloakTransactionManager.class);
-
+    // Used to prevent double committing/rollback if there is an uncaught exception
+    protected boolean completed;
     private List<KeycloakTransaction> prepare = new LinkedList<KeycloakTransaction>();
     private List<KeycloakTransaction> transactions = new LinkedList<KeycloakTransaction>();
     private List<KeycloakTransaction> afterCompletion = new LinkedList<KeycloakTransaction>();
@@ -41,8 +42,6 @@ public class DefaultKeycloakTransactionManager implements KeycloakTransactionMan
     private boolean rollback;
     private KeycloakSession session;
     private JTAPolicy jtaPolicy = JTAPolicy.REQUIRES_NEW;
-    // Used to prevent double committing/rollback if there is an uncaught exception
-    protected boolean completed;
 
     public DefaultKeycloakTransactionManager(KeycloakSession session) {
         this.session = session;
@@ -89,7 +88,7 @@ public class DefaultKeycloakTransactionManager implements KeycloakTransactionMan
     @Override
     public void begin() {
         if (active) {
-             throw new IllegalStateException("Transaction already active");
+            throw new IllegalStateException("Transaction already active");
         }
 
         completed = false;
@@ -99,7 +98,7 @@ public class DefaultKeycloakTransactionManager implements KeycloakTransactionMan
             if (jtaLookup != null) {
                 TransactionManager tm = jtaLookup.getTransactionManager();
                 if (tm != null) {
-                   enlist(new JtaTransactionWrapper(session.getKeycloakSessionFactory(), tm));
+                    enlist(new JtaTransactionWrapper(session.getKeycloakSessionFactory(), tm));
                 }
             }
         }

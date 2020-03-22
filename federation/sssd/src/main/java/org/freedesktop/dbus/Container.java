@@ -22,6 +22,10 @@ import java.util.Map;
  */
 abstract class Container {
     private static Map<Type, Type[]> typecache = new HashMap<Type, Type[]>();
+    private Object[] parameters = null;
+
+    public Container() {
+    }
 
     static void putTypeCache(Type k, Type[] v) {
         typecache.put(k, v);
@@ -29,11 +33,6 @@ abstract class Container {
 
     static Type[] getTypeCache(Type k) {
         return typecache.get(k);
-    }
-
-    private Object[] parameters = null;
-
-    public Container() {
     }
 
     private void setup() {

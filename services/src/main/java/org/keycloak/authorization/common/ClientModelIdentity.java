@@ -19,11 +19,7 @@ package org.keycloak.authorization.common;
 import org.keycloak.authorization.attribute.Attributes;
 import org.keycloak.authorization.identity.Identity;
 import org.keycloak.common.util.MultivaluedHashMap;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>

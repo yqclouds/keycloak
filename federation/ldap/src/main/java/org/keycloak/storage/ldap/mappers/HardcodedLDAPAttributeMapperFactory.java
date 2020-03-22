@@ -17,9 +17,6 @@
 
 package org.keycloak.storage.ldap.mappers;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
 import org.keycloak.models.KeycloakSession;
@@ -27,6 +24,9 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ConfigurationValidationHelper;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.storage.ldap.LDAPStorageProvider;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -44,7 +44,7 @@ public class HardcodedLDAPAttributeMapperFactory extends AbstractLDAPStorageMapp
 
         ProviderConfigProperty attrValue = createConfigProperty(HardcodedLDAPAttributeMapper.LDAP_ATTRIBUTE_VALUE, "LDAP Attribute Value",
                 "Value of the LDAP attribute, which will be added to the new user during registration. You can either hardcode any value like 'foo' but you can also use some special tokens. "
-                + "Only supported token right now is '${RANDOM}' , which will be replaced with some randomly generated String.",
+                        + "Only supported token right now is '${RANDOM}' , which will be replaced with some randomly generated String.",
                 ProviderConfigProperty.STRING_TYPE, null);
 
         configProperties.add(attrName);

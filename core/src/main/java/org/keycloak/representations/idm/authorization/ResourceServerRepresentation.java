@@ -36,12 +36,12 @@ public class ResourceServerRepresentation {
     private List<ScopeRepresentation> scopes = emptyList();
     private DecisionStrategy decisionStrategy;
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public String getId() {
         return this.id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getClientId() {
@@ -76,35 +76,35 @@ public class ResourceServerRepresentation {
         this.policyEnforcementMode = policyEnforcementMode;
     }
 
-    public void setResources(List<ResourceRepresentation> resources) {
-        this.resources = resources;
-    }
-
     public List<ResourceRepresentation> getResources() {
         return resources;
     }
 
-    public void setPolicies(List<PolicyRepresentation> policies) {
-        this.policies = policies;
+    public void setResources(List<ResourceRepresentation> resources) {
+        this.resources = resources;
     }
 
     public List<PolicyRepresentation> getPolicies() {
         return policies;
     }
 
-    public void setScopes(List<ScopeRepresentation> scopes) {
-        this.scopes = scopes;
+    public void setPolicies(List<PolicyRepresentation> policies) {
+        this.policies = policies;
     }
 
     public List<ScopeRepresentation> getScopes() {
         return scopes;
     }
 
-    public void setDecisionStrategy(DecisionStrategy decisionStrategy) {
-        this.decisionStrategy = decisionStrategy;
+    public void setScopes(List<ScopeRepresentation> scopes) {
+        this.scopes = scopes;
     }
 
     public DecisionStrategy getDecisionStrategy() {
         return decisionStrategy;
+    }
+
+    public void setDecisionStrategy(DecisionStrategy decisionStrategy) {
+        this.decisionStrategy = decisionStrategy;
     }
 }

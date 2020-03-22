@@ -17,20 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -38,41 +25,42 @@ import java.util.Collection;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 @Entity
-@Table(name="USER_CONSENT", uniqueConstraints = {
+@Table(name = "USER_CONSENT", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"USER_ID", "CLIENT_ID"})
 })
 @NamedQueries({
-        @NamedQuery(name="userConsentByUserAndClient", query="select consent from UserConsentEntity consent where consent.user.id = :userId and consent.clientId = :clientId"),
-        @NamedQuery(name="userConsentByUserAndExternalClient", query="select consent from UserConsentEntity consent where consent.user.id = :userId and consent.clientStorageProvider = :clientStorageProvider and consent.externalClientId = :externalClientId"),
-        @NamedQuery(name="userConsentsByUser", query="select consent from UserConsentEntity consent where consent.user.id = :userId"),
-        @NamedQuery(name="deleteUserConsentsByRealm", query="delete from UserConsentEntity consent where consent.user IN (select user from UserEntity user where user.realmId = :realmId)"),
-        @NamedQuery(name="deleteUserConsentsByRealmAndLink", query="delete from UserConsentEntity consent where consent.user IN (select u from UserEntity u where u.realmId=:realmId and u.federationLink=:link)"),
-        @NamedQuery(name="deleteUserConsentsByUser", query="delete from UserConsentEntity consent where consent.user = :user"),
-        @NamedQuery(name="deleteUserConsentsByClient", query="delete from UserConsentEntity consent where consent.clientId = :clientId"),
-        @NamedQuery(name="deleteUserConsentsByExternalClient", query="delete from UserConsentEntity consent where consent.clientStorageProvider = :clientStorageProvider and consent.externalClientId = :externalClientId"),
-        @NamedQuery(name="deleteUserConsentsByClientStorageProvider", query="delete from UserConsentEntity consent where consent.clientStorageProvider = :clientStorageProvider"),
+        @NamedQuery(name = "userConsentByUserAndClient", query = "select consent from UserConsentEntity consent where consent.user.id = :userId and consent.clientId = :clientId"),
+        @NamedQuery(name = "userConsentByUserAndExternalClient", query = "select consent from UserConsentEntity consent where consent.user.id = :userId and consent.clientStorageProvider = :clientStorageProvider and consent.externalClientId = :externalClientId"),
+        @NamedQuery(name = "userConsentsByUser", query = "select consent from UserConsentEntity consent where consent.user.id = :userId"),
+        @NamedQuery(name = "deleteUserConsentsByRealm", query = "delete from UserConsentEntity consent where consent.user IN (select user from UserEntity user where user.realmId = :realmId)"),
+        @NamedQuery(name = "deleteUserConsentsByRealmAndLink", query = "delete from UserConsentEntity consent where consent.user IN (select u from UserEntity u where u.realmId=:realmId and u.federationLink=:link)"),
+        @NamedQuery(name = "deleteUserConsentsByUser", query = "delete from UserConsentEntity consent where consent.user = :user"),
+        @NamedQuery(name = "deleteUserConsentsByClient", query = "delete from UserConsentEntity consent where consent.clientId = :clientId"),
+        @NamedQuery(name = "deleteUserConsentsByExternalClient", query = "delete from UserConsentEntity consent where consent.clientStorageProvider = :clientStorageProvider and consent.externalClientId = :externalClientId"),
+        @NamedQuery(name = "deleteUserConsentsByClientStorageProvider", query = "delete from UserConsentEntity consent where consent.clientStorageProvider = :clientStorageProvider"),
 })
 public class UserConsentEntity {
 
     @Id
-    @Column(name="ID", length = 36)
-    @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
+    @Column(name = "ID", length = 36)
+    @Access(AccessType.PROPERTY)
+    // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
     protected String id;
 
-    @ManyToOne(fetch= FetchType.LAZY)
-    @JoinColumn(name="USER_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "USER_ID")
     protected UserEntity user;
 
-    @Column(name="CLIENT_ID")
+    @Column(name = "CLIENT_ID")
     protected String clientId;
 
-    @Column(name="CLIENT_STORAGE_PROVIDER")
+    @Column(name = "CLIENT_STORAGE_PROVIDER")
     protected String clientStorageProvider;
 
-    @Column(name="EXTERNAL_CLIENT_ID")
+    @Column(name = "EXTERNAL_CLIENT_ID")
     protected String externalClientId;
 
-    @OneToMany(cascade ={CascadeType.REMOVE}, orphanRemoval = true, mappedBy = "userConsent")
+    @OneToMany(cascade = {CascadeType.REMOVE}, orphanRemoval = true, mappedBy = "userConsent")
     Collection<UserConsentClientScopeEntity> grantedClientScopes = new ArrayList<>();
 
     @Column(name = "CREATED_DATE")

@@ -44,6 +44,14 @@ public class ProfileInfoRepresentation {
         return info;
     }
 
+    private static List<String> names(Set<Profile.Feature> featureSet) {
+        List<String> l = new LinkedList();
+        for (Profile.Feature f : featureSet) {
+            l.add(f.name());
+        }
+        return l;
+    }
+
     public String getName() {
         return name;
     }
@@ -58,14 +66,6 @@ public class ProfileInfoRepresentation {
 
     public List<String> getExperimentalFeatures() {
         return experimentalFeatures;
-    }
-
-    private static List<String> names(Set<Profile.Feature> featureSet) {
-        List<String> l = new LinkedList();
-        for (Profile.Feature f : featureSet) {
-            l.add(f.name());
-        }
-        return l;
     }
 
 }

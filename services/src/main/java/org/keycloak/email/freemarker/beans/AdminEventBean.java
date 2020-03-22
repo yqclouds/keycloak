@@ -25,7 +25,7 @@ import java.util.Date;
  * @author <a href="mailto:giriraj.sharma27@gmail.com">Giriraj Sharma</a>
  */
 public class AdminEventBean {
-    
+
     private AdminEvent adminEvent;
 
     public AdminEventBean(AdminEvent adminEvent) {
@@ -47,7 +47,7 @@ public class AdminEventBean {
     public String getIpAddress() {
         return adminEvent.getAuthDetails().getIpAddress();
     }
-    
+
     public String getResourcePath() {
         return adminEvent.getResourcePath();
     }

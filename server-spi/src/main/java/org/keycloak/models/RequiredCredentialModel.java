@@ -31,46 +31,6 @@ import java.util.Map;
  */
 public class RequiredCredentialModel implements Serializable {
 
-    protected String type;
-    protected boolean input;
-    protected boolean secret;
-    protected String formLabel;
-
-    public RequiredCredentialModel() {
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public boolean isInput() {
-        return input;
-    }
-
-    public void setInput(boolean input) {
-        this.input = input;
-    }
-
-    public boolean isSecret() {
-        return secret;
-    }
-
-    public void setSecret(boolean secret) {
-        this.secret = secret;
-    }
-
-    public String getFormLabel() {
-        return formLabel;
-    }
-
-    public void setFormLabel(String formLabel) {
-        this.formLabel = formLabel;
-    }
-
     public static final Map<String, RequiredCredentialModel> BUILT_IN;
     public static final RequiredCredentialModel PASSWORD;
     public static final RequiredCredentialModel TOTP;
@@ -111,5 +71,45 @@ public class RequiredCredentialModel implements Serializable {
         KERBEROS.setFormLabel("kerberos");
         map.put(KERBEROS.getType(), KERBEROS);
         BUILT_IN = Collections.unmodifiableMap(map);
+    }
+
+    protected String type;
+    protected boolean input;
+    protected boolean secret;
+    protected String formLabel;
+
+    public RequiredCredentialModel() {
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public boolean isInput() {
+        return input;
+    }
+
+    public void setInput(boolean input) {
+        this.input = input;
+    }
+
+    public boolean isSecret() {
+        return secret;
+    }
+
+    public void setSecret(boolean secret) {
+        this.secret = secret;
+    }
+
+    public String getFormLabel() {
+        return formLabel;
+    }
+
+    public void setFormLabel(String formLabel) {
+        this.formLabel = formLabel;
     }
 }

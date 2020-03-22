@@ -28,14 +28,13 @@ import org.keycloak.models.UserModel;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.messages.Messages;
 
-import java.util.Optional;
-
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import java.util.Optional;
 
 /**
  * Same like classic username+password form, but for use in IdP linking.
- *
+ * <p>
  * User identity is optionally established by the preceding idp-create-user-if-unique execution.
  * In this case username field will be pre-filled (but still changeable).
  *

@@ -20,15 +20,15 @@ public class DockerComposeYamlFile {
     private final String serviceId;
 
     /**
-     * @param registryDataDirName Directory name to be used for both the container's storage directory, as well as the local data directory name
-     * @param localCertDirName Name of the (relative) local directory that holds the certs
-     * @param containerCertPath Path at which the local certs directory should be mounted on the container
-     * @param localhostCrtFileName SSL Cert file name for the registry
-     * @param localhostKeyFileName SSL Key file name for the registry
+     * @param registryDataDirName          Directory name to be used for both the container's storage directory, as well as the local data directory name
+     * @param localCertDirName             Name of the (relative) local directory that holds the certs
+     * @param containerCertPath            Path at which the local certs directory should be mounted on the container
+     * @param localhostCrtFileName         SSL Cert file name for the registry
+     * @param localhostKeyFileName         SSL Key file name for the registry
      * @param authServerTrustChainFileName IDP trust chain, used for auth token validation
-     * @param authServerUrl Root URL for Keycloak, commonly something like http://localhost:8080/auth for dev environments
-     * @param realmName Name of the realm for which the docker client is configured
-     * @param serviceId Docker's Service ID, corresponds to Keycloak's client ID
+     * @param authServerUrl                Root URL for Keycloak, commonly something like http://localhost:8080/auth for dev environments
+     * @param realmName                    Name of the realm for which the docker client is configured
+     * @param serviceId                    Docker's Service ID, corresponds to Keycloak's client ID
      */
     public DockerComposeYamlFile(final String registryDataDirName, final String localCertDirName, final String containerCertPath, final String localhostCrtFileName, final String localhostKeyFileName, final String authServerTrustChainFileName, final URL authServerUrl, final String realmName, final String serviceId) {
         this.registryDataDirName = registryDataDirName;

@@ -212,14 +212,14 @@ public class UserModelDelegate implements UserModel {
     public UserModel getDelegate() {
         return delegate;
     }
-    
+
     @Override
-    public Long getCreatedTimestamp(){
+    public Long getCreatedTimestamp() {
         return delegate.getCreatedTimestamp();
     }
-    
+
     @Override
-    public void setCreatedTimestamp(Long timestamp){
+    public void setCreatedTimestamp(Long timestamp) {
         delegate.setCreatedTimestamp(timestamp);
     }
 

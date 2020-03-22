@@ -74,6 +74,7 @@ public class JWSInput {
     public String getEncodedSignature() {
         return encodedSignature;
     }
+
     public String getEncodedSignatureInput() {
         return encodedSignatureInput;
     }

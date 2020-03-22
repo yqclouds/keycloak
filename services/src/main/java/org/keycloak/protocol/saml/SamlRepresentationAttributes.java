@@ -76,6 +76,7 @@ public class SamlRepresentationAttributes {
         return getAttributes().get(SamlConfigAttributes.SAML_FORCE_POST_BINDING);
 
     }
+
     public String getClientSignature() {
         if (getAttributes() == null) return null;
         return getAttributes().get(SamlConfigAttributes.SAML_CLIENT_SIGNATURE_ATTRIBUTE);

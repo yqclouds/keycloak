@@ -32,7 +32,6 @@ public class PropertyQueries {
      *
      * @param <V>
      * @param targetClass
-     *
      * @return
      */
     public static <V> PropertyQuery<V> createQuery(Class<?> targetClass) {

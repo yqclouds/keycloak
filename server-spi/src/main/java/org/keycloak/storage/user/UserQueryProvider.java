@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Optional capability interface implemented by UserStorageProviders.
@@ -36,6 +35,25 @@ import java.util.stream.Collectors;
  * @version $Revision: 1 $
  */
 public interface UserQueryProvider {
+
+    /**
+     * Returns the number of users from the given list of users that are in at
+     * least one of the groups given in the groups set.
+     *
+     * @param users    list of users to check
+     * @param groupIds id of groups that should be checked for
+     * @return number of users that are in at least one of the groups
+     */
+    static int countUsersInGroups(List<UserModel> users, Set<String> groupIds) {
+        return (int) users.stream().filter(u -> {
+            for (GroupModel group : u.getGroups()) {
+                if (groupIds.contains(group.getId())) {
+                    return true;
+                }
+            }
+            return false;
+        }).count();
+    }
 
     /**
      * Returns the number of users, without consider any service account.
@@ -120,28 +138,9 @@ public interface UserQueryProvider {
     }
 
     /**
-     * Returns the number of users from the given list of users that are in at
-     * least one of the groups given in the groups set.
-     *
-     * @param users    list of users to check
-     * @param groupIds id of groups that should be checked for
-     * @return number of users that are in at least one of the groups
-     */
-    static int countUsersInGroups(List<UserModel> users, Set<String> groupIds) {
-        return (int) users.stream().filter(u -> {
-            for (GroupModel group : u.getGroups()) {
-                if (groupIds.contains(group.getId())) {
-                    return true;
-                }
-            }
-            return false;
-        }).count();
-    }
-
-    /**
      * Returns the number of users.
      *
-     * @param realm the realm
+     * @param realm                 the realm
      * @param includeServiceAccount if true, the number of users will also include service accounts. Otherwise, only the number of users.
      * @return the number of users
      */
@@ -150,13 +149,14 @@ public interface UserQueryProvider {
     }
 
     List<UserModel> getUsers(RealmModel realm);
+
     List<UserModel> getUsers(RealmModel realm, int firstResult, int maxResults);
 
     /**
      * Search for users with username, email or first + last name that is like search string.
-     *
+     * <p>
      * If possible, implementations should treat the parameter values as partial match patterns i.e. in RDMBS terms use LIKE.
-     *
+     * <p>
      * This method is used by the admin console search box
      *
      * @param search
@@ -167,9 +167,9 @@ public interface UserQueryProvider {
 
     /**
      * Search for users with username, email or first + last name that is like search string.
-     *
+     * <p>
      * If possible, implementations should treat the parameter values as partial match patterns i.e. in RDMBS terms use LIKE.
-     *
+     * <p>
      * This method is used by the admin console search box
      *
      * @param search
@@ -186,11 +186,10 @@ public interface UserQueryProvider {
      * "last" - last name
      * "email" - email
      * "username" - username
-     *
+     * <p>
      * If possible, implementations should treat the parameter values as partial match patterns i.e. in RDMBS terms use LIKE.
-     *
+     * <p>
      * This method is used by the REST API when querying users.
-     *
      *
      * @param params
      * @param realm
@@ -204,10 +203,9 @@ public interface UserQueryProvider {
      * "last" - last name
      * "email" - email
      * "username" - username
-     *
+     * <p>
      * If possible, implementations should treat the parameter values as patterns i.e. in RDMBS terms use LIKE.
      * This method is used by the REST API when querying users.
-     *
      *
      * @param params
      * @param realm
@@ -221,42 +219,35 @@ public interface UserQueryProvider {
      * Get users that belong to a specific group.  Implementations do not have to search in UserFederatedStorageProvider
      * as this is done automatically.
      *
-     * @see org.keycloak.storage.federated.UserFederatedStorageProvider
-     *
      * @param realm
      * @param group
      * @param firstResult
      * @param maxResults
      * @return
+     * @see org.keycloak.storage.federated.UserFederatedStorageProvider
      */
     List<UserModel> getGroupMembers(RealmModel realm, GroupModel group, int firstResult, int maxResults);
 
     /**
      * Get users that belong to a specific role.
      *
-     *
-     *
      * @param realm
      * @param role
      * @return
      */
-    default List<UserModel> getRoleMembers(RealmModel realm, RoleModel role)
-    {
+    default List<UserModel> getRoleMembers(RealmModel realm, RoleModel role) {
         return Collections.EMPTY_LIST;
     }
 
     /**
      * Search for users that have a specific role with a specific roleId.
      *
-     *
-     *
      * @param firstResult
      * @param maxResults
      * @param role
      * @return
      */
-    default List<UserModel> getRoleMembers(RealmModel realm, RoleModel role, int firstResult, int maxResults)
-    {
+    default List<UserModel> getRoleMembers(RealmModel realm, RoleModel role, int firstResult, int maxResults) {
         return Collections.EMPTY_LIST;
     }
 
@@ -264,13 +255,10 @@ public interface UserQueryProvider {
      * Get users that belong to a specific group.  Implementations do not have to search in UserFederatedStorageProvider
      * as this is done automatically.
      *
-     * @see org.keycloak.storage.federated.UserFederatedStorageProvider
-     *
-     *
-     *
      * @param realm
      * @param group
      * @return
+     * @see org.keycloak.storage.federated.UserFederatedStorageProvider
      */
     List<UserModel> getGroupMembers(RealmModel realm, GroupModel group);
 
@@ -279,14 +267,11 @@ public interface UserQueryProvider {
      * Implementations do not have to search in UserFederatedStorageProvider
      * as this is done automatically.
      *
-     * @see org.keycloak.storage.federated.UserFederatedStorageProvider
-     *
-
-     *
      * @param attrName
      * @param attrValue
      * @param realm
      * @return
+     * @see org.keycloak.storage.federated.UserFederatedStorageProvider
      */
     List<UserModel> searchForUserByUserAttribute(String attrName, String attrValue, RealmModel realm);
 }

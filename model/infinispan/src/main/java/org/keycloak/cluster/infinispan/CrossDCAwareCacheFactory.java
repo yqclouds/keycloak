@@ -17,9 +17,6 @@
 
 package org.keycloak.cluster.infinispan;
 
-import java.io.Serializable;
-import java.util.Set;
-
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
@@ -27,16 +24,15 @@ import org.infinispan.commons.api.BasicCache;
 import org.infinispan.persistence.remote.RemoteStore;
 import org.jboss.logging.Logger;
 
+import java.io.Serializable;
+import java.util.Set;
+
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 abstract class CrossDCAwareCacheFactory {
 
     protected static final Logger logger = Logger.getLogger(CrossDCAwareCacheFactory.class);
-
-
-    abstract BasicCache<String, Serializable> getCache();
-
 
     static CrossDCAwareCacheFactory getFactory(Cache<String, Serializable> workCache, Set<RemoteStore> remoteStores) {
         if (remoteStores.isEmpty()) {
@@ -62,6 +58,7 @@ abstract class CrossDCAwareCacheFactory {
         }
     }
 
+    abstract BasicCache<String, Serializable> getCache();
 
     // We don't have external JDG configured. No cross-DC.
     private static class InfinispanCacheWrapperFactory extends CrossDCAwareCacheFactory {

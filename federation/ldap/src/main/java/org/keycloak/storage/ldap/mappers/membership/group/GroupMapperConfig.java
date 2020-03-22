@@ -81,7 +81,7 @@ public class GroupMapperConfig extends CommonLDAPGroupMapperConfig {
 
     public String getGroupNameLdapAttribute() {
         String rolesRdnAttr = mapperModel.getConfig().getFirst(GROUP_NAME_LDAP_ATTRIBUTE);
-        return rolesRdnAttr!=null ? rolesRdnAttr : LDAPConstants.CN;
+        return rolesRdnAttr != null ? rolesRdnAttr : LDAPConstants.CN;
     }
 
     @Override
@@ -122,6 +122,6 @@ public class GroupMapperConfig extends CommonLDAPGroupMapperConfig {
 
     public String getUserGroupsRetrieveStrategy() {
         String strategyString = mapperModel.getConfig().getFirst(USER_ROLES_RETRIEVE_STRATEGY);
-        return strategyString!=null ? strategyString : LOAD_GROUPS_BY_MEMBER_ATTRIBUTE;
+        return strategyString != null ? strategyString : LOAD_GROUPS_BY_MEMBER_ATTRIBUTE;
     }
 }

@@ -26,9 +26,16 @@ import java.util.Vector;
 import static org.freedesktop.dbus.Gettext.getString;
 
 public class DBusSignal extends Message {
+    private static Map<Class<? extends DBusSignal>, Type[]> typeCache = new HashMap<Class<? extends DBusSignal>, Type[]>();
+    private static Map<String, Class<? extends DBusSignal>> classCache = new HashMap<String, Class<? extends DBusSignal>>();
+    private static Map<Class<? extends DBusSignal>, Constructor<? extends DBusSignal>> conCache = new HashMap<Class<? extends DBusSignal>, Constructor<? extends DBusSignal>>();
+    private static Map<String, String> signames = new HashMap<String, String>();
+    private static Map<String, String> intnames = new HashMap<String, String>();
+    private Class<? extends DBusSignal> c;
+    private boolean bodydone = false;
+    private byte[] blen;
     DBusSignal() {
     }
-
     public DBusSignal(String source, String path, String iface, String member, String sig, Object... args) throws DBusException {
         super(Message.Endian.BIG, Message.MessageType.SIGNAL, (byte) 0);
 
@@ -64,21 +71,78 @@ public class DBusSignal extends Message {
         marshallint(bytecounter - c, blen, 0, 4);
         bodydone = true;
     }
+    /**
+     * Create a new signal.
+     * This contructor MUST be called by all sub classes.
+     *
+     * @param objectpath The path to the object this is emitted from.
+     * @param args       The parameters of the signal.
+     * @throws DBusException This is thrown if the subclass is incorrectly defined.
+     */
+    @SuppressWarnings("unchecked")
+    protected DBusSignal(String objectpath, Object... args) throws DBusException {
+        super(Message.Endian.BIG, Message.MessageType.SIGNAL, (byte) 0);
 
-    static class internalsig extends DBusSignal {
-        public internalsig(String source, String objectpath, String type, String name, String sig, Object[] parameters, long serial) throws DBusException {
-            super(source, objectpath, type, name, sig, parameters, serial);
+        if (!objectpath.matches(AbstractConnection.OBJECT_REGEX))
+            throw new DBusException(getString("invalidObjectPath") + objectpath);
+
+        Class<? extends DBusSignal> tc = getClass();
+        String member;
+        if (tc.isAnnotationPresent(DBusMemberName.class))
+            member = tc.getAnnotation(DBusMemberName.class).value();
+        else
+            member = tc.getSimpleName();
+        String iface = null;
+        Class<? extends Object> enc = tc.getEnclosingClass();
+        if (null == enc ||
+                !DBusInterface.class.isAssignableFrom(enc) ||
+                enc.getName().equals(enc.getSimpleName()))
+            throw new DBusException(getString("signalsMustBeMemberOfClass"));
+        else if (null != enc.getAnnotation(DBusInterfaceName.class))
+            iface = enc.getAnnotation(DBusInterfaceName.class).value();
+        else
+            iface = AbstractConnection.dollar_pattern.matcher(enc.getName()).replaceAll(".");
+
+        headers.put(Message.HeaderField.PATH, objectpath);
+        headers.put(Message.HeaderField.MEMBER, member);
+        headers.put(Message.HeaderField.INTERFACE, iface);
+
+        Vector<Object> hargs = new Vector<Object>();
+        hargs.add(new Object[]{Message.HeaderField.PATH, new Object[]{ArgumentType.OBJECT_PATH_STRING, objectpath}});
+        hargs.add(new Object[]{Message.HeaderField.INTERFACE, new Object[]{ArgumentType.STRING_STRING, iface}});
+        hargs.add(new Object[]{Message.HeaderField.MEMBER, new Object[]{ArgumentType.STRING_STRING, member}});
+
+        String sig = null;
+        if (0 < args.length) {
+            try {
+                Type[] types = typeCache.get(tc);
+                if (null == types) {
+                    Constructor<? extends DBusSignal> con = (Constructor<? extends DBusSignal>) tc.getDeclaredConstructors()[0];
+                    conCache.put(tc, con);
+                    Type[] ts = con.getGenericParameterTypes();
+                    types = new Type[ts.length - 1];
+                    for (int i = 1; i <= types.length; i++)
+                        if (ts[i] instanceof TypeVariable)
+                            types[i - 1] = ((TypeVariable<GenericDeclaration>) ts[i]).getBounds()[0];
+                        else
+                            types[i - 1] = ts[i];
+                    typeCache.put(tc, types);
+                }
+                sig = Marshalling.getDBusType(types);
+                hargs.add(new Object[]{Message.HeaderField.SIGNATURE, new Object[]{ArgumentType.SIGNATURE_STRING, sig}});
+                headers.put(Message.HeaderField.SIGNATURE, sig);
+                setArgs(args);
+            } catch (Exception e) {
+                if (AbstractConnection.EXCEPTION_DEBUG && Debug.debug) Debug.print(Debug.ERR, e);
+                throw new DBusException(getString("errorAddSignalParameters") + e.getMessage());
+            }
         }
-    }
 
-    private static Map<Class<? extends DBusSignal>, Type[]> typeCache = new HashMap<Class<? extends DBusSignal>, Type[]>();
-    private static Map<String, Class<? extends DBusSignal>> classCache = new HashMap<String, Class<? extends DBusSignal>>();
-    private static Map<Class<? extends DBusSignal>, Constructor<? extends DBusSignal>> conCache = new HashMap<Class<? extends DBusSignal>, Constructor<? extends DBusSignal>>();
-    private static Map<String, String> signames = new HashMap<String, String>();
-    private static Map<String, String> intnames = new HashMap<String, String>();
-    private Class<? extends DBusSignal> c;
-    private boolean bodydone = false;
-    private byte[] blen;
+        blen = new byte[4];
+        appendBytes(blen);
+        append("ua(yv)", ++serial, hargs.toArray());
+        pad((byte) 8);
+    }
 
     static void addInterfaceMap(String java, String dbus) {
         intnames.put(dbus, java);
@@ -170,79 +234,6 @@ public class DBusSignal extends Message {
         }
     }
 
-    /**
-     * Create a new signal.
-     * This contructor MUST be called by all sub classes.
-     *
-     * @param objectpath The path to the object this is emitted from.
-     * @param args       The parameters of the signal.
-     * @throws DBusException This is thrown if the subclass is incorrectly defined.
-     */
-    @SuppressWarnings("unchecked")
-    protected DBusSignal(String objectpath, Object... args) throws DBusException {
-        super(Message.Endian.BIG, Message.MessageType.SIGNAL, (byte) 0);
-
-        if (!objectpath.matches(AbstractConnection.OBJECT_REGEX))
-            throw new DBusException(getString("invalidObjectPath") + objectpath);
-
-        Class<? extends DBusSignal> tc = getClass();
-        String member;
-        if (tc.isAnnotationPresent(DBusMemberName.class))
-            member = tc.getAnnotation(DBusMemberName.class).value();
-        else
-            member = tc.getSimpleName();
-        String iface = null;
-        Class<? extends Object> enc = tc.getEnclosingClass();
-        if (null == enc ||
-                !DBusInterface.class.isAssignableFrom(enc) ||
-                enc.getName().equals(enc.getSimpleName()))
-            throw new DBusException(getString("signalsMustBeMemberOfClass"));
-        else if (null != enc.getAnnotation(DBusInterfaceName.class))
-            iface = enc.getAnnotation(DBusInterfaceName.class).value();
-        else
-            iface = AbstractConnection.dollar_pattern.matcher(enc.getName()).replaceAll(".");
-
-        headers.put(Message.HeaderField.PATH, objectpath);
-        headers.put(Message.HeaderField.MEMBER, member);
-        headers.put(Message.HeaderField.INTERFACE, iface);
-
-        Vector<Object> hargs = new Vector<Object>();
-        hargs.add(new Object[]{Message.HeaderField.PATH, new Object[]{ArgumentType.OBJECT_PATH_STRING, objectpath}});
-        hargs.add(new Object[]{Message.HeaderField.INTERFACE, new Object[]{ArgumentType.STRING_STRING, iface}});
-        hargs.add(new Object[]{Message.HeaderField.MEMBER, new Object[]{ArgumentType.STRING_STRING, member}});
-
-        String sig = null;
-        if (0 < args.length) {
-            try {
-                Type[] types = typeCache.get(tc);
-                if (null == types) {
-                    Constructor<? extends DBusSignal> con = (Constructor<? extends DBusSignal>) tc.getDeclaredConstructors()[0];
-                    conCache.put(tc, con);
-                    Type[] ts = con.getGenericParameterTypes();
-                    types = new Type[ts.length - 1];
-                    for (int i = 1; i <= types.length; i++)
-                        if (ts[i] instanceof TypeVariable)
-                            types[i - 1] = ((TypeVariable<GenericDeclaration>) ts[i]).getBounds()[0];
-                        else
-                            types[i - 1] = ts[i];
-                    typeCache.put(tc, types);
-                }
-                sig = Marshalling.getDBusType(types);
-                hargs.add(new Object[]{Message.HeaderField.SIGNATURE, new Object[]{ArgumentType.SIGNATURE_STRING, sig}});
-                headers.put(Message.HeaderField.SIGNATURE, sig);
-                setArgs(args);
-            } catch (Exception e) {
-                if (AbstractConnection.EXCEPTION_DEBUG && Debug.debug) Debug.print(Debug.ERR, e);
-                throw new DBusException(getString("errorAddSignalParameters") + e.getMessage());
-            }
-        }
-
-        blen = new byte[4];
-        appendBytes(blen);
-        append("ua(yv)", ++serial, hargs.toArray());
-        pad((byte) 8);
-    }
-
     void appendbody(AbstractConnection conn) throws DBusException {
         if (bodydone) return;
 
@@ -255,5 +246,11 @@ public class DBusSignal extends Message {
         if (null != args && 0 < args.length) append(sig, args);
         marshallint(bytecounter - c, blen, 0, 4);
         bodydone = true;
+    }
+
+    static class internalsig extends DBusSignal {
+        public internalsig(String source, String objectpath, String type, String name, String sig, Object[] parameters, long serial) throws DBusException {
+            super(source, objectpath, type, name, sig, parameters, serial);
+        }
     }
 }

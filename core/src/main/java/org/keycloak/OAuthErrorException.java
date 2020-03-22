@@ -49,27 +49,33 @@ public class OAuthErrorException extends Exception {
     public static final String INVALID_CLIENT = "invalid_client";
     public static final String INVALID_GRANT = "invalid_grant";
     public static final String UNSUPPORTED_GRANT_TYPE = "unsupported_grant_type";
+    protected String error;
+    protected String description;
 
     public OAuthErrorException(String error, String description, String message, Throwable cause) {
         super(message, cause);
         this.error = error;
         this.description = description;
     }
+
     public OAuthErrorException(String error, String description, String message) {
         super(message);
         this.error = error;
         this.description = description;
     }
+
     public OAuthErrorException(String error, String description) {
         super(description);
         this.error = error;
         this.description = description;
     }
+
     public OAuthErrorException(String error, String description, Throwable cause) {
         super(description, cause);
         this.error = error;
         this.description = description;
     }
+
 
     public OAuthErrorException(String error) {
         super(error);
@@ -79,10 +85,6 @@ public class OAuthErrorException extends Exception {
         super(error, cause);
         this.error = error;
     }
-
-
-    protected String error;
-    protected String description;
 
     public String getError() {
         return error;

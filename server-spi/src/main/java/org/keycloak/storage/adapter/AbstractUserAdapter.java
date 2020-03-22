@@ -18,32 +18,22 @@ package org.keycloak.storage.adapter;
 
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.GroupModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleContainerModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.DefaultRoles;
 import org.keycloak.models.utils.RoleUtils;
 import org.keycloak.storage.ReadOnlyException;
 import org.keycloak.storage.StorageId;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This abstract class provides implementations for everything but getUsername().  getId() returns a default value
  * of "f:" + providerId + ":" + getUsername().  isEnabled() returns true.  getRoleMappings() will return default roles.
  * getGroups() will return default groups.
- *
+ * <p>
  * All other read methods return null, an empty collection, or false depending
  * on the type.  All update methods throw a ReadOnlyException.
- *
+ * <p>
  * Provider implementors should override the methods for attributes, properties, and mappings they support.
  *
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -53,6 +43,8 @@ public abstract class AbstractUserAdapter implements UserModel {
     protected KeycloakSession session;
     protected RealmModel realm;
     protected ComponentModel storageProviderModel;
+    protected StorageId storageId;
+    protected long created = System.currentTimeMillis();
 
     public AbstractUserAdapter(KeycloakSession session, RealmModel realm, ComponentModel storageProviderModel) {
         this.session = session;
@@ -169,7 +161,7 @@ public abstract class AbstractUserAdapter implements UserModel {
     public boolean hasRole(RoleModel role) {
         Set<RoleModel> roles = getRoleMappings();
         return RoleUtils.hasRole(roles, role)
-          || RoleUtils.hasRoleFromGroup(getGroups(), role, true);
+                || RoleUtils.hasRoleFromGroup(getGroups(), role, true);
     }
 
     @Override
@@ -200,7 +192,6 @@ public abstract class AbstractUserAdapter implements UserModel {
         set.addAll(getRoleMappingsInternal());
         return set;
     }
-
 
     @Override
     public void deleteRoleMapping(RoleModel role) {
@@ -260,8 +251,6 @@ public abstract class AbstractUserAdapter implements UserModel {
 
     }
 
-    protected StorageId storageId;
-
     /**
      * Defaults to 'f:' + storageProvider.getId() + ':' + getUsername()
      *
@@ -279,8 +268,6 @@ public abstract class AbstractUserAdapter implements UserModel {
     public void setUsername(String username) {
         throw new ReadOnlyException("user is read only for this update");
     }
-
-    protected long created = System.currentTimeMillis();
 
     @Override
     public Long getCreatedTimestamp() {

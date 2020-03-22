@@ -31,27 +31,41 @@ public enum ResourceType {
      * @return The resource portion of the path.
      */
     public String getPath() {
-        switch(this) {
-            case USER: return "users";
-            case GROUP: return "groups";
-            case CLIENT: return "clients";
-            case IDP: return "identity-provider-settings";
-            case REALM_ROLE: return "realms";
-            case CLIENT_ROLE: return "clients";
-            default: return "";
+        switch (this) {
+            case USER:
+                return "users";
+            case GROUP:
+                return "groups";
+            case CLIENT:
+                return "clients";
+            case IDP:
+                return "identity-provider-settings";
+            case REALM_ROLE:
+                return "realms";
+            case CLIENT_ROLE:
+                return "clients";
+            default:
+                return "";
         }
     }
 
     @Override
     public String toString() {
-        switch(this) {
-            case USER: return "User";
-            case GROUP: return "Group";
-            case CLIENT: return "Client";
-            case IDP: return "Identity Provider";
-            case REALM_ROLE: return "Realm Role";
-            case CLIENT_ROLE: return "Client Role";
-            default: return super.toString();
+        switch (this) {
+            case USER:
+                return "User";
+            case GROUP:
+                return "Group";
+            case CLIENT:
+                return "Client";
+            case IDP:
+                return "Identity Provider";
+            case REALM_ROLE:
+                return "Realm Role";
+            case CLIENT_ROLE:
+                return "Client Role";
+            default:
+                return super.toString();
         }
     }
 }

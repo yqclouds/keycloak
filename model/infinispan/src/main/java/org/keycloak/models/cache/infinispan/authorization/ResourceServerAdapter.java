@@ -30,6 +30,7 @@ public class ResourceServerAdapter implements ResourceServer, CachedModel<Resour
     protected CachedResourceServer cached;
     protected StoreFactoryCacheSession cacheSession;
     protected ResourceServer updated;
+    protected boolean invalidated;
 
     public ResourceServerAdapter(CachedResourceServer cached, StoreFactoryCacheSession cacheSession) {
         this.cached = cached;
@@ -45,8 +46,6 @@ public class ResourceServerAdapter implements ResourceServer, CachedModel<Resour
         }
         return updated;
     }
-
-    protected boolean invalidated;
 
     protected void invalidateFlag() {
         invalidated = true;

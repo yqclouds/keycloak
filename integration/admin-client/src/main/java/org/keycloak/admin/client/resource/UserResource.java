@@ -17,22 +17,9 @@
 
 package org.keycloak.admin.client.resource;
 
-import org.keycloak.representations.idm.CredentialRepresentation;
-import org.keycloak.representations.idm.FederatedIdentityRepresentation;
-import org.keycloak.representations.idm.GroupRepresentation;
-import org.keycloak.representations.idm.UserRepresentation;
-import org.keycloak.representations.idm.UserSessionRepresentation;
+import org.keycloak.representations.idm.*;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -68,13 +55,13 @@ public interface UserResource {
     List<GroupRepresentation> groups(@QueryParam("search") String search,
                                      @QueryParam("first") Integer firstResult,
                                      @QueryParam("max") Integer maxResults);
-    
+
     @Path("groups")
     @GET
     List<GroupRepresentation> groups(@QueryParam("first") Integer firstResult,
                                      @QueryParam("max") Integer maxResults,
                                      @QueryParam("briefRepresentation") @DefaultValue("true") boolean briefRepresentation);
-    
+
     @Path("groups")
     @GET
     List<GroupRepresentation> groups(@QueryParam("search") String search,
@@ -91,12 +78,9 @@ public interface UserResource {
     void leaveGroup(@PathParam("groupId") String groupId);
 
 
-
-
     @POST
     @Path("logout")
     void logout();
-
 
 
     @GET
@@ -118,11 +102,10 @@ public interface UserResource {
 
     /**
      * Remove a credential for a user
-     *
      */
     @DELETE
     @Path("credentials/{credentialId}")
-    void removeCredential(@PathParam("credentialId")String credentialId);
+    void removeCredential(@PathParam("credentialId") String credentialId);
 
     /**
      * Update a credential label for a user
@@ -134,6 +117,7 @@ public interface UserResource {
 
     /**
      * Move a credential to a first position in the credentials list of the user
+     *
      * @param credentialId The credential to move
      */
     @Path("credentials/{credentialId}/moveToFirst")
@@ -142,7 +126,8 @@ public interface UserResource {
 
     /**
      * Move a credential to a position behind another credential
-     * @param credentialId The credential to move
+     *
+     * @param credentialId            The credential to move
      * @param newPreviousCredentialId The credential that will be the previous element in the list. If set to null, the moved credential will be the first element in the list.
      */
     @Path("credentials/{credentialId}/moveAfter/{newPreviousCredentialId}")
@@ -153,7 +138,7 @@ public interface UserResource {
     /**
      * Disables or deletes all credentials for specific types.
      * Type examples "otp", "password"
-     *
+     * <p>
      * This is typically supported just for the users backed by user storage providers. See {@link UserRepresentation#getDisableableCredentialTypes()}
      * to see what credential types can be disabled for the particular user
      *
@@ -170,7 +155,6 @@ public interface UserResource {
 
     /**
      * Use executeActionsEmail and pass in the UPDATE_PASSWORD required action
-     *
      */
     @PUT
     @Path("reset-password-email")
@@ -179,7 +163,6 @@ public interface UserResource {
 
     /**
      * Use executeActionsEmail and pass in the UPDATE_PASSWORD required action
-     *
      */
     @PUT
     @Path("reset-password-email")
@@ -190,7 +173,6 @@ public interface UserResource {
      * Sends an email to the user with a link within it.  If they click on the link they will be asked to perform some actions
      * i.e. reset password, update profile, etc.
      *
-     *
      * @param actions
      */
     @PUT
@@ -200,7 +182,7 @@ public interface UserResource {
     /**
      * Sends an email to the user with a link within it.  If they click on the link they will be asked to perform some actions
      * i.e. reset password, update profile, etc.
-     *
+     * <p>
      * The lifespan decides the number of seconds after which the generated token in the email link expires. The default
      * value is 12 hours.
      *
@@ -214,11 +196,11 @@ public interface UserResource {
     /**
      * Sends an email to the user with a link within it.  If they click on the link they will be asked to perform some actions
      * i.e. reset password, update profile, etc.
-     *
+     * <p>
      * If redirectUri is not null, then you must specify a client id.  This will set the URI you want the flow to link
      * to after the email link is clicked and actions completed.  If both parameters are null, then no page is linked to
      * at the end of the flow.
-     *
+     * <p>
      * The lifespan decides the number of seconds after which the generated token in the email link expires. The default
      * value is 12 hours.
      *
@@ -237,7 +219,7 @@ public interface UserResource {
     /**
      * Sends an email to the user with a link within it.  If they click on the link they will be asked to perform some actions
      * i.e. reset password, update profile, etc.
-     *
+     * <p>
      * If redirectUri is not null, then you must specify a client id.  This will set the URI you want the flow to link
      * to after the email link is clicked and actions completed.  If both parameters are null, then no page is linked to
      * at the end of the flow.

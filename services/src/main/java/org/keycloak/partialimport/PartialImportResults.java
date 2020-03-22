@@ -28,15 +28,13 @@ import java.util.Set;
  */
 public class PartialImportResults {
 
+    private final Set<PartialImportResult> importResults = new HashSet<>();
     // these fields used only for marsalling from JSON with admin client
     // they are never directly set
     private int overwritten;
     private int added;
     private int skipped;
-
     private String errorMessage;
-
-    private final Set<PartialImportResult> importResults = new HashSet<>();
 
     public void addResult(PartialImportResult result) {
         importResults.add(result);

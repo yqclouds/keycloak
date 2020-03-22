@@ -28,7 +28,7 @@ public abstract class SAMLIndexedEndpointTypeParser extends AbstractStaxSamlMeta
         if (isDefault != null) {
             endpoint.setIsDefault(isDefault);
         }
-        
+
         Integer index = StaxParserUtil.getIntegerAttributeValue(element, SAMLMetadataQNames.ATTR_INDEX);
         if (index != null)
             endpoint.setIndex(index);

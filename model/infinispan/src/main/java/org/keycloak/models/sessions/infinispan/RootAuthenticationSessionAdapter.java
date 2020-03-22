@@ -17,9 +17,6 @@
 
 package org.keycloak.models.sessions.infinispan;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.infinispan.Cache;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.ClientModel;
@@ -29,6 +26,9 @@ import org.keycloak.models.sessions.infinispan.entities.AuthenticationSessionEnt
 import org.keycloak.models.sessions.infinispan.entities.RootAuthenticationSessionEntity;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -83,7 +83,7 @@ public class RootAuthenticationSessionAdapter implements RootAuthenticationSessi
 
         for (Map.Entry<String, AuthenticationSessionEntity> entry : entity.getAuthenticationSessions().entrySet()) {
             String tabId = entry.getKey();
-            result.put(tabId , new AuthenticationSessionAdapter(session, this, tabId, entry.getValue()));
+            result.put(tabId, new AuthenticationSessionAdapter(session, this, tabId, entry.getValue()));
         }
 
         return result;

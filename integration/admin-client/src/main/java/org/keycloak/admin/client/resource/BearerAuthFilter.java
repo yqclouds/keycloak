@@ -67,8 +67,8 @@ public class BearerAuthFilter implements ClientRequestFilter, ClientResponseFilt
                 if (authHeader instanceof String) {
                     String headerValue = (String) authHeader;
                     if (headerValue.startsWith(AUTH_HEADER_PREFIX)) {
-                        String token = headerValue.substring( AUTH_HEADER_PREFIX.length() );
-                        tokenManager.invalidate( token );
+                        String token = headerValue.substring(AUTH_HEADER_PREFIX.length());
+                        tokenManager.invalidate(token);
                     }
                 }
             }

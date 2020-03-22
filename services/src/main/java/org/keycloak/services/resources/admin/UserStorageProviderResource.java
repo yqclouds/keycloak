@@ -18,7 +18,6 @@ package org.keycloak.services.resources.admin;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import javax.ws.rs.NotFoundException;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.events.admin.OperationType;
@@ -33,13 +32,7 @@ import org.keycloak.storage.ldap.LDAPStorageProvider;
 import org.keycloak.storage.ldap.mappers.LDAPStorageMapper;
 import org.keycloak.storage.user.SynchronizationResult;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -47,9 +40,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @resource User Storage Provider
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
+ * @resource User Storage Provider
  */
 public class UserStorageProviderResource {
     private static final Logger logger = Logger.getLogger(UserStorageProviderResource.class);
@@ -77,7 +70,7 @@ public class UserStorageProviderResource {
 
     /**
      * Need this for admin console to display simple name of provider when displaying user detail
-     *
+     * <p>
      * KEYCLOAK-4328
      *
      * @param id
@@ -107,7 +100,7 @@ public class UserStorageProviderResource {
 
     /**
      * Trigger sync of users
-     *
+     * <p>
      * Action can be "triggerFullSync" or "triggerChangedUsersSync"
      *
      * @param id
@@ -131,7 +124,6 @@ public class UserStorageProviderResource {
         }
 
         UserStorageProviderModel providerModel = new UserStorageProviderModel(model);
-
 
 
         logger.debug("Syncing users");
@@ -161,7 +153,6 @@ public class UserStorageProviderResource {
     /**
      * Remove imported users
      *
-     *
      * @param id
      * @return
      */
@@ -181,9 +172,9 @@ public class UserStorageProviderResource {
 
         session.users().removeImportedUsers(realm, id);
     }
+
     /**
      * Unlink imported users from a storage provider
-     *
      *
      * @param id
      * @return
@@ -207,7 +198,7 @@ public class UserStorageProviderResource {
 
     /**
      * Trigger sync of mapper data related to ldap mapper (roles, groups, ...)
-     *
+     * <p>
      * direction is "fedToKeycloak" or "keycloakToFed"
      *
      * @return
@@ -244,8 +235,6 @@ public class UserStorageProviderResource {
         adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).representation(eventRep).success();
         return syncResult;
     }
-
-
 
 
 }

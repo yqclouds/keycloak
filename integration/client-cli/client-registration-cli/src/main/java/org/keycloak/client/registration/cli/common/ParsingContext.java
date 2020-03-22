@@ -10,24 +10,24 @@ public class ParsingContext {
 
     private int offset;
     private int pos = -1;
-    private String [] args;
+    private String[] args;
 
-    public ParsingContext(String [] args) {
+    public ParsingContext(String[] args) {
         this(args, 0, -1);
     }
 
-    public ParsingContext(String [] args, int offset) {
+    public ParsingContext(String[] args, int offset) {
         this(args, offset, -1);
     }
 
-    public ParsingContext(String [] args, int offset, int pos) {
+    public ParsingContext(String[] args, int offset, int pos) {
         this.args = args.clone();
         this.offset = offset;
         this.pos = pos;
     }
 
     public boolean hasNext() {
-        return pos < args.length-1;
+        return pos < args.length - 1;
     }
 
 
@@ -107,7 +107,7 @@ public class ParsingContext {
         }
     }
 
-    public String [] getArgs() {
+    public String[] getArgs() {
         return args;
     }
 }

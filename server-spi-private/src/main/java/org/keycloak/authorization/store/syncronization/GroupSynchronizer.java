@@ -17,11 +17,6 @@
 
 package org.keycloak.authorization.store.syncronization;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.model.Policy;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
@@ -31,6 +26,11 @@ import org.keycloak.models.GroupModel;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.idm.authorization.GroupPolicyRepresentation;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -47,8 +47,8 @@ public class GroupSynchronizer implements Synchronizer<GroupModel.GroupRemovedEv
         GroupModel group = event.getGroup();
         Map<String, String[]> attributes = new HashMap<>();
 
-        attributes.put("type", new String[] {"group"});
-        attributes.put("config:groups", new String[] {group.getId()});
+        attributes.put("type", new String[]{"group"});
+        attributes.put("config:groups", new String[]{group.getId()});
 
         List<Policy> search = policyStore.findByResourceServer(attributes, null, -1, -1);
 

@@ -17,27 +17,23 @@
 
 package org.keycloak.authorization.store.syncronization;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.model.PermissionTicket;
 import org.keycloak.authorization.model.Policy;
 import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
-import org.keycloak.authorization.store.PermissionTicketStore;
-import org.keycloak.authorization.store.PolicyStore;
-import org.keycloak.authorization.store.ResourceServerStore;
-import org.keycloak.authorization.store.ResourceStore;
-import org.keycloak.authorization.store.StoreFactory;
+import org.keycloak.authorization.store.*;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserModel.UserRemovedEvent;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.idm.authorization.UserPolicyRepresentation;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -60,8 +56,8 @@ public class UserSynchronizer implements Synchronizer<UserRemovedEvent> {
         UserModel userModel = event.getUser();
         Map<String, String[]> attributes = new HashMap<>();
 
-        attributes.put("type", new String[] {"user"});
-        attributes.put("config:users", new String[] {userModel.getId()});
+        attributes.put("type", new String[]{"user"});
+        attributes.put("config:users", new String[]{userModel.getId()});
 
         List<Policy> search = policyStore.findByResourceServer(attributes, null, -1, -1);
 
@@ -121,7 +117,7 @@ public class UserSynchronizer implements Synchronizer<UserRemovedEvent> {
         }
 
         attributes = new HashMap<>();
-        
+
         attributes.put(PermissionTicket.REQUESTER, userModel.getId());
 
         for (PermissionTicket ticket : ticketStore.find(attributes, null, -1, -1)) {

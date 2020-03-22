@@ -21,11 +21,7 @@ import org.keycloak.broker.provider.AbstractIdentityProviderMapper;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.saml.SAMLEndpoint;
 import org.keycloak.broker.saml.SAMLIdentityProviderFactory;
-import org.keycloak.dom.saml.v2.assertion.AssertionType;
-import org.keycloak.dom.saml.v2.assertion.AttributeStatementType;
-import org.keycloak.dom.saml.v2.assertion.AttributeType;
-import org.keycloak.dom.saml.v2.assertion.NameIDType;
-import org.keycloak.dom.saml.v2.assertion.SubjectType;
+import org.keycloak.dom.saml.v2.assertion.*;
 import org.keycloak.models.IdentityProviderMapperModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
@@ -45,10 +41,10 @@ import java.util.regex.Pattern;
 public class UsernameTemplateMapper extends AbstractIdentityProviderMapper {
 
     public static final String[] COMPATIBLE_PROVIDERS = {SAMLIdentityProviderFactory.PROVIDER_ID};
-
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
-
     public static final String TEMPLATE = "template";
+    public static final String PROVIDER_ID = "saml-username-idp-mapper";
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    static Pattern substitution = Pattern.compile("\\$\\{([^}]+)\\}");
 
     static {
         ProviderConfigProperty property;
@@ -60,8 +56,6 @@ public class UsernameTemplateMapper extends AbstractIdentityProviderMapper {
         property.setDefaultValue("${ALIAS}.${NAMEID}");
         configProperties.add(property);
     }
-
-    public static final String PROVIDER_ID = "saml-username-idp-mapper";
 
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {
@@ -92,11 +86,10 @@ public class UsernameTemplateMapper extends AbstractIdentityProviderMapper {
     public void updateBrokeredUser(KeycloakSession session, RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
 
     }
-    static Pattern substitution = Pattern.compile("\\$\\{([^}]+)\\}");
 
     @Override
     public void preprocessFederatedIdentity(KeycloakSession session, RealmModel realm, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
-        AssertionType assertion = (AssertionType)context.getContextData().get(SAMLEndpoint.SAML_ASSERTION);
+        AssertionType assertion = (AssertionType) context.getContextData().get(SAMLEndpoint.SAML_ASSERTION);
         String template = mapperModel.getConfig().get(TEMPLATE);
         Matcher m = substitution.matcher(template);
         StringBuffer sb = new StringBuffer();

@@ -23,15 +23,13 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import static org.keycloak.client.admin.cli.util.ConfigUtil.DEFAULT_CONFIG_FILE_STRING;
-import static org.keycloak.client.admin.cli.util.OsUtil.CMD;
-import static org.keycloak.client.admin.cli.util.OsUtil.EOL;
-import static org.keycloak.client.admin.cli.util.OsUtil.PROMPT;
+import static org.keycloak.client.admin.cli.util.OsUtil.*;
 
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
  */
 @CommandDefinition(name = "get", description = "[ARGUMENTS]")
-public class GetCmd extends  AbstractRequestCmd {
+public class GetCmd extends AbstractRequestCmd {
 
     @Option(name = "noquotes", description = "", hasValue = false)
     boolean unquoted;
@@ -53,35 +51,6 @@ public class GetCmd extends  AbstractRequestCmd {
 
     @Option(name = "format", description = "Output format - one of: json, csv", defaultValue = "json")
     String format;
-
-
-    @Override
-    void initOptions() {
-        // set options on parent
-        super.fields = fields;
-        super.printHeaders = printHeaders;
-        super.returnId = false;
-        super.outputResult = true;
-        super.compressed = compressed;
-        super.offset = offset;
-        super.limit = limit;
-        super.format = format;
-        super.unquoted = unquoted;
-        super.httpVerb = "get";
-    }
-
-    @Override
-    protected boolean nothingToDo() {
-        return noOptions() && (args == null || args.size() == 0);
-    }
-
-    protected String suggestHelp() {
-        return EOL + "Try '" + CMD + " help get' for more information";
-    }
-
-    protected String help() {
-        return usage();
-    }
 
     public static String usage() {
         StringWriter sb = new StringWriter();
@@ -177,5 +146,33 @@ public class GetCmd extends  AbstractRequestCmd {
         out.println();
         out.println("Use '" + CMD + " help' for general information and a list of commands");
         return sb.toString();
+    }
+
+    @Override
+    void initOptions() {
+        // set options on parent
+        super.fields = fields;
+        super.printHeaders = printHeaders;
+        super.returnId = false;
+        super.outputResult = true;
+        super.compressed = compressed;
+        super.offset = offset;
+        super.limit = limit;
+        super.format = format;
+        super.unquoted = unquoted;
+        super.httpVerb = "get";
+    }
+
+    @Override
+    protected boolean nothingToDo() {
+        return noOptions() && (args == null || args.size() == 0);
+    }
+
+    protected String suggestHelp() {
+        return EOL + "Try '" + CMD + " help get' for more information";
+    }
+
+    protected String help() {
+        return usage();
     }
 }

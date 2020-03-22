@@ -26,6 +26,7 @@ import java.util.Map;
 public interface UserSessionModel {
 
     String getId();
+
     RealmModel getRealm();
 
     /**
@@ -35,6 +36,7 @@ public interface UserSessionModel {
      * @return
      */
     String getBrokerSessionId();
+
     String getBrokerUserId();
 
     UserModel getUser();
@@ -57,29 +59,40 @@ public interface UserSessionModel {
 
     /**
      * Returns map where key is ID of the client (its UUID) and value is ID respective {@link AuthenticatedClientSessionModel} object.
-     * @return 
+     *
+     * @return
      */
     Map<String, AuthenticatedClientSessionModel> getAuthenticatedClientSessions();
+
     /**
      * Returns a client session for the given client UUID.
+     *
      * @return
      */
     default AuthenticatedClientSessionModel getAuthenticatedClientSessionByClient(String clientUUID) {
         return getAuthenticatedClientSessions().get(clientUUID);
-    };
+    }
+
+    ;
+
     /**
      * Removes authenticated client sessions for all clients whose UUID is present in {@code removedClientUUIDS} parameter.
+     *
      * @param removedClientUUIDS
      */
     void removeAuthenticatedClientSessions(Collection<String> removedClientUUIDS);
 
 
     String getNote(String name);
+
     void setNote(String name, String value);
+
     void removeNote(String name);
+
     Map<String, String> getNotes();
 
     State getState();
+
     void setState(State state);
 
     // Will completely restart whole state of user session. It will just keep same ID.

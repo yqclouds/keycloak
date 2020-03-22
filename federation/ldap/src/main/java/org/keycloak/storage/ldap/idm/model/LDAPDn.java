@@ -39,18 +39,18 @@ public class LDAPDn {
 
     public static LDAPDn fromString(String dnString) {
         LDAPDn dn = new LDAPDn();
-        
+
         // In certain OpenLDAP implementations the uniqueMember attribute is mandatory
         // Thus, if a new group is created, it will contain an empty uniqueMember attribute
         // Later on, when adding members, this empty attribute will be kept
         // Keycloak must be able to process it, properly, w/o throwing an ArrayIndexOutOfBoundsException
-        if(dnString.trim().isEmpty())
+        if (dnString.trim().isEmpty())
             return dn;
-        
+
         String[] rdns = dnString.split("(?<!\\\\),");
         for (String entryStr : rdns) {
             String[] rdn = entryStr.split("(?<!\\\\)=");
-            if (rdn.length >1) {
+            if (rdn.length > 1) {
                 dn.addLast(rdn[0].trim(), rdn[1].trim());
             } else {
                 dn.addLast(rdn[0].trim(), "");
@@ -58,6 +58,22 @@ public class LDAPDn {
         }
 
         return dn;
+    }
+
+    private static String toString(Collection<Entry> entries) {
+        StringBuilder builder = new StringBuilder();
+
+        boolean first = true;
+        for (Entry rdn : entries) {
+            if (first) {
+                first = false;
+            } else {
+                builder.append(",");
+            }
+            builder.append(rdn.attrName).append("=").append(rdn.attrValue);
+        }
+
+        return builder.toString();
     }
 
     @Override
@@ -77,22 +93,6 @@ public class LDAPDn {
     @Override
     public String toString() {
         return toString(entries);
-    }
-
-    private static String toString(Collection<Entry> entries) {
-        StringBuilder builder = new StringBuilder();
-
-        boolean first = true;
-        for (Entry rdn : entries) {
-            if (first) {
-                first = false;
-            } else {
-                builder.append(",");
-            }
-            builder.append(rdn.attrName).append("=").append(rdn.attrValue);
-        }
-
-        return builder.toString();
     }
 
     /**
@@ -126,10 +126,8 @@ public class LDAPDn {
     }
 
     /**
-     *
      * @return DN like "dc=something,dc=org" from the DN like "uid=joe,dc=something,dc=org".
      * Returned DN will be new clone not related to the original DN instance.
-     *
      */
     public LDAPDn getParentDn() {
         LinkedList<Entry> parentDnEntries = new LinkedList<>(entries);

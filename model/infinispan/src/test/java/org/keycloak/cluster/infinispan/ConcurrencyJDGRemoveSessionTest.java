@@ -17,13 +17,6 @@
 
 package org.keycloak.cluster.infinispan;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryCreated;
@@ -45,13 +38,18 @@ import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.entities.AuthenticatedClientSessionEntity;
 import org.keycloak.models.sessions.infinispan.entities.UserSessionEntity;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Check that removing of session from remoteCache is session immediately removed on remoteCache in other DC. This is true.
- *
+ * <p>
  * Also check that listeners are executed asynchronously with some delay.
- *
+ * <p>
  * Steps: {@see ConcurrencyJDGRemoteCacheClientListenersTest}
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -61,19 +59,13 @@ public class ConcurrencyJDGRemoveSessionTest {
     protected static final Logger logger = Logger.getLogger(ConcurrencyJDGRemoveSessionTest.class);
 
     private static final int ITERATIONS = 10000;
-
-    private static RemoteCache remoteCache1;
-    private static RemoteCache remoteCache2;
-
     private static final AtomicInteger errorsCounter = new AtomicInteger(0);
-
     private static final AtomicInteger successfulListenerWrites = new AtomicInteger(0);
     private static final AtomicInteger successfulListenerWrites2 = new AtomicInteger(0);
-
-    private static Map<String, AtomicInteger> removalCounts = new ConcurrentHashMap<>();
-
-
     private static final UUID CLIENT_1_UUID = UUID.randomUUID();
+    private static RemoteCache remoteCache1;
+    private static RemoteCache remoteCache2;
+    private static Map<String, AtomicInteger> removalCounts = new ConcurrentHashMap<>();
 
     public static void main(String[] args) throws Exception {
         Cache<String, SessionEntityWrapper<UserSessionEntity>> cache1 = createManager(1).getCache(InfinispanConnectionProvider.USER_SESSION_CACHE_NAME);
@@ -86,7 +78,7 @@ public class ConcurrencyJDGRemoveSessionTest {
         Thread worker4 = createWorker(cache2, 2);
 
         // Create 100 initial sessions
-        for (int i=0 ; i<ITERATIONS ; i++) {
+        for (int i = 0; i < ITERATIONS; i++) {
             String sessionId = String.valueOf(i);
             SessionEntityWrapper<UserSessionEntity> wrappedSession = createSessionEntity(sessionId);
             cache1.put(sessionId, wrappedSession);
@@ -97,7 +89,7 @@ public class ConcurrencyJDGRemoveSessionTest {
         logger.info("SESSIONS CREATED");
 
         // Create 100 initial sessions
-        for (int i=0 ; i<ITERATIONS ; i++) {
+        for (int i = 0; i < ITERATIONS; i++) {
             String sessionId = String.valueOf(i);
             SessionEntityWrapper loadedWrapper = cache2.get(sessionId);
             Assert.assertNotNull("Loaded wrapper for key " + sessionId, loadedWrapper);
@@ -223,7 +215,7 @@ public class ConcurrencyJDGRemoveSessionTest {
             remoteCache2 = remoteCache;
         }
 
-        AtomicInteger counter = threadId ==1 ? successfulListenerWrites : successfulListenerWrites2;
+        AtomicInteger counter = threadId == 1 ? successfulListenerWrites : successfulListenerWrites2;
         HotRodListener listener = new HotRodListener(cache, remoteCache, counter);
         remoteCache.addClientListener(listener);
 
@@ -296,7 +288,7 @@ public class ConcurrencyJDGRemoveSessionTest {
         @Override
         public void run() {
 
-            for (int i=0 ; i<ITERATIONS ; i++) {
+            for (int i = 0; i < ITERATIONS; i++) {
                 String sessionId = String.valueOf(i);
 
                 try {

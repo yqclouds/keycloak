@@ -20,8 +20,6 @@ package org.keycloak.services.resources.admin;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.NotFoundException;
 import org.keycloak.common.util.PemUtils;
 import org.keycloak.common.util.StreamUtil;
 import org.keycloak.events.admin.OperationType;
@@ -42,16 +40,9 @@ import org.keycloak.services.util.CertificateInfoHelper;
 import org.keycloak.util.JWKSUtils;
 import org.keycloak.util.JsonSerialization;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,9 +55,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @resource Client Attribute Certificate
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
+ * @resource Client Attribute Certificate
  */
 public class ClientAttributeCertificateResource {
 
@@ -75,11 +66,11 @@ public class ClientAttributeCertificateResource {
     public static final String JSON_WEB_KEY_SET = "JSON Web Key Set";
 
     protected RealmModel realm;
-    private AdminPermissionEvaluator auth;
     protected ClientModel client;
     protected KeycloakSession session;
     protected AdminEventBuilder adminEvent;
     protected String attributePrefix;
+    private AdminPermissionEvaluator auth;
 
     public ClientAttributeCertificateResource(RealmModel realm, AdminPermissionEvaluator auth, ClientModel client, KeycloakSession session, String attributePrefix, AdminEventBuilder adminEvent) {
         this.realm = realm;
@@ -233,11 +224,11 @@ public class ClientAttributeCertificateResource {
             else keyStore = KeyStore.getInstance(keystoreFormat, "BC");
             keyStore.load(inputParts.get(0).getBody(InputStream.class, null), storePassword);
             try {
-                privateKey = (PrivateKey)keyStore.getKey(keyAlias, keyPassword);
+                privateKey = (PrivateKey) keyStore.getKey(keyAlias, keyPassword);
             } catch (Exception e) {
                 // ignore
             }
-            certificate = (X509Certificate)keyStore.getCertificate(keyAlias);
+            certificate = (X509Certificate) keyStore.getCertificate(keyAlias);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -293,7 +284,7 @@ public class ClientAttributeCertificateResource {
 
     /**
      * Generate a new keypair and certificate, and get the private key file
-     *
+     * <p>
      * Generates a keypair and certificate and serves the private key in a specified keystore format.
      * Only generated public certificate is saved in Keycloak DB - the private key is not.
      *
@@ -343,7 +334,7 @@ public class ClientAttributeCertificateResource {
                 X509Certificate clientCert = PemUtils.decodeCertificate(certPem);
 
 
-                Certificate[] chain =  {clientCert};
+                Certificate[] chain = {clientCert};
 
                 keyStore.setKeyEntry(keyAlias, privateKey, config.getKeyPassword().trim().toCharArray(), chain);
             } else {

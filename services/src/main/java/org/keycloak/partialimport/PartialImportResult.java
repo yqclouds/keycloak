@@ -32,7 +32,10 @@ public class PartialImportResult {
     private String id;
     private Object representation;
 
-    private PartialImportResult() {};
+    private PartialImportResult() {
+    }
+
+    ;
 
     private PartialImportResult(Action action, ResourceType resourceType, String resourceName, String id, Object representation) {
         this.action = action;
@@ -40,7 +43,9 @@ public class PartialImportResult {
         this.resourceName = resourceName;
         this.id = id;
         this.representation = representation;
-    };
+    }
+
+    ;
 
     public static PartialImportResult skipped(ResourceType resourceType, String resourceName, String id, Object representation) {
         return new PartialImportResult(Action.SKIPPED, resourceType, resourceName, id, representation);

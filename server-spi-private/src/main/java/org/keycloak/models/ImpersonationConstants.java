@@ -47,7 +47,9 @@ public class ImpersonationConstants {
     }
 
     public static void setupRealmRole(RealmModel realm) {
-        if (realm.getName().equals(Config.getAdminRealm())) { return; } // don't need to do this for master realm
+        if (realm.getName().equals(Config.getAdminRealm())) {
+            return;
+        } // don't need to do this for master realm
         String realmAdminApplicationClientId = Constants.REALM_MANAGEMENT_CLIENT_ID;
         ClientModel realmAdminApp = realm.getClientByClientId(realmAdminApplicationClientId);
         if (realmAdminApp.getRole(IMPERSONATION_ROLE) != null) return;

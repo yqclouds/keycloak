@@ -21,7 +21,7 @@ import org.keycloak.provider.ProviderFactory;
 
 /**
  * @author <a href="mailto:erik.mulder@docdatapayments.com">Erik Mulder</a>
- * 
+ * <p>
  * Extended interface for a provider factory for JpaEntityProvider's.
  */
 public interface JpaEntityProviderFactory extends ProviderFactory<JpaEntityProvider> {

@@ -32,16 +32,10 @@ import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.jose.jws.JWSBuilder;
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientSessionContext;
-import org.keycloak.protocol.oidc.TokenManager.NotBeforeCheck;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.protocol.oidc.OIDCAdvancedConfigWrapper;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
+import org.keycloak.protocol.oidc.TokenManager.NotBeforeCheck;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.Urls;
@@ -69,21 +63,17 @@ import java.util.Map;
  */
 public class UserInfoEndpoint {
 
-    @Context
-    private HttpRequest request;
-
-    @Context
-    private HttpResponse response;
-
-    @Context
-    private KeycloakSession session;
-
-    @Context
-    private ClientConnection clientConnection;
-
     private final org.keycloak.protocol.oidc.TokenManager tokenManager;
     private final AppAuthManager appAuthManager;
     private final RealmModel realm;
+    @Context
+    private HttpRequest request;
+    @Context
+    private HttpResponse response;
+    @Context
+    private KeycloakSession session;
+    @Context
+    private ClientConnection clientConnection;
 
     public UserInfoEndpoint(org.keycloak.protocol.oidc.TokenManager tokenManager, RealmModel realm) {
         this.realm = realm;
@@ -162,7 +152,7 @@ public class UserInfoEndpoint {
             throw newUnauthorizedErrorResponseException(OAuthErrorException.INVALID_TOKEN, "Token verification failed");
         }
 
-	    if (!clientModel.getProtocol().equals(OIDCLoginProtocol.LOGIN_PROTOCOL)) {
+        if (!clientModel.getProtocol().equals(OIDCLoginProtocol.LOGIN_PROTOCOL)) {
             event.error(Errors.INVALID_CLIENT);
             throw new ErrorResponseException(Errors.INVALID_CLIENT, "Wrong client protocol.", Response.Status.BAD_REQUEST);
         }

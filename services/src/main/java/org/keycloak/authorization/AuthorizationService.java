@@ -18,10 +18,10 @@
 
 package org.keycloak.authorization;
 
-import javax.ws.rs.Path;
-
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authorization.protection.ProtectionService;
+
+import javax.ws.rs.Path;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>

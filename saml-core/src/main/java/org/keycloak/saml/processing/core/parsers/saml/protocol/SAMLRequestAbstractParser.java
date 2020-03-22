@@ -20,6 +20,7 @@ import org.keycloak.dom.saml.v2.protocol.RequestAbstractType;
 import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.util.StaxParserUtil;
 import org.keycloak.saml.processing.core.parsers.util.SAMLParserUtil;
+
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.StartElement;
 
@@ -41,7 +42,6 @@ public abstract class SAMLRequestAbstractParser<T extends RequestAbstractType> e
      *
      * @param startElement
      * @param request
-     *
      * @throws ParsingException
      */
     protected void parseBaseAttributes(StartElement startElement, T request) throws ParsingException {
@@ -51,6 +51,7 @@ public abstract class SAMLRequestAbstractParser<T extends RequestAbstractType> e
 
     /**
      * If the current element is one of the common request elements (Issuer, Signature, Extensions), parses it.
+     *
      * @param element
      * @param xmlEventReader
      * @param request
@@ -66,7 +67,7 @@ public abstract class SAMLRequestAbstractParser<T extends RequestAbstractType> e
             case SIGNATURE:
                 request.setSignature(StaxParserUtil.getDOMElement(xmlEventReader));
                 break;
-            
+
             case EXTENSIONS:
                 request.setExtensions(SAMLExtensionsParser.getInstance().parse(xmlEventReader));
                 break;

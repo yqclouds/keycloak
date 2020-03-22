@@ -64,7 +64,7 @@ public class RealmBean {
     public boolean isRegistrationEmailAsUsername() {
         return realm.isRegistrationEmailAsUsername();
     }
-    
+
     public boolean isLoginWithEmailAllowed() {
         return realm.isLoginWithEmailAllowed();
     }

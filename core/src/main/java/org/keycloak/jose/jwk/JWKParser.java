@@ -85,16 +85,16 @@ public class JWKParser {
 
         String name;
         switch (crv) {
-            case "P-256" :
+            case "P-256":
                 name = "secp256r1";
                 break;
-            case "P-384" :
+            case "P-384":
                 name = "secp384r1";
                 break;
-            case "P-521" :
+            case "P-521":
                 name = "secp521r1";
                 break;
-            default :
+            default:
                 throw new RuntimeException("Unsupported curve");
         }
 

@@ -36,11 +36,7 @@ import org.keycloak.services.managers.RealmManager;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -83,7 +79,7 @@ public class ImportUtils {
      *
      * @param session
      * @param rep
-     * @param strategy specifies whether to overwrite or ignore existing realm or user entries
+     * @param strategy          specifies whether to overwrite or ignore existing realm or user entries
      * @param skipUserDependent If true, then import of any models, which needs users already imported in DB, will be skipped. For example authorization
      * @return newly imported realm (or existing realm if ignoreExisting is true and realm of this name already exists)
      */
@@ -115,7 +111,7 @@ public class ImportUtils {
         if (System.getProperty(ExportImportConfig.ACTION) != null) {
             logger.infof("Realm '%s' imported", realmName);
         }
-        
+
         return true;
     }
 

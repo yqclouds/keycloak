@@ -27,51 +27,28 @@ import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.common.util.Retry;
 import org.keycloak.common.util.Time;
 import org.keycloak.device.DeviceActivityManager;
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.OfflineUserSessionModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserLoginFailureModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
-import org.keycloak.models.UserSessionProvider;
+import org.keycloak.models.*;
+import org.keycloak.models.sessions.infinispan.changes.InfinispanChangelogBasedTransaction;
+import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
+import org.keycloak.models.sessions.infinispan.changes.SessionUpdateTask;
 import org.keycloak.models.sessions.infinispan.changes.Tasks;
 import org.keycloak.models.sessions.infinispan.changes.sessions.CrossDCLastSessionRefreshStore;
 import org.keycloak.models.sessions.infinispan.changes.sessions.PersisterLastSessionRefreshStore;
-import org.keycloak.models.sessions.infinispan.remotestore.RemoteCacheInvoker;
-import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
-import org.keycloak.models.sessions.infinispan.changes.InfinispanChangelogBasedTransaction;
-import org.keycloak.models.sessions.infinispan.changes.SessionUpdateTask;
-import org.keycloak.models.sessions.infinispan.entities.AuthenticatedClientSessionEntity;
-import org.keycloak.models.sessions.infinispan.entities.AuthenticatedClientSessionStore;
-import org.keycloak.models.sessions.infinispan.entities.LoginFailureEntity;
-import org.keycloak.models.sessions.infinispan.entities.LoginFailureKey;
-import org.keycloak.models.sessions.infinispan.entities.UserSessionEntity;
+import org.keycloak.models.sessions.infinispan.entities.*;
 import org.keycloak.models.sessions.infinispan.events.RealmRemovedSessionEvent;
 import org.keycloak.models.sessions.infinispan.events.RemoveAllUserLoginFailuresEvent;
 import org.keycloak.models.sessions.infinispan.events.RemoveUserSessionsEvent;
 import org.keycloak.models.sessions.infinispan.events.SessionEventsSenderTransaction;
-import org.keycloak.models.sessions.infinispan.stream.AuthenticatedClientSessionPredicate;
+import org.keycloak.models.sessions.infinispan.remotestore.RemoteCacheInvoker;
 import org.keycloak.models.sessions.infinispan.stream.Comparators;
-import org.keycloak.models.sessions.infinispan.stream.Mappers;
-import org.keycloak.models.sessions.infinispan.stream.SessionPredicate;
-import org.keycloak.models.sessions.infinispan.stream.UserLoginFailurePredicate;
-import org.keycloak.models.sessions.infinispan.stream.UserSessionPredicate;
+import org.keycloak.models.sessions.infinispan.stream.*;
 import org.keycloak.models.sessions.infinispan.util.FuturesHelper;
 import org.keycloak.models.sessions.infinispan.util.InfinispanKeyGenerator;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
 import org.keycloak.models.utils.SessionTimeoutHelper;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -217,11 +194,11 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
         sessionTx.addTask(id, createSessionTask, entity);
 
         UserSessionAdapter adapter = wrap(realm, entity, false);
-        
+
         if (adapter != null) {
             DeviceActivityManager.attachDevice(adapter, session);
         }
-        
+
         return adapter;
     }
 
@@ -257,7 +234,7 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
     private UserSessionEntity getUserSessionEntity(String id, boolean offline) {
         InfinispanChangelogBasedTransaction<String, UserSessionEntity> tx = getTransaction(offline);
         SessionEntityWrapper<UserSessionEntity> entityWrapper = tx.get(id);
-        return entityWrapper==null ? null : entityWrapper.getEntity();
+        return entityWrapper == null ? null : entityWrapper.getEntity();
     }
 
 
@@ -434,7 +411,7 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
         return cache.entrySet().stream()
                 .filter(UserSessionPredicate.create(realm.getId()))
                 .map(Mappers.authClientSessionSetMapper())
-                .flatMap((Serializable & Function<Set<String>, Stream<? extends String>>)Mappers::toStream)
+                .flatMap((Serializable & Function<Set<String>, Stream<? extends String>>) Mappers::toStream)
                 .collect(
                         CacheCollectors.serializableCollector(
                                 () -> Collectors.groupingBy(Function.identity(), Collectors.counting())
@@ -442,7 +419,7 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
                 );
     }
 
-     protected long getUserSessionsCount(RealmModel realm, ClientModel client, boolean offline) {
+    protected long getUserSessionsCount(RealmModel realm, ClientModel client, boolean offline) {
         Cache<String, SessionEntityWrapper<UserSessionEntity>> cache = getCache(offline);
         cache = CacheDecorators.skipCacheLoaders(cache);
 
@@ -680,7 +657,7 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
     private LoginFailureEntity getLoginFailureEntity(LoginFailureKey key) {
         InfinispanChangelogBasedTransaction<LoginFailureKey, LoginFailureEntity> tx = getLoginFailuresTx();
         SessionEntityWrapper<LoginFailureEntity> entityWrapper = tx.get(key);
-        return entityWrapper==null ? null : entityWrapper.getEntity();
+        return entityWrapper == null ? null : entityWrapper.getEntity();
     }
 
     @Override
@@ -794,7 +771,7 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
     AuthenticatedClientSessionAdapter wrap(UserSessionModel userSession, ClientModel client, AuthenticatedClientSessionEntity entity, boolean offline) {
         InfinispanChangelogBasedTransaction<String, UserSessionEntity> userSessionUpdateTx = getTransaction(offline);
         InfinispanChangelogBasedTransaction<UUID, AuthenticatedClientSessionEntity> clientSessionUpdateTx = getClientSessionTransaction(offline);
-        return entity != null ? new AuthenticatedClientSessionAdapter(session,this, entity, client, userSession, userSessionUpdateTx, clientSessionUpdateTx, offline) : null;
+        return entity != null ? new AuthenticatedClientSessionAdapter(session, this, entity, client, userSession, userSessionUpdateTx, clientSessionUpdateTx, offline) : null;
     }
 
     UserLoginFailureModel wrap(LoginFailureKey key, LoginFailureEntity entity) {
@@ -834,7 +811,6 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
             removeUserSession(userSessionEntity, true);
         }
     }
-
 
 
     @Override
@@ -1008,7 +984,7 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
         if (userSession instanceof OfflineUserSessionModel) {
             // this is a hack so that UserModel doesn't have to be available when offline token is imported.
             // see related JIRA - KEYCLOAK-5350 and corresponding test
-            OfflineUserSessionModel oline = (OfflineUserSessionModel)userSession;
+            OfflineUserSessionModel oline = (OfflineUserSessionModel) userSession;
             entity.setUser(oline.getUserId());
             // NOTE: Hack
             // We skip calling entity.setLoginUsername(userSession.getLoginUsername())
@@ -1041,7 +1017,7 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
         SessionUpdateTask registerClientSessionTask = new RegisterClientSessionTask(clientSession.getClient().getId(), clientSessionId);
         userSessionUpdateTx.addTask(sessionToImportInto.getId(), registerClientSessionTask);
 
-        return new AuthenticatedClientSessionAdapter(session,this, entity, clientSession.getClient(), sessionToImportInto, userSessionUpdateTx, clientSessionUpdateTx, offline);
+        return new AuthenticatedClientSessionAdapter(session, this, entity, clientSession.getClient(), sessionToImportInto, userSessionUpdateTx, clientSessionUpdateTx, offline);
     }
 
 

@@ -36,7 +36,7 @@ import java.util.Arrays;
  */
 public class KcAdmMain {
 
-    public static void main(String [] args) {
+    public static void main(String[] args) {
 
         Globals.stdin = new ValveInputStream();
 

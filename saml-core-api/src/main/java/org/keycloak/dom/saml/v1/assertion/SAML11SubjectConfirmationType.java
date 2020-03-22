@@ -57,10 +57,6 @@ public class SAML11SubjectConfirmationType {
         return Collections.unmodifiableList(confirmationMethod);
     }
 
-    public void setSubjectConfirmationData(Object subjectConfirmation) {
-        this.subjectConfirmationData = subjectConfirmation;
-    }
-
     public Element getKeyInfo() {
         return keyInfo;
     }
@@ -71,5 +67,9 @@ public class SAML11SubjectConfirmationType {
 
     public Object getSubjectConfirmationData() {
         return subjectConfirmationData;
+    }
+
+    public void setSubjectConfirmationData(Object subjectConfirmation) {
+        this.subjectConfirmationData = subjectConfirmation;
     }
 }

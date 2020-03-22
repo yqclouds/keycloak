@@ -6,9 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class OTPCredentialData {
     private final String subType;
     private final int digits;
-    private int counter;
     private final int period;
     private final String algorithm;
+    private int counter;
 
     @JsonCreator
     public OTPCredentialData(@JsonProperty("subType") String subType,

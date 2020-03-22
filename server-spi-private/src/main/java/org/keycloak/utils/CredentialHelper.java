@@ -17,27 +17,12 @@
 
 package org.keycloak.utils;
 
-import javax.ws.rs.core.Response;
-
 import org.jboss.logging.Logger;
-import org.keycloak.authentication.Authenticator;
-import org.keycloak.authentication.AuthenticatorFactory;
-import org.keycloak.authentication.ClientAuthenticator;
-import org.keycloak.authentication.ClientAuthenticatorFactory;
-import org.keycloak.authentication.ConfigurableAuthenticatorFactory;
-import org.keycloak.authentication.FormAction;
-import org.keycloak.authentication.FormActionFactory;
+import org.keycloak.authentication.*;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.credential.CredentialProvider;
-import org.keycloak.forms.account.AccountPages;
-import org.keycloak.models.AuthenticationExecutionModel;
-import org.keycloak.models.AuthenticationFlowModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserCredentialModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.credential.OTPCredentialModel;
-import org.keycloak.models.utils.CredentialValidation;
 import org.keycloak.representations.idm.CredentialRepresentation;
 
 /**
@@ -79,15 +64,15 @@ public class CredentialHelper {
         }
     }
 
-     public static ConfigurableAuthenticatorFactory getConfigurableAuthenticatorFactory(KeycloakSession session, String providerId) {
-         ConfigurableAuthenticatorFactory factory = (AuthenticatorFactory)session.getKeycloakSessionFactory().getProviderFactory(Authenticator.class, providerId);
-         if (factory == null) {
-             factory = (FormActionFactory)session.getKeycloakSessionFactory().getProviderFactory(FormAction.class, providerId);
-         }
-         if (factory == null) {
-             factory = (ClientAuthenticatorFactory)session.getKeycloakSessionFactory().getProviderFactory(ClientAuthenticator.class, providerId);
-         }
-         return factory;
+    public static ConfigurableAuthenticatorFactory getConfigurableAuthenticatorFactory(KeycloakSession session, String providerId) {
+        ConfigurableAuthenticatorFactory factory = (AuthenticatorFactory) session.getKeycloakSessionFactory().getProviderFactory(Authenticator.class, providerId);
+        if (factory == null) {
+            factory = (FormActionFactory) session.getKeycloakSessionFactory().getProviderFactory(FormAction.class, providerId);
+        }
+        if (factory == null) {
+            factory = (ClientAuthenticatorFactory) session.getKeycloakSessionFactory().getProviderFactory(ClientAuthenticator.class, providerId);
+        }
+        return factory;
     }
 
     /**

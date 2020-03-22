@@ -17,26 +17,23 @@
 
 package org.keycloak.representations.idm;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import java.util.List;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@JsonIgnoreProperties(ignoreUnknown=true)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserConsentRepresentation {
 
     protected String clientId;
 
     protected List<String> grantedClientScopes;
-
-    private Long createdDate;
-
-    private Long lastUpdatedDate;
-
     @Deprecated
     protected List<String> grantedRealmRoles;
+    private Long createdDate;
+    private Long lastUpdatedDate;
 
     public String getClientId() {
         return clientId;
@@ -54,20 +51,20 @@ public class UserConsentRepresentation {
         this.grantedClientScopes = grantedClientScopes;
     }
 
-    public void setCreatedDate(Long createdDate) {
-        this.createdDate = createdDate;
-    }
-
     public Long getCreatedDate() {
         return createdDate;
     }
 
-    public void setLastUpdatedDate(Long lastUpdatedDate) {
-        this.lastUpdatedDate = lastUpdatedDate;
+    public void setCreatedDate(Long createdDate) {
+        this.createdDate = createdDate;
     }
 
     public Long getLastUpdatedDate() {
         return lastUpdatedDate;
+    }
+
+    public void setLastUpdatedDate(Long lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
     }
 
     @Deprecated

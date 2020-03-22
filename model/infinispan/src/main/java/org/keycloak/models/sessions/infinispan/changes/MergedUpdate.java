@@ -17,10 +17,10 @@
 
 package org.keycloak.models.sessions.infinispan.changes;
 
+import org.keycloak.models.sessions.infinispan.entities.SessionEntity;
+
 import java.util.LinkedList;
 import java.util.List;
-
-import org.keycloak.models.sessions.infinispan.entities.SessionEntity;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -36,24 +36,6 @@ class MergedUpdate<S extends SessionEntity> implements SessionUpdateTask<S> {
         this.operation = operation;
         this.crossDCMessageStatus = crossDCMessageStatus;
     }
-
-    @Override
-    public void runUpdate(S session) {
-        for (SessionUpdateTask<S> child : childUpdates) {
-            child.runUpdate(session);
-        }
-    }
-
-    @Override
-    public CacheOperation getOperation(S session) {
-        return operation;
-    }
-
-    @Override
-    public CrossDCMessageStatus getCrossDCMessageStatus(SessionEntityWrapper<S> sessionWrapper) {
-        return crossDCMessageStatus;
-    }
-
 
     public static <S extends SessionEntity> MergedUpdate<S> computeUpdate(List<SessionUpdateTask<S>> childUpdates, SessionEntityWrapper<S> sessionWrapper) {
         if (childUpdates == null || childUpdates.isEmpty()) {
@@ -93,6 +75,23 @@ class MergedUpdate<S extends SessionEntity> implements SessionUpdateTask<S> {
         }
 
         return result;
+    }
+
+    @Override
+    public void runUpdate(S session) {
+        for (SessionUpdateTask<S> child : childUpdates) {
+            child.runUpdate(session);
+        }
+    }
+
+    @Override
+    public CacheOperation getOperation(S session) {
+        return operation;
+    }
+
+    @Override
+    public CrossDCMessageStatus getCrossDCMessageStatus(SessionEntityWrapper<S> sessionWrapper) {
+        return crossDCMessageStatus;
     }
 
     @Override

@@ -25,6 +25,7 @@ import org.keycloak.saml.common.PicketLinkLogger;
 import org.keycloak.saml.common.PicketLinkLoggerFactory;
 import org.keycloak.saml.common.constants.JBossSAMLConstants;
 import org.keycloak.saml.common.exceptions.ParsingException;
+import org.keycloak.saml.common.parsers.StaxParser;
 import org.keycloak.saml.common.util.StaxParserUtil;
 import org.keycloak.saml.processing.core.saml.v1.SAML11Constants;
 import org.keycloak.saml.processing.core.saml.v2.util.XMLTimeUtil;
@@ -37,7 +38,6 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
-import org.keycloak.saml.common.parsers.StaxParser;
 
 /**
  * Parse the SAML 11 Response
@@ -96,9 +96,7 @@ public class SAML11ResponseParser implements StaxParser {
      * Parse the status element
      *
      * @param xmlEventReader
-     *
      * @return
-     *
      * @throws ParsingException
      */
     protected SAML11StatusType parseStatus(XMLEventReader xmlEventReader) throws ParsingException {

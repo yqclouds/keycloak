@@ -1,34 +1,5 @@
 package org.keycloak.procotol.docker.installation;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.keycloak.protocol.docker.installation.DockerComposeYamlInstallationProvider.ROOT_DIR;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.SecureRandom;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.util.List;
-import java.util.Optional;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
-
-import javax.ws.rs.core.Response;
-
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -38,10 +9,30 @@ import org.keycloak.common.util.CertificateUtils;
 import org.keycloak.common.util.PemUtils;
 import org.keycloak.protocol.docker.installation.DockerComposeYamlInstallationProvider;
 
+import javax.ws.rs.core.Response;
+import java.io.*;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.security.*;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.List;
+import java.util.Optional;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.IsNull.notNullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.keycloak.protocol.docker.installation.DockerComposeYamlInstallationProvider.ROOT_DIR;
+
 public class DockerComposeYamlInstallationProviderTest {
 
-    DockerComposeYamlInstallationProvider installationProvider;
     static Certificate certificate;
+    DockerComposeYamlInstallationProvider installationProvider;
 
     @BeforeClass
     public static void setUp_beforeClass() throws NoSuchAlgorithmException {
@@ -51,6 +42,38 @@ public class DockerComposeYamlInstallationProviderTest {
 
         final KeyPair keypair = keyGen.generateKeyPair();
         certificate = CertificateUtils.generateV1SelfSignedCertificate(keypair, "test-realm");
+    }
+
+    private static Optional<String> getFileContents(final ZipInputStream zipInputStream, final String fileName) throws IOException {
+        ZipEntry zipEntry;
+        while ((zipEntry = zipInputStream.getNextEntry()) != null) {
+            try {
+                if (zipEntry.getName().equals(fileName)) {
+                    return Optional.of(readBytesToString(zipInputStream));
+                }
+            } finally {
+                zipInputStream.closeEntry();
+            }
+        }
+
+        // fall-through case if file name not found:
+        return Optional.empty();
+    }
+
+    private static String readBytesToString(final InputStream inputStream) throws IOException {
+        final ByteArrayOutputStream output = new ByteArrayOutputStream();
+        final byte[] buffer = new byte[4096];
+        int bytesRead;
+
+        try {
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                output.write(buffer, 0, bytesRead);
+            }
+        } finally {
+            output.close();
+        }
+
+        return new String(output.toByteArray());
     }
 
     @Before
@@ -165,37 +188,5 @@ public class DockerComposeYamlInstallationProviderTest {
         }
 
         return new ZipInputStream(new ByteArrayInputStream((byte[]) responseEntity));
-    }
-
-    private static Optional<String> getFileContents(final ZipInputStream zipInputStream, final String fileName) throws IOException {
-        ZipEntry zipEntry;
-        while ((zipEntry = zipInputStream.getNextEntry()) != null) {
-            try {
-                if (zipEntry.getName().equals(fileName)) {
-                    return Optional.of(readBytesToString(zipInputStream));
-                }
-            } finally {
-                zipInputStream.closeEntry();
-            }
-        }
-
-        // fall-through case if file name not found:
-        return Optional.empty();
-    }
-
-    private static String readBytesToString(final InputStream inputStream) throws IOException {
-        final ByteArrayOutputStream output = new ByteArrayOutputStream();
-        final byte[] buffer = new byte[4096];
-        int bytesRead;
-
-        try {
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                output.write(buffer, 0, bytesRead);
-            }
-        } finally {
-            output.close();
-        }
-
-        return new String(output.toByteArray());
     }
 }

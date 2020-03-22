@@ -28,16 +28,6 @@ public class DeviceRepresentation {
     public static final String UNKNOWN = "Unknown";
     private static final String OTHER = "Other";
     private static final String BROWSER_VERSION_SEPARATOR = "/";
-    
-    public static DeviceRepresentation unknown() {
-        DeviceRepresentation device = new DeviceRepresentation();
-
-        device.setOs(OTHER);
-        device.setDevice(OTHER);
-        
-        return device;
-    }
-
     private String id;
     private String ipAddress;
     private String os;
@@ -48,6 +38,15 @@ public class DeviceRepresentation {
     private Boolean current;
     private List<SessionRepresentation> sessions;
     private boolean mobile;
+
+    public static DeviceRepresentation unknown() {
+        DeviceRepresentation device = new DeviceRepresentation();
+
+        device.setOs(OTHER);
+        device.setDevice(OTHER);
+
+        return device;
+    }
 
     public String getId() {
         return id;
@@ -135,11 +134,11 @@ public class DeviceRepresentation {
         return sessions;
     }
 
-    public void setMobile(boolean mobile) {
-        this.mobile = mobile;
-    }
-
     public boolean isMobile() {
         return mobile;
+    }
+
+    public void setMobile(boolean mobile) {
+        this.mobile = mobile;
     }
 }

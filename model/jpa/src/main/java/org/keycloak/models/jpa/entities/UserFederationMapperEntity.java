@@ -17,33 +17,23 @@
 
 package org.keycloak.models.jpa.entities;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.MapKeyColumn;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Map;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 @Entity
-@Table(name="USER_FEDERATION_MAPPER")
+@Table(name = "USER_FEDERATION_MAPPER")
 public class UserFederationMapperEntity {
 
     @Id
-    @Column(name="ID", length = 36)
-    @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
+    @Column(name = "ID", length = 36)
+    @Access(AccessType.PROPERTY)
+    // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
     protected String id;
 
-    @Column(name="NAME")
+    @Column(name = "NAME")
     protected String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -54,9 +44,9 @@ public class UserFederationMapperEntity {
     protected String federationMapperType;
 
     @ElementCollection
-    @MapKeyColumn(name="NAME")
-    @Column(name="VALUE")
-    @CollectionTable(name="USER_FEDERATION_MAPPER_CONFIG", joinColumns={ @JoinColumn(name="USER_FEDERATION_MAPPER_ID") })
+    @MapKeyColumn(name = "NAME")
+    @Column(name = "VALUE")
+    @CollectionTable(name = "USER_FEDERATION_MAPPER_CONFIG", joinColumns = {@JoinColumn(name = "USER_FEDERATION_MAPPER_ID")})
     private Map<String, String> config;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -114,7 +104,7 @@ public class UserFederationMapperEntity {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null ) return false;
+        if (o == null) return false;
         if (!(o instanceof UserFederationMapperEntity)) return false;
 
         UserFederationMapperEntity that = (UserFederationMapperEntity) o;

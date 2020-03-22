@@ -82,7 +82,7 @@ public class CompositeKeyLocator implements KeyLocator, Iterable<Key> {
         }
 
         StringBuilder sb = new StringBuilder("Key locator chain: [");
-        for (Iterator<KeyLocator> it = keyLocators.iterator(); it.hasNext();) {
+        for (Iterator<KeyLocator> it = keyLocators.iterator(); it.hasNext(); ) {
             KeyLocator keyLocator = it.next();
             sb.append(keyLocator.toString());
             if (it.hasNext()) {
@@ -121,7 +121,7 @@ public class CompositeKeyLocator implements KeyLocator, Iterable<Key> {
 
         @Override
         public Iterator<Key> iterator() {
-            if (! iterablesIterator.hasNext()) {
+            if (!iterablesIterator.hasNext()) {
                 return Collections.<Key>emptyIterator();
             }
 
@@ -145,8 +145,8 @@ public class CompositeKeyLocator implements KeyLocator, Iterable<Key> {
                 }
 
                 private Iterator<Key> findNext() {
-                    while (! currentIterator.hasNext()) {
-                        if (! iterablesIterator.hasNext()) {
+                    while (!currentIterator.hasNext()) {
+                        if (!iterablesIterator.hasNext()) {
                             break;
                         }
                         currentIterator = nextIterator();

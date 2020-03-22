@@ -22,9 +22,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import static org.keycloak.client.admin.cli.util.ConfigUtil.DEFAULT_CONFIG_FILE_STRING;
-import static org.keycloak.client.admin.cli.util.OsUtil.CMD;
-import static org.keycloak.client.admin.cli.util.OsUtil.EOL;
-import static org.keycloak.client.admin.cli.util.OsUtil.PROMPT;
+import static org.keycloak.client.admin.cli.util.OsUtil.*;
 
 
 /**
@@ -32,24 +30,6 @@ import static org.keycloak.client.admin.cli.util.OsUtil.PROMPT;
  */
 @CommandDefinition(name = "delete", description = "CLIENT [GLOBAL_OPTIONS]")
 public class DeleteCmd extends CreateCmd {
-
-    void initOptions() {
-        super.initOptions();
-        httpVerb = "delete";
-    }
-
-    @Override
-    protected boolean nothingToDo() {
-        return noOptions() && (args == null || args.size() == 0);
-    }
-
-    protected String suggestHelp() {
-        return EOL + "Try '" + CMD + " help delete' for more information";
-    }
-
-    protected String help() {
-        return usage();
-    }
 
     public static String usage() {
         StringWriter sb = new StringWriter();
@@ -104,5 +84,23 @@ public class DeleteCmd extends CreateCmd {
         out.println();
         out.println("Use '" + CMD + " help' for general information and a list of commands");
         return sb.toString();
+    }
+
+    void initOptions() {
+        super.initOptions();
+        httpVerb = "delete";
+    }
+
+    @Override
+    protected boolean nothingToDo() {
+        return noOptions() && (args == null || args.size() == 0);
+    }
+
+    protected String suggestHelp() {
+        return EOL + "Try '" + CMD + " help delete' for more information";
+    }
+
+    protected String help() {
+        return usage();
     }
 }

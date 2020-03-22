@@ -21,18 +21,7 @@ import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.UserCredentialStoreManager;
 import org.keycloak.jose.jws.DefaultTokenManager;
 import org.keycloak.keys.DefaultKeyManager;
-import org.keycloak.models.ClientProvider;
-import org.keycloak.models.TokenManager;
-import org.keycloak.models.KeycloakContext;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.KeycloakTransactionManager;
-import org.keycloak.models.KeyManager;
-import org.keycloak.models.RealmProvider;
-import org.keycloak.models.ThemeManager;
-import org.keycloak.models.UserCredentialManager;
-import org.keycloak.models.UserProvider;
-import org.keycloak.models.UserSessionProvider;
+import org.keycloak.models.*;
 import org.keycloak.models.cache.CacheRealmProvider;
 import org.keycloak.models.cache.UserCache;
 import org.keycloak.provider.Provider;
@@ -45,11 +34,7 @@ import org.keycloak.vault.DefaultVaultTranscriber;
 import org.keycloak.vault.VaultProvider;
 import org.keycloak.vault.VaultTranscriber;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -255,8 +240,8 @@ public class DefaultKeycloakSession implements KeycloakSession {
     @Override
     public <T extends Provider> Set<T> getAllProviders(Class<T> clazz) {
         return listProviderIds(clazz).stream()
-            .map(id -> getProvider(clazz, id))
-            .collect(Collectors.toSet());
+                .map(id -> getProvider(clazz, id))
+                .collect(Collectors.toSet());
     }
 
     @Override

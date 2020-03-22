@@ -30,13 +30,7 @@ import org.keycloak.authorization.model.Scope;
 import org.keycloak.authorization.permission.ResourcePermission;
 import org.keycloak.authorization.policy.evaluation.EvaluationContext;
 import org.keycloak.authorization.store.ResourceServerStore;
-import org.keycloak.models.AdminRoles;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.Constants;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.representations.idm.authorization.Permission;
 import org.keycloak.services.ForbiddenException;
 import org.keycloak.services.managers.RealmManager;
@@ -66,7 +60,8 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
     protected RealmPermissions realmPermissions;
     protected ClientPermissions clientPermissions;
     protected IdentityProviderPermissions idpPermissions;
-
+    protected Scope manageScope;
+    protected Scope viewScope;
 
     MgmtPermissions(KeycloakSession session, RealmModel realm) {
         this.session = session;
@@ -87,22 +82,13 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
         }
         initIdentity(session, auth);
     }
+
     MgmtPermissions(KeycloakSession session, AdminAuth auth) {
         this.session = session;
         this.auth = auth;
         this.admin = auth.getUser();
         this.adminsRealm = auth.getRealm();
         initIdentity(session, auth);
-    }
-
-    private void initIdentity(KeycloakSession session, AdminAuth auth) {
-        if (Constants.ADMIN_CLI_CLIENT_ID.equals(auth.getToken().getIssuedFor())
-                || Constants.ADMIN_CONSOLE_CLIENT_ID.equals(auth.getToken().getIssuedFor())) {
-            this.identity = new UserModelIdentity(auth.getRealm(), auth.getUser());
-
-        } else {
-            this.identity = new KeycloakIdentity(auth.getToken(), session);
-        }
     }
 
     MgmtPermissions(KeycloakSession session, RealmModel adminsRealm, UserModel admin) {
@@ -117,6 +103,16 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
         this.admin = admin;
         this.adminsRealm = adminsRealm;
         this.identity = new UserModelIdentity(realm, admin);
+    }
+
+    private void initIdentity(KeycloakSession session, AdminAuth auth) {
+        if (Constants.ADMIN_CLI_CLIENT_ID.equals(auth.getToken().getIssuedFor())
+                || Constants.ADMIN_CONSOLE_CLIENT_ID.equals(auth.getToken().getIssuedFor())) {
+            this.identity = new UserModelIdentity(auth.getRealm(), auth.getUser());
+
+        } else {
+            this.identity = new KeycloakIdentity(auth.getToken(), session);
+        }
     }
 
     @Override
@@ -135,8 +131,6 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
     public AuthorizationProvider authz() {
         return authz;
     }
-
-
 
     @Override
     public void requireAnyAdminRole() {
@@ -175,7 +169,6 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
         return false;
     }
 
-
     public boolean isAdminSameRealm() {
         return auth == null || realm.getId().equals(auth.getRealm().getId());
     }
@@ -196,7 +189,6 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
     public RealmModel adminsRealm() {
         return adminsRealm;
     }
-
 
     @Override
     public RolePermissions roles() {
@@ -239,7 +231,7 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
     }
 
     public ResourceServer findOrCreateResourceServer(ClientModel client) {
-         return initializeRealmResourceServer();
+        return initializeRealmResourceServer();
     }
 
     public ResourceServer resourceServer(ClientModel client) {
@@ -267,9 +259,6 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
         return realmResourceServer;
     }
 
-    protected Scope manageScope;
-    protected Scope viewScope;
-
     public void initializeRealmDefaultScopes() {
         ResourceServer server = initializeRealmResourceServer();
         manageScope = initializeRealmScope(MgmtPermissions.MANAGE_SCOPE);
@@ -278,7 +267,7 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
 
     public Scope initializeRealmScope(String name) {
         ResourceServer server = initializeRealmResourceServer();
-        Scope scope  = authz.getStoreFactory().getScopeStore().findByName(name, server.getId());
+        Scope scope = authz.getStoreFactory().getScopeStore().findByName(name, server.getId());
         if (scope == null) {
             scope = authz.getStoreFactory().getScopeStore().create(name, server);
         }
@@ -286,13 +275,12 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
     }
 
     public Scope initializeScope(String name, ResourceServer server) {
-        Scope scope  = authz.getStoreFactory().getScopeStore().findByName(name, server.getId());
+        Scope scope = authz.getStoreFactory().getScopeStore().findByName(name, server.getId());
         if (scope == null) {
             scope = authz.getStoreFactory().getScopeStore().create(name, server);
         }
         return scope;
     }
-
 
 
     public Scope realmManageScope() {
@@ -379,7 +367,7 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
     public boolean canCreateRealm() {
         RealmManager realmManager = new RealmManager(session);
         if (!auth.getRealm().equals(realmManager.getKeycloakAdminstrationRealm())) {
-           return false;
+            return false;
         }
         return identity.hasRealmRole(AdminRoles.CREATE_REALM);
     }
@@ -390,8 +378,6 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
             throw new ForbiddenException();
         }
     }
-
-
 
 
 }

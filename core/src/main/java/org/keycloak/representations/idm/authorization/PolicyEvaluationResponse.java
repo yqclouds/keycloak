@@ -39,28 +39,28 @@ public class PolicyEvaluationResponse {
         return results;
     }
 
+    public void setResults(List<EvaluationResultRepresentation> results) {
+        this.results = results;
+    }
+
     public DecisionEffect getStatus() {
         return status;
+    }
+
+    public void setStatus(DecisionEffect status) {
+        this.status = status;
     }
 
     public boolean isEntitlements() {
         return entitlements;
     }
 
-    public AccessToken getRpt() {
-        return rpt;
-    }
-
-    public void setResults(List<EvaluationResultRepresentation> results) {
-        this.results = results;
-    }
-
     public void setEntitlements(boolean entitlements) {
         this.entitlements = entitlements;
     }
 
-    public void setStatus(DecisionEffect status) {
-        this.status = status;
+    public AccessToken getRpt() {
+        return rpt;
     }
 
     public void setRpt(AccessToken rpt) {
@@ -75,44 +75,44 @@ public class PolicyEvaluationResponse {
         private DecisionEffect status;
         private List<ScopeRepresentation> allowedScopes = new ArrayList<>();
 
-        public void setResource(final ResourceRepresentation resource) {
-            this.resource = resource;
-        }
-
         public ResourceRepresentation getResource() {
             return resource;
         }
 
-        public void setScopes(List<ScopeRepresentation> scopes) {
-            this.scopes = scopes;
+        public void setResource(final ResourceRepresentation resource) {
+            this.resource = resource;
         }
 
         public List<ScopeRepresentation> getScopes() {
             return scopes;
         }
 
-        public void setPolicies(final List<PolicyResultRepresentation> policies) {
-            this.policies = policies;
+        public void setScopes(List<ScopeRepresentation> scopes) {
+            this.scopes = scopes;
         }
 
         public List<PolicyResultRepresentation> getPolicies() {
             return policies;
         }
 
-        public void setStatus(final DecisionEffect status) {
-            this.status = status;
+        public void setPolicies(final List<PolicyResultRepresentation> policies) {
+            this.policies = policies;
         }
 
         public DecisionEffect getStatus() {
             return status;
         }
 
-        public void setAllowedScopes(List<ScopeRepresentation> allowedScopes) {
-            this.allowedScopes = allowedScopes;
+        public void setStatus(final DecisionEffect status) {
+            this.status = status;
         }
 
         public List<ScopeRepresentation> getAllowedScopes() {
             return allowedScopes;
+        }
+
+        public void setAllowedScopes(List<ScopeRepresentation> allowedScopes) {
+            this.allowedScopes = allowedScopes;
         }
     }
 
@@ -160,12 +160,12 @@ public class PolicyEvaluationResponse {
             return this.policy.equals(policy.getPolicy());
         }
 
-        public void setScopes(Set<String> scopes) {
-            this.scopes = scopes;
-        }
-
         public Set<String> getScopes() {
             return scopes;
+        }
+
+        public void setScopes(Set<String> scopes) {
+            this.scopes = scopes;
         }
     }
 }

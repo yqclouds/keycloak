@@ -34,27 +34,11 @@ import static org.keycloak.client.registration.cli.util.OsUtil.PROMPT;
  */
 
 @GroupCommandDefinition(name = "kcreg", description = "COMMAND [ARGUMENTS]", groupCommands = {
-    HelpCmd.class, ConfigCmd.class, CreateCmd.class, UpdateCmd.class, GetCmd.class, DeleteCmd.class, AttrsCmd.class, UpdateTokenCmd.class} )
+        HelpCmd.class, ConfigCmd.class, CreateCmd.class, UpdateCmd.class, GetCmd.class, DeleteCmd.class, AttrsCmd.class, UpdateTokenCmd.class})
 public class KcRegCmd extends AbstractGlobalOptionsCmd {
 
     //@Arguments
     //private List<String> args;
-
-    @Override
-    public CommandResult execute(CommandInvocation commandInvocation) throws CommandException, InterruptedException {
-        try {
-            // if --help was requested then status is SUCCESS
-            // if not we print help anyway, but status is FAILURE
-            if (printHelp()) {
-                return CommandResult.SUCCESS;
-            } else {
-                printOut(usage());
-                return CommandResult.FAILURE;
-            }
-        } finally {
-            commandInvocation.stop();
-        }
-    }
 
     public static String usage() {
         StringWriter sb = new StringWriter();
@@ -108,5 +92,21 @@ public class KcRegCmd extends AbstractGlobalOptionsCmd {
         out.println();
         out.println("Use '" + CMD + " help <command>' for more information about a given command.");
         return sb.toString();
+    }
+
+    @Override
+    public CommandResult execute(CommandInvocation commandInvocation) throws CommandException, InterruptedException {
+        try {
+            // if --help was requested then status is SUCCESS
+            // if not we print help anyway, but status is FAILURE
+            if (printHelp()) {
+                return CommandResult.SUCCESS;
+            } else {
+                printOut(usage());
+                return CommandResult.FAILURE;
+            }
+        } finally {
+            commandInvocation.stop();
+        }
     }
 }

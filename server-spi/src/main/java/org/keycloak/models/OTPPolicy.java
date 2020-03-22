@@ -37,6 +37,15 @@ import java.util.Map;
 public class OTPPolicy implements Serializable {
 
     protected static final Logger logger = Logger.getLogger(OTPPolicy.class);
+    private static final Map<String, String> algToKeyUriAlg = new HashMap<>();
+    private static final OtpApp[] allApplications = new OtpApp[]{new FreeOTP(), new GoogleAuthenticator()};
+    public static OTPPolicy DEFAULT_POLICY = new OTPPolicy(OTPCredentialModel.TOTP, HmacOTP.HMAC_SHA1, 0, 6, 1, 30);
+
+    static {
+        algToKeyUriAlg.put(HmacOTP.HMAC_SHA1, "SHA1");
+        algToKeyUriAlg.put(HmacOTP.HMAC_SHA256, "SHA256");
+        algToKeyUriAlg.put(HmacOTP.HMAC_SHA512, "SHA512");
+    }
 
     protected String type;
     protected String algorithm;
@@ -44,16 +53,6 @@ public class OTPPolicy implements Serializable {
     protected int digits;
     protected int lookAheadWindow;
     protected int period;
-
-    private static final Map<String, String> algToKeyUriAlg = new HashMap<>();
-
-    private static final OtpApp[] allApplications = new OtpApp[] { new FreeOTP(), new GoogleAuthenticator() };
-
-    static {
-        algToKeyUriAlg.put(HmacOTP.HMAC_SHA1, "SHA1");
-        algToKeyUriAlg.put(HmacOTP.HMAC_SHA256, "SHA256");
-        algToKeyUriAlg.put(HmacOTP.HMAC_SHA512, "SHA512");
-    }
 
     public OTPPolicy() {
     }
@@ -66,8 +65,6 @@ public class OTPPolicy implements Serializable {
         this.lookAheadWindow = lookAheadWindow;
         this.period = period;
     }
-
-    public static OTPPolicy DEFAULT_POLICY = new OTPPolicy(OTPCredentialModel.TOTP, HmacOTP.HMAC_SHA1, 0, 6, 1, 30);
 
     public String getAlgorithmKey() {
         return algToKeyUriAlg.containsKey(algorithm) ? algToKeyUriAlg.get(algorithm) : algorithm;
@@ -123,6 +120,7 @@ public class OTPPolicy implements Serializable {
 
     /**
      * Constructs the <code>otpauth://</code> URI based on the <a href="https://github.com/google/google-authenticator/wiki/Key-Uri-Format">Key-Uri-Format</a>.
+     *
      * @param realm
      * @param user
      * @param secret
@@ -135,7 +133,7 @@ public class OTPPolicy implements Serializable {
             String displayName = realm.getDisplayName() != null && !realm.getDisplayName().isEmpty() ? realm.getDisplayName() : realm.getName();
 
             String accountName = URLEncoder.encode(user.getUsername(), "UTF-8");
-            String issuerName = URLEncoder.encode(displayName, "UTF-8") .replaceAll("\\+", "%20");
+            String issuerName = URLEncoder.encode(displayName, "UTF-8").replaceAll("\\+", "%20");
 
             /*
              * The issuerName component in the label is usually shown in a authenticator app, such as
@@ -145,9 +143,9 @@ public class OTPPolicy implements Serializable {
             String label = issuerName + ":" + accountName;
 
             String parameters = "secret=" + Base32.encode(secret.getBytes()) //
-                                + "&digits=" + digits //
-                                + "&algorithm=" + algToKeyUriAlg.get(algorithm) //
-                                + "&issuer=" + issuerName;
+                    + "&digits=" + digits //
+                    + "&algorithm=" + algToKeyUriAlg.get(algorithm) //
+                    + "&issuer=" + issuerName;
 
             if (type.equals(OTPCredentialModel.HOTP)) {
                 parameters += "&counter=" + initialCounter;
@@ -155,7 +153,7 @@ public class OTPPolicy implements Serializable {
                 parameters += "&period=" + period;
             }
 
-            return "otpauth://" + type + "/" + label+ "?" + parameters;
+            return "otpauth://" + type + "/" + label + "?" + parameters;
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }

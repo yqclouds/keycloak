@@ -32,16 +32,6 @@ public class FileSystemProviderLoaderFactory implements ProviderLoaderFactory {
 
     private static final Logger logger = Logger.getLogger(FileSystemProviderLoaderFactory.class);
 
-    @Override
-    public boolean supports(String type) {
-        return "classpath".equals(type);
-    }
-
-    @Override
-    public ProviderLoader create(KeycloakDeploymentInfo info, ClassLoader baseClassLoader, String resource) {
-        return new DefaultProviderLoader(info, createClassLoader(baseClassLoader, resource.split(";")));
-    }
-
     private static URLClassLoader createClassLoader(ClassLoader parent, String... files) {
         try {
             List<URL> urls = new LinkedList<URL>();
@@ -65,6 +55,16 @@ public class FileSystemProviderLoaderFactory implements ProviderLoaderFactory {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public boolean supports(String type) {
+        return "classpath".equals(type);
+    }
+
+    @Override
+    public ProviderLoader create(KeycloakDeploymentInfo info, ClassLoader baseClassLoader, String resource) {
+        return new DefaultProviderLoader(info, createClassLoader(baseClassLoader, resource.split(";")));
     }
 
     private static class JarFilter implements FilenameFilter {

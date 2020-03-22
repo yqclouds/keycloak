@@ -17,30 +17,20 @@
 
 package org.keycloak.services.managers;
 
+import org.jboss.logging.Logger;
+import org.keycloak.common.util.Base64Url;
+import org.keycloak.events.EventBuilder;
+import org.keycloak.models.ClientModel;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.utils.KeycloakModelUtils;
+import org.keycloak.sessions.AuthenticationSessionModel;
+import org.keycloak.sessions.CommonClientSessionModel;
+
 import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.Supplier;
-
-import javax.crypto.SecretKey;
-
-import org.jboss.logging.Logger;
-import org.keycloak.common.util.Base64Url;
-import org.keycloak.common.util.Time;
-import org.keycloak.events.Details;
-import org.keycloak.events.EventBuilder;
-import org.keycloak.jose.jwe.JWEException;
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.CodeToTokenStoreProvider;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserSessionModel;
-import org.keycloak.models.utils.KeycloakModelUtils;
-import org.keycloak.sessions.CommonClientSessionModel;
-import org.keycloak.sessions.AuthenticationSessionModel;
-import org.keycloak.util.TokenUtil;
 
 /**
  * TODO: Remove this and probably also ClientSessionParser. It's uneccessary genericity and abstraction, which is not needed anymore when clientSessionModel was fully removed.
@@ -60,7 +50,6 @@ class CodeGenerateUtil {
             return new AuthenticationSessionModelParser();
         });
     }
-
 
 
     static <CS extends CommonClientSessionModel> ClientSessionParser<CS> getParser(Class<CS> clientSessionClass) {
@@ -86,6 +75,7 @@ class CodeGenerateUtil {
         boolean isExpired(KeycloakSession session, String code, CS clientSession);
 
         int getTimestamp(CS clientSession);
+
         void setTimestamp(CS clientSession, int timestamp);
 
         String getClientNote(CS clientSession, String noteKey);

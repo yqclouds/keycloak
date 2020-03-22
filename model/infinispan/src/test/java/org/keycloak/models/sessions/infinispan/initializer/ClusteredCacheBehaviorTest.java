@@ -57,39 +57,6 @@ public class ClusteredCacheBehaviorTest {
 
     }
 
-    @Listener
-    public static class CacheListener {
-        String name;
-
-        public CacheListener(String name) {
-            this.name = name;
-        }
-
-
-        @CacheEntryCreated
-        public void created(CacheEntryCreatedEvent event) {
-
-            System.out.println("Listener '" + name + "' entry created  " + event.getKey() + " isPre: " + event.isPre());
-        }
-
-        @CacheEntryRemoved
-        public void removed(CacheEntryRemovedEvent<String, Object> event) {
-            System.out.println("Listener '" + name + "' entry removed  isPre: " + event.isPre());
-        }
-
-        @CacheEntryInvalidated
-        public void removed(CacheEntryInvalidatedEvent<String, Object> event) {
-            System.out.println("Listener '" + name + "' entry invalidated: isPre: " + event.isPre());
-        }
-
-        @CacheEntriesEvicted
-        public void evicted(CacheEntriesEvictedEvent<String, Object> event) {
-            System.out.println("Listener '" + name + "' entry evicted isPre: " + event.isPre());
-
-        }
-
-    }
-
     @Test
     public void testListener() throws Exception {
         EmbeddedCacheManager node1 = createManager();
@@ -146,6 +113,38 @@ public class ClusteredCacheBehaviorTest {
         System.out.println("node 2 exists key?: " + node2Cache.containsKey("key"));
 
 
+    }
+
+    @Listener
+    public static class CacheListener {
+        String name;
+
+        public CacheListener(String name) {
+            this.name = name;
+        }
+
+
+        @CacheEntryCreated
+        public void created(CacheEntryCreatedEvent event) {
+
+            System.out.println("Listener '" + name + "' entry created  " + event.getKey() + " isPre: " + event.isPre());
+        }
+
+        @CacheEntryRemoved
+        public void removed(CacheEntryRemovedEvent<String, Object> event) {
+            System.out.println("Listener '" + name + "' entry removed  isPre: " + event.isPre());
+        }
+
+        @CacheEntryInvalidated
+        public void removed(CacheEntryInvalidatedEvent<String, Object> event) {
+            System.out.println("Listener '" + name + "' entry invalidated: isPre: " + event.isPre());
+        }
+
+        @CacheEntriesEvicted
+        public void evicted(CacheEntriesEvictedEvent<String, Object> event) {
+            System.out.println("Listener '" + name + "' entry evicted isPre: " + event.isPre());
+
+        }
 
     }
 }

@@ -16,9 +16,6 @@
  */
 package org.keycloak.authentication.authenticators.challenge;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.keycloak.Config;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
@@ -28,6 +25,9 @@ import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.provider.ProviderConfigProperty;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
@@ -36,6 +36,9 @@ public class NoCookieFlowRedirectAuthenticatorFactory implements AuthenticatorFa
 
     public static final String PROVIDER_ID = "no-cookie-redirect";
     public static final NoCookieFlowRedirectAuthenticator SINGLETON = new NoCookieFlowRedirectAuthenticator();
+    public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionModel.Requirement.REQUIRED
+    };
 
     @Override
     public Authenticator create(KeycloakSession session) {
@@ -71,9 +74,6 @@ public class NoCookieFlowRedirectAuthenticatorFactory implements AuthenticatorFa
     public boolean isConfigurable() {
         return false;
     }
-    public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED
-    };
 
     @Override
     public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {

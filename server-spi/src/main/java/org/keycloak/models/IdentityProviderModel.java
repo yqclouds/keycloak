@@ -29,30 +29,21 @@ import java.util.Map;
 public class IdentityProviderModel implements Serializable {
 
     public static final String ALLOWED_CLOCK_SKEW = "allowedClockSkew";
-
+    protected boolean addReadTokenRoleOnCreate;
+    protected boolean linkOnly;
     private String internalId;
-
     /**
      * <p>An user-defined identifier to unique identify an identity provider instance.</p>
      */
     private String alias;
-
     /**
      * <p>An identifier used to reference a specific identity provider implementation. The value of this field is the same
      * across instances of the same provider implementation.</p>
      */
     private String providerId;
-
     private boolean enabled;
-    
     private boolean trustEmail;
-
     private boolean storeToken;
-
-    protected boolean addReadTokenRoleOnCreate;
-
-    protected boolean linkOnly;
-
     /**
      * Specifies if particular provider should be used by default for authentication even before displaying login screen
      */
@@ -199,12 +190,12 @@ public class IdentityProviderModel implements Serializable {
 
     /**
      * <p>Validates this configuration.
-     * 
+     *
      * <p>Sub-classes can override this method in order to enforce provider specific validations.
-     * 
+     *
      * @param realm the realm
      */
     public void validate(RealmModel realm) {
-        
+
     }
 }

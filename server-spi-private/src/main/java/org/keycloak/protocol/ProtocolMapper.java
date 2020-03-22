@@ -29,13 +29,16 @@ import org.keycloak.provider.ProviderFactory;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public interface ProtocolMapper extends Provider, ProviderFactory<ProtocolMapper>,ConfiguredProvider {
+public interface ProtocolMapper extends Provider, ProviderFactory<ProtocolMapper>, ConfiguredProvider {
     String getProtocol();
+
     String getDisplayCategory();
+
     String getDisplayType();
 
     /**
      * Priority of this protocolMapper implementation. Lower goes first.
+     *
      * @return
      */
     default int getPriority() {
@@ -47,11 +50,13 @@ public interface ProtocolMapper extends Provider, ProviderFactory<ProtocolMapper
      *
      * @param session
      * @param realm
-     * @param client client or clientTemplate
+     * @param client      client or clientTemplate
      * @param mapperModel
      * @throws ProtocolMapperConfigException if configuration provided in mapperModel is not valid
      */
     default void validateConfig(KeycloakSession session, RealmModel realm, ProtocolMapperContainerModel client, ProtocolMapperModel mapperModel) throws ProtocolMapperConfigException {
-    };
+    }
+
+    ;
 
 }

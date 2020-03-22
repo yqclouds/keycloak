@@ -17,12 +17,6 @@
 
 package org.keycloak.cluster.infinispan;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.VersionedValue;
@@ -33,6 +27,7 @@ import org.infinispan.client.hotrod.event.ClientCacheEntryCreatedEvent;
 import org.infinispan.client.hotrod.event.ClientCacheEntryModifiedEvent;
 import org.infinispan.context.Flag;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.persistence.remote.configuration.RemoteStoreConfigurationBuilder;
 import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
@@ -41,12 +36,17 @@ import org.keycloak.models.sessions.infinispan.entities.AuthenticatedClientSessi
 import org.keycloak.models.sessions.infinispan.entities.SessionEntity;
 import org.keycloak.models.sessions.infinispan.entities.UserSessionEntity;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
-import org.infinispan.persistence.remote.configuration.RemoteStoreConfigurationBuilder;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Test concurrency for remoteStore (backed by HotRod RemoteCaches) against external JDG. Especially tests "replaceWithVersion" contract.
- *
+ * <p>
  * Steps: {@see ConcurrencyJDGRemoteCacheClientListenersTest}
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -56,25 +56,18 @@ public class ConcurrencyJDGCacheReplaceTest {
     protected static final Logger logger = Logger.getLogger(ConcurrencyJDGCacheReplaceTest.class);
 
     private static final int ITERATION_PER_WORKER = 1000;
-
+    private static final AtomicInteger failedReplaceCounter = new AtomicInteger(0);
+    private static final AtomicInteger failedReplaceCounter2 = new AtomicInteger(0);
+    private static final AtomicInteger successfulListenerWrites = new AtomicInteger(0);
+    private static final AtomicInteger successfulListenerWrites2 = new AtomicInteger(0);
+    private static final ConcurrencyTestHistogram histogram = new ConcurrencyTestHistogram();
+    private static final UUID CLIENT_1_UUID = UUID.randomUUID();
     private static RemoteCache remoteCache1;
     private static RemoteCache remoteCache2;
 
+    //private static Map<String, EntryInfo> state = new HashMap<>();
     private static List<ExecutorService> executors = new ArrayList<>();
 
-    private static final AtomicInteger failedReplaceCounter = new AtomicInteger(0);
-    private static final AtomicInteger failedReplaceCounter2 = new AtomicInteger(0);
-
-    private static final AtomicInteger successfulListenerWrites = new AtomicInteger(0);
-    private static final AtomicInteger successfulListenerWrites2 = new AtomicInteger(0);
-
-    private static final ConcurrencyTestHistogram histogram = new ConcurrencyTestHistogram();
-
-    //private static Map<String, EntryInfo> state = new HashMap<>();
-
-    private static final UUID CLIENT_1_UUID = UUID.randomUUID();
-
-    
     public static void main(String[] args) throws Exception {
         Cache<String, SessionEntityWrapper<UserSessionEntity>> cache1 = createManager(1).getCache(InfinispanConnectionProvider.USER_SESSION_CACHE_NAME);
         Cache<String, SessionEntityWrapper<UserSessionEntity>> cache2 = createManager(2).getCache(InfinispanConnectionProvider.USER_SESSION_CACHE_NAME);
@@ -108,7 +101,7 @@ public class ConcurrencyJDGCacheReplaceTest {
 
         logger.info("After put");
 
-        cache1.replace("123",  wrappedSession);
+        cache1.replace("123", wrappedSession);
 
         logger.info("After replace");
 
@@ -128,7 +121,7 @@ public class ConcurrencyJDGCacheReplaceTest {
 
         logger.info("After cache2.get - second call");
 
-        cache2.replace("123",  wrappedSession);
+        cache2.replace("123", wrappedSession);
 
         logger.info("After replace - second call");
 
@@ -176,7 +169,7 @@ public class ConcurrencyJDGCacheReplaceTest {
 
         System.out.println("Finished. Took: " + took + " ms. Notes: " + cache1.get("123").getEntity().getNotes().size() +
                 ", successfulListenerWrites: " + successfulListenerWrites.get() + ", successfulListenerWrites2: " + successfulListenerWrites2.get() +
-                ", failedReplaceCounter: " + failedReplaceCounter.get() + ", failedReplaceCounter2: " + failedReplaceCounter2.get() );
+                ", failedReplaceCounter: " + failedReplaceCounter.get() + ", failedReplaceCounter2: " + failedReplaceCounter2.get());
 
         System.out.println("Sleeping before other report");
 
@@ -186,8 +179,8 @@ public class ConcurrencyJDGCacheReplaceTest {
                 ", successfulListenerWrites: " + successfulListenerWrites.get() + ", successfulListenerWrites2: " + successfulListenerWrites2.get() +
                 ", failedReplaceCounter: " + failedReplaceCounter.get() + ", failedReplaceCounter2: " + failedReplaceCounter2.get());
 
-        System.out.println("remoteCache1.notes: " + ((UserSessionEntity) remoteCache1.get("123")).getNotes().size() );
-        System.out.println("remoteCache2.notes: " + ((UserSessionEntity) remoteCache2.get("123")).getNotes().size() );
+        System.out.println("remoteCache1.notes: " + ((UserSessionEntity) remoteCache1.get("123")).getNotes().size());
+        System.out.println("remoteCache2.notes: " + ((UserSessionEntity) remoteCache2.get("123")).getNotes().size());
 
         System.out.println("Histogram: ");
         //histogram.dumpStats();
@@ -213,7 +206,7 @@ public class ConcurrencyJDGCacheReplaceTest {
             remoteCache2 = remoteCache;
         }
 
-        AtomicInteger counter = threadId ==1 ? successfulListenerWrites : successfulListenerWrites2;
+        AtomicInteger counter = threadId == 1 ? successfulListenerWrites : successfulListenerWrites2;
         HotRodListener listener = new HotRodListener(cache, remoteCache, counter);
         remoteCache.addClientListener(listener);
 
@@ -226,6 +219,10 @@ public class ConcurrencyJDGCacheReplaceTest {
         return new TestCacheManagerFactory().createManager(threadId, InfinispanConnectionProvider.USER_SESSION_CACHE_NAME, RemoteStoreConfigurationBuilder.class);
     }
 
+
+    private enum ReplaceStatus {
+        REPLACED, NOT_REPLACED, ERROR
+    }
 
     @ClientListener
     public static class HotRodListener {
@@ -290,8 +287,6 @@ public class ConcurrencyJDGCacheReplaceTest {
         }
 
 
-
-
     }
 
     private static class RemoteCacheWorker extends Thread {
@@ -308,7 +303,7 @@ public class ConcurrencyJDGCacheReplaceTest {
         @Override
         public void run() {
 
-            for (int i=0 ; i<ITERATION_PER_WORKER ; i++) {
+            for (int i = 0; i < ITERATION_PER_WORKER; i++) {
 
                 // Histogram will contain value 1 in all places as it's always different note and hence session is changed to different value
                 String noteKey = "n-" + myThreadId + "-" + i;
@@ -370,10 +365,6 @@ public class ConcurrencyJDGCacheReplaceTest {
             //return replaced;
         }
 
-    }
-
-    private enum ReplaceStatus {
-        REPLACED, NOT_REPLACED, ERROR
     }
 /*
     // Worker, which operates on "classic" cache and rely on operations delegated to the second cache

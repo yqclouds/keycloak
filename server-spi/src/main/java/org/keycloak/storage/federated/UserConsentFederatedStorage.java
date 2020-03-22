@@ -27,8 +27,12 @@ import java.util.List;
  */
 public interface UserConsentFederatedStorage {
     void addConsent(RealmModel realm, String userId, UserConsentModel consent);
+
     UserConsentModel getConsentByClient(RealmModel realm, String userId, String clientInternalId);
+
     List<UserConsentModel> getConsents(RealmModel realm, String userId);
+
     void updateConsent(RealmModel realm, String userId, UserConsentModel consent);
+
     boolean revokeConsentForClient(RealmModel realm, String userId, String clientInternalId);
 }

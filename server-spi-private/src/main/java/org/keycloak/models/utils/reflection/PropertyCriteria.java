@@ -36,7 +36,6 @@ public interface PropertyCriteria {
      * Tests whether the specified method matches the criteria
      *
      * @param m
-     *
      * @return true if the method matches
      */
     boolean methodMatches(Method m);

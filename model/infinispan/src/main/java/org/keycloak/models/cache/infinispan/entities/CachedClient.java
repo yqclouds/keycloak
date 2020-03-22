@@ -17,19 +17,9 @@
 
 package org.keycloak.models.cache.infinispan.entities;
 
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
+import org.keycloak.models.*;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -92,7 +82,7 @@ public class CachedClient extends AbstractRevisioned implements InRealm {
         fullScopeAllowed = model.isFullScopeAllowed();
         redirectUris.addAll(model.getRedirectUris());
         webOrigins.addAll(model.getWebOrigins());
-        for (RoleModel role : model.getScopeMappings())  {
+        for (RoleModel role : model.getScopeMappings()) {
             scope.add(role.getId());
         }
         for (ProtocolMapperModel mapper : model.getProtocolMappers()) {
@@ -131,9 +121,13 @@ public class CachedClient extends AbstractRevisioned implements InRealm {
         return name;
     }
 
-    public String getDescription() { return description; }
+    public String getDescription() {
+        return description;
+    }
 
-    public void setDescription(String description) { this.description = description; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     public String getRealm() {
         return realm;

@@ -26,9 +26,9 @@ import org.jboss.aesh.console.command.CommandResult;
 import org.jboss.aesh.console.command.invocation.CommandInvocation;
 import org.keycloak.client.registration.cli.aesh.EndpointTypeConverter;
 import org.keycloak.client.registration.cli.common.AttributeOperation;
-import org.keycloak.client.registration.cli.config.ConfigData;
 import org.keycloak.client.registration.cli.common.CmdStdinContext;
 import org.keycloak.client.registration.cli.common.EndpointType;
+import org.keycloak.client.registration.cli.config.ConfigData;
 import org.keycloak.client.registration.cli.util.ParseUtil;
 import org.keycloak.client.registration.cli.util.ReflectionUtil;
 import org.keycloak.representations.idm.ClientRepresentation;
@@ -45,28 +45,14 @@ import java.util.List;
 
 import static org.keycloak.client.registration.cli.common.AttributeOperation.Type.DELETE;
 import static org.keycloak.client.registration.cli.common.AttributeOperation.Type.SET;
-import static org.keycloak.client.registration.cli.util.AuthUtil.ensureToken;
-import static org.keycloak.client.registration.cli.util.ConfigUtil.DEFAULT_CONFIG_FILE_STRING;
-import static org.keycloak.client.registration.cli.util.ConfigUtil.credentialsAvailable;
-import static org.keycloak.client.registration.cli.util.ConfigUtil.getRegistrationToken;
-import static org.keycloak.client.registration.cli.util.ConfigUtil.loadConfig;
-import static org.keycloak.client.registration.cli.util.ConfigUtil.saveMergeConfig;
-import static org.keycloak.client.registration.cli.util.ConfigUtil.setRegistrationToken;
 import static org.keycloak.client.registration.cli.common.EndpointType.DEFAULT;
 import static org.keycloak.client.registration.cli.common.EndpointType.OIDC;
-import static org.keycloak.client.registration.cli.util.HttpUtil.doGet;
-import static org.keycloak.client.registration.cli.util.HttpUtil.doPut;
-import static org.keycloak.client.registration.cli.util.HttpUtil.urlencode;
-import static org.keycloak.client.registration.cli.util.IoUtil.printOut;
-import static org.keycloak.client.registration.cli.util.IoUtil.warnfErr;
-import static org.keycloak.client.registration.cli.util.IoUtil.readFully;
-import static org.keycloak.client.registration.cli.util.HttpUtil.APPLICATION_JSON;
-import static org.keycloak.client.registration.cli.util.OsUtil.CMD;
-import static org.keycloak.client.registration.cli.util.OsUtil.EOL;
-import static org.keycloak.client.registration.cli.util.OsUtil.PROMPT;
-import static org.keycloak.client.registration.cli.util.ParseUtil.mergeAttributes;
-import static org.keycloak.client.registration.cli.util.ParseUtil.parseFileOrStdin;
-import static org.keycloak.client.registration.cli.util.ParseUtil.parseKeyVal;
+import static org.keycloak.client.registration.cli.util.AuthUtil.ensureToken;
+import static org.keycloak.client.registration.cli.util.ConfigUtil.*;
+import static org.keycloak.client.registration.cli.util.HttpUtil.*;
+import static org.keycloak.client.registration.cli.util.IoUtil.*;
+import static org.keycloak.client.registration.cli.util.OsUtil.*;
+import static org.keycloak.client.registration.cli.util.ParseUtil.*;
 
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
@@ -95,6 +81,79 @@ public class UpdateCmd extends AbstractAuthOptionsCmd {
     @Arguments
     private List<String> args;
 
+    public static String usage() {
+        StringWriter sb = new StringWriter();
+        PrintWriter out = new PrintWriter(sb);
+        out.println("Usage: " + CMD + " update CLIENT [ARGUMENTS]");
+        out.println();
+        out.println("Command to update an existing client configuration. If registration access token is specified it is used.");
+        out.println("Otherwise, if 'registrationAccessToken' attribute is set, that is used. Otherwise, if registration access");
+        out.println("token is available in configuration file, we use that. Finally, if it's not available anywhere, the current ");
+        out.println("active session is used.");
+        out.println();
+        out.println("Arguments:");
+        out.println();
+        out.println("  Global options:");
+        out.println("    -x                    Print full stack trace when exiting with error");
+        out.println("    --config              Path to the config file (" + DEFAULT_CONFIG_FILE_STRING + " by default)");
+        out.println("    --no-config           Don't use config file - no authentication info is loaded or saved");
+        out.println("    --truststore PATH     Path to a truststore containing trusted certificates");
+        out.println("    --trustpass PASSWORD  Truststore password (prompted for if not specified and --truststore is used)");
+        out.println("    CREDENTIALS OPTIONS   Same set of options as accepted by '" + CMD + " config credentials' in order to establish");
+        out.println("                          an authenticated sessions. In combination with --no-config option this allows transient");
+        out.println("                          (on-the-fly) authentication to be performed which leaves no tokens in config file.");
+        out.println();
+        out.println("  Command specific options:");
+        out.println("    CLIENT                ClientId of the client to update");
+        out.println("    -t, --token TOKEN     Use the specified Registration Access Token for authorization");
+        out.println("    -s, --set KEY=VALUE   Set specific attribute to a specified value");
+        out.println("              KEY+=VALUE  Add item to an array");
+        out.println("    -d, --delete NAME     Delete the specific attribute, or array item");
+        out.println("    -e, --endpoint TYPE   Endpoint type to use - one of: 'default', 'oidc'");
+        out.println("    -f, --file FILENAME   Use the file or standard input if '-' is specified");
+        out.println("    -m, --merge           Merge new values with existing configuration on the server");
+        out.println("                          Merge is automatically enabled unless --file is specified");
+        out.println("    -o, --output          After update output the new client configuration");
+        out.println("    -c, --compressed      Don't pretty print the output");
+        out.println();
+        out.println();
+        out.println("Nested attributes are supported by using '.' to separate components of a KEY. Optionaly, the KEY components ");
+        out.println("can be quoted with double quotes - e.g. my_client.attributes.\"external.user.id\". If VALUE starts with [ and ");
+        out.println("ends with ] the attribute will be set as a JSON array. If VALUE starts with { and ends with } the attribute ");
+        out.println("will be set as a JSON object. If KEY ends with an array index - e.g. clients[3]=VALUE - then the specified item");
+        out.println("of the array is updated. If KEY+=VALUE syntax is used, then KEY is assumed to be an array, and another item is");
+        out.println("added to it.");
+        out.println();
+        out.println("Attributes can also be deleted. If KEY ends with an array index, then the targeted item of an array is removed");
+        out.println("and the following items are shifted.");
+        out.println();
+        out.println("Merged mode fetches current configuration from the server, applies attribute changes to it, and sends it");
+        out.println("back to the server, overwriting existing configuration there. If available, Registration Access Token is used ");
+        out.println("for authorization when doing changes. Otherwise current session's authorization is used in which case user needs");
+        out.println("manage-clients permission for update to work.");
+        out.println();
+        out.println();
+        out.println("Examples:");
+        out.println();
+        out.println("Update a client by fetching current configuration from server, and applying specified changes.");
+        out.println("  " + PROMPT + " " + CMD + " update my_client -s enabled=true -s 'redirectUris=[\"http://localhost:8080/myapp/*\"]'");
+        out.println();
+        out.println("Update a client by overwriting existing configuration on the server with a new one:");
+        out.println("  " + PROMPT + " " + CMD + " update my_client -f new_my_client.json");
+        out.println();
+        out.println("Update a client by overwriting existing configuration using local file as a template:");
+        out.println("  " + PROMPT + " " + CMD + " update my_client -f new_my_client.json -s enabled=true");
+        out.println();
+        out.println("Update client by fetching current configuration from server and merging with specified changes:");
+        out.println("  " + PROMPT + " " + CMD + " update my_client -f new_my_client.json -s enabled=true --merge");
+        out.println();
+        out.println("Update a client using 'oidc' endpoint:");
+        out.println("  " + PROMPT + " " + CMD + " update my_client -e oidc -s 'redirect_uris=[\"http://localhost:8080/myapp/*\"]'");
+        out.println();
+        out.println();
+        out.println("Use '" + CMD + " help' for general information and a list of commands");
+        return sb.toString();
+    }
 
     @Override
     public CommandResult execute(CommandInvocation commandInvocation) throws CommandException, InterruptedException {
@@ -209,7 +268,7 @@ public class UpdateCmd extends AbstractAuthOptionsCmd {
                 // if registration access token is not set via --token, see if it's in the body of any input file
                 // but first see if it's overridden by --set, or maybe deliberately muted via -d registrationAccessToken
                 boolean processed = false;
-                for (AttributeOperation op: attrs) {
+                for (AttributeOperation op : attrs) {
                     if ("registrationAccessToken".equals(op.getKey().toString())) {
                         processed = true;
                         if (op.getType() == AttributeOperation.Type.SET) {
@@ -347,79 +406,5 @@ public class UpdateCmd extends AbstractAuthOptionsCmd {
 
     protected String help() {
         return usage();
-    }
-
-    public static String usage() {
-        StringWriter sb = new StringWriter();
-        PrintWriter out = new PrintWriter(sb);
-        out.println("Usage: " + CMD + " update CLIENT [ARGUMENTS]");
-        out.println();
-        out.println("Command to update an existing client configuration. If registration access token is specified it is used.");
-        out.println("Otherwise, if 'registrationAccessToken' attribute is set, that is used. Otherwise, if registration access");
-        out.println("token is available in configuration file, we use that. Finally, if it's not available anywhere, the current ");
-        out.println("active session is used.");
-        out.println();
-        out.println("Arguments:");
-        out.println();
-        out.println("  Global options:");
-        out.println("    -x                    Print full stack trace when exiting with error");
-        out.println("    --config              Path to the config file (" + DEFAULT_CONFIG_FILE_STRING + " by default)");
-        out.println("    --no-config           Don't use config file - no authentication info is loaded or saved");
-        out.println("    --truststore PATH     Path to a truststore containing trusted certificates");
-        out.println("    --trustpass PASSWORD  Truststore password (prompted for if not specified and --truststore is used)");
-        out.println("    CREDENTIALS OPTIONS   Same set of options as accepted by '" + CMD + " config credentials' in order to establish");
-        out.println("                          an authenticated sessions. In combination with --no-config option this allows transient");
-        out.println("                          (on-the-fly) authentication to be performed which leaves no tokens in config file.");
-        out.println();
-        out.println("  Command specific options:");
-        out.println("    CLIENT                ClientId of the client to update");
-        out.println("    -t, --token TOKEN     Use the specified Registration Access Token for authorization");
-        out.println("    -s, --set KEY=VALUE   Set specific attribute to a specified value");
-        out.println("              KEY+=VALUE  Add item to an array");
-        out.println("    -d, --delete NAME     Delete the specific attribute, or array item");
-        out.println("    -e, --endpoint TYPE   Endpoint type to use - one of: 'default', 'oidc'");
-        out.println("    -f, --file FILENAME   Use the file or standard input if '-' is specified");
-        out.println("    -m, --merge           Merge new values with existing configuration on the server");
-        out.println("                          Merge is automatically enabled unless --file is specified");
-        out.println("    -o, --output          After update output the new client configuration");
-        out.println("    -c, --compressed      Don't pretty print the output");
-        out.println();
-        out.println();
-        out.println("Nested attributes are supported by using '.' to separate components of a KEY. Optionaly, the KEY components ");
-        out.println("can be quoted with double quotes - e.g. my_client.attributes.\"external.user.id\". If VALUE starts with [ and ");
-        out.println("ends with ] the attribute will be set as a JSON array. If VALUE starts with { and ends with } the attribute ");
-        out.println("will be set as a JSON object. If KEY ends with an array index - e.g. clients[3]=VALUE - then the specified item");
-        out.println("of the array is updated. If KEY+=VALUE syntax is used, then KEY is assumed to be an array, and another item is");
-        out.println("added to it.");
-        out.println();
-        out.println("Attributes can also be deleted. If KEY ends with an array index, then the targeted item of an array is removed");
-        out.println("and the following items are shifted.");
-        out.println();
-        out.println("Merged mode fetches current configuration from the server, applies attribute changes to it, and sends it");
-        out.println("back to the server, overwriting existing configuration there. If available, Registration Access Token is used ");
-        out.println("for authorization when doing changes. Otherwise current session's authorization is used in which case user needs");
-        out.println("manage-clients permission for update to work.");
-        out.println();
-        out.println();
-        out.println("Examples:");
-        out.println();
-        out.println("Update a client by fetching current configuration from server, and applying specified changes.");
-        out.println("  " + PROMPT + " " + CMD + " update my_client -s enabled=true -s 'redirectUris=[\"http://localhost:8080/myapp/*\"]'");
-        out.println();
-        out.println("Update a client by overwriting existing configuration on the server with a new one:");
-        out.println("  " + PROMPT + " " + CMD + " update my_client -f new_my_client.json");
-        out.println();
-        out.println("Update a client by overwriting existing configuration using local file as a template:");
-        out.println("  " + PROMPT + " " + CMD + " update my_client -f new_my_client.json -s enabled=true");
-        out.println();
-        out.println("Update client by fetching current configuration from server and merging with specified changes:");
-        out.println("  " + PROMPT + " " + CMD + " update my_client -f new_my_client.json -s enabled=true --merge");
-        out.println();
-        out.println("Update a client using 'oidc' endpoint:");
-        out.println("  " + PROMPT + " " + CMD + " update my_client -e oidc -s 'redirect_uris=[\"http://localhost:8080/myapp/*\"]'");
-        out.println();
-        out.println();
-        out.println("Use '" + CMD + " help' for general information and a list of commands");
-        return sb.toString();
     }
 }

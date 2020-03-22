@@ -17,21 +17,11 @@
 
 package org.keycloak.exportimport.util;
 
-import static org.keycloak.models.utils.ModelToRepresentation.toRepresentation;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.AuthorizationProviderFactory;
 import org.keycloak.authorization.model.Policy;
@@ -44,40 +34,18 @@ import org.keycloak.common.Version;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.CredentialModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.FederatedIdentityModel;
-import org.keycloak.models.GroupModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleContainerModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserConsentModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
-import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.ClientScopeRepresentation;
-import org.keycloak.representations.idm.ComponentExportRepresentation;
-import org.keycloak.representations.idm.CredentialRepresentation;
-import org.keycloak.representations.idm.FederatedIdentityRepresentation;
-import org.keycloak.representations.idm.RealmRepresentation;
-import org.keycloak.representations.idm.RoleRepresentation;
-import org.keycloak.representations.idm.RolesRepresentation;
-import org.keycloak.representations.idm.ScopeMappingRepresentation;
-import org.keycloak.representations.idm.UserConsentRepresentation;
-import org.keycloak.representations.idm.UserRepresentation;
-import org.keycloak.representations.idm.authorization.PolicyRepresentation;
-import org.keycloak.representations.idm.authorization.ResourceOwnerRepresentation;
-import org.keycloak.representations.idm.authorization.ResourceRepresentation;
-import org.keycloak.representations.idm.authorization.ResourceServerRepresentation;
-import org.keycloak.representations.idm.authorization.ScopeRepresentation;
+import org.keycloak.representations.idm.*;
+import org.keycloak.representations.idm.authorization.*;
 import org.keycloak.util.JsonSerialization;
 
-import com.fasterxml.jackson.core.JsonEncoding;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.keycloak.models.utils.ModelToRepresentation.toRepresentation;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -213,7 +181,7 @@ public class ExportUtils {
                     }
                     scopeMappingRep.role(scope.getName());
                 } else {
-                    ClientModel app = (ClientModel)scope.getContainer();
+                    ClientModel app = (ClientModel) scope.getContainer();
                     String appName = app.getClientId();
                     List<ScopeMappingRepresentation> currentAppScopes = clientScopeReps.get(appName);
                     if (currentAppScopes == null) {
@@ -306,13 +274,14 @@ public class ExportUtils {
 
     /**
      * Full export of application including claims and secret
+     *
      * @param client
      * @return full ApplicationRepresentation
      */
     public static ClientRepresentation exportClient(KeycloakSession session, ClientModel client) {
         ClientRepresentation clientRep = ModelToRepresentation.toRepresentation(client, session);
         clientRep.setSecret(client.getSecret());
-        clientRep.setAuthorizationSettings(exportAuthorizationSettings(session,client));
+        clientRep.setAuthorizationSettings(exportAuthorizationSettings(session, client));
         return clientRep;
     }
 
@@ -431,6 +400,7 @@ public class ExportUtils {
 
     /**
      * Full export of role including composite roles
+     *
      * @param role
      * @return RoleRepresentation with all stuff filled (including composite roles)
      */
@@ -455,7 +425,7 @@ public class ExportUtils {
                         compositeClientRoles = new HashMap<>();
                     }
 
-                    ClientModel app = (ClientModel)crContainer;
+                    ClientModel app = (ClientModel) crContainer;
                     String appName = app.getClientId();
                     List<String> currentAppComposites = compositeClientRoles.get(appName);
                     if (currentAppComposites == null) {
@@ -509,7 +479,7 @@ public class ExportUtils {
                 if (role.getContainer() instanceof RealmModel) {
                     realmRoleNames.add(role.getName());
                 } else {
-                    ClientModel client = (ClientModel)role.getContainer();
+                    ClientModel client = (ClientModel) role.getContainer();
                     String clientId = client.getClientId();
                     List<String> currentClientRoles = clientRoleNames.get(clientId);
                     if (currentClientRoles == null) {

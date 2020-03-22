@@ -20,12 +20,7 @@ package org.keycloak.representations.idm;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.keycloak.common.util.MultivaluedHashMap;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -149,19 +144,14 @@ public class RealmRepresentation {
     protected String accountTheme;
     protected String adminTheme;
     protected String emailTheme;
-    
+
     protected Boolean eventsEnabled;
     protected Long eventsExpiration;
     protected List<String> eventsListeners;
     protected List<String> enabledEventTypes;
-    
+
     protected Boolean adminEventsEnabled;
     protected Boolean adminEventsDetailsEnabled;
-    
-    private List<IdentityProviderRepresentation> identityProviders;
-    private List<IdentityProviderMapperRepresentation> identityProviderMappers;
-    private List<ProtocolMapperRepresentation> protocolMappers;
-    private MultivaluedHashMap<String, ComponentExportRepresentation> components;
     protected Boolean internationalizationEnabled;
     protected Set<String> supportedLocales;
     protected String defaultLocale;
@@ -174,13 +164,9 @@ public class RealmRepresentation {
     protected String resetCredentialsFlow;
     protected String clientAuthenticationFlow;
     protected String dockerAuthenticationFlow;
-
     protected Map<String, String> attributes;
-
     protected String keycloakVersion;
-
     protected Boolean userManagedAccessAllowed;
-
     @Deprecated
     protected Boolean social;
     @Deprecated
@@ -195,6 +181,10 @@ public class RealmRepresentation {
     protected List<OAuthClientRepresentation> oauthClients;
     @Deprecated
     protected List<ClientTemplateRepresentation> clientTemplates;
+    private List<IdentityProviderRepresentation> identityProviders;
+    private List<IdentityProviderMapperRepresentation> identityProviderMappers;
+    private List<ProtocolMapperRepresentation> protocolMappers;
+    private MultivaluedHashMap<String, ComponentExportRepresentation> components;
 
     public String getId() {
         return id;
@@ -232,12 +222,12 @@ public class RealmRepresentation {
         return users;
     }
 
-    public List<ApplicationRepresentation> getApplications() {
-        return applications;
-    }
-
     public void setUsers(List<UserRepresentation> users) {
         this.users = users;
+    }
+
+    public List<ApplicationRepresentation> getApplications() {
+        return applications;
     }
 
     public UserRepresentation user(String username) {
@@ -393,6 +383,7 @@ public class RealmRepresentation {
     public Set<String> getRequiredCredentials() {
         return requiredCredentials;
     }
+
     @Deprecated
     public void setRequiredCredentials(Set<String> requiredCredentials) {
         this.requiredCredentials = requiredCredentials;
@@ -529,7 +520,7 @@ public class RealmRepresentation {
     public void setVerifyEmail(Boolean verifyEmail) {
         this.verifyEmail = verifyEmail;
     }
-    
+
     public Boolean isLoginWithEmailAllowed() {
         return loginWithEmailAllowed;
     }
@@ -537,7 +528,7 @@ public class RealmRepresentation {
     public void setLoginWithEmailAllowed(Boolean loginWithEmailAllowed) {
         this.loginWithEmailAllowed = loginWithEmailAllowed;
     }
-    
+
     public Boolean isDuplicateEmailsAllowed() {
         return duplicateEmailsAllowed;
     }
@@ -746,7 +737,7 @@ public class RealmRepresentation {
     public void setEventsListeners(List<String> eventsListeners) {
         this.eventsListeners = eventsListeners;
     }
-    
+
     public List<String> getEnabledEventTypes() {
         return enabledEventTypes;
     }
@@ -809,13 +800,13 @@ public class RealmRepresentation {
         return protocolMappers;
     }
 
+    public void setProtocolMappers(List<ProtocolMapperRepresentation> protocolMappers) {
+        this.protocolMappers = protocolMappers;
+    }
+
     public void addProtocolMapper(ProtocolMapperRepresentation rep) {
         if (protocolMappers == null) protocolMappers = new LinkedList<ProtocolMapperRepresentation>();
         protocolMappers.add(rep);
-    }
-
-    public void setProtocolMappers(List<ProtocolMapperRepresentation> protocolMappers) {
-        this.protocolMappers = protocolMappers;
     }
 
     public Boolean isInternationalizationEnabled() {
@@ -830,15 +821,15 @@ public class RealmRepresentation {
         return supportedLocales;
     }
 
+    public void setSupportedLocales(Set<String> supportedLocales) {
+        this.supportedLocales = supportedLocales;
+    }
+
     public void addSupportedLocales(String locale) {
-        if(supportedLocales == null){
+        if (supportedLocales == null) {
             supportedLocales = new HashSet<>();
         }
         supportedLocales.add(locale);
-    }
-
-    public void setSupportedLocales(Set<String> supportedLocales) {
-        this.supportedLocales = supportedLocales;
     }
 
     public String getDefaultLocale() {
@@ -1214,12 +1205,12 @@ public class RealmRepresentation {
         return identityProviders != null && !identityProviders.isEmpty();
     }
 
-    public void setAttributes(Map<String, String> attributes) {
-        this.attributes = attributes;
-    }
-
     public Map<String, String> getAttributes() {
         return attributes;
+    }
+
+    public void setAttributes(Map<String, String> attributes) {
+        this.attributes = attributes;
     }
 
     public List<UserRepresentation> getFederatedUsers() {

@@ -21,7 +21,7 @@ import java.util.Map;
 
 /**
  * Bean used to hold form messages per field. Stored under <code>messagesPerField</code> key in Freemarker context.
- * 
+ *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class MessagesPerFieldBean {
@@ -44,7 +44,7 @@ public class MessagesPerFieldBean {
 
     /**
      * Check if message for given field exists
-     * 
+     *
      * @param field
      * @return
      */
@@ -54,7 +54,7 @@ public class MessagesPerFieldBean {
 
     /**
      * Get message for given field.
-     * 
+     *
      * @param fieldName
      * @return message text or empty string
      */
@@ -69,9 +69,9 @@ public class MessagesPerFieldBean {
 
     /**
      * Print text if message for given field exists. Useful eg. to add css styles for fields with message.
-     * 
+     *
      * @param fieldName to check for
-     * @param text to print
+     * @param text      to print
      * @return text if message exists for given field, else empty string
      */
     public String printIfExists(String fieldName, String text) {

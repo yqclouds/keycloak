@@ -17,8 +17,6 @@
 
 package org.keycloak.models.sessions.infinispan.changes.sessions;
 
-import java.util.UUID;
-
 import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
@@ -27,6 +25,8 @@ import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.changes.SessionUpdateTask;
 import org.keycloak.models.sessions.infinispan.entities.AuthenticatedClientSessionEntity;
 import org.keycloak.models.sessions.infinispan.entities.UserSessionEntity;
+
+import java.util.UUID;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -48,7 +48,7 @@ public class CrossDCLastSessionRefreshChecker {
     public SessionUpdateTask.CrossDCMessageStatus shouldSaveUserSessionToRemoteCache(
             KeycloakSession kcSession, RealmModel realm, SessionEntityWrapper<UserSessionEntity> sessionWrapper, boolean offline, int newLastSessionRefresh) {
 
-        SessionUpdateTask.CrossDCMessageStatus baseChecks = baseChecks(kcSession, realm ,offline);
+        SessionUpdateTask.CrossDCMessageStatus baseChecks = baseChecks(kcSession, realm, offline);
         if (baseChecks != null) {
             return baseChecks;
         }
@@ -82,7 +82,7 @@ public class CrossDCLastSessionRefreshChecker {
     public SessionUpdateTask.CrossDCMessageStatus shouldSaveClientSessionToRemoteCache(
             KeycloakSession kcSession, RealmModel realm, SessionEntityWrapper<AuthenticatedClientSessionEntity> sessionWrapper, UserSessionModel userSession, boolean offline, int newTimestamp) {
 
-        SessionUpdateTask.CrossDCMessageStatus baseChecks = baseChecks(kcSession, realm ,offline);
+        SessionUpdateTask.CrossDCMessageStatus baseChecks = baseChecks(kcSession, realm, offline);
         if (baseChecks != null) {
             return baseChecks;
         }
@@ -96,8 +96,8 @@ public class CrossDCLastSessionRefreshChecker {
             }
 
             if (lsrr + (realm.getOfflineSessionIdleTimeout() / 2) <= newTimestamp) {
-                    logger.debugf("We are going to write remotely for clientSession %s. Remote timestamp: %d, New timestamp: %d",
-                            clientSessionId, lsrr, newTimestamp);
+                logger.debugf("We are going to write remotely for clientSession %s. Remote timestamp: %d, New timestamp: %d",
+                        clientSessionId, lsrr, newTimestamp);
                 return SessionUpdateTask.CrossDCMessageStatus.SYNC;
             }
         }

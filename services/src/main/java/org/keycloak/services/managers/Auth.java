@@ -17,17 +17,13 @@
 
 package org.keycloak.services.managers;
 
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.services.ForbiddenException;
 
 /**
-* @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
-*/
+ * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
+ */
 public class Auth {
 
     private final boolean cookie;

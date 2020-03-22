@@ -18,12 +18,7 @@
 package org.keycloak.saml.processing.core.saml.v2.util;
 
 
-import org.keycloak.dom.xmlsec.w3.xmldsig.DSAKeyValueType;
-import org.keycloak.dom.xmlsec.w3.xmldsig.KeyInfoType;
-import org.keycloak.dom.xmlsec.w3.xmldsig.KeyValueType;
-import org.keycloak.dom.xmlsec.w3.xmldsig.RSAKeyValueType;
-import org.keycloak.dom.xmlsec.w3.xmldsig.X509CertificateType;
-import org.keycloak.dom.xmlsec.w3.xmldsig.X509DataType;
+import org.keycloak.dom.xmlsec.w3.xmldsig.*;
 import org.keycloak.saml.common.ErrorCodes;
 import org.keycloak.saml.common.PicketLinkLogger;
 import org.keycloak.saml.common.PicketLinkLoggerFactory;
@@ -31,7 +26,6 @@ import org.keycloak.saml.common.constants.GeneralConstants;
 import org.keycloak.saml.common.constants.WSTrustConstants;
 import org.keycloak.saml.common.exceptions.ProcessingException;
 import org.keycloak.saml.common.util.StaxUtil;
-
 import org.w3c.dom.Element;
 
 import javax.xml.stream.XMLStreamWriter;
@@ -51,7 +45,6 @@ public class StaxWriterUtil {
      *
      * @param writer
      * @param keyInfo
-     *
      * @throws org.keycloak.saml.common.exceptions.ProcessingException
      */
     public static void writeKeyInfo(XMLStreamWriter writer, KeyInfoType keyInfo) throws ProcessingException {

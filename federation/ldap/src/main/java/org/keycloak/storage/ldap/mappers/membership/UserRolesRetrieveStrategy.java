@@ -74,7 +74,9 @@ public interface UserRolesRetrieveStrategy {
             return new LDAPQueryConditionsBuilder().equal(membershipAttr, userMembership);
         }
 
-    };
+    }
+
+    ;
 
     /**
      * Roles of user will be retrieved from "memberOf" attribute of our user
@@ -118,7 +120,9 @@ public interface UserRolesRetrieveStrategy {
             query.addReturningReadOnlyLdapAttribute(memberOfLdapAttrName);
         }
 
-    };
+    }
+
+    ;
 
     /**
      * Extension specific to Active Directory. Roles of user will be retrieved by sending LDAP query to retrieve all roles where "member" is our user.
@@ -130,6 +134,8 @@ public interface UserRolesRetrieveStrategy {
             return new LDAPQueryConditionsBuilder().equal(membershipAttr + LDAPConstants.LDAP_MATCHING_RULE_IN_CHAIN, userMembership);
         }
 
-    };
+    }
+
+    ;
 
 }

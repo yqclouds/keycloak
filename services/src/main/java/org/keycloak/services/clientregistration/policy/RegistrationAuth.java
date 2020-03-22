@@ -24,14 +24,14 @@ public enum RegistrationAuth {
 
     /**
      * Case when client is registered without token (either initialAccessToken or BearerToken).
-     *
+     * <p>
      * Note this will be the case also for update + view + remove with registrationToken, which was created during anonymous registration
      */
     ANONYMOUS,
 
     /**
      * Case when client is registered with token (either initialAccessToken or BearerToken).
-     *
+     * <p>
      * Note this will be the case also update + view + remove with registrationToken, which was created during authenticated registration or via admin console
      */
     AUTHENTICATED;

@@ -17,14 +17,10 @@ public class DefaultHostnameProvider implements HostnameProvider {
     private final KeycloakSession session;
 
     private final URI frontendUri;
-
-    private String currentRealm;
-
-    private URI realmUri;
-
-    private URI adminUri;
-
     private final boolean forceBackendUrlToFrontendUrl;
+    private String currentRealm;
+    private URI realmUri;
+    private URI adminUri;
 
     public DefaultHostnameProvider(KeycloakSession session, URI frontendUri, URI adminUri, boolean forceBackendUrlToFrontendUrl) {
         this.session = session;

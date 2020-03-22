@@ -18,7 +18,6 @@ package org.keycloak.services.resources.admin;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import javax.ws.rs.NotFoundException;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
@@ -40,50 +39,31 @@ import org.keycloak.representations.idm.ConfigPropertyRepresentation;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
- * @resource Component
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
+ * @resource Component
  */
 public class ComponentResource {
     protected static final Logger logger = Logger.getLogger(ComponentResource.class);
 
     protected RealmModel realm;
-
-    private AdminPermissionEvaluator auth;
-
-    private AdminEventBuilder adminEvent;
-
     @Context
     protected ClientConnection clientConnection;
-
     @Context
     protected KeycloakSession session;
-
     @Context
     protected HttpHeaders headers;
+    private AdminPermissionEvaluator auth;
+    private AdminEventBuilder adminEvent;
 
     public ComponentResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.auth = auth;
@@ -177,6 +157,7 @@ public class ComponentResource {
             throw new BadRequestException();
         }
     }
+
     @DELETE
     @Path("{id}")
     public void removeComponent(@PathParam("id") String id) {
@@ -193,7 +174,7 @@ public class ComponentResource {
     private Response localizedErrorResponse(ComponentValidationException cve) {
         Properties messages = AdminRoot.getMessages(session, realm, auth.adminAuth().getToken().getLocale(), "admin-messages", "messages");
 
-        Object[] localizedParameters = cve.getParameters()==null ? null : Arrays.asList(cve.getParameters()).stream().map((Object parameter) -> {
+        Object[] localizedParameters = cve.getParameters() == null ? null : Arrays.asList(cve.getParameters()).stream().map((Object parameter) -> {
 
             if (parameter instanceof String) {
                 String paramStr = (String) parameter;
@@ -230,7 +211,7 @@ public class ComponentResource {
         }
         Class<? extends Provider> providerClass = null;
         try {
-            providerClass = (Class<? extends Provider>)Class.forName(subtype);
+            providerClass = (Class<? extends Provider>) Class.forName(subtype);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -241,28 +222,27 @@ public class ComponentResource {
             if (!(factory instanceof ComponentFactory)) {
                 continue;
             }
-            ComponentFactory componentFactory = (ComponentFactory)factory;
+            ComponentFactory componentFactory = (ComponentFactory) factory;
 
             rep.setHelpText(componentFactory.getHelpText());
             List<ProviderConfigProperty> props = null;
             Map<String, Object> metadata = null;
             if (factory instanceof SubComponentFactory) {
-                props = ((SubComponentFactory)factory).getConfigProperties(realm, parent);
-                metadata = ((SubComponentFactory)factory).getTypeMetadata(realm, parent);
+                props = ((SubComponentFactory) factory).getConfigProperties(realm, parent);
+                metadata = ((SubComponentFactory) factory).getTypeMetadata(realm, parent);
 
             } else {
                 props = componentFactory.getConfigProperties();
                 metadata = componentFactory.getTypeMetadata();
             }
 
-            List<ConfigPropertyRepresentation> propReps =  ModelToRepresentation.toRepresentation(props);
+            List<ConfigPropertyRepresentation> propReps = ModelToRepresentation.toRepresentation(props);
             rep.setProperties(propReps);
             rep.setMetadata(metadata);
             subcomponents.add(rep);
         }
         return subcomponents;
     }
-
 
 
 }

@@ -17,10 +17,6 @@
 
 package org.keycloak.jose.jwe;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.spec.KeySpec;
-
 import org.keycloak.common.util.Base64;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.common.util.BouncyIntegration;
@@ -32,6 +28,9 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.spec.KeySpec;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -54,6 +53,57 @@ public class JWE {
     private byte[] encryptedContent;
 
     private byte[] authenticationTag;
+
+    public static String encryptUTF8(String password, String saltString, String payload) {
+        byte[] bytes = payload.getBytes(StandardCharsets.UTF_8);
+        return encrypt(password, saltString, bytes);
+    }
+
+    public static String encrypt(String password, String saltString, byte[] payload) {
+        try {
+            byte[] salt = Base64.decode(saltString);
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 100, 128);
+            SecretKey tmp = factory.generateSecret(spec);
+            SecretKey aesKey = new SecretKeySpec(tmp.getEncoded(), "AES");
+
+            JWEHeader jweHeader = new JWEHeader(JWEConstants.A128KW, JWEConstants.A128CBC_HS256, null);
+            JWE jwe = new JWE()
+                    .header(jweHeader)
+                    .content(payload);
+
+            jwe.getKeyStorage()
+                    .setEncryptionKey(aesKey);
+
+            return jwe.encodeJwe();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static byte[] decrypt(String password, String saltString, String encodedJwe) {
+        try {
+            byte[] salt = Base64.decode(saltString);
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 100, 128);
+            SecretKey tmp = factory.generateSecret(spec);
+            SecretKey aesKey = new SecretKeySpec(tmp.getEncoded(), "AES");
+
+            JWE jwe = new JWE();
+            jwe.getKeyStorage()
+                    .setDecryptionKey(aesKey);
+
+            jwe.verifyAndDecodeJwe(encodedJwe);
+            return jwe.getContent();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String decryptUTF8(String password, String saltString, String encodedJwe) {
+        byte[] payload = decrypt(password, saltString, encodedJwe);
+        return new String(payload, StandardCharsets.UTF_8);
+    }
 
     public JWE header(JWEHeader header) {
         this.header = header;
@@ -81,16 +131,13 @@ public class JWE {
         return base64Header;
     }
 
-
     public JWEKeyStorage getKeyStorage() {
         return keyStorage;
     }
 
-
     public byte[] getInitializationVector() {
         return initializationVector;
     }
-
 
     public JWE content(byte[] content) {
         this.content = content;
@@ -105,18 +152,15 @@ public class JWE {
         return encryptedContent;
     }
 
-
     public byte[] getAuthenticationTag() {
         return authenticationTag;
     }
-
 
     public void setEncryptedContentInfo(byte[] initializationVector, byte[] encryptedContent, byte[] authenticationTag) {
         this.initializationVector = initializationVector;
         this.encryptedContent = encryptedContent;
         this.authenticationTag = authenticationTag;
     }
-
 
     public String encodeJwe() throws JWEException {
         try {
@@ -219,58 +263,6 @@ public class JWE {
         } catch (Exception e) {
             throw new JWEException(e);
         }
-    }
-
-    public static String encryptUTF8(String password, String saltString, String payload) {
-        byte[] bytes = payload.getBytes(StandardCharsets.UTF_8);
-        return encrypt(password, saltString, bytes);
-    }
-
-
-    public static String encrypt(String password, String saltString, byte[] payload) {
-        try {
-            byte[] salt = Base64.decode(saltString);
-            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-            KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 100, 128);
-            SecretKey tmp = factory.generateSecret(spec);
-            SecretKey aesKey = new SecretKeySpec(tmp.getEncoded(), "AES");
-
-            JWEHeader jweHeader = new JWEHeader(JWEConstants.A128KW, JWEConstants.A128CBC_HS256, null);
-            JWE jwe = new JWE()
-                    .header(jweHeader)
-                    .content(payload);
-
-            jwe.getKeyStorage()
-                    .setEncryptionKey(aesKey);
-
-            return jwe.encodeJwe();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static byte[] decrypt(String password, String saltString, String encodedJwe) {
-        try {
-            byte[] salt = Base64.decode(saltString);
-            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-            KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 100, 128);
-            SecretKey tmp = factory.generateSecret(spec);
-            SecretKey aesKey = new SecretKeySpec(tmp.getEncoded(), "AES");
-
-            JWE jwe = new JWE();
-            jwe.getKeyStorage()
-                    .setDecryptionKey(aesKey);
-
-            jwe.verifyAndDecodeJwe(encodedJwe);
-            return jwe.getContent();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static String decryptUTF8(String password, String saltString, String encodedJwe) {
-        byte[] payload = decrypt(password, saltString, encodedJwe);
-        return new String(payload, StandardCharsets.UTF_8);
     }
 
 }

@@ -41,9 +41,9 @@ public class ParseUtil {
             throw new RuntimeException("Invalid key=value parameter: [" + keyval + "]");
         }
 
-        String [] parsed = new String[2];
+        String[] parsed = new String[2];
         parsed[0] = keyval.substring(0, pos);
-        parsed[1] = keyval.substring(pos+1);
+        parsed[1] = keyval.substring(pos + 1);
 
         return parsed;
     }

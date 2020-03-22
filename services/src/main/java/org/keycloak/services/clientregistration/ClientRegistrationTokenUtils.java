@@ -21,13 +21,12 @@ import org.keycloak.TokenCategory;
 import org.keycloak.TokenVerifier;
 import org.keycloak.common.VerificationException;
 import org.keycloak.common.util.Time;
-import org.keycloak.crypto.SignatureSignerContext;
 import org.keycloak.crypto.SignatureProvider;
+import org.keycloak.crypto.SignatureSignerContext;
 import org.keycloak.crypto.SignatureVerifierContext;
 import org.keycloak.jose.jws.JWSBuilder;
 import org.keycloak.models.ClientInitialAccessModel;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.TokenManager;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
@@ -140,18 +139,18 @@ public class ClientRegistrationTokenUtils {
         private final JsonWebToken jwt;
         private final RuntimeException error;
 
+        private TokenVerification(String kid, JsonWebToken jwt, RuntimeException error) {
+            this.kid = kid;
+            this.jwt = jwt;
+            this.error = error;
+        }
+
         public static TokenVerification success(String kid, JsonWebToken jwt) {
             return new TokenVerification(kid, jwt, null);
         }
 
         public static TokenVerification error(RuntimeException error) {
-            return new TokenVerification(null,null, error);
-        }
-
-        private TokenVerification(String kid, JsonWebToken jwt, RuntimeException error) {
-            this.kid = kid;
-            this.jwt = jwt;
-            this.error = error;
+            return new TokenVerification(null, null, error);
         }
 
         public String getKid() {

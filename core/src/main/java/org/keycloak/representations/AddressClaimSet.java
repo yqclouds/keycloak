@@ -20,9 +20,9 @@ package org.keycloak.representations;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
-* @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
-* @version $Revision: 1 $
-*/
+ * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
+ * @version $Revision: 1 $
+ */
 public class AddressClaimSet {
     public static final String FORMATTED = "formatted";
     public static final String STREET_ADDRESS = "street_address";

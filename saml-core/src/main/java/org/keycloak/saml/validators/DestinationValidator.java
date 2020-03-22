@@ -1,13 +1,13 @@
 /*
  * Copyright 2018 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,12 +26,13 @@ import java.util.regex.Pattern;
 
 /**
  * Check that Destination field in SAML request/response is either unset or matches the expected one.
+ *
  * @author hmlnarik
  */
 public class DestinationValidator {
 
     private static final Pattern PROTOCOL_MAP_PATTERN = Pattern.compile("\\s*([a-zA-Z][a-zA-Z\\d+-.]*)\\s*=\\s*(\\d+)\\s*");
-    private static final String[] DEFAULT_PROTOCOL_TO_PORT_MAP = new String[] { "http=80", "https=443" };
+    private static final String[] DEFAULT_PROTOCOL_TO_PORT_MAP = new String[]{"http=80", "https=443"};
 
     private final Map<String, Integer> knownPorts;
     private final Map<Integer, String> knownProtocols;
@@ -40,7 +41,7 @@ public class DestinationValidator {
         this.knownPorts = knownPorts;
         this.knownProtocols = knownProtocols;
     }
-    
+
     public static DestinationValidator forProtocolMap(String[] protocolMappings) {
         if (protocolMappings == null) {
             protocolMappings = DEFAULT_PROTOCOL_TO_PORT_MAP;
@@ -107,23 +108,23 @@ public class DestinationValidator {
         try {
             if (expectedDestination.getPort() < 0 && portByScheme != null) {
                 updatedUri = new URI(
-                  expectedDestination.getScheme(),
-                  expectedDestination.getUserInfo(),
-                  expectedDestination.getHost(),
-                  portByScheme,
-                  expectedDestination.getPath(),
-                  expectedDestination.getQuery(),
-                  expectedDestination.getFragment()
+                        expectedDestination.getScheme(),
+                        expectedDestination.getUserInfo(),
+                        expectedDestination.getHost(),
+                        portByScheme,
+                        expectedDestination.getPath(),
+                        expectedDestination.getQuery(),
+                        expectedDestination.getFragment()
                 );
             } else if (expectedDestination.getPort() >= 0 && Objects.equals(protocolByPort, expectedDestination.getScheme())) {
                 updatedUri = new URI(
-                  expectedDestination.getScheme(),
-                  expectedDestination.getUserInfo(),
-                  expectedDestination.getHost(),
-                  -1,
-                  expectedDestination.getPath(),
-                  expectedDestination.getQuery(),
-                  expectedDestination.getFragment()
+                        expectedDestination.getScheme(),
+                        expectedDestination.getUserInfo(),
+                        expectedDestination.getHost(),
+                        -1,
+                        expectedDestination.getPath(),
+                        expectedDestination.getQuery(),
+                        expectedDestination.getFragment()
                 );
             }
         } catch (URISyntaxException ex) {

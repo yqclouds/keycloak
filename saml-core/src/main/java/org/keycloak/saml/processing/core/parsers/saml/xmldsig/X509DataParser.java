@@ -27,7 +27,6 @@ import javax.xml.stream.events.StartElement;
 
 /**
  * Base Class for all Response Type parsing for SAML2
- *
  */
 public class X509DataParser extends AbstractStaxXmlDSigParser<X509DataType> {
 
@@ -56,7 +55,7 @@ public class X509DataParser extends AbstractStaxXmlDSigParser<X509DataType> {
                 X509CertificateType cert = new X509CertificateType();
                 cert.setEncodedCertificate(certValue.getBytes(GeneralConstants.SAML_CHARSET));
                 target.add(cert);
-                
+
                 break;
 
             default:

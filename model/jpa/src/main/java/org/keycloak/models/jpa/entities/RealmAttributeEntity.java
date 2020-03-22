@@ -19,16 +19,7 @@ package org.keycloak.models.jpa.entities;
 
 import org.hibernate.annotations.Nationalized;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 
 /**
@@ -36,15 +27,15 @@ import java.io.Serializable;
  * @version $Revision: 1 $
  */
 @NamedQueries({
-        @NamedQuery(name="deleteRealmAttributesByRealm", query="delete from RealmAttributeEntity attr where attr.realm = :realm")
+        @NamedQuery(name = "deleteRealmAttributesByRealm", query = "delete from RealmAttributeEntity attr where attr.realm = :realm")
 })
-@Table(name="REALM_ATTRIBUTE")
+@Table(name = "REALM_ATTRIBUTE")
 @Entity
 @IdClass(RealmAttributeEntity.Key.class)
 public class RealmAttributeEntity {
 
     @Id
-    @ManyToOne(fetch= FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REALM_ID")
     protected RealmEntity realm;
 
@@ -79,6 +70,28 @@ public class RealmAttributeEntity {
         this.realm = realm;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        if (!(o instanceof RealmAttributeEntity)) return false;
+
+        RealmAttributeEntity key = (RealmAttributeEntity) o;
+
+        if (name != null ? !name.equals(key.name) : key.name != null) return false;
+        if (realm != null ? !realm.getId().equals(key.realm != null ? key.realm.getId() : null) : key.realm != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = realm != null ? realm.getId().hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        return result;
+    }
+
     public static class Key implements Serializable {
 
         protected RealmEntity realm;
@@ -109,7 +122,8 @@ public class RealmAttributeEntity {
             Key key = (Key) o;
 
             if (name != null ? !name.equals(key.name) : key.name != null) return false;
-            if (realm != null ? !realm.getId().equals(key.realm != null ? key.realm.getId() : null) : key.realm != null) return false;
+            if (realm != null ? !realm.getId().equals(key.realm != null ? key.realm.getId() : null) : key.realm != null)
+                return false;
 
             return true;
         }
@@ -120,27 +134,6 @@ public class RealmAttributeEntity {
             result = 31 * result + (name != null ? name.hashCode() : 0);
             return result;
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null) return false;
-        if (!(o instanceof RealmAttributeEntity)) return false;
-
-        RealmAttributeEntity key = (RealmAttributeEntity) o;
-
-        if (name != null ? !name.equals(key.name) : key.name != null) return false;
-        if (realm != null ? !realm.getId().equals(key.realm != null ? key.realm.getId() : null) : key.realm != null) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = realm != null ? realm.getId().hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        return result;
     }
 
 

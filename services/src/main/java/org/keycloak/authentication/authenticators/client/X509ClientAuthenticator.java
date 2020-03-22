@@ -15,13 +15,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -108,18 +102,18 @@ public class X509ClientAuthenticator extends AbstractClientAuthenticator {
         Pattern subjectDNPattern = Pattern.compile(subjectDNRegexp);
 
         Optional<String> matchedCertificate = Arrays.stream(certs)
-              .map(certificate -> certificate.getSubjectDN().getName())
-              .filter(subjectdn -> subjectDNPattern.matcher(subjectdn).matches())
-              .findFirst();
+                .map(certificate -> certificate.getSubjectDN().getName())
+                .filter(subjectdn -> subjectDNPattern.matcher(subjectdn).matches())
+                .findFirst();
 
         if (!matchedCertificate.isPresent()) {
             // We do quite expensive operation here, so better check the logging level beforehand.
             if (logger.isDebugEnabled()) {
                 logger.debug("[X509ClientCertificateAuthenticator:authenticate] Couldn't match any certificate for pattern " + subjectDNRegexp);
                 logger.debug("[X509ClientCertificateAuthenticator:authenticate] Available SubjectDNs: " +
-                      Arrays.stream(certs)
-                            .map(cert -> cert.getSubjectDN().getName())
-                            .collect(Collectors.toList()));
+                        Arrays.stream(certs)
+                                .map(cert -> cert.getSubjectDN().getName())
+                                .collect(Collectors.toList()));
             }
             context.attempted();
             return;
@@ -154,7 +148,7 @@ public class X509ClientAuthenticator extends AbstractClientAuthenticator {
         return Collections.emptyMap();
     }
 
-   @Override
+    @Override
     public Set<String> getProtocolAuthenticatorMethods(String loginProtocol) {
         if (loginProtocol.equals(OIDCLoginProtocol.LOGIN_PROTOCOL)) {
             Set<String> results = new HashSet<>();

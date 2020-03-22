@@ -50,7 +50,7 @@ public class CachedClientScope extends AbstractRevisioned implements InRealm {
         for (ProtocolMapperModel mapper : model.getProtocolMappers()) {
             this.protocolMappers.add(mapper);
         }
-        for (RoleModel role : model.getScopeMappings())  {
+        for (RoleModel role : model.getScopeMappings()) {
             scope.add(role.getId());
         }
         attributes.putAll(model.getAttributes());
@@ -60,13 +60,18 @@ public class CachedClientScope extends AbstractRevisioned implements InRealm {
         return name;
     }
 
-    public String getDescription() { return description; }
+    public String getDescription() {
+        return description;
+    }
 
-    public void setDescription(String description) { this.description = description; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     public String getRealm() {
         return realm;
     }
+
     public Set<ProtocolMapperModel> getProtocolMappers() {
         return protocolMappers;
     }

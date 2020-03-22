@@ -19,43 +19,23 @@ package org.keycloak.storage.ldap.mappers;
 
 import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.LDAPConstants;
-import org.keycloak.models.ModelDuplicateException;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.UserModelDelegate;
 import org.keycloak.models.utils.reflection.Property;
-import org.keycloak.models.utils.reflection.PropertyCriteria;
-import org.keycloak.models.utils.reflection.PropertyQueries;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.ldap.LDAPStorageProvider;
 import org.keycloak.storage.ldap.LDAPUtils;
 import org.keycloak.storage.ldap.idm.model.LDAPObject;
 import org.keycloak.storage.ldap.idm.query.Condition;
 import org.keycloak.storage.ldap.idm.query.internal.LDAPQuery;
-import org.keycloak.storage.ldap.idm.store.ldap.LDAPUtil;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.keycloak.models.ModelException;
+import java.util.*;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
-
-    private static final Logger logger = Logger.getLogger(UserAttributeLDAPStorageMapper.class);
-
-    private static final Map<String, Property<Object>> userModelProperties = LDAPUtils.getUserModelProperties();
 
     public static final String USER_MODEL_ATTRIBUTE = "user.model.attribute";
     public static final String LDAP_ATTRIBUTE = "ldap.attribute";
@@ -63,6 +43,8 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
     public static final String ALWAYS_READ_VALUE_FROM_LDAP = "always.read.value.from.ldap";
     public static final String IS_MANDATORY_IN_LDAP = "is.mandatory.in.ldap";
     public static final String IS_BINARY_ATTRIBUTE = "is.binary.attribute";
+    private static final Logger logger = Logger.getLogger(UserAttributeLDAPStorageMapper.class);
+    private static final Map<String, Property<Object>> userModelProperties = LDAPUtils.getUserModelProperties();
 
     public UserAttributeLDAPStorageMapper(ComponentModel mapperModel, LDAPStorageProvider ldapProvider) {
         super(mapperModel, ldapProvider);
@@ -208,7 +190,7 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
 
                 @Override
                 public void removeAttribute(String name) {
-                    if ( setLDAPAttribute(name, null)) {
+                    if (setLDAPAttribute(name, null)) {
                         super.removeAttribute(name);
                     }
                 }
@@ -218,26 +200,6 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
                     checkDuplicateUsername(userModelAttrName, username, realm, ldapProvider.getSession(), this);
                     setLDAPAttribute(UserModel.USERNAME, username);
                     super.setUsername(username);
-                }
-
-                @Override
-                public void setEmail(String email) {
-                    checkDuplicateEmail(userModelAttrName, email, realm, ldapProvider.getSession(), this);
-
-                    setLDAPAttribute(UserModel.EMAIL, email);
-                    super.setEmail(email);
-                }
-
-                @Override
-                public void setLastName(String lastName) {
-                    setLDAPAttribute(UserModel.LAST_NAME, lastName);
-                    super.setLastName(lastName);
-                }
-
-                @Override
-                public void setFirstName(String firstName) {
-                    setLDAPAttribute(UserModel.FIRST_NAME, firstName);
-                    super.setFirstName(firstName);
                 }
 
                 protected boolean setLDAPAttribute(String modelAttrName, Object value) {
@@ -274,7 +236,27 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
                     }
 
                     return true;
+                }                @Override
+                public void setEmail(String email) {
+                    checkDuplicateEmail(userModelAttrName, email, realm, ldapProvider.getSession(), this);
+
+                    setLDAPAttribute(UserModel.EMAIL, email);
+                    super.setEmail(email);
                 }
+
+                @Override
+                public void setLastName(String lastName) {
+                    setLDAPAttribute(UserModel.LAST_NAME, lastName);
+                    super.setLastName(lastName);
+                }
+
+                @Override
+                public void setFirstName(String firstName) {
+                    setLDAPAttribute(UserModel.FIRST_NAME, firstName);
+                    super.setFirstName(firstName);
+                }
+
+
 
             };
 

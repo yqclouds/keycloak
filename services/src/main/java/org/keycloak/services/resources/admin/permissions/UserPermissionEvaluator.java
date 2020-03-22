@@ -26,29 +26,42 @@ import java.util.Map;
  */
 public interface UserPermissionEvaluator {
     void requireManage();
+
     void requireManage(UserModel user);
+
     boolean canManage();
+
     boolean canManage(UserModel user);
 
     void requireQuery();
+
     boolean canQuery();
 
     void requireView();
+
     void requireView(UserModel user);
+
     boolean canView();
+
     boolean canView(UserModel user);
 
     void requireImpersonate(UserModel user);
+
     boolean canImpersonate();
+
     boolean canImpersonate(UserModel user);
+
     boolean isImpersonatable(UserModel user);
 
     Map<String, Boolean> getAccess(UserModel user);
 
     void requireMapRoles(UserModel user);
+
     boolean canMapRoles(UserModel user);
 
     void requireManageGroupMembership(UserModel user);
+
     boolean canManageGroupMembership(UserModel user);
+
     void grantIfNoPermission(boolean grantIfNoPermission);
 }

@@ -58,6 +58,7 @@ public class AdminRoles {
     public static String[] ALL_QUERY_ROLES = {QUERY_USERS, QUERY_CLIENTS, QUERY_REALMS, QUERY_GROUPS};
 
     public static Set<String> ALL_ROLES = new HashSet<>();
+
     static {
         for (String name : ALL_REALM_ROLES) {
             ALL_ROLES.add(name);

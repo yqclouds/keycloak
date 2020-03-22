@@ -23,23 +23,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
-* @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
-* @version $Revision: 1 $
-*/
+ * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
+ * @version $Revision: 1 $
+ */
 public class RequiredActionProviderModel implements Serializable {
-
-    public static class RequiredActionComparator implements Comparator<RequiredActionProviderModel> {
-        public static final RequiredActionComparator SINGLETON = new RequiredActionComparator();
-
-        @Override
-        public int compare(RequiredActionProviderModel o1, RequiredActionProviderModel o2) {
-
-            return Comparator
-                    .comparingInt(RequiredActionProviderModel::getPriority)
-                    .thenComparing(RequiredActionProviderModel::getName, Comparator.nullsFirst(String.CASE_INSENSITIVE_ORDER))
-                    .compare(o1, o2);
-        }
-    }
 
     private String id;
     private String alias;
@@ -49,7 +36,6 @@ public class RequiredActionProviderModel implements Serializable {
     private boolean defaultAction;
     private int priority;
     private Map<String, String> config = new HashMap<>();
-
 
     public String getId() {
         return id;
@@ -119,5 +105,18 @@ public class RequiredActionProviderModel implements Serializable {
 
     public void setConfig(Map<String, String> config) {
         this.config = config;
+    }
+
+    public static class RequiredActionComparator implements Comparator<RequiredActionProviderModel> {
+        public static final RequiredActionComparator SINGLETON = new RequiredActionComparator();
+
+        @Override
+        public int compare(RequiredActionProviderModel o1, RequiredActionProviderModel o2) {
+
+            return Comparator
+                    .comparingInt(RequiredActionProviderModel::getPriority)
+                    .thenComparing(RequiredActionProviderModel::getName, Comparator.nullsFirst(String.CASE_INSENSITIVE_ORDER))
+                    .compare(o1, o2);
+        }
     }
 }

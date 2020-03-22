@@ -17,13 +17,7 @@
 package org.keycloak.client.admin.cli.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.BooleanNode;
-import com.fasterxml.jackson.databind.node.DoubleNode;
-import com.fasterxml.jackson.databind.node.LongNode;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
+import com.fasterxml.jackson.databind.node.*;
 import org.keycloak.client.admin.cli.common.AttributeKey;
 import org.keycloak.client.admin.cli.common.AttributeOperation;
 
@@ -40,7 +34,7 @@ import static org.keycloak.client.admin.cli.util.OutputUtil.MAPPER;
 public class ReflectionUtil {
 
     public static void setAttributes(JsonNode client, List<AttributeOperation> attrs) {
-        for (AttributeOperation item: attrs) {
+        for (AttributeOperation item : attrs) {
             AttributeKey attr = item.getKey();
             JsonNode nested = client;
 
@@ -67,7 +61,7 @@ public class ReflectionUtil {
                         if (c.isArray() || attr.isAppend()) {
                             JsonNode list = obj.get(c.getName());
                             // child expected to be an array
-                            if ( ! (list instanceof ArrayNode)) {
+                            if (!(list instanceof ArrayNode)) {
                                 // replace with new array
                                 list = MAPPER.createArrayNode();
                                 obj.set(c.getName(), list);
@@ -114,7 +108,7 @@ public class ReflectionUtil {
             return;
         }
         // make sure items up to index exist
-        for (int i = list.size(); i < index+1; i++) {
+        for (int i = list.size(); i < index + 1; i++) {
             list.add(NullNode.instance);
         }
         list.set(index, valNode);
@@ -183,7 +177,7 @@ public class ReflectionUtil {
         if (!(val.startsWith("'") || val.startsWith("\"")) || !(val.endsWith("'") || val.endsWith("\""))) {
             throw new RuntimeException("Invalid string value: " + val);
         }
-        return val.substring(1, val.length()-1);
+        return val.substring(1, val.length() - 1);
     }
 
     public static void merge(JsonNode source, ObjectNode dest) {

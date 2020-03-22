@@ -17,8 +17,6 @@
 
 package org.keycloak.common;
 
-import static org.keycloak.common.Profile.Type.DEPRECATED;
-
 import org.jboss.logging.Logger;
 
 import java.io.File;
@@ -28,6 +26,8 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import static org.keycloak.common.Profile.Type.DEPRECATED;
+
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
@@ -35,68 +35,9 @@ import java.util.Set;
 public class Profile {
 
     private static final Logger logger = Logger.getLogger(Profile.class);
-
-    public enum Type {
-        DEFAULT,
-        DISABLED_BY_DEFAULT,
-        PREVIEW,
-        EXPERIMENTAL,
-        DEPRECATED;
-    }
-    public enum Feature {
-        ACCOUNT2(Type.EXPERIMENTAL),
-        ACCOUNT_API(Type.PREVIEW),
-        ADMIN_FINE_GRAINED_AUTHZ(Type.PREVIEW),
-        DOCKER(Type.DISABLED_BY_DEFAULT),
-        IMPERSONATION(Type.DEFAULT),
-        OPENSHIFT_INTEGRATION(Type.PREVIEW),
-        SCRIPTS(Type.PREVIEW),
-        TOKEN_EXCHANGE(Type.PREVIEW),
-        UPLOAD_SCRIPTS(DEPRECATED),
-        WEB_AUTHN(Type.DEFAULT, Type.PREVIEW);
-
-        private Type typeProject;
-        private Type typeProduct;
-
-        Feature(Type type) {
-            this(type, type);
-        }
-
-        Feature(Type typeProject, Type typeProduct) {
-            this.typeProject = typeProject;
-            this.typeProduct = typeProduct;
-        }
-
-        public Type getTypeProject() {
-            return typeProject;
-        }
-
-        public Type getTypeProduct() {
-            return typeProduct;
-        }
-
-        public boolean hasDifferentProductType() {
-            return typeProject != typeProduct;
-        }
-    }
-
-    private enum ProductValue {
-        KEYCLOAK,
-        RHSSO
-    }
-
-    private enum ProfileValue {
-        COMMUNITY,
-        PRODUCT,
-        PREVIEW
-    }
-
     private static Profile CURRENT = new Profile();
-
     private final ProductValue product;
-
     private final ProfileValue profile;
-
     private final Set<Feature> disabledFeatures = new HashSet<>();
     private final Set<Feature> previewFeatures = new HashSet<>();
     private final Set<Feature> experimentalFeatures = new HashSet<>();
@@ -178,6 +119,62 @@ public class Profile {
 
     public static boolean isFeatureEnabled(Feature feature) {
         return !CURRENT.disabledFeatures.contains(feature);
+    }
+
+    public enum Type {
+        DEFAULT,
+        DISABLED_BY_DEFAULT,
+        PREVIEW,
+        EXPERIMENTAL,
+        DEPRECATED;
+    }
+
+    public enum Feature {
+        ACCOUNT2(Type.EXPERIMENTAL),
+        ACCOUNT_API(Type.PREVIEW),
+        ADMIN_FINE_GRAINED_AUTHZ(Type.PREVIEW),
+        DOCKER(Type.DISABLED_BY_DEFAULT),
+        IMPERSONATION(Type.DEFAULT),
+        OPENSHIFT_INTEGRATION(Type.PREVIEW),
+        SCRIPTS(Type.PREVIEW),
+        TOKEN_EXCHANGE(Type.PREVIEW),
+        UPLOAD_SCRIPTS(DEPRECATED),
+        WEB_AUTHN(Type.DEFAULT, Type.PREVIEW);
+
+        private Type typeProject;
+        private Type typeProduct;
+
+        Feature(Type type) {
+            this(type, type);
+        }
+
+        Feature(Type typeProject, Type typeProduct) {
+            this.typeProject = typeProject;
+            this.typeProduct = typeProduct;
+        }
+
+        public Type getTypeProject() {
+            return typeProject;
+        }
+
+        public Type getTypeProduct() {
+            return typeProduct;
+        }
+
+        public boolean hasDifferentProductType() {
+            return typeProject != typeProduct;
+        }
+    }
+
+    private enum ProductValue {
+        KEYCLOAK,
+        RHSSO
+    }
+
+    private enum ProfileValue {
+        COMMUNITY,
+        PRODUCT,
+        PREVIEW
     }
 
     private class Config {

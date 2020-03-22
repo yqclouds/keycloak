@@ -32,48 +32,6 @@ import java.util.*;
  * @version $Revision: 1 $
  */
 public interface RealmModel extends RoleContainerModel {
-    interface RealmCreationEvent extends ProviderEvent {
-        RealmModel getCreatedRealm();
-        KeycloakSession getKeycloakSession();
-    }
-
-    interface RealmPostCreateEvent extends ProviderEvent {
-        RealmModel getCreatedRealm();
-        KeycloakSession getKeycloakSession();
-    }
-
-    interface RealmRemovedEvent extends ProviderEvent {
-        RealmModel getRealm();
-        KeycloakSession getKeycloakSession();
-    }
-
-    interface ClientCreationEvent extends ProviderEvent {
-        ClientModel getCreatedClient();
-    }
-
-    // Called also during client creation after client is fully initialized (including all attributes etc)
-    interface ClientUpdatedEvent extends ProviderEvent {
-        ClientModel getUpdatedClient();
-        KeycloakSession getKeycloakSession();
-    }
-
-    interface ClientRemovedEvent extends ProviderEvent {
-        ClientModel getClient();
-        KeycloakSession getKeycloakSession();
-    }
-
-    interface IdentityProviderUpdatedEvent extends ProviderEvent {
-        RealmModel getRealm();
-        IdentityProviderModel getUpdatedIdentityProvider();
-        KeycloakSession getKeycloakSession();
-    }
-
-    interface IdentityProviderRemovedEvent extends ProviderEvent {
-        RealmModel getRealm();
-        IdentityProviderModel getRemovedIdentityProvider();
-        KeycloakSession getKeycloakSession();
-    }
-
     String getId();
 
     String getName();
@@ -117,35 +75,57 @@ public interface RealmModel extends RoleContainerModel {
     void setUserManagedAccessAllowed(boolean userManagedAccessAllowed);
 
     void setAttribute(String name, String value);
+
     void setAttribute(String name, Boolean value);
+
     void setAttribute(String name, Integer value);
+
     void setAttribute(String name, Long value);
+
     void removeAttribute(String name);
+
     String getAttribute(String name);
+
     Integer getAttribute(String name, Integer defaultValue);
+
     Long getAttribute(String name, Long defaultValue);
+
     Boolean getAttribute(String name, Boolean defaultValue);
+
     Map<String, String> getAttributes();
 
     //--- brute force settings
     boolean isBruteForceProtected();
-    void setBruteForceProtected(boolean value);
-    boolean isPermanentLockout();
-    void setPermanentLockout(boolean val);
-    int getMaxFailureWaitSeconds();
-    void setMaxFailureWaitSeconds(int val);
-    int getWaitIncrementSeconds();
-    void setWaitIncrementSeconds(int val);
-    int getMinimumQuickLoginWaitSeconds();
-    void setMinimumQuickLoginWaitSeconds(int val);
-    long getQuickLoginCheckMilliSeconds();
-    void setQuickLoginCheckMilliSeconds(long val);
-    int getMaxDeltaTimeSeconds();
-    void setMaxDeltaTimeSeconds(int val);
-    int getFailureFactor();
-    void setFailureFactor(int failureFactor);
-    //--- end brute force settings
 
+    void setBruteForceProtected(boolean value);
+
+    boolean isPermanentLockout();
+
+    void setPermanentLockout(boolean val);
+
+    int getMaxFailureWaitSeconds();
+
+    void setMaxFailureWaitSeconds(int val);
+
+    int getWaitIncrementSeconds();
+
+    void setWaitIncrementSeconds(int val);
+
+    int getMinimumQuickLoginWaitSeconds();
+
+    void setMinimumQuickLoginWaitSeconds(int val);
+
+    long getQuickLoginCheckMilliSeconds();
+
+    void setQuickLoginCheckMilliSeconds(long val);
+
+    int getMaxDeltaTimeSeconds();
+
+    void setMaxDeltaTimeSeconds(int val);
+
+    int getFailureFactor();
+
+    void setFailureFactor(int failureFactor);
 
     boolean isVerifyEmail();
 
@@ -162,43 +142,55 @@ public interface RealmModel extends RoleContainerModel {
     boolean isResetPasswordAllowed();
 
     void setResetPasswordAllowed(boolean resetPasswordAllowed);
+    //--- end brute force settings
 
     String getDefaultSignatureAlgorithm();
+
     void setDefaultSignatureAlgorithm(String defaultSignatureAlgorithm);
 
     boolean isRevokeRefreshToken();
+
     void setRevokeRefreshToken(boolean revokeRefreshToken);
 
     int getRefreshTokenMaxReuse();
+
     void setRefreshTokenMaxReuse(int revokeRefreshTokenCount);
 
     int getSsoSessionIdleTimeout();
+
     void setSsoSessionIdleTimeout(int seconds);
 
     int getSsoSessionMaxLifespan();
+
     void setSsoSessionMaxLifespan(int seconds);
 
     int getSsoSessionIdleTimeoutRememberMe();
+
     void setSsoSessionIdleTimeoutRememberMe(int seconds);
 
     int getSsoSessionMaxLifespanRememberMe();
+
     void setSsoSessionMaxLifespanRememberMe(int seconds);
 
     int getOfflineSessionIdleTimeout();
+
     void setOfflineSessionIdleTimeout(int seconds);
 
     int getAccessTokenLifespan();
 
+    void setAccessTokenLifespan(int seconds);
+
     // KEYCLOAK-7688 Offline Session Max for Offline Token
     boolean isOfflineSessionMaxLifespanEnabled();
+
     void setOfflineSessionMaxLifespanEnabled(boolean offlineSessionMaxLifespanEnabled);
 
     int getOfflineSessionMaxLifespan();
+
     void setOfflineSessionMaxLifespan(int seconds);
 
-    void setAccessTokenLifespan(int seconds);
-
     int getAccessTokenLifespanForImplicitFlow();
+
     void setAccessTokenLifespanForImplicitFlow(int seconds);
 
     int getAccessCodeLifespan();
@@ -212,6 +204,7 @@ public interface RealmModel extends RoleContainerModel {
     /**
      * This method will return a map with all the lifespans available
      * or an empty map, but never null.
+     *
      * @return map with user action token lifespans
      */
     Map<String, Integer> getUserActionTokenLifespans();
@@ -221,12 +214,15 @@ public interface RealmModel extends RoleContainerModel {
     void setAccessCodeLifespanLogin(int seconds);
 
     int getActionTokenGeneratedByAdminLifespan();
+
     void setActionTokenGeneratedByAdminLifespan(int seconds);
 
     int getActionTokenGeneratedByUserLifespan();
+
     void setActionTokenGeneratedByUserLifespan(int seconds);
 
     int getActionTokenGeneratedByUserLifespan(String actionTokenType);
+
     void setActionTokenGeneratedByUserLifespan(String actionTokenType, Integer seconds);
 
     List<RequiredCredentialModel> getRequiredCredentials();
@@ -238,10 +234,11 @@ public interface RealmModel extends RoleContainerModel {
     void setPasswordPolicy(PasswordPolicy policy);
 
     OTPPolicy getOTPPolicy();
+
     void setOTPPolicy(OTPPolicy policy);
 
     /**
-     * @return  WebAuthn policy for 2-factor authentication
+     * @return WebAuthn policy for 2-factor authentication
      */
     WebAuthnPolicy getWebAuthnPolicy();
 
@@ -253,13 +250,13 @@ public interface RealmModel extends RoleContainerModel {
     void setWebAuthnPolicy(WebAuthnPolicy policy);
 
     /**
-     *
      * @return WebAuthn passwordless policy below. This is temporary and will be removed later.
      */
     WebAuthnPolicy getWebAuthnPolicyPasswordless();
 
     /**
      * Set WebAuthn passwordless policy below. This is temporary and will be removed later.
+     *
      * @param policy
      */
     void setWebAuthnPolicyPasswordless(WebAuthnPolicy policy);
@@ -273,7 +270,9 @@ public interface RealmModel extends RoleContainerModel {
     void removeDefaultGroup(GroupModel group);
 
     List<ClientModel> getClients();
+
     List<ClientModel> getClients(Integer firstResult, Integer maxResults);
+
     Long getClientsCount();
 
     List<ClientModel> getAlwaysDisplayInConsoleClients();
@@ -285,12 +284,15 @@ public interface RealmModel extends RoleContainerModel {
     boolean removeClient(String id);
 
     ClientModel getClientById(String id);
+
     ClientModel getClientByClientId(String clientId);
+
     List<ClientModel> searchClientByClientId(String clientId, Integer firstResult, Integer maxResults);
-    
+
     void updateRequiredCredentials(Set<String> creds);
 
     Map<String, String> getBrowserSecurityHeaders();
+
     void setBrowserSecurityHeaders(Map<String, String> headers);
 
     Map<String, String> getSmtpConfig();
@@ -298,65 +300,100 @@ public interface RealmModel extends RoleContainerModel {
     void setSmtpConfig(Map<String, String> smtpConfig);
 
     AuthenticationFlowModel getBrowserFlow();
+
     void setBrowserFlow(AuthenticationFlowModel flow);
 
     AuthenticationFlowModel getRegistrationFlow();
+
     void setRegistrationFlow(AuthenticationFlowModel flow);
 
     AuthenticationFlowModel getDirectGrantFlow();
+
     void setDirectGrantFlow(AuthenticationFlowModel flow);
 
     AuthenticationFlowModel getResetCredentialsFlow();
+
     void setResetCredentialsFlow(AuthenticationFlowModel flow);
 
     AuthenticationFlowModel getClientAuthenticationFlow();
+
     void setClientAuthenticationFlow(AuthenticationFlowModel flow);
 
     AuthenticationFlowModel getDockerAuthenticationFlow();
+
     void setDockerAuthenticationFlow(AuthenticationFlowModel flow);
 
     List<AuthenticationFlowModel> getAuthenticationFlows();
+
     AuthenticationFlowModel getFlowByAlias(String alias);
+
     AuthenticationFlowModel addAuthenticationFlow(AuthenticationFlowModel model);
+
     AuthenticationFlowModel getAuthenticationFlowById(String id);
+
     void removeAuthenticationFlow(AuthenticationFlowModel model);
+
     void updateAuthenticationFlow(AuthenticationFlowModel model);
 
     List<AuthenticationExecutionModel> getAuthenticationExecutions(String flowId);
+
     AuthenticationExecutionModel getAuthenticationExecutionById(String id);
+
     AuthenticationExecutionModel getAuthenticationExecutionByFlowId(String flowId);
+
     AuthenticationExecutionModel addAuthenticatorExecution(AuthenticationExecutionModel model);
+
     void updateAuthenticatorExecution(AuthenticationExecutionModel model);
+
     void removeAuthenticatorExecution(AuthenticationExecutionModel model);
 
-
     List<AuthenticatorConfigModel> getAuthenticatorConfigs();
+
     AuthenticatorConfigModel addAuthenticatorConfig(AuthenticatorConfigModel model);
+
     void updateAuthenticatorConfig(AuthenticatorConfigModel model);
+
     void removeAuthenticatorConfig(AuthenticatorConfigModel model);
+
     AuthenticatorConfigModel getAuthenticatorConfigById(String id);
+
     AuthenticatorConfigModel getAuthenticatorConfigByAlias(String alias);
 
     List<RequiredActionProviderModel> getRequiredActionProviders();
+
     RequiredActionProviderModel addRequiredActionProvider(RequiredActionProviderModel model);
+
     void updateRequiredActionProvider(RequiredActionProviderModel model);
+
     void removeRequiredActionProvider(RequiredActionProviderModel model);
+
     RequiredActionProviderModel getRequiredActionProviderById(String id);
+
     RequiredActionProviderModel getRequiredActionProviderByAlias(String alias);
 
     List<IdentityProviderModel> getIdentityProviders();
-    IdentityProviderModel getIdentityProviderByAlias(String alias);
-    void addIdentityProvider(IdentityProviderModel identityProvider);
-    void removeIdentityProviderByAlias(String alias);
-    void updateIdentityProvider(IdentityProviderModel identityProvider);
-    Set<IdentityProviderMapperModel> getIdentityProviderMappers();
-    Set<IdentityProviderMapperModel> getIdentityProviderMappersByAlias(String brokerAlias);
-    IdentityProviderMapperModel addIdentityProviderMapper(IdentityProviderMapperModel model);
-    void removeIdentityProviderMapper(IdentityProviderMapperModel mapping);
-    void updateIdentityProviderMapper(IdentityProviderMapperModel mapping);
-    IdentityProviderMapperModel getIdentityProviderMapperById(String id);
-    IdentityProviderMapperModel getIdentityProviderMapperByName(String brokerAlias, String name);
 
+    IdentityProviderModel getIdentityProviderByAlias(String alias);
+
+    void addIdentityProvider(IdentityProviderModel identityProvider);
+
+    void removeIdentityProviderByAlias(String alias);
+
+    void updateIdentityProvider(IdentityProviderModel identityProvider);
+
+    Set<IdentityProviderMapperModel> getIdentityProviderMappers();
+
+    Set<IdentityProviderMapperModel> getIdentityProviderMappersByAlias(String brokerAlias);
+
+    IdentityProviderMapperModel addIdentityProviderMapper(IdentityProviderMapperModel model);
+
+    void removeIdentityProviderMapper(IdentityProviderMapperModel mapping);
+
+    void updateIdentityProviderMapper(IdentityProviderMapperModel mapping);
+
+    IdentityProviderMapperModel getIdentityProviderMapperById(String id);
+
+    IdentityProviderMapperModel getIdentityProviderMapperByName(String brokerAlias, String name);
 
     /**
      * Adds component model.  Will call onCreate() method of ComponentFactory
@@ -375,17 +412,20 @@ public interface RealmModel extends RoleContainerModel {
     ComponentModel importComponentModel(ComponentModel model);
 
     void updateComponent(ComponentModel component);
+
     void removeComponent(ComponentModel component);
+
     void removeComponents(String parentId);
+
     List<ComponentModel> getComponents(String parentId, String providerType);
 
     List<ComponentModel> getComponents(String parentId);
 
     List<ComponentModel> getComponents();
+
     ComponentModel getComponent(String id);
 
-    default
-    List<UserStorageProviderModel> getUserStorageProviders() {
+    default List<UserStorageProviderModel> getUserStorageProviders() {
         List<UserStorageProviderModel> list = new LinkedList<>();
         for (ComponentModel component : getComponents(getId(), UserStorageProvider.class.getName())) {
             list.add(new UserStorageProviderModel(component));
@@ -394,8 +434,7 @@ public interface RealmModel extends RoleContainerModel {
         return list;
     }
 
-    default
-    List<ClientStorageProviderModel> getClientStorageProviders() {
+    default List<ClientStorageProviderModel> getClientStorageProviders() {
         List<ClientStorageProviderModel> list = new LinkedList<>();
         for (ComponentModel component : getComponents(getId(), ClientStorageProvider.class.getName())) {
             list.add(new ClientStorageProviderModel(component));
@@ -420,7 +459,6 @@ public interface RealmModel extends RoleContainerModel {
 
     void setEmailTheme(String name);
 
-
     /**
      * Time in seconds since epoc
      *
@@ -433,10 +471,6 @@ public interface RealmModel extends RoleContainerModel {
     boolean isEventsEnabled();
 
     void setEventsEnabled(boolean enabled);
-
-//    boolean isPersistUserSessions();
-//
-//    void setPersistUserSessions();
 
     long getEventsExpiration();
 
@@ -454,6 +488,10 @@ public interface RealmModel extends RoleContainerModel {
 
     void setAdminEventsEnabled(boolean enabled);
 
+//    boolean isPersistUserSessions();
+//
+//    void setPersistUserSessions();
+
     boolean isAdminEventsDetailsEnabled();
 
     void setAdminEventsDetailsEnabled(boolean enabled);
@@ -465,34 +503,53 @@ public interface RealmModel extends RoleContainerModel {
     boolean isIdentityFederationEnabled();
 
     boolean isInternationalizationEnabled();
+
     void setInternationalizationEnabled(boolean enabled);
+
     Set<String> getSupportedLocales();
+
     void setSupportedLocales(Set<String> locales);
+
     String getDefaultLocale();
+
     void setDefaultLocale(String locale);
 
     default GroupModel createGroup(String name) {
         return createGroup(null, name, null);
-    };
+    }
 
     default GroupModel createGroup(String id, String name) {
         return createGroup(id, name, null);
-    };
+    }
 
     default GroupModel createGroup(String name, GroupModel toParent) {
         return createGroup(null, name, toParent);
-    };
+    }
 
     GroupModel createGroup(String id, String name, GroupModel toParent);
 
     GroupModel getGroupById(String id);
+
     List<GroupModel> getGroups();
+
     Long getGroupsCount(Boolean onlyTopGroups);
+
     Long getGroupsCountByNameContaining(String search);
+
     List<GroupModel> getTopLevelGroups();
+
+    ;
+
     List<GroupModel> getTopLevelGroups(Integer first, Integer max);
+
+    ;
+
     List<GroupModel> searchForGroupByName(String search, Integer first, Integer max);
+
+    ;
+
     boolean removeGroup(GroupModel group);
+
     void moveGroup(GroupModel group, GroupModel toParent);
 
     List<ClientScopeModel> getClientScopes();
@@ -506,7 +563,60 @@ public interface RealmModel extends RoleContainerModel {
     ClientScopeModel getClientScopeById(String id);
 
     void addDefaultClientScope(ClientScopeModel clientScope, boolean defaultScope);
+
     void removeDefaultClientScope(ClientScopeModel clientScope);
+
     List<ClientScopeModel> getDefaultClientScopes(boolean defaultScope);
+
+    interface RealmCreationEvent extends ProviderEvent {
+        RealmModel getCreatedRealm();
+
+        KeycloakSession getKeycloakSession();
+    }
+
+    interface RealmPostCreateEvent extends ProviderEvent {
+        RealmModel getCreatedRealm();
+
+        KeycloakSession getKeycloakSession();
+    }
+
+    interface RealmRemovedEvent extends ProviderEvent {
+        RealmModel getRealm();
+
+        KeycloakSession getKeycloakSession();
+    }
+
+    interface ClientCreationEvent extends ProviderEvent {
+        ClientModel getCreatedClient();
+    }
+
+    // Called also during client creation after client is fully initialized (including all attributes etc)
+    interface ClientUpdatedEvent extends ProviderEvent {
+        ClientModel getUpdatedClient();
+
+        KeycloakSession getKeycloakSession();
+    }
+
+    interface ClientRemovedEvent extends ProviderEvent {
+        ClientModel getClient();
+
+        KeycloakSession getKeycloakSession();
+    }
+
+    interface IdentityProviderUpdatedEvent extends ProviderEvent {
+        RealmModel getRealm();
+
+        IdentityProviderModel getUpdatedIdentityProvider();
+
+        KeycloakSession getKeycloakSession();
+    }
+
+    interface IdentityProviderRemovedEvent extends ProviderEvent {
+        RealmModel getRealm();
+
+        IdentityProviderModel getRemovedIdentityProvider();
+
+        KeycloakSession getKeycloakSession();
+    }
 
 }

@@ -38,26 +38,6 @@ import org.keycloak.provider.Provider;
 public interface DBLockProvider extends Provider {
 
     /**
-     * Lock namespace to have different lock types or contexts.
-     */
-    enum Namespace {
-
-        DATABASE(1),
-        KEYCLOAK_BOOT(1000),
-        OFFLINE_SESSIONS(1001);
-
-        private final int id;
-
-        Namespace(int id) {
-            this.id = id;
-        }
-
-        public int getId() {
-            return id;
-        }
-    };
-
-    /**
      * Try to retrieve DB lock or wait if retrieve was unsuccessful.
      * Throw exception if lock can't be retrieved within specified timeout (900 seconds by default)
      * Throw exception if a different namespace has already been locked by this provider.
@@ -65,6 +45,8 @@ public interface DBLockProvider extends Provider {
      * @param lock The namespace to lock
      */
     void waitForLock(Namespace lock);
+
+    ;
 
     /**
      * Release previously acquired lock by this provider.
@@ -85,6 +67,26 @@ public interface DBLockProvider extends Provider {
 
     /**
      * Will destroy whole state of DB lock (drop table/collection to track locking).
-     * */
+     */
     void destroyLockInfo();
+
+    /**
+     * Lock namespace to have different lock types or contexts.
+     */
+    enum Namespace {
+
+        DATABASE(1),
+        KEYCLOAK_BOOT(1000),
+        OFFLINE_SESSIONS(1001);
+
+        private final int id;
+
+        Namespace(int id) {
+            this.id = id;
+        }
+
+        public int getId() {
+            return id;
+        }
+    }
 }

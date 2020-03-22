@@ -65,20 +65,17 @@ public class ClientRepresentation {
 
     @Deprecated
     protected String clientTemplate;
+    protected List<String> defaultClientScopes;
+    protected List<String> optionalClientScopes;
+    protected String origin;
     @Deprecated
     private Boolean useTemplateConfig;
     @Deprecated
     private Boolean useTemplateScope;
     @Deprecated
     private Boolean useTemplateMappers;
-
-    protected List<String> defaultClientScopes;
-    protected List<String> optionalClientScopes;
-
     private ResourceServerRepresentation authorizationSettings;
     private Map<String, Boolean> access;
-    protected String origin;
-
 
     public String getId() {
         return id;

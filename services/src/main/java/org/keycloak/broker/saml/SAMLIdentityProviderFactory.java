@@ -18,12 +18,7 @@ package org.keycloak.broker.saml;
 
 import org.keycloak.Config.Scope;
 import org.keycloak.broker.provider.AbstractIdentityProviderFactory;
-import org.keycloak.dom.saml.v2.metadata.EndpointType;
-import org.keycloak.dom.saml.v2.metadata.EntitiesDescriptorType;
-import org.keycloak.dom.saml.v2.metadata.EntityDescriptorType;
-import org.keycloak.dom.saml.v2.metadata.IDPSSODescriptorType;
-import org.keycloak.dom.saml.v2.metadata.KeyDescriptorType;
-import org.keycloak.dom.saml.v2.metadata.KeyTypes;
+import org.keycloak.dom.saml.v2.metadata.*;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.saml.common.constants.JBossSAMLURIConstants;
@@ -82,10 +77,10 @@ public class SAMLIdentityProviderFactory extends AbstractIdentityProviderFactory
 
                 //Metadata documents can contain multiple Descriptors (See ADFS metadata documents) such as RoleDescriptor, SPSSODescriptor, IDPSSODescriptor.
                 //So we need to loop through to find the IDPSSODescriptor.
-                for(EntityDescriptorType.EDTChoiceType edtChoiceType : entityType.getChoiceType()) {
+                for (EntityDescriptorType.EDTChoiceType edtChoiceType : entityType.getChoiceType()) {
                     List<EntityDescriptorType.EDTDescriptorChoiceType> descriptors = edtChoiceType.getDescriptors();
 
-                    if(!descriptors.isEmpty() && descriptors.get(0).getIdpDescriptor() != null) {
+                    if (!descriptors.isEmpty() && descriptors.get(0).getIdpDescriptor() != null) {
                         idpDescriptor = descriptors.get(0).getIdpDescriptor();
                     }
                 }
@@ -100,7 +95,7 @@ public class SAMLIdentityProviderFactory extends AbstractIdentityProviderFactory
                             singleSignOnServiceUrl = endpoint.getLocation().toString();
                             postBindingResponse = true;
                             break;
-                        } else if (endpoint.getBinding().toString().equals(JBossSAMLURIConstants.SAML_HTTP_REDIRECT_BINDING.get())){
+                        } else if (endpoint.getBinding().toString().equals(JBossSAMLURIConstants.SAML_HTTP_REDIRECT_BINDING.get())) {
                             singleSignOnServiceUrl = endpoint.getLocation().toString();
                         }
                     }
@@ -110,7 +105,7 @@ public class SAMLIdentityProviderFactory extends AbstractIdentityProviderFactory
                             singleLogoutServiceUrl = endpoint.getLocation().toString();
                             postBindingLogout = true;
                             break;
-                        } else if (!postBindingResponse && endpoint.getBinding().toString().equals(JBossSAMLURIConstants.SAML_HTTP_REDIRECT_BINDING.get())){
+                        } else if (!postBindingResponse && endpoint.getBinding().toString().equals(JBossSAMLURIConstants.SAML_HTTP_REDIRECT_BINDING.get())) {
                             singleLogoutServiceUrl = endpoint.getLocation().toString();
                             break;
                         }
@@ -137,7 +132,7 @@ public class SAMLIdentityProviderFactory extends AbstractIdentityProviderFactory
                                 samlIdentityProviderConfig.addSigningCertificate(x509KeyInfo.getTextContent());
                             } else if (KeyTypes.ENCRYPTION.equals(keyDescriptorType.getUse())) {
                                 samlIdentityProviderConfig.setEncryptionPublicKey(x509KeyInfo.getTextContent());
-                            } else if (keyDescriptorType.getUse() ==  null) {
+                            } else if (keyDescriptorType.getUse() == null) {
                                 defaultCertificate = x509KeyInfo.getTextContent();
                             }
                         }

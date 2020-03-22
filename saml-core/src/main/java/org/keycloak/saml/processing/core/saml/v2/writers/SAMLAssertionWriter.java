@@ -16,31 +16,15 @@
  */
 package org.keycloak.saml.processing.core.saml.v2.writers;
 
-import org.keycloak.dom.saml.v2.assertion.AdviceType;
-import org.keycloak.dom.saml.v2.assertion.AssertionType;
-import org.keycloak.dom.saml.v2.assertion.AttributeStatementType;
+import org.keycloak.dom.saml.v2.assertion.*;
 import org.keycloak.dom.saml.v2.assertion.AttributeStatementType.ASTChoiceType;
-import org.keycloak.dom.saml.v2.assertion.AttributeType;
-import org.keycloak.dom.saml.v2.assertion.AudienceRestrictionType;
-import org.keycloak.dom.saml.v2.assertion.AuthnContextClassRefType;
-import org.keycloak.dom.saml.v2.assertion.AuthnContextDeclRefType;
-import org.keycloak.dom.saml.v2.assertion.AuthnContextDeclType;
-import org.keycloak.dom.saml.v2.assertion.AuthnContextType;
-import org.keycloak.dom.saml.v2.assertion.AuthnStatementType;
-import org.keycloak.dom.saml.v2.assertion.ConditionAbstractType;
-import org.keycloak.dom.saml.v2.assertion.ConditionsType;
-import org.keycloak.dom.saml.v2.assertion.EncryptedElementType;
-import org.keycloak.dom.saml.v2.assertion.NameIDType;
-import org.keycloak.dom.saml.v2.assertion.OneTimeUseType;
-import org.keycloak.dom.saml.v2.assertion.StatementAbstractType;
-import org.keycloak.dom.saml.v2.assertion.SubjectType;
-import org.keycloak.dom.saml.v2.assertion.URIType;
 import org.keycloak.saml.common.constants.JBossSAMLConstants;
 import org.keycloak.saml.common.exceptions.ProcessingException;
 import org.keycloak.saml.common.util.StaxUtil;
 import org.keycloak.saml.processing.core.parsers.saml.assertion.SAMLAssertionQNames;
 import org.w3c.dom.Element;
 
+import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamWriter;
@@ -48,7 +32,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.crypto.dsig.XMLSignature;
 import static org.keycloak.saml.common.constants.JBossSAMLURIConstants.ASSERTION_NSURI;
 
 /**
@@ -67,7 +50,6 @@ public class SAMLAssertionWriter extends BaseWriter {
      * Write an {@code AssertionType} to stream
      *
      * @param assertion
-     *
      * @throws org.keycloak.saml.common.exceptions.ProcessingException
      */
     public void write(AssertionType assertion) throws ProcessingException {
@@ -79,7 +61,7 @@ public class SAMLAssertionWriter extends BaseWriter {
 
         StaxUtil.writeStartElement(writer, ASSERTION_PREFIX, JBossSAMLConstants.ASSERTION.get(), ASSERTION_NSURI.get());
         StaxUtil.writeNameSpace(writer, ASSERTION_PREFIX, ASSERTION_NSURI.get());
-        if (forceWriteDsigNamespace && sig != null && sig.getPrefix() != null && ! sig.hasAttribute("xmlns:" + sig.getPrefix())) {
+        if (forceWriteDsigNamespace && sig != null && sig.getPrefix() != null && !sig.hasAttribute("xmlns:" + sig.getPrefix())) {
             StaxUtil.writeNameSpace(writer, sig.getPrefix(), XMLSignature.XMLNS);
         }
         StaxUtil.writeDefaultNameSpace(writer, ASSERTION_NSURI.get());
@@ -168,7 +150,6 @@ public class SAMLAssertionWriter extends BaseWriter {
      * Write an {@code StatementAbstractType} to stream
      *
      * @param statement
-     *
      * @throws ProcessingException
      */
     public void write(StatementAbstractType statement) throws ProcessingException {
@@ -201,7 +182,6 @@ public class SAMLAssertionWriter extends BaseWriter {
      * Write an {@code AuthnStatementType} to stream
      *
      * @param authnStatement
-     *
      * @throws ProcessingException
      */
     public void write(AuthnStatementType authnStatement, boolean includeNamespace) throws ProcessingException {
@@ -239,7 +219,6 @@ public class SAMLAssertionWriter extends BaseWriter {
      * Write an {@code AuthnContextType} to stream
      *
      * @param authContext
-     *
      * @throws ProcessingException
      */
     public void write(AuthnContextType authContext) throws ProcessingException {

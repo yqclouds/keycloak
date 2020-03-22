@@ -44,10 +44,6 @@ public enum ContactTypeType {
         value = v;
     }
 
-    public String value() {
-        return value;
-    }
-
     public static ContactTypeType fromValue(String v) {
         for (ContactTypeType c : ContactTypeType.values()) {
             if (c.value.equals(v)) {
@@ -55,6 +51,10 @@ public enum ContactTypeType {
             }
         }
         throw new IllegalArgumentException(v);
+    }
+
+    public String value() {
+        return value;
     }
 
 }

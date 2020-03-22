@@ -25,7 +25,7 @@ import liquibase.exception.DatabaseException;
 
 /**
  * Changes VARCHAR type with size greater than 255 to text type for MySQL 8 and newer.
- * 
+ * <p>
  * Resolves Limits on Table Column Count and Row Size for MySQL 8
  */
 public class MySQL8VarcharType extends VarcharType {

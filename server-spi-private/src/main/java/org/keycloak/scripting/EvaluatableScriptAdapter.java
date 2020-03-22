@@ -1,8 +1,8 @@
 package org.keycloak.scripting;
 
-import javax.script.ScriptContext;
-
 import org.keycloak.models.ScriptModel;
+
+import javax.script.ScriptContext;
 
 /**
  * Wraps a {@link ScriptModel} so it can be evaluated with custom bindings.
@@ -13,5 +13,6 @@ public interface EvaluatableScriptAdapter {
     ScriptModel getScriptModel();
 
     Object eval(ScriptBindingsConfigurer bindingsConfigurer) throws ScriptExecutionException;
+
     Object eval(ScriptContext context) throws ScriptExecutionException;
 }

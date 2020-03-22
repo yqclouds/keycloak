@@ -49,7 +49,7 @@ public class ClientValidationUtil {
 
         private String error;
 
-        public DefaultClientValidationContext(Event event, KeycloakSession session,  ClientModel client) {
+        public DefaultClientValidationContext(Event event, KeycloakSession session, ClientModel client) {
             this.event = event;
             this.session = session;
             this.client = client;

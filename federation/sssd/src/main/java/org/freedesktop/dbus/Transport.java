@@ -15,15 +15,7 @@ import cx.ath.matthew.unix.UnixSocket;
 import cx.ath.matthew.unix.UnixSocketAddress;
 import cx.ath.matthew.utils.Hexdump;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -39,84 +31,137 @@ import java.util.Vector;
 import static org.freedesktop.dbus.Gettext.getString;
 
 public class Transport {
-    public static class SASL {
-        public static class Command {
-            private int command;
-            private int mechs;
-            private String data;
-            private String response;
+    public MessageReader min;
+    public MessageWriter mout;
+    public Transport() {
+    }
 
-            public Command() {
-            }
+    public Transport(BusAddress address) throws IOException {
+        connect(address);
+    }
 
-            public Command(String s) throws IOException {
-                String[] ss = s.split(" ");
-                if (Debug.debug) Debug.print(Debug.VERBOSE, "Creating command from: " + Arrays.toString(ss));
-                if (0 == col.compare(ss[0], "OK")) {
-                    command = COMMAND_OK;
-                    data = ss[1];
-                } else if (0 == col.compare(ss[0], "AUTH")) {
-                    command = COMMAND_AUTH;
-                    if (ss.length > 1) {
-                        if (0 == col.compare(ss[1], "EXTERNAL"))
-                            mechs = AUTH_EXTERNAL;
-                        else if (0 == col.compare(ss[1], "DBUS_COOKIE_SHA1"))
-                            mechs = AUTH_SHA;
-                        else if (0 == col.compare(ss[1], "ANONYMOUS"))
-                            mechs = AUTH_ANON;
-                    }
-                    if (ss.length > 2)
-                        data = ss[2];
-                } else if (0 == col.compare(ss[0], "DATA")) {
-                    command = COMMAND_DATA;
-                    data = ss[1];
-                } else if (0 == col.compare(ss[0], "REJECTED")) {
-                    command = COMMAND_REJECTED;
-                    for (int i = 1; i < ss.length; i++)
-                        if (0 == col.compare(ss[i], "EXTERNAL"))
-                            mechs |= AUTH_EXTERNAL;
-                        else if (0 == col.compare(ss[i], "DBUS_COOKIE_SHA1"))
-                            mechs |= AUTH_SHA;
-                        else if (0 == col.compare(ss[i], "ANONYMOUS"))
-                            mechs |= AUTH_ANON;
-                } else if (0 == col.compare(ss[0], "BEGIN")) {
-                    command = COMMAND_BEGIN;
-                } else if (0 == col.compare(ss[0], "CANCEL")) {
-                    command = COMMAND_CANCEL;
-                } else if (0 == col.compare(ss[0], "ERROR")) {
-                    command = COMMAND_ERROR;
-                    data = ss[1];
-                } else {
-                    throw new IOException(getString("invalidCommand") + ss[0]);
-                }
-                if (Debug.debug) Debug.print(Debug.VERBOSE, "Created command: " + this);
-            }
+    public Transport(String address) throws IOException, ParseException {
+        connect(new BusAddress(address));
+    }
 
-            public int getCommand() {
-                return command;
-            }
+    public Transport(String address, int timeout) throws IOException, ParseException {
+        connect(new BusAddress(address), timeout);
+    }
 
-            public int getMechs() {
-                return mechs;
-            }
+    public static String genGUID() {
+        Random r = new Random();
+        byte[] buf = new byte[16];
+        r.nextBytes(buf);
+        String guid = Hexdump.toHex(buf);
+        return guid.replaceAll(" ", "");
+    }
 
-            public String getData() {
-                return data;
-            }
+    public void connect(String address) throws IOException, ParseException {
+        connect(new BusAddress(address), 0);
+    }
 
-            public String getResponse() {
-                return response;
-            }
+    public void connect(String address, int timeout) throws IOException, ParseException {
+        connect(new BusAddress(address), timeout);
+    }
 
-            public void setResponse(String s) {
-                response = s;
-            }
+    public void connect(BusAddress address) throws IOException {
+        connect(address, 0);
+    }
 
-            public String toString() {
-                return "Command(" + command + ", " + mechs + ", " + data + ", " + null + ")";
+    public void connect(BusAddress address, int timeout) throws IOException {
+        if (Debug.debug) Debug.print(Debug.INFO, "Connecting to " + address);
+        OutputStream out = null;
+        InputStream in = null;
+        UnixSocket us = null;
+        Socket s = null;
+        int mode = 0;
+        int types = 0;
+        if ("unix".equals(address.getType())) {
+            types = SASL.AUTH_EXTERNAL;
+            mode = SASL.MODE_CLIENT;
+            us = new UnixSocket();
+            if (null != address.getParameter("abstract"))
+                us.connect(new UnixSocketAddress(address.getParameter("abstract"), true));
+            else if (null != address.getParameter("path"))
+                us.connect(new UnixSocketAddress(address.getParameter("path"), false));
+            us.setPassCred(true);
+            in = us.getInputStream();
+            out = us.getOutputStream();
+        } else if ("tcp".equals(address.getType())) {
+            types = SASL.AUTH_SHA;
+            if (null != address.getParameter("listen")) {
+                mode = SASL.MODE_SERVER;
+                ServerSocket ss = new ServerSocket();
+                ss.bind(new InetSocketAddress(address.getParameter("host"), Integer.parseInt(address.getParameter("port"))));
+                s = ss.accept();
+            } else {
+                mode = SASL.MODE_CLIENT;
+                s = new Socket();
+                s.connect(new InetSocketAddress(address.getParameter("host"), Integer.parseInt(address.getParameter("port"))));
             }
+            in = s.getInputStream();
+            out = s.getOutputStream();
+        } else {
+            throw new IOException(getString("unknownAddress") + address.getType());
         }
 
+        if (!(new SASL()).auth(mode, types, address.getParameter("guid"), out, in, us)) {
+            out.close();
+            throw new IOException(getString("errorAuth"));
+        }
+        if (null != us) {
+            if (Debug.debug) Debug.print(Debug.VERBOSE, "Setting timeout to " + timeout + " on Socket");
+            if (timeout == 1)
+                us.setBlocking(false);
+            else
+                us.setSoTimeout(timeout);
+        }
+        if (null != s) {
+            if (Debug.debug) Debug.print(Debug.VERBOSE, "Setting timeout to " + timeout + " on Socket");
+            s.setSoTimeout(timeout);
+        }
+        mout = new MessageWriter(out);
+        min = new MessageReader(in);
+    }
+
+    public void disconnect() throws IOException {
+        if (Debug.debug) Debug.print(Debug.INFO, "Disconnecting Transport");
+        min.close();
+        mout.close();
+    }
+
+    public static class SASL {
+        public static final int LOCK_TIMEOUT = 1000;
+        public static final int NEW_KEY_TIMEOUT_SECONDS = 60 * 5;
+        public static final int EXPIRE_KEYS_TIMEOUT_SECONDS = NEW_KEY_TIMEOUT_SECONDS + (60 * 2);
+        public static final int MAX_TIME_TRAVEL_SECONDS = 60 * 5;
+        public static final int COOKIE_TIMEOUT = 240;
+        public static final String COOKIE_CONTEXT = "org_freedesktop_java";
+        public static final int MODE_SERVER = 1;
+        public static final int MODE_CLIENT = 2;
+        public static final int AUTH_NONE = 0;
+        public static final int AUTH_EXTERNAL = 1;
+        public static final int AUTH_SHA = 2;
+        public static final int AUTH_ANON = 4;
+        public static final int COMMAND_AUTH = 1;
+        public static final int COMMAND_DATA = 2;
+        public static final int COMMAND_REJECTED = 3;
+        public static final int COMMAND_OK = 4;
+        public static final int COMMAND_BEGIN = 5;
+        public static final int COMMAND_CANCEL = 6;
+        public static final int COMMAND_ERROR = 7;
+        public static final int INITIAL_STATE = 0;
+        public static final int WAIT_DATA = 1;
+        public static final int WAIT_OK = 2;
+        public static final int WAIT_REJECT = 3;
+        public static final int WAIT_AUTH = 4;
+        public static final int WAIT_BEGIN = 5;
+        public static final int AUTHENTICATED = 6;
+        public static final int FAILED = 7;
+        public static final int OK = 1;
+        public static final int CONTINUE = 2;
+        public static final int ERROR = 3;
+        public static final int REJECT = 4;
         private static Collator col = Collator.getInstance();
 
         static {
@@ -124,12 +169,8 @@ public class Transport {
             col.setStrength(Collator.PRIMARY);
         }
 
-        public static final int LOCK_TIMEOUT = 1000;
-        public static final int NEW_KEY_TIMEOUT_SECONDS = 60 * 5;
-        public static final int EXPIRE_KEYS_TIMEOUT_SECONDS = NEW_KEY_TIMEOUT_SECONDS + (60 * 2);
-        public static final int MAX_TIME_TRAVEL_SECONDS = 60 * 5;
-        public static final int COOKIE_TIMEOUT = 240;
-        public static final String COOKIE_CONTEXT = "org_freedesktop_java";
+        public String challenge = "";
+        public String cookie = "";
 
         private String findCookie(String context, String ID) throws IOException {
             String homedir = System.getProperty("user.home");
@@ -257,36 +298,6 @@ public class Transport {
             return new String(res);
         }
 
-        public static final int MODE_SERVER = 1;
-        public static final int MODE_CLIENT = 2;
-
-        public static final int AUTH_NONE = 0;
-        public static final int AUTH_EXTERNAL = 1;
-        public static final int AUTH_SHA = 2;
-        public static final int AUTH_ANON = 4;
-
-        public static final int COMMAND_AUTH = 1;
-        public static final int COMMAND_DATA = 2;
-        public static final int COMMAND_REJECTED = 3;
-        public static final int COMMAND_OK = 4;
-        public static final int COMMAND_BEGIN = 5;
-        public static final int COMMAND_CANCEL = 6;
-        public static final int COMMAND_ERROR = 7;
-
-        public static final int INITIAL_STATE = 0;
-        public static final int WAIT_DATA = 1;
-        public static final int WAIT_OK = 2;
-        public static final int WAIT_REJECT = 3;
-        public static final int WAIT_AUTH = 4;
-        public static final int WAIT_BEGIN = 5;
-        public static final int AUTHENTICATED = 6;
-        public static final int FAILED = 7;
-
-        public static final int OK = 1;
-        public static final int CONTINUE = 2;
-        public static final int ERROR = 3;
-        public static final int REJECT = 4;
-
         public Command receive(InputStream s) throws IOException {
             StringBuffer sb = new StringBuffer();
             top:
@@ -394,9 +405,6 @@ public class Transport {
                     return ERROR;
             }
         }
-
-        public String challenge = "";
-        public String cookie = "";
 
         public int do_response(int auth, String Uid, String kernelUid, Command c) {
             MessageDigest md = null;
@@ -729,106 +737,83 @@ public class Transport {
 
             return state == AUTHENTICATED;
         }
-    }
 
-    public MessageReader min;
-    public MessageWriter mout;
+        public static class Command {
+            private int command;
+            private int mechs;
+            private String data;
+            private String response;
 
-    public Transport() {
-    }
-
-    public static String genGUID() {
-        Random r = new Random();
-        byte[] buf = new byte[16];
-        r.nextBytes(buf);
-        String guid = Hexdump.toHex(buf);
-        return guid.replaceAll(" ", "");
-    }
-
-    public Transport(BusAddress address) throws IOException {
-        connect(address);
-    }
-
-    public Transport(String address) throws IOException, ParseException {
-        connect(new BusAddress(address));
-    }
-
-    public Transport(String address, int timeout) throws IOException, ParseException {
-        connect(new BusAddress(address), timeout);
-    }
-
-    public void connect(String address) throws IOException, ParseException {
-        connect(new BusAddress(address), 0);
-    }
-
-    public void connect(String address, int timeout) throws IOException, ParseException {
-        connect(new BusAddress(address), timeout);
-    }
-
-    public void connect(BusAddress address) throws IOException {
-        connect(address, 0);
-    }
-
-    public void connect(BusAddress address, int timeout) throws IOException {
-        if (Debug.debug) Debug.print(Debug.INFO, "Connecting to " + address);
-        OutputStream out = null;
-        InputStream in = null;
-        UnixSocket us = null;
-        Socket s = null;
-        int mode = 0;
-        int types = 0;
-        if ("unix".equals(address.getType())) {
-            types = SASL.AUTH_EXTERNAL;
-            mode = SASL.MODE_CLIENT;
-            us = new UnixSocket();
-            if (null != address.getParameter("abstract"))
-                us.connect(new UnixSocketAddress(address.getParameter("abstract"), true));
-            else if (null != address.getParameter("path"))
-                us.connect(new UnixSocketAddress(address.getParameter("path"), false));
-            us.setPassCred(true);
-            in = us.getInputStream();
-            out = us.getOutputStream();
-        } else if ("tcp".equals(address.getType())) {
-            types = SASL.AUTH_SHA;
-            if (null != address.getParameter("listen")) {
-                mode = SASL.MODE_SERVER;
-                ServerSocket ss = new ServerSocket();
-                ss.bind(new InetSocketAddress(address.getParameter("host"), Integer.parseInt(address.getParameter("port"))));
-                s = ss.accept();
-            } else {
-                mode = SASL.MODE_CLIENT;
-                s = new Socket();
-                s.connect(new InetSocketAddress(address.getParameter("host"), Integer.parseInt(address.getParameter("port"))));
+            public Command() {
             }
-            in = s.getInputStream();
-            out = s.getOutputStream();
-        } else {
-            throw new IOException(getString("unknownAddress") + address.getType());
-        }
 
-        if (!(new SASL()).auth(mode, types, address.getParameter("guid"), out, in, us)) {
-            out.close();
-            throw new IOException(getString("errorAuth"));
-        }
-        if (null != us) {
-            if (Debug.debug) Debug.print(Debug.VERBOSE, "Setting timeout to " + timeout + " on Socket");
-            if (timeout == 1)
-                us.setBlocking(false);
-            else
-                us.setSoTimeout(timeout);
-        }
-        if (null != s) {
-            if (Debug.debug) Debug.print(Debug.VERBOSE, "Setting timeout to " + timeout + " on Socket");
-            s.setSoTimeout(timeout);
-        }
-        mout = new MessageWriter(out);
-        min = new MessageReader(in);
-    }
+            public Command(String s) throws IOException {
+                String[] ss = s.split(" ");
+                if (Debug.debug) Debug.print(Debug.VERBOSE, "Creating command from: " + Arrays.toString(ss));
+                if (0 == col.compare(ss[0], "OK")) {
+                    command = COMMAND_OK;
+                    data = ss[1];
+                } else if (0 == col.compare(ss[0], "AUTH")) {
+                    command = COMMAND_AUTH;
+                    if (ss.length > 1) {
+                        if (0 == col.compare(ss[1], "EXTERNAL"))
+                            mechs = AUTH_EXTERNAL;
+                        else if (0 == col.compare(ss[1], "DBUS_COOKIE_SHA1"))
+                            mechs = AUTH_SHA;
+                        else if (0 == col.compare(ss[1], "ANONYMOUS"))
+                            mechs = AUTH_ANON;
+                    }
+                    if (ss.length > 2)
+                        data = ss[2];
+                } else if (0 == col.compare(ss[0], "DATA")) {
+                    command = COMMAND_DATA;
+                    data = ss[1];
+                } else if (0 == col.compare(ss[0], "REJECTED")) {
+                    command = COMMAND_REJECTED;
+                    for (int i = 1; i < ss.length; i++)
+                        if (0 == col.compare(ss[i], "EXTERNAL"))
+                            mechs |= AUTH_EXTERNAL;
+                        else if (0 == col.compare(ss[i], "DBUS_COOKIE_SHA1"))
+                            mechs |= AUTH_SHA;
+                        else if (0 == col.compare(ss[i], "ANONYMOUS"))
+                            mechs |= AUTH_ANON;
+                } else if (0 == col.compare(ss[0], "BEGIN")) {
+                    command = COMMAND_BEGIN;
+                } else if (0 == col.compare(ss[0], "CANCEL")) {
+                    command = COMMAND_CANCEL;
+                } else if (0 == col.compare(ss[0], "ERROR")) {
+                    command = COMMAND_ERROR;
+                    data = ss[1];
+                } else {
+                    throw new IOException(getString("invalidCommand") + ss[0]);
+                }
+                if (Debug.debug) Debug.print(Debug.VERBOSE, "Created command: " + this);
+            }
 
-    public void disconnect() throws IOException {
-        if (Debug.debug) Debug.print(Debug.INFO, "Disconnecting Transport");
-        min.close();
-        mout.close();
+            public int getCommand() {
+                return command;
+            }
+
+            public int getMechs() {
+                return mechs;
+            }
+
+            public String getData() {
+                return data;
+            }
+
+            public String getResponse() {
+                return response;
+            }
+
+            public void setResponse(String s) {
+                response = s;
+            }
+
+            public String toString() {
+                return "Command(" + command + ", " + mechs + ", " + data + ", " + null + ")";
+            }
+        }
     }
 }
 

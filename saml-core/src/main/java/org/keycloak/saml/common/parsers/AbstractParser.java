@@ -24,21 +24,21 @@ import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.util.SecurityActions;
 import org.keycloak.saml.common.util.StaxParserUtil;
 import org.keycloak.saml.common.util.SystemPropertiesUtil;
+import org.w3c.dom.Node;
 
 import javax.xml.stream.EventFilter;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Characters;
-import javax.xml.stream.events.XMLEvent;
-import javax.xml.stream.util.EventReaderDelegate;
-import java.io.InputStream;
-import java.util.regex.Pattern;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
+import javax.xml.stream.util.EventReaderDelegate;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
-import org.w3c.dom.Node;
+import java.io.InputStream;
+import java.util.regex.Pattern;
 
 /**
  * Base class for parsers
@@ -77,30 +77,7 @@ public abstract class AbstractParser implements StaxParser {
             }
         }
     };
-
-    /**
-     * Parse an InputStream for payload
-     *
-     * @param stream
-     *
-     * @return
-     *
-     * @throws {@link IllegalArgumentException}
-     * @throws {@link IllegalArgumentException} when the configStream is null
-     */
-    public Object parse(InputStream stream) throws ParsingException {
-        XMLEventReader xmlEventReader = createEventReader(stream);
-        return parse(xmlEventReader);
-    }
-
-    public Object parse(Source source) throws ParsingException {
-        XMLEventReader xmlEventReader = createEventReader(source);
-        return parse(xmlEventReader);
-    }
-
-    public Object parse(Node node) throws ParsingException {
-        return parse(new DOMSource(node));
-    }
+    private static final Pattern WHITESPACE_ONLY = Pattern.compile("\\s*");
 
     public static XMLEventReader createEventReader(InputStream configStream) throws ParsingException {
         if (configStream == null)
@@ -111,21 +88,10 @@ public abstract class AbstractParser implements StaxParser {
         return filterWhitespaces(xmlEventReader);
     }
 
-    public XMLEventReader createEventReader(Source source) throws ParsingException {
-        if (source == null)
-            throw logger.nullArgumentError("Source");
-
-        XMLEventReader xmlEventReader = StaxParserUtil.getXMLEventReader(source);
-
-        return filterWhitespaces(xmlEventReader);
-    }
-
-    private static final Pattern WHITESPACE_ONLY = Pattern.compile("\\s*");
-
     /**
      * Creates a derived {@link XMLEventReader} that ignores all events except for: {@link StartElement},
      * {@link EndElement}, and non-empty and non-whitespace-only {@link Characters}.
-     * 
+     *
      * @param xmlEventReader Original {@link XMLEventReader}
      * @return Derived {@link XMLEventReader}
      * @throws XMLStreamException
@@ -141,7 +107,7 @@ public abstract class AbstractParser implements StaxParser {
                     if (xmlEvent.isCharacters()) {
                         Characters chars = xmlEvent.asCharacters();
                         String data = chars.getData();
-                        return data != null && ! WHITESPACE_ONLY.matcher(data).matches();
+                        return data != null && !WHITESPACE_ONLY.matcher(data).matches();
                     } else {
                         return xmlEvent.isStartElement() || xmlEvent.isEndElement();
                     }
@@ -171,6 +137,37 @@ public abstract class AbstractParser implements StaxParser {
         }
 
         return xmlEventReader;
+    }
+
+    /**
+     * Parse an InputStream for payload
+     *
+     * @param stream
+     * @return
+     * @throws {@link IllegalArgumentException}
+     * @throws {@link IllegalArgumentException} when the configStream is null
+     */
+    public Object parse(InputStream stream) throws ParsingException {
+        XMLEventReader xmlEventReader = createEventReader(stream);
+        return parse(xmlEventReader);
+    }
+
+    public Object parse(Source source) throws ParsingException {
+        XMLEventReader xmlEventReader = createEventReader(source);
+        return parse(xmlEventReader);
+    }
+
+    public Object parse(Node node) throws ParsingException {
+        return parse(new DOMSource(node));
+    }
+
+    public XMLEventReader createEventReader(Source source) throws ParsingException {
+        if (source == null)
+            throw logger.nullArgumentError("Source");
+
+        XMLEventReader xmlEventReader = StaxParserUtil.getXMLEventReader(source);
+
+        return filterWhitespaces(xmlEventReader);
     }
 
 }

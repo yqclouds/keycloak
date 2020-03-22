@@ -61,7 +61,7 @@ public class RSAPublicJWK extends JWK {
     public void setPublicExponent(String publicExponent) {
         this.publicExponent = publicExponent;
     }
-    
+
     public String[] getX509CertificateChain() {
         return x509CertificateChain;
     }

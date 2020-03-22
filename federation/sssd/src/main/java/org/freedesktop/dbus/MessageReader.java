@@ -39,7 +39,7 @@ public class MessageReader {
 
     public Message readMessage() throws IOException, DBusException {
         int rv;
-      /* Read the 12 byte fixed header, retrying as neccessary */
+        /* Read the 12 byte fixed header, retrying as neccessary */
         if (null == buf) {
             buf = new byte[12];
             len[0] = 0;
@@ -59,7 +59,7 @@ public class MessageReader {
             return null;
         }
 
-      /* Parse the details from the header */
+        /* Parse the details from the header */
         byte endian = buf[0];
         byte type = buf[1];
         byte protover = buf[3];
@@ -68,7 +68,7 @@ public class MessageReader {
             throw new MessageProtocolVersionException(MessageFormat.format(getString("protocolVersionUnsupported"), new Object[]{protover}));
         }
 
-      /* Read the length of the variable header */
+        /* Read the length of the variable header */
         if (null == tbuf) {
             tbuf = new byte[4];
             len[1] = 0;
@@ -87,7 +87,7 @@ public class MessageReader {
             return null;
         }
 
-      /* Parse the variable header length */
+        /* Parse the variable header length */
         int headerlen = 0;
         if (null == header) {
             headerlen = (int) Message.demarshallint(tbuf, 0, endian, 4);
@@ -96,7 +96,7 @@ public class MessageReader {
         } else
             headerlen = header.length - 8;
 
-      /* Read the variable header */
+        /* Read the variable header */
         if (null == header) {
             header = new byte[headerlen + 8];
             System.arraycopy(tbuf, 0, header, 0, 4);
@@ -116,7 +116,7 @@ public class MessageReader {
             return null;
         }
 
-      /* Read the body */
+        /* Read the body */
         int bodylen = 0;
         if (null == body) bodylen = (int) Message.demarshallint(buf, 4, endian, 4);
         if (null == body) {

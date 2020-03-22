@@ -18,16 +18,8 @@
 package org.keycloak.saml.common;
 
 
-import org.keycloak.saml.common.exceptions.ConfigurationException;
-import org.keycloak.saml.common.exceptions.ParsingException;
-import org.keycloak.saml.common.exceptions.ProcessingException;
-import org.keycloak.saml.common.exceptions.TrustKeyConfigurationException;
-import org.keycloak.saml.common.exceptions.TrustKeyProcessingException;
-import org.keycloak.saml.common.exceptions.fed.AssertionExpiredException;
-import org.keycloak.saml.common.exceptions.fed.IssueInstantMissingException;
-import org.keycloak.saml.common.exceptions.fed.IssuerNotTrustedException;
-import org.keycloak.saml.common.exceptions.fed.SignatureValidationException;
-import org.keycloak.saml.common.exceptions.fed.WSTrustException;
+import org.keycloak.saml.common.exceptions.*;
+import org.keycloak.saml.common.exceptions.fed.*;
 import org.w3c.dom.Element;
 
 import javax.security.auth.login.LoginException;
@@ -52,7 +44,6 @@ public interface PicketLinkLogger {
      * <p>Creates an {@link IllegalArgumentException} for null arguments.</p>
      *
      * @param argument
-     *
      * @return
      */
     IllegalArgumentException nullArgumentError(String argument);
@@ -61,7 +52,6 @@ public interface PicketLinkLogger {
      * <p>Creates an {@link IllegalArgumentException} for arguments that should not be the same.</p>
      *
      * @param string
-     *
      * @return
      */
     IllegalArgumentException shouldNotBeTheSameError(String string);
@@ -70,7 +60,6 @@ public interface PicketLinkLogger {
      * <p>Creates an {@link org.keycloak.saml.common.exceptions.ProcessingException} for resources that are not found.</p>
      *
      * @param resource
-     *
      * @return
      */
     ProcessingException resourceNotFound(String resource);
@@ -80,7 +69,6 @@ public interface PicketLinkLogger {
      *
      * @param message
      * @param t
-     *
      * @return
      */
     ProcessingException processingError(Throwable t);
@@ -89,7 +77,6 @@ public interface PicketLinkLogger {
      * <p>Creates an {@link RuntimeException} for not supported types.</p>
      *
      * @param name
-     *
      * @return
      */
     RuntimeException unsupportedType(String name);
@@ -98,7 +85,6 @@ public interface PicketLinkLogger {
      * <p>Creates a {@link ProcessingException} for exceptions raised during signature processing.</p>
      *
      * @param e
-     *
      * @return
      */
     XMLSignatureException signatureError(Throwable e);
@@ -107,7 +93,6 @@ public interface PicketLinkLogger {
      * <p>Creates a {@link RuntimeException} for null values.</p>
      *
      * @param nullValue
-     *
      * @return
      */
     RuntimeException nullValueError(String nullValue);
@@ -116,7 +101,6 @@ public interface PicketLinkLogger {
      * <p>Creates a {@link RuntimeException} for not implemented methods or features.</p>
      *
      * @param string
-     *
      * @return
      */
     RuntimeException notImplementedYet(String string);
@@ -146,12 +130,13 @@ public interface PicketLinkLogger {
      * <p>Creates a {@link RuntimeException} for missing values.</p>
      *
      * @param string
-     *
      * @return
      */
     RuntimeException injectedValueMissing(String value);
 
-    /** <p>Logs a message during the KeyStore setup.</p> */
+    /**
+     * <p>Logs a message during the KeyStore setup.</p>
+     */
     void keyStoreSetup();
 
     /**
@@ -172,7 +157,6 @@ public interface PicketLinkLogger {
      * <p>Creates a {@link org.keycloak.saml.common.exceptions.TrustKeyConfigurationException} for exceptions raised during the KeyStore configuration.</p>
      *
      * @param t
-     *
      * @return
      */
     TrustKeyConfigurationException keyStoreConfigurationError(Throwable t);
@@ -181,14 +165,12 @@ public interface PicketLinkLogger {
      * <p>Creates a {@link TrustKeyConfigurationException} for exceptions raised during the KeyStore processing.</p>
      *
      * @param t
-     *
      * @return
      */
     TrustKeyProcessingException keyStoreProcessingError(Throwable t);
 
     /**
      * @param domain
-     *
      * @return
      */
     IllegalStateException keyStoreMissingDomainAlias(String domain);
@@ -206,7 +188,6 @@ public interface PicketLinkLogger {
      * <p>Creates a {@link RuntimeException} for the case where key store are not located.</p>
      *
      * @param keyStore
-     *
      * @return
      */
     RuntimeException keyStoreNotLocated(String keyStore);
@@ -222,7 +203,6 @@ public interface PicketLinkLogger {
      * <p>Creates a {@link RuntimeException} for the case where parser founds a unknown end element.</p>
      *
      * @param endElementName
-     *
      * @return
      */
     RuntimeException parserUnknownEndElement(String endElementName, Location location);
@@ -230,14 +210,12 @@ public interface PicketLinkLogger {
     /**
      * @param tag
      * @param location
-     *
      * @return
      */
     RuntimeException parserUnknownTag(String tag, Location location);
 
     /**
      * @param string
-     *
      * @return
      */
     ParsingException parserRequiredAttribute(String string);
@@ -245,45 +223,41 @@ public interface PicketLinkLogger {
     /**
      * @param elementName
      * @param location
-     *
      * @return
      */
     RuntimeException parserUnknownStartElement(String elementName, Location location);
 
-    /** @return  */
+    /**
+     * @return
+     */
     IllegalStateException parserNullStartElement();
 
     /**
      * @param xsiTypeValue
-     *
      * @return
      */
     ParsingException parserUnknownXSI(String xsiTypeValue);
 
     /**
      * @param string
-     *
      * @return
      */
     ParsingException parserExpectedEndTag(String tagName);
 
     /**
      * @param e
-     *
      * @return
      */
     ParsingException parserException(Throwable t);
 
     /**
      * @param string
-     *
      * @return
      */
     ParsingException parserExpectedTextValue(String string);
 
     /**
      * @param expectedXsi
-     *
      * @return
      */
     RuntimeException parserExpectedXSI(String expectedXsi);
@@ -291,7 +265,6 @@ public interface PicketLinkLogger {
     /**
      * @param tag
      * @param foundElementTag
-     *
      * @return
      */
     RuntimeException parserExpectedTag(String tag, String foundElementTag);
@@ -299,45 +272,41 @@ public interface PicketLinkLogger {
     /**
      * @param ns
      * @param foundElementNs
-     *
      * @return
      */
     RuntimeException parserExpectedNamespace(String ns, String foundElementNs);
 
     /**
      * @param elementName
-     *
      * @return
      */
     RuntimeException parserFailed(String elementName);
 
-    /** @return  */
+    /**
+     * @return
+     */
     ParsingException parserUnableParsingNullToken();
 
     /**
      * @param t
-     *
      * @return
      */
     ParsingException parserError(Throwable t);
 
     /**
      * @param e
-     *
      * @return
      */
     RuntimeException xacmlPDPMessageProcessingError(Throwable t);
 
     /**
      * @param policyConfigFileName
-     *
      * @return
      */
     IllegalStateException fileNotLocated(String policyConfigFileName);
 
     /**
      * @param string
-     *
      * @return
      */
     IllegalStateException optionNotSet(String option);
@@ -347,7 +316,9 @@ public interface PicketLinkLogger {
      */
     void stsTokenRegistryNotSpecified();
 
-    /** @param tokenRegistryOption */
+    /**
+     * @param tokenRegistryOption
+     */
     void stsTokenRegistryInvalidType(String tokenRegistryOption);
 
     /**
@@ -360,7 +331,9 @@ public interface PicketLinkLogger {
      */
     void stsRevocationRegistryNotSpecified();
 
-    /** @param registryOption */
+    /**
+     * @param registryOption
+     */
     void stsRevocationRegistryInvalidType(String registryOption);
 
     /**
@@ -368,39 +341,41 @@ public interface PicketLinkLogger {
      */
     void stsRevocationRegistryInstantiationError();
 
-    /** @return  */
+    /**
+     * @return
+     */
     ProcessingException samlAssertionExpiredError();
 
-    /** @return  */
+    /**
+     * @return
+     */
     ProcessingException assertionInvalidError();
 
     /**
      * @param name
-     *
      * @return
      */
     RuntimeException writerUnknownTypeError(String name);
 
     /**
      * @param string
-     *
      * @return
      */
     ProcessingException writerNullValueError(String value);
 
     /**
      * @param value
-     *
      * @return
      */
     RuntimeException writerUnsupportedAttributeValueError(String value);
 
-    /** @return  */
+    /**
+     * @return
+     */
     IllegalArgumentException issuerInfoMissingStatusCodeError();
 
     /**
      * @param fqn
-     *
      * @return
      */
     ProcessingException classNotLoadedError(String fqn);
@@ -408,45 +383,51 @@ public interface PicketLinkLogger {
     /**
      * @param fqn
      * @param e
-     *
      * @return
      */
     ProcessingException couldNotCreateInstance(String fqn, Throwable t);
 
     /**
      * @param property
-     *
      * @return
      */
     RuntimeException systemPropertyMissingError(String property);
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void samlMetaDataIdentityProviderLoadingError(Throwable t);
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void samlMetaDataServiceProviderLoadingError(Throwable t);
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void signatureAssertionValidationError(Throwable t);
 
-    /** @param id */
+    /**
+     * @param id
+     */
     void samlAssertionExpired(String id);
 
     /**
      * @param attrValue
-     *
      * @return
      */
     RuntimeException unknownObjectType(Object attrValue);
 
     /**
      * @param e
-     *
      * @return
      */
     ConfigurationException configurationError(Throwable t);
 
-    /** @param message */
+    /**
+     * @param message
+     */
     void trace(String message);
 
     /**
@@ -457,14 +438,12 @@ public interface PicketLinkLogger {
 
     /**
      * @param algo
-     *
      * @return
      */
     RuntimeException signatureUnknownAlgo(String algo);
 
     /**
      * @param message
-     *
      * @return
      */
     IllegalArgumentException invalidArgumentError(String message);
@@ -472,36 +451,43 @@ public interface PicketLinkLogger {
     /**
      * @param configuration
      * @param protocolContext
-     *
      * @return
      */
     ProcessingException stsNoTokenProviderError(String configuration, String protocolContext);
 
-    /** @param message */
+    /**
+     * @param message
+     */
     void debug(String message);
 
-    /** @param fileName */
+    /**
+     * @param fileName
+     */
     void stsConfigurationFileNotFoundTCL(String fileName);
 
-    /** @param fileName */
+    /**
+     * @param fileName
+     */
     void stsConfigurationFileNotFoundClassLoader(String fileName);
 
-    /** @param fileName */
+    /**
+     * @param fileName
+     */
     void stsUsingDefaultConfiguration(String fileName);
 
-    /** @param fileName */
+    /**
+     * @param fileName
+     */
     void stsConfigurationFileLoaded(String fileName);
 
     /**
      * @param t
-     *
      * @return
      */
     ConfigurationException stsConfigurationFileParsingError(Throwable t);
 
     /**
      * @param message
-     *
      * @return
      */
     IOException notSerializableError(String message);
@@ -511,22 +497,34 @@ public interface PicketLinkLogger {
      */
     void trustKeyManagerCreationError(Throwable t);
 
-    /** @param message */
+    /**
+     * @param message
+     */
     void info(String message);
 
-    /** @param string */
+    /**
+     * @param string
+     */
     void warn(String message);
 
-    /** @param message */
+    /**
+     * @param message
+     */
     void error(String message);
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void xmlCouldNotGetSchema(Throwable t);
 
-    /** @return  */
+    /**
+     * @return
+     */
     boolean isTraceEnabled();
 
-    /** @return  */
+    /**
+     * @return
+     */
     boolean isDebugEnabled();
 
     /**
@@ -535,86 +533,79 @@ public interface PicketLinkLogger {
      */
     void jceProviderCouldNotBeLoaded(String name, Throwable t);
 
-    /** @return  */
+    /**
+     * @return
+     */
     ProcessingException writerInvalidKeyInfoNullContentError();
 
     /**
      * @param first
      * @param second
-     *
      * @return
      */
     RuntimeException notEqualError(String first, String second);
 
     /**
      * @param message
-     *
      * @return
      */
     IllegalArgumentException wrongTypeError(String message);
 
     /**
      * @param certAlgo
-     *
      * @return
      */
     RuntimeException encryptUnknownAlgoError(String certAlgo);
 
     /**
      * @param element
-     *
      * @return
      */
     IllegalStateException domMissingDocElementError(String element);
 
     /**
      * @param element
-     *
      * @return
      */
     IllegalStateException domMissingElementError(String element);
 
-    /** @return  */
+    /**
+     * @return
+     */
     WebServiceException stsWSInvalidTokenRequestError();
 
     /**
      * @param t
-     *
      * @return
      */
     WebServiceException stsWSError(Throwable t);
 
     /**
      * @param t
-     *
      * @return
      */
     WebServiceException stsWSConfigurationError(Throwable t);
 
     /**
      * @param requestType
-     *
      * @return
      */
     WSTrustException stsWSInvalidRequestTypeError(String requestType);
 
     /**
      * @param t
-     *
      * @return
      */
     WebServiceException stsWSHandlingTokenRequestError(Throwable t);
 
     /**
      * @param t
-     *
      * @return
      */
     WebServiceException stsWSResponseWritingError(Throwable t);
 
     /**
      * @param t
-     *
      * @return
      */
     RuntimeException stsUnableToConstructKeyManagerError(Throwable t);
@@ -622,21 +613,18 @@ public interface PicketLinkLogger {
     /**
      * @param serviceName
      * @param t
-     *
      * @return
      */
     RuntimeException stsPublicKeyError(String serviceName, Throwable t);
 
     /**
      * @param t
-     *
      * @return
      */
     RuntimeException stsSigningKeyPairError(Throwable t);
 
     /**
      * @param t
-     *
      * @return
      */
     RuntimeException stsPublicKeyCertError(Throwable t);
@@ -648,17 +636,17 @@ public interface PicketLinkLogger {
 
     /**
      * @param t
-     *
      * @return
      */
     WSTrustException wsTrustCombinedSecretKeyError(Throwable t);
 
-    /** @return  */
+    /**
+     * @return
+     */
     WSTrustException wsTrustClientPublicKeyError();
 
     /**
      * @param t
-     *
      * @return
      */
     WSTrustException stsError(Throwable t);
@@ -666,7 +654,6 @@ public interface PicketLinkLogger {
     /**
      * @param message
      * @param t
-     *
      * @return
      */
     XMLSignatureException signatureInvalidError(String message, Throwable t);
@@ -678,7 +665,6 @@ public interface PicketLinkLogger {
 
     /**
      * @param e
-     *
      * @return
      */
     RuntimeException encryptProcessError(Throwable t);
@@ -690,21 +676,18 @@ public interface PicketLinkLogger {
 
     /**
      * @param password
-     *
      * @return
      */
     RuntimeException unableToDecodePasswordError(String password);
 
     /**
      * @param configFile
-     *
      * @return
      */
     IllegalStateException couldNotLoadProperties(String configFile);
 
     /**
      * @param t
-     *
      * @return
      */
     WSTrustException stsKeyInfoTypeCreationError(Throwable t);
@@ -714,82 +697,100 @@ public interface PicketLinkLogger {
      */
     void stsSecretKeyNotEncrypted();
 
-    /** @return  */
+    /**
+     * @return
+     */
     LoginException authCouldNotIssueSAMLToken();
 
     /**
      * @param t
-     *
      * @return
      */
     LoginException authLoginError(Throwable t);
 
     /**
      * @param e
-     *
      * @return
      */
     IllegalStateException authCouldNotCreateWSTrustClient(Throwable t);
 
-    /** @param id */
+    /**
+     * @param id
+     */
     void samlAssertionWithoutExpiration(String id);
 
     /**
      * @param token
-     *
      * @return
      */
     LoginException authCouldNotValidateSAMLToken(Element token);
 
-    /** @return  */
+    /**
+     * @return
+     */
     LoginException authCouldNotLocateSecurityToken();
 
-    /** @return  */
+    /**
+     * @return
+     */
     ProcessingException wsTrustNullCancelTargetError();
 
     /**
      * @param t
-     *
      * @return
      */
     ProcessingException samlAssertionMarshallError(Throwable t);
 
-    /** @return  */
+    /**
+     * @return
+     */
     ProcessingException wsTrustNullRenewTargetError();
 
     /**
      * @param t
-     *
      * @return
      */
     ProcessingException samlAssertionUnmarshallError(Throwable t);
 
-    /** @return  */
+    /**
+     * @return
+     */
     ProcessingException samlAssertionRevokedCouldNotRenew(String id);
 
-    /** @return  */
+    /**
+     * @return
+     */
     ProcessingException wsTrustNullValidationTargetError();
 
-    /** @param attributeProviderClassName */
+    /**
+     * @param attributeProviderClassName
+     */
     void stsWrongAttributeProviderTypeNotInstalled(String attributeProviderClassName);
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void attributeProviderInstationError(Throwable t);
 
-    /** @param nodeAsString */
+    /**
+     * @param nodeAsString
+     */
     void samlAssertion(String nodeAsString);
 
     /**
      * @param dce
-     *
      * @return
      */
     RuntimeException wsTrustUnableToGetDataTypeFactory(Throwable t);
 
-    /** @return  */
+    /**
+     * @return
+     */
     ProcessingException wsTrustValidationStatusCodeMissing();
 
-    /** @param activeSessionCount */
+    /**
+     * @param activeSessionCount
+     */
     void samlIdentityServerActiveSessionCount(int activeSessionCount);
 
     /**
@@ -806,42 +807,53 @@ public interface PicketLinkLogger {
 
     /**
      * @param name
-     *
      * @return
      */
     RuntimeException unknowCredentialType(String name);
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void samlHandlerRoleGeneratorSetupError(Throwable t);
 
-    /** @return  */
+    /**
+     * @return
+     */
     RuntimeException samlHandlerAssertionNotFound();
 
-    /** @return  */
+    /**
+     * @return
+     */
     ProcessingException samlHandlerAuthnRequestIsNull();
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void samlHandlerAuthenticationError(Throwable t);
 
-    /** @return  */
+    /**
+     * @return
+     */
     IllegalArgumentException samlHandlerNoAssertionFromIDP();
 
-    /** @return  */
+    /**
+     * @return
+     */
     ProcessingException samlHandlerNullEncryptedAssertion();
 
-    /** @return  */
+    /**
+     * @return
+     */
     SecurityException samlHandlerIDPAuthenticationFailedError();
 
     /**
      * @param aee
-     *
      * @return
      */
     ProcessingException assertionExpiredError(AssertionExpiredException aee);
 
     /**
      * @param attrValue
-     *
      * @return
      */
     RuntimeException unsupportedRoleType(Object attrValue);
@@ -852,30 +864,36 @@ public interface PicketLinkLogger {
      */
     void samlHandlerFailedInResponseToVerification(String inResponseTo, String authnRequestId);
 
-    /** @return  */
+    /**
+     * @return
+     */
     ProcessingException samlHandlerFailedInResponseToVerificarionError();
 
     /**
      * @param issuer
-     *
      * @return
      */
     IssuerNotTrustedException samlIssuerNotTrustedError(String issuer);
 
     /**
      * @param e
-     *
      * @return
      */
     IssuerNotTrustedException samlIssuerNotTrustedException(Throwable t);
 
-    /** @return  */
+    /**
+     * @return
+     */
     ConfigurationException samlHandlerTrustElementMissingError();
 
-    /** @return  */
+    /**
+     * @return
+     */
     ProcessingException samlHandlerIdentityServerNotFoundError();
 
-    /** @return  */
+    /**
+     * @return
+     */
     ProcessingException samlHandlerPrincipalNotFoundError();
 
     /**
@@ -883,58 +901,77 @@ public interface PicketLinkLogger {
      */
     void samlHandlerKeyPairNotFound();
 
-    /** @return  */
+    /**
+     * @return
+     */
     ProcessingException samlHandlerKeyPairNotFoundError();
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void samlHandlerErrorSigningRedirectBindingMessage(Throwable t);
 
     /**
      * @param t
-     *
      * @return
      */
     RuntimeException samlHandlerSigningRedirectBindingMessageError(Throwable t);
 
-    /** @return  */
+    /**
+     * @return
+     */
     SignatureValidationException samlHandlerSignatureValidationFailed();
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void samlHandlerErrorValidatingSignature(Throwable t);
 
-    /** @return  */
+    /**
+     * @return
+     */
     ProcessingException samlHandlerInvalidSignatureError();
 
-    /** @return  */
+    /**
+     * @return
+     */
     ProcessingException samlHandlerSignatureNotPresentError();
 
     /**
      * @param t
-     *
      * @return
      */
     ProcessingException samlHandlerSignatureValidationError(Throwable t);
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void error(Throwable t);
 
     /**
      * @param t
-     *
      * @return
      */
     RuntimeException samlHandlerChainProcessingError(Throwable t);
 
-    /** @return  */
+    /**
+     * @return
+     */
     TrustKeyConfigurationException trustKeyManagerMissing();
 
-    /** @param rte */
+    /**
+     * @param rte
+     */
     void samlBase64DecodingError(Throwable t);
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void samlParsingError(Throwable t);
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void trace(Throwable t);
 
     /**
@@ -942,7 +979,9 @@ public interface PicketLinkLogger {
      */
     void mappingContextNull();
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void attributeManagerError(Throwable t);
 
     /**
@@ -952,46 +991,47 @@ public interface PicketLinkLogger {
 
     /**
      * @param t
-     *
      * @return
      */
     LoginException authFailedToCreatePrincipal(Throwable t);
 
     /**
      * @param class1
-     *
      * @return
      */
     LoginException authSharedCredentialIsNotSAMLCredential(String className);
 
-    /** @return  */
+    /**
+     * @return
+     */
     LoginException authSTSConfigFileNotFound();
 
     /**
      * @param t
-     *
      * @return
      */
     LoginException authErrorHandlingCallback(Throwable t);
 
-    /** @return  */
+    /**
+     * @return
+     */
     LoginException authInvalidSAMLAssertionBySTS();
 
     /**
      * @param t
-     *
      * @return
      */
     LoginException authAssertionValidationError(Throwable t);
 
     /**
      * @param t
-     *
      * @return
      */
     LoginException authFailedToParseSAMLAssertion(Throwable t);
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void samlAssertionPasingFailed(Throwable t);
 
     LoginException authNullKeyStoreFromSecurityDomainError(String name);
@@ -1004,10 +1044,14 @@ public interface PicketLinkLogger {
 
     LoginException authSAMLAssertionExpiredError();
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void authSAMLAssertionIssuingFailed(Throwable t);
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void jbossWSUnableToCreateBinaryToken(Throwable t);
 
     /**
@@ -1015,76 +1059,102 @@ public interface PicketLinkLogger {
      */
     void jbossWSUnableToCreateSecurityToken();
 
-    /** @param ignore */
+    /**
+     * @param ignore
+     */
     void jbossWSUnableToWriteSOAPMessage(Throwable t);
 
-    /** @return  */
+    /**
+     * @return
+     */
     RuntimeException jbossWSUnableToLoadJBossWSSEConfigError();
 
-    /** @return  */
+    /**
+     * @return
+     */
     RuntimeException jbossWSAuthorizationFailed();
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void jbossWSErrorGettingOperationName(Throwable t);
 
-    /** @return  */
+    /**
+     * @return
+     */
     LoginException authSAMLCredentialNotAvailable();
 
     /**
      * @param token
      * @param t
-     *
      * @return
      */
     RuntimeException authUnableToInstantiateHandler(String token, Throwable t);
 
     /**
      * @param e1
-     *
      * @return
      */
     RuntimeException jbossWSUnableToCreateSSLSocketFactory(Throwable t);
 
-    /** @return  */
+    /**
+     * @return
+     */
     RuntimeException jbossWSUnableToFindSSLSocketFactory();
 
-    /** @return  */
+    /**
+     * @return
+     */
     RuntimeException authUnableToGetIdentityFromSubject();
 
-    /** @return  */
+    /**
+     * @return
+     */
     RuntimeException authSAMLAssertionNullOrEmpty();
 
-    /** @return  */
+    /**
+     * @return
+     */
     ProcessingException jbossWSUncheckedAndRolesCannotBeTogether();
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void samlIDPHandlingSAML11Error(Throwable t);
 
-    /** @return  */
+    /**
+     * @return
+     */
     GeneralSecurityException samlIDPValidationCheckFailed();
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void samlIDPRequestProcessingError(Throwable t);
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void samlIDPUnableToSetParticipantStackUsingDefault(Throwable t);
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void samlHandlerConfigurationError(Throwable t);
 
-    /** @param canonicalizationMethod */
+    /**
+     * @param canonicalizationMethod
+     */
     void samlIDPSettingCanonicalizationMethod(String canonicalizationMethod);
 
     /**
      * @param t
-     *
      * @return
      */
     RuntimeException samlIDPConfigurationError(Throwable t);
 
     /**
      * @param configFile
-     *
      * @return
      */
     RuntimeException configurationFileMissing(String configFile);
@@ -1098,7 +1168,6 @@ public interface PicketLinkLogger {
 
     /**
      * @param ex
-     *
      * @return
      */
     IOException unableLocalAuthentication(Throwable t);
@@ -1110,15 +1179,18 @@ public interface PicketLinkLogger {
 
     /**
      * @param t
-     *
      * @return
      */
     RuntimeException samlSPConfigurationError(Throwable t);
 
-    /** @param canonicalizationMethod */
+    /**
+     * @param canonicalizationMethod
+     */
     void samlSPSettingCanonicalizationMethod(String canonicalizationMethod);
 
-    /** @param logOutPage */
+    /**
+     * @param logOutPage
+     */
     void samlSPCouldNotDispatchToLogoutPage(String logOutPage);
 
     /**
@@ -1135,7 +1207,6 @@ public interface PicketLinkLogger {
 
     /**
      * @param t
-     *
      * @return
      */
     ConfigurationException auditSecurityDomainNotFound(Throwable t);
@@ -1143,41 +1214,50 @@ public interface PicketLinkLogger {
     /**
      * @param location
      * @param t
-     *
      * @return
      */
     ConfigurationException auditAuditManagerNotFound(String location, Throwable t);
 
-    /** @return  */
+    /**
+     * @return
+     */
     IssueInstantMissingException samlIssueInstantMissingError();
 
     /**
      * @param response
-     *
      * @return
      */
     RuntimeException samlSPResponseNotCatalinaResponseError(Object response);
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void samlLogoutError(Throwable t);
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void samlErrorPageForwardError(String errorPage, Throwable t);
 
-    /** @param t */
+    /**
+     * @param t
+     */
     void samlSPHandleRequestError(Throwable t);
 
     /**
      * @param t
-     *
      * @return
      */
     IOException samlSPProcessingExceptionError(Throwable t);
 
-    /** @return  */
+    /**
+     * @return
+     */
     IllegalArgumentException samlInvalidProtocolBinding();
 
-    /** @return  */
+    /**
+     * @return
+     */
     IllegalStateException samlHandlerServiceProviderConfigNotFound();
 
     /**
@@ -1185,7 +1265,9 @@ public interface PicketLinkLogger {
      */
     void samlSecurityTokenAlreadyPersisted(String id);
 
-    /** @param id */
+    /**
+     * @param id
+     */
     void samlSecurityTokenNotFoundInRegistry(String id);
 
     IllegalArgumentException samlMetaDataFailedToCreateCacheDuration(String timeValue);

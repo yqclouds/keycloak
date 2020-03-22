@@ -35,8 +35,8 @@ import java.util.Map;
 public class HardcodedRole extends AbstractSAMLProtocolMapper {
     public static final String PROVIDER_ID = "saml-hardcode-role-mapper";
     public static final String ATTRIBUTE_VALUE = "attribute.value";
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
     public static final String ROLE_ATTRIBUTE = "role";
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     static {
         ProviderConfigProperty property;
@@ -48,11 +48,24 @@ public class HardcodedRole extends AbstractSAMLProtocolMapper {
         configProperties.add(property);
     }
 
+    public static ProtocolMapperModel create(String name,
+                                             String role) {
+        String mapperId = PROVIDER_ID;
+        ProtocolMapperModel mapper = new ProtocolMapperModel();
+        mapper.setName(name);
+        mapper.setProtocolMapper(mapperId);
+        mapper.setProtocol(SamlProtocol.LOGIN_PROTOCOL);
+        Map<String, String> config = new HashMap<>();
+        config.put(ROLE_ATTRIBUTE, role);
+        mapper.setConfig(config);
+        return mapper;
 
+    }
 
     public List<ProviderConfigProperty> getConfigProperties() {
         return configProperties;
     }
+
     @Override
     public String getId() {
         return PROVIDER_ID;
@@ -71,20 +84,6 @@ public class HardcodedRole extends AbstractSAMLProtocolMapper {
     @Override
     public String getHelpText() {
         return "Hardcode role into SAML Assertion.";
-    }
-
-    public static ProtocolMapperModel create(String name,
-                                             String role) {
-        String mapperId = PROVIDER_ID;
-        ProtocolMapperModel mapper = new ProtocolMapperModel();
-        mapper.setName(name);
-        mapper.setProtocolMapper(mapperId);
-        mapper.setProtocol(SamlProtocol.LOGIN_PROTOCOL);
-        Map<String, String> config = new HashMap<>();
-        config.put(ROLE_ATTRIBUTE, role);
-        mapper.setConfig(config);
-        return mapper;
-
     }
 
 }

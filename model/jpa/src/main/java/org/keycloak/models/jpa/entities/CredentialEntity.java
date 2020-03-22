@@ -17,70 +17,57 @@
 
 package org.keycloak.models.jpa.entities;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import java.util.ArrayList;
-import java.util.Collection;
+import javax.persistence.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 @NamedQueries({
-        @NamedQuery(name="credentialByUser", query="select cred from CredentialEntity cred where cred.user = :user order by cred.priority"),
-        @NamedQuery(name="deleteCredentialsByRealm", query="delete from CredentialEntity cred where cred.user IN (select u from UserEntity u where u.realmId=:realmId)"),
-        @NamedQuery(name="deleteCredentialsByRealmAndLink", query="delete from CredentialEntity cred where cred.user IN (select u from UserEntity u where u.realmId=:realmId and u.federationLink=:link)")
+        @NamedQuery(name = "credentialByUser", query = "select cred from CredentialEntity cred where cred.user = :user order by cred.priority"),
+        @NamedQuery(name = "deleteCredentialsByRealm", query = "delete from CredentialEntity cred where cred.user IN (select u from UserEntity u where u.realmId=:realmId)"),
+        @NamedQuery(name = "deleteCredentialsByRealmAndLink", query = "delete from CredentialEntity cred where cred.user IN (select u from UserEntity u where u.realmId=:realmId and u.federationLink=:link)")
 
 })
-@Table(name="CREDENTIAL")
+@Table(name = "CREDENTIAL")
 @Entity
 public class CredentialEntity {
     @Id
-    @Column(name="ID", length = 36)
-    @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
+    @Column(name = "ID", length = 36)
+    @Access(AccessType.PROPERTY)
+    // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
     protected String id;
 
-    @Column(name="TYPE")
+    @Column(name = "TYPE")
     protected String type;
 
-    @Column(name="USER_LABEL")
+    @Column(name = "USER_LABEL")
     protected String userLabel;
 
-    @Column(name="CREATED_DATE")
+    @Column(name = "CREATED_DATE")
     protected Long createdDate;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="USER_ID")
+    @JoinColumn(name = "USER_ID")
     protected UserEntity user;
 
-    @Column(name="SECRET_DATA")
+    @Column(name = "SECRET_DATA")
     protected String secretData;
 
-    @Column(name="CREDENTIAL_DATA")
+    @Column(name = "CREDENTIAL_DATA")
     protected String credentialData;
 
-    @Column(name="PRIORITY")
+    @Column(name = "PRIORITY")
     protected int priority;
 
     @Deprecated // Needed just for backwards compatibility when migrating old credentials
-    @Column(name="SALT")
+    @Column(name = "SALT")
     protected byte[] salt;
 
     public String getId() {
         return id;
     }
+
     public void setId(String id) {
         this.id = id;
     }
@@ -88,6 +75,7 @@ public class CredentialEntity {
     public String getType() {
         return type;
     }
+
     public void setType(String type) {
         this.type = type;
     }
@@ -95,6 +83,7 @@ public class CredentialEntity {
     public String getUserLabel() {
         return userLabel;
     }
+
     public void setUserLabel(String userLabel) {
         this.userLabel = userLabel;
     }
@@ -102,6 +91,7 @@ public class CredentialEntity {
     public UserEntity getUser() {
         return user;
     }
+
     public void setUser(UserEntity user) {
         this.user = user;
     }
@@ -119,6 +109,7 @@ public class CredentialEntity {
     public Long getCreatedDate() {
         return createdDate;
     }
+
     public void setCreatedDate(Long createdDate) {
         this.createdDate = createdDate;
     }
@@ -126,6 +117,7 @@ public class CredentialEntity {
     public String getSecretData() {
         return secretData;
     }
+
     public void setSecretData(String secretData) {
         this.secretData = secretData;
     }
@@ -133,6 +125,7 @@ public class CredentialEntity {
     public String getCredentialData() {
         return credentialData;
     }
+
     public void setCredentialData(String credentialData) {
         this.credentialData = credentialData;
     }

@@ -16,14 +16,14 @@
  */
 package org.keycloak.protocol.oidc.mappers;
 
-import java.util.List;
-
 import org.keycloak.common.Profile;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
 import org.keycloak.representations.provider.ScriptProviderMetadata;
+
+import java.util.List;
 
 public final class DeployedScriptOIDCProtocolMapper extends ScriptBasedOIDCProtocolMapper {
 

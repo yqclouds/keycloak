@@ -31,9 +31,12 @@ public interface AuthenticationFlow {
     String CLIENT_FLOW = "client-flow";
 
     Response processAction(String actionExecution);
+
     Response processFlow();
+
     boolean isSuccessful();
-    default List<AuthenticationFlowException> getFlowExceptions(){
+
+    default List<AuthenticationFlowException> getFlowExceptions() {
         return Collections.emptyList();
     }
 }

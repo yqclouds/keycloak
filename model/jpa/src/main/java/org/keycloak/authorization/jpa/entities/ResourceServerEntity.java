@@ -34,7 +34,7 @@ import javax.persistence.Table;
 public class ResourceServerEntity {
 
     @Id
-    @Column(name="ID", length = 36)
+    @Column(name = "ID", length = 36)
     private String id;
 
     @Column(name = "ALLOW_RS_REMOTE_MGMT")
@@ -70,15 +70,15 @@ public class ResourceServerEntity {
         this.policyEnforcementMode = policyEnforcementMode;
     }
 
+    public DecisionStrategy getDecisionStrategy() {
+        return decisionStrategy;
+    }
+
     public void setDecisionStrategy(DecisionStrategy decisionStrategy) {
         if (DecisionStrategy.CONSENSUS.equals(decisionStrategy)) {
             throw new IllegalArgumentException("Strategy " + decisionStrategy + " not supported");
         }
         this.decisionStrategy = decisionStrategy;
-    }
-
-    public DecisionStrategy getDecisionStrategy() {
-        return decisionStrategy;
     }
 
     @Override

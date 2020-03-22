@@ -20,13 +20,7 @@ package org.keycloak.common.util;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.asn1.x509.BasicConstraints;
-import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.bouncycastle.asn1.x509.KeyUsage;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509ExtensionUtils;
 import org.bouncycastle.cert.X509v1CertificateBuilder;
@@ -64,17 +58,15 @@ public class CertificateUtils {
     /**
      * Generates version 3 {@link java.security.cert.X509Certificate}.
      *
-     * @param keyPair the key pair
+     * @param keyPair      the key pair
      * @param caPrivateKey the CA private key
-     * @param caCert the CA certificate
-     * @param subject the subject name
-     * 
+     * @param caCert       the CA certificate
+     * @param subject      the subject name
      * @return the x509 certificate
-     * 
      * @throws Exception the exception
      */
     public static X509Certificate generateV3Certificate(KeyPair keyPair, PrivateKey caPrivateKey, X509Certificate caCert,
-            String subject) throws Exception {
+                                                        String subject) throws Exception {
         try {
             X500Name subjectDN = new X500Name("CN=" + subject);
 
@@ -133,10 +125,8 @@ public class CertificateUtils {
      * Generate version 1 self signed {@link java.security.cert.X509Certificate}..
      *
      * @param caKeyPair the CA key pair
-     * @param subject the subject name
-     * 
+     * @param subject   the subject name
      * @return the x509 certificate
-     * 
      * @throws Exception the exception
      */
     public static X509Certificate generateV1SelfSignedCertificate(KeyPair caKeyPair, String subject) {
@@ -166,7 +156,6 @@ public class CertificateUtils {
      * Creates the content signer for generation of Version 1 {@link java.security.cert.X509Certificate}.
      *
      * @param privateKey the private key
-     *
      * @return the content signer
      */
     public static ContentSigner createSigner(PrivateKey privateKey) {

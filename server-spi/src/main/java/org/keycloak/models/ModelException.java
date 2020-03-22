@@ -31,7 +31,7 @@ public class ModelException extends RuntimeException {
         super(message);
     }
 
-    public ModelException(String message, Object ... parameters) {
+    public ModelException(String message, Object... parameters) {
         super(message);
         this.parameters = parameters;
     }

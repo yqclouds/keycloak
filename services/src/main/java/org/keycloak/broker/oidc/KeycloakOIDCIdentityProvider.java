@@ -68,6 +68,21 @@ public class KeycloakOIDCIdentityProvider extends OIDCIdentityProvider {
         context.getContextData().put(VALIDATED_ACCESS_TOKEN, access);
     }
 
+    @Override
+    protected BrokeredIdentityContext exchangeExternalImpl(EventBuilder event, MultivaluedMap<String, String> params) {
+        String subjectToken = params.getFirst(OAuth2Constants.SUBJECT_TOKEN);
+        if (subjectToken == null) {
+            event.detail(Details.REASON, OAuth2Constants.SUBJECT_TOKEN + " param unset");
+            event.error(Errors.INVALID_TOKEN);
+            throw new ErrorResponseException(OAuthErrorException.INVALID_TOKEN, "token not set", Response.Status.BAD_REQUEST);
+        }
+        String subjectTokenType = params.getFirst(OAuth2Constants.SUBJECT_TOKEN_TYPE);
+        if (subjectTokenType == null) {
+            subjectTokenType = OAuth2Constants.ACCESS_TOKEN_TYPE;
+        }
+        return validateJwt(event, subjectToken, subjectTokenType);
+    }
+
     protected class KeycloakEndpoint extends OIDCEndpoint {
         public KeycloakEndpoint(AuthenticationCallback callback, RealmModel realm, EventBuilder event) {
             super(callback, realm, event);
@@ -103,7 +118,7 @@ public class KeycloakOIDCIdentityProvider extends OIDCIdentityProvider {
                     if (userSession != null
                             && userSession.getState() != UserSessionModel.State.LOGGING_OUT
                             && userSession.getState() != UserSessionModel.State.LOGGED_OUT
-                            ) {
+                    ) {
                         AuthenticationManager.backchannelLogout(session, realm, userSession, session.getContext().getUri(), clientConnection, headers, false);
                     }
                 }
@@ -112,7 +127,7 @@ public class KeycloakOIDCIdentityProvider extends OIDCIdentityProvider {
             return Response.ok().build();
         }
 
-        protected boolean validateAction(AdminAction action)  {
+        protected boolean validateAction(AdminAction action) {
             if (!action.validate()) {
                 logger.warn("admin request failed, not validated" + action.getAction());
                 return false;
@@ -137,24 +152,7 @@ public class KeycloakOIDCIdentityProvider extends OIDCIdentityProvider {
         }
 
 
-
     }
-
-    @Override
-    protected BrokeredIdentityContext exchangeExternalImpl(EventBuilder event, MultivaluedMap<String, String> params) {
-        String subjectToken = params.getFirst(OAuth2Constants.SUBJECT_TOKEN);
-        if (subjectToken == null) {
-            event.detail(Details.REASON, OAuth2Constants.SUBJECT_TOKEN + " param unset");
-            event.error(Errors.INVALID_TOKEN);
-            throw new ErrorResponseException(OAuthErrorException.INVALID_TOKEN, "token not set", Response.Status.BAD_REQUEST);
-        }
-        String subjectTokenType = params.getFirst(OAuth2Constants.SUBJECT_TOKEN_TYPE);
-        if (subjectTokenType == null) {
-            subjectTokenType = OAuth2Constants.ACCESS_TOKEN_TYPE;
-        }
-        return validateJwt(event, subjectToken, subjectTokenType);
-    }
-
 
 
 }

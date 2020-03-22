@@ -21,7 +21,7 @@ import org.keycloak.provider.Provider;
 
 /**
  * Provides single-use cache for OAuth2 code parameter. Used to ensure that particular value of code parameter is used once.
- *
+ * <p>
  * TODO: For now, it is separate provider as {@link CodeToTokenStoreProvider}, however will be good to merge those 2 providers to "SingleUseCacheProvider"
  * in the future as they provide very similar thing
  *

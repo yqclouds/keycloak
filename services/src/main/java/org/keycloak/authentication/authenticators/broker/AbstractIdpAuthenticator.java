@@ -59,6 +59,27 @@ public abstract class AbstractIdpAuthenticator implements Authenticator {
     // Set if nested firstBrokerLogin is detected, allowing to report a detailed error
     public static final String NESTED_FIRST_BROKER_CONTEXT = "NESTED_FIRST_BROKER_CONTEXT";
 
+    public static UserModel getExistingUser(KeycloakSession session, RealmModel realm, AuthenticationSessionModel authSession) {
+        String existingUserId = authSession.getAuthNote(EXISTING_USER_INFO);
+        if (existingUserId == null) {
+            throw new AuthenticationFlowException("Unexpected state. There is no existing duplicated user identified in ClientSession",
+                    AuthenticationFlowError.INTERNAL_ERROR);
+        }
+
+        ExistingUserInfo duplication = ExistingUserInfo.deserialize(existingUserId);
+
+        UserModel existingUser = session.users().getUserById(duplication.getExistingUserId(), realm);
+        if (existingUser == null) {
+            throw new AuthenticationFlowException("User with ID '" + existingUserId + "' not found.", AuthenticationFlowError.INVALID_USER);
+        }
+
+        if (!existingUser.isEnabled()) {
+            throw new AuthenticationFlowException("User with ID '" + existingUserId + "', username '" + existingUser.getUsername() + "' disabled.", AuthenticationFlowError.USER_DISABLED);
+        }
+
+        return existingUser;
+    }
+
     @Override
     public void authenticate(AuthenticationFlowContext context) {
         AuthenticationSessionModel authSession = context.getAuthenticationSession();
@@ -94,6 +115,7 @@ public abstract class AbstractIdpAuthenticator implements Authenticator {
     }
 
     protected abstract void authenticateImpl(AuthenticationFlowContext context, SerializedBrokeredIdentityContext serializedCtx, BrokeredIdentityContext brokerContext);
+
     protected abstract void actionImpl(AuthenticationFlowContext context, SerializedBrokeredIdentityContext serializedCtx, BrokeredIdentityContext brokerContext);
 
     protected void sendFailureChallenge(AuthenticationFlowContext context, Response.Status status, String eventError, String errorMessage, AuthenticationFlowError flowError) {
@@ -112,26 +134,5 @@ public abstract class AbstractIdpAuthenticator implements Authenticator {
     @Override
     public void close() {
 
-    }
-
-    public static UserModel getExistingUser(KeycloakSession session, RealmModel realm, AuthenticationSessionModel authSession) {
-        String existingUserId = authSession.getAuthNote(EXISTING_USER_INFO);
-        if (existingUserId == null) {
-            throw new AuthenticationFlowException("Unexpected state. There is no existing duplicated user identified in ClientSession",
-                    AuthenticationFlowError.INTERNAL_ERROR);
-        }
-
-        ExistingUserInfo duplication = ExistingUserInfo.deserialize(existingUserId);
-
-        UserModel existingUser = session.users().getUserById(duplication.getExistingUserId(), realm);
-        if (existingUser == null) {
-            throw new AuthenticationFlowException("User with ID '" + existingUserId + "' not found.", AuthenticationFlowError.INVALID_USER);
-        }
-
-        if (!existingUser.isEnabled()) {
-            throw new AuthenticationFlowException("User with ID '" + existingUserId + "', username '" + existingUser.getUsername() + "' disabled.", AuthenticationFlowError.USER_DISABLED);
-        }
-
-        return existingUser;
     }
 }

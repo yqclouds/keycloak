@@ -19,11 +19,11 @@ package org.keycloak.saml.processing.core.parsers.saml.protocol;
 import org.keycloak.dom.saml.v2.protocol.StatusResponseType;
 import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.util.StaxParserUtil;
+
 import javax.xml.stream.events.StartElement;
 
 /**
  * Base Class for all Response Type parsing for SAML2
- *
  */
 public abstract class SAMLStatusResponseTypeParser<T extends StatusResponseType> extends AbstractStaxSamlProtocolParser<T> {
 
@@ -38,7 +38,6 @@ public abstract class SAMLStatusResponseTypeParser<T extends StatusResponseType>
      *
      * @param startElement
      * @param response
-     *
      * @throws org.keycloak.saml.common.exceptions.ParsingException
      */
     protected void parseBaseAttributes(StartElement startElement, T response) throws ParsingException {

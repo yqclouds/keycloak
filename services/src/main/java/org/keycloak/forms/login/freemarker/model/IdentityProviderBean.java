@@ -35,11 +35,10 @@ import java.util.Map;
 public class IdentityProviderBean {
 
     public static OrderedModel.OrderedModelComparator<IdentityProvider> IDP_COMPARATOR_INSTANCE = new OrderedModel.OrderedModelComparator<>();
-
+    private final KeycloakSession session;
     private boolean displaySocial;
     private List<IdentityProvider> providers;
     private RealmModel realm;
-    private final KeycloakSession session;
 
     public IdentityProviderBean(RealmModel realm, KeycloakSession session, List<IdentityProviderModel> identityProviders, URI baseURI) {
         this.realm = realm;
@@ -78,7 +77,7 @@ public class IdentityProviderBean {
     }
 
     public boolean isDisplayInfo() {
-        return  realm.isRegistrationAllowed() || displaySocial;
+        return realm.isRegistrationAllowed() || displaySocial;
     }
 
     public static class IdentityProvider implements OrderedModel {

@@ -34,8 +34,7 @@ public interface UserStorageProvider extends Provider {
      *
      * @param realm
      */
-    default
-    void preRemove(RealmModel realm) {
+    default void preRemove(RealmModel realm) {
 
     }
 
@@ -46,27 +45,24 @@ public interface UserStorageProvider extends Provider {
      * @param realm
      * @param group
      */
-    default
-    void preRemove(RealmModel realm, GroupModel group) {
+    default void preRemove(RealmModel realm, GroupModel group) {
 
     }
 
     /**
      * Callback when a role is removed.  Allows you to do things like remove a user
      * role mapping in your external store if appropriate
-
+     *
      * @param realm
      * @param role
      */
-    default
-    void preRemove(RealmModel realm, RoleModel role) {
+    default void preRemove(RealmModel realm, RoleModel role) {
 
     }
 
     /**
      * Optional type that can be used by implementations to
      * describe edit mode of user storage
-     *
      */
     enum EditMode {
         /**
@@ -75,12 +71,10 @@ public interface UserStorageProvider extends Provider {
         READ_ONLY,
         /**
          * user storage is writable
-         *
          */
         WRITABLE,
         /**
          * updates to user are stored locally and not synced with user storage.
-         *
          */
         UNSYNCED
     }

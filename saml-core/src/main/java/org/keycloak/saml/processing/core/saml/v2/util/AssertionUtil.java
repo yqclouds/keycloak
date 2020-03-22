@@ -16,26 +16,17 @@
  */
 package org.keycloak.saml.processing.core.saml.v2.util;
 
-import org.keycloak.dom.saml.v1.assertion.SAML11AssertionType;
-import org.keycloak.dom.saml.v1.assertion.SAML11AttributeStatementType;
-import org.keycloak.dom.saml.v1.assertion.SAML11AttributeType;
-import org.keycloak.dom.saml.v1.assertion.SAML11ConditionsType;
-import org.keycloak.dom.saml.v1.assertion.SAML11StatementAbstractType;
-import org.keycloak.dom.saml.v2.assertion.AssertionType;
-import org.keycloak.dom.saml.v2.assertion.AttributeStatementType;
+import org.keycloak.dom.saml.v1.assertion.*;
+import org.keycloak.dom.saml.v2.assertion.*;
 import org.keycloak.dom.saml.v2.assertion.AttributeStatementType.ASTChoiceType;
-import org.keycloak.dom.saml.v2.assertion.AttributeType;
-import org.keycloak.dom.saml.v2.assertion.ConditionsType;
-import org.keycloak.dom.saml.v2.assertion.EncryptedAssertionType;
-import org.keycloak.dom.saml.v2.assertion.NameIDType;
-import org.keycloak.dom.saml.v2.assertion.StatementAbstractType;
-import org.keycloak.dom.saml.v2.assertion.SubjectType;
 import org.keycloak.dom.saml.v2.assertion.SubjectType.STSubType;
 import org.keycloak.dom.saml.v2.protocol.ResponseType;
+import org.keycloak.rotation.HardcodedKeyLocator;
 import org.keycloak.rotation.KeyLocator;
 import org.keycloak.saml.common.ErrorCodes;
 import org.keycloak.saml.common.PicketLinkLogger;
 import org.keycloak.saml.common.PicketLinkLoggerFactory;
+import org.keycloak.saml.common.constants.GeneralConstants;
 import org.keycloak.saml.common.constants.JBossSAMLConstants;
 import org.keycloak.saml.common.exceptions.ConfigurationException;
 import org.keycloak.saml.common.exceptions.ParsingException;
@@ -45,6 +36,7 @@ import org.keycloak.saml.common.util.DocumentUtil;
 import org.keycloak.saml.common.util.StaxUtil;
 import org.keycloak.saml.processing.api.saml.v2.sig.SAML2Signature;
 import org.keycloak.saml.processing.core.parsers.saml.SAMLParser;
+import org.keycloak.saml.processing.core.saml.v2.common.SAMLDocumentHolder;
 import org.keycloak.saml.processing.core.saml.v2.writers.SAMLAssertionWriter;
 import org.keycloak.saml.processing.core.util.JAXPValidationUtil;
 import org.keycloak.saml.processing.core.util.XMLEncryptionUtil;
@@ -64,10 +56,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.keycloak.rotation.HardcodedKeyLocator;
-import org.keycloak.saml.common.constants.GeneralConstants;
-import org.keycloak.saml.processing.core.saml.v2.common.SAMLDocumentHolder;
-
 /**
  * Utility to deal with assertions
  *
@@ -82,9 +70,7 @@ public class AssertionUtil {
      * Given {@code AssertionType}, convert it into a String
      *
      * @param assertion
-     *
      * @return
-     *
      * @throws ProcessingException
      */
     public static String asString(AssertionType assertion) throws ProcessingException {
@@ -98,9 +84,7 @@ public class AssertionUtil {
      * Given {@code AssertionType}, convert it into a DOM Document.
      *
      * @param assertion
-     *
      * @return
-     *
      * @throws ProcessingException
      */
     public static Document asDocument(AssertionType assertion) throws ProcessingException {
@@ -121,7 +105,6 @@ public class AssertionUtil {
      *
      * @param id
      * @param issuer
-     *
      * @return
      */
     public static SAML11AssertionType createSAML11Assertion(String id, XMLGregorianCalendar issueInstant, String issuer) {
@@ -135,7 +118,6 @@ public class AssertionUtil {
      *
      * @param id
      * @param issuer
-     *
      * @return
      */
     public static AssertionType createAssertion(String id, NameIDType issuer) {
@@ -149,7 +131,6 @@ public class AssertionUtil {
      * Given a user name, create a {@code SubjectType} that can then be inserted into an assertion
      *
      * @param userName
-     *
      * @return
      */
     public static SubjectType createAssertionSubject(String userName) {
@@ -165,10 +146,9 @@ public class AssertionUtil {
     /**
      * Create an attribute type
      *
-     * @param name Name of the attribute
-     * @param nameFormat name format uri
+     * @param name            Name of the attribute
+     * @param nameFormat      name format uri
      * @param attributeValues an object array of attribute values
-     *
      * @return
      */
     public static AttributeType createAttribute(String name, String nameFormat, Object... attributeValues) {
@@ -192,11 +172,10 @@ public class AssertionUtil {
      *
      * @param assertion
      * @param durationInMilis
-     *
      * @throws ConfigurationException
      * @throws IssueInstantMissingException
      * @see {{@link #createTimedConditions(AssertionType, long, long)}
-     *      </p>
+     * </p>
      */
     public static void createTimedConditions(AssertionType assertion, long durationInMilis) throws ConfigurationException,
             IssueInstantMissingException {
@@ -216,7 +195,6 @@ public class AssertionUtil {
      *
      * @param assertion
      * @param durationInMilis
-     *
      * @throws ConfigurationException
      * @throws IssueInstantMissingException
      */
@@ -242,7 +220,6 @@ public class AssertionUtil {
      *
      * @param assertion
      * @param durationInMilis
-     *
      * @throws ConfigurationException
      * @throws IssueInstantMissingException
      */
@@ -265,9 +242,8 @@ public class AssertionUtil {
     /**
      * Given an {@linkplain Element}, validate the Signature direct child element
      *
-     * @param element parent {@linkplain Element}
+     * @param element   parent {@linkplain Element}
      * @param publicKey the {@link PublicKey}
-     *
      * @return true if signature is present and valid
      */
     public static boolean isSignatureValid(Element element, PublicKey publicKey) {
@@ -277,18 +253,17 @@ public class AssertionUtil {
     /**
      * Given an {@linkplain Element}, validate the Signature direct child element
      *
-     * @param element parent {@linkplain Element}
+     * @param element    parent {@linkplain Element}
      * @param keyLocator the {@link KeyLocator}
-     *
      * @return true if signature is present and valid
      */
-    
+
     public static boolean isSignatureValid(Element element, KeyLocator keyLocator) {
         try {
             SAML2Signature.configureIdAttribute(element);
-            
+
             Element signature = getSignature(element);
-            if(signature != null) {
+            if (signature != null) {
                 return XMLSignatureUtil.validateSingleNode(signature, keyLocator);
             }
         } catch (Exception e) {
@@ -296,11 +271,10 @@ public class AssertionUtil {
         }
         return false;
     }
-    
+
     /**
-     * 
      * Given an {@linkplain Element}, check if there is a Signature direct child element
-     * 
+     *
      * @param element parent {@linkplain Element}
      * @return true if signature is present
      */
@@ -308,19 +282,17 @@ public class AssertionUtil {
     public static boolean isSignedElement(Element element) {
         return getSignature(element) != null;
     }
-    
+
     protected static Element getSignature(Element element) {
         return DocumentUtil.getDirectChildElement(element, XMLSignature.XMLNS, "Signature");
     }
-    
+
     /**
      * Check whether the assertion has expired.
      * Processing rules defined in Section 2.5.1.2 of saml-core-2.0-os.pdf.
      *
      * @param assertion
-     *
      * @return
-     *
      * @throws ConfigurationException
      */
     public static boolean hasExpired(AssertionType assertion) throws ConfigurationException {
@@ -359,9 +331,7 @@ public class AssertionUtil {
      *
      * @param assertion
      * @param clockSkewInMilis in miliseconds
-     *
      * @return
-     *
      * @throws ConfigurationException
      */
     public static boolean hasExpired(AssertionType assertion, long clockSkewInMilis) throws ConfigurationException {
@@ -391,9 +361,7 @@ public class AssertionUtil {
      * Check whether the assertion has expired
      *
      * @param assertion
-     *
      * @return
-     *
      * @throws ConfigurationException
      */
     public static boolean hasExpired(SAML11AssertionType assertion) throws ConfigurationException {
@@ -425,9 +393,7 @@ public class AssertionUtil {
      *
      * @param assertion
      * @param clockSkewInMilis in miliseconds
-     *
      * @return
-     *
      * @throws ConfigurationException
      */
     public static boolean hasExpired(SAML11AssertionType assertion, long clockSkewInMilis) throws ConfigurationException {
@@ -458,7 +424,6 @@ public class AssertionUtil {
      * Extract the expiration time from an {@link AssertionType}
      *
      * @param assertion
-     *
      * @return
      */
     public static XMLGregorianCalendar getExpiration(AssertionType assertion) {
@@ -475,8 +440,7 @@ public class AssertionUtil {
      * Given an assertion, return the list of roles it may have
      *
      * @param assertion The {@link AssertionType}
-     * @param roleKeys a list of string values representing the role keys. The list can be null.
-     *
+     * @param roleKeys  a list of string values representing the role keys. The list can be null.
      * @return
      */
     public static List<String> getRoles(AssertionType assertion, List<String> roleKeys) {
@@ -514,8 +478,7 @@ public class AssertionUtil {
      * Given an assertion, return the list of roles it may have
      *
      * @param assertion The {@link SAML11AssertionType}
-     * @param roleKeys a list of string values representing the role keys. The list can be null.
-     *
+     * @param roleKeys  a list of string values representing the role keys. The list can be null.
      * @return
      */
     public static List<String> getRoles(SAML11AssertionType assertion, List<String> roleKeys) {
@@ -581,6 +544,7 @@ public class AssertionUtil {
 
     /**
      * This method modifies the given responseType, and replaces the encrypted assertion with a decrypted version.
+     *
      * @param responseType a response containg an encrypted assertion
      * @return the assertion element as it was decrypted. This can be used in signature verification.
      */

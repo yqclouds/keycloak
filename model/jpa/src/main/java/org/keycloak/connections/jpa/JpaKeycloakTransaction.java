@@ -65,7 +65,7 @@ public class JpaKeycloakTransaction implements KeycloakTransaction {
 
     @Override
     public boolean getRollbackOnly() {
-        return  em.getTransaction().getRollbackOnly();
+        return em.getTransaction().getRollbackOnly();
     }
 
     @Override

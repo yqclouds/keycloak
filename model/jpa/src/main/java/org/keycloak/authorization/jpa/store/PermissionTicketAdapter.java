@@ -16,20 +16,16 @@
  */
 package org.keycloak.authorization.jpa.store;
 
-import static org.keycloak.authorization.UserManagedPermissionUtil.updatePolicy;
-
-import javax.persistence.EntityManager;
-
 import org.keycloak.authorization.jpa.entities.PermissionTicketEntity;
 import org.keycloak.authorization.jpa.entities.PolicyEntity;
 import org.keycloak.authorization.jpa.entities.ScopeEntity;
-import org.keycloak.authorization.model.PermissionTicket;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.model.*;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.jpa.JpaModel;
+
+import javax.persistence.EntityManager;
+
+import static org.keycloak.authorization.UserManagedPermissionUtil.updatePolicy;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -45,6 +41,14 @@ public class PermissionTicketAdapter implements PermissionTicket, JpaModel<Permi
         this.entity = entity;
         this.entityManager = entityManager;
         this.storeFactory = storeFactory;
+    }
+
+    public static PermissionTicketEntity toEntity(EntityManager em, PermissionTicket permission) {
+        if (permission instanceof PermissionTicketAdapter) {
+            return ((PermissionTicketAdapter) permission).getEntity();
+        } else {
+            return em.getReference(PermissionTicketEntity.class, permission.getId());
+        }
     }
 
     @Override
@@ -140,15 +144,6 @@ public class PermissionTicketAdapter implements PermissionTicket, JpaModel<Permi
     public int hashCode() {
         return getId().hashCode();
     }
-
-    public static PermissionTicketEntity toEntity(EntityManager em, PermissionTicket permission) {
-        if (permission instanceof PermissionTicketAdapter) {
-            return ((PermissionTicketAdapter)permission).getEntity();
-        } else {
-            return em.getReference(PermissionTicketEntity.class, permission.getId());
-        }
-    }
-
 
 
 }

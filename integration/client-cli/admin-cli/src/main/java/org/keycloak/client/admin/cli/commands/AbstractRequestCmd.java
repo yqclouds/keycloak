@@ -24,47 +24,22 @@ import org.jboss.aesh.console.command.invocation.CommandInvocation;
 import org.keycloak.client.admin.cli.common.AttributeOperation;
 import org.keycloak.client.admin.cli.common.CmdStdinContext;
 import org.keycloak.client.admin.cli.config.ConfigData;
-import org.keycloak.client.admin.cli.util.AccessibleBufferOutputStream;
-import org.keycloak.client.admin.cli.util.Header;
-import org.keycloak.client.admin.cli.util.Headers;
-import org.keycloak.client.admin.cli.util.HeadersBody;
-import org.keycloak.client.admin.cli.util.HeadersBodyStatus;
-import org.keycloak.client.admin.cli.util.HttpUtil;
-import org.keycloak.client.admin.cli.util.OutputFormat;
-import org.keycloak.client.admin.cli.util.ReflectionUtil;
-import org.keycloak.client.admin.cli.util.ReturnFields;
+import org.keycloak.client.admin.cli.util.*;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.keycloak.client.admin.cli.common.AttributeOperation.Type.DELETE;
 import static org.keycloak.client.admin.cli.common.AttributeOperation.Type.SET;
 import static org.keycloak.client.admin.cli.util.AuthUtil.ensureToken;
 import static org.keycloak.client.admin.cli.util.ConfigUtil.credentialsAvailable;
 import static org.keycloak.client.admin.cli.util.ConfigUtil.loadConfig;
-import static org.keycloak.client.admin.cli.util.HttpUtil.checkSuccess;
-import static org.keycloak.client.admin.cli.util.HttpUtil.composeResourceUrl;
-import static org.keycloak.client.admin.cli.util.HttpUtil.doGet;
-import static org.keycloak.client.admin.cli.util.IoUtil.copyStream;
-import static org.keycloak.client.admin.cli.util.IoUtil.printErr;
-import static org.keycloak.client.admin.cli.util.IoUtil.printOut;
+import static org.keycloak.client.admin.cli.util.HttpUtil.*;
+import static org.keycloak.client.admin.cli.util.IoUtil.*;
 import static org.keycloak.client.admin.cli.util.OutputUtil.MAPPER;
 import static org.keycloak.client.admin.cli.util.OutputUtil.printAsCsv;
-import static org.keycloak.client.admin.cli.util.ParseUtil.mergeAttributes;
-import static org.keycloak.client.admin.cli.util.ParseUtil.parseFileOrStdin;
-import static org.keycloak.client.admin.cli.util.ParseUtil.parseKeyVal;
+import static org.keycloak.client.admin.cli.util.ParseUtil.*;
 
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
@@ -176,7 +151,7 @@ public abstract class AbstractRequestCmd extends AbstractAuthOptionsCmd {
                     String arg = it.next();
                     String[] keyVal;
                     if (arg.indexOf("=") == -1) {
-                        keyVal = new String[] {"", arg};
+                        keyVal = new String[]{"", arg};
                     } else {
                         keyVal = parseKeyVal(arg);
                     }
@@ -220,7 +195,6 @@ public abstract class AbstractRequestCmd extends AbstractAuthOptionsCmd {
             mergeMode = true;
         }
     }
-
 
 
     public CommandResult process(CommandInvocation commandInvocation) throws CommandException, InterruptedException {

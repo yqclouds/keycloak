@@ -24,12 +24,7 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Parse the <conditions> in the saml assertion
@@ -52,20 +47,6 @@ public class SAMLAttributeParser extends AbstractStaxSamlAssertionParser<Attribu
 
     public static SAMLAttributeParser getInstance() {
         return INSTANCE;
-    }
-
-    @Override
-    protected AttributeType instantiateElement(XMLEventReader xmlEventReader, StartElement element) throws ParsingException {
-        String name = StaxParserUtil.getRequiredAttributeValue(element, SAMLAssertionQNames.ATTR_NAME);
-        final AttributeType attribute = new AttributeType(name);
-
-        attribute.setFriendlyName(StaxParserUtil.getAttributeValue(element, SAMLAssertionQNames.ATTR_FRIENDLY_NAME));
-        attribute.setNameFormat(StaxParserUtil.getAttributeValue(element, SAMLAssertionQNames.ATTR_NAME_FORMAT));
-
-        // add non standard elements like SAMLAssertionQNames.ATTR_X500_ENCODING to other attributes
-        attribute.getOtherAttributes().putAll(collectUnknownAttributesFrom(element));
-
-        return attribute;
     }
 
     /**
@@ -93,6 +74,20 @@ public class SAMLAttributeParser extends AbstractStaxSamlAssertionParser<Attribu
         }
 
         return otherAttributes;
+    }
+
+    @Override
+    protected AttributeType instantiateElement(XMLEventReader xmlEventReader, StartElement element) throws ParsingException {
+        String name = StaxParserUtil.getRequiredAttributeValue(element, SAMLAssertionQNames.ATTR_NAME);
+        final AttributeType attribute = new AttributeType(name);
+
+        attribute.setFriendlyName(StaxParserUtil.getAttributeValue(element, SAMLAssertionQNames.ATTR_FRIENDLY_NAME));
+        attribute.setNameFormat(StaxParserUtil.getAttributeValue(element, SAMLAssertionQNames.ATTR_NAME_FORMAT));
+
+        // add non standard elements like SAMLAssertionQNames.ATTR_X500_ENCODING to other attributes
+        attribute.getOtherAttributes().putAll(collectUnknownAttributesFrom(element));
+
+        return attribute;
     }
 
     @Override

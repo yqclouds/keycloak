@@ -17,17 +17,13 @@
 
 package org.keycloak.protocol.saml;
 
+import org.keycloak.models.*;
+import org.keycloak.protocol.saml.preprocessor.SamlAuthenticationPreprocessor;
+import org.keycloak.services.managers.UserSessionCrossDCManager;
+
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.regex.Pattern;
-
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserSessionModel;
-import org.keycloak.protocol.saml.preprocessor.SamlAuthenticationPreprocessor;
-import org.keycloak.services.managers.UserSessionCrossDCManager;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -67,7 +63,7 @@ public class SamlSessionUtils {
 
         return userSession.getAuthenticatedClientSessionByClient(clientUUID);
     }
-    
+
     public static Iterator<SamlAuthenticationPreprocessor> getSamlAuthenticationPreprocessorIterator(KeycloakSession session) {
         return session.getKeycloakSessionFactory().getProviderFactories(SamlAuthenticationPreprocessor.class).stream()
                 .filter(Objects::nonNull)

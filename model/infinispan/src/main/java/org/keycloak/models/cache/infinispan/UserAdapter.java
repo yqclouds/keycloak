@@ -17,24 +17,13 @@
 
 package org.keycloak.models.cache.infinispan;
 
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.GroupModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleContainerModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.cache.CachedUserModel;
 import org.keycloak.models.cache.infinispan.entities.CachedUser;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.RoleUtils;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
@@ -44,11 +33,11 @@ import java.util.function.Supplier;
  */
 public class UserAdapter implements CachedUserModel {
 
-    private final Supplier<UserModel> modelSupplier;
     protected final CachedUser cached;
     protected final UserCacheSession userProviderCache;
     protected final KeycloakSession keycloakSession;
     protected final RealmModel realm;
+    private final Supplier<UserModel> modelSupplier;
     protected volatile UserModel updated;
 
     public UserAdapter(CachedUser cached, UserCacheSession userProvider, KeycloakSession keycloakSession, RealmModel realm) {
@@ -313,8 +302,8 @@ public class UserAdapter implements CachedUserModel {
         if (cached.getRoleMappings(modelSupplier).contains(role.getId())) return true;
 
         Set<RoleModel> mappings = getRoleMappings();
-        for (RoleModel mapping: mappings) {
-           if (mapping.hasRole(role)) return true;
+        for (RoleModel mapping : mappings) {
+            if (mapping.hasRole(role)) return true;
         }
         return RoleUtils.hasRoleFromGroup(getGroups(), role, true);
     }

@@ -29,8 +29,6 @@ import org.keycloak.representations.oidc.OIDCClientRepresentation;
  */
 public abstract class Auth {
 
-    public abstract void addAuth(HttpRequest request);
-
     public static Auth token(String token) {
         return new BearerTokenAuth(token);
     }
@@ -50,6 +48,8 @@ public abstract class Auth {
     public static Auth client(String clientId, String clientSecret) {
         return new BasicAuth(clientId, clientSecret);
     }
+
+    public abstract void addAuth(HttpRequest request);
 
     private static class BearerTokenAuth extends Auth {
 

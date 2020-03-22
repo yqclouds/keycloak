@@ -53,14 +53,14 @@ class AeshConsoleCallbackImpl extends AeshConsoleCallback {
                 CommandContainerResult ccResult =
                         commandContainer.executeCommand(aeshLine, console.getInvocationProviders(), console.getAeshContext(),
                                 new AeshCommandInvocationProvider().enhanceCommandInvocation(
-                                new AeshCommandInvocation(console,
-                                    output.getControlOperator(), output.getPid(), this)));
+                                        new AeshCommandInvocation(console,
+                                                output.getControlOperator(), output.getPid(), this)));
 
                 result = ccResult.getCommandResult();
 
-                if(result == CommandResult.SUCCESS && resultHandler != null)
+                if (result == CommandResult.SUCCESS && resultHandler != null)
                     resultHandler.onSuccess();
-                else if(resultHandler != null)
+                else if (resultHandler != null)
                     resultHandler.onFailure(result);
 
                 if (result == CommandResult.FAILURE) {
@@ -85,8 +85,7 @@ class AeshConsoleCallbackImpl extends AeshConsoleCallback {
         // empty line
         else if (output != null) {
             result = CommandResult.FAILURE;
-        }
-        else {
+        } else {
             //stop();
             result = CommandResult.FAILURE;
         }

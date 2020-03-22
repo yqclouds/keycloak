@@ -39,6 +39,9 @@ public class UsernameFormFactory implements AuthenticatorFactory, DisplayTypeAut
 
     public static final String PROVIDER_ID = "auth-username-form";
     public static final UsernameForm SINGLETON = new UsernameForm();
+    public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionModel.Requirement.REQUIRED
+    };
 
     @Override
     public Authenticator create(KeycloakSession session) {
@@ -81,9 +84,6 @@ public class UsernameFormFactory implements AuthenticatorFactory, DisplayTypeAut
     public boolean isConfigurable() {
         return false;
     }
-    public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED
-    };
 
     @Override
     public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {

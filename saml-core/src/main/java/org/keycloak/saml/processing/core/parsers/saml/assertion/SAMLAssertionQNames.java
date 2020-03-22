@@ -1,13 +1,13 @@
 /*
  * Copyright 2018 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,10 +19,12 @@ package org.keycloak.saml.processing.core.parsers.saml.assertion;
 import org.keycloak.saml.common.constants.JBossSAMLURIConstants;
 import org.keycloak.saml.processing.core.parsers.saml.xmldsig.XmlDSigQNames;
 import org.keycloak.saml.processing.core.parsers.util.HasQName;
+
 import javax.xml.namespace.QName;
 
 /**
  * Elements and attribute names from saml-schema-assertion-2.0.xsd
+ *
  * @author hmlnarik
  */
 public enum SAMLAssertionQNames implements HasQName {
@@ -90,8 +92,7 @@ public enum SAMLAssertionQNames implements HasQName {
 
     ATTR_X500_ENCODING(JBossSAMLURIConstants.X500_NSURI, "Encoding"),
 
-    UNKNOWN_ELEMENT("")
-    ;
+    UNKNOWN_ELEMENT("");
 
     private final QName qName;
 

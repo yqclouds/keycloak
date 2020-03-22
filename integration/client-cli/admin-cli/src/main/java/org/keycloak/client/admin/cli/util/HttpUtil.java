@@ -22,13 +22,7 @@ import org.apache.http.HeaderIterator;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpHead;
-import org.apache.http.client.methods.HttpOptions;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.*;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.InputStreamEntity;
@@ -42,11 +36,7 @@ import org.keycloak.client.admin.cli.operations.RoleOperations;
 import org.keycloak.util.JsonSerialization;
 
 import javax.net.ssl.SSLContext;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -68,10 +58,9 @@ public class HttpUtil {
     public static final String APPLICATION_JSON = "application/json";
     public static final String APPLICATION_FORM_URL_ENCODED = "application/x-www-form-urlencoded";
     public static final String UTF_8 = "utf-8";
-
+    private static final AtomicBoolean tlsWarningEmitted = new AtomicBoolean();
     private static HttpClient httpClient;
     private static SSLConnectionSocketFactory sslsf;
-    private static final AtomicBoolean tlsWarningEmitted = new AtomicBoolean();
 
     public static InputStream doGet(String url, String acceptType, String authorization) {
         try {
@@ -165,7 +154,7 @@ public class HttpUtil {
         } else {
             responseStream = new InputStream() {
                 @Override
-                public int read () throws IOException {
+                public int read() throws IOException {
                     return -1;
                 }
             };
@@ -182,7 +171,7 @@ public class HttpUtil {
     }
 
     private static void addHeaders(HttpRequestBase request, Headers headers) {
-        for (Header header: headers) {
+        for (Header header : headers) {
             request.setHeader(header.getName(), header.getValue());
         }
     }
@@ -292,18 +281,18 @@ public class HttpUtil {
         return null;
     }
 
-    public static String addQueryParamsToUri(String uri, String ... queryParams) {
+    public static String addQueryParamsToUri(String uri, String... queryParams) {
         if (queryParams == null) {
             return uri;
         }
 
         if (queryParams.length % 2 != 0) {
-            throw new RuntimeException("Value missing for query parameter: " + queryParams[queryParams.length-1]);
+            throw new RuntimeException("Value missing for query parameter: " + queryParams[queryParams.length - 1]);
         }
 
         Map<String, String> params = new LinkedHashMap<>();
         for (int i = 0; i < queryParams.length; i += 2) {
-            params.put(queryParams[i], queryParams[i+1]);
+            params.put(queryParams[i], queryParams[i + 1]);
         }
         return addQueryParamsToUri(uri, params);
     }
@@ -315,7 +304,7 @@ public class HttpUtil {
         }
 
         StringBuilder query = new StringBuilder();
-        for (Map.Entry<String, String> params: queryParams.entrySet()) {
+        for (Map.Entry<String, String> params : queryParams.entrySet()) {
             try {
                 if (query.length() > 0) {
                     query.append("&");
@@ -334,7 +323,7 @@ public class HttpUtil {
             if ("realms".equals(uri) || uri.startsWith("realms/")) {
                 uri = normalize(adminRoot) + uri;
             } else if ("serverinfo".equals(uri)) {
-                    uri = normalize(adminRoot) + uri;
+                uri = normalize(adminRoot) + uri;
             } else {
                 uri = normalize(adminRoot) + "realms/" + realm + "/" + uri;
             }
@@ -467,6 +456,6 @@ public class HttpUtil {
 
 
     public static String singularize(String value) {
-        return value.substring(0, value.length()-1);
+        return value.substring(0, value.length() - 1);
     }
 }

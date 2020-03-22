@@ -38,16 +38,6 @@ import java.net.URI;
  */
 public class KeycloakSamlClientInstallation implements ClientInstallationProvider {
 
-    @Override
-    public Response generateInstallation(KeycloakSession session, RealmModel realm, ClientModel client, URI baseUri) {
-        SamlClient samlClient = new SamlClient(client);
-        StringBuilder buffer = new StringBuilder();
-        buffer.append("<keycloak-saml-adapter>\n");
-        baseXml(session, realm, client, baseUri, samlClient, buffer);
-        buffer.append("</keycloak-saml-adapter>\n");
-        return Response.ok(buffer.toString(), MediaType.TEXT_PLAIN_TYPE).build();
-    }
-
     public static void baseXml(KeycloakSession session, RealmModel realm, ClientModel client, URI baseUri, SamlClient samlClient, StringBuilder buffer) {
         buffer.append("    <SP entityID=\"").append(client.getBaseUrl() == null ? "SPECIFY YOUR entityID!" : client.getBaseUrl()).append("\"\n");
         buffer.append("        sslPolicy=\"").append(realm.getSslRequired().name()).append("\"\n");
@@ -114,6 +104,16 @@ public class KeycloakSamlClientInstallation implements ClientInstallationProvide
         buffer.append("/>\n");
         buffer.append("        </IDP>\n");
         buffer.append("    </SP>\n");
+    }
+
+    @Override
+    public Response generateInstallation(KeycloakSession session, RealmModel realm, ClientModel client, URI baseUri) {
+        SamlClient samlClient = new SamlClient(client);
+        StringBuilder buffer = new StringBuilder();
+        buffer.append("<keycloak-saml-adapter>\n");
+        baseXml(session, realm, client, baseUri, samlClient, buffer);
+        buffer.append("</keycloak-saml-adapter>\n");
+        return Response.ok(buffer.toString(), MediaType.TEXT_PLAIN_TYPE).build();
     }
 
     @Override

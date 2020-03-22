@@ -29,10 +29,9 @@ import org.keycloak.storage.ldap.idm.store.ldap.LDAPContextManager;
  */
 public class LDAPConnectionTestManager {
 
-    private static final Logger logger = Logger.getLogger(LDAPConnectionTestManager.class);
-
     public static final String TEST_CONNECTION = "testConnection";
     public static final String TEST_AUTHENTICATION = "testAuthentication";
+    private static final Logger logger = Logger.getLogger(LDAPConnectionTestManager.class);
 
     public static boolean testLDAP(KeycloakSession session, String action, String connectionUrl, String bindDn,
                                    String bindCredential, String useTruststoreSpi, String connectionTimeout, String tls) {

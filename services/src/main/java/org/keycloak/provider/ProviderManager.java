@@ -19,15 +19,7 @@ package org.keycloak.provider;
 import org.jboss.logging.Logger;
 import org.keycloak.common.util.MultivaluedHashMap;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -73,6 +65,7 @@ public class ProviderManager {
             }
         }
     }
+
     public synchronized List<Spi> loadSpis() {
         // Use a map to prevent duplicates, since the loaders may have overlapping classpaths.
         Map<String, Spi> spiMap = new HashMap<>();
@@ -94,7 +87,7 @@ public class ProviderManager {
             for (ProviderLoader loader : loaders) {
                 List<ProviderFactory> f = loader.load(spi);
                 if (f != null) {
-                    for (ProviderFactory pf: f) {
+                    for (ProviderFactory pf : f) {
                         String uniqueId = spi.getName() + "-" + pf.getId();
                         if (!loaded.contains(uniqueId)) {
                             cache.add(spi.getProviderClass(), pf);
@@ -129,7 +122,7 @@ public class ProviderManager {
     }
 
     public synchronized KeycloakDeploymentInfo getInfo() {
-        return  info;
+        return info;
     }
 
 }

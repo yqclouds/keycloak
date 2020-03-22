@@ -45,7 +45,7 @@ public abstract class AbstractVaultProvider implements VaultProvider {
     /**
      * Creates an instance of {@code AbstractVaultProvider} with the specified realm and list of key resolvers.
      *
-     * @param realm the name of the keycloak realm.
+     * @param realm               the name of the keycloak realm.
      * @param configuredResolvers a {@link List} containing the configured key resolvers.
      */
     public AbstractVaultProvider(final String realm, final List<VaultKeyResolver> configuredResolvers) {

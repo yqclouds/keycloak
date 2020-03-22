@@ -35,24 +35,9 @@ import org.keycloak.protocol.ClientInstallationProvider;
 import org.keycloak.protocol.LoginProtocol;
 import org.keycloak.protocol.LoginProtocolFactory;
 import org.keycloak.protocol.ProtocolMapper;
-import org.keycloak.provider.ConfiguredProvider;
-import org.keycloak.provider.ProviderConfigProperty;
-import org.keycloak.provider.ProviderFactory;
-import org.keycloak.provider.ServerInfoAwareProviderFactory;
-import org.keycloak.provider.Spi;
-import org.keycloak.representations.idm.ComponentTypeRepresentation;
-import org.keycloak.representations.idm.ConfigPropertyRepresentation;
-import org.keycloak.representations.idm.PasswordPolicyTypeRepresentation;
-import org.keycloak.representations.idm.ProtocolMapperRepresentation;
-import org.keycloak.representations.idm.ProtocolMapperTypeRepresentation;
-import org.keycloak.representations.info.ClientInstallationRepresentation;
-import org.keycloak.representations.info.MemoryInfoRepresentation;
-import org.keycloak.representations.info.ProfileInfoRepresentation;
-import org.keycloak.representations.info.ProviderRepresentation;
-import org.keycloak.representations.info.ServerInfoRepresentation;
-import org.keycloak.representations.info.SpiInfoRepresentation;
-import org.keycloak.representations.info.SystemInfoRepresentation;
-import org.keycloak.representations.info.ThemeInfoRepresentation;
+import org.keycloak.provider.*;
+import org.keycloak.representations.idm.*;
+import org.keycloak.representations.info.*;
 import org.keycloak.theme.Theme;
 
 import javax.ws.rs.GET;
@@ -61,13 +46,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -78,6 +57,23 @@ public class ServerInfoAdminResource {
 
     @Context
     private KeycloakSession session;
+
+    private static Map<String, List<String>> createEnumsMap(Class... enums) {
+        Map<String, List<String>> m = new HashMap<>();
+        for (Class e : enums) {
+            String n = e.getSimpleName();
+            n = Character.toLowerCase(n.charAt(0)) + n.substring(1);
+
+            List<String> l = new LinkedList<>();
+            for (Object c : e.getEnumConstants()) {
+                l.add(c.toString());
+            }
+            Collections.sort(l);
+
+            m.put(n, l);
+        }
+        return m;
+    }
 
     /**
      * Get themes, social providers, auth providers, and event listeners available on this server
@@ -137,13 +133,13 @@ public class ServerInfoAdminResource {
                     if (pi instanceof ConfiguredProvider) {
                         ComponentTypeRepresentation rep = new ComponentTypeRepresentation();
                         rep.setId(pi.getId());
-                        ConfiguredProvider configured = (ConfiguredProvider)pi;
+                        ConfiguredProvider configured = (ConfiguredProvider) pi;
                         rep.setHelpText(configured.getHelpText());
                         List<ProviderConfigProperty> configProperties = configured.getConfigProperties();
                         if (configProperties == null) configProperties = Collections.EMPTY_LIST;
                         rep.setProperties(ModelToRepresentation.toRepresentation(configProperties));
                         if (pi instanceof ComponentFactory) {
-                            rep.setMetadata(((ComponentFactory)pi).getTypeMetadata());
+                            rep.setMetadata(((ComponentFactory) pi).getTypeMetadata());
                         }
                         List<ComponentTypeRepresentation> reps = info.getComponentTypes().get(spi.getProviderClass().getName());
                         if (reps == null) {
@@ -226,7 +222,7 @@ public class ServerInfoAdminResource {
     private void setClientInstallations(ServerInfoRepresentation info) {
         info.setClientInstallations(new HashMap<String, List<ClientInstallationRepresentation>>());
         for (ProviderFactory p : session.getKeycloakSessionFactory().getProviderFactories(ClientInstallationProvider.class)) {
-            ClientInstallationProvider provider = (ClientInstallationProvider)p;
+            ClientInstallationProvider provider = (ClientInstallationProvider) p;
             List<ClientInstallationRepresentation> types = info.getClientInstallations().get(provider.getProtocol());
             if (types == null) {
                 types = new LinkedList<>();
@@ -235,9 +231,9 @@ public class ServerInfoAdminResource {
             ClientInstallationRepresentation rep = new ClientInstallationRepresentation();
             rep.setId(p.getId());
             rep.setHelpText(provider.getHelpText());
-            rep.setDisplayType( provider.getDisplayType());
-            rep.setProtocol( provider.getProtocol());
-            rep.setDownloadOnly( provider.isDownloadOnly());
+            rep.setDisplayType(provider.getDisplayType());
+            rep.setProtocol(provider.getProtocol());
+            rep.setDownloadOnly(provider.isDownloadOnly());
             rep.setFilename(provider.getFilename());
             rep.setMediaType(provider.getMediaType());
             types.add(rep);
@@ -247,7 +243,7 @@ public class ServerInfoAdminResource {
     private void setProtocolMapperTypes(ServerInfoRepresentation info) {
         info.setProtocolMapperTypes(new HashMap<String, List<ProtocolMapperTypeRepresentation>>());
         for (ProviderFactory p : session.getKeycloakSessionFactory().getProviderFactories(ProtocolMapper.class)) {
-            ProtocolMapper mapper = (ProtocolMapper)p;
+            ProtocolMapper mapper = (ProtocolMapper) p;
             List<ProtocolMapperTypeRepresentation> types = info.getProtocolMapperTypes().get(mapper.getProtocol());
             if (types == null) {
                 types = new LinkedList<>();
@@ -269,7 +265,7 @@ public class ServerInfoAdminResource {
     private void setBuiltinProtocolMappers(ServerInfoRepresentation info) {
         info.setBuiltinProtocolMappers(new HashMap<String, List<ProtocolMapperRepresentation>>());
         for (ProviderFactory p : session.getKeycloakSessionFactory().getProviderFactories(LoginProtocol.class)) {
-            LoginProtocolFactory factory = (LoginProtocolFactory)p;
+            LoginProtocolFactory factory = (LoginProtocolFactory) p;
             List<ProtocolMapperRepresentation> mappers = new LinkedList<>();
             for (ProtocolMapperModel mapper : factory.getBuiltinMappers().values()) {
                 mappers.add(ModelToRepresentation.toRepresentation(mapper));
@@ -290,23 +286,6 @@ public class ServerInfoAdminResource {
             rep.setMultipleSupported(factory.isMultiplSupported());
             info.getPasswordPolicies().add(rep);
         }
-    }
-
-    private static Map<String, List<String>> createEnumsMap(Class... enums) {
-        Map<String, List<String>> m = new HashMap<>();
-        for (Class e : enums) {
-            String n = e.getSimpleName();
-            n = Character.toLowerCase(n.charAt(0)) + n.substring(1);
-
-            List<String> l = new LinkedList<>();
-            for (Object c :  e.getEnumConstants()) {
-                l.add(c.toString());
-            }
-            Collections.sort(l);
-
-            m.put(n, l);
-        }
-        return m;
     }
 
 }

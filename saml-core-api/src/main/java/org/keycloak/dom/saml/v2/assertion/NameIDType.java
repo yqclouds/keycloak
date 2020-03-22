@@ -18,6 +18,7 @@ package org.keycloak.dom.saml.v2.assertion;
 
 import org.keycloak.common.util.StringSerialization;
 import org.keycloak.common.util.StringSerialization.Deserializer;
+
 import java.net.URI;
 
 /**
@@ -39,6 +40,17 @@ public class NameIDType extends BaseIDAbstractType {
     private String value;
     private URI format;
     private String sPProvidedID;
+
+    public static NameIDType deserializeFromString(String s) {
+        NameIDType res = new NameIDType();
+        Deserializer d = StringSerialization.deserialize(s);
+        res.setNameQualifier(d.next(String.class));
+        res.setSPNameQualifier(d.next(String.class));
+        res.setValue(d.next(String.class));
+        res.setFormat(d.next(URI.class));
+        res.setSPProvidedID(d.next(String.class));
+        return res;
+    }
 
     public String getValue() {
         return value;
@@ -74,22 +86,11 @@ public class NameIDType extends BaseIDAbstractType {
 
     public String serializeAsString() {
         return StringSerialization.serialize(
-          getNameQualifier(),
-          getSPNameQualifier(),
-          value,
-          format,
-          sPProvidedID
+                getNameQualifier(),
+                getSPNameQualifier(),
+                value,
+                format,
+                sPProvidedID
         );
-    }
-
-    public static NameIDType deserializeFromString(String s) {
-        NameIDType res = new NameIDType();
-        Deserializer d = StringSerialization.deserialize(s);
-        res.setNameQualifier(d.next(String.class));
-        res.setSPNameQualifier(d.next(String.class));
-        res.setValue(d.next(String.class));
-        res.setFormat(d.next(URI.class));
-        res.setSPProvidedID(d.next(String.class));
-        return res;
     }
 }

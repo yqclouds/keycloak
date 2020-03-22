@@ -30,7 +30,7 @@ import org.keycloak.sessions.AuthenticationSessionProvider;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-public abstract class AbstractAuthSessionClusterListener <SE extends SessionClusterEvent> implements ClusterListener {
+public abstract class AbstractAuthSessionClusterListener<SE extends SessionClusterEvent> implements ClusterListener {
 
     private static final Logger log = Logger.getLogger(AbstractAuthSessionClusterListener.class);
 

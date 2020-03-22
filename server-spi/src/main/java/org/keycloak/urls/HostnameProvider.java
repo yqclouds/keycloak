@@ -25,7 +25,7 @@ import javax.ws.rs.core.UriInfo;
  * The Hostname provider is used by Keycloak to decide URLs for frontend and backend requests. A provider can either
  * base the URL on the request (Host header for example) or based on hard-coded URLs. Further, it is possible to have
  * different URLs on frontend requests and backend requests.
- *
+ * <p>
  * Note: Do NOT use {@link KeycloakContext#getUri()} within a Hostname provider. It will result in an infinite loop.
  */
 public interface HostnameProvider extends Provider {
@@ -34,7 +34,7 @@ public interface HostnameProvider extends Provider {
      * Returns the URL scheme. If not implemented will delegate to {@link #getScheme(UriInfo)}.
      *
      * @param originalUriInfo the original URI
-     * @param uype type of the request
+     * @param uype            type of the request
      * @return the schema
      */
     default String getScheme(UriInfo originalUriInfo, UrlType type) {
@@ -55,7 +55,7 @@ public interface HostnameProvider extends Provider {
      * Returns the host. If not implemented will delegate to {@link #getHostname(UriInfo)}.
      *
      * @param originalUriInfo the original URI
-     * @param type type of the request
+     * @param type            type of the request
      * @return the host
      */
     default String getHostname(UriInfo originalUriInfo, UrlType type) {
@@ -63,7 +63,8 @@ public interface HostnameProvider extends Provider {
     }
 
     /**
-     *  Returns the host. If not implemented will get the host from the request.
+     * Returns the host. If not implemented will get the host from the request.
+     *
      * @param originalUriInfo
      * @return the host
      */
@@ -75,7 +76,7 @@ public interface HostnameProvider extends Provider {
      * Returns the port (or -1 for default port). If not implemented will delegate to {@link #getPort(UriInfo)}
      *
      * @param originalUriInfo the original URI
-     * @param type type of the request
+     * @param type            type of the request
      * @return the port
      */
     default int getPort(UriInfo originalUriInfo, UrlType type) {
@@ -97,7 +98,7 @@ public interface HostnameProvider extends Provider {
      * a reverse proxy. If not implemented will delegate to {@link #getContextPath(UriInfo)}
      *
      * @param originalUriInfo the original URI
-     * @param type type of the request
+     * @param type            type of the request
      * @return the context-path
      */
     default String getContextPath(UriInfo originalUriInfo, UrlType type) {

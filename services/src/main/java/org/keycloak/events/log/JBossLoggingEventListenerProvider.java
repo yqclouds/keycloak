@@ -84,16 +84,16 @@ public class JBossLoggingEventListenerProvider implements EventListenerProvider 
                     }
                 }
             }
-            
-            AuthenticationSessionModel authSession = session.getContext().getAuthenticationSession(); 
-            if(authSession!=null) {
+
+            AuthenticationSessionModel authSession = session.getContext().getAuthenticationSession();
+            if (authSession != null) {
                 sb.append(", authSessionParentId=");
                 sb.append(authSession.getParentSession().getId());
                 sb.append(", authSessionTabId=");
                 sb.append(authSession.getTabId());
             }
-            
-            if(logger.isTraceEnabled()) {
+
+            if (logger.isTraceEnabled()) {
                 setKeycloakContext(sb);
             }
 
@@ -127,8 +127,8 @@ public class JBossLoggingEventListenerProvider implements EventListenerProvider 
                 sb.append(", error=");
                 sb.append(adminEvent.getError());
             }
-            
-            if(logger.isTraceEnabled()) {
+
+            if (logger.isTraceEnabled()) {
                 setKeycloakContext(sb);
             }
 
@@ -139,7 +139,7 @@ public class JBossLoggingEventListenerProvider implements EventListenerProvider 
     @Override
     public void close() {
     }
-    
+
     private void setKeycloakContext(StringBuilder sb) {
         KeycloakContext context = session.getContext();
         UriInfo uriInfo = context.getUri();
@@ -162,7 +162,7 @@ public class JBossLoggingEventListenerProvider implements EventListenerProvider 
             }
             sb.append("]");
         }
-        
+
     }
 
 }

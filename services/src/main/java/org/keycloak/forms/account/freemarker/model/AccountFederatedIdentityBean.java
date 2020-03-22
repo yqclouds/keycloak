@@ -17,12 +17,7 @@
 
 package org.keycloak.forms.account.freemarker.model;
 
-import org.keycloak.models.FederatedIdentityModel;
-import org.keycloak.models.IdentityProviderModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.OrderedModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.services.resources.account.AccountFormService;
 
@@ -65,11 +60,11 @@ public class AccountFederatedIdentityBean {
 
                 String displayName = KeycloakModelUtils.getIdentityProviderDisplayName(session, provider);
                 FederatedIdentityEntry entry = new FederatedIdentityEntry(identity, displayName, provider.getAlias(), provider.getAlias(),
-                		  															provider.getConfig() != null ? provider.getConfig().get("guiOrder") : null);
+                        provider.getConfig() != null ? provider.getConfig().get("guiOrder") : null);
                 this.identities.add(entry);
             }
         }
-        
+
         this.identities.sort(IDP_COMPARATOR_INSTANCE);
 
         // Removing last social provider is not possible if you don't have other possibility to authenticate
@@ -95,11 +90,11 @@ public class AccountFederatedIdentityBean {
 
     public class FederatedIdentityEntry implements OrderedModel {
 
-        private FederatedIdentityModel federatedIdentityModel;
         private final String providerId;
-		private final String providerName;
+        private final String providerName;
         private final String guiOrder;
         private final String displayName;
+        private FederatedIdentityModel federatedIdentityModel;
 
         public FederatedIdentityEntry(FederatedIdentityModel federatedIdentityModel, String displayName, String providerId,
                                       String providerName, String guiOrder) {
@@ -113,9 +108,9 @@ public class AccountFederatedIdentityBean {
         public String getProviderId() {
             return providerId;
         }
-        
+
         public String getProviderName() {
-          return providerName;
+            return providerName;
         }
 
         public String getUserId() {

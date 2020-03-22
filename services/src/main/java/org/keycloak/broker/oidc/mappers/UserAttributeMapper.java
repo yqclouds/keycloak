@@ -42,13 +42,12 @@ import java.util.stream.Collectors;
 public class UserAttributeMapper extends AbstractClaimMapper {
 
     public static final String[] COMPATIBLE_PROVIDERS = {KeycloakOIDCIdentityProviderFactory.PROVIDER_ID, OIDCIdentityProviderFactory.PROVIDER_ID};
-
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
-
     public static final String USER_ATTRIBUTE = "user.attribute";
     public static final String EMAIL = "email";
     public static final String FIRST_NAME = "firstName";
     public static final String LAST_NAME = "lastName";
+    public static final String PROVIDER_ID = "oidc-user-attribute-idp-mapper";
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     static {
         ProviderConfigProperty property;
@@ -66,8 +65,6 @@ public class UserAttributeMapper extends AbstractClaimMapper {
         property.setType(ProviderConfigProperty.STRING_TYPE);
         configProperties.add(property);
     }
-
-    public static final String PROVIDER_ID = "oidc-user-attribute-idp-mapper";
 
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {
@@ -97,7 +94,7 @@ public class UserAttributeMapper extends AbstractClaimMapper {
     @Override
     public void preprocessFederatedIdentity(KeycloakSession session, RealmModel realm, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
         String attribute = mapperModel.getConfig().get(USER_ATTRIBUTE);
-        if(StringUtil.isNullOrEmpty(attribute)){
+        if (StringUtil.isNullOrEmpty(attribute)) {
             return;
         }
         Object value = getClaimValue(mapperModel, context);
@@ -138,7 +135,7 @@ public class UserAttributeMapper extends AbstractClaimMapper {
     @Override
     public void updateBrokeredUser(KeycloakSession session, RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
         String attribute = mapperModel.getConfig().get(USER_ATTRIBUTE);
-        if(StringUtil.isNullOrEmpty(attribute)){
+        if (StringUtil.isNullOrEmpty(attribute)) {
             return;
         }
         Object value = getClaimValue(mapperModel, context);

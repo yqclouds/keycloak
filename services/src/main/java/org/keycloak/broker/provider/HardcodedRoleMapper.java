@@ -17,11 +17,7 @@
 
 package org.keycloak.broker.provider;
 
-import org.keycloak.models.IdentityProviderMapperModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 
@@ -33,6 +29,8 @@ import java.util.List;
  * @version $Revision: 1 $
  */
 public class HardcodedRoleMapper extends AbstractIdentityProviderMapper {
+    public static final String[] COMPATIBLE_PROVIDERS = {ANY_PROVIDER};
+    public static final String PROVIDER_ID = "oidc-hardcoded-role-idp-mapper";
     protected static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     static {
@@ -59,11 +57,6 @@ public class HardcodedRoleMapper extends AbstractIdentityProviderMapper {
     public String getDisplayType() {
         return "Hardcoded Role";
     }
-
-    public static final String[] COMPATIBLE_PROVIDERS = {ANY_PROVIDER};
-
-
-    public static final String PROVIDER_ID = "oidc-hardcoded-role-idp-mapper";
 
     @Override
     public String getId() {

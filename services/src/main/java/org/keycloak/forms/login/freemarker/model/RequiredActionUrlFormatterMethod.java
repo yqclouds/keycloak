@@ -26,6 +26,7 @@ import java.net.URI;
 import java.util.List;
 
 /**
+ *
  */
 public class RequiredActionUrlFormatterMethod implements TemplateMethodModelEx {
     private final String realm;

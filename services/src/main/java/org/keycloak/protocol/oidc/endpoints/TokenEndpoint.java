@@ -27,12 +27,7 @@ import org.keycloak.authentication.AuthenticationProcessor;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.authorization.AuthorizationTokenService;
 import org.keycloak.authorization.util.Tokens;
-import org.keycloak.broker.provider.BrokeredIdentityContext;
-import org.keycloak.broker.provider.ExchangeExternalToken;
-import org.keycloak.broker.provider.ExchangeTokenToIdentityProviderToken;
-import org.keycloak.broker.provider.IdentityProvider;
-import org.keycloak.broker.provider.IdentityProviderFactory;
-import org.keycloak.broker.provider.IdentityProviderMapper;
+import org.keycloak.broker.provider.*;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.Profile;
 import org.keycloak.common.constants.ServiceAccountConstants;
@@ -45,24 +40,14 @@ import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.jose.jws.JWSInputException;
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.AuthenticationFlowModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.ClientSessionContext;
-import org.keycloak.models.FederatedIdentityModel;
-import org.keycloak.models.IdentityProviderMapperModel;
-import org.keycloak.models.IdentityProviderModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.AuthenticationFlowResolver;
 import org.keycloak.protocol.oidc.OIDCAdvancedConfigWrapper;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.TokenManager;
 import org.keycloak.protocol.oidc.utils.AuthorizeClientUtil;
+import org.keycloak.protocol.oidc.utils.OAuth2Code;
+import org.keycloak.protocol.oidc.utils.OAuth2CodeParser;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.JsonWebToken;
@@ -70,20 +55,13 @@ import org.keycloak.representations.idm.authorization.AuthorizationRequest.Metad
 import org.keycloak.services.CorsErrorResponseException;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.Urls;
-import org.keycloak.services.managers.AppAuthManager;
-import org.keycloak.services.managers.AuthenticationManager;
-import org.keycloak.services.managers.AuthenticationSessionManager;
-import org.keycloak.services.managers.BruteForceProtector;
-import org.keycloak.services.managers.ClientManager;
-import org.keycloak.protocol.oidc.utils.OAuth2Code;
-import org.keycloak.protocol.oidc.utils.OAuth2CodeParser;
-import org.keycloak.services.managers.RealmManager;
+import org.keycloak.services.managers.*;
 import org.keycloak.services.resources.Cors;
 import org.keycloak.services.resources.IdentityBrokerService;
 import org.keycloak.services.resources.admin.AdminAuth;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
-import org.keycloak.services.util.MtlsHoKTokenUtil;
 import org.keycloak.services.util.DefaultClientSessionContext;
+import org.keycloak.services.util.MtlsHoKTokenUtil;
 import org.keycloak.services.validation.Validation;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
@@ -93,14 +71,9 @@ import org.keycloak.utils.ProfileHelper;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.Status;
 import java.security.MessageDigest;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -117,40 +90,26 @@ import static org.keycloak.models.ImpersonationSessionNote.IMPERSONATOR_USERNAME
 public class TokenEndpoint {
 
     private static final Logger logger = Logger.getLogger(TokenEndpoint.class);
-    private MultivaluedMap<String, String> formParams;
-    private ClientModel client;
-    private Map<String, String> clientAuthAttributes;
-
-    private enum Action {
-        AUTHORIZATION_CODE, REFRESH_TOKEN, PASSWORD, CLIENT_CREDENTIALS, TOKEN_EXCHANGE, PERMISSION
-    }
-
     // https://tools.ietf.org/html/rfc7636#section-4.2
     private static final Pattern VALID_CODE_VERIFIER_PATTERN = Pattern.compile("^[0-9a-zA-Z\\-\\.~_]+$");
-
-    @Context
-    private KeycloakSession session;
-
-    @Context
-    private HttpRequest request;
-
-    @Context
-    private HttpResponse httpResponse;
-
-    @Context
-    private HttpHeaders headers;
-
-    @Context
-    private ClientConnection clientConnection;
-
     private final TokenManager tokenManager;
     private final RealmModel realm;
     private final EventBuilder event;
-
+    private MultivaluedMap<String, String> formParams;
+    private ClientModel client;
+    private Map<String, String> clientAuthAttributes;
+    @Context
+    private KeycloakSession session;
+    @Context
+    private HttpRequest request;
+    @Context
+    private HttpResponse httpResponse;
+    @Context
+    private HttpHeaders headers;
+    @Context
+    private ClientConnection clientConnection;
     private Action action;
-
     private String grantType;
-
     private Cors cors;
 
     public TokenEndpoint(TokenManager tokenManager, RealmModel realm, EventBuilder event) {
@@ -267,7 +226,7 @@ public class TokenEndpoint {
             action = Action.PERMISSION;
         } else {
             throw new CorsErrorResponseException(cors, OAuthErrorException.UNSUPPORTED_GRANT_TYPE,
-                "Unsupported " + OIDCLoginProtocol.GRANT_TYPE_PARAM, Response.Status.BAD_REQUEST);
+                    "Unsupported " + OIDCLoginProtocol.GRANT_TYPE_PARAM, Response.Status.BAD_REQUEST);
         }
 
         event.detail(Details.GRANT_TYPE, grantType);
@@ -415,7 +374,7 @@ public class TokenEndpoint {
         if (TokenUtil.isOIDCRequest(scopeParam)) {
             responseBuilder.generateIDToken();
         }
-        
+
         AccessTokenResponse res = null;
         try {
             res = responseBuilder.build();
@@ -426,7 +385,7 @@ public class TokenEndpoint {
                 throw re;
             }
         }
-        
+
         event.success();
 
         return cors.builder(Response.ok(res).type(MediaType.APPLICATION_JSON_TYPE)).build();
@@ -437,7 +396,7 @@ public class TokenEndpoint {
         if (codeVerifier == null) {
             logger.warnf("PKCE code verifier not specified, authUserId = %s, authUsername = %s", authUserId, authUsername);
             event.error(Errors.CODE_VERIFIER_MISSING);
-            throw new CorsErrorResponseException(cors, OAuthErrorException.INVALID_GRANT, "PKCE code verifier not specified", Response.Status.BAD_REQUEST); 
+            throw new CorsErrorResponseException(cors, OAuthErrorException.INVALID_GRANT, "PKCE code verifier not specified", Response.Status.BAD_REQUEST);
         }
         verifyCodeVerifier(codeVerifier, codeChallenge, codeChallengeMethod, authUserId, authUsername);
     }
@@ -527,7 +486,7 @@ public class TokenEndpoint {
 
     private void updateClientSession(AuthenticatedClientSessionModel clientSession) {
 
-        if(clientSession == null) {
+        if (clientSession == null) {
             ServicesLogger.LOGGER.clientSessionNull();
             return;
         }
@@ -818,7 +777,7 @@ public class TokenEndpoint {
                     }
                 }
             }
-         }
+        }
     }
 
     public Response exchangeToIdentityProvider(UserModel targetUser, UserSessionModel targetUserSession, String requestedIssuer) {
@@ -841,7 +800,7 @@ public class TokenEndpoint {
             event.error(Errors.NOT_ALLOWED);
             throw new CorsErrorResponseException(cors, OAuthErrorException.ACCESS_DENIED, "Client not allowed to exchange", Response.Status.FORBIDDEN);
         }
-        Response response = ((ExchangeTokenToIdentityProviderToken)provider).exchangeFromToken(session.getContext().getUri(), event, client, targetUserSession, targetUser, formParams);
+        Response response = ((ExchangeTokenToIdentityProviderToken) provider).exchangeFromToken(session.getContext().getUri(), event, client, targetUserSession, targetUser, formParams);
         return cors.builder(Response.fromResponse(response)).build();
 
     }
@@ -983,7 +942,7 @@ public class TokenEndpoint {
         if (mappers != null) {
             KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
             for (IdentityProviderMapperModel mapper : mappers) {
-                IdentityProviderMapper target = (IdentityProviderMapper)sessionFactory.getProviderFactory(IdentityProviderMapper.class, mapper.getIdentityProviderMapper());
+                IdentityProviderMapper target = (IdentityProviderMapper) sessionFactory.getProviderFactory(IdentityProviderMapper.class, mapper.getIdentityProviderMapper());
                 target.preprocessFederatedIdentity(session, realm, mapper, context);
             }
         }
@@ -1039,7 +998,7 @@ public class TokenEndpoint {
             if (mappers != null) {
                 KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
                 for (IdentityProviderMapperModel mapper : mappers) {
-                    IdentityProviderMapper target = (IdentityProviderMapper)sessionFactory.getProviderFactory(IdentityProviderMapper.class, mapper.getIdentityProviderMapper());
+                    IdentityProviderMapper target = (IdentityProviderMapper) sessionFactory.getProviderFactory(IdentityProviderMapper.class, mapper.getIdentityProviderMapper());
                     target.importNewUser(session, realm, user, mapper, context);
                 }
             }
@@ -1064,7 +1023,7 @@ public class TokenEndpoint {
             if (mappers != null) {
                 KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
                 for (IdentityProviderMapperModel mapper : mappers) {
-                    IdentityProviderMapper target = (IdentityProviderMapper)sessionFactory.getProviderFactory(IdentityProviderMapper.class, mapper.getIdentityProviderMapper());
+                    IdentityProviderMapper target = (IdentityProviderMapper) sessionFactory.getProviderFactory(IdentityProviderMapper.class, mapper.getIdentityProviderMapper());
                     target.updateBrokeredUser(session, realm, user, mapper, context);
                 }
             }
@@ -1215,5 +1174,9 @@ public class TokenEndpoint {
         String codeVerifierEncoded = Base64Url.encode(digestBytes);
         return codeVerifierEncoded;
     }
- 
+
+    private enum Action {
+        AUTHORIZATION_CODE, REFRESH_TOKEN, PASSWORD, CLIENT_CREDENTIALS, TOKEN_EXCHANGE, PERMISSION
+    }
+
 }

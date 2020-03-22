@@ -14,11 +14,7 @@ import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class SHA256PairwiseSubMapper extends AbstractPairwiseSubMapper {
     public static final String PROVIDER_ID = "sha256";
@@ -44,6 +40,10 @@ public class SHA256PairwiseSubMapper extends AbstractPairwiseSubMapper {
         config.put(PairwiseSubMapperHelper.PAIRWISE_SUB_ALGORITHM_SALT, salt);
         pairwise.setConfig(config);
         return pairwise;
+    }
+
+    private static String generateSalt() {
+        return KeycloakModelUtils.generateId();
     }
 
     @Override
@@ -93,10 +93,6 @@ public class SHA256PairwiseSubMapper extends AbstractPairwiseSubMapper {
         sha256.update(localSub.getBytes(charset));
         byte[] hash = sha256.digest(salt);
         return UUID.nameUUIDFromBytes(hash).toString();
-    }
-
-    private static String generateSalt() {
-        return KeycloakModelUtils.generateId();
     }
 
     @Override

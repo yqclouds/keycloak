@@ -20,13 +20,7 @@ package org.keycloak.admin.client.resource;
 import org.keycloak.representations.idm.ClientInitialAccessCreatePresentation;
 import org.keycloak.representations.idm.ClientInitialAccessPresentation;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -39,7 +33,7 @@ public interface ClientInitialAccessResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     ClientInitialAccessPresentation create(ClientInitialAccessCreatePresentation rep);
-    
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     List<ClientInitialAccessPresentation> list();

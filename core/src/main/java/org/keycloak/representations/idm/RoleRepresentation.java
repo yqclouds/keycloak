@@ -17,11 +17,7 @@
 
 package org.keycloak.representations.idm;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -35,37 +31,9 @@ public class RoleRepresentation {
     protected Boolean scopeParamRequired;
     protected boolean composite;
     protected Composites composites;
+    protected Map<String, List<String>> attributes;
     private Boolean clientRole;
     private String containerId;
-    protected Map<String, List<String>> attributes;
-
-    public static class Composites {
-        protected Set<String> realm;
-        protected Map<String, List<String>> client;
-        @Deprecated
-        protected Map<String, List<String>> application;
-
-        public Set<String> getRealm() {
-            return realm;
-        }
-
-        public void setRealm(Set<String> realm) {
-            this.realm = realm;
-        }
-
-        public Map<String, List<String>> getClient() {
-            return client;
-        }
-
-        public void setClient(Map<String, List<String>> client) {
-            this.client = client;
-        }
-
-        @Deprecated
-        public Map<String, List<String>> getApplication() {
-            return application;
-        }
-    }
 
     public RoleRepresentation() {
     }
@@ -157,5 +125,33 @@ public class RoleRepresentation {
 
         attributes.put(name, Arrays.asList(value));
         return this;
+    }
+
+    public static class Composites {
+        protected Set<String> realm;
+        protected Map<String, List<String>> client;
+        @Deprecated
+        protected Map<String, List<String>> application;
+
+        public Set<String> getRealm() {
+            return realm;
+        }
+
+        public void setRealm(Set<String> realm) {
+            this.realm = realm;
+        }
+
+        public Map<String, List<String>> getClient() {
+            return client;
+        }
+
+        public void setClient(Map<String, List<String>> client) {
+            this.client = client;
+        }
+
+        @Deprecated
+        public Map<String, List<String>> getApplication() {
+            return application;
+        }
     }
 }

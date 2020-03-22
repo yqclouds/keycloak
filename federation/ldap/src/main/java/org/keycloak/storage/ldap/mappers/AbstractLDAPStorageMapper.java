@@ -22,10 +22,8 @@ import org.keycloak.models.GroupModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-import org.keycloak.storage.ldap.LDAPConfig;
 import org.keycloak.storage.ldap.LDAPStorageProvider;
 import org.keycloak.storage.ldap.idm.model.LDAPObject;
-import org.keycloak.storage.ldap.idm.query.internal.LDAPQuery;
 import org.keycloak.storage.user.SynchronizationResult;
 
 import javax.naming.AuthenticationException;
@@ -49,32 +47,26 @@ public abstract class AbstractLDAPStorageMapper implements LDAPStorageMapper {
         this.session = ldapProvider.getSession();
     }
 
-
-    public SynchronizationResult syncDataFromFederationProviderToKeycloak(RealmModel realm) {
-        return new SynchronizationResult();
-    }
-
-
-    public SynchronizationResult syncDataFromKeycloakToFederationProvider(RealmModel realm) {
-        return new SynchronizationResult();
-    }
-
-
-    public List<UserModel> getGroupMembers(RealmModel realm, GroupModel group, int firstResult, int maxResults) {
-        return Collections.emptyList();
-    }
-
-
-    public boolean onAuthenticationFailure(LDAPObject ldapUser, UserModel user, AuthenticationException ldapException, RealmModel realm) {
-        return false;
-    }
-
-
     public static boolean parseBooleanParameter(ComponentModel mapperModel, String paramName) {
         String paramm = mapperModel.getConfig().getFirst(paramName);
         return Boolean.parseBoolean(paramm);
     }
 
+    public SynchronizationResult syncDataFromFederationProviderToKeycloak(RealmModel realm) {
+        return new SynchronizationResult();
+    }
+
+    public SynchronizationResult syncDataFromKeycloakToFederationProvider(RealmModel realm) {
+        return new SynchronizationResult();
+    }
+
+    public List<UserModel> getGroupMembers(RealmModel realm, GroupModel group, int firstResult, int maxResults) {
+        return Collections.emptyList();
+    }
+
+    public boolean onAuthenticationFailure(LDAPObject ldapUser, UserModel user, AuthenticationException ldapException, RealmModel realm) {
+        return false;
+    }
 
     public LDAPStorageProvider getLdapProvider() {
         return ldapProvider;

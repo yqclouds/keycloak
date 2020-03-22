@@ -60,6 +60,16 @@ public class PublicRealmResource {
         this.realm = realm;
     }
 
+    public static PublishedRealmRepresentation realmRep(KeycloakSession session, RealmModel realm, UriInfo uriInfo) {
+        PublishedRealmRepresentation rep = new PublishedRealmRepresentation();
+        rep.setRealm(realm.getName());
+        rep.setTokenServiceUrl(OIDCLoginProtocolService.tokenServiceBaseUrl(uriInfo).build(realm.getName()).toString());
+        rep.setAccountServiceUrl(AccountFormService.accountServiceBaseUrl(uriInfo).build(realm.getName()).toString());
+        rep.setPublicKeyPem(PemUtils.encodeKey(session.keys().getActiveRsaKey(realm).getPublicKey()));
+        rep.setNotBefore(realm.getNotBefore());
+        return rep;
+    }
+
     /**
      * CORS preflight
      *
@@ -82,16 +92,6 @@ public class PublicRealmResource {
     public PublishedRealmRepresentation getRealm() {
         Cors.add(request).allowedOrigins(Cors.ACCESS_CONTROL_ALLOW_ORIGIN_WILDCARD).auth().build(response);
         return realmRep(session, realm, session.getContext().getUri());
-    }
-
-    public static PublishedRealmRepresentation realmRep(KeycloakSession session, RealmModel realm, UriInfo uriInfo) {
-        PublishedRealmRepresentation rep = new PublishedRealmRepresentation();
-        rep.setRealm(realm.getName());
-        rep.setTokenServiceUrl(OIDCLoginProtocolService.tokenServiceBaseUrl(uriInfo).build(realm.getName()).toString());
-        rep.setAccountServiceUrl(AccountFormService.accountServiceBaseUrl(uriInfo).build(realm.getName()).toString());
-        rep.setPublicKeyPem(PemUtils.encodeKey(session.keys().getActiveRsaKey(realm).getPublicKey()));
-        rep.setNotBefore(realm.getNotBefore());
-        return rep;
     }
 
 

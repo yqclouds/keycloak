@@ -18,6 +18,7 @@
 package org.keycloak.protocol.saml.installation;
 
 import org.keycloak.Config;
+import org.keycloak.dom.saml.v2.metadata.KeyTypes;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
@@ -31,7 +32,6 @@ import org.keycloak.saml.common.constants.JBossSAMLURIConstants;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import org.keycloak.dom.saml.v2.metadata.KeyTypes;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -64,7 +64,7 @@ public class SamlSPDescriptorClientInstallation implements ClientInstallationPro
         if (nameIdFormat == null) nameIdFormat = SamlProtocol.SAML_DEFAULT_NAMEID_FORMAT;
         String spCertificate = SPMetadataDescriptor.xmlKeyInfo("        ", null, samlClient.getClientSigningCertificate(), KeyTypes.SIGNING.value(), true);
         String encCertificate = SPMetadataDescriptor.xmlKeyInfo("        ", null, samlClient.getClientEncryptingCertificate(), KeyTypes.ENCRYPTION.value(), true);
-        return SPMetadataDescriptor.getSPDescriptor(binding, assertionUrl, logoutUrl, samlClient.requiresClientSignature(), 
+        return SPMetadataDescriptor.getSPDescriptor(binding, assertionUrl, logoutUrl, samlClient.requiresClientSignature(),
                 samlClient.requiresAssertionSignature(), samlClient.requiresEncryption(),
                 client.getClientId(), nameIdFormat, spCertificate, encCertificate);
     }

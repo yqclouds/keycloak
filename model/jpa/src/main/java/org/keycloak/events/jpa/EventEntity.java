@@ -26,38 +26,38 @@ import javax.persistence.Table;
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 @Entity
-@Table(name="EVENT_ENTITY")
+@Table(name = "EVENT_ENTITY")
 public class EventEntity {
 
     @Id
-    @Column(name="ID", length = 36)
+    @Column(name = "ID", length = 36)
     private String id;
 
-    @Column(name="EVENT_TIME")
+    @Column(name = "EVENT_TIME")
     private long time;
 
-    @Column(name="TYPE")
+    @Column(name = "TYPE")
     private String type;
 
-    @Column(name="REALM_ID")
+    @Column(name = "REALM_ID")
     private String realmId;
 
-    @Column(name="CLIENT_ID")
+    @Column(name = "CLIENT_ID")
     private String clientId;
 
-    @Column(name="USER_ID")
+    @Column(name = "USER_ID")
     private String userId;
 
-    @Column(name="SESSION_ID")
+    @Column(name = "SESSION_ID")
     private String sessionId;
 
-    @Column(name="IP_ADDRESS")
+    @Column(name = "IP_ADDRESS")
     private String ipAddress;
 
-    @Column(name="ERROR")
+    @Column(name = "ERROR")
     private String error;
 
-    @Column(name="DETAILS_JSON", length = 2550)
+    @Column(name = "DETAILS_JSON", length = 2550)
     private String detailsJson;
 
     public String getId() {

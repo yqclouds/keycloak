@@ -313,7 +313,7 @@ public class AuthnRequestType extends RequestAbstractType {
                 return URI.create(issuer.getValue());
             }
         } catch (Exception e) {
-            throw new RuntimeException("Could not resolve sender URL using the Issuer value [" + issuer.getValue() + "]." , e);
+            throw new RuntimeException("Could not resolve sender URL using the Issuer value [" + issuer.getValue() + "].", e);
         }
 
         throw new RuntimeException("Could not resolve sender URL. AuthnRequest must have a value for AssertionConsumerServiceURL or Issuer.");

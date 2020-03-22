@@ -45,6 +45,15 @@ public class NamespaceContext implements javax.xml.namespace.NamespaceContext {
         nsMap.put(prefix, uri);
     }
 
+    /**
+     * Create new NamespaceContext for use.
+     *
+     * @return
+     */
+    public static NamespaceContext create() {
+        return new NamespaceContext();
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -82,14 +91,5 @@ public class NamespaceContext implements javax.xml.namespace.NamespaceContext {
     public NamespaceContext addNsUriPair(String ns, String uri) {
         nsMap.put(ns, uri);
         return this;
-    }
-
-    /**
-     * Create new NamespaceContext for use.
-     *
-     * @return
-     */
-    public static NamespaceContext create() {
-        return new NamespaceContext();
     }
 }

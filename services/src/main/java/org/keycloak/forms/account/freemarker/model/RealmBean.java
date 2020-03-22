@@ -57,7 +57,7 @@ public class RealmBean {
         return realm.isInternationalizationEnabled();
     }
 
-    public Set<String> getSupportedLocales(){
+    public Set<String> getSupportedLocales() {
         return realm.getSupportedLocales();
     }
 

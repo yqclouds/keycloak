@@ -19,16 +19,11 @@ package org.keycloak.protocol.oidc.utils;
 
 import org.jboss.logging.Logger;
 import org.keycloak.common.util.UriUtils;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.Constants;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakUriInfo;
-import org.keycloak.models.RealmModel;
+import org.keycloak.models.*;
 import org.keycloak.services.Urls;
 import org.keycloak.services.util.ResolveRelative;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;

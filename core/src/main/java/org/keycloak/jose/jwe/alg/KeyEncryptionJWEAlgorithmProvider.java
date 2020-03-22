@@ -17,12 +17,11 @@
 
 package org.keycloak.jose.jwe.alg;
 
-import java.security.Key;
-
-import javax.crypto.Cipher;
-
 import org.keycloak.jose.jwe.JWEKeyStorage;
 import org.keycloak.jose.jwe.enc.JWEEncryptionProvider;
+
+import javax.crypto.Cipher;
+import java.security.Key;
 
 public abstract class KeyEncryptionJWEAlgorithmProvider implements JWEAlgorithmProvider {
 
@@ -38,7 +37,7 @@ public abstract class KeyEncryptionJWEAlgorithmProvider implements JWEAlgorithmP
         Cipher cipher = getCipherProvider();
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
         byte[] cekBytes = keyStorage.getCekBytes();
-        return cipher.doFinal(cekBytes); 
+        return cipher.doFinal(cekBytes);
     }
 
     protected abstract Cipher getCipherProvider() throws Exception;

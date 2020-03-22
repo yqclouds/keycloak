@@ -37,17 +37,6 @@ public class JsonConfigProvider implements Config.ConfigProvider {
         this.properties = properties;
     }
 
-    @Override
-    public String getProvider(String spi) {
-        JsonNode n = getNode(config, spi, "provider");
-        return n != null ? replaceProperties(n.textValue()) : null;
-    }
-
-    @Override
-    public Config.Scope scope(String... path) {
-        return new JsonScope(getNode(config, path));
-    }
-
     private static JsonNode getNode(JsonNode root, String... path) {
         if (root == null) {
             return null;
@@ -60,6 +49,17 @@ public class JsonConfigProvider implements Config.ConfigProvider {
             }
         }
         return n;
+    }
+
+    @Override
+    public String getProvider(String spi) {
+        JsonNode n = getNode(config, spi, "provider");
+        return n != null ? replaceProperties(n.textValue()) : null;
+    }
+
+    @Override
+    public Config.Scope scope(String... path) {
+        return new JsonScope(getNode(config, path));
     }
 
     private String replaceProperties(String value) {
@@ -107,7 +107,7 @@ public class JsonConfigProvider implements Config.ConfigProvider {
                 }
                 return a;
             } else {
-               return new String[] { replaceProperties(n.textValue()) };
+                return new String[]{replaceProperties(n.textValue())};
             }
         }
 

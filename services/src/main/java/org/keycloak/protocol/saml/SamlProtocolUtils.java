@@ -17,32 +17,32 @@
 
 package org.keycloak.protocol.saml;
 
-import java.security.Key;
 import org.keycloak.common.VerificationException;
 import org.keycloak.common.util.PemUtils;
-import org.keycloak.models.ClientModel;
-import org.keycloak.saml.SignatureAlgorithm;
-import org.keycloak.saml.common.constants.GeneralConstants;
-import org.keycloak.saml.common.exceptions.ProcessingException;
-import org.keycloak.saml.processing.api.saml.v2.sig.SAML2Signature;
-import org.keycloak.saml.processing.web.util.RedirectBindingUtil;
-import org.w3c.dom.Document;
-
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.UriInfo;
-import java.security.PublicKey;
-import java.security.Signature;
 import org.keycloak.dom.saml.v2.SAML2Object;
 import org.keycloak.dom.saml.v2.protocol.ExtensionsType;
 import org.keycloak.dom.saml.v2.protocol.RequestAbstractType;
 import org.keycloak.dom.saml.v2.protocol.StatusResponseType;
+import org.keycloak.models.ClientModel;
 import org.keycloak.rotation.HardcodedKeyLocator;
 import org.keycloak.rotation.KeyLocator;
+import org.keycloak.saml.SignatureAlgorithm;
+import org.keycloak.saml.common.constants.GeneralConstants;
+import org.keycloak.saml.common.exceptions.ProcessingException;
+import org.keycloak.saml.processing.api.saml.v2.sig.SAML2Signature;
 import org.keycloak.saml.processing.core.saml.v2.common.SAMLDocumentHolder;
 import org.keycloak.saml.processing.core.util.KeycloakKeySamlExtensionGenerator;
+import org.keycloak.saml.processing.web.util.RedirectBindingUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriInfo;
+import java.security.Key;
+import java.security.PublicKey;
+import java.security.Signature;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import org.w3c.dom.Element;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -89,6 +89,7 @@ public class SamlProtocolUtils {
 
     /**
      * Returns public part of SAML signing key from the client settings.
+     *
      * @param client
      * @return Public key for signature validation.
      * @throws VerificationException
@@ -99,6 +100,7 @@ public class SamlProtocolUtils {
 
     /**
      * Returns public part of SAML encryption key from the client settings.
+     *
      * @param client
      * @return Public key for encryption.
      * @throws VerificationException
@@ -189,7 +191,7 @@ public class SamlProtocolUtils {
         }
 
         for (Object ext : extensions.getAny()) {
-            if (! (ext instanceof Element)) {
+            if (!(ext instanceof Element)) {
                 continue;
             }
 

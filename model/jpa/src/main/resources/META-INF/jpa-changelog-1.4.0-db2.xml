@@ -16,10 +16,13 @@
   ~ limitations under the License.
   -->
 
-<databaseChangeLog logicalFilePath="META-INF/db2-jpa-changelog-1.4.0.xml" xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   logicalFilePath="META-INF/db2-jpa-changelog-1.4.0.xml"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
     <changeSet author="bburke@redhat.com" id="1.4.0">
         <preConditions onSqlOutput="TEST" onFail="MARK_RAN">
-            <dbms type="db2" />
+            <dbms type="db2"/>
         </preConditions>
 
         <delete tableName="CLIENT_SESSION_AUTH_STATUS"/>
@@ -65,12 +68,14 @@
             </column>
         </addColumn>
 
-        <dropColumn tableName="AUTHENTICATOR"  columnName="PROVIDER_ID"/>
+        <dropColumn tableName="AUTHENTICATOR" columnName="PROVIDER_ID"/>
         <renameTable oldTableName="AUTHENTICATOR_CONFIG" newTableName="AUTHENTICATOR_CONFIG_ENTRY"/>
 
-        <dropForeignKeyConstraint baseTableName="AUTHENTICATOR" constraintName="FK_AUTH_REALM" />
+        <dropForeignKeyConstraint baseTableName="AUTHENTICATOR" constraintName="FK_AUTH_REALM"/>
         <renameTable oldTableName="AUTHENTICATOR" newTableName="AUTHENTICATOR_CONFIG"/>
-        <addForeignKeyConstraint baseColumnNames="REALM_ID" baseTableName="AUTHENTICATOR_CONFIG" constraintName="FK_AUTH_REALM_2" referencedColumnNames="ID" referencedTableName="REALM"/>
+        <addForeignKeyConstraint baseColumnNames="REALM_ID" baseTableName="AUTHENTICATOR_CONFIG"
+                                 constraintName="FK_AUTH_REALM_2" referencedColumnNames="ID"
+                                 referencedTableName="REALM"/>
 
         <!-- OAUTH_GRANT,
         CODE_TO_TOKEN,
@@ -161,11 +166,18 @@
 
         <dropPrimaryKey constraintName="CONSTRAINT_6" tableName="USER_ATTRIBUTE"/>
         <addPrimaryKey columnNames="ID" constraintName="CONSTRAINT_USER_ATTRIBUTE_PK" tableName="USER_ATTRIBUTE"/>
-        <addPrimaryKey columnNames="ID" constraintName="CONSTRAINT_REQ_ACT_PRV_PK" tableName="REQUIRED_ACTION_PROVIDER"/>
-        <addPrimaryKey columnNames="REQUIRED_ACTION_ID, NAME" constraintName="CONSTRAINT_REQ_ACT_CFG_PK" tableName="REQUIRED_ACTION_CONFIG"/>
-        <addPrimaryKey columnNames="CLIENT_SESSION, NAME" constraintName="CONSTR_CL_USR_SES_NOTE" tableName="CLIENT_USER_SESSION_NOTE"/>
-        <addForeignKeyConstraint baseColumnNames="REALM_ID" baseTableName="REQUIRED_ACTION_PROVIDER" constraintName="FK_REQ_ACT_REALM" referencedColumnNames="ID" referencedTableName="REALM"/>
-        <addForeignKeyConstraint baseColumnNames="CLIENT_SESSION" baseTableName="CLIENT_USER_SESSION_NOTE" constraintName="FK_CL_USR_SES_NOTE" referencedColumnNames="ID" referencedTableName="CLIENT_SESSION"/>
+        <addPrimaryKey columnNames="ID" constraintName="CONSTRAINT_REQ_ACT_PRV_PK"
+                       tableName="REQUIRED_ACTION_PROVIDER"/>
+        <addPrimaryKey columnNames="REQUIRED_ACTION_ID, NAME" constraintName="CONSTRAINT_REQ_ACT_CFG_PK"
+                       tableName="REQUIRED_ACTION_CONFIG"/>
+        <addPrimaryKey columnNames="CLIENT_SESSION, NAME" constraintName="CONSTR_CL_USR_SES_NOTE"
+                       tableName="CLIENT_USER_SESSION_NOTE"/>
+        <addForeignKeyConstraint baseColumnNames="REALM_ID" baseTableName="REQUIRED_ACTION_PROVIDER"
+                                 constraintName="FK_REQ_ACT_REALM" referencedColumnNames="ID"
+                                 referencedTableName="REALM"/>
+        <addForeignKeyConstraint baseColumnNames="CLIENT_SESSION" baseTableName="CLIENT_USER_SESSION_NOTE"
+                                 constraintName="FK_CL_USR_SES_NOTE" referencedColumnNames="ID"
+                                 referencedTableName="CLIENT_SESSION"/>
         <dropColumn tableName="CLIENT_SESSION" columnName="ACTION"/>
         <addColumn tableName="USER_ENTITY">
             <column name="CREATED_TIMESTAMP" type="BIGINT"/>

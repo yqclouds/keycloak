@@ -22,11 +22,7 @@ import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.IDToken;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -37,11 +33,9 @@ import java.util.stream.Collectors;
  */
 abstract class AbstractUserRoleMappingMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
 
-    @Override
-    public int getPriority() {
-        return ProtocolMapperUtils.PRIORITY_ROLE_MAPPER;
-    }
-
+    private static final Pattern CLIENT_ID_PATTERN = Pattern.compile("\\$\\{client_id\\}");
+    private static final Pattern DOT_PATTERN = Pattern.compile("\\.");
+    private static final String DOT_REPLACEMENT = "\\\\\\\\.";
 
     /**
      * Retrieves all roles of the current user based on direct roles set to the user, its groups and their parent groups.
@@ -78,12 +72,6 @@ abstract class AbstractUserRoleMappingMapper extends AbstractOIDCProtocolMapper 
         //OIDCAttributeMapperHelper.mapClaim(token, mappingModel, claimValue);
         mapClaim(token, mappingModel, claimValue, clientId);
     }
-
-
-    private static final Pattern CLIENT_ID_PATTERN = Pattern.compile("\\$\\{client_id\\}");
-
-    private static final Pattern DOT_PATTERN = Pattern.compile("\\.");
-    private static final String DOT_REPLACEMENT = "\\\\\\\\.";
 
     private static void mapClaim(IDToken token, ProtocolMapperModel mappingModel, Object attributeValue, String clientId) {
         attributeValue = OIDCAttributeMapperHelper.mapAttributeValue(mappingModel, attributeValue);
@@ -122,7 +110,7 @@ abstract class AbstractUserRoleMappingMapper extends AbstractOIDCProtocolMapper 
                 }
 
             } else {
-                Map<String, Object> nested = (Map<String, Object>)jsonObject.get(component);
+                Map<String, Object> nested = (Map<String, Object>) jsonObject.get(component);
 
                 if (nested == null) {
                     nested = new HashMap<>();
@@ -133,7 +121,6 @@ abstract class AbstractUserRoleMappingMapper extends AbstractOIDCProtocolMapper 
             }
         }
     }
-
 
     // Special case when roles are put to the access token via "realmAcces, resourceAccess" properties
     private static boolean checkAccessToken(IDToken idToken, List<String> path, Object attributeValue) {
@@ -166,5 +153,10 @@ abstract class AbstractUserRoleMappingMapper extends AbstractOIDCProtocolMapper 
             access.addRole(role);
         }
         return true;
+    }
+
+    @Override
+    public int getPriority() {
+        return ProtocolMapperUtils.PRIORITY_ROLE_MAPPER;
     }
 }

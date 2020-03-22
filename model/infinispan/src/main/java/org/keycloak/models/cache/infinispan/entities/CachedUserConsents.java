@@ -27,8 +27,8 @@ import java.util.List;
  * @version $Revision: 1 $
  */
 public class CachedUserConsents extends AbstractRevisioned implements InRealm {
-    private HashMap<String, CachedUserConsent> consents = new HashMap<>();
     private final String realmId;
+    private HashMap<String, CachedUserConsent> consents = new HashMap<>();
 
     public CachedUserConsents(Long revision, String id, RealmModel realm,
                               List<UserConsentModel> consents) {

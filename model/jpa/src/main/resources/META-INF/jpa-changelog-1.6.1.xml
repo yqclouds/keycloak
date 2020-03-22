@@ -16,12 +16,17 @@
   ~ limitations under the License.
   -->
 
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
     <changeSet author="mposolda@redhat.com" id="1.6.1_from15">
 
-        <preConditions onFail="MARK_RAN" onFailMessage="Upgrading from 1.6.0 version. Skipped 1.6.1_from15 changeSet and marked as ran" onSqlOutput="TEST">
+        <preConditions onFail="MARK_RAN"
+                       onFailMessage="Upgrading from 1.6.0 version. Skipped 1.6.1_from15 changeSet and marked as ran"
+                       onSqlOutput="TEST">
             <not>
-                <changeSetExecuted id="1.6.0" author="mposolda@redhat.com" changeLogFile="META-INF/jpa-changelog-1.6.0.xml" />
+                <changeSetExecuted id="1.6.0" author="mposolda@redhat.com"
+                                   changeLogFile="META-INF/jpa-changelog-1.6.0.xml"/>
             </not>
         </preConditions>
 
@@ -77,36 +82,44 @@
             <column name="DATA" type="CLOB"/>
         </createTable>
 
-        <addPrimaryKey columnNames="USER_SESSION_ID, OFFLINE_FLAG" constraintName="CONSTRAINT_OFFL_US_SES_PK2" tableName="OFFLINE_USER_SESSION"/>
-        <addPrimaryKey columnNames="CLIENT_SESSION_ID, OFFLINE_FLAG" constraintName="CONSTRAINT_OFFL_CL_SES_PK2" tableName="OFFLINE_CLIENT_SESSION"/>
+        <addPrimaryKey columnNames="USER_SESSION_ID, OFFLINE_FLAG" constraintName="CONSTRAINT_OFFL_US_SES_PK2"
+                       tableName="OFFLINE_USER_SESSION"/>
+        <addPrimaryKey columnNames="CLIENT_SESSION_ID, OFFLINE_FLAG" constraintName="CONSTRAINT_OFFL_CL_SES_PK2"
+                       tableName="OFFLINE_CLIENT_SESSION"/>
     </changeSet>
 
     <!-- KEYCLOAK-2404 - just for the update from 1.6.0 BUT not 1.6.1 or newer -->
     <changeSet author="mposolda@redhat.com" id="1.6.1_from16-pre">
 
-        <preConditions onFail="MARK_RAN" onFailMessage="Skipped 1.6.1_from16-pre changeSet and marked as ran" onSqlOutput="TEST">
+        <preConditions onFail="MARK_RAN" onFailMessage="Skipped 1.6.1_from16-pre changeSet and marked as ran"
+                       onSqlOutput="TEST">
             <and>
-                <changeSetExecuted id="1.6.0" author="mposolda@redhat.com" changeLogFile="META-INF/jpa-changelog-1.6.0.xml" />
+                <changeSetExecuted id="1.6.0" author="mposolda@redhat.com"
+                                   changeLogFile="META-INF/jpa-changelog-1.6.0.xml"/>
                 <not>
-                    <changeSetExecuted id="1.6.1" author="mposolda@redhat.com" changeLogFile="META-INF/jpa-changelog-1.6.1.xml"/>
+                    <changeSetExecuted id="1.6.1" author="mposolda@redhat.com"
+                                       changeLogFile="META-INF/jpa-changelog-1.6.1.xml"/>
                 </not>
             </and>
         </preConditions>
 
         <delete tableName="OFFLINE_CLIENT_SESSION"/>
         <delete tableName="OFFLINE_USER_SESSION"/>
-    
+
     </changeSet>
 
     <!-- Just for the update from 1.6.0 -->
     <changeSet author="mposolda@redhat.com" id="1.6.1_from16">
 
-        <preConditions onFail="MARK_RAN" onFailMessage="Upgrading from 1.5.0 or older version. Skipped 1.6.1_from16 changeSet and marked as ran" onSqlOutput="TEST">
-            <changeSetExecuted id="1.6.0" author="mposolda@redhat.com" changeLogFile="META-INF/jpa-changelog-1.6.0.xml" />
+        <preConditions onFail="MARK_RAN"
+                       onFailMessage="Upgrading from 1.5.0 or older version. Skipped 1.6.1_from16 changeSet and marked as ran"
+                       onSqlOutput="TEST">
+            <changeSetExecuted id="1.6.0" author="mposolda@redhat.com"
+                               changeLogFile="META-INF/jpa-changelog-1.6.0.xml"/>
         </preConditions>
 
-        <dropPrimaryKey constraintName="CONSTRAINT_OFFLINE_US_SES_PK" tableName="OFFLINE_USER_SESSION" />
-        <dropPrimaryKey constraintName="CONSTRAINT_OFFLINE_CL_SES_PK" tableName="OFFLINE_CLIENT_SESSION" />
+        <dropPrimaryKey constraintName="CONSTRAINT_OFFLINE_US_SES_PK" tableName="OFFLINE_USER_SESSION"/>
+        <dropPrimaryKey constraintName="CONSTRAINT_OFFLINE_CL_SES_PK" tableName="OFFLINE_CLIENT_SESSION"/>
 
         <addColumn tableName="OFFLINE_USER_SESSION">
             <column name="OFFLINE_FLAG" type="VARCHAR(4)">
@@ -116,7 +129,7 @@
         <update tableName="OFFLINE_USER_SESSION">
             <column name="OFFLINE_FLAG" value="1"/>
         </update>
-        <dropColumn tableName="OFFLINE_USER_SESSION" columnName="OFFLINE" />
+        <dropColumn tableName="OFFLINE_USER_SESSION" columnName="OFFLINE"/>
 
         <addColumn tableName="OFFLINE_CLIENT_SESSION">
             <column name="OFFLINE_FLAG" type="VARCHAR(4)">
@@ -126,10 +139,12 @@
         <update tableName="OFFLINE_CLIENT_SESSION">
             <column name="OFFLINE_FLAG" value="1"/>
         </update>
-        <dropColumn tableName="OFFLINE_CLIENT_SESSION" columnName="OFFLINE" />
+        <dropColumn tableName="OFFLINE_CLIENT_SESSION" columnName="OFFLINE"/>
 
-        <addPrimaryKey columnNames="USER_SESSION_ID, OFFLINE_FLAG" constraintName="CONSTRAINT_OFFL_US_SES_PK2" tableName="OFFLINE_USER_SESSION"/>
-        <addPrimaryKey columnNames="CLIENT_SESSION_ID, OFFLINE_FLAG" constraintName="CONSTRAINT_OFFL_CL_SES_PK2" tableName="OFFLINE_CLIENT_SESSION"/>
+        <addPrimaryKey columnNames="USER_SESSION_ID, OFFLINE_FLAG" constraintName="CONSTRAINT_OFFL_US_SES_PK2"
+                       tableName="OFFLINE_USER_SESSION"/>
+        <addPrimaryKey columnNames="CLIENT_SESSION_ID, OFFLINE_FLAG" constraintName="CONSTRAINT_OFFL_CL_SES_PK2"
+                       tableName="OFFLINE_CLIENT_SESSION"/>
 
     </changeSet>
 

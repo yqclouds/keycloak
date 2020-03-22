@@ -15,7 +15,9 @@
   ~ * See the License for the specific language governing permissions and
   ~ * limitations under the License.
   -->
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
     <changeSet author="wadahiro@gmail.com" id="4.3.0-KEYCLOAK-7984">
         <update tableName="REQUIRED_ACTION_PROVIDER">
@@ -23,5 +25,5 @@
             <where>PRIORITY is NULL</where>
         </update>
     </changeSet>
- 
+
 </databaseChangeLog>

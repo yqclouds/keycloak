@@ -24,20 +24,20 @@ import org.keycloak.models.IdentityProviderModel;
  */
 public class StackOverflowIdentityProviderConfig extends OAuth2IdentityProviderConfig {
 
-	public StackOverflowIdentityProviderConfig(IdentityProviderModel model) {
-		super(model);
-	}
+    public StackOverflowIdentityProviderConfig(IdentityProviderModel model) {
+        super(model);
+    }
 
     public StackOverflowIdentityProviderConfig() {
-        
+
     }
 
     public String getKey() {
-		return getConfig().get("key");
-	}
+        return getConfig().get("key");
+    }
 
-	public void setKey(String key) {
-		getConfig().put("key", key);
-	}
+    public void setKey(String key) {
+        getConfig().put("key", key);
+    }
 
 }

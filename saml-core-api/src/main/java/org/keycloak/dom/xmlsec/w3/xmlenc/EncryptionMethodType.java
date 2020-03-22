@@ -46,38 +46,6 @@ public class EncryptionMethodType {
 
     protected EncryptionMethod encryptionMethod;
 
-    public static class EncryptionMethod {
-
-        protected BigInteger keySize;
-        protected byte[] OAEPparams;
-
-        public EncryptionMethod(BigInteger bigInteger, byte[] oAEPparams) {
-            this.keySize = bigInteger;
-            OAEPparams = oAEPparams;
-        }
-
-        public EncryptionMethod() {
-            this.keySize = null;
-            this.OAEPparams = null;
-        }
-
-        public BigInteger getKeySize() {
-            return keySize;
-        }
-
-        public byte[] getOAEPparams() {
-            return OAEPparams;
-        }
-
-        public void setKeySize(BigInteger keySize) {
-            this.keySize = keySize;
-        }
-
-        public void setOAEPparams(byte[] OAEPparams) {
-            this.OAEPparams = OAEPparams;
-        }
-    }
-
     public EncryptionMethodType(String algo) {
         this.algorithm = algo;
     }
@@ -97,5 +65,37 @@ public class EncryptionMethodType {
      */
     public String getAlgorithm() {
         return algorithm;
+    }
+
+    public static class EncryptionMethod {
+
+        protected BigInteger keySize;
+        protected byte[] OAEPparams;
+
+        public EncryptionMethod(BigInteger bigInteger, byte[] oAEPparams) {
+            this.keySize = bigInteger;
+            OAEPparams = oAEPparams;
+        }
+
+        public EncryptionMethod() {
+            this.keySize = null;
+            this.OAEPparams = null;
+        }
+
+        public BigInteger getKeySize() {
+            return keySize;
+        }
+
+        public void setKeySize(BigInteger keySize) {
+            this.keySize = keySize;
+        }
+
+        public byte[] getOAEPparams() {
+            return OAEPparams;
+        }
+
+        public void setOAEPparams(byte[] OAEPparams) {
+            this.OAEPparams = OAEPparams;
+        }
     }
 }

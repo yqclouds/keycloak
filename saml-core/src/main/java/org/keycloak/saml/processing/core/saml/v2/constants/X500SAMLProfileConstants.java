@@ -127,9 +127,6 @@ public enum X500SAMLProfileConstants {
             "urn:oid:2.16.840.1.113730.3.1.40"), USERID("userid", "urn:oid:0.9.2342.19200300.100.1.1"), X121_ADDRESS(
             "x121Address", "urn:oid:2.5.4.24"), X500_UNIQUE_IDENTIFIER("x500UniqueIdentifier", "urn:oid:2.5.4.45");
 
-    private String friendlyName = null;
-    private String uri = null;
-
     private static final Map<String, String> lookup = new HashMap<>();
 
     static {
@@ -137,9 +134,16 @@ public enum X500SAMLProfileConstants {
             lookup.put(s.friendlyName, s.uri);
     }
 
+    private String friendlyName = null;
+    private String uri = null;
+
     X500SAMLProfileConstants(String friendlyName, String uristr) {
         this.uri = uristr;
         this.friendlyName = friendlyName;
+    }
+
+    public static String getOID(final String key) {
+        return lookup.get(key);
     }
 
     public String get() {
@@ -152,11 +156,7 @@ public enum X500SAMLProfileConstants {
 
     public boolean correspondsTo(AttributeType attribute) {
         return attribute != null
-            ? Objects.equals(this.uri, attribute.getName()) || Objects.equals(this.friendlyName, attribute.getFriendlyName())
-            : false;
-    }
-
-    public static String getOID(final String key) {
-        return lookup.get(key);
+                ? Objects.equals(this.uri, attribute.getName()) || Objects.equals(this.friendlyName, attribute.getFriendlyName())
+                : false;
     }
 }

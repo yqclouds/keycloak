@@ -17,13 +17,20 @@
 
 package org.keycloak.authentication.authenticators.resetcred;
 
-import org.keycloak.authentication.actiontoken.DefaultActionTokenKey;
+import org.jboss.logging.Logger;
 import org.keycloak.Config;
-import org.keycloak.authentication.*;
+import org.keycloak.authentication.AuthenticationFlowContext;
+import org.keycloak.authentication.AuthenticationFlowError;
+import org.keycloak.authentication.Authenticator;
+import org.keycloak.authentication.AuthenticatorFactory;
+import org.keycloak.authentication.actiontoken.DefaultActionTokenKey;
 import org.keycloak.authentication.actiontoken.resetcred.ResetCredentialsActionToken;
 import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAuthenticator;
 import org.keycloak.common.util.Time;
-import org.keycloak.credential.*;
+import org.keycloak.credential.CredentialModel;
+import org.keycloak.credential.CredentialProvider;
+import org.keycloak.credential.PasswordCredentialProvider;
+import org.keycloak.credential.PasswordCredentialProviderFactory;
 import org.keycloak.email.EmailException;
 import org.keycloak.email.EmailTemplateProvider;
 import org.keycloak.events.Details;
@@ -38,11 +45,11 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
-import java.util.*;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -50,9 +57,19 @@ import org.jboss.logging.Logger;
  */
 public class ResetCredentialEmail implements Authenticator, AuthenticatorFactory {
 
+    public static final String PROVIDER_ID = "reset-credential-email";
+    public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionModel.Requirement.REQUIRED
+    };
     private static final Logger logger = Logger.getLogger(ResetCredentialEmail.class);
 
-    public static final String PROVIDER_ID = "reset-credential-email";
+    public static Long getLastChangedTimestamp(KeycloakSession session, RealmModel realm, UserModel user) {
+        // TODO(hmlnarik): Make this more generic to support non-password credential types
+        PasswordCredentialProvider passwordProvider = (PasswordCredentialProvider) session.getProvider(CredentialProvider.class, PasswordCredentialProviderFactory.PROVIDER_ID);
+        CredentialModel password = passwordProvider.getPassword(realm, user);
+
+        return password == null ? null : password.getCreatedDate();
+    }
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
@@ -93,17 +110,17 @@ public class ResetCredentialEmail implements Authenticator, AuthenticatorFactory
         String authSessionEncodedId = AuthenticationSessionCompoundId.fromAuthSession(authenticationSession).getEncodedId();
         ResetCredentialsActionToken token = new ResetCredentialsActionToken(user.getId(), absoluteExpirationInSecs, authSessionEncodedId, authenticationSession.getClient().getClientId());
         String link = UriBuilder
-          .fromUri(context.getActionTokenUrl(token.serialize(context.getSession(), context.getRealm(), context.getUriInfo())))
-          .build()
-          .toString();
+                .fromUri(context.getActionTokenUrl(token.serialize(context.getSession(), context.getRealm(), context.getUriInfo())))
+                .build()
+                .toString();
         long expirationInMinutes = TimeUnit.SECONDS.toMinutes(validityInSecs);
         try {
             context.getSession().getProvider(EmailTemplateProvider.class).setRealm(context.getRealm()).setUser(user).setAuthenticationSession(authenticationSession).sendPasswordReset(link, expirationInMinutes);
 
             event.clone().event(EventType.SEND_RESET_PASSWORD)
-                         .user(user)
-                         .detail(Details.USERNAME, username)
-                         .detail(Details.EMAIL, user.getEmail()).detail(Details.CODE_ID, authenticationSession.getParentSession().getId()).success();
+                    .user(user)
+                    .detail(Details.USERNAME, username)
+                    .detail(Details.EMAIL, user.getEmail()).detail(Details.CODE_ID, authenticationSession.getParentSession().getId()).success();
             context.forkWithSuccessMessage(new FormMessage(Messages.EMAIL_SENT));
         } catch (EmailException e) {
             event.clone().event(EventType.SEND_RESET_PASSWORD)
@@ -116,14 +133,6 @@ public class ResetCredentialEmail implements Authenticator, AuthenticatorFactory
                     .createErrorPage(Response.Status.INTERNAL_SERVER_ERROR);
             context.failure(AuthenticationFlowError.INTERNAL_ERROR, challenge);
         }
-    }
-
-    public static Long getLastChangedTimestamp(KeycloakSession session, RealmModel realm, UserModel user) {
-        // TODO(hmlnarik): Make this more generic to support non-password credential types
-        PasswordCredentialProvider passwordProvider = (PasswordCredentialProvider) session.getProvider(CredentialProvider.class, PasswordCredentialProviderFactory.PROVIDER_ID);
-        CredentialModel password = passwordProvider.getPassword(realm, user);
-
-        return password == null ? null : password.getCreatedDate();
     }
 
     @Override
@@ -161,10 +170,6 @@ public class ResetCredentialEmail implements Authenticator, AuthenticatorFactory
     public boolean isConfigurable() {
         return false;
     }
-
-    public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED
-    };
 
     @Override
     public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {

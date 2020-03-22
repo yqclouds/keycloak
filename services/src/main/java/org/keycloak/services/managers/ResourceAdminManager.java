@@ -24,13 +24,7 @@ import org.keycloak.common.util.StringPropertyReplacer;
 import org.keycloak.common.util.Time;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.constants.AdapterConstants;
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.TokenManager;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.protocol.LoginProtocol;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.representations.adapters.action.GlobalRequestResult;
@@ -42,13 +36,7 @@ import org.keycloak.services.util.ResolveRelative;
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -68,7 +56,7 @@ public class ResourceAdminManager {
         String absoluteURI = ResolveRelative.resolveRelativeUri(session, rootUrl, uri);
         return StringPropertyReplacer.replaceProperties(absoluteURI);
 
-   }
+    }
 
     public static String getManagementUrl(KeycloakSession session, ClientModel client) {
         String mgmtUrl = client.getManagementUrl();
@@ -158,7 +146,8 @@ public class ResourceAdminManager {
                         String host = clientSession.getNote(AdapterConstants.CLIENT_SESSION_HOST);
                         adapterSessionIds.add(host, adapterSessionId);
                     }
-                    if (clientSession.getUserSession() != null) userSessions.add(clientSession.getUserSession().getId());
+                    if (clientSession.getUserSession() != null)
+                        userSessions.add(clientSession.getUserSession().getId());
                 }
             }
 
@@ -243,7 +232,8 @@ public class ResourceAdminManager {
     protected boolean sendLogoutRequest(RealmModel realm, ClientModel resource, List<String> adapterSessionIds, List<String> userSessions, int notBefore, String managementUrl) {
         LogoutAction adminAction = new LogoutAction(TokenIdGenerator.generateId(), Time.currentTime() + 30, resource.getClientId(), adapterSessionIds, notBefore, userSessions);
         String token = session.tokens().encode(adminAction);
-        if (logger.isDebugEnabled()) logger.debugv("logout resource {0} url: {1} sessionIds: " + adapterSessionIds, resource.getClientId(), managementUrl);
+        if (logger.isDebugEnabled())
+            logger.debugv("logout resource {0} url: {1} sessionIds: " + adapterSessionIds, resource.getClientId(), managementUrl);
         URI target = UriBuilder.fromUri(managementUrl).path(AdapterConstants.K_LOGOUT).build();
         try {
             int status = session.getProvider(HttpClientProvider.class).postText(target.toString(), token);
@@ -298,8 +288,8 @@ public class ResourceAdminManager {
         }
         LoginProtocol loginProtocol = (LoginProtocol) session.getProvider(LoginProtocol.class, protocol);
         return loginProtocol == null
-          ? false
-          : loginProtocol.sendPushRevocationPolicyRequest(realm, resource, notBefore, managementUrl);
+                ? false
+                : loginProtocol.sendPushRevocationPolicyRequest(realm, resource, notBefore, managementUrl);
     }
 
     public GlobalRequestResult testNodesAvailability(RealmModel realm, ClientModel client) {
@@ -338,6 +328,6 @@ public class ResourceAdminManager {
             ServicesLogger.LOGGER.availabilityTestFailed(managementUrl);
             return false;
         }
-   }
+    }
 
 }

@@ -17,14 +17,10 @@
 
 package org.keycloak.connections.jpa.updater.liquibase;
 
+import liquibase.database.core.MySQLDatabase;
+
 import java.util.HashSet;
 import java.util.Set;
-import liquibase.database.DatabaseConnection;
-import liquibase.database.core.MySQLDatabase;
-import liquibase.database.core.PostgresDatabase;
-import liquibase.exception.DatabaseException;
-import liquibase.executor.ExecutorService;
-import liquibase.statement.core.RawSqlStatement;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -32,6 +28,10 @@ import liquibase.statement.core.RawSqlStatement;
 public class UpdatedMySqlDatabase extends MySQLDatabase {
 
     private static final Set<String> RESERVED_WORDS = new HashSet();
+
+    static {
+        RESERVED_WORDS.add("PERIOD");
+    }
 
     @Override
     public boolean isReservedWord(String string) {
@@ -41,9 +41,5 @@ public class UpdatedMySqlDatabase extends MySQLDatabase {
     @Override
     public int getPriority() {
         return super.getPriority() + 1; // Always take precedence over factory MySQLDatabase
-    }
-
-    static {
-        RESERVED_WORDS.add("PERIOD");
     }
 }

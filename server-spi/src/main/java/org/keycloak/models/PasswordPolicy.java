@@ -46,6 +46,11 @@ public class PasswordPolicy implements Serializable {
     private Map<String, Object> policyConfig;
     private Builder builder;
 
+    private PasswordPolicy(Builder builder, Map<String, Object> policyConfig) {
+        this.builder = builder;
+        this.policyConfig = policyConfig;
+    }
+
     public static PasswordPolicy empty() {
         return new PasswordPolicy(null, new HashMap<>());
     }
@@ -56,11 +61,6 @@ public class PasswordPolicy implements Serializable {
 
     public static PasswordPolicy parse(KeycloakSession session, String policyString) {
         return new Builder(policyString).build(session);
-    }
-
-    private PasswordPolicy(Builder builder, Map<String, Object> policyConfig) {
-        this.builder = builder;
-        this.policyConfig = policyConfig;
     }
 
     public Set<String> getPolicies() {

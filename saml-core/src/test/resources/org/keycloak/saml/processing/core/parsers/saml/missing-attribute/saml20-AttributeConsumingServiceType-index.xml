@@ -1,6 +1,6 @@
-<EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
-                  xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
+<EntityDescriptor xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
                   xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+                  xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
                   entityID="https://ServiceProvider.com/SAML">
     <ds:Signature>...</ds:Signature>
     <SPSSODescriptor AuthnRequestsSigned="true"
@@ -8,9 +8,9 @@
         <AttributeConsumingService>
             <ServiceName xml:lang="en">Academic Journals R US</ServiceName>
             <RequestedAttribute
-                NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"
-                Name="urn:oid:1.3.6.1.4.1.5923.1.1.1.7"
-                FriendlyName="eduPersonEntitlement">
+                    NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"
+                    Name="urn:oid:1.3.6.1.4.1.5923.1.1.1.7"
+                    FriendlyName="eduPersonEntitlement">
                 <saml:AttributeValue>
                     https://ServiceProvider.com/entitlements/123456789
                 </saml:AttributeValue>

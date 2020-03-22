@@ -34,7 +34,7 @@ public class ErrorResponse {
     public static Response error(String message, Response.Status status) {
         return ErrorResponse.error(message, null, status);
     }
-    
+
     public static Response error(String message, Object[] params, Response.Status status) {
         ErrorRepresentation error = new ErrorRepresentation();
         error.setErrorMessage(message);

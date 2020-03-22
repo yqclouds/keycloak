@@ -7,7 +7,6 @@ import org.junit.Test;
  * author Pascal Knueppel <br>
  * created at: 02.12.2019 - 10:59 <br>
  * <br>
- *
  */
 public class X509AuthenticatorConfigModelTest {
 

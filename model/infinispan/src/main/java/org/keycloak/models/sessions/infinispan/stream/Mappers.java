@@ -18,11 +18,7 @@
 package org.keycloak.models.sessions.infinispan.stream;
 
 import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
-import org.keycloak.models.sessions.infinispan.entities.AuthenticatedClientSessionEntity;
-import org.keycloak.models.sessions.infinispan.entities.LoginFailureEntity;
-import org.keycloak.models.sessions.infinispan.entities.LoginFailureKey;
-import org.keycloak.models.sessions.infinispan.entities.SessionEntity;
-import org.keycloak.models.sessions.infinispan.entities.UserSessionEntity;
+import org.keycloak.models.sessions.infinispan.entities.*;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -61,6 +57,13 @@ public class Mappers {
         return new LoginFailureIdMapper();
     }
 
+    public static <T> Stream<T> toStream(Collection<T> collection) {
+        return collection.stream();
+    }
+
+    public static Function<Map.Entry<String, SessionEntityWrapper<UserSessionEntity>>, Set<String>> authClientSessionSetMapper() {
+        return new AuthClientSessionSetMapper();
+    }
 
     private static class SessionUnwrap implements Function<Map.Entry<String, SessionEntityWrapper>, Map.Entry<String, SessionEntity>>, Serializable {
 
@@ -87,7 +90,6 @@ public class Mappers {
         }
 
     }
-
 
     private static class SessionIdMapper implements Function<Map.Entry<String, SessionEntityWrapper<UserSessionEntity>>, String>, Serializable {
         @Override
@@ -135,14 +137,6 @@ public class Mappers {
             UserSessionEntity entity = entry.getValue().getEntity();
             return entity.getAuthenticatedClientSessions().keySet();
         }
-    }
-
-    public static <T> Stream<T> toStream(Collection<T> collection) {
-        return collection.stream();
-    }
-
-    public static Function<Map.Entry<String, SessionEntityWrapper<UserSessionEntity>>, Set<String>> authClientSessionSetMapper() {
-        return new AuthClientSessionSetMapper();
     }
 
 

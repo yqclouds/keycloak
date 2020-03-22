@@ -16,15 +16,13 @@
  */
 package org.keycloak.broker.saml;
 
-import static org.keycloak.common.util.UriUtils.checkUrl;
-
 import org.keycloak.common.enums.SslRequired;
 import org.keycloak.models.IdentityProviderModel;
-
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.saml.SamlPrincipalType;
 import org.keycloak.saml.common.util.XmlKeyInfoKeyNameTransformer;
+
+import static org.keycloak.common.util.UriUtils.checkUrl;
 
 /**
  * @author Pedro Igor
@@ -93,16 +91,16 @@ public class SAMLIdentityProviderConfig extends IdentityProviderModel {
     }
 
     /**
-     * @deprecated Prefer {@link #getSigningCertificates()}}
      * @param signingCertificate
+     * @deprecated Prefer {@link #getSigningCertificates()}}
      */
     public String getSigningCertificate() {
         return getConfig().get(SIGNING_CERTIFICATE_KEY);
     }
 
     /**
-     * @deprecated Prefer {@link #addSigningCertificate(String)}}
      * @param signingCertificate
+     * @deprecated Prefer {@link #addSigningCertificate(String)}}
      */
     public void setSigningCertificate(String signingCertificate) {
         getConfig().put(SIGNING_CERTIFICATE_KEY, signingCertificate);
@@ -122,7 +120,7 @@ public class SAMLIdentityProviderConfig extends IdentityProviderModel {
     public String[] getSigningCertificates() {
         String crt = getConfig().get(SIGNING_CERTIFICATE_KEY);
         if (crt == null || crt.isEmpty()) {
-            return new String[] { };
+            return new String[]{};
         }
         // Note that "," is not coding character per PEM format specification:
         // see https://tools.ietf.org/html/rfc1421, section 4.3.2.4 Step 4: Printable Encoding
@@ -225,6 +223,7 @@ public class SAMLIdentityProviderConfig extends IdentityProviderModel {
 
     /**
      * Always returns non-{@code null} result.
+     *
      * @return Configured ransformer of {@link #DEFAULT_XML_KEY_INFO_KEY_NAME_TRANSFORMER} if not set.
      */
     public XmlKeyInfoKeyNameTransformer getXmlSigKeyInfoKeyNameTransformer() {
@@ -233,9 +232,9 @@ public class SAMLIdentityProviderConfig extends IdentityProviderModel {
 
     public void setXmlSigKeyInfoKeyNameTransformer(XmlKeyInfoKeyNameTransformer xmlSigKeyInfoKeyNameTransformer) {
         getConfig().put(XML_SIG_KEY_INFO_KEY_NAME_TRANSFORMER,
-          xmlSigKeyInfoKeyNameTransformer == null
-            ? null
-            : xmlSigKeyInfoKeyNameTransformer.name());
+                xmlSigKeyInfoKeyNameTransformer == null
+                        ? null
+                        : xmlSigKeyInfoKeyNameTransformer.name());
     }
 
     public int getAllowedClockSkew() {
@@ -268,9 +267,9 @@ public class SAMLIdentityProviderConfig extends IdentityProviderModel {
 
     public void setPrincipalType(SamlPrincipalType principalType) {
         getConfig().put(PRINCIPAL_TYPE,
-            principalType == null
-                ? null
-                : principalType.name());
+                principalType == null
+                        ? null
+                        : principalType.name());
     }
 
     public String getPrincipalAttribute() {

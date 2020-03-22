@@ -18,11 +18,7 @@
 package org.keycloak.protocol.oidc.mappers;
 
 import org.keycloak.Config;
-import org.keycloak.models.ClientSessionContext;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.representations.AccessToken;
@@ -74,7 +70,7 @@ public abstract class AbstractOIDCProtocolMapper implements ProtocolMapper {
     public AccessToken transformAccessToken(AccessToken token, ProtocolMapperModel mappingModel, KeycloakSession session,
                                             UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
 
-        if (!OIDCAttributeMapperHelper.includeInAccessToken(mappingModel)){
+        if (!OIDCAttributeMapperHelper.includeInAccessToken(mappingModel)) {
             return token;
         }
 
@@ -85,7 +81,7 @@ public abstract class AbstractOIDCProtocolMapper implements ProtocolMapper {
     public IDToken transformIDToken(IDToken token, ProtocolMapperModel mappingModel, KeycloakSession session,
                                     UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
 
-        if (!OIDCAttributeMapperHelper.includeInIDToken(mappingModel)){
+        if (!OIDCAttributeMapperHelper.includeInIDToken(mappingModel)) {
             return token;
         }
 
@@ -95,10 +91,10 @@ public abstract class AbstractOIDCProtocolMapper implements ProtocolMapper {
 
     /**
      * Intended to be overridden in {@link ProtocolMapper} implementations to add claims to an token.
+     *
      * @param token
      * @param mappingModel
      * @param userSession
-     *
      * @deprecated override {@link #setClaim(IDToken, ProtocolMapperModel, UserSessionModel, KeycloakSession, ClientSessionContext)} instead.
      */
     @Deprecated
@@ -107,6 +103,7 @@ public abstract class AbstractOIDCProtocolMapper implements ProtocolMapper {
 
     /**
      * Intended to be overridden in {@link ProtocolMapper} implementations to add claims to an token.
+     *
      * @param token
      * @param mappingModel
      * @param userSession

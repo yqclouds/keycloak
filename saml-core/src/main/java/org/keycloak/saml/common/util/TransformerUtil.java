@@ -33,23 +33,8 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.util.JAXBSource;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.Characters;
-import javax.xml.stream.events.Comment;
-import javax.xml.stream.events.EndElement;
-import javax.xml.stream.events.Namespace;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
-import javax.xml.transform.ErrorListener;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.URIResolver;
+import javax.xml.stream.events.*;
+import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stax.StAXSource;
 import java.util.Iterator;
@@ -72,7 +57,6 @@ public class TransformerUtil {
      * Get the Default Transformer
      *
      * @return
-     *
      * @throws org.keycloak.saml.common.exceptions.ConfigurationException
      */
     public static Transformer getTransformer() throws ConfigurationException {
@@ -96,7 +80,6 @@ public class TransformerUtil {
      * threads.</p>
      *
      * @return
-     *
      * @throws TransformerFactoryConfigurationError
      */
     public static TransformerFactory getTransformerFactory() throws TransformerFactoryConfigurationError {
@@ -139,7 +122,6 @@ public class TransformerUtil {
      * (JDK6) as well as the issue of Xalan installing its Transformer (which does not support stax).
      *
      * @return
-     *
      * @throws ConfigurationException
      */
     public static Transformer getStaxSourceToDomResultTransformer() throws ConfigurationException {
@@ -152,7 +134,6 @@ public class TransformerUtil {
      * @param transformer
      * @param stax
      * @param result
-     *
      * @throws org.keycloak.saml.common.exceptions.ParsingException
      */
     public static void transform(Transformer transformer, StAXSource stax, DOMResult result) throws ParsingException {
@@ -165,7 +146,6 @@ public class TransformerUtil {
      * @param transformer
      * @param source
      * @param result
-     *
      * @throws ParsingException
      */
     public static void transform(Transformer transformer, Source source, DOMResult result) throws ParsingException {
@@ -249,11 +229,11 @@ public class TransformerUtil {
                             Element docStartElement = handleStartElement(xmlEventReader, startElement, holder);
                             Node el = doc.importNode(docStartElement, true);
 
-                            if (! stack.isEmpty()) {
+                            if (!stack.isEmpty()) {
                                 top = stack.peek();
                             }
 
-                            if (! holder.encounteredTextNode) {
+                            if (!holder.encounteredTextNode) {
                                 stack.push(el);
                             }
 
@@ -266,7 +246,7 @@ public class TransformerUtil {
                         case XMLEvent.END_ELEMENT:
                             top = stack.pop();
 
-                            if (! (top instanceof Element)) {
+                            if (!(top instanceof Element)) {
                                 throw new TransformerException(ErrorCodes.UNKNOWN_END_ELEMENT);
                             }
                             if (stack.isEmpty())
@@ -293,21 +273,21 @@ public class TransformerUtil {
         }
 
         @Override
-        public void setURIResolver(URIResolver resolver) {
-        }
-
-        @Override
         public URIResolver getURIResolver() {
             return null;
         }
 
         @Override
-        public void setOutputProperties(Properties oformat) {
+        public void setURIResolver(URIResolver resolver) {
         }
 
         @Override
         public Properties getOutputProperties() {
             return null;
+        }
+
+        @Override
+        public void setOutputProperties(Properties oformat) {
         }
 
         @Override
@@ -320,12 +300,12 @@ public class TransformerUtil {
         }
 
         @Override
-        public void setErrorListener(ErrorListener listener) throws IllegalArgumentException {
+        public ErrorListener getErrorListener() {
+            return null;
         }
 
         @Override
-        public ErrorListener getErrorListener() {
-            return null;
+        public void setErrorListener(ErrorListener listener) throws IllegalArgumentException {
         }
 
         private Element handleStartElement(XMLEventReader xmlEventReader, StartElement startElement, CustomHolder holder)
@@ -337,7 +317,7 @@ public class TransformerUtil {
             String prefix = elementName.getPrefix();
             String localPart = elementName.getLocalPart();
 
-            String qual = (prefix != null && ! prefix.isEmpty()) ? prefix + ":" + localPart : localPart;
+            String qual = (prefix != null && !prefix.isEmpty()) ? prefix + ":" + localPart : localPart;
 
             Element el = doc.createElementNS(ns, qual);
 
@@ -359,7 +339,7 @@ public class TransformerUtil {
                 ns = attrName.getNamespaceURI();
                 prefix = attrName.getPrefix();
                 localPart = attrName.getLocalPart();
-                qual = (prefix != null && ! prefix.isEmpty()) ? prefix + ":" + localPart : localPart;
+                qual = (prefix != null && !prefix.isEmpty()) ? prefix + ":" + localPart : localPart;
 
                 if (logger.isTraceEnabled()) {
                     logger.trace("Creating an Attribute Namespace=" + ns + ":" + qual);
@@ -376,8 +356,8 @@ public class TransformerUtil {
                 QName name = namespace.getName();
                 localPart = name.getLocalPart();
                 prefix = name.getPrefix();
-                if (prefix != null && ! prefix.isEmpty())
-                    qual = (localPart != null && ! localPart.isEmpty()) ? prefix + ":" + localPart : prefix;
+                if (prefix != null && !prefix.isEmpty())
+                    qual = (localPart != null && !localPart.isEmpty()) ? prefix + ":" + localPart : prefix;
 
                 if (qual.equals("xmlns"))
                     continue;
@@ -426,8 +406,8 @@ public class TransformerUtil {
                 QName name = namespace.getName();
                 localPart = name.getLocalPart();
                 prefix = name.getPrefix();
-                if (prefix != null && ! prefix.isEmpty())
-                    qual = (localPart != null && ! localPart.isEmpty()) ? prefix + ":" + localPart : prefix;
+                if (prefix != null && !prefix.isEmpty())
+                    qual = (localPart != null && !localPart.isEmpty()) ? prefix + ":" + localPart : prefix;
 
                 if (qual != null && qual.equals("xmlns"))
                     return namespace.getNamespaceURI();

@@ -45,6 +45,7 @@ public class FreeMarkerLoginFormsProviderFactory implements LoginFormsProviderFa
     public void postInit(KeycloakSessionFactory factory) {
 
     }
+
     @Override
     public void close() {
         freeMarker = null;
@@ -54,7 +55,6 @@ public class FreeMarkerLoginFormsProviderFactory implements LoginFormsProviderFa
     public String getId() {
         return "freemarker";
     }
-
 
 
 }

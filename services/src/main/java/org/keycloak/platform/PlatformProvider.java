@@ -18,7 +18,7 @@
 package org.keycloak.platform;
 
 public interface PlatformProvider {
-    
+
     void onStartup(Runnable runnable);
 
     void onShutdown(Runnable runnable);

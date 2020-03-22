@@ -17,19 +17,19 @@
 
 package org.keycloak.models.sessions.infinispan.stream;
 
+import org.infinispan.commons.marshall.Externalizer;
+import org.infinispan.commons.marshall.MarshallUtil;
+import org.infinispan.commons.marshall.SerializeWith;
 import org.keycloak.models.sessions.infinispan.AuthenticatedClientSessionAdapter;
 import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.entities.UserSessionEntity;
-
 import org.keycloak.models.sessions.infinispan.util.KeycloakMarshallUtil;
+
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Map;
 import java.util.function.Predicate;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.MarshallUtil;
-import org.infinispan.commons.marshall.SerializeWith;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -60,6 +60,7 @@ public class UserSessionPredicate implements Predicate<Map.Entry<String, Session
 
     /**
      * Creates a user session predicate. If using the {@link #client(java.lang.String)} method, see its warning.
+     *
      * @param realm
      * @return
      */
@@ -76,9 +77,9 @@ public class UserSessionPredicate implements Predicate<Map.Entry<String, Session
      * Adds a test for client. Note that this test can return stale sessions because on detaching client session
      * from user session, only client session is deleted and user session is not updated for performance reason.
      *
-     * @see AuthenticatedClientSessionAdapter#detachFromUserSession()
      * @param clientUUID
      * @return
+     * @see AuthenticatedClientSessionAdapter#detachFromUserSession()
      */
     public UserSessionPredicate client(String clientUUID) {
         this.client = clientUUID;
@@ -136,8 +137,7 @@ public class UserSessionPredicate implements Predicate<Map.Entry<String, Session
             if (expiredRememberMe != null && expiredRefreshRememberMe != null && entity.getStarted() > expiredRememberMe && entity.getLastSessionRefresh() > expiredRefreshRememberMe) {
                 return false;
             }
-        }
-        else {
+        } else {
             if (expired != null && expiredRefresh != null && entity.getStarted() > expired && entity.getLastSessionRefresh() > expiredRefresh) {
                 return false;
             }

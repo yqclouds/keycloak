@@ -17,33 +17,23 @@
 
 package org.keycloak.utils;
 
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.x509.*;
+import org.jboss.logging.Logger;
+import org.keycloak.common.util.BouncyIntegration;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.truststore.TruststoreProvider;
+
+import javax.security.auth.x500.X500Principal;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
-
-import javax.security.auth.x500.X500Principal;
-
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.x509.CRLDistPoint;
-import org.bouncycastle.asn1.x509.DistributionPoint;
-import org.bouncycastle.asn1.x509.DistributionPointName;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.GeneralNames;
-import org.jboss.logging.Logger;
-import org.keycloak.common.util.BouncyIntegration;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.truststore.TruststoreProvider;
 
 /**
  * @author <a href="mailto:brat000012001@gmail.com">Peter Nalyvayko</a>
@@ -54,17 +44,16 @@ import org.keycloak.truststore.TruststoreProvider;
 public final class CRLUtils {
 
     private static final Logger log = Logger.getLogger(CRLUtils.class);
-
+    private static final String CRL_DISTRIBUTION_POINTS_OID = "2.5.29.31";
 
     static {
         BouncyIntegration.init();
     }
 
-    private static final String CRL_DISTRIBUTION_POINTS_OID = "2.5.29.31";
-
     /**
      * Retrieves a list of CRL distribution points from CRLDP v3 certificate extension
      * See <a href="www.nakov.com/blog/2009/12/01/x509-certificate-validation-in-java-build-and-verify-cchain-and-verify-clr-with-bouncy-castle/">CRL validation</a>
+     *
      * @param cert
      * @return
      * @throws IOException
@@ -78,7 +67,7 @@ public final class CRLUtils {
         List<String> distributionPointUrls = new LinkedList<>();
         DEROctetString octetString;
         try (ASN1InputStream crldpExtensionInputStream = new ASN1InputStream(new ByteArrayInputStream(data))) {
-            octetString = (DEROctetString)crldpExtensionInputStream.readObject();
+            octetString = (DEROctetString) crldpExtensionInputStream.readObject();
         }
         byte[] octets = octetString.getOctets();
 
@@ -108,7 +97,7 @@ public final class CRLUtils {
      * Check the signature on CRL and check if 1st certificate from the chain ((The actual certificate from the client)) is valid and not available on CRL.
      *
      * @param certs The 1st certificate is the actual certificate of the user. The other certificates represents the certificate chain
-     * @param crl Given CRL
+     * @param crl   Given CRL
      * @throws GeneralSecurityException if some error in validation happens. Typically certificate not valid, or CRL signature not valid
      */
     public static void check(X509Certificate[] certs, X509CRL crl, KeycloakSession session) throws GeneralSecurityException {
@@ -120,7 +109,7 @@ public final class CRLUtils {
         X509Certificate crlSignatureCertificate = null;
 
         // Try to find the certificate in the CA chain, which was used to sign the CRL
-        for (int i=1 ; i<certs.length ; i++) {
+        for (int i = 1; i < certs.length; i++) {
             X509Certificate currentCACert = certs[i];
             if (crlIssuerPrincipal.equals(currentCACert.getSubjectX500Principal())) {
                 crlSignatureCertificate = currentCACert;

@@ -18,10 +18,7 @@ package org.keycloak.client.admin.cli.operations;
 
 import java.util.List;
 
-import static org.keycloak.client.admin.cli.util.HttpUtil.composeResourceUrl;
-import static org.keycloak.client.admin.cli.util.HttpUtil.doDeleteJSON;
-import static org.keycloak.client.admin.cli.util.HttpUtil.doPostJSON;
-import static org.keycloak.client.admin.cli.util.HttpUtil.getIdForType;
+import static org.keycloak.client.admin.cli.util.HttpUtil.*;
 
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>

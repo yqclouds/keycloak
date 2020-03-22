@@ -21,14 +21,7 @@ import org.keycloak.Config;
 import org.keycloak.authentication.ClientAuthenticator;
 import org.keycloak.authentication.ClientAuthenticatorFactory;
 import org.keycloak.authorization.admin.AuthorizationService;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.Constants;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
+import org.keycloak.models.*;
 import org.keycloak.protocol.ClientInstallationProvider;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.mappers.AudienceProtocolMapper;
@@ -48,6 +41,44 @@ import java.util.Set;
  * @version $Revision: 1 $
  */
 public class KeycloakOIDCClientInstallation implements ClientInstallationProvider {
+
+    public static Map<String, Object> getClientCredentialsAdapterConfig(KeycloakSession session, ClientModel client) {
+        String clientAuthenticator = client.getClientAuthenticatorType();
+        ClientAuthenticatorFactory authenticator = (ClientAuthenticatorFactory) session.getKeycloakSessionFactory().getProviderFactory(ClientAuthenticator.class, clientAuthenticator);
+        return authenticator.getAdapterConfiguration(client);
+    }
+
+    public static boolean showClientCredentialsAdapterConfig(ClientModel client) {
+        if (client.isPublicClient()) {
+            return false;
+        }
+
+        if (client.isBearerOnly() && !client.isServiceAccountsEnabled() && client.getNodeReRegistrationTimeout() <= 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    static boolean showVerifyTokenAudience(ClientModel client) {
+        // We want to verify-token-audience if service client has any client roles
+        if (client.getRoles().size() > 0) {
+            return true;
+        }
+
+        // Check if there is client scope with audience protocol mapper created for particular client. If yes, admin wants verifying token audience
+        String clientId = client.getClientId();
+
+        for (ClientScopeModel clientScope : client.getRealm().getClientScopes()) {
+            for (ProtocolMapperModel protocolMapper : clientScope.getProtocolMappers()) {
+                if (AudienceProtocolMapper.PROVIDER_ID.equals(protocolMapper.getProtocolMapper()) && (clientId.equals(protocolMapper.getConfig().get(AudienceProtocolMapper.INCLUDED_CLIENT_AUDIENCE)))) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 
     @Override
     public Response generateInstallation(KeycloakSession session, RealmModel realm, ClientModel client, URI baseUri) {
@@ -81,47 +112,6 @@ public class KeycloakOIDCClientInstallation implements ClientInstallationProvide
         }
         return Response.ok(json, MediaType.TEXT_PLAIN_TYPE).build();
     }
-
-    public static Map<String, Object> getClientCredentialsAdapterConfig(KeycloakSession session, ClientModel client) {
-        String clientAuthenticator = client.getClientAuthenticatorType();
-        ClientAuthenticatorFactory authenticator = (ClientAuthenticatorFactory) session.getKeycloakSessionFactory().getProviderFactory(ClientAuthenticator.class, clientAuthenticator);
-        return authenticator.getAdapterConfiguration(client);
-    }
-
-
-    public static boolean showClientCredentialsAdapterConfig(ClientModel client) {
-        if (client.isPublicClient()) {
-            return false;
-        }
-
-        if (client.isBearerOnly() && !client.isServiceAccountsEnabled() && client.getNodeReRegistrationTimeout() <= 0) {
-            return false;
-        }
-
-        return true;
-    }
-
-
-    static boolean showVerifyTokenAudience(ClientModel client) {
-        // We want to verify-token-audience if service client has any client roles
-        if (client.getRoles().size() > 0) {
-            return true;
-        }
-
-        // Check if there is client scope with audience protocol mapper created for particular client. If yes, admin wants verifying token audience
-        String clientId = client.getClientId();
-
-        for (ClientScopeModel clientScope : client.getRealm().getClientScopes()) {
-            for (ProtocolMapperModel protocolMapper : clientScope.getProtocolMappers()) {
-                if (AudienceProtocolMapper.PROVIDER_ID.equals(protocolMapper.getProtocolMapper()) && (clientId.equals(protocolMapper.getConfig().get(AudienceProtocolMapper.INCLUDED_CLIENT_AUDIENCE)))) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
 
     @Override
     public String getProtocol() {

@@ -17,11 +17,6 @@
 
 package org.keycloak.keys.infinispan;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.FutureTask;
-
 import org.infinispan.Cache;
 import org.jboss.logging.Logger;
 import org.keycloak.Config;
@@ -38,23 +33,22 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderEvent;
 import org.keycloak.provider.ProviderEventListener;
 
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.FutureTask;
+
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class InfinispanPublicKeyStorageProviderFactory implements PublicKeyStorageProviderFactory {
 
-    private static final Logger log = Logger.getLogger(InfinispanPublicKeyStorageProviderFactory.class);
-
     public static final String PROVIDER_ID = "infinispan";
-
     public static final String KEYS_CLEAR_CACHE_EVENTS = "KEYS_CLEAR_CACHE_EVENTS";
-
     public static final String PUBLIC_KEY_STORAGE_INVALIDATION_EVENT = "PUBLIC_KEY_STORAGE_INVALIDATION_EVENT";
-
-    private volatile Cache<String, PublicKeysEntry> keysCache;
-
+    private static final Logger log = Logger.getLogger(InfinispanPublicKeyStorageProviderFactory.class);
     private final Map<String, FutureTask<PublicKeysEntry>> tasksInProgress = new ConcurrentHashMap<>();
-
+    private volatile Cache<String, PublicKeysEntry> keysCache;
     private int minTimeBetweenRequests;
 
     @Override
@@ -146,16 +140,6 @@ public class InfinispanPublicKeyStorageProviderFactory implements PublicKeyStora
         }
     }
 
-    private class SessionAndKeyHolder {
-        private final KeycloakSession session;
-        private final ArrayList<String> cacheKeys;
-
-        public SessionAndKeyHolder(KeycloakSession session, ArrayList<String> cacheKeys) {
-            this.session = session;
-            this.cacheKeys = cacheKeys;
-        }
-    }
-
     @Override
     public void close() {
 
@@ -164,5 +148,15 @@ public class InfinispanPublicKeyStorageProviderFactory implements PublicKeyStora
     @Override
     public String getId() {
         return PROVIDER_ID;
+    }
+
+    private class SessionAndKeyHolder {
+        private final KeycloakSession session;
+        private final ArrayList<String> cacheKeys;
+
+        public SessionAndKeyHolder(KeycloakSession session, ArrayList<String> cacheKeys) {
+            this.session = session;
+            this.cacheKeys = cacheKeys;
+        }
     }
 }

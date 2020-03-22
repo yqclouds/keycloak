@@ -139,7 +139,7 @@ public class IDToken extends JsonWebToken {
     // Financial API - Part 2: Read and Write API Security Profile
     // http://openid.net/specs/openid-financial-api-part-2.html#authorization-server
     @JsonProperty(S_HASH)
-    protected String stateHash; 
+    protected String stateHash;
 
     public String getNonce() {
         return nonce;
@@ -153,6 +153,10 @@ public class IDToken extends JsonWebToken {
         return auth_time;
     }
 
+    public void setAuth_time(Long auth_time) {
+        this.auth_time = auth_time;
+    }
+
     /**
      * @deprecated int will overflow with values after 2038. Use {@link #getAuth_time()} instead.
      */
@@ -160,10 +164,6 @@ public class IDToken extends JsonWebToken {
     @JsonIgnore
     public int getAuthTime() {
         return auth_time != null ? auth_time.intValue() : 0;
-    }
-
-    public void setAuth_time(Long auth_time) {
-        this.auth_time = auth_time;
     }
 
     /**

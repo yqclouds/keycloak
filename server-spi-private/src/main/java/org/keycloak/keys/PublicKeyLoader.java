@@ -17,9 +17,9 @@
 
 package org.keycloak.keys;
 
-import java.util.Map;
-
 import org.keycloak.crypto.KeyWrapper;
+
+import java.util.Map;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>

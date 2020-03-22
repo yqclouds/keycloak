@@ -28,6 +28,7 @@ public class CacheDecorators {
 
     /**
      * Adds {@link Flag#CACHE_MODE_LOCAL} flag to the cache.
+     *
      * @param cache
      * @return Cache with the flag applied.
      */
@@ -37,6 +38,7 @@ public class CacheDecorators {
 
     /**
      * Adds {@link Flag#SKIP_CACHE_LOAD} and {@link Flag#SKIP_CACHE_STORE} flags to the cache.
+     *
      * @param cache
      * @return Cache with the flags applied.
      */
@@ -46,6 +48,7 @@ public class CacheDecorators {
 
     /**
      * Adds {@link Flag#SKIP_CACHE_STORE} flag to the cache.
+     *
      * @param cache
      * @return Cache with the flags applied.
      */

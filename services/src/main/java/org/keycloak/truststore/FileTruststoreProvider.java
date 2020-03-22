@@ -17,11 +17,10 @@
 
 package org.keycloak.truststore;
 
+import javax.security.auth.x500.X500Principal;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.Map;
-
-import javax.security.auth.x500.X500Principal;
 
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>

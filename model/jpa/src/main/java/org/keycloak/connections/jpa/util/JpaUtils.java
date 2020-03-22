@@ -41,7 +41,7 @@ public class JpaUtils {
 
     public static String getTableNameForNativeQuery(String tableName, EntityManager em) {
         String schema = (String) em.getEntityManagerFactory().getProperties().get(HIBERNATE_DEFAULT_SCHEMA);
-        return (schema==null) ? tableName : schema + "." + tableName;
+        return (schema == null) ? tableName : schema + "." + tableName;
     }
 
     public static EntityManagerFactory createEntityManagerFactory(KeycloakSession session, String unitName, Map<String, Object> properties, boolean jta) {
@@ -66,7 +66,7 @@ public class JpaUtils {
 
     /**
      * Get a list of all provided entities by looping over all configured entity providers.
-     * 
+     *
      * @param session the keycloak session
      * @return a list of all provided entities (can be an empty list)
      */
@@ -83,6 +83,7 @@ public class JpaUtils {
 
     /**
      * Get the name of custom table for liquibase updates for give ID of JpaEntityProvider
+     *
      * @param jpaEntityProviderFactoryId
      * @return table name
      */

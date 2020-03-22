@@ -39,27 +39,39 @@ public abstract class AbstractPartialImport<T> implements PartialImport<T> {
     protected final Set<T> toSkip = new HashSet<>();
 
     public abstract List<T> getRepList(PartialImportRepresentation partialImportRep);
+
     public abstract String getName(T resourceRep);
+
     public abstract String getModelId(RealmModel realm, KeycloakSession session, T resourceRep);
+
     public abstract boolean exists(RealmModel realm, KeycloakSession session, T resourceRep);
+
     public abstract String existsMessage(RealmModel realm, T resourceRep);
+
     public abstract ResourceType getResourceType();
+
     public abstract void remove(RealmModel realm, KeycloakSession session, T resourceRep);
+
     public abstract void create(RealmModel realm, KeycloakSession session, T resourceRep);
 
     @Override
     public void prepare(PartialImportRepresentation partialImportRep,
-                         RealmModel realm,
-                         KeycloakSession session) throws ErrorResponseException {
+                        RealmModel realm,
+                        KeycloakSession session) throws ErrorResponseException {
         List<T> repList = getRepList(partialImportRep);
         if ((repList == null) || repList.isEmpty()) return;
 
         for (T resourceRep : getRepList(partialImportRep)) {
             if (exists(realm, session, resourceRep)) {
                 switch (partialImportRep.getPolicy()) {
-                    case SKIP: toSkip.add(resourceRep); break;
-                    case OVERWRITE: toOverwrite.add(resourceRep); break;
-                    default: throw existsError(existsMessage(realm, resourceRep));
+                    case SKIP:
+                        toSkip.add(resourceRep);
+                        break;
+                    case OVERWRITE:
+                        toOverwrite.add(resourceRep);
+                        break;
+                    default:
+                        throw existsError(existsMessage(realm, resourceRep));
                 }
             }
         }
@@ -70,7 +82,7 @@ public abstract class AbstractPartialImport<T> implements PartialImport<T> {
         return new ErrorResponseException(error);
     }
 
-    protected PartialImportResult overwritten(String modelId, T resourceRep){
+    protected PartialImportResult overwritten(String modelId, T resourceRep) {
         return PartialImportResult.overwritten(getResourceType(), getName(resourceRep), modelId, resourceRep);
     }
 

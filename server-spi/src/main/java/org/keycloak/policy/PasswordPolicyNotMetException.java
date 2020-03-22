@@ -38,7 +38,7 @@ public class PasswordPolicyNotMetException extends ModelException {
         super(message);
         this.username = username;
     }
-    
+
     public PasswordPolicyNotMetException(String message, String username, Throwable cause) {
         super(message, cause);
         this.username = username;

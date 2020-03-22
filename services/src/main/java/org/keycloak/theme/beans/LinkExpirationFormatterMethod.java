@@ -5,12 +5,12 @@
  */
 package org.keycloak.theme.beans;
 
+import freemarker.template.TemplateMethodModelEx;
+import freemarker.template.TemplateModelException;
+
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
-
-import freemarker.template.TemplateMethodModelEx;
-import freemarker.template.TemplateModelException;
 
 /**
  * Method used to format link expiration time period in emails.

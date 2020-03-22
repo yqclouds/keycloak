@@ -26,36 +26,25 @@ import org.keycloak.constants.AdapterConstants;
 import org.keycloak.events.Details;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientSessionContext;
-import org.keycloak.models.Constants;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.protocol.LoginProtocol;
-import org.keycloak.protocol.oidc.utils.OIDCRedirectUriBuilder;
-import org.keycloak.protocol.oidc.utils.OIDCResponseMode;
-import org.keycloak.protocol.oidc.utils.OIDCResponseType;
+import org.keycloak.protocol.oidc.utils.*;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.adapters.action.PushNotBeforeAction;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.managers.AuthenticationSessionManager;
-import org.keycloak.protocol.oidc.utils.OAuth2Code;
-import org.keycloak.protocol.oidc.utils.OAuth2CodeParser;
 import org.keycloak.services.managers.ResourceAdminManager;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.util.TokenUtil;
-
-import java.io.IOException;
-import java.net.URI;
-import java.util.UUID;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
+import java.net.URI;
+import java.util.UUID;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -109,8 +98,8 @@ public class OIDCLoginProtocol implements LoginProtocol {
 
     // https://tools.ietf.org/html/rfc7636#section-4.1
     public static final int PKCE_CODE_VERIFIER_MIN_LENGTH = 43;
-    public static final int PKCE_CODE_VERIFIER_MAX_LENGTH = 128;    
-    
+    public static final int PKCE_CODE_VERIFIER_MAX_LENGTH = 128;
+
     // https://tools.ietf.org/html/rfc7636#section-6.2.2
     public static final String PKCE_METHOD_PLAIN = "plain";
     public static final String PKCE_METHOD_S256 = "S256";
@@ -182,7 +171,7 @@ public class OIDCLoginProtocol implements LoginProtocol {
 
     @Override
     public Response authenticated(AuthenticationSessionModel authSession, UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
-        AuthenticatedClientSessionModel clientSession= clientSessionCtx.getClientSession();
+        AuthenticatedClientSessionModel clientSession = clientSessionCtx.getClientSession();
 
         String responseTypeParam = authSession.getClientNote(OIDCLoginProtocol.RESPONSE_TYPE_PARAM);
         String responseModeParam = authSession.getClientNote(OIDCLoginProtocol.RESPONSE_MODE_PARAM);
@@ -240,7 +229,7 @@ public class OIDCLoginProtocol implements LoginProtocol {
                 if (responseType.hasResponseType(OIDCResponseType.CODE)) {
                     responseBuilder.generateCodeHash(code);
                 }
-                
+
                 // Financial API - Part 2: Read and Write API Security Profile
                 // http://openid.net/specs/openid-financial-api-part-2.html#authorization-server
                 if (state != null && !state.isEmpty())
@@ -275,7 +264,7 @@ public class OIDCLoginProtocol implements LoginProtocol {
         String redirect = authSession.getRedirectUri();
         String state = authSession.getClientNote(OIDCLoginProtocol.STATE_PARAM);
         OIDCRedirectUriBuilder redirectUri = OIDCRedirectUriBuilder.fromUri(redirect, responseMode);
-        
+
         if (error != Error.CANCELLED_AIA_SILENT) {
             redirectUri.addParam(OAuth2Constants.ERROR, translateError(error));
         }
@@ -285,7 +274,7 @@ public class OIDCLoginProtocol implements LoginProtocol {
         if (state != null) {
             redirectUri.addParam(OAuth2Constants.STATE, state);
         }
-        
+
         new AuthenticationSessionManager(session).removeAuthenticationSession(realm, authSession, true);
         return redirectUri.build();
     }
@@ -357,7 +346,7 @@ public class OIDCLoginProtocol implements LoginProtocol {
             return false;
         }
 
-        int authTimeInt = authTime==null ? 0 : Integer.parseInt(authTime);
+        int authTimeInt = authTime == null ? 0 : Integer.parseInt(authTime);
         int maxAgeInt = Integer.parseInt(maxAge);
 
         if (authTimeInt + maxAgeInt < Time.currentTime()) {

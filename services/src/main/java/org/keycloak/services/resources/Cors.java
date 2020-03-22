@@ -16,48 +16,42 @@
  */
 package org.keycloak.services.resources;
 
+import org.jboss.logging.Logger;
+import org.jboss.resteasy.spi.HttpRequest;
+import org.jboss.resteasy.spi.HttpResponse;
+import org.keycloak.common.util.CollectionUtil;
+import org.keycloak.models.ClientModel;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.protocol.oidc.utils.WebOriginsUtils;
+import org.keycloak.representations.AccessToken;
+
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.UriInfo;
-import org.jboss.logging.Logger;
-import org.jboss.resteasy.spi.HttpRequest;
-import org.jboss.resteasy.spi.HttpResponse;
-import org.keycloak.common.util.CollectionUtil;
-import org.keycloak.common.util.UriUtils;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.protocol.oidc.utils.WebOriginsUtils;
-import org.keycloak.representations.AccessToken;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class Cors {
 
-    private static final Logger logger = Logger.getLogger(Cors.class);
-
     public static final long DEFAULT_MAX_AGE = TimeUnit.HOURS.toSeconds(1);
     public static final String DEFAULT_ALLOW_METHODS = "GET, HEAD, OPTIONS";
     public static final String DEFAULT_ALLOW_HEADERS = "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers";
-
     public static final String ORIGIN_HEADER = "Origin";
     public static final String AUTHORIZATION_HEADER = "Authorization";
-
     public static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
     public static final String ACCESS_CONTROL_ALLOW_METHODS = "Access-Control-Allow-Methods";
     public static final String ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers";
     public static final String ACCESS_CONTROL_EXPOSE_HEADERS = "Access-Control-Expose-Headers";
     public static final String ACCESS_CONTROL_ALLOW_CREDENTIALS = "Access-Control-Allow-Credentials";
     public static final String ACCESS_CONTROL_MAX_AGE = "Access-Control-Max-Age";
-
     public static final String ACCESS_CONTROL_ALLOW_ORIGIN_WILDCARD = "*";
     public static final String INCLUDE_REDIRECTS = "+";
-
+    private static final Logger logger = Logger.getLogger(Cors.class);
     private HttpRequest request;
     private ResponseBuilder builder;
     private Set<String> allowedOrigins;

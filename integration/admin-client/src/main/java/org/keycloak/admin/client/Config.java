@@ -48,6 +48,13 @@ public class Config {
         checkGrantType(grantType);
     }
 
+    public static void checkGrantType(String grantType) {
+        if (grantType != null && !PASSWORD.equals(grantType) && !CLIENT_CREDENTIALS.equals(grantType)) {
+            throw new IllegalArgumentException("Unsupported grantType: " + grantType +
+                    " (only " + PASSWORD + " and " + CLIENT_CREDENTIALS + " are supported)");
+        }
+    }
+
     public String getServerUrl() {
         return serverUrl;
     }
@@ -107,12 +114,5 @@ public class Config {
     public void setGrantType(String grantType) {
         this.grantType = grantType;
         checkGrantType(grantType);
-    }
-
-    public static void checkGrantType(String grantType) {
-        if (grantType != null && !PASSWORD.equals(grantType) && !CLIENT_CREDENTIALS.equals(grantType)) {
-            throw new IllegalArgumentException("Unsupported grantType: " + grantType +
-                    " (only " + PASSWORD + " and " + CLIENT_CREDENTIALS + " are supported)");
-        }
     }
 }

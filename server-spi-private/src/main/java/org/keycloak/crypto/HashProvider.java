@@ -17,9 +17,9 @@
 
 package org.keycloak.crypto;
 
-import java.nio.charset.StandardCharsets;
-
 import org.keycloak.provider.Provider;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>

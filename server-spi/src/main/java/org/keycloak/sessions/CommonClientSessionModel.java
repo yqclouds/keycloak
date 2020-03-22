@@ -28,15 +28,19 @@ import org.keycloak.models.RealmModel;
 public interface CommonClientSessionModel {
 
     String getRedirectUri();
+
     void setRedirectUri(String uri);
 
     RealmModel getRealm();
+
     ClientModel getClient();
 
     String getAction();
+
     void setAction(String action);
 
     String getProtocol();
+
     void setProtocol(String method);
 
     enum Action {

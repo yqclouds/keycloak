@@ -45,7 +45,7 @@ public class UpdateProfile implements RequiredActionProvider, RequiredActionFact
     public InitiatedActionSupport initiatedActionSupport() {
         return InitiatedActionSupport.SUPPORTED;
     }
-    
+
     @Override
     public void evaluateTriggers(RequiredActionContext context) {
     }
@@ -153,7 +153,6 @@ public class UpdateProfile implements RequiredActionProvider, RequiredActionFact
         if (!OAuth2Constants.DISPLAY_CONSOLE.equalsIgnoreCase(displayType)) return null;
         return ConsoleUpdateProfile.SINGLETON;
     }
-
 
 
     @Override

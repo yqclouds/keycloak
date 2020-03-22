@@ -17,12 +17,6 @@
 
 package org.keycloak.models.sessions.infinispan.remotestore;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.impl.RemoteCacheImpl;
@@ -37,6 +31,12 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.sessions.infinispan.initializer.BaseCacheInitializer;
 import org.keycloak.models.sessions.infinispan.initializer.OfflinePersistentUserSessionLoader;
 import org.keycloak.models.sessions.infinispan.initializer.SessionLoader;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static org.infinispan.client.hotrod.impl.Util.await;
 
@@ -157,7 +157,7 @@ public class RemoteCacheSessionsLoader implements SessionLoader<RemoteCacheSessi
         int last = first + countPerSegment - 1;
 
         Set<Integer> myIspnSegments = new HashSet<>();
-        for (int i=first ; i<=last ; i++) {
+        for (int i = first; i <= last; i++) {
             myIspnSegments.add(i);
         }
         return myIspnSegments;

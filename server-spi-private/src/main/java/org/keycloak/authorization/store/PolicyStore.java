@@ -18,13 +18,13 @@
 package org.keycloak.authorization.store;
 
 
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-
 import org.keycloak.authorization.model.Policy;
 import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * A {@link PolicyStore} is responsible to manage the persistence of {@link Policy} instances.
@@ -53,7 +53,7 @@ public interface PolicyStore {
     /**
      * Returns a {@link Policy} with the given <code>id</code>
      *
-     * @param id the identifier of the policy
+     * @param id               the identifier of the policy
      * @param resourceServerId the resource server id
      * @return a policy with the given identifier.
      */
@@ -79,7 +79,7 @@ public interface PolicyStore {
     /**
      * Returns a list of {@link Policy} associated with a {@link ResourceServer} with the given <code>resourceServerId</code>.
      *
-     * @param attributes a map holding the attributes that will be used as a filter
+     * @param attributes       a map holding the attributes that will be used as a filter
      * @param resourceServerId the identifier of a resource server
      * @return a list of policies that belong to the given resource server
      */
@@ -88,7 +88,7 @@ public interface PolicyStore {
     /**
      * Returns a list of {@link Policy} associated with a {@link org.keycloak.authorization.core.model.Resource} with the given <code>resourceId</code>.
      *
-     * @param resourceId the identifier of a resource
+     * @param resourceId       the identifier of a resource
      * @param resourceServerId the resource server id
      * @return a list of policies associated with the given resource
      */
@@ -108,7 +108,7 @@ public interface PolicyStore {
     /**
      * Returns a list of {@link Policy} associated with a {@link org.keycloak.authorization.core.model.Scope} with the given <code>scopeIds</code>.
      *
-     * @param scopeIds the id of the scopes
+     * @param scopeIds         the id of the scopes
      * @param resourceServerId the resource server id
      * @return a list of policies associated with the given scopes
      */
@@ -117,8 +117,8 @@ public interface PolicyStore {
     /**
      * Returns a list of {@link Policy} associated with a {@link org.keycloak.authorization.core.model.Scope} with the given <code>resourceId</code> and <code>scopeIds</code>.
      *
-     * @param scopeIds the id of the scopes
-     * @param resourceId the id of the resource
+     * @param scopeIds         the id of the scopes
+     * @param resourceId       the id of the resource
      * @param resourceServerId the resource server id
      * @return a list of policies associated with the given scopes
      */
@@ -129,7 +129,7 @@ public interface PolicyStore {
     /**
      * Returns a list of {@link Policy} with the given <code>type</code>.
      *
-     * @param type the type of the policy
+     * @param type             the type of the policy
      * @param resourceServerId the resource server id
      * @return a list of policies with the given type
      */
@@ -138,7 +138,7 @@ public interface PolicyStore {
     /**
      * Returns a list of {@link Policy} that depends on another policy with the given <code>id</code>.
      *
-     * @param id the id of the policy to query its dependents
+     * @param id               the id of the policy to query its dependents
      * @param resourceServerId the resource server id
      * @return a list of policies that depends on the a policy with the given identifier
      */

@@ -16,11 +16,7 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.NotConnected;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.text.MessageFormat;
 import java.util.Arrays;
 
@@ -30,6 +26,13 @@ class RemoteInvocationHandler implements InvocationHandler {
     public static final int CALL_TYPE_SYNC = 0;
     public static final int CALL_TYPE_ASYNC = 1;
     public static final int CALL_TYPE_CALLBACK = 2;
+    AbstractConnection conn;
+    RemoteObject remote;
+
+    public RemoteInvocationHandler(AbstractConnection conn, RemoteObject remote) {
+        this.remote = remote;
+        this.conn = conn;
+    }
 
     public static Object convertRV(String sig, Object[] rp, Method m, AbstractConnection conn) throws DBusException {
         Class<? extends Object> c = m.getReturnType();
@@ -139,14 +142,6 @@ class RemoteInvocationHandler implements InvocationHandler {
             if (AbstractConnection.EXCEPTION_DEBUG && Debug.debug) Debug.print(Debug.ERR, e);
             throw new DBusExecutionException(e.getMessage());
         }
-    }
-
-    AbstractConnection conn;
-    RemoteObject remote;
-
-    public RemoteInvocationHandler(AbstractConnection conn, RemoteObject remote) {
-        this.remote = remote;
-        this.conn = conn;
     }
 
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {

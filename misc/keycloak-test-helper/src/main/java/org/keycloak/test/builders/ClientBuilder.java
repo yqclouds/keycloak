@@ -28,17 +28,17 @@ public class ClientBuilder {
 
     private ClientRepresentation rep;
 
-    public enum AccessType { BEARER_ONLY, PUBLIC, CONFIDENTIAL };
+    private ClientBuilder(ClientRepresentation rep) {
+        this.rep = rep;
+    }
+
+    ;
 
     public static ClientBuilder create(String clientId) {
         ClientRepresentation rep = new ClientRepresentation();
         rep.setEnabled(Boolean.TRUE);
         rep.setClientId(clientId);
         return new ClientBuilder(rep);
-    }
-
-    private ClientBuilder(ClientRepresentation rep) {
-        this.rep = rep;
     }
 
     public ClientRepresentation accessType(AccessType accessType) {
@@ -90,5 +90,7 @@ public class ClientBuilder {
             rep.setRedirectUris(Collections.singletonList(rep.getRootUrl().concat("/*")));
         return rep;
     }
+
+    public enum AccessType {BEARER_ONLY, PUBLIC, CONFIDENTIAL}
 
 }

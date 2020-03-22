@@ -25,11 +25,7 @@ import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.AuthenticationFlowModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.AuthenticationFlowResolver;
 import org.keycloak.protocol.LoginProtocol.Error;
 import org.keycloak.services.ErrorPageException;
@@ -52,10 +48,8 @@ import javax.ws.rs.core.Response;
  */
 public abstract class AuthorizationEndpointBase {
 
-    private static final Logger logger = Logger.getLogger(AuthorizationEndpointBase.class);
-
     public static final String APP_INITIATED_FLOW = "APP_INITIATED_FLOW";
-
+    private static final Logger logger = Logger.getLogger(AuthorizationEndpointBase.class);
     protected RealmModel realm;
     protected EventBuilder event;
     protected AuthenticationManager authManager;
@@ -95,9 +89,9 @@ public abstract class AuthorizationEndpointBase {
     /**
      * Common method to handle browser authentication request in protocols unified way.
      *
-     * @param authSession for current request
-     * @param protocol handler for protocol used to initiate login
-     * @param isPassive set to true if login should be passive (without login screen shown)
+     * @param authSession              for current request
+     * @param protocol                 handler for protocol used to initiate login
+     * @param isPassive                set to true if login should be passive (without login screen shown)
      * @param redirectToAuthentication if true redirect to flow url.  If initial call to protocol is a POST, you probably want to do this.  This is so we can disable the back button on browser
      * @return response to be returned to the browser
      */
@@ -123,8 +117,7 @@ public abstract class AuthorizationEndpointBase {
                         }
                         // no need to trigger authenticate, just return the challenge we got from authenticateOnly.
                         return challenge;
-                    }
-                    else {
+                    } else {
                         Response response = protocol.sendError(authSession, Error.PASSIVE_LOGIN_REQUIRED);
                         return response;
                     }

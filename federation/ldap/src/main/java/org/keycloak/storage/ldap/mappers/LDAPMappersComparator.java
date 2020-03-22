@@ -21,11 +21,7 @@ import org.keycloak.component.ComponentModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.storage.ldap.LDAPConfig;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * TODO: Possibly add "priority" instead of hardcoding behaviour

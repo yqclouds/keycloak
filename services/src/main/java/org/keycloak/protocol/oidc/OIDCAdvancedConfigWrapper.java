@@ -48,11 +48,11 @@ public class OIDCAdvancedConfigWrapper {
 
     public Algorithm getUserInfoSignedResponseAlg() {
         String alg = getAttribute(OIDCConfigAttributes.USER_INFO_RESPONSE_SIGNATURE_ALG);
-        return alg==null ? null : Enum.valueOf(Algorithm.class, alg);
+        return alg == null ? null : Enum.valueOf(Algorithm.class, alg);
     }
 
     public void setUserInfoSignedResponseAlg(Algorithm alg) {
-        String algStr = alg==null ? null : alg.toString();
+        String algStr = alg == null ? null : alg.toString();
         setAttribute(OIDCConfigAttributes.USER_INFO_RESPONSE_SIGNATURE_ALG, algStr);
     }
 
@@ -62,18 +62,18 @@ public class OIDCAdvancedConfigWrapper {
 
     public Algorithm getRequestObjectSignatureAlg() {
         String alg = getAttribute(OIDCConfigAttributes.REQUEST_OBJECT_SIGNATURE_ALG);
-        return alg==null ? null : Enum.valueOf(Algorithm.class, alg);
+        return alg == null ? null : Enum.valueOf(Algorithm.class, alg);
     }
 
     public void setRequestObjectSignatureAlg(Algorithm alg) {
-        String algStr = alg==null ? null : alg.toString();
+        String algStr = alg == null ? null : alg.toString();
         setAttribute(OIDCConfigAttributes.REQUEST_OBJECT_SIGNATURE_ALG, algStr);
     }
-    
+
     public String getRequestObjectRequired() {
         return getAttribute(OIDCConfigAttributes.REQUEST_OBJECT_REQUIRED);
     }
-    
+
     public void setRequestObjectRequired(String requestObjectRequired) {
         setAttribute(OIDCConfigAttributes.REQUEST_OBJECT_REQUIRED, requestObjectRequired);
     }
@@ -129,6 +129,7 @@ public class OIDCAdvancedConfigWrapper {
     public String getIdTokenSignedResponseAlg() {
         return getAttribute(OIDCConfigAttributes.ID_TOKEN_SIGNED_RESPONSE_ALG);
     }
+
     public void setIdTokenSignedResponseAlg(String algName) {
         setAttribute(OIDCConfigAttributes.ID_TOKEN_SIGNED_RESPONSE_ALG, algName);
     }
@@ -153,7 +154,7 @@ public class OIDCAdvancedConfigWrapper {
         if (clientModel != null) {
             return clientModel.getAttribute(attrKey);
         } else {
-            return clientRep.getAttributes()==null ? null : clientRep.getAttributes().get(attrKey);
+            return clientRep.getAttributes() == null ? null : clientRep.getAttributes().get(attrKey);
         }
     }
 

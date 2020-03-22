@@ -16,14 +16,14 @@
  */
 package org.keycloak.authentication.authenticators.browser;
 
-import java.util.HashMap;
-
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.common.Profile;
 import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.provider.ScriptProviderMetadata;
+
+import java.util.HashMap;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>

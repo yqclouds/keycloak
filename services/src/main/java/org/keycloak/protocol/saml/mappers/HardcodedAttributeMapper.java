@@ -50,11 +50,20 @@ public class HardcodedAttributeMapper extends AbstractSAMLProtocolMapper impleme
 
     }
 
+    public static ProtocolMapperModel create(String name,
+                                             String samlAttributeName, String nameFormat, String friendlyName, String value) {
+        String mapperId = PROVIDER_ID;
+        ProtocolMapperModel model = AttributeStatementHelper.createAttributeMapper(name, null, samlAttributeName, nameFormat, friendlyName,
+                mapperId);
+        model.getConfig().put(ATTRIBUTE_VALUE, value);
+        return model;
 
+    }
 
     public List<ProviderConfigProperty> getConfigProperties() {
         return configProperties;
     }
+
     @Override
     public String getId() {
         return PROVIDER_ID;
@@ -79,16 +88,6 @@ public class HardcodedAttributeMapper extends AbstractSAMLProtocolMapper impleme
     public void transformAttributeStatement(AttributeStatementType attributeStatement, ProtocolMapperModel mappingModel, KeycloakSession session, UserSessionModel userSession, AuthenticatedClientSessionModel clientSession) {
         String attributeValue = mappingModel.getConfig().get(ATTRIBUTE_VALUE);
         AttributeStatementHelper.addAttribute(attributeStatement, mappingModel, attributeValue);
-
-    }
-
-    public static ProtocolMapperModel create(String name,
-                                             String samlAttributeName, String nameFormat, String friendlyName, String value) {
-        String mapperId = PROVIDER_ID;
-        ProtocolMapperModel model = AttributeStatementHelper.createAttributeMapper(name, null, samlAttributeName, nameFormat, friendlyName,
-                mapperId);
-        model.getConfig().put(ATTRIBUTE_VALUE, value);
-        return model;
 
     }
 

@@ -18,11 +18,7 @@
 package org.keycloak.models.session;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ModelException;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.util.JsonSerialization;
 
 import java.io.IOException;
@@ -113,13 +109,13 @@ public class PersistentAuthenticatedClientSessionAdapter implements Authenticate
         return userSession;
     }
 
+    public void setUserSession(UserSessionModel userSession) {
+        this.userSession = userSession;
+    }
+
     @Override
     public void detachFromUserSession() {
         setUserSession(null);
-    }
-
-    public void setUserSession(UserSessionModel userSession) {
-        this.userSession = userSession;
     }
 
     @Override
@@ -185,7 +181,7 @@ public class PersistentAuthenticatedClientSessionAdapter implements Authenticate
     @Override
     public String getNote(String name) {
         PersistentClientSessionData entity = getData();
-        return entity.getNotes()==null ? null : entity.getNotes().get(name);
+        return entity.getNotes() == null ? null : entity.getNotes().get(name);
     }
 
     @Override

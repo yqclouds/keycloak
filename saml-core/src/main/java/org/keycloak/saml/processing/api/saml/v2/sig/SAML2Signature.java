@@ -16,6 +16,7 @@
  */
 package org.keycloak.saml.processing.api.saml.v2.sig;
 
+import org.keycloak.rotation.KeyLocator;
 import org.keycloak.saml.common.PicketLinkLogger;
 import org.keycloak.saml.common.PicketLinkLoggerFactory;
 import org.keycloak.saml.common.constants.JBossSAMLConstants;
@@ -36,7 +37,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
-import org.keycloak.rotation.KeyLocator;
 
 /**
  * Class that deals with SAML2 Signature
@@ -59,6 +59,31 @@ public class SAML2Signature {
      * Set the X509Certificate if X509Data is needed in signed info
      */
     private X509Certificate x509Certificate;
+
+    /**
+     * <p>
+     * Sets the IDness of the ID attribute. Santuario 1.5.1 does not assumes IDness based on attribute names anymore.
+     * This
+     * method should be called before signing/validating a saml document.
+     * </p>
+     *
+     * @param document SAML document to have its ID attribute configured.
+     */
+    public static void configureIdAttribute(Document document) {
+        // Estabilish the IDness of the ID attribute.
+        configureIdAttribute(document.getDocumentElement());
+
+        NodeList nodes = document.getElementsByTagNameNS(JBossSAMLURIConstants.ASSERTION_NSURI.get(),
+                JBossSAMLConstants.ASSERTION.get());
+
+        for (int i = 0; i < nodes.getLength(); i++) {
+            configureIdAttribute((Element) nodes.item(i));
+        }
+    }
+
+    public static void configureIdAttribute(Element element) {
+        element.setIdAttribute(JBossSAMLConstants.ID.get(), true);
+    }
 
     public String getSignatureMethod() {
         return signatureMethod;
@@ -84,7 +109,6 @@ public class SAML2Signature {
      * Set to false, if you do not want to include keyinfo in the signature
      *
      * @param val
-     *
      * @since v2.0.1
      */
     public void setSignatureIncludeKeyInfo(boolean val) {
@@ -96,11 +120,10 @@ public class SAML2Signature {
     /**
      * Set the {@link X509Certificate} if you desire
      * to have the SignedInfo have X509 Data
-     *
+     * <p>
      * This method needs to be called before any of the sign methods.
      *
      * @param x509Certificate
-     *
      * @since v2.5.0
      */
     public void setX509Certificate(X509Certificate x509Certificate) {
@@ -111,9 +134,7 @@ public class SAML2Signature {
      * Sign an Document at the root
      *
      * @param keyPair Key Pair
-     *
      * @return
-     *
      * @throws ParserConfigurationException
      * @throws XMLSignatureException
      * @throws MarshalException
@@ -149,7 +170,6 @@ public class SAML2Signature {
      *
      * @param samlDocument
      * @param keypair
-     *
      * @throws org.keycloak.saml.common.exceptions.ProcessingException
      */
     public void signSAMLDocument(Document samlDocument, String keyName, KeyPair keypair, String canonicalizationMethodType) throws ProcessingException {
@@ -167,9 +187,7 @@ public class SAML2Signature {
      *
      * @param signedDocument
      * @param keyLocator
-     *
      * @return
-     *
      * @throws ProcessingException
      */
     public boolean validate(Document signedDocument, KeyLocator keyLocator) throws ProcessingException {
@@ -185,7 +203,6 @@ public class SAML2Signature {
      * Given a {@link Document}, find the {@link Node} which is the sibling of the Issuer element
      *
      * @param doc
-     *
      * @return
      */
     public Node getNextSiblingOfIssuer(Document doc) {
@@ -197,31 +214,6 @@ public class SAML2Signature {
             return issuer.getNextSibling();
         }
         return null;
-    }
-
-    /**
-     * <p>
-     * Sets the IDness of the ID attribute. Santuario 1.5.1 does not assumes IDness based on attribute names anymore.
-     * This
-     * method should be called before signing/validating a saml document.
-     * </p>
-     *
-     * @param document SAML document to have its ID attribute configured.
-     */
-    public static void configureIdAttribute(Document document) {
-        // Estabilish the IDness of the ID attribute.
-        configureIdAttribute(document.getDocumentElement());
-
-        NodeList nodes = document.getElementsByTagNameNS(JBossSAMLURIConstants.ASSERTION_NSURI.get(),
-                JBossSAMLConstants.ASSERTION.get());
-
-        for (int i = 0; i < nodes.getLength(); i++) {
-            configureIdAttribute((Element) nodes.item(i));
-        }
-    }
-    
-    public static void configureIdAttribute(Element element) {
-        element.setIdAttribute(JBossSAMLConstants.ID.get(), true);
     }
 
 }

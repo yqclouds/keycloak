@@ -17,12 +17,6 @@
 
 package org.keycloak.cluster.infinispan;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.VersionedValue;
@@ -39,29 +33,33 @@ import org.junit.Assert;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * Test that hotrod ClientListeners are correctly executed as expected
- *
+ * <p>
  * STEPS TO REPRODUCE:
  * - Unzip infinispan-server-9.2.4.Final to some locations ISPN1 and ISPN2
- *
+ * <p>
  * - Edit both ISPN1/standalone/configuration/clustered.xml and ISPN2/standalone/configuration/clustered.xml . Configure cache in container "clustered"
- *
- * 		<replicated-cache-configuration name="sessions-cfg" mode="ASYNC" start="EAGER" batching="false">
-            <transaction mode="NON_XA" locking="PESSIMISTIC"/>
-        </replicated-cache-configuration>
-
-        <replicated-cache name="work" configuration="sessions-cfg" />
-
-    - Run server1
- ./standalone.sh -c clustered.xml -Djava.net.preferIPv4Stack=true -Djboss.socket.binding.port-offset=1010 -Djboss.default.multicast.address=234.56.78.99 -Djboss.node.name=cache-server
-
-    - Run server2
- ./standalone.sh -c clustered.xml -Djava.net.preferIPv4Stack=true -Djboss.socket.binding.port-offset=2010 -Djboss.default.multicast.address=234.56.78.100 -Djboss.node.name=cache-server-dc-2
-
-    - Run this test as main class from IDE
- *
- *
+ * <p>
+ * <replicated-cache-configuration name="sessions-cfg" mode="ASYNC" start="EAGER" batching="false">
+ * <transaction mode="NON_XA" locking="PESSIMISTIC"/>
+ * </replicated-cache-configuration>
+ * <p>
+ * <replicated-cache name="work" configuration="sessions-cfg" />
+ * <p>
+ * - Run server1
+ * ./standalone.sh -c clustered.xml -Djava.net.preferIPv4Stack=true -Djboss.socket.binding.port-offset=1010 -Djboss.default.multicast.address=234.56.78.99 -Djboss.node.name=cache-server
+ * <p>
+ * - Run server2
+ * ./standalone.sh -c clustered.xml -Djava.net.preferIPv4Stack=true -Djboss.socket.binding.port-offset=2010 -Djboss.default.multicast.address=234.56.78.100 -Djboss.node.name=cache-server-dc-2
+ * <p>
+ * - Run this test as main class from IDE
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
@@ -77,7 +75,7 @@ public class ConcurrencyJDGRemoteCacheClientListenersTest {
 
     public static void main(String[] args) throws Exception {
         // Init map somehow
-        for (int i=0 ; i<1000 ; i++) {
+        for (int i = 0; i < 1000; i++) {
             String key = "key-" + i;
             EntryInfo entryInfo = new EntryInfo();
             entryInfo.val.set(i);
@@ -141,6 +139,16 @@ public class ConcurrencyJDGRemoteCacheClientListenersTest {
         return new Worker(cache, threadId);
     }
 
+    private static void createItems(Cache<String, Integer> cache, int myThreadId) {
+        for (Map.Entry<String, EntryInfo> entry : state.entrySet()) {
+            String cacheKey = entry.getKey();
+            Integer value = entry.getValue().val.get();
+
+            cache.put(cacheKey, value);
+        }
+
+        System.out.println("Worker creating finished: " + myThreadId);
+    }
 
     @ClientListener
     public static class HotRodListener {
@@ -210,18 +218,6 @@ public class ConcurrencyJDGRemoteCacheClientListenersTest {
             }
         }
 
-    }
-
-
-    private static void createItems(Cache<String, Integer> cache, int myThreadId) {
-        for (Map.Entry<String, EntryInfo> entry : state.entrySet()) {
-            String cacheKey = entry.getKey();
-            Integer value = entry.getValue().val.get();
-
-            cache.put(cacheKey, value);
-        }
-
-        System.out.println("Worker creating finished: " + myThreadId);
     }
 
     private static class Worker extends Thread {

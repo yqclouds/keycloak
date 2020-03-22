@@ -34,7 +34,7 @@ public interface ValidationContext extends FormContext {
      * Mark this validation as having a validation error
      *
      * @param formData form data you want to display when the form is refreshed
-     * @param errors error messages to display on the form
+     * @param errors   error messages to display on the form
      */
     void validationError(MultivaluedMap<String, String> formData, List<FormMessage> errors);
 
@@ -42,7 +42,6 @@ public interface ValidationContext extends FormContext {
 
     /**
      * Mark this validation as sucessful
-     *
      */
     void success();
 

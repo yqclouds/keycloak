@@ -15,6 +15,8 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import java.util.Vector;
 
 public class MethodReturn extends Message {
+    MethodCall call;
+
     MethodReturn() {
     }
 
@@ -64,8 +66,6 @@ public class MethodReturn extends Message {
         this(source, mc.getSource(), mc.getSerial(), sig, args);
         this.call = mc;
     }
-
-    MethodCall call;
 
     public MethodCall getCall() {
         return call;

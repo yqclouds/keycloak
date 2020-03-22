@@ -17,12 +17,12 @@
 package org.keycloak.authorization.store;
 
 
-import java.util.List;
-import java.util.Map;
-
 import org.keycloak.authorization.model.PermissionTicket;
 import org.keycloak.authorization.model.Resource;
 import org.keycloak.authorization.model.ResourceServer;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * A {@link PermissionTicketStore} is responsible to manage the persistence of {@link org.keycloak.authorization.model.PermissionTicket} instances.
@@ -34,7 +34,7 @@ public interface PermissionTicketStore {
     /**
      * Creates a new {@link PermissionTicket} instance.
      *
-     * @param permission the policy representation
+     * @param permission     the policy representation
      * @param resourceServer the resource server to which this policy belongs
      * @return a new instance of {@link PermissionTicket}
      */
@@ -50,7 +50,7 @@ public interface PermissionTicketStore {
     /**
      * Returns a {@link PermissionTicket} with the given <code>id</code>
      *
-     * @param id the identifier of the permission
+     * @param id               the identifier of the permission
      * @param resourceServerId the resource server id
      * @return a permission with the given identifier.
      */
@@ -75,7 +75,7 @@ public interface PermissionTicketStore {
     /**
      * Returns a list of {@link PermissionTicket} associated with a {@link org.keycloak.authorization.core.model.Resource} with the given <code>resourceId</code>.
      *
-     * @param resourceId the identifier of a resource
+     * @param resourceId       the identifier of a resource
      * @param resourceServerId the resource server id
      * @return a list of permissions associated with the given resource
      */
@@ -84,7 +84,7 @@ public interface PermissionTicketStore {
     /**
      * Returns a list of {@link PermissionTicket} associated with a {@link org.keycloak.authorization.core.model.Scope} with the given <code>scopeId</code>.
      *
-     * @param scopeId the id of the scopes
+     * @param scopeId          the id of the scopes
      * @param resourceServerId the resource server id
      * @return a list of permissions associated with the given scopes
      */
@@ -95,7 +95,7 @@ public interface PermissionTicketStore {
     /**
      * Returns a list of {@link PermissionTicket} granted to the given {@code userId}.
      *
-     * @param userId the user id
+     * @param userId           the user id
      * @param resourceServerId the resource server id
      * @return a list of permissions granted for a particular user
      */
@@ -104,8 +104,8 @@ public interface PermissionTicketStore {
     /**
      * Returns a list of {@link PermissionTicket} with name equal to {@code resourceName} granted to the given {@code userId}.
      *
-     * @param resourceName the name of a resource
-     * @param userId the user id
+     * @param resourceName     the name of a resource
+     * @param userId           the user id
      * @param resourceServerId the resource server id
      * @return a list of permissions granted for a particular user
      */
@@ -113,11 +113,11 @@ public interface PermissionTicketStore {
 
     /**
      * Returns a list of {@link Resource} granted to the given {@code requester}
-     * 
+     *
      * @param requester the requester
-     * @param name the keyword to query resources by name or null if any resource
-     * @param first first  result
-     * @param max max result
+     * @param name      the keyword to query resources by name or null if any resource
+     * @param first     first  result
+     * @param max       max result
      * @return a list of {@link Resource} granted to the given {@code requester}
      */
     List<Resource> findGrantedResources(String requester, String name, int first, int max);
@@ -127,7 +127,7 @@ public interface PermissionTicketStore {
      *
      * @param owner the owner
      * @param first first  result
-     * @param max max result
+     * @param max   max result
      * @return a list of {@link Resource} granted by the owner
      */
     List<Resource> findGrantedOwnerResources(String owner, int first, int max);

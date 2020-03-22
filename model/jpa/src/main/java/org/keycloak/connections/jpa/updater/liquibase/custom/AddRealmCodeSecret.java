@@ -60,12 +60,12 @@ public class AddRealmCodeSecret implements CustomSqlChange {
                 try (Statement st = connection.createStatement(); ResultSet resultSet = st.executeQuery("SELECT ID FROM " + LiquibaseJpaUpdaterProvider.getTable(correctedTableName, correctedSchemaName) + " WHERE CODE_SECRET IS NULL")) {
                     while (resultSet.next()) {
                         String id = resultSet.getString(1);
-                        
+
                         UpdateStatement statement = new UpdateStatement(null, null, correctedTableName)
                                 .addNewColumnValue("CODE_SECRET", KeycloakModelUtils.generateCodeSecret())
                                 .setWhereClause("ID=?").addWhereParameters(id);
                         statements.add(statement);
-                        
+
                         if (!resultSet.isFirst()) {
                             sb.append(", ");
                         }

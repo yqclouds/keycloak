@@ -104,14 +104,12 @@ public interface ClientStorageProviderFactory<T extends ClientStorageProvider> e
      * @return
      */
     @Override
-    default
-    List<ProviderConfigProperty> getCommonProviderConfigProperties() {
+    default List<ProviderConfigProperty> getCommonProviderConfigProperties() {
         return ClientStorageProviderSpi.commonConfig();
     }
 
     @Override
-    default
-    Map<String, Object> getTypeMetadata() {
+    default Map<String, Object> getTypeMetadata() {
         Map<String, Object> metadata = new HashMap<>();
         return metadata;
     }

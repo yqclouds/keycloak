@@ -32,6 +32,7 @@ public interface LocaleSelectorProvider extends Provider {
 
     /**
      * Resolve the locale which should be used for the request
+     *
      * @param user
      * @return
      */

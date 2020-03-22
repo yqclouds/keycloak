@@ -16,30 +16,27 @@
  */
 package org.keycloak.saml.common.util;
 
-import org.keycloak.saml.common.exceptions.ParsingException;
-import java.nio.charset.Charset;
-import java.util.NoSuchElementException;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.Characters;
-import javax.xml.stream.events.EndDocument;
-import javax.xml.stream.events.EndElement;
-import javax.xml.stream.events.StartDocument;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.Matcher;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.keycloak.saml.common.exceptions.ParsingException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
+
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.*;
+import java.nio.charset.Charset;
+import java.util.NoSuchElementException;
+
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.hamcrest.CoreMatchers.*;
 
 /**
- *
  * @author hmlnarik
  */
 public class StaxParserUtilTest {
@@ -65,7 +62,7 @@ public class StaxParserUtilTest {
     @Test
     public void testBypassElementBlock() throws XMLStreamException, ParsingException {
         String xml = "<a><b><c>test</c>"
-          + "<d>aa</d></b></a>";
+                + "<d>aa</d></b></a>";
         XMLEventReader reader = StaxParserUtil.getXMLEventReader(IOUtils.toInputStream(xml, Charset.defaultCharset()));
 
         assertThat(reader.nextEvent(), instanceOf(StartDocument.class));
@@ -85,7 +82,7 @@ public class StaxParserUtilTest {
     @Test
     public void testBypassElementBlockAnon() throws XMLStreamException, ParsingException {
         String xml = "<a><b><c>test</c>"
-          + "<d>aa</d></b></a>";
+                + "<d>aa</d></b></a>";
         XMLEventReader reader = StaxParserUtil.getXMLEventReader(IOUtils.toInputStream(xml, Charset.defaultCharset()));
 
         assertThat(reader.nextEvent(), instanceOf(StartDocument.class));
@@ -105,7 +102,7 @@ public class StaxParserUtilTest {
     @Test
     public void testBypassElementBlockNested() throws XMLStreamException, ParsingException {
         String xml = "<a><b><c>test</c>"
-          + "<d>aa<d>nestedD</d></d></b></a>";
+                + "<d>aa<d>nestedD</d></d></b></a>";
         XMLEventReader reader = StaxParserUtil.getXMLEventReader(IOUtils.toInputStream(xml, Charset.defaultCharset()));
 
         assertThat(reader.nextEvent(), instanceOf(StartDocument.class));
@@ -125,7 +122,7 @@ public class StaxParserUtilTest {
     @Test
     public void testBypassElementBlockNestedAnon() throws XMLStreamException, ParsingException {
         String xml = "<a><b><c>test</c>"
-          + "<d>aa<d>nestedD</d></d></b></a>";
+                + "<d>aa<d>nestedD</d></d></b></a>";
         XMLEventReader reader = StaxParserUtil.getXMLEventReader(IOUtils.toInputStream(xml, Charset.defaultCharset()));
 
         assertThat(reader.nextEvent(), instanceOf(StartDocument.class));
@@ -145,7 +142,7 @@ public class StaxParserUtilTest {
     @Test
     public void testBypassElementBlockWrongPairing() throws XMLStreamException, ParsingException {
         String xml = "<a><b><c>test</c>"
-          + "<d><b>aa</d><d>nestedD</d></d></b></a>";
+                + "<d><b>aa</d><d>nestedD</d></d></b></a>";
         XMLEventReader reader = StaxParserUtil.getXMLEventReader(IOUtils.toInputStream(xml, Charset.defaultCharset()));
 
         assertThat(reader.nextEvent(), instanceOf(StartDocument.class));
@@ -163,7 +160,7 @@ public class StaxParserUtilTest {
     @Test
     public void testBypassElementBlockNestedPrematureEnd() throws XMLStreamException, ParsingException {
         String xml = "<a><b><c>test</c>"
-          + "<d>aa<d>nestedD</d></d>";
+                + "<d>aa<d>nestedD</d></d>";
         XMLEventReader reader = StaxParserUtil.getXMLEventReader(IOUtils.toInputStream(xml, Charset.defaultCharset()));
 
         assertThat(reader.nextEvent(), instanceOf(StartDocument.class));

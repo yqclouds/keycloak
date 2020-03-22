@@ -29,5 +29,5 @@ import org.keycloak.representations.AccessToken;
 public interface UserInfoTokenMapper {
 
     AccessToken transformUserInfoToken(AccessToken token, ProtocolMapperModel mappingModel, KeycloakSession session,
-                                               UserSessionModel userSession, ClientSessionContext clientSessionCtx);
+                                       UserSessionModel userSession, ClientSessionContext clientSessionCtx);
 }

@@ -23,7 +23,7 @@ package org.keycloak.events.admin;
 public class AdminEvent {
 
     private long time;
-    
+
     private String realmId;
 
     private AuthDetails authDetails;
@@ -40,7 +40,7 @@ public class AdminEvent {
     private String representation;
 
     private String error;
-    
+
     /**
      * Returns the time of the event
      *
@@ -53,7 +53,7 @@ public class AdminEvent {
     public void setTime(long time) {
         this.time = time;
     }
-    
+
     /**
      * Returns the id of the realm
      *
@@ -145,18 +145,17 @@ public class AdminEvent {
      */
     public ResourceType getResourceType() {
         if (resourceType == null) {
-          return null;
+            return null;
         }
         try {
             return ResourceType.valueOf(resourceType);
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             return ResourceType.CUSTOM;
         }
     }
 
     public void setResourceType(ResourceType resourceType) {
-        this.resourceType = resourceType == null ? null  : resourceType.toString();
+        this.resourceType = resourceType == null ? null : resourceType.toString();
     }
 
     /**

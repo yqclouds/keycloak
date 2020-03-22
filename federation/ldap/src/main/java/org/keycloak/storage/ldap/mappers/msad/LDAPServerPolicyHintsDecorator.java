@@ -17,23 +17,22 @@
 
 package org.keycloak.storage.ldap.mappers.msad;
 
-import javax.naming.NamingException;
-import javax.naming.ldap.BasicControl;
-import javax.naming.ldap.LdapContext;
-
 import org.jboss.logging.Logger;
 import org.keycloak.storage.ldap.idm.store.ldap.LDAPOperationManager;
 import org.keycloak.storage.ldap.mappers.LDAPOperationDecorator;
+
+import javax.naming.NamingException;
+import javax.naming.ldap.BasicControl;
+import javax.naming.ldap.LdapContext;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class LDAPServerPolicyHintsDecorator implements LDAPOperationDecorator {
 
-    private static final Logger logger = Logger.getLogger(LDAPServerPolicyHintsDecorator.class);
-
     public static final String LDAP_SERVER_POLICY_HINTS_OID = "1.2.840.113556.1.4.2239";
     public static final String LDAP_SERVER_POLICY_HINTS_DEPRECATED_OID = "1.2.840.113556.1.4.2066";
+    private static final Logger logger = Logger.getLogger(LDAPServerPolicyHintsDecorator.class);
 
     @Override
     public void beforeLDAPOperation(LdapContext ldapContext, LDAPOperationManager.LdapOperation ldapOperation) throws NamingException {
@@ -43,7 +42,7 @@ public class LDAPServerPolicyHintsDecorator implements LDAPOperationDecorator {
 
         // Rather using deprecated OID as it works from MSAD 2008-R2 when the newer works from MSAD 2012
         BasicControl control = new BasicControl(LDAP_SERVER_POLICY_HINTS_DEPRECATED_OID, true, controlData);
-        BasicControl[] controls = new BasicControl[] { control };
+        BasicControl[] controls = new BasicControl[]{control};
         ldapContext.setRequestControls(controls);
     }
 }

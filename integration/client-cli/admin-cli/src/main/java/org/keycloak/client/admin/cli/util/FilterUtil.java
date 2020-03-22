@@ -38,12 +38,12 @@ public class FilterUtil {
         JsonNode r = node;
         if (node.isArray()) {
             ArrayNode ar = MAPPER.createArrayNode();
-            for (JsonNode item: node) {
+            for (JsonNode item : node) {
                 ar.add(copyFilteredObject(item, returnFields));
             }
             r = ar;
 
-        } else if (node.isObject()){
+        } else if (node.isObject()) {
             r = MAPPER.createObjectNode();
             Iterator<String> fieldNames = node.fieldNames();
             while (fieldNames.hasNext()) {

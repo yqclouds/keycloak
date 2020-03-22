@@ -17,16 +17,16 @@
 
 package org.keycloak.models;
 
+import org.keycloak.common.util.ObjectUtil;
+
 import java.util.Map;
 import java.util.Set;
-
-import org.keycloak.common.util.ObjectUtil;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public interface ClientModel extends ClientScopeModel, RoleContainerModel,  ProtocolMapperContainerModel, ScopeContainerModel {
+public interface ClientModel extends ClientScopeModel, RoleContainerModel, ProtocolMapperContainerModel, ScopeContainerModel {
 
     // COMMON ATTRIBUTES
 
@@ -38,12 +38,14 @@ public interface ClientModel extends ClientScopeModel, RoleContainerModel,  Prot
 
     /**
      * Returns client internal ID (UUID).
+     *
      * @return
      */
     String getId();
 
     /**
      * Returns client ID as defined by the user.
+     *
      * @return
      */
     String getClientId();
@@ -100,6 +102,7 @@ public interface ClientModel extends ClientScopeModel, RoleContainerModel,  Prot
 
 
     boolean isBearerOnly();
+
     void setBearerOnly(boolean only);
 
     int getNodeReRegistrationTimeout();
@@ -107,64 +110,83 @@ public interface ClientModel extends ClientScopeModel, RoleContainerModel,  Prot
     void setNodeReRegistrationTimeout(int timeout);
 
     String getClientAuthenticatorType();
+
     void setClientAuthenticatorType(String clientAuthenticatorType);
 
     boolean validateSecret(String secret);
+
     String getSecret();
+
     public void setSecret(String secret);
 
     String getRegistrationToken();
+
     void setRegistrationToken(String registrationToken);
 
     String getProtocol();
+
     void setProtocol(String protocol);
 
     void setAttribute(String name, String value);
+
     void removeAttribute(String name);
+
     String getAttribute(String name);
+
     Map<String, String> getAttributes();
 
     /**
      * Get authentication flow binding override for this client.  Allows client to override an authentication flow binding.
      *
      * @param binding examples are "browser", "direct_grant"
-     *
      * @return
      */
     String getAuthenticationFlowBindingOverride(String binding);
+
     Map<String, String> getAuthenticationFlowBindingOverrides();
+
     void removeAuthenticationFlowBindingOverride(String binding);
+
     void setAuthenticationFlowBindingOverride(String binding, String flowId);
 
     boolean isFrontchannelLogout();
+
     void setFrontchannelLogout(boolean flag);
 
     boolean isFullScopeAllowed();
+
     void setFullScopeAllowed(boolean value);
 
 
     boolean isPublicClient();
+
     void setPublicClient(boolean flag);
 
     boolean isConsentRequired();
+
     void setConsentRequired(boolean consentRequired);
 
     boolean isStandardFlowEnabled();
+
     void setStandardFlowEnabled(boolean standardFlowEnabled);
 
     boolean isImplicitFlowEnabled();
+
     void setImplicitFlowEnabled(boolean implicitFlowEnabled);
 
     boolean isDirectAccessGrantsEnabled();
+
     void setDirectAccessGrantsEnabled(boolean directAccessGrantsEnabled);
 
     boolean isServiceAccountsEnabled();
+
     void setServiceAccountsEnabled(boolean serviceAccountsEnabled);
 
     RealmModel getRealm();
 
     /**
      * Add clientScope with this client. Add it as default scope (if parameter 'defaultScope' is true) or optional scope (if parameter 'defaultScope' is false)
+     *
      * @param clientScope
      * @param defaultScope
      */
@@ -202,7 +224,7 @@ public interface ClientModel extends ClientScopeModel, RoleContainerModel,  Prot
 
     void setNotBefore(int notBefore);
 
-     Map<String, Integer> getRegisteredNodes();
+    Map<String, Integer> getRegisteredNodes();
 
     /**
      * Register node or just update the 'lastReRegistration' time if this node is already registered
@@ -219,7 +241,7 @@ public interface ClientModel extends ClientScopeModel, RoleContainerModel,  Prot
     @Override
     default boolean isDisplayOnConsentScreen() {
         String displayVal = getAttribute(DISPLAY_ON_CONSENT_SCREEN);
-        return displayVal==null ? false : Boolean.parseBoolean(displayVal);
+        return displayVal == null ? false : Boolean.parseBoolean(displayVal);
     }
 
     // Fallback to name or clientId if consentScreenText attribute is null

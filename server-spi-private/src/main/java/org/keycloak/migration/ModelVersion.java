@@ -20,9 +20,9 @@ package org.keycloak.migration;
 import org.jboss.logging.Logger;
 
 /**
-* @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
-* @version $Revision: 1 $
-*/
+ * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
+ * @version $Revision: 1 $
+ */
 public class ModelVersion {
     private static Logger logger = Logger.getLogger(ModelVersion.class);
 
@@ -104,7 +104,7 @@ public class ModelVersion {
         int comp = qualifier.compareTo(version.qualifier);
         if (comp < 0) {
             return true;
-        } else if (comp > 0){
+        } else if (comp > 0) {
             return false;
         }
 

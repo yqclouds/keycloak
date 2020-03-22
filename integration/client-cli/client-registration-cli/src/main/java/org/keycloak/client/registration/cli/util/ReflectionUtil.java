@@ -26,13 +26,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
@@ -46,8 +40,8 @@ public class ReflectionUtil {
         // because it seems like JSON mapping sometimes also uses fields as well
         // This may have to be changed some day due to reliance on Field.setAccessible()
         Map<String, Field> map = new HashMap<>();
-        Field [] fields  = type.getDeclaredFields();
-        for (Field f: fields) {
+        Field[] fields = type.getDeclaredFields();
+        for (Field f : fields) {
             // make sure to also have access to non-public fields
             f.setAccessible(true);
             map.put(f.getName(), f);
@@ -128,7 +122,7 @@ public class ReflectionUtil {
 
     public static void setAttributes(Object client, List<AttributeOperation> attrs) {
 
-        for (AttributeOperation item: attrs) {
+        for (AttributeOperation item : attrs) {
 
             AttributeKey attr = item.getKey();
             Object nested = client;
@@ -172,7 +166,7 @@ public class ReflectionUtil {
                         throw new AttributeException(attr.toString(), "Failed to set attribute " + attr, e);
                     }
                 } else if (isListType(type)) {
-                    if (i < cs.size() -1) {
+                    if (i < cs.size() - 1) {
                         // not the target component
                         try {
                             nested = field.get(nested);
@@ -254,7 +248,8 @@ public class ReflectionUtil {
 
                         } else {
                             // set the whole list field itself
-                            List value = createNewList(type);;
+                            List value = createNewList(type);
+                            ;
                             if (item.getType() == AttributeOperation.Type.SET) {
                                 List converted = convertValueToList(item.getValue(), itype);
                                 value.addAll(converted);
@@ -268,7 +263,7 @@ public class ReflectionUtil {
                     }
                 } else {
                     // object type
-                    if (i < cs.size() -1) {
+                    if (i < cs.size() - 1) {
                         // not the target component
                         Object value;
                         if (field == null) {
@@ -347,7 +342,7 @@ public class ReflectionUtil {
                 throw new RuntimeException("List attribute value has to start with '[' - '" + value + "'");
             }
             List parsed = JsonSerialization.readValue(value, List.class);
-            for (Object item: parsed) {
+            for (Object item : parsed) {
                 if (itemType.isAssignableFrom(item.getClass())) {
                     result.add(item);
                 } else {
@@ -387,7 +382,7 @@ public class ReflectionUtil {
         attr = attr != null ? attr : new AttributeKey();
 
         Map<String, Field> fields = getAttrFieldsForType(type);
-        for (AttributeKey.Component c: attr.getComponents()) {
+        for (AttributeKey.Component c : attr.getComponents()) {
             Field f = fields.get(c.getName());
             if (f == null) {
                 throw new AttributeException(attr.toString(), "No such attribute: " + attr);
@@ -415,13 +410,13 @@ public class ReflectionUtil {
         Field f = null;
         Type gtype = type;
 
-        for (AttributeKey.Component c: attr.getComponents()) {
+        for (AttributeKey.Component c : attr.getComponents()) {
             if (f != null) {
                 gtype = f.getGenericType();
                 if (gtype instanceof ParameterizedType) {
                     Type[] typeargs = ((ParameterizedType) gtype).getActualTypeArguments();
                     if (typeargs.length > 0) {
-                        gtype = typeargs[typeargs.length-1];
+                        gtype = typeargs[typeargs.length - 1];
                     }
                 }
             }

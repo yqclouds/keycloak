@@ -19,7 +19,6 @@ package org.keycloak.models.cache.infinispan.authorization;
 import org.infinispan.Cache;
 import org.jboss.logging.Logger;
 import org.keycloak.models.cache.infinispan.CacheManager;
-import org.keycloak.models.cache.infinispan.RealmCacheManager;
 import org.keycloak.models.cache.infinispan.authorization.events.AuthorizationCacheInvalidationEvent;
 import org.keycloak.models.cache.infinispan.authorization.stream.InResourcePredicate;
 import org.keycloak.models.cache.infinispan.authorization.stream.InResourceServerPredicate;
@@ -40,6 +39,7 @@ public class StoreFactoryCacheManager extends CacheManager {
     public StoreFactoryCacheManager(Cache<String, Revisioned> cache, Cache<String, Long> revisions) {
         super(cache, revisions);
     }
+
     @Override
     protected Logger getLogger() {
         return logger;
@@ -94,7 +94,7 @@ public class StoreFactoryCacheManager extends CacheManager {
         }
 
         if (uris != null) {
-            for (String uri: uris) {
+            for (String uri : uris) {
                 invalidations.add(StoreFactoryCacheSession.getResourceByUriCacheKey(uri, serverId));
             }
         }

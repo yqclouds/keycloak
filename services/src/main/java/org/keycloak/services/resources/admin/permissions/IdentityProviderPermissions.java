@@ -30,23 +30,17 @@ import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.keycloak.services.resources.admin.permissions.AdminPermissionManagement.TOKEN_EXCHANGE;
 
 /**
  * Manages default policies for identity providers.
  *
- *
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-class IdentityProviderPermissions implements  IdentityProviderPermissionManagement {
+class IdentityProviderPermissions implements IdentityProviderPermissionManagement {
     private static final Logger logger = Logger.getLogger(IdentityProviderPermissions.class);
     protected final KeycloakSession session;
     protected final RealmModel realm;
@@ -100,7 +94,8 @@ class IdentityProviderPermissions implements  IdentityProviderPermissionManageme
         ResourceServer server = root.initializeRealmResourceServer();
         if (server == null) return;
         deletePolicy(getExchangeToPermissionName(idp), server);
-        Resource resource = authz.getStoreFactory().getResourceStore().findByName(getResourceName(idp), server.getId());;
+        Resource resource = authz.getStoreFactory().getResourceStore().findByName(getResourceName(idp), server.getId());
+        ;
         if (resource != null) authz.getStoreFactory().getResourceStore().delete(resource.getId());
     }
 
@@ -122,7 +117,6 @@ class IdentityProviderPermissions implements  IdentityProviderPermissionManageme
     }
 
 
-
     private Scope exchangeToScope(ResourceServer server) {
         return authz.getStoreFactory().getScopeStore().findByName(TOKEN_EXCHANGE, server.getId());
     }
@@ -131,7 +125,7 @@ class IdentityProviderPermissions implements  IdentityProviderPermissionManageme
     public Resource resource(IdentityProviderModel idp) {
         ResourceServer server = root.initializeRealmResourceServer();
         if (server == null) return null;
-        Resource resource =  authz.getStoreFactory().getResourceStore().findByName(getResourceName(idp), server.getId());
+        Resource resource = authz.getStoreFactory().getResourceStore().findByName(getResourceName(idp), server.getId());
         if (resource == null) return null;
         return resource;
     }
@@ -155,7 +149,7 @@ class IdentityProviderPermissions implements  IdentityProviderPermissionManageme
                 return false;
             }
 
-            Resource resource =  authz.getStoreFactory().getResourceStore().findByName(getResourceName(to), server.getId());
+            Resource resource = authz.getStoreFactory().getResourceStore().findByName(getResourceName(to), server.getId());
             if (resource == null) {
                 logger.debug("No resource object set up for target idp");
                 return false;

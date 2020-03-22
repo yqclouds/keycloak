@@ -17,9 +17,6 @@
 
 package org.keycloak.services.clientregistration.policy.impl;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
 import org.keycloak.models.KeycloakSession;
@@ -28,6 +25,9 @@ import org.keycloak.provider.ConfigurationValidationHelper;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.services.clientregistration.policy.AbstractClientRegistrationPolicyFactory;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -38,7 +38,7 @@ public class MaxClientsClientRegistrationPolicyFactory extends AbstractClientReg
     public static final ProviderConfigProperty MAX_CLIENTS_PROPERTY = new ProviderConfigProperty();
 
     public static final int DEFAULT_MAX_CLIENTS = 200;
-
+    public static final String PROVIDER_ID = "max-clients";
     private static List<ProviderConfigProperty> configProperties = new LinkedList<>();
 
     static {
@@ -49,8 +49,6 @@ public class MaxClientsClientRegistrationPolicyFactory extends AbstractClientReg
         MAX_CLIENTS_PROPERTY.setDefaultValue(String.valueOf(DEFAULT_MAX_CLIENTS));
         configProperties.add(MAX_CLIENTS_PROPERTY);
     }
-
-    public static final String PROVIDER_ID = "max-clients";
 
     @Override
     public ClientRegistrationPolicy create(KeycloakSession session, ComponentModel model) {

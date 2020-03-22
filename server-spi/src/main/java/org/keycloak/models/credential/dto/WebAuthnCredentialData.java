@@ -37,7 +37,7 @@ public class WebAuthnCredentialData {
                                   @JsonProperty("credentialId") String credentialId,
                                   @JsonProperty("counter") long counter,
                                   @JsonProperty("attestationStatement") String attestationStatement,
-                                  @JsonProperty("credentialPublicKey") String credentialPublicKey                                  ) {
+                                  @JsonProperty("credentialPublicKey") String credentialPublicKey) {
         this.aaguid = aaguid;
         this.credentialId = credentialId;
         this.counter = counter;

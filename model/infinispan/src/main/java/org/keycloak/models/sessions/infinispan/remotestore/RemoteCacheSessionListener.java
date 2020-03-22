@@ -19,6 +19,7 @@ package org.keycloak.models.sessions.infinispan.remotestore;
 
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.RemoteCache;
+import org.infinispan.client.hotrod.VersionedValue;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryCreated;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryModified;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryRemoved;
@@ -35,15 +36,15 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.entities.SessionEntity;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
+
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
-import org.infinispan.client.hotrod.VersionedValue;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 @ClientListener
-public class RemoteCacheSessionListener<K, V extends SessionEntity>  {
+public class RemoteCacheSessionListener<K, V extends SessionEntity> {
 
     protected static final Logger logger = Logger.getLogger(RemoteCacheSessionListener.class);
 
@@ -58,6 +59,25 @@ public class RemoteCacheSessionListener<K, V extends SessionEntity>  {
     protected RemoteCacheSessionListener() {
     }
 
+    public static <K, V extends SessionEntity> RemoteCacheSessionListener createListener(KeycloakSession session, Cache<K, SessionEntityWrapper<V>> cache, RemoteCache<K, SessionEntityWrapper<V>> remoteCache) {
+        /*boolean isCoordinator = InfinispanUtil.isCoordinator(cache);
+
+        // Just cluster coordinator will fetch userSessions from remote cache.
+        // In case that coordinator is failover during state fetch, there is slight risk that not all userSessions will be fetched to local cluster. Assume acceptable for now
+        RemoteCacheSessionListener listener;
+        if (isCoordinator) {
+            logger.infof("Will fetch initial state from remote cache for cache '%s'", cache.getName());
+            listener = new FetchInitialStateCacheListener();
+        } else {
+            logger.infof("Won't fetch initial state from remote cache for cache '%s'", cache.getName());
+            listener = new DontFetchInitialStateCacheListener();
+        }*/
+
+        RemoteCacheSessionListener<K, V> listener = new RemoteCacheSessionListener<>();
+        listener.init(session, cache, remoteCache);
+
+        return listener;
+    }
 
     protected void init(KeycloakSession session, Cache<K, SessionEntityWrapper<V>> cache, RemoteCache<K, SessionEntityWrapper<V>> remoteCache) {
         this.cache = cache;
@@ -68,7 +88,6 @@ public class RemoteCacheSessionListener<K, V extends SessionEntity>  {
         ExecutorService executor = session.getProvider(ExecutorsProvider.class).getExecutor("client-listener-" + cache.getName());
         this.executor = new ClientListenerExecutorDecorator<>(executor);
     }
-
 
     @ClientCacheEntryCreated
     public void created(ClientCacheEntryCreatedEvent event) {
@@ -86,7 +105,6 @@ public class RemoteCacheSessionListener<K, V extends SessionEntity>  {
         }
     }
 
-
     @ClientCacheEntryModified
     public void updated(ClientCacheEntryModifiedEvent event) {
         K key = (K) event.getKey();
@@ -100,7 +118,6 @@ public class RemoteCacheSessionListener<K, V extends SessionEntity>  {
             });
         }
     }
-
 
     protected void createRemoteEntityInCache(K key, long eventVersion) {
         VersionedValue<SessionEntityWrapper<V>> remoteSessionVersioned = remoteCache.getWithMetadata(key);
@@ -123,7 +140,6 @@ public class RemoteCacheSessionListener<K, V extends SessionEntity>  {
                 .putIfAbsent(key, newWrapper);
     }
 
-
     protected void replaceRemoteEntityInCache(K key, long eventVersion) {
         // TODO can be optimized and remoteSession sent in the event itself?
         boolean replaced = false;
@@ -131,7 +147,7 @@ public class RemoteCacheSessionListener<K, V extends SessionEntity>  {
         int sleepInterval = 25;
         do {
             replaceRetries++;
-            
+
             SessionEntityWrapper<V> localEntityWrapper = cache.get(key);
             VersionedValue<SessionEntityWrapper<V>> remoteSessionVersioned = remoteCache.getWithMetadata(key);
 
@@ -145,7 +161,7 @@ public class RemoteCacheSessionListener<K, V extends SessionEntity>  {
             if (remoteSessionVersioned.getVersion() < eventVersion) {
                 try {
                     logger.debugf("Got replace remote entity event prematurely for entity '%s', will try again. Event version: %d, got: %d",
-                      key.toString(), eventVersion, remoteSessionVersioned == null ? -1 : remoteSessionVersioned.getVersion());
+                            key.toString(), eventVersion, remoteSessionVersioned == null ? -1 : remoteSessionVersioned.getVersion());
                     Thread.sleep(new Random().nextInt(sleepInterval));  // using exponential backoff
                     continue;
                 } catch (InterruptedException ex) {
@@ -164,12 +180,11 @@ public class RemoteCacheSessionListener<K, V extends SessionEntity>  {
             replaced = cache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_STORE, Flag.SKIP_CACHE_LOAD, Flag.IGNORE_RETURN_VALUES)
                     .replace(key, localEntityWrapper, sessionWrapper);
 
-            if (! replaced) {
+            if (!replaced) {
                 logger.debugf("Did not succeed in merging sessions, will try again: %s", remoteSession.toString());
             }
-        } while (replaceRetries < MAXIMUM_REPLACE_RETRIES && ! replaced);
+        } while (replaceRetries < MAXIMUM_REPLACE_RETRIES && !replaced);
     }
-
 
     @ClientCacheEntryRemoved
     public void removed(ClientCacheEntryRemovedEvent event) {
@@ -186,7 +201,6 @@ public class RemoteCacheSessionListener<K, V extends SessionEntity>  {
             });
         }
     }
-
 
     // For distributed caches, ensure that local modification is executed just on owner OR if event.isCommandRetried
     protected boolean shouldUpdateLocalCache(ClientEvent.Type type, K key, boolean commandRetried) {
@@ -208,36 +222,12 @@ public class RemoteCacheSessionListener<K, V extends SessionEntity>  {
         return result;
     }
 
-
-
     @ClientListener(includeCurrentState = true)
     public static class FetchInitialStateCacheListener extends RemoteCacheSessionListener {
     }
 
-
     @ClientListener(includeCurrentState = false)
     public static class DontFetchInitialStateCacheListener extends RemoteCacheSessionListener {
-    }
-
-
-    public static <K, V extends SessionEntity> RemoteCacheSessionListener createListener(KeycloakSession session, Cache<K, SessionEntityWrapper<V>> cache, RemoteCache<K, SessionEntityWrapper<V>> remoteCache) {
-        /*boolean isCoordinator = InfinispanUtil.isCoordinator(cache);
-
-        // Just cluster coordinator will fetch userSessions from remote cache.
-        // In case that coordinator is failover during state fetch, there is slight risk that not all userSessions will be fetched to local cluster. Assume acceptable for now
-        RemoteCacheSessionListener listener;
-        if (isCoordinator) {
-            logger.infof("Will fetch initial state from remote cache for cache '%s'", cache.getName());
-            listener = new FetchInitialStateCacheListener();
-        } else {
-            logger.infof("Won't fetch initial state from remote cache for cache '%s'", cache.getName());
-            listener = new DontFetchInitialStateCacheListener();
-        }*/
-
-        RemoteCacheSessionListener<K, V> listener = new RemoteCacheSessionListener<>();
-        listener.init(session, cache, remoteCache);
-
-        return listener;
     }
 
 

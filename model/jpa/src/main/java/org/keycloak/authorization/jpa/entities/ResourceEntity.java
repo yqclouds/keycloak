@@ -18,35 +18,12 @@
 
 package org.keycloak.authorization.jpa.entities;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.CascadeType;
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+
+import javax.persistence.*;
+import java.util.*;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -57,25 +34,26 @@ import org.hibernate.annotations.FetchMode;
 })
 @NamedQueries(
         {
-                @NamedQuery(name="findResourceIdByOwner", query="select distinct(r) from ResourceEntity r left join fetch r.scopes s where r.resourceServer.id = :serverId and r.owner = :owner"),
-                @NamedQuery(name="findResourceIdByOwnerOrdered", query="select distinct(r) from ResourceEntity r left join fetch r.scopes s where r.resourceServer.id = :serverId and r.owner = :owner order by r.id"),
-                @NamedQuery(name="findAnyResourceIdByOwner", query="select distinct(r) from ResourceEntity r left join fetch r.scopes s where r.owner = :owner"),
-                @NamedQuery(name="findAnyResourceIdByOwnerOrdered", query="select distinct(r) from ResourceEntity r left join fetch r.scopes s where r.owner = :owner order by r.id"),
-                @NamedQuery(name="findResourceIdByUri", query="select r.id from ResourceEntity r where  r.resourceServer.id = :serverId  and :uri in elements(r.uris)"),
-                @NamedQuery(name="findResourceIdByName", query="select distinct(r) from ResourceEntity r left join fetch r.scopes s where  r.resourceServer.id = :serverId  and r.owner = :ownerId and r.name = :name"),
-                @NamedQuery(name="findResourceIdByType", query="select distinct(r) from ResourceEntity r left join fetch r.scopes s where  r.resourceServer.id = :serverId  and r.owner = :ownerId and r.type = :type"),
-                @NamedQuery(name="findResourceIdByTypeNoOwner", query="select distinct(r) from ResourceEntity r left join fetch r.scopes s where  r.resourceServer.id = :serverId  and r.type = :type"),
-                @NamedQuery(name="findResourceIdByTypeInstance", query="select distinct(r) from ResourceEntity r left join fetch r.scopes s where  r.resourceServer.id = :serverId and r.type = :type and r.owner <> :serverId"),
-                @NamedQuery(name="findResourceIdByServerId", query="select r.id from ResourceEntity r where  r.resourceServer.id = :serverId "),
-                @NamedQuery(name="findResourceIdByScope", query="select r from ResourceEntity r inner join r.scopes s where r.resourceServer.id = :serverId and (s.resourceServer.id = :serverId and s.id in (:scopeIds))"),
-                @NamedQuery(name="deleteResourceByResourceServer", query="delete from ResourceEntity r where r.resourceServer.id = :serverId")
+                @NamedQuery(name = "findResourceIdByOwner", query = "select distinct(r) from ResourceEntity r left join fetch r.scopes s where r.resourceServer.id = :serverId and r.owner = :owner"),
+                @NamedQuery(name = "findResourceIdByOwnerOrdered", query = "select distinct(r) from ResourceEntity r left join fetch r.scopes s where r.resourceServer.id = :serverId and r.owner = :owner order by r.id"),
+                @NamedQuery(name = "findAnyResourceIdByOwner", query = "select distinct(r) from ResourceEntity r left join fetch r.scopes s where r.owner = :owner"),
+                @NamedQuery(name = "findAnyResourceIdByOwnerOrdered", query = "select distinct(r) from ResourceEntity r left join fetch r.scopes s where r.owner = :owner order by r.id"),
+                @NamedQuery(name = "findResourceIdByUri", query = "select r.id from ResourceEntity r where  r.resourceServer.id = :serverId  and :uri in elements(r.uris)"),
+                @NamedQuery(name = "findResourceIdByName", query = "select distinct(r) from ResourceEntity r left join fetch r.scopes s where  r.resourceServer.id = :serverId  and r.owner = :ownerId and r.name = :name"),
+                @NamedQuery(name = "findResourceIdByType", query = "select distinct(r) from ResourceEntity r left join fetch r.scopes s where  r.resourceServer.id = :serverId  and r.owner = :ownerId and r.type = :type"),
+                @NamedQuery(name = "findResourceIdByTypeNoOwner", query = "select distinct(r) from ResourceEntity r left join fetch r.scopes s where  r.resourceServer.id = :serverId  and r.type = :type"),
+                @NamedQuery(name = "findResourceIdByTypeInstance", query = "select distinct(r) from ResourceEntity r left join fetch r.scopes s where  r.resourceServer.id = :serverId and r.type = :type and r.owner <> :serverId"),
+                @NamedQuery(name = "findResourceIdByServerId", query = "select r.id from ResourceEntity r where  r.resourceServer.id = :serverId "),
+                @NamedQuery(name = "findResourceIdByScope", query = "select r from ResourceEntity r inner join r.scopes s where r.resourceServer.id = :serverId and (s.resourceServer.id = :serverId and s.id in (:scopeIds))"),
+                @NamedQuery(name = "deleteResourceByResourceServer", query = "delete from ResourceEntity r where r.resourceServer.id = :serverId")
         }
 )
 public class ResourceEntity {
 
     @Id
-    @Column(name="ID", length = 36)
-    @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
+    @Column(name = "ID", length = 36)
+    @Access(AccessType.PROPERTY)
+    // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
     private String id;
 
     @Column(name = "NAME")
@@ -86,7 +64,7 @@ public class ResourceEntity {
 
     @ElementCollection(fetch = FetchType.LAZY)
     @Column(name = "VALUE")
-    @CollectionTable(name = "RESOURCE_URIS", joinColumns = { @JoinColumn(name="RESOURCE_ID") })
+    @CollectionTable(name = "RESOURCE_URIS", joinColumns = {@JoinColumn(name = "RESOURCE_ID")})
     private Set<String> uris = new HashSet<>();
 
     @Column(name = "TYPE")
@@ -113,7 +91,7 @@ public class ResourceEntity {
     @JoinTable(name = "RESOURCE_POLICY", joinColumns = @JoinColumn(name = "RESOURCE_ID"), inverseJoinColumns = @JoinColumn(name = "POLICY_ID"))
     private List<PolicyEntity> policies = new LinkedList<>();
 
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy="resource", fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "resource", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SELECT)
     @BatchSize(size = 20)
     private Collection<ResourceAttributeEntity> attributes = new ArrayList<>();
@@ -186,12 +164,12 @@ public class ResourceEntity {
         this.owner = owner;
     }
 
-    public void setOwnerManagedAccess(boolean ownerManagedAccess) {
-        this.ownerManagedAccess = ownerManagedAccess;
-    }
-
     public boolean isOwnerManagedAccess() {
         return ownerManagedAccess;
+    }
+
+    public void setOwnerManagedAccess(boolean ownerManagedAccess) {
+        this.ownerManagedAccess = ownerManagedAccess;
     }
 
     public List<PolicyEntity> getPolicies() {

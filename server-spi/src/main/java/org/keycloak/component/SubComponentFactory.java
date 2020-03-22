@@ -30,8 +30,7 @@ import java.util.Map;
  * @version $Revision: 1 $
  */
 public interface SubComponentFactory<CreatedType, ProviderType extends Provider> extends ComponentFactory<CreatedType, ProviderType> {
-    default
-    List<ProviderConfigProperty> getConfigProperties(RealmModel realm, ComponentModel parent) {
+    default List<ProviderConfigProperty> getConfigProperties(RealmModel realm, ComponentModel parent) {
         return getConfigProperties();
     }
 

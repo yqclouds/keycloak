@@ -22,10 +22,11 @@ import org.keycloak.dom.saml.v2.assertion.AuthnContextDeclType;
 import org.keycloak.dom.saml.v2.assertion.AuthnContextType;
 import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.util.StaxParserUtil;
-import java.net.URI;
+import org.w3c.dom.Element;
+
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.StartElement;
-import org.w3c.dom.Element;
+import java.net.URI;
 
 /**
  * Parse the <conditions> in the saml assertion

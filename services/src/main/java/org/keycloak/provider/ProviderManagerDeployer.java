@@ -22,5 +22,6 @@ package org.keycloak.provider;
  */
 public interface ProviderManagerDeployer {
     void deploy(ProviderManager pm);
+
     void undeploy(ProviderManager pm);
 }

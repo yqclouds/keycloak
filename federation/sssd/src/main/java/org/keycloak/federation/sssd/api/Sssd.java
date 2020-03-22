@@ -36,15 +36,9 @@ import java.util.Vector;
  */
 public class Sssd {
 
-    private static DBusConnection dBusConnection;
-
-    public static void disconnect() {
-        dBusConnection.disconnect();
-    }
-
-    private String username;
     private static final Logger logger = Logger.getLogger(Sssd.class);
-
+    private static DBusConnection dBusConnection;
+    private String username;
     private Sssd() {
     }
 
@@ -59,6 +53,10 @@ public class Sssd {
 
     }
 
+    public static void disconnect() {
+        dBusConnection.disconnect();
+    }
+
     public static String getRawAttribute(Variant variant) {
         if (variant != null) {
             Vector value = (Vector) variant.getValue();
@@ -67,17 +65,6 @@ public class Sssd {
             }
         }
         return null;
-    }
-
-    public List<String> getGroups() {
-        List<String> userGroups;
-        try {
-            InfoPipe infoPipe = dBusConnection.getRemoteObject(InfoPipe.BUSNAME, InfoPipe.OBJECTPATH, InfoPipe.class);
-            userGroups = infoPipe.getUserGroups(username);
-        } catch (Exception e) {
-            throw new SSSDException("Failed to retrieve user's groups from SSSD. Check if SSSD service is active.");
-        }
-        return userGroups;
     }
 
     public static boolean isAvailable() {
@@ -99,6 +86,17 @@ public class Sssd {
             logger.debugv("SSSD is not available in your system. Federation provider will be disabled.", e);
         }
         return sssdAvailable;
+    }
+
+    public List<String> getGroups() {
+        List<String> userGroups;
+        try {
+            InfoPipe infoPipe = dBusConnection.getRemoteObject(InfoPipe.BUSNAME, InfoPipe.OBJECTPATH, InfoPipe.class);
+            userGroups = infoPipe.getUserGroups(username);
+        } catch (Exception e) {
+            throw new SSSDException("Failed to retrieve user's groups from SSSD. Check if SSSD service is active.");
+        }
+        return userGroups;
     }
 
     public User getUser() {

@@ -16,7 +16,9 @@
   ~ limitations under the License.
   -->
 
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
     <changeSet author="bburke@redhat.com" id="1.3.0">
         <delete tableName="CLIENT_SESSION_ROLE"/>
         <delete tableName="CLIENT_SESSION_PROT_MAPPER"/>
@@ -144,12 +146,12 @@
             <column name="UPDATE_PROFILE_FIRST_LGN_MD" value="off"/>
             <where>UPDATE_PROFILE_FIRST_LOGIN = :value</where>
             <whereParams>
-                <param valueBoolean="false" />
+                <param valueBoolean="false"/>
             </whereParams>
         </update>
-        <dropDefaultValue tableName="IDENTITY_PROVIDER" columnName="UPDATE_PROFILE_FIRST_LOGIN" />
+        <dropDefaultValue tableName="IDENTITY_PROVIDER" columnName="UPDATE_PROFILE_FIRST_LOGIN"/>
         <dropColumn tableName="IDENTITY_PROVIDER" columnName="UPDATE_PROFILE_FIRST_LOGIN"/>
-        
+
         <addColumn tableName="USER_REQUIRED_ACTION">
             <column name="REQUIRED_ACTION" type="VARCHAR(255)" defaultValue=" ">
                 <constraints nullable="false"/>
@@ -175,42 +177,70 @@
         <addPrimaryKey columnNames="ID" constraintName="CONSTRAINT_AUTH_PK" tableName="AUTHENTICATOR"/>
         <addPrimaryKey columnNames="ID" constraintName="CONSTRAINT_AUTH_FLOW_PK" tableName="AUTHENTICATION_FLOW"/>
         <addPrimaryKey columnNames="ID" constraintName="CONSTRAINT_AUTH_EXEC_PK" tableName="AUTHENTICATION_EXECUTION"/>
-        <addPrimaryKey columnNames="AUTHENTICATOR_ID, NAME" constraintName="CONSTRAINT_AUTH_CFG_PK" tableName="AUTHENTICATOR_CONFIG"/>
+        <addPrimaryKey columnNames="AUTHENTICATOR_ID, NAME" constraintName="CONSTRAINT_AUTH_CFG_PK"
+                       tableName="AUTHENTICATOR_CONFIG"/>
         <dropPrimaryKey constraintName="CONSTRAINT_2" tableName="USER_REQUIRED_ACTION"/>
         <dropColumn tableName="USER_REQUIRED_ACTION" columnName="ACTION"/>
-        <addPrimaryKey columnNames="REQUIRED_ACTION, USER_ID" constraintName="CONSTRAINT_REQUIRED_ACTION" tableName="USER_REQUIRED_ACTION"/>
-        <addPrimaryKey columnNames="CLIENT_SESSION, AUTHENTICATOR" constraintName="CONSTRAINT_AUTH_STATUS_PK" tableName="CLIENT_SESSION_AUTH_STATUS"/>
+        <addPrimaryKey columnNames="REQUIRED_ACTION, USER_ID" constraintName="CONSTRAINT_REQUIRED_ACTION"
+                       tableName="USER_REQUIRED_ACTION"/>
+        <addPrimaryKey columnNames="CLIENT_SESSION, AUTHENTICATOR" constraintName="CONSTRAINT_AUTH_STATUS_PK"
+                       tableName="CLIENT_SESSION_AUTH_STATUS"/>
         <addPrimaryKey columnNames="ID" constraintName="CONSTRAINT_FEDMAPPERPM" tableName="USER_FEDERATION_MAPPER"/>
-        <addPrimaryKey columnNames="USER_FEDERATION_MAPPER_ID, NAME" constraintName="CONSTRAINT_FEDMAPPER_CFG_PM" tableName="USER_FEDERATION_MAPPER_CONFIG"/>
-        <addForeignKeyConstraint baseColumnNames="CLIENT_SESSION" baseTableName="CLIENT_SESSION_AUTH_STATUS" constraintName="AUTH_STATUS_CONSTRAINT" referencedColumnNames="ID" referencedTableName="CLIENT_SESSION"/>
-        <addForeignKeyConstraint baseColumnNames="REALM_ID" baseTableName="AUTHENTICATOR" constraintName="FK_AUTH_REALM" referencedColumnNames="ID" referencedTableName="REALM"/>
-        <addForeignKeyConstraint baseColumnNames="REALM_ID" baseTableName="AUTHENTICATION_FLOW" constraintName="FK_AUTH_FLOW_REALM" referencedColumnNames="ID" referencedTableName="REALM"/>
-        <addForeignKeyConstraint baseColumnNames="REALM_ID" baseTableName="AUTHENTICATION_EXECUTION" constraintName="FK_AUTH_EXEC_REALM" referencedColumnNames="ID" referencedTableName="REALM"/>
-        <addForeignKeyConstraint baseColumnNames="FLOW_ID" baseTableName="AUTHENTICATION_EXECUTION" constraintName="FK_AUTH_EXEC_FLOW" referencedColumnNames="ID" referencedTableName="AUTHENTICATION_FLOW"/>
-        <addForeignKeyConstraint baseColumnNames="REALM_ID" baseTableName="USER_FEDERATION_MAPPER" constraintName="FK_FEDMAPPERPM_REALM" referencedColumnNames="ID" referencedTableName="REALM"/>
-        <addForeignKeyConstraint baseColumnNames="FEDERATION_PROVIDER_ID" baseTableName="USER_FEDERATION_MAPPER" constraintName="FK_FEDMAPPERPM_FEDPRV" referencedColumnNames="ID" referencedTableName="USER_FEDERATION_PROVIDER"/>
-        <addForeignKeyConstraint baseColumnNames="USER_FEDERATION_MAPPER_ID" baseTableName="USER_FEDERATION_MAPPER_CONFIG" constraintName="FK_FEDMAPPER_CFG" referencedColumnNames="ID" referencedTableName="USER_FEDERATION_MAPPER"/>
+        <addPrimaryKey columnNames="USER_FEDERATION_MAPPER_ID, NAME" constraintName="CONSTRAINT_FEDMAPPER_CFG_PM"
+                       tableName="USER_FEDERATION_MAPPER_CONFIG"/>
+        <addForeignKeyConstraint baseColumnNames="CLIENT_SESSION" baseTableName="CLIENT_SESSION_AUTH_STATUS"
+                                 constraintName="AUTH_STATUS_CONSTRAINT" referencedColumnNames="ID"
+                                 referencedTableName="CLIENT_SESSION"/>
+        <addForeignKeyConstraint baseColumnNames="REALM_ID" baseTableName="AUTHENTICATOR" constraintName="FK_AUTH_REALM"
+                                 referencedColumnNames="ID" referencedTableName="REALM"/>
+        <addForeignKeyConstraint baseColumnNames="REALM_ID" baseTableName="AUTHENTICATION_FLOW"
+                                 constraintName="FK_AUTH_FLOW_REALM" referencedColumnNames="ID"
+                                 referencedTableName="REALM"/>
+        <addForeignKeyConstraint baseColumnNames="REALM_ID" baseTableName="AUTHENTICATION_EXECUTION"
+                                 constraintName="FK_AUTH_EXEC_REALM" referencedColumnNames="ID"
+                                 referencedTableName="REALM"/>
+        <addForeignKeyConstraint baseColumnNames="FLOW_ID" baseTableName="AUTHENTICATION_EXECUTION"
+                                 constraintName="FK_AUTH_EXEC_FLOW" referencedColumnNames="ID"
+                                 referencedTableName="AUTHENTICATION_FLOW"/>
+        <addForeignKeyConstraint baseColumnNames="REALM_ID" baseTableName="USER_FEDERATION_MAPPER"
+                                 constraintName="FK_FEDMAPPERPM_REALM" referencedColumnNames="ID"
+                                 referencedTableName="REALM"/>
+        <addForeignKeyConstraint baseColumnNames="FEDERATION_PROVIDER_ID" baseTableName="USER_FEDERATION_MAPPER"
+                                 constraintName="FK_FEDMAPPERPM_FEDPRV" referencedColumnNames="ID"
+                                 referencedTableName="USER_FEDERATION_PROVIDER"/>
+        <addForeignKeyConstraint baseColumnNames="USER_FEDERATION_MAPPER_ID"
+                                 baseTableName="USER_FEDERATION_MAPPER_CONFIG" constraintName="FK_FEDMAPPER_CFG"
+                                 referencedColumnNames="ID" referencedTableName="USER_FEDERATION_MAPPER"/>
 
-        <dropDefaultValue tableName="REALM" columnName="PASSWORD_CRED_GRANT_ALLOWED" />
+        <dropDefaultValue tableName="REALM" columnName="PASSWORD_CRED_GRANT_ALLOWED"/>
         <dropColumn tableName="REALM" columnName="PASSWORD_CRED_GRANT_ALLOWED"/>
 
         <!-- KEYCLOAK-1298 Change constraint names to be upper-cased -->
-        <dropForeignKeyConstraint baseTableName="PROTOCOL_MAPPER_CONFIG" constraintName="FK_PMConfig" />
+        <dropForeignKeyConstraint baseTableName="PROTOCOL_MAPPER_CONFIG" constraintName="FK_PMConfig"/>
         <dropPrimaryKey constraintName="CONSTRAINT_PMConfig" tableName="PROTOCOL_MAPPER_CONFIG"/>
-        <addPrimaryKey columnNames="PROTOCOL_MAPPER_ID, NAME" constraintName="CONSTRAINT_PMCONFIG" tableName="PROTOCOL_MAPPER_CONFIG"/>
-        <addForeignKeyConstraint baseColumnNames="PROTOCOL_MAPPER_ID" baseTableName="PROTOCOL_MAPPER_CONFIG" constraintName="FK_PMCONFIG" referencedColumnNames="ID" referencedTableName="PROTOCOL_MAPPER"/>
+        <addPrimaryKey columnNames="PROTOCOL_MAPPER_ID, NAME" constraintName="CONSTRAINT_PMCONFIG"
+                       tableName="PROTOCOL_MAPPER_CONFIG"/>
+        <addForeignKeyConstraint baseColumnNames="PROTOCOL_MAPPER_ID" baseTableName="PROTOCOL_MAPPER_CONFIG"
+                                 constraintName="FK_PMCONFIG" referencedColumnNames="ID"
+                                 referencedTableName="PROTOCOL_MAPPER"/>
 
-        <dropForeignKeyConstraint baseTableName="IDP_MAPPER_CONFIG" constraintName="FK_IDPMConfig" />
+        <dropForeignKeyConstraint baseTableName="IDP_MAPPER_CONFIG" constraintName="FK_IDPMConfig"/>
         <dropPrimaryKey constraintName="CONSTRAINT_IDPMConfig" tableName="IDP_MAPPER_CONFIG"/>
-        <addPrimaryKey columnNames="IDP_MAPPER_ID, NAME" constraintName="CONSTRAINT_IDPMCONFIG" tableName="IDP_MAPPER_CONFIG"/>
-        <addForeignKeyConstraint baseColumnNames="IDP_MAPPER_ID" baseTableName="IDP_MAPPER_CONFIG" constraintName="FK_IDPMCONFIG" referencedColumnNames="ID" referencedTableName="IDENTITY_PROVIDER_MAPPER"/>
+        <addPrimaryKey columnNames="IDP_MAPPER_ID, NAME" constraintName="CONSTRAINT_IDPMCONFIG"
+                       tableName="IDP_MAPPER_CONFIG"/>
+        <addForeignKeyConstraint baseColumnNames="IDP_MAPPER_ID" baseTableName="IDP_MAPPER_CONFIG"
+                                 constraintName="FK_IDPMCONFIG" referencedColumnNames="ID"
+                                 referencedTableName="IDENTITY_PROVIDER_MAPPER"/>
 
         <!-- Sybase specific hacks -->
         <modifySql dbms="sybase">
-            <replace replace="[USER_REQUIRED_ACTION] DROP PRIMARY KEY" with="[USER_REQUIRED_ACTION] DROP CONSTRAINT CONSTRAINT_2" />
-            <replace replace="[PROTOCOL_MAPPER_CONFIG] DROP PRIMARY KEY" with="[PROTOCOL_MAPPER_CONFIG] DROP CONSTRAINT CONSTRAINT_PMConfig" />
-            <replace replace="[IDP_MAPPER_CONFIG] DROP PRIMARY KEY" with="[IDP_MAPPER_CONFIG] DROP CONSTRAINT CONSTRAINT_IDPMConfig" />
-            <regExpReplace replace=".*(SET DEFAULT NULL)" with="SELECT 1" />
+            <replace replace="[USER_REQUIRED_ACTION] DROP PRIMARY KEY"
+                     with="[USER_REQUIRED_ACTION] DROP CONSTRAINT CONSTRAINT_2"/>
+            <replace replace="[PROTOCOL_MAPPER_CONFIG] DROP PRIMARY KEY"
+                     with="[PROTOCOL_MAPPER_CONFIG] DROP CONSTRAINT CONSTRAINT_PMConfig"/>
+            <replace replace="[IDP_MAPPER_CONFIG] DROP PRIMARY KEY"
+                     with="[IDP_MAPPER_CONFIG] DROP CONSTRAINT CONSTRAINT_IDPMConfig"/>
+            <regExpReplace replace=".*(SET DEFAULT NULL)" with="SELECT 1"/>
         </modifySql>
 
     </changeSet>

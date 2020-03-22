@@ -17,11 +17,11 @@
 
 package org.keycloak.models.sessions.infinispan.changes.sessions;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Abstract "store" for bulk sending of the updates related to lastSessionRefresh

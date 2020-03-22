@@ -37,20 +37,20 @@ public class SAMLPDPDescriptorParser extends SAMLRoleDecriptorTypeParser<PDPDesc
     protected void processSubElement(XMLEventReader xmlEventReader, PDPDescriptorType target, SAMLMetadataQNames element, StartElement elementDetail) throws ParsingException {
         switch (element) {
             case AUTHZ_SERVICE:
-            target.addAuthZService(SAMLAuthzServiceParser.getInstance().parse(xmlEventReader));
-            break;
+                target.addAuthZService(SAMLAuthzServiceParser.getInstance().parse(xmlEventReader));
+                break;
 
-        case ASSERTION_ID_REQUEST_SERVICE:
-            target.addAssertionIDRequestService(SAMLAssertinIDRequestServiceParser.getInstance().parse(xmlEventReader));
-            break;
+            case ASSERTION_ID_REQUEST_SERVICE:
+                target.addAssertionIDRequestService(SAMLAssertinIDRequestServiceParser.getInstance().parse(xmlEventReader));
+                break;
 
-        case NAMEID_FORMAT:
-            StaxParserUtil.advance(xmlEventReader);
-            target.addNameIDFormat(StaxParserUtil.getElementText(xmlEventReader));
-            break;
+            case NAMEID_FORMAT:
+                StaxParserUtil.advance(xmlEventReader);
+                target.addNameIDFormat(StaxParserUtil.getElementText(xmlEventReader));
+                break;
 
-        default:
-            super.processSubElement(xmlEventReader, target, element, elementDetail);
+            default:
+                super.processSubElement(xmlEventReader, target, element, elementDetail);
         }
     }
 }

@@ -37,6 +37,12 @@ public class SAML11StatusType implements Serializable {
 
     protected CommonStatusDetailType statusDetail;
 
+    public static SAML11StatusType successType() {
+        SAML11StatusType success = new SAML11StatusType();
+        success.setStatusCode(SAML11StatusCodeType.SUCCESS);
+        return success;
+    }
+
     public SAML11StatusCodeType getStatusCode() {
         return statusCode;
     }
@@ -59,11 +65,5 @@ public class SAML11StatusType implements Serializable {
 
     public void setStatusDetail(CommonStatusDetailType statusDetail) {
         this.statusDetail = statusDetail;
-    }
-
-    public static SAML11StatusType successType() {
-        SAML11StatusType success = new SAML11StatusType();
-        success.setStatusCode(SAML11StatusCodeType.SUCCESS);
-        return success;
     }
 }

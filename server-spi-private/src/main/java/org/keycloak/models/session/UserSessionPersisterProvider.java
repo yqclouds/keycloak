@@ -17,11 +17,7 @@
 
 package org.keycloak.models.session;
 
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.provider.Provider;
 
 import java.util.Collection;
@@ -45,7 +41,9 @@ public interface UserSessionPersisterProvider extends Provider {
     void removeClientSession(String userSessionId, String clientUUID, boolean offline);
 
     void onRealmRemoved(RealmModel realm);
+
     void onClientRemoved(RealmModel realm, ClientModel client);
+
     void onUserRemoved(RealmModel realm, UserModel user);
 
     // Bulk update of lastSessionRefresh of all specified userSessions to the given value.

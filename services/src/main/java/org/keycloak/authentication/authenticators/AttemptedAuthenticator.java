@@ -12,6 +12,7 @@ import org.keycloak.models.UserModel;
 public class AttemptedAuthenticator implements Authenticator {
 
     public static final AttemptedAuthenticator SINGLETON = new AttemptedAuthenticator();
+
     @Override
     public void authenticate(AuthenticationFlowContext context) {
         context.attempted();

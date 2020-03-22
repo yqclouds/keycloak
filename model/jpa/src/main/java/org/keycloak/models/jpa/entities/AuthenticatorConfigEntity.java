@@ -17,34 +17,23 @@
 
 package org.keycloak.models.jpa.entities;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.MapKeyColumn;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Map;
-import javax.persistence.UniqueConstraint;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@Table(name="AUTHENTICATOR_CONFIG")
+@Table(name = "AUTHENTICATOR_CONFIG")
 @Entity
 public class AuthenticatorConfigEntity {
     @Id
-    @Column(name="ID", length = 36)
-    @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
+    @Column(name = "ID", length = 36)
+    @Access(AccessType.PROPERTY)
+    // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
     protected String id;
 
-    @Column(name="ALIAS")
+    @Column(name = "ALIAS")
     protected String alias;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -52,12 +41,12 @@ public class AuthenticatorConfigEntity {
     protected RealmEntity realm;
 
     @ElementCollection
-    @MapKeyColumn(name="NAME")
-    @Column(name="VALUE")
+    @MapKeyColumn(name = "NAME")
+    @Column(name = "VALUE")
     @CollectionTable(
-      name="AUTHENTICATOR_CONFIG_ENTRY",
-      joinColumns={ @JoinColumn(name="AUTHENTICATOR_ID") },
-      uniqueConstraints = { @UniqueConstraint(columnNames = {"AUTHENTICATOR_ID", "NAME"})}
+            name = "AUTHENTICATOR_CONFIG_ENTRY",
+            joinColumns = {@JoinColumn(name = "AUTHENTICATOR_ID")},
+            uniqueConstraints = {@UniqueConstraint(columnNames = {"AUTHENTICATOR_ID", "NAME"})}
     )
     private Map<String, String> config;
 

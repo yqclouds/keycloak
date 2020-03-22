@@ -17,11 +17,6 @@
 
 package org.keycloak.protocol.oidc.mappers;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
@@ -32,6 +27,11 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.utils.RoleResolveUtil;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Protocol mapper, which adds all client_ids of "allowed" clients to the audience field of the token. Allowed client means the client
  * for which user has at least one client role
@@ -40,11 +40,17 @@ import org.keycloak.utils.RoleResolveUtil;
  */
 public class AudienceResolveProtocolMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper {
 
+    public static final String PROVIDER_ID = "oidc-audience-resolve-mapper";
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
 
-
-    public static final String PROVIDER_ID = "oidc-audience-resolve-mapper";
-
+    public static ProtocolMapperModel createClaimMapper(String name) {
+        ProtocolMapperModel mapper = new ProtocolMapperModel();
+        mapper.setName(name);
+        mapper.setProtocolMapper(PROVIDER_ID);
+        mapper.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
+        mapper.setConfig(Collections.emptyMap());
+        return mapper;
+    }
 
     public List<ProviderConfigProperty> getConfigProperties() {
         return configProperties;
@@ -94,14 +100,5 @@ public class AudienceResolveProtocolMapper extends AbstractOIDCProtocolMapper im
         }
 
         return token;
-    }
-
-    public static ProtocolMapperModel createClaimMapper(String name) {
-        ProtocolMapperModel mapper = new ProtocolMapperModel();
-        mapper.setName(name);
-        mapper.setProtocolMapper(PROVIDER_ID);
-        mapper.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
-        mapper.setConfig(Collections.emptyMap());
-        return mapper;
     }
 }

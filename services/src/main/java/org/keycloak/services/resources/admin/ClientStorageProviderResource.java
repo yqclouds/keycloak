@@ -18,7 +18,6 @@ package org.keycloak.services.resources.admin;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import javax.ws.rs.NotFoundException;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.KeycloakSession;
@@ -26,10 +25,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.storage.client.ClientStorageProvider;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -37,9 +33,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @resource User Storage Provider
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
+ * @resource User Storage Provider
  */
 public class ClientStorageProviderResource {
     private static final Logger logger = Logger.getLogger(ClientStorageProviderResource.class);
@@ -67,7 +63,7 @@ public class ClientStorageProviderResource {
 
     /**
      * Need this for admin console to display simple name of provider when displaying client detail
-     *
+     * <p>
      * KEYCLOAK-4328
      *
      * @param id

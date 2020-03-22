@@ -20,12 +20,7 @@ package org.keycloak.representations.idm;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.keycloak.json.StringListMapDeserializer;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>

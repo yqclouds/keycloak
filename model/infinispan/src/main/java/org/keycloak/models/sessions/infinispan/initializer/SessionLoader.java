@@ -17,9 +17,9 @@
 
 package org.keycloak.models.sessions.infinispan.initializer;
 
-import java.io.Serializable;
-
 import org.keycloak.models.KeycloakSession;
+
+import java.io.Serializable;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -30,7 +30,7 @@ public interface SessionLoader<LOADER_CONTEXT extends SessionLoader.LoaderContex
 
     /**
      * Will be triggered just once on cluster coordinator node to perform some generic initialization tasks (Eg. update DB before starting load).
-     *
+     * <p>
      * NOTE: This shouldn't be used for the initialization of loader instance itself!
      *
      * @param session
@@ -39,10 +39,9 @@ public interface SessionLoader<LOADER_CONTEXT extends SessionLoader.LoaderContex
 
 
     /**
-     *
      * Will be triggered just once on cluster coordinator node to count the number of segments and other context data specific to whole computation.
      * Each segment will be then later computed in one "worker" task
-     *
+     * <p>
      * This method could be expensive to call, so the "computed" loaderContext object is passed among workers/loaders and needs to be serializable
      *
      * @param session
@@ -54,9 +53,9 @@ public interface SessionLoader<LOADER_CONTEXT extends SessionLoader.LoaderContex
     /**
      * Compute the worker context for current iteration
      *
-     * @param loaderCtx global loader context
-     * @param segment the current segment (page) to compute
-     * @param workerId ID of worker for current worker iteration. Usually the number 0-8 (with single cluster node)
+     * @param loaderCtx      global loader context
+     * @param segment        the current segment (page) to compute
+     * @param workerId       ID of worker for current worker iteration. Usually the number 0-8 (with single cluster node)
      * @param previousResult last workerResult from previous computation. Can be empty list in case of the operation is triggered for the 1st time
      * @return
      */

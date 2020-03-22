@@ -17,17 +17,6 @@
 
 package org.keycloak.storage.ldap;
 
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.naming.directory.SearchControls;
-
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
 import org.keycloak.models.LDAPConstants;
@@ -45,6 +34,10 @@ import org.keycloak.storage.ldap.idm.query.internal.LDAPQueryConditionsBuilder;
 import org.keycloak.storage.ldap.idm.store.ldap.LDAPIdentityStore;
 import org.keycloak.storage.ldap.mappers.LDAPStorageMapper;
 import org.keycloak.storage.ldap.mappers.membership.MembershipType;
+
+import javax.naming.directory.SearchControls;
+import java.lang.reflect.Method;
+import java.util.*;
 
 /**
  * Allow to directly call some operations against LDAPIdentityStore.
@@ -174,11 +167,11 @@ public class LDAPUtils {
      * Add ldapChild as member of ldapParent and save ldapParent to LDAP.
      *
      * @param ldapProvider
-     * @param membershipType how is 'member' attribute saved (full DN or just uid)
-     * @param memberAttrName usually 'member'
+     * @param membershipType      how is 'member' attribute saved (full DN or just uid)
+     * @param memberAttrName      usually 'member'
      * @param memberChildAttrName used just if membershipType is UID. Usually 'uid'
-     * @param ldapParent role or group
-     * @param ldapChild usually user (or child group or child role)
+     * @param ldapParent          role or group
+     * @param ldapChild           usually user (or child group or child role)
      */
     public static void addMember(LDAPStorageProvider ldapProvider, MembershipType membershipType, String memberAttrName, String memberChildAttrName, LDAPObject ldapParent, LDAPObject ldapChild) {
         String membership = getMemberValueOfChildObject(ldapChild, membershipType, memberChildAttrName);
@@ -189,11 +182,11 @@ public class LDAPUtils {
      * Remove ldapChild as member of ldapParent and save ldapParent to LDAP.
      *
      * @param ldapProvider
-     * @param membershipType how is 'member' attribute saved (full DN or just uid)
-     * @param memberAttrName usually 'member'
+     * @param membershipType      how is 'member' attribute saved (full DN or just uid)
+     * @param memberAttrName      usually 'member'
      * @param memberChildAttrName used just if membershipType is UID. Usually 'uid'
-     * @param ldapParent role or group
-     * @param ldapChild usually user (or child group or child role)
+     * @param ldapParent          role or group
+     * @param ldapChild           usually user (or child group or child role)
      */
     public static void deleteMember(LDAPStorageProvider ldapProvider, MembershipType membershipType, String memberAttrName, String memberChildAttrName, LDAPObject ldapParent, LDAPObject ldapChild) {
         String userMembership = getMemberValueOfChildObject(ldapChild, membershipType, memberChildAttrName);
@@ -203,7 +196,7 @@ public class LDAPUtils {
     /**
      * Return all existing memberships (values of attribute 'member' ) from the given ldapRole or ldapGroup
      *
-     * @param ldapProvider The ldap provider
+     * @param ldapProvider   The ldap provider
      * @param memberAttrName usually 'member'
      * @param ldapRole
      * @return
@@ -233,7 +226,7 @@ public class LDAPUtils {
      * Load all LDAP objects corresponding to given query. We will load them paginated, so we allow to bypass the limitation of 1000
      * maximum loaded objects in single query in MSAD
      *
-     * @param ldapQuery LDAP query to be used. The caller should close it after calling this method
+     * @param ldapQuery    LDAP query to be used. The caller should close it after calling this method
      * @param ldapProvider
      * @return
      */
@@ -292,9 +285,10 @@ public class LDAPUtils {
 
     /**
      * Performs iterative searches over an LDAPObject to return an attribute that is ranged.
+     *
      * @param ldapProvider The provider to use
-     * @param ldapObject The current object with the ranged attribute not complete
-     * @param name The attribute name
+     * @param ldapObject   The current object with the ranged attribute not complete
+     * @param name         The attribute name
      */
     public static void fillRangedAttribute(LDAPStorageProvider ldapProvider, LDAPObject ldapObject, String name) {
         LDAPObject newObject = ldapObject;
@@ -310,8 +304,8 @@ public class LDAPUtils {
      * Return a map of the user model properties from the getter methods
      * Map key are the attributes names in lower case
      */
-    public static Map<String, Property<Object>> getUserModelProperties(){
-        
+    public static Map<String, Property<Object>> getUserModelProperties() {
+
         Map<String, Property<Object>> userModelProps = PropertyQueries.createQuery(UserModel.class)
                 .addCriteria(new PropertyCriteria() {
 

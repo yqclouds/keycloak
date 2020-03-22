@@ -17,12 +17,6 @@
 
 package org.keycloak.services.util;
 
-import java.net.URI;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.ws.rs.core.Response;
-
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.models.KeycloakSession;
@@ -30,14 +24,19 @@ import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.theme.BrowserSecurityHeaderSetup;
 import org.keycloak.utils.MediaType;
 
+import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * The point of this is to improve experience of browser history (back/forward/refresh buttons), but ensure there is no more redirects then necessary.
- *
+ * <p>
  * Ideally we want to:
  * - Remove all POST requests from browser history, because browsers don't automatically re-send them when click "back" button. POSTS in history causes unfriendly dialogs and browser "Page is expired" pages.
- *
+ * <p>
  * - Keep the browser URL to match the flow and execution from authentication session. This means that browser refresh works fine and show us the correct form.
- *
+ * <p>
  * - Avoid redirects. This is possible with javascript based approach (JavascriptHistoryReplace). The RedirectAfterPostHelper requires one redirect after POST, but works even on browser without javascript and
  * on old browsers where "history.replaceState" is unsupported.
  *
@@ -50,10 +49,16 @@ public abstract class BrowserHistoryHelper {
 
     protected static final Logger logger = Logger.getLogger(BrowserHistoryHelper.class);
 
+    // Always rely on javascript for now
+    public static BrowserHistoryHelper getInstance() {
+        return new JavascriptHistoryReplace();
+        //return new RedirectAfterPostHelper();
+        //return new NoOpHelper();
+    }
+
     public abstract Response saveResponseAndRedirect(KeycloakSession session, AuthenticationSessionModel authSession, Response response, boolean actionRequest, HttpRequest httpRequest);
 
     public abstract Response loadSavedResponse(KeycloakSession session, AuthenticationSessionModel authSession);
-
 
     protected boolean shouldReplaceBrowserHistory(boolean actionRequest, HttpRequest httpRequest) {
         if (actionRequest) {
@@ -62,15 +67,6 @@ public abstract class BrowserHistoryHelper {
 
         Boolean flowChanged = (Boolean) httpRequest.getAttribute(SHOULD_UPDATE_BROWSER_HISTORY);
         return (flowChanged != null && flowChanged);
-    }
-
-
-
-    // Always rely on javascript for now
-    public static BrowserHistoryHelper getInstance() {
-        return new JavascriptHistoryReplace();
-        //return new RedirectAfterPostHelper();
-        //return new NoOpHelper();
     }
 
 
@@ -118,7 +114,7 @@ public abstract class BrowserHistoryHelper {
                 String javascript = getJavascriptText(lastExecutionUrl);
 
                 return new StringBuilder(origHtml.substring(0, start))
-                        .append(javascript )
+                        .append(javascript)
                         .append(origHtml.substring(start))
                         .toString();
             } else {

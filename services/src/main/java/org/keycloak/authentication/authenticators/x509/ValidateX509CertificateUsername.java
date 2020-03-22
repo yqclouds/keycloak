@@ -18,10 +18,6 @@
 
 package org.keycloak.authentication.authenticators.x509;
 
-import java.security.cert.X509Certificate;
-
-import javax.ws.rs.core.Response;
-
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAuthenticator;
@@ -30,6 +26,9 @@ import org.keycloak.events.Errors;
 import org.keycloak.models.ModelDuplicateException;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.ServicesLogger;
+
+import javax.ws.rs.core.Response;
+import java.security.cert.X509Certificate;
 
 /**
  * @author <a href="mailto:pnalyvayko@agi.com">Peter Nalyvayko</a>
@@ -74,7 +73,7 @@ public class ValidateX509CertificateUsername extends AbstractX509ClientCertifica
             validator.checkRevocationStatus()
                     .validateKeyUsage()
                     .validateExtendedKeyUsage();
-        } catch(Exception e) {
+        } catch (Exception e) {
             logger.error(e.getMessage(), e);
             // TODO use specific locale to load error messages
             Response challengeResponse = errorResponse(Response.Status.UNAUTHORIZED.getStatusCode(), "invalid_request", e.getMessage());
@@ -97,15 +96,13 @@ public class ValidateX509CertificateUsername extends AbstractX509ClientCertifica
             context.getEvent().detail(Details.USERNAME, userIdentity.toString());
             context.getAuthenticationSession().setAuthNote(AbstractUsernameFormAuthenticator.ATTEMPTED_USERNAME, userIdentity.toString());
             user = getUserIdentityToModelMapper(config).find(context, userIdentity);
-        }
-        catch(ModelDuplicateException e) {
+        } catch (ModelDuplicateException e) {
             logger.modelDuplicateException(e);
             String errorMessage = String.format("X509 certificate authentication's failed. Reason: \"%s\"", e.getMessage());
             Response challengeResponse = errorResponse(Response.Status.UNAUTHORIZED.getStatusCode(), "invalid_request", errorMessage);
             context.failure(AuthenticationFlowError.INVALID_USER, challengeResponse);
             return;
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             logger.error(e.getMessage(), e);
             String errorMessage = String.format("X509 certificate authentication's failed. Reason: \"%s\"", e.getMessage());
             Response challengeResponse = errorResponse(Response.Status.UNAUTHORIZED.getStatusCode(), "invalid_request", errorMessage);

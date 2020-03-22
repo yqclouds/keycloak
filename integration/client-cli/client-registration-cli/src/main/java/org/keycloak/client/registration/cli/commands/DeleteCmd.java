@@ -30,17 +30,11 @@ import java.io.StringWriter;
 import java.util.List;
 
 import static org.keycloak.client.registration.cli.util.AuthUtil.ensureToken;
-import static org.keycloak.client.registration.cli.util.ConfigUtil.DEFAULT_CONFIG_FILE_STRING;
-import static org.keycloak.client.registration.cli.util.ConfigUtil.credentialsAvailable;
-import static org.keycloak.client.registration.cli.util.ConfigUtil.getRegistrationToken;
-import static org.keycloak.client.registration.cli.util.ConfigUtil.loadConfig;
-import static org.keycloak.client.registration.cli.util.ConfigUtil.saveMergeConfig;
+import static org.keycloak.client.registration.cli.util.ConfigUtil.*;
 import static org.keycloak.client.registration.cli.util.HttpUtil.doDelete;
 import static org.keycloak.client.registration.cli.util.HttpUtil.urlencode;
 import static org.keycloak.client.registration.cli.util.IoUtil.warnfErr;
-import static org.keycloak.client.registration.cli.util.OsUtil.CMD;
-import static org.keycloak.client.registration.cli.util.OsUtil.EOL;
-import static org.keycloak.client.registration.cli.util.OsUtil.PROMPT;
+import static org.keycloak.client.registration.cli.util.OsUtil.*;
 
 
 /**
@@ -51,6 +45,40 @@ public class DeleteCmd extends AbstractAuthOptionsCmd {
 
     @Arguments
     private List<String> args;
+
+    public static String usage() {
+        StringWriter sb = new StringWriter();
+        PrintWriter out = new PrintWriter(sb);
+        out.println("Usage: " + CMD + " delete CLIENT [ARGUMENTS]");
+        out.println();
+        out.println("Command to delete a specific client configuration. If registration access token is specified or is available in ");
+        out.println("configuration file, then it is used. Otherwise, current active session is used.");
+        out.println();
+        out.println("Arguments:");
+        out.println();
+        out.println("  Global options:");
+        out.println("    -x                    Print full stack trace when exiting with error");
+        out.println("    --config              Path to the config file (" + DEFAULT_CONFIG_FILE_STRING + " by default)");
+        out.println("    --no-config           Don't use config file - no authentication info is loaded or saved");
+        out.println("    --truststore PATH     Path to a truststore containing trusted certificates");
+        out.println("    --trustpass PASSWORD  Truststore password (prompted for if not specified and --truststore is used)");
+        out.println("    CREDENTIALS OPTIONS   Same set of options as accepted by '" + CMD + " config credentials' in order to establish");
+        out.println("                          an authenticated sessions. In combination with --no-config option this allows transient");
+        out.println("                          (on-the-fly) authentication to be performed which leaves no tokens in config file.");
+        out.println();
+        out.println("  Command specific options:");
+        out.println("    CLIENT                ClientId of the client to delete");
+        out.println("    -t, --token TOKEN     Use the specified Registration Access Token for authorization");
+        out.println();
+        out.println("Examples:");
+        out.println();
+        out.println("Delete a client:");
+        out.println("  " + PROMPT + " " + CMD + " delete my_client");
+        out.println();
+        out.println();
+        out.println("Use '" + CMD + " help' for general information and a list of commands");
+        return sb.toString();
+    }
 
     @Override
     public CommandResult execute(CommandInvocation commandInvocation) throws CommandException, InterruptedException {
@@ -127,39 +155,5 @@ public class DeleteCmd extends AbstractAuthOptionsCmd {
 
     protected String help() {
         return usage();
-    }
-
-    public static String usage() {
-        StringWriter sb = new StringWriter();
-        PrintWriter out = new PrintWriter(sb);
-        out.println("Usage: " + CMD + " delete CLIENT [ARGUMENTS]");
-        out.println();
-        out.println("Command to delete a specific client configuration. If registration access token is specified or is available in ");
-        out.println("configuration file, then it is used. Otherwise, current active session is used.");
-        out.println();
-        out.println("Arguments:");
-        out.println();
-        out.println("  Global options:");
-        out.println("    -x                    Print full stack trace when exiting with error");
-        out.println("    --config              Path to the config file (" + DEFAULT_CONFIG_FILE_STRING + " by default)");
-        out.println("    --no-config           Don't use config file - no authentication info is loaded or saved");
-        out.println("    --truststore PATH     Path to a truststore containing trusted certificates");
-        out.println("    --trustpass PASSWORD  Truststore password (prompted for if not specified and --truststore is used)");
-        out.println("    CREDENTIALS OPTIONS   Same set of options as accepted by '" + CMD + " config credentials' in order to establish");
-        out.println("                          an authenticated sessions. In combination with --no-config option this allows transient");
-        out.println("                          (on-the-fly) authentication to be performed which leaves no tokens in config file.");
-        out.println();
-        out.println("  Command specific options:");
-        out.println("    CLIENT                ClientId of the client to delete");
-        out.println("    -t, --token TOKEN     Use the specified Registration Access Token for authorization");
-        out.println();
-        out.println("Examples:");
-        out.println();
-        out.println("Delete a client:");
-        out.println("  " + PROMPT + " " + CMD + " delete my_client");
-        out.println();
-        out.println();
-        out.println("Use '" + CMD + " help' for general information and a list of commands");
-        return sb.toString();
     }
 }

@@ -35,31 +35,11 @@ import org.keycloak.storage.ldap.mappers.LDAPOperationDecorator;
 import javax.naming.AuthenticationException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.BasicAttributes;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.ModificationItem;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
-
+import javax.naming.directory.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.naming.directory.AttributeInUseException;
-import javax.naming.directory.NoSuchAttributeException;
-import javax.naming.directory.SchemaViolationException;
 
 /**
  * An IdentityStore implementation backed by an LDAP directory
@@ -320,7 +300,7 @@ public class LDAPIdentityStore implements IdentityStore {
             List<ModificationItem> modItems = new ArrayList<ModificationItem>();
             modItems.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, unicodePwd));
 
-            operationManager.modifyAttributes(userDN, modItems.toArray(new ModificationItem[] {}), passwordUpdateDecorator);
+            operationManager.modifyAttributes(userDN, modItems.toArray(new ModificationItem[]{}), passwordUpdateDecorator);
         } catch (ModelException me) {
             throw me;
         } catch (Exception e) {
@@ -467,13 +447,13 @@ public class LDAPIdentityStore implements IdentityStore {
 
             if (
                 // Ignore empty attributes on create (changetype: add)
-                !(isCreate && attrValue.isEmpty()) &&
+                    !(isCreate && attrValue.isEmpty()) &&
 
-                // Since we're extracting for saving, skip read-only attributes. ldapObject.getReadOnlyAttributeNames() are lower-cased
-                !ldapObject.getReadOnlyAttributeNames().contains(attrName.toLowerCase()) &&
+                            // Since we're extracting for saving, skip read-only attributes. ldapObject.getReadOnlyAttributeNames() are lower-cased
+                            !ldapObject.getReadOnlyAttributeNames().contains(attrName.toLowerCase()) &&
 
-                // Only extract RDN for create since it can't be changed on update
-                (isCreate || !ldapObject.getRdnAttributeName().equalsIgnoreCase(attrName))
+                            // Only extract RDN for create since it can't be changed on update
+                            (isCreate || !ldapObject.getRdnAttributeName().equalsIgnoreCase(attrName))
             ) {
                 if (getConfig().getBinaryAttributeNames().contains(attrName)) {
                     // Binary attribute

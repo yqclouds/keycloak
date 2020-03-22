@@ -179,7 +179,7 @@ public class JpaUpdate1_2_0_Beta1 extends CustomKeycloakTask {
         confirmationMessage.append("Updated LOGIN_LIFESPAN of all realms to 1800 seconds. ");
     }
 
-    private void addNewAdminRoles() throws SQLException, DatabaseException{
+    private void addNewAdminRoles() throws SQLException, DatabaseException {
         addNewMasterAdminRoles();
         addNewRealmAdminRoles();
 

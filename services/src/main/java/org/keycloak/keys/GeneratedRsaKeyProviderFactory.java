@@ -42,10 +42,8 @@ import java.util.List;
  */
 public class GeneratedRsaKeyProviderFactory extends AbstractRsaKeyProviderFactory {
 
-    private static final Logger logger = Logger.getLogger(GeneratedRsaKeyProviderFactory.class);
-
     public static final String ID = "rsa-generated";
-
+    private static final Logger logger = Logger.getLogger(GeneratedRsaKeyProviderFactory.class);
     private static final String HELP_TEXT = "Generates RSA keys and creates a self-signed certificate";
 
     private static final List<ProviderConfigProperty> CONFIG_PROPERTIES = AbstractRsaKeyProviderFactory.configurationBuilder()
@@ -82,12 +80,12 @@ public class GeneratedRsaKeyProviderFactory extends AbstractRsaKeyProviderFactor
     }
 
     private boolean isSupportedRsaAlgorithm(String algorithm) {
-        return algorithm.equals(Algorithm.RS256) 
-            || algorithm.equals(Algorithm.PS256) 
-            || algorithm.equals(Algorithm.RS384)
-            || algorithm.equals(Algorithm.PS384) 
-            || algorithm.equals(Algorithm.RS512) 
-            || algorithm.equals(Algorithm.PS512);
+        return algorithm.equals(Algorithm.RS256)
+                || algorithm.equals(Algorithm.PS256)
+                || algorithm.equals(Algorithm.RS384)
+                || algorithm.equals(Algorithm.PS384)
+                || algorithm.equals(Algorithm.RS512)
+                || algorithm.equals(Algorithm.PS512);
     }
 
     @Override

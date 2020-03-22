@@ -18,20 +18,14 @@
 package org.keycloak.authentication.authenticators.browser;
 
 import org.keycloak.authentication.AuthenticationFlowContext;
-import org.keycloak.models.AuthenticatorConfigModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static org.keycloak.authentication.authenticators.browser.ConditionalOtpFormAuthenticator.OtpDecision.ABSTAIN;
-import static org.keycloak.authentication.authenticators.browser.ConditionalOtpFormAuthenticator.OtpDecision.SHOW_OTP;
-import static org.keycloak.authentication.authenticators.browser.ConditionalOtpFormAuthenticator.OtpDecision.SKIP_OTP;
+import static org.keycloak.authentication.authenticators.browser.ConditionalOtpFormAuthenticator.OtpDecision.*;
 import static org.keycloak.models.utils.KeycloakModelUtils.getRoleFromString;
 
 /**
@@ -98,10 +92,6 @@ public class ConditionalOtpFormAuthenticator extends OTPFormAuthenticator {
     public static final String FORCE_OTP_FOR_HTTP_HEADER = "forceOtpForHeaderPattern";
 
     public static final String DEFAULT_OTP_OUTCOME = "defaultOtpOutcome";
-
-    enum OtpDecision {
-        SKIP_OTP, SHOW_OTP, ABSTAIN
-    }
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
@@ -302,10 +292,10 @@ public class ConditionalOtpFormAuthenticator extends OTPFormAuthenticator {
                 return true;
             }
             if (containsConditionalOtpConfig(configModel.getConfig())
-                && voteForUserOtpControlAttribute(user, configModel.getConfig()) == ABSTAIN
-                && voteForUserRole(realm, user, configModel.getConfig()) == ABSTAIN
-                && voteForHttpHeaderMatchesPattern(requestHeaders, configModel.getConfig()) == ABSTAIN
-                && (voteForDefaultFallback(configModel.getConfig()) == SHOW_OTP
+                    && voteForUserOtpControlAttribute(user, configModel.getConfig()) == ABSTAIN
+                    && voteForUserRole(realm, user, configModel.getConfig()) == ABSTAIN
+                    && voteForHttpHeaderMatchesPattern(requestHeaders, configModel.getConfig()) == ABSTAIN
+                    && (voteForDefaultFallback(configModel.getConfig()) == SHOW_OTP
                     || voteForDefaultFallback(configModel.getConfig()) == ABSTAIN)) {
                 return true;
             }
@@ -315,11 +305,11 @@ public class ConditionalOtpFormAuthenticator extends OTPFormAuthenticator {
 
     private boolean containsConditionalOtpConfig(Map config) {
         return config.containsKey(OTP_CONTROL_USER_ATTRIBUTE)
-            || config.containsKey(SKIP_OTP_ROLE)
-            || config.containsKey(FORCE_OTP_ROLE)
-            || config.containsKey(SKIP_OTP_FOR_HTTP_HEADER)
-            || config.containsKey(FORCE_OTP_FOR_HTTP_HEADER)
-            || config.containsKey(DEFAULT_OTP_OUTCOME);
+                || config.containsKey(SKIP_OTP_ROLE)
+                || config.containsKey(FORCE_OTP_ROLE)
+                || config.containsKey(SKIP_OTP_FOR_HTTP_HEADER)
+                || config.containsKey(FORCE_OTP_FOR_HTTP_HEADER)
+                || config.containsKey(DEFAULT_OTP_OUTCOME);
     }
 
     @Override
@@ -329,5 +319,9 @@ public class ConditionalOtpFormAuthenticator extends OTPFormAuthenticator {
         } else if (!user.getRequiredActions().contains(UserModel.RequiredAction.CONFIGURE_TOTP.name())) {
             user.addRequiredAction(UserModel.RequiredAction.CONFIGURE_TOTP.name());
         }
+    }
+
+    enum OtpDecision {
+        SKIP_OTP, SHOW_OTP, ABSTAIN
     }
 }

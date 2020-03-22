@@ -44,9 +44,8 @@ import java.util.Map;
  * @version $Revision: 1 $
  */
 public class RestartLoginCookie implements Token {
-    private static final Logger logger = Logger.getLogger(RestartLoginCookie.class);
     public static final String KC_RESTART = "KC_RESTART";
-
+    private static final Logger logger = Logger.getLogger(RestartLoginCookie.class);
     @JsonProperty("cid")
     protected String clientId;
 
@@ -65,6 +64,73 @@ public class RestartLoginCookie implements Token {
     @Deprecated // Backwards compatibility
     @JsonProperty("cs")
     protected String cs;
+
+    public RestartLoginCookie() {
+    }
+
+    public RestartLoginCookie(AuthenticationSessionModel authSession) {
+        this.action = authSession.getAction();
+        this.clientId = authSession.getClient().getClientId();
+        this.authMethod = authSession.getProtocol();
+        this.redirectUri = authSession.getRedirectUri();
+        for (Map.Entry<String, String> entry : authSession.getClientNotes().entrySet()) {
+            notes.put(entry.getKey(), entry.getValue());
+        }
+    }
+
+    public static void setRestartCookie(KeycloakSession session, RealmModel realm, ClientConnection connection, UriInfo uriInfo, AuthenticationSessionModel authSession) {
+        RestartLoginCookie restart = new RestartLoginCookie(authSession);
+        String encoded = session.tokens().encode(restart);
+        String path = AuthenticationManager.getRealmCookiePath(realm, uriInfo);
+        boolean secureOnly = realm.getSslRequired().isRequired(connection);
+        CookieHelper.addCookie(KC_RESTART, encoded, path, null, null, -1, secureOnly, true);
+    }
+
+    public static void expireRestartCookie(RealmModel realm, ClientConnection connection, UriInfo uriInfo) {
+        String path = AuthenticationManager.getRealmCookiePath(realm, uriInfo);
+        boolean secureOnly = realm.getSslRequired().isRequired(connection);
+        CookieHelper.addCookie(KC_RESTART, "", path, null, null, 0, secureOnly, true);
+    }
+
+    public static AuthenticationSessionModel restartSession(KeycloakSession session, RealmModel realm,
+                                                            RootAuthenticationSessionModel rootSession, String expectedClientId) throws Exception {
+        Cookie cook = session.getContext().getRequestHeaders().getCookies().get(KC_RESTART);
+        if (cook == null) {
+            logger.debug("KC_RESTART cookie doesn't exist");
+            return null;
+        }
+        String encodedCookie = cook.getValue();
+
+        RestartLoginCookie cookie = session.tokens().decode(encodedCookie, RestartLoginCookie.class);
+        if (cookie == null) {
+            logger.debug("Failed to verify encoded RestartLoginCookie");
+            return null;
+        }
+
+        ClientModel client = realm.getClientByClientId(cookie.getClientId());
+        if (client == null) return null;
+
+        // Restart just if client from cookie matches client from the URL.
+        if (!client.getClientId().equals(expectedClientId)) {
+            logger.debugf("Skip restarting from the KC_RESTART. Clients doesn't match: Cookie client: %s, Requested client: %s", client.getClientId(), expectedClientId);
+            return null;
+        }
+
+        // Need to create brand new session and setup cookie
+        if (rootSession == null) {
+            rootSession = new AuthenticationSessionManager(session).createAuthenticationSession(realm, true);
+        }
+
+        AuthenticationSessionModel authSession = rootSession.createAuthenticationSession(client);
+        authSession.setProtocol(cookie.getAuthMethod());
+        authSession.setRedirectUri(cookie.getRedirectUri());
+        authSession.setAction(cookie.getAction());
+        for (Map.Entry<String, String> entry : cookie.getNotes().entrySet()) {
+            authSession.setClientNote(entry.getKey(), entry.getValue());
+        }
+
+        return authSession;
+    }
 
     public Map<String, String> getNotes() {
         return notes;
@@ -104,74 +170,6 @@ public class RestartLoginCookie implements Token {
 
     public void setAction(String action) {
         this.action = action;
-    }
-
-    public RestartLoginCookie() {
-    }
-
-    public RestartLoginCookie(AuthenticationSessionModel authSession) {
-        this.action = authSession.getAction();
-        this.clientId = authSession.getClient().getClientId();
-        this.authMethod = authSession.getProtocol();
-        this.redirectUri = authSession.getRedirectUri();
-        for (Map.Entry<String, String> entry : authSession.getClientNotes().entrySet()) {
-            notes.put(entry.getKey(), entry.getValue());
-        }
-    }
-
-    public static void setRestartCookie(KeycloakSession session, RealmModel realm, ClientConnection connection, UriInfo uriInfo, AuthenticationSessionModel authSession) {
-        RestartLoginCookie restart = new RestartLoginCookie(authSession);
-        String encoded = session.tokens().encode(restart);
-        String path = AuthenticationManager.getRealmCookiePath(realm, uriInfo);
-        boolean secureOnly = realm.getSslRequired().isRequired(connection);
-        CookieHelper.addCookie(KC_RESTART, encoded, path, null, null, -1, secureOnly, true);
-    }
-
-    public static void expireRestartCookie(RealmModel realm, ClientConnection connection, UriInfo uriInfo) {
-        String path = AuthenticationManager.getRealmCookiePath(realm, uriInfo);
-        boolean secureOnly = realm.getSslRequired().isRequired(connection);
-        CookieHelper.addCookie(KC_RESTART, "", path, null, null, 0, secureOnly, true);
-    }
-
-
-    public static AuthenticationSessionModel restartSession(KeycloakSession session, RealmModel realm,
-                                                            RootAuthenticationSessionModel rootSession, String expectedClientId) throws Exception {
-        Cookie cook = session.getContext().getRequestHeaders().getCookies().get(KC_RESTART);
-        if (cook ==  null) {
-            logger.debug("KC_RESTART cookie doesn't exist");
-            return null;
-        }
-        String encodedCookie = cook.getValue();
-
-        RestartLoginCookie cookie = session.tokens().decode(encodedCookie, RestartLoginCookie.class);
-        if (cookie == null) {
-            logger.debug("Failed to verify encoded RestartLoginCookie");
-            return null;
-        }
-
-        ClientModel client = realm.getClientByClientId(cookie.getClientId());
-        if (client == null) return null;
-
-        // Restart just if client from cookie matches client from the URL.
-        if (!client.getClientId().equals(expectedClientId)) {
-            logger.debugf("Skip restarting from the KC_RESTART. Clients doesn't match: Cookie client: %s, Requested client: %s", client.getClientId(), expectedClientId);
-            return null;
-        }
-
-        // Need to create brand new session and setup cookie
-        if (rootSession == null) {
-            rootSession = new AuthenticationSessionManager(session).createAuthenticationSession(realm, true);
-        }
-
-        AuthenticationSessionModel authSession = rootSession.createAuthenticationSession(client);
-        authSession.setProtocol(cookie.getAuthMethod());
-        authSession.setRedirectUri(cookie.getRedirectUri());
-        authSession.setAction(cookie.getAction());
-        for (Map.Entry<String, String> entry : cookie.getNotes().entrySet()) {
-            authSession.setClientNote(entry.getKey(), entry.getValue());
-        }
-
-        return authSession;
     }
 
     @Override

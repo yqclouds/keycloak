@@ -41,9 +41,9 @@ import java.util.Map;
  */
 public class RoleNameMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper {
 
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
-
     public static final String ROLE_CONFIG = "role";
+    public static final String PROVIDER_ID = "oidc-role-name-mapper";
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
     public static String NEW_ROLE_NAME = "new.role.name";
 
     static {
@@ -62,8 +62,21 @@ public class RoleNameMapper extends AbstractOIDCProtocolMapper implements OIDCAc
         configProperties.add(property);
     }
 
-    public static final String PROVIDER_ID = "oidc-role-name-mapper";
+    public static ProtocolMapperModel create(String name,
+                                             String role,
+                                             String newName) {
+        String mapperId = PROVIDER_ID;
+        ProtocolMapperModel mapper = new ProtocolMapperModel();
+        mapper.setName(name);
+        mapper.setProtocolMapper(mapperId);
+        mapper.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
+        Map<String, String> config = new HashMap<>();
+        config.put(ROLE_CONFIG, role);
+        config.put(NEW_ROLE_NAME, newName);
+        mapper.setConfig(config);
+        return mapper;
 
+    }
 
     public List<ProviderConfigProperty> getConfigProperties() {
         return configProperties;
@@ -126,22 +139,6 @@ public class RoleNameMapper extends AbstractOIDCProtocolMapper implements OIDCAc
 
         access.addRole(newRoleName);
         return token;
-    }
-
-    public static ProtocolMapperModel create(String name,
-                                             String role,
-                                             String newName) {
-        String mapperId = PROVIDER_ID;
-        ProtocolMapperModel mapper = new ProtocolMapperModel();
-        mapper.setName(name);
-        mapper.setProtocolMapper(mapperId);
-        mapper.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
-        Map<String, String> config = new HashMap<>();
-        config.put(ROLE_CONFIG, role);
-        config.put(NEW_ROLE_NAME, newName);
-        mapper.setConfig(config);
-        return mapper;
-
     }
 
 }

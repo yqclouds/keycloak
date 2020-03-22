@@ -17,9 +17,9 @@
 
 package org.keycloak.models.sessions.infinispan.entities;
 
-import java.io.Serializable;
-
 import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
+
+import java.io.Serializable;
 
 /**
  * Represents an entity containing data about a session, i.e. an object that is stored in infinispan cache and can be
@@ -33,8 +33,16 @@ public abstract class SessionEntity implements Serializable {
 
     private String realmId;
 
+    public SessionEntity() {
+    }
+
+    protected SessionEntity(String realmId) {
+        this.realmId = realmId;
+    }
+
     /**
      * Returns realmId ID.
+     *
      * @return
      */
     public String getRealmId() {
@@ -45,20 +53,15 @@ public abstract class SessionEntity implements Serializable {
         this.realmId = realmId;
     }
 
-    public SessionEntity() {
-    }
-
-    protected SessionEntity(String realmId) {
-        this.realmId = realmId;
-    }
-
     public SessionEntityWrapper mergeRemoteEntityWithLocalEntity(SessionEntityWrapper localEntityWrapper) {
         if (localEntityWrapper == null) {
             return new SessionEntityWrapper<>(this);
         } else {
             return new SessionEntityWrapper<>(localEntityWrapper.getLocalMetadata(), this);
         }
-    };
+    }
+
+    ;
 
     @Override
     public abstract boolean equals(Object obj);

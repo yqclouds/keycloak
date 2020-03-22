@@ -27,7 +27,6 @@ public enum EscapeStrategy {
 
     // LDAP special characters like * ( ) \ are not escaped. Only non-ASCII characters like é are escaped
     NON_ASCII_CHARS_ONLY {
-
         @Override
         public String escape(String input) {
             StringBuilder output = new StringBuilder();
@@ -44,8 +43,6 @@ public enum EscapeStrategy {
 
     // Escaping of LDAP special characters including non-ASCII characters like é
     DEFAULT {
-
-
         @Override
         public String escape(String input) {
             StringBuilder output = new StringBuilder();

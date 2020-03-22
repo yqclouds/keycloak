@@ -28,6 +28,7 @@ import org.keycloak.storage.CacheableStorageProviderModel;
 public class ClientStorageProviderModel extends CacheableStorageProviderModel {
 
     public static final String ENABLED = "enabled";
+    private transient Boolean enabled;
 
     public ClientStorageProviderModel() {
         setProviderType(ClientStorageProvider.class.getName());
@@ -36,14 +37,6 @@ public class ClientStorageProviderModel extends CacheableStorageProviderModel {
     public ClientStorageProviderModel(ComponentModel copy) {
         super(copy);
     }
-
-    private transient Boolean enabled;
-
-     public void setEnabled(boolean flag) {
-        enabled = flag;
-        getConfig().putSingle(ENABLED, Boolean.toString(flag));
-    }
-
 
     public boolean isEnabled() {
         if (enabled == null) {
@@ -56,5 +49,10 @@ public class ClientStorageProviderModel extends CacheableStorageProviderModel {
         }
         return enabled;
 
+    }
+
+    public void setEnabled(boolean flag) {
+        enabled = flag;
+        getConfig().putSingle(ENABLED, Boolean.toString(flag));
     }
 }

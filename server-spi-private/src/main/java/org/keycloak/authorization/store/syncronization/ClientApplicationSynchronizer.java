@@ -18,11 +18,6 @@
 
 package org.keycloak.authorization.store.syncronization;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.model.Policy;
 import org.keycloak.authorization.model.ResourceServer;
@@ -33,6 +28,11 @@ import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel.ClientRemovedEvent;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.idm.authorization.ClientPolicyRepresentation;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -58,8 +58,8 @@ public class ClientApplicationSynchronizer implements Synchronizer<ClientRemoved
 
         Map<String, String[]> attributes = new HashMap<>();
 
-        attributes.put("type", new String[] {"client"});
-        attributes.put("config:clients", new String[] {event.getClient().getId()});
+        attributes.put("type", new String[]{"client"});
+        attributes.put("config:clients", new String[]{event.getClient().getId()});
 
         List<Policy> search = storeFactory.getPolicyStore().findByResourceServer(attributes, null, -1, -1);
 

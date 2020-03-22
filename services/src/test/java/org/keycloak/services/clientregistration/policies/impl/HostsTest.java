@@ -28,7 +28,7 @@ public class HostsTest {
         //Security.setProperty("networkaddress.cache.ttl", "5");
         long start = System.currentTimeMillis();
 
-        for (int i=0 ; i<100 ; i++) {
+        for (int i = 0; i < 100; i++) {
             //Foo f = test1();
             //Foo f = test2();
             //Foo f = test3();
@@ -37,7 +37,7 @@ public class HostsTest {
             //Foo f = test6();
 
             long end = System.currentTimeMillis();
-            System.out.println("IPAddr=" + f.ipAddr + ", Hostname=" + f.hostname + ", Took: " + (end-start) + " ms");
+            System.out.println("IPAddr=" + f.ipAddr + ", Hostname=" + f.hostname + ", Took: " + (end - start) + " ms");
         }
     }
 
@@ -64,7 +64,7 @@ public class HostsTest {
         Foo f = new Foo();
         InetAddress addr = InetAddress.getByName("10.40.2.225");
         f.ipAddr = addr.getHostAddress();
-        for (int i=0 ; i<10 ; i++) {
+        for (int i = 0; i < 10; i++) {
             f.hostname = addr.getHostName();
         }
         return f;

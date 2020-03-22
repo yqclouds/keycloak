@@ -20,11 +20,7 @@ package org.keycloak.services.managers;
 import org.jboss.logging.Logger;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.util.Time;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserLoginFailureModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.services.ServicesLogger;
 
 import java.util.ArrayList;
@@ -40,58 +36,16 @@ import java.util.concurrent.TimeUnit;
  * @version $Revision: 1 $
  */
 public class DefaultBruteForceProtector implements Runnable, BruteForceProtector {
+    public static final int TRANSACTION_SIZE = 20;
     private static final Logger logger = Logger.getLogger(DefaultBruteForceProtector.class);
-
     protected volatile boolean run = true;
     protected int maxDeltaTimeSeconds = 60 * 60 * 12; // 12 hours
     protected KeycloakSessionFactory factory;
     protected CountDownLatch shutdownLatch = new CountDownLatch(1);
-
     protected volatile long failures;
     protected volatile long lastFailure;
     protected volatile long totalTime;
-
     protected LinkedBlockingQueue<LoginEvent> queue = new LinkedBlockingQueue<LoginEvent>();
-    public static final int TRANSACTION_SIZE = 20;
-
-    protected abstract class LoginEvent implements Comparable<LoginEvent> {
-        protected final String realmId;
-        protected final String userId;
-        protected final String ip;
-
-        protected LoginEvent(String realmId, String userId, String ip) {
-            this.realmId = realmId;
-            this.userId = userId;
-            this.ip = ip;
-        }
-
-        @Override
-        public int compareTo(LoginEvent o) {
-            return userId.compareTo(o.userId);
-        }
-    }
-
-    protected class ShutdownEvent extends LoginEvent {
-        public ShutdownEvent() {
-            super(null, null, null);
-        }
-    }
-
-    protected class FailedLogin extends LoginEvent {
-        protected final CountDownLatch latch = new CountDownLatch(1);
-
-        public FailedLogin(String realmId, String userId, String ip) {
-            super(realmId, userId, ip);
-        }
-    }
-
-    protected class SuccessfulLogin extends LoginEvent {
-        protected final CountDownLatch latch = new CountDownLatch(1);
-
-        public SuccessfulLogin(String realmId, String userId, String ip) {
-            super(realmId, userId, ip);
-        }
-    }
 
     public DefaultBruteForceProtector(KeycloakSessionFactory factory) {
         this.factory = factory;
@@ -121,11 +75,11 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
         }
         userLoginFailure.setLastFailure(currentTime);
 
-        if(realm.isPermanentLockout()) {
+        if (realm.isPermanentLockout()) {
             userLoginFailure.incrementFailures();
             logger.debugv("new num failures: {0}", userLoginFailure.getNumFailures());
 
-            if(userLoginFailure.getNumFailures() == realm.getFailureFactor()) {
+            if (userLoginFailure.getNumFailures() == realm.getFailureFactor()) {
                 logger.debugv("user {0} locked permanently due to too many login attempts", user.getUsername());
                 user.setEnabled(false);
                 return;
@@ -150,7 +104,7 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
         userLoginFailure.incrementFailures();
         logger.debugv("new num failures: {0}", userLoginFailure.getNumFailures());
 
-        int waitSeconds = realm.getWaitIncrementSeconds() *  (userLoginFailure.getNumFailures() / realm.getFailureFactor());
+        int waitSeconds = realm.getWaitIncrementSeconds() * (userLoginFailure.getNumFailures() / realm.getFailureFactor());
         logger.debugv("waitSeconds: {0}", waitSeconds);
         logger.debugv("deltaTime: {0}", deltaTime);
 
@@ -167,7 +121,6 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
             userLoginFailure.setFailedLoginNotBefore(notBefore);
         }
     }
-
 
     protected UserLoginFailureModel getUserModel(KeycloakSession session, LoginEvent event) {
         RealmModel realm = getRealmModel(session, event);
@@ -254,7 +207,7 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
         UserModel model = session.users().getUserById(userId, getRealmModel(session, event));
 
         UserLoginFailureModel user = getUserModel(session, event);
-        if(user == null) return;
+        if (user == null) return;
 
         logger.debugv("user {0} successfully logged in, clearing all failures", model.getUsername());
         user.clearFailures();
@@ -266,7 +219,7 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
         long delta = 0;
         if (lastFailure > 0) {
             delta = Time.currentTimeMillis() - lastFailure;
-            if (delta > (long)maxDeltaTimeSeconds * 1000L) {
+            if (delta > (long) maxDeltaTimeSeconds * 1000L) {
                 totalTime = 0;
 
             } else {
@@ -317,8 +270,48 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
 
         return false;
     }
+
     @Override
     public void close() {
 
+    }
+
+    protected abstract class LoginEvent implements Comparable<LoginEvent> {
+        protected final String realmId;
+        protected final String userId;
+        protected final String ip;
+
+        protected LoginEvent(String realmId, String userId, String ip) {
+            this.realmId = realmId;
+            this.userId = userId;
+            this.ip = ip;
+        }
+
+        @Override
+        public int compareTo(LoginEvent o) {
+            return userId.compareTo(o.userId);
+        }
+    }
+
+    protected class ShutdownEvent extends LoginEvent {
+        public ShutdownEvent() {
+            super(null, null, null);
+        }
+    }
+
+    protected class FailedLogin extends LoginEvent {
+        protected final CountDownLatch latch = new CountDownLatch(1);
+
+        public FailedLogin(String realmId, String userId, String ip) {
+            super(realmId, userId, ip);
+        }
+    }
+
+    protected class SuccessfulLogin extends LoginEvent {
+        protected final CountDownLatch latch = new CountDownLatch(1);
+
+        public SuccessfulLogin(String realmId, String userId, String ip) {
+            super(realmId, userId, ip);
+        }
     }
 }

@@ -67,7 +67,7 @@ public class UserAttributeLDAPStorageMapperFactory extends AbstractLDAPStorageMa
                 .add();
         if (parent.isImportEnabled()) {
             config.
-            property().name(UserAttributeLDAPStorageMapper.ALWAYS_READ_VALUE_FROM_LDAP).label("Always Read Value From LDAP")
+                    property().name(UserAttributeLDAPStorageMapper.ALWAYS_READ_VALUE_FROM_LDAP).label("Always Read Value From LDAP")
                     .helpText("If on, then during reading of the LDAP attribute value will always used instead of the value from Keycloak DB")
                     .type(ProviderConfigProperty.BOOLEAN_TYPE).defaultValue("false").add();
         }

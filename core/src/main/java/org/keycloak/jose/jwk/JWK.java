@@ -36,22 +36,7 @@ public class JWK {
     public static final String ALGORITHM = "alg";
 
     public static final String PUBLIC_KEY_USE = "use";
-
-    public enum Use {
-        SIG("sig"),
-        ENCRYPTION("enc");
-
-        private String str;
-
-        Use(String str) {
-            this.str = str;
-        }
-
-        public String asString() {
-            return str;
-        }
-    }
-
+    protected Map<String, Object> otherClaims = new HashMap<String, Object>();
     @JsonProperty(KEY_ID)
     private String keyId;
 
@@ -63,9 +48,6 @@ public class JWK {
 
     @JsonProperty(PUBLIC_KEY_USE)
     private String publicKeyUse;
-
-    protected Map<String, Object> otherClaims = new HashMap<String, Object>();
-
 
     public String getKeyId() {
         return keyId;
@@ -107,6 +89,21 @@ public class JWK {
     @JsonAnySetter
     public void setOtherClaims(String name, Object value) {
         otherClaims.put(name, value);
+    }
+
+    public enum Use {
+        SIG("sig"),
+        ENCRYPTION("enc");
+
+        private String str;
+
+        Use(String str) {
+            this.str = str;
+        }
+
+        public String asString() {
+            return str;
+        }
     }
 
 

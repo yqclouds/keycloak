@@ -25,8 +25,11 @@ import org.keycloak.provider.ProviderFactory;
 public interface PasswordPolicyProviderFactory extends ProviderFactory<PasswordPolicyProvider> {
 
     String getDisplayName();
+
     String getConfigType();
+
     String getDefaultConfigValue();
+
     boolean isMultiplSupported();
 
 }

@@ -44,8 +44,8 @@ public class ParseUtil {
     public static String[] shift(String[] args) {
         if (args.length == 1)
             return new String[0];
-        String [] nu = new String [args.length-1];
-        arraycopy(args, 1, nu, 0, args.length-1);
+        String[] nu = new String[args.length - 1];
+        arraycopy(args, 1, nu, 0, args.length - 1);
         return nu;
     }
 
@@ -56,9 +56,9 @@ public class ParseUtil {
             throw new RuntimeException("Invalid key=value parameter: [" + keyval + "]");
         }
 
-        String [] parsed = new String[2];
+        String[] parsed = new String[2];
         parsed[0] = keyval.substring(0, pos);
-        parsed[1] = keyval.substring(pos+1);
+        parsed[1] = keyval.substring(pos + 1);
 
         return parsed;
     }

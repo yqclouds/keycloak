@@ -22,16 +22,8 @@ import org.keycloak.authorization.model.Resource;
 import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.authorization.model.Scope;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 /**
  * Represents a permission for a given resource.
@@ -109,7 +101,7 @@ public class ResourcePermission {
      *
      * <p>If a claim already exists, the value is added to list of values of the existing claim</p>
      *
-     * @param name the name of the claim
+     * @param name  the name of the claim
      * @param value the value of the claim
      */
     public boolean addClaim(String name, String value) {
@@ -121,7 +113,6 @@ public class ResourcePermission {
 
     /**
      * <p>Removes a permission claim.
-     *
      *
      * @param name the name of the claim
      */

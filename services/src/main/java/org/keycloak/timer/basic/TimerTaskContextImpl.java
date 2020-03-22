@@ -17,17 +17,17 @@
 
 package org.keycloak.timer.basic;
 
-import java.util.TimerTask;
-
 import org.keycloak.timer.TimerProvider;
+
+import java.util.TimerTask;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class TimerTaskContextImpl implements TimerProvider.TimerTaskContext {
 
-    private final Runnable runnable;
     final TimerTask timerTask;
+    private final Runnable runnable;
     private final long intervalMillis;
 
     public TimerTaskContextImpl(Runnable runnable, TimerTask timerTask, long intervalMillis) {

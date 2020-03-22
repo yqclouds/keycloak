@@ -104,15 +104,15 @@ public interface LoginFormsProvider extends Provider {
 
     /**
      * Set one global error message.
-     * 
-     * @param message key of message
+     *
+     * @param message    key of message
      * @param parameters to be formatted into message
      */
-    LoginFormsProvider setError(String message, Object ... parameters);
-    
+    LoginFormsProvider setError(String message, Object... parameters);
+
     /**
      * Set multiple error messages.
-     * 
+     *
      * @param messages to be set
      */
     LoginFormsProvider setErrors(List<FormMessage> messages);
@@ -127,9 +127,9 @@ public interface LoginFormsProvider extends Provider {
      */
     LoginFormsProvider addSuccess(FormMessage errorMessage);
 
-    LoginFormsProvider setSuccess(String message, Object ... parameters);
+    LoginFormsProvider setSuccess(String message, Object... parameters);
 
-    LoginFormsProvider setInfo(String message, Object ... parameters);
+    LoginFormsProvider setInfo(String message, Object... parameters);
 
     LoginFormsProvider setUser(UserModel user);
 

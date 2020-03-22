@@ -23,9 +23,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 public class DockerComposeYamlInstallationProvider implements ClientInstallationProvider {
-    private static Logger log = Logger.getLogger(DockerComposeYamlInstallationProvider.class);
-
     public static final String ROOT_DIR = "keycloak-docker-compose-yaml/";
+    private static Logger log = Logger.getLogger(DockerComposeYamlInstallationProvider.class);
 
     @Override
     public ClientInstallationProvider create(final KeycloakSession session) {

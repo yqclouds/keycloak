@@ -44,7 +44,6 @@ public class CommonAdviceType implements Serializable {
      * Remove an advice
      *
      * @param advice
-     *
      * @return
      */
     public boolean remove(Object advice) {

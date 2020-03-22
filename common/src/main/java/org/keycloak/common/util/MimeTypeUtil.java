@@ -26,6 +26,7 @@ import java.io.File;
 public class MimeTypeUtil {
 
     private static MimetypesFileTypeMap map = new MimetypesFileTypeMap();
+
     static {
         map.addMimeTypes("text/css css CSS");
         map.addMimeTypes("text/javascript js JS");

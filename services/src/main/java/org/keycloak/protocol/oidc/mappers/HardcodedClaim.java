@@ -29,16 +29,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
- *
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public class HardcodedClaim extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
 
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
-
     public static final String CLAIM_VALUE = "claim.value";
+    public static final String PROVIDER_ID = "oidc-hardcoded-claim-mapper";
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
 
     static {
         OIDCAttributeMapperHelper.addTokenClaimNameConfig(configProperties);
@@ -54,8 +52,23 @@ public class HardcodedClaim extends AbstractOIDCProtocolMapper implements OIDCAc
         OIDCAttributeMapperHelper.addIncludeInTokensConfig(configProperties, HardcodedClaim.class);
     }
 
-    public static final String PROVIDER_ID = "oidc-hardcoded-claim-mapper";
-
+    public static ProtocolMapperModel create(String name,
+                                             String hardcodedName,
+                                             String hardcodedValue, String claimType,
+                                             boolean accessToken, boolean idToken) {
+        ProtocolMapperModel mapper = new ProtocolMapperModel();
+        mapper.setName(name);
+        mapper.setProtocolMapper(PROVIDER_ID);
+        mapper.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
+        Map<String, String> config = new HashMap<>();
+        config.put(OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME, hardcodedName);
+        config.put(CLAIM_VALUE, hardcodedValue);
+        config.put(OIDCAttributeMapperHelper.JSON_TYPE, claimType);
+        if (accessToken) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ACCESS_TOKEN, "true");
+        if (idToken) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ID_TOKEN, "true");
+        mapper.setConfig(config);
+        return mapper;
+    }
 
     public List<ProviderConfigProperty> getConfigProperties() {
         return configProperties;
@@ -86,24 +99,6 @@ public class HardcodedClaim extends AbstractOIDCProtocolMapper implements OIDCAc
         String attributeValue = mappingModel.getConfig().get(CLAIM_VALUE);
         if (attributeValue == null) return;
         OIDCAttributeMapperHelper.mapClaim(token, mappingModel, attributeValue);
-    }
-
-    public static ProtocolMapperModel create(String name,
-                                      String hardcodedName,
-                                      String hardcodedValue, String claimType,
-                                      boolean accessToken, boolean idToken) {
-        ProtocolMapperModel mapper = new ProtocolMapperModel();
-        mapper.setName(name);
-        mapper.setProtocolMapper(PROVIDER_ID);
-        mapper.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
-        Map<String, String> config = new HashMap<>();
-        config.put(OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME, hardcodedName);
-        config.put(CLAIM_VALUE, hardcodedValue);
-        config.put(OIDCAttributeMapperHelper.JSON_TYPE, claimType);
-        if (accessToken) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ACCESS_TOKEN, "true");
-        if (idToken) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ID_TOKEN, "true");
-        mapper.setConfig(config);
-        return mapper;
     }
 
 

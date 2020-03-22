@@ -20,6 +20,7 @@ import org.keycloak.dom.xmlsec.w3.xmldsig.DSAKeyValueType;
 import org.keycloak.dom.xmlsec.w3.xmldsig.KeyValueType;
 import org.keycloak.dom.xmlsec.w3.xmldsig.RSAKeyValueType;
 import org.keycloak.dom.xmlsec.w3.xmldsig.SignatureType;
+import org.keycloak.rotation.KeyLocator;
 import org.keycloak.saml.common.PicketLinkLogger;
 import org.keycloak.saml.common.PicketLinkLoggerFactory;
 import org.keycloak.saml.common.constants.GeneralConstants;
@@ -27,35 +28,19 @@ import org.keycloak.saml.common.constants.JBossSAMLConstants;
 import org.keycloak.saml.common.constants.WSTrustConstants;
 import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.exceptions.ProcessingException;
-import org.keycloak.saml.common.util.Base64;
-import org.keycloak.saml.common.util.DocumentUtil;
-import org.keycloak.saml.common.util.StringUtil;
-import org.keycloak.saml.common.util.SystemPropertiesUtil;
-import org.keycloak.saml.common.util.TransformerUtil;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.keycloak.saml.common.util.*;
+import org.keycloak.saml.processing.api.util.KeyInfoTools;
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.bind.JAXBException;
-import javax.xml.crypto.XMLStructure;
-import javax.xml.crypto.MarshalException;
-import javax.xml.crypto.dsig.CanonicalizationMethod;
-import javax.xml.crypto.dsig.DigestMethod;
-import javax.xml.crypto.dsig.Reference;
-import javax.xml.crypto.dsig.SignatureMethod;
-import javax.xml.crypto.dsig.SignedInfo;
-import javax.xml.crypto.dsig.Transform;
-import javax.xml.crypto.dsig.XMLSignature;
-import javax.xml.crypto.dsig.XMLSignatureException;
-import javax.xml.crypto.dsig.XMLSignatureFactory;
+import javax.xml.crypto.*;
+import javax.xml.crypto.dsig.*;
 import javax.xml.crypto.dsig.dom.DOMSignContext;
 import javax.xml.crypto.dsig.dom.DOMValidateContext;
 import javax.xml.crypto.dsig.keyinfo.KeyInfo;
 import javax.xml.crypto.dsig.keyinfo.KeyInfoFactory;
+import javax.xml.crypto.dsig.keyinfo.KeyName;
 import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
 import javax.xml.crypto.dsig.spec.TransformParameterSpec;
 import javax.xml.namespace.QName;
@@ -66,14 +51,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayInputStream;
 import java.io.OutputStream;
-import java.security.GeneralSecurityException;
-import java.security.Key;
-import java.security.KeyException;
-import java.security.KeyManagementException;
-import java.security.KeyPair;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
+import java.security.*;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
@@ -82,15 +60,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import javax.xml.crypto.AlgorithmMethod;
-import javax.xml.crypto.KeySelector;
-import javax.xml.crypto.KeySelectorException;
-import javax.xml.crypto.KeySelectorResult;
-import javax.xml.crypto.XMLCryptoContext;
-import javax.xml.crypto.dsig.keyinfo.KeyName;
-import org.keycloak.rotation.KeyLocator;
-import org.keycloak.saml.common.util.SecurityActions;
-import org.keycloak.saml.processing.api.util.KeyInfoTools;
 
 /**
  * Utility for XML Signature <b>Note:</b> You can change the canonicalization method type by using the system property
@@ -103,6 +72,13 @@ import org.keycloak.saml.processing.api.util.KeyInfoTools;
 public class XMLSignatureUtil {
 
     private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final XMLSignatureFactory fac = getXMLSignatureFactory();
+
+    ;
+    /**
+     * By default, we include the keyinfo in the signature
+     */
+    private static boolean includeKeyInfoInSignature = true;
 
     // Set some system properties and Santuario providers. Run this block before any other class initialization.
     static {
@@ -111,68 +87,6 @@ public class XMLSignatureUtil {
         String keyInfoProp = SecurityActions.getSystemProperty("picketlink.xmlsig.includeKeyInfo", null);
         if (StringUtil.isNotNull(keyInfoProp)) {
             includeKeyInfoInSignature = Boolean.parseBoolean(keyInfoProp);
-        }
-    }
-
-    ;
-
-    private static final XMLSignatureFactory fac = getXMLSignatureFactory();
-
-    /**
-     * By default, we include the keyinfo in the signature
-     */
-    private static boolean includeKeyInfoInSignature = true;
-
-    private static class KeySelectorUtilizingKeyNameHint extends KeySelector {
-
-        private final KeyLocator locator;
-
-        private boolean keyLocated = false;
-
-        private String keyName = null;
-
-        public KeySelectorUtilizingKeyNameHint(KeyLocator locator) {
-            this.locator = locator;
-        }
-
-        @Override
-        public KeySelectorResult select(KeyInfo keyInfo, KeySelector.Purpose purpose, AlgorithmMethod method, XMLCryptoContext context) throws KeySelectorException {
-            try {
-                KeyName keyNameEl = KeyInfoTools.getKeyName(keyInfo);
-                this.keyName = keyNameEl == null ? null : keyNameEl.getName();
-                final Key key = locator.getKey(keyName);
-                this.keyLocated = key != null;
-                return new KeySelectorResult() {
-                    @Override public Key getKey() {
-                        return key;
-                    }
-                };
-            } catch (KeyManagementException ex) {
-                throw new KeySelectorException(ex);
-            }
-
-        }
-
-        private boolean wasKeyLocated() {
-            return this.keyLocated;
-        }
-    }
-
-    private static class KeySelectorPresetKey extends KeySelector {
-
-        private final Key key;
-
-        public KeySelectorPresetKey(Key key) {
-            this.key = key;
-        }
-
-        @Override
-        public KeySelectorResult select(KeyInfo keyInfo, KeySelector.Purpose purpose, AlgorithmMethod method, XMLCryptoContext context) {
-            return new KeySelectorResult() {
-                @Override public Key getKey() {
-                    return key;
-                }
-            };
         }
     }
 
@@ -195,7 +109,6 @@ public class XMLSignatureUtil {
      * Use this method to not include the KeyInfo in the signature
      *
      * @param includeKeyInfoInSignature
-     *
      * @since v2.0.1
      */
     public static void setIncludeKeyInfoInSignature(boolean includeKeyInfoInSignature) {
@@ -211,9 +124,7 @@ public class XMLSignatureUtil {
      * @param digestMethod
      * @param signatureMethod
      * @param referenceURI
-     *
      * @return
-     *
      * @throws ParserConfigurationException
      * @throws XMLSignatureException
      * @throws MarshalException
@@ -271,13 +182,12 @@ public class XMLSignatureUtil {
     /**
      * Sign only specified element (assumption is that it already has ID attribute set)
      *
-     * @param elementToSign element to sign with set ID
-     * @param nextSibling child of elementToSign, which will be used as next sibling of created signature
+     * @param elementToSign   element to sign with set ID
+     * @param nextSibling     child of elementToSign, which will be used as next sibling of created signature
      * @param keyPair
      * @param digestMethod
      * @param signatureMethod
      * @param referenceURI
-     *
      * @throws GeneralSecurityException
      * @throws MarshalException
      * @throws XMLSignatureException
@@ -291,14 +201,13 @@ public class XMLSignatureUtil {
     /**
      * Sign only specified element (assumption is that it already has ID attribute set)
      *
-     * @param elementToSign element to sign with set ID
-     * @param nextSibling child of elementToSign, which will be used as next sibling of created signature
+     * @param elementToSign   element to sign with set ID
+     * @param nextSibling     child of elementToSign, which will be used as next sibling of created signature
      * @param keyPair
      * @param digestMethod
      * @param signatureMethod
      * @param referenceURI
      * @param x509Certificate {@link X509Certificate} to be placed in SignedInfo
-     *
      * @throws GeneralSecurityException
      * @throws MarshalException
      * @throws XMLSignatureException
@@ -339,9 +248,7 @@ public class XMLSignatureUtil {
      * @param digestMethod
      * @param signatureMethod
      * @param referenceURI
-     *
      * @return
-     *
      * @throws GeneralSecurityException
      * @throws XMLSignatureException
      * @throws MarshalException
@@ -358,9 +265,7 @@ public class XMLSignatureUtil {
      * @param digestMethod
      * @param signatureMethod
      * @param referenceURI
-     *
      * @return
-     *
      * @throws GeneralSecurityException
      * @throws XMLSignatureException
      * @throws MarshalException
@@ -385,9 +290,7 @@ public class XMLSignatureUtil {
     /**
      * Sign the root element
      *
-     *
      * @return
-     *
      * @throws GeneralSecurityException
      * @throws XMLSignatureException
      * @throws MarshalException
@@ -426,9 +329,7 @@ public class XMLSignatureUtil {
      *
      * @param signedDoc
      * @param publicKey
-     *
      * @return
-     *
      * @throws MarshalException
      * @throws XMLSignatureException
      */
@@ -462,7 +363,7 @@ public class XMLSignatureUtil {
                 }
             }
 
-            if (! validateSingleNode(signatureNode, locator)) return false;
+            if (!validateSingleNode(signatureNode, locator)) return false;
         }
 
         NodeList assertions = signedDoc.getElementsByTagNameNS(assertionNameSpaceUri, JBossSAMLConstants.ASSERTION.get());
@@ -518,8 +419,8 @@ public class XMLSignatureUtil {
         DOMValidateContext valContext = new DOMValidateContext(validationKeySelector, signatureNode);
         XMLSignature signature = fac.unmarshalXMLSignature(valContext);
         boolean coreValidity = signature.validate(valContext);
-        
-        if (! coreValidity) {
+
+        if (!coreValidity) {
             if (logger.isTraceEnabled()) {
                 boolean sv = signature.getSignatureValue().validate(valContext);
                 logger.trace("Signature validation status: " + sv);
@@ -539,7 +440,6 @@ public class XMLSignatureUtil {
      *
      * @param signature
      * @param os
-     *
      * @throws SAXException
      * @throws JAXBException
      */
@@ -556,7 +456,6 @@ public class XMLSignatureUtil {
      *
      * @param signedDocument
      * @param os
-     *
      * @throws TransformerException
      */
     public static void marshall(Document signedDocument, OutputStream os) throws TransformerException {
@@ -569,9 +468,7 @@ public class XMLSignatureUtil {
      * Given the X509Certificate in the keyinfo element, get a {@link X509Certificate}
      *
      * @param certificateString
-     *
      * @return
-     *
      * @throws org.keycloak.saml.common.exceptions.ProcessingException
      */
     public static X509Certificate getX509CertificateFromKeyInfoString(String certificateString) throws ProcessingException {
@@ -598,9 +495,7 @@ public class XMLSignatureUtil {
      * Given a dsig:DSAKeyValue element, return {@link DSAKeyValueType}
      *
      * @param element
-     *
      * @return
-     *
      * @throws ProcessingException
      */
     public static DSAKeyValueType getDSAKeyValue(Element element) throws ParsingException {
@@ -639,9 +534,7 @@ public class XMLSignatureUtil {
      * Given a dsig:DSAKeyValue element, return {@link DSAKeyValueType}
      *
      * @param element
-     *
      * @return
-     *
      * @throws ProcessingException
      */
     public static RSAKeyValueType getRSAKeyValue(Element element) throws ParsingException {
@@ -674,9 +567,8 @@ public class XMLSignatureUtil {
      * </p>
      *
      * @param key the {@code PublicKey} that will be represented as a {@code KeyValueType}.
-     *
      * @return the constructed {@code KeyValueType} or {@code null} if the specified key is neither a DSA nor a RSA
-     *         key.
+     * key.
      */
     public static KeyValueType createKeyValue(PublicKey key) {
         if (key instanceof RSAPublicKey) {
@@ -756,5 +648,60 @@ public class XMLSignatureUtil {
         }
 
         return keyInfoFactory.newKeyInfo(items);
+    }
+
+    private static class KeySelectorUtilizingKeyNameHint extends KeySelector {
+
+        private final KeyLocator locator;
+
+        private boolean keyLocated = false;
+
+        private String keyName = null;
+
+        public KeySelectorUtilizingKeyNameHint(KeyLocator locator) {
+            this.locator = locator;
+        }
+
+        @Override
+        public KeySelectorResult select(KeyInfo keyInfo, KeySelector.Purpose purpose, AlgorithmMethod method, XMLCryptoContext context) throws KeySelectorException {
+            try {
+                KeyName keyNameEl = KeyInfoTools.getKeyName(keyInfo);
+                this.keyName = keyNameEl == null ? null : keyNameEl.getName();
+                final Key key = locator.getKey(keyName);
+                this.keyLocated = key != null;
+                return new KeySelectorResult() {
+                    @Override
+                    public Key getKey() {
+                        return key;
+                    }
+                };
+            } catch (KeyManagementException ex) {
+                throw new KeySelectorException(ex);
+            }
+
+        }
+
+        private boolean wasKeyLocated() {
+            return this.keyLocated;
+        }
+    }
+
+    private static class KeySelectorPresetKey extends KeySelector {
+
+        private final Key key;
+
+        public KeySelectorPresetKey(Key key) {
+            this.key = key;
+        }
+
+        @Override
+        public KeySelectorResult select(KeyInfo keyInfo, KeySelector.Purpose purpose, AlgorithmMethod method, XMLCryptoContext context) {
+            return new KeySelectorResult() {
+                @Override
+                public Key getKey() {
+                    return key;
+                }
+            };
+        }
     }
 }

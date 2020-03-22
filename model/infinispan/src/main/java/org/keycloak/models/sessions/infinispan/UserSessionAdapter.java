@@ -17,54 +17,35 @@
 
 package org.keycloak.models.sessions.infinispan;
 
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.models.sessions.infinispan.changes.InfinispanChangelogBasedTransaction;
-import org.keycloak.models.sessions.infinispan.changes.sessions.CrossDCLastSessionRefreshChecker;
 import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.changes.Tasks;
 import org.keycloak.models.sessions.infinispan.changes.UserSessionUpdateTask;
+import org.keycloak.models.sessions.infinispan.changes.sessions.CrossDCLastSessionRefreshChecker;
 import org.keycloak.models.sessions.infinispan.changes.sessions.CrossDCLastSessionRefreshListener;
 import org.keycloak.models.sessions.infinispan.entities.AuthenticatedClientSessionEntity;
 import org.keycloak.models.sessions.infinispan.entities.AuthenticatedClientSessionStore;
 import org.keycloak.models.sessions.infinispan.entities.UserSessionEntity;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.keycloak.models.sessions.infinispan.changes.sessions.CrossDCLastSessionRefreshListener.IGNORE_REMOTE_CACHE_UPDATE;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class UserSessionAdapter implements UserSessionModel {
 
+    private static final int MINIMUM_INACTIVE_CLIENT_SESSIONS_TO_CLEANUP = 5;
     private final KeycloakSession session;
-
     private final InfinispanUserSessionProvider provider;
-
     private final InfinispanChangelogBasedTransaction<String, UserSessionEntity> userSessionUpdateTx;
-
     private final InfinispanChangelogBasedTransaction<UUID, AuthenticatedClientSessionEntity> clientSessionUpdateTx;
-
     private final RealmModel realm;
-
     private final UserSessionEntity entity;
-
     private final boolean offline;
 
-    public UserSessionAdapter(KeycloakSession session, InfinispanUserSessionProvider provider, 
+    public UserSessionAdapter(KeycloakSession session, InfinispanUserSessionProvider provider,
                               InfinispanChangelogBasedTransaction<String, UserSessionEntity> userSessionUpdateTx,
                               InfinispanChangelogBasedTransaction<UUID, AuthenticatedClientSessionEntity> clientSessionUpdateTx,
                               RealmModel realm, UserSessionEntity entity, boolean offline) {
@@ -123,8 +104,6 @@ public class UserSessionAdapter implements UserSessionModel {
         return null;
     }
 
-    private static final int MINIMUM_INACTIVE_CLIENT_SESSIONS_TO_CLEANUP = 5;
-
     @Override
     public void removeAuthenticatedClientSessions(Collection<String> removedClientUUIDS) {
         if (removedClientUUIDS == null || removedClientUUIDS.isEmpty()) {
@@ -136,20 +115,20 @@ public class UserSessionAdapter implements UserSessionModel {
         if (removedClientUUIDS.size() >= MINIMUM_INACTIVE_CLIENT_SESSIONS_TO_CLEANUP) {
             // Update user session
             UserSessionUpdateTask task = new UserSessionUpdateTask() {
-                @Override		
-                public void runUpdate(UserSessionEntity entity) {		
-                    removedClientUUIDS.forEach(entity.getAuthenticatedClientSessions()::remove);		
-                }		
-            };		
+                @Override
+                public void runUpdate(UserSessionEntity entity) {
+                    removedClientUUIDS.forEach(entity.getAuthenticatedClientSessions()::remove);
+                }
+            };
             update(task);
         }
 
         // do not iterate the removedClientUUIDS and remove the clientSession directly as the addTask can manipulate
         // the collection being iterated, and that can lead to unpredictable behaviour (e.g. NPE)
         List<UUID> clientSessionUuids = removedClientUUIDS.stream()
-          .map(entity.getAuthenticatedClientSessions()::get)
-          .filter(Objects::nonNull)
-          .collect(Collectors.toList());
+                .map(entity.getAuthenticatedClientSessions()::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
         clientSessionUuids.forEach(clientSessionId -> this.clientSessionUpdateTx.addTask(clientSessionId, Tasks.removeSync()));
     }
@@ -172,6 +151,7 @@ public class UserSessionAdapter implements UserSessionModel {
     public String getBrokerUserId() {
         return entity.getBrokerUserId();
     }
+
     public UserModel getUser() {
         return session.users().getUserById(entity.getUser(), realm);
     }

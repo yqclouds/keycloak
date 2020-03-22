@@ -17,11 +17,7 @@
 
 package org.keycloak.models.utils;
 
-import org.keycloak.models.AuthenticationExecutionModel;
-import org.keycloak.models.AuthenticationFlowModel;
-import org.keycloak.models.AuthenticatorConfigModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RequiredCredentialModel;
+import org.keycloak.models.*;
 import org.keycloak.representations.idm.IdentityProviderRepresentation;
 
 import java.util.HashMap;
@@ -63,6 +59,7 @@ public class DefaultAuthenticationFlows {
         if (realm.getFlowByAlias(DOCKER_AUTH) == null) dockerAuthenticationFlow(realm);
         if (realm.getFlowByAlias(HTTP_CHALLENGE_FLOW) == null) httpChallengeFlow(realm);
     }
+
     public static void migrateFlows(RealmModel realm) {
         if (realm.getFlowByAlias(BROWSER_FLOW) == null) browserFlow(realm, true);
         if (realm.getFlowByAlias(DIRECT_GRANT_FLOW) == null) directGrantFlow(realm, true);
@@ -617,8 +614,8 @@ public class DefaultAuthenticationFlows {
             List<AuthenticationExecutionModel> browserExecutions = new LinkedList<>();
             KeycloakModelUtils.deepFindAuthenticationExecutions(realm, browserFlow, browserExecutions);
             for (AuthenticationExecutionModel browserExecution : browserExecutions) {
-                if (browserExecution.isAuthenticatorFlow()){
-                    if (realm.getAuthenticationExecutions(browserExecution.getFlowId()).stream().anyMatch(e -> e.getAuthenticator().equals("auth-otp-form"))){
+                if (browserExecution.isAuthenticatorFlow()) {
+                    if (realm.getAuthenticationExecutions(browserExecution.getFlowId()).stream().anyMatch(e -> e.getAuthenticator().equals("auth-otp-form"))) {
                         execution.setRequirement(browserExecution.getRequirement());
                     }
                 }

@@ -43,20 +43,18 @@ public class DefaultVaultCharSecret implements VaultCharSecret {
         public void close() {
         }
     };
-
-    public static VaultCharSecret forBuffer(Optional<CharBuffer> buffer) {
-        if (buffer == null || ! buffer.isPresent()) {
-            return EMPTY_VAULT_SECRET;
-        }
-        return new DefaultVaultCharSecret(buffer.get());
-    }
-
     private final CharBuffer buffer;
-
     private char[] secretArray;
 
     private DefaultVaultCharSecret(final CharBuffer buffer) {
         this.buffer = buffer;
+    }
+
+    public static VaultCharSecret forBuffer(Optional<CharBuffer> buffer) {
+        if (buffer == null || !buffer.isPresent()) {
+            return EMPTY_VAULT_SECRET;
+        }
+        return new DefaultVaultCharSecret(buffer.get());
     }
 
     @Override

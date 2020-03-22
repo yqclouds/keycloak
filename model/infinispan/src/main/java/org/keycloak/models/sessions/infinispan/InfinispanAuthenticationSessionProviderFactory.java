@@ -18,6 +18,7 @@
 package org.keycloak.models.sessions.infinispan;
 
 import org.infinispan.Cache;
+import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterProvider;
@@ -37,35 +38,51 @@ import org.keycloak.provider.ProviderEvent;
 import org.keycloak.provider.ProviderEventListener;
 import org.keycloak.sessions.AuthenticationSessionProvider;
 import org.keycloak.sessions.AuthenticationSessionProviderFactory;
+
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class InfinispanAuthenticationSessionProviderFactory implements AuthenticationSessionProviderFactory {
 
+    public static final String PROVIDER_ID = "infinispan";
+    public static final String AUTHENTICATION_SESSION_EVENTS = "AUTHENTICATION_SESSION_EVENTS";
+    public static final String REALM_REMOVED_AUTHSESSION_EVENT = "REALM_REMOVED_EVENT_AUTHSESSIONS";
+    public static final String CLIENT_REMOVED_AUTHSESSION_EVENT = "CLIENT_REMOVED_SESSION_AUTHSESSIONS";
     private static final Logger log = Logger.getLogger(InfinispanAuthenticationSessionProviderFactory.class);
-
     private InfinispanKeyGenerator keyGenerator;
-
     private volatile Cache<String, RootAuthenticationSessionEntity> authSessionsCache;
 
-    public static final String PROVIDER_ID = "infinispan";
+    private static void updateAuthSession(RootAuthenticationSessionEntity rootAuthSession, String tabId, Map<String, String> authNotesFragment) {
+        if (rootAuthSession == null) {
+            return;
+        }
 
-    public static final String AUTHENTICATION_SESSION_EVENTS = "AUTHENTICATION_SESSION_EVENTS";
+        AuthenticationSessionEntity authSession = rootAuthSession.getAuthenticationSessions().get(tabId);
 
-    public static final String REALM_REMOVED_AUTHSESSION_EVENT = "REALM_REMOVED_EVENT_AUTHSESSIONS";
+        if (authSession != null) {
+            if (authSession.getAuthNotes() == null) {
+                authSession.setAuthNotes(new ConcurrentHashMap<>());
+            }
 
-    public static final String CLIENT_REMOVED_AUTHSESSION_EVENT = "CLIENT_REMOVED_SESSION_AUTHSESSIONS";
+            for (Entry<String, String> me : authNotesFragment.entrySet()) {
+                String value = me.getValue();
+                if (value == null) {
+                    authSession.getAuthNotes().remove(me.getKey());
+                } else {
+                    authSession.getAuthNotes().put(me.getKey(), value);
+                }
+            }
+        }
+    }
 
     @Override
     public void init(Config.Scope config) {
 
     }
-
 
     @Override
     public void postInit(KeycloakSessionFactory factory) {
@@ -84,7 +101,6 @@ public class InfinispanAuthenticationSessionProviderFactory implements Authentic
             }
         });
     }
-
 
     protected void registerClusterListeners(KeycloakSession session) {
         KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
@@ -110,7 +126,6 @@ public class InfinispanAuthenticationSessionProviderFactory implements Authentic
         log.debug("Registered cluster listeners");
     }
 
-
     @Override
     public AuthenticationSessionProvider create(KeycloakSession session) {
         lazyInit(session);
@@ -118,37 +133,13 @@ public class InfinispanAuthenticationSessionProviderFactory implements Authentic
     }
 
     private void updateAuthNotes(ClusterEvent clEvent) {
-        if (! (clEvent instanceof AuthenticationSessionAuthNoteUpdateEvent)) {
+        if (!(clEvent instanceof AuthenticationSessionAuthNoteUpdateEvent)) {
             return;
         }
 
         AuthenticationSessionAuthNoteUpdateEvent event = (AuthenticationSessionAuthNoteUpdateEvent) clEvent;
         RootAuthenticationSessionEntity authSession = this.authSessionsCache.get(event.getAuthSessionId());
         updateAuthSession(authSession, event.getTabId(), event.getAuthNotesFragment());
-    }
-
-
-    private static void updateAuthSession(RootAuthenticationSessionEntity rootAuthSession, String tabId, Map<String, String> authNotesFragment) {
-        if (rootAuthSession == null) {
-            return;
-        }
-
-        AuthenticationSessionEntity authSession = rootAuthSession.getAuthenticationSessions().get(tabId);
-
-        if (authSession != null) {
-            if (authSession.getAuthNotes() == null) {
-                authSession.setAuthNotes(new ConcurrentHashMap<>());
-            }
-
-            for (Entry<String, String> me : authNotesFragment.entrySet()) {
-                String value = me.getValue();
-                if (value == null) {
-                    authSession.getAuthNotes().remove(me.getKey());
-                } else {
-                    authSession.getAuthNotes().put(me.getKey(), value);
-                }
-            }
-        }
     }
 
     private void lazyInit(KeycloakSession session) {

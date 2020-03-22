@@ -18,57 +18,34 @@ package org.keycloak.services.resources.admin;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import javax.ws.rs.NotFoundException;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.util.ObjectUtil;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.Constants;
-import org.keycloak.models.FederatedIdentityModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ModelDuplicateException;
-import org.keycloak.models.ModelException;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.policy.PasswordPolicyNotMetException;
-import org.keycloak.representations.idm.FederatedIdentityRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.ForbiddenException;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.resources.admin.permissions.UserPermissionEvaluator;
-import org.keycloak.util.JsonSerialization;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.*;
 
 /**
  * Base resource for managing users
  *
- * @resource Users
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
+ * @resource Users
  */
 public class UsersResource {
 
@@ -76,19 +53,14 @@ public class UsersResource {
     private static final String SEARCH_ID_PARAMETER = "id:";
 
     protected RealmModel realm;
-
-    private AdminPermissionEvaluator auth;
-
-    private AdminEventBuilder adminEvent;
-
     @Context
     protected ClientConnection clientConnection;
-
     @Context
     protected KeycloakSession session;
-
     @Context
     protected HttpHeaders headers;
+    private AdminPermissionEvaluator auth;
+    private AdminEventBuilder adminEvent;
 
     public UsersResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.auth = auth;
@@ -98,7 +70,7 @@ public class UsersResource {
 
     /**
      * Create a new user
-     *
+     * <p>
      * Username must be unique.
      *
      * @param rep
@@ -110,7 +82,7 @@ public class UsersResource {
         auth.users().requireManage();
 
         String username = rep.getUsername();
-        if(realm.isRegistrationEmailAsUsername()) {
+        if (realm.isRegistrationEmailAsUsername()) {
             username = rep.getEmail();
         }
         if (ObjectUtil.isBlank(username)) {
@@ -151,7 +123,7 @@ public class UsersResource {
                 session.getTransactionManager().setRollbackOnly();
             }
             return ErrorResponse.error("Password policy not met", Response.Status.BAD_REQUEST);
-        } catch (ModelException me){
+        } catch (ModelException me) {
             if (session.getTransactionManager().isActive()) {
                 session.getTransactionManager().setRollbackOnly();
             }
@@ -159,6 +131,7 @@ public class UsersResource {
             return ErrorResponse.error("Could not create user", Response.Status.BAD_REQUEST);
         }
     }
+
     /**
      * Get representation of the user
      *
@@ -181,15 +154,15 @@ public class UsersResource {
 
     /**
      * Get users
-     *
+     * <p>
      * Returns a list of users, filtered according to query parameters
      *
-     * @param search A String contained in username, first or last name, or email
+     * @param search     A String contained in username, first or last name, or email
      * @param last
      * @param first
      * @param email
      * @param username
-     * @param first Pagination offset
+     * @param first      Pagination offset
      * @param maxResults Maximum results size (defaults to 100)
      * @return
      */

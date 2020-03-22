@@ -19,9 +19,7 @@ package org.keycloak.services.resources.admin;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.HttpResponse;
-import javax.ws.rs.NotFoundException;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import javax.ws.rs.NotAuthorizedException;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.jose.jws.JWSInputException;
@@ -40,15 +38,8 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import org.keycloak.theme.Theme;
 import org.keycloak.urls.UrlType;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.Properties;
@@ -91,11 +82,62 @@ public class AdminRoot {
         return base.path(AdminRoot.class);
     }
 
+    public static UriBuilder adminConsoleUrl(UriInfo uriInfo) {
+        return adminConsoleUrl(uriInfo.getBaseUriBuilder());
+    }
+
+    public static UriBuilder adminConsoleUrl(UriBuilder base) {
+        return adminBaseUrl(base).path(AdminRoot.class, "getAdminConsole");
+    }
+
+    public static UriBuilder realmsUrl(UriInfo uriInfo) {
+        return realmsUrl(uriInfo.getBaseUriBuilder());
+    }
+
+    public static UriBuilder realmsUrl(UriBuilder base) {
+        return adminBaseUrl(base).path(AdminRoot.class, "getRealmsAdmin");
+    }
+
+    public static Theme getTheme(KeycloakSession session, RealmModel realm) throws IOException {
+        return session.theme().getTheme(Theme.Type.ADMIN);
+    }
+
+    public static Properties getMessages(KeycloakSession session, RealmModel realm, String lang) {
+        try {
+            Theme theme = getTheme(session, realm);
+            Locale locale = lang != null ? Locale.forLanguageTag(lang) : Locale.ENGLISH;
+            return theme.getMessages(locale);
+        } catch (IOException e) {
+            logger.error("Failed to load messages from theme", e);
+            return new Properties();
+        }
+    }
+
+    public static Properties getMessages(KeycloakSession session, RealmModel realm, String lang, String... bundles) {
+        Properties compound = new Properties();
+        for (String bundle : bundles) {
+            Properties current = getMessages(session, realm, lang, bundle);
+            compound.putAll(current);
+        }
+        return compound;
+    }
+
+    private static Properties getMessages(KeycloakSession session, RealmModel realm, String lang, String bundle) {
+        try {
+            Theme theme = getTheme(session, realm);
+            Locale locale = lang != null ? Locale.forLanguageTag(lang) : Locale.ENGLISH;
+            return theme.getMessages(bundle, locale);
+        } catch (IOException e) {
+            logger.error("Failed to load messages from theme", e);
+            return new Properties();
+        }
+    }
+
     /**
      * Convenience path to master realm admin console
      *
-     * @exclude
      * @return
+     * @exclude
      */
     @GET
     public Response masterRealmAdminConsoleRedirect() {
@@ -108,8 +150,8 @@ public class AdminRoot {
     /**
      * Convenience path to master realm admin console
      *
-     * @exclude
      * @return
+     * @exclude
      */
     @Path("index.{html:html}") // expression is actually "index.html" but this is a hack to get around jax-doclet bug
     @GET
@@ -126,21 +168,12 @@ public class AdminRoot {
         return realm;
     }
 
-
-    public static UriBuilder adminConsoleUrl(UriInfo uriInfo) {
-        return adminConsoleUrl(uriInfo.getBaseUriBuilder());
-    }
-
-    public static UriBuilder adminConsoleUrl(UriBuilder base) {
-        return adminBaseUrl(base).path(AdminRoot.class, "getAdminConsole");
-    }
-
     /**
      * path to realm admin console ui
      *
-     * @exclude
      * @param name Realm name (not id!)
      * @return
+     * @exclude
      */
     @Path("{realm}/console")
     public AdminConsole getAdminConsole(final @PathParam("realm") String name) {
@@ -150,7 +183,6 @@ public class AdminRoot {
         ResteasyProviderFactory.getInstance().injectProperties(service);
         return service;
     }
-
 
     protected AdminAuth authenticateRealmAdminRequest(HttpHeaders headers) {
         String tokenString = authManager.extractAuthorizationHeaderToken(headers);
@@ -182,14 +214,6 @@ public class AdminRoot {
         }
 
         return new AdminAuth(realm, authResult.getToken(), authResult.getUser(), client);
-    }
-
-    public static UriBuilder realmsUrl(UriInfo uriInfo) {
-        return realmsUrl(uriInfo.getBaseUriBuilder());
-    }
-
-    public static UriBuilder realmsUrl(UriBuilder base) {
-        return adminBaseUrl(base).path(AdminRoot.class, "getRealmsAdmin");
     }
 
     /**
@@ -242,41 +266,6 @@ public class AdminRoot {
         ServerInfoAdminResource adminResource = new ServerInfoAdminResource();
         ResteasyProviderFactory.getInstance().injectProperties(adminResource);
         return adminResource;
-    }
-
-    public static Theme getTheme(KeycloakSession session, RealmModel realm) throws IOException {
-        return session.theme().getTheme(Theme.Type.ADMIN);
-    }
-
-    public static Properties getMessages(KeycloakSession session, RealmModel realm, String lang) {
-        try {
-            Theme theme = getTheme(session, realm);
-            Locale locale = lang != null ? Locale.forLanguageTag(lang) : Locale.ENGLISH;
-            return theme.getMessages(locale);
-        } catch (IOException e) {
-            logger.error("Failed to load messages from theme", e);
-            return new Properties();
-        }
-    }
-
-    public static Properties getMessages(KeycloakSession session, RealmModel realm, String lang, String... bundles) {
-        Properties compound = new Properties();
-        for (String bundle : bundles) {
-            Properties current = getMessages(session, realm, lang, bundle);
-            compound.putAll(current);
-        }
-        return compound;
-    }
-
-    private static Properties getMessages(KeycloakSession session, RealmModel realm, String lang, String bundle) {
-        try {
-            Theme theme = getTheme(session, realm);
-            Locale locale = lang != null ? Locale.forLanguageTag(lang) : Locale.ENGLISH;
-            return theme.getMessages(bundle, locale);
-        } catch (IOException e) {
-            logger.error("Failed to load messages from theme", e);
-            return new Properties();
-        }
     }
 
 }

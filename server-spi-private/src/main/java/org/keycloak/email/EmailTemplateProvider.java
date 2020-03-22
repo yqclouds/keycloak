@@ -32,7 +32,7 @@ import java.util.Map;
 public interface EmailTemplateProvider extends Provider {
 
     String IDENTITY_PROVIDER_BROKER_CONTEXT = "identityProviderBrokerCtx";
-    
+
     EmailTemplateProvider setAuthenticationSession(AuthenticationSessionModel authenticationSession);
 
     EmailTemplateProvider setRealm(RealmModel realm);
@@ -56,7 +56,7 @@ public interface EmailTemplateProvider extends Provider {
      * Test SMTP connection with current logged in user
      *
      * @param config SMTP server configuration
-     * @param user SMTP recipient
+     * @param user   SMTP recipient
      * @throws EmailException
      */
     void sendSmtpTestEmail(Map<String, String> config, UserModel user) throws EmailException;
@@ -81,8 +81,8 @@ public interface EmailTemplateProvider extends Provider {
      * Send formatted email
      *
      * @param subjectFormatKey message property that will be used to format email subject
-     * @param bodyTemplate freemarker template file
-     * @param bodyAttributes attributes used to fill template
+     * @param bodyTemplate     freemarker template file
+     * @param bodyAttributes   attributes used to fill template
      * @throws EmailException
      */
     void send(String subjectFormatKey, String bodyTemplate, Map<String, Object> bodyAttributes) throws EmailException;
@@ -90,10 +90,10 @@ public interface EmailTemplateProvider extends Provider {
     /**
      * Send formatted email
      *
-     * @param subjectFormatKey message property that will be used to format email subject
+     * @param subjectFormatKey  message property that will be used to format email subject
      * @param subjectAttributes attributes used to fill subject format message
-     * @param bodyTemplate freemarker template file
-     * @param bodyAttributes attributes used to fill template
+     * @param bodyTemplate      freemarker template file
+     * @param bodyAttributes    attributes used to fill template
      * @throws EmailException
      */
     void send(String subjectFormatKey, List<Object> subjectAttributes, String bodyTemplate, Map<String, Object> bodyAttributes) throws EmailException;

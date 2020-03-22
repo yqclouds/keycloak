@@ -18,25 +18,6 @@
 package org.keycloak.authorization.admin;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
 import org.jboss.logging.Logger;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.authorization.AuthorizationProvider;
@@ -54,25 +35,26 @@ import org.keycloak.authorization.policy.evaluation.Result;
 import org.keycloak.authorization.store.ScopeStore;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.authorization.util.Permissions;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientSessionContext;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.TokenManager;
 import org.keycloak.representations.AccessToken;
-import org.keycloak.representations.idm.authorization.AuthorizationRequest;
-import org.keycloak.representations.idm.authorization.Permission;
-import org.keycloak.representations.idm.authorization.PolicyEvaluationRequest;
-import org.keycloak.representations.idm.authorization.ResourceRepresentation;
-import org.keycloak.representations.idm.authorization.ScopeRepresentation;
+import org.keycloak.representations.idm.authorization.*;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.Urls;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.sessions.AuthenticationSessionModel;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -190,41 +172,6 @@ public class PolicyEvaluationService {
         }).collect(Collectors.toList());
     }
 
-    private static class CloseableKeycloakIdentity extends KeycloakIdentity {
-        private UserSessionModel userSession;
-
-        public CloseableKeycloakIdentity(AccessToken accessToken, KeycloakSession keycloakSession, UserSessionModel userSession) {
-            super(accessToken, keycloakSession);
-            this.userSession = userSession;
-        }
-
-        public void close() {
-            if (userSession != null) {
-                keycloakSession.sessions().removeUserSession(realm, userSession);
-            }
-
-        }
-
-        @Override
-        public String getId() {
-            if (userSession != null) {
-                return super.getId();
-            }
-
-            String issuedFor = accessToken.getIssuedFor();
-
-            if (issuedFor != null) {
-                UserModel serviceAccount = keycloakSession.users().getServiceAccount(realm.getClientByClientId(issuedFor));
-
-                if (serviceAccount != null) {
-                    return serviceAccount.getId();
-                }
-            }
-
-            return null;
-        }
-    }
-
     private CloseableKeycloakIdentity createIdentity(PolicyEvaluationRequest representation) {
         KeycloakSession keycloakSession = this.authorization.getKeycloakSession();
         RealmModel realm = keycloakSession.getContext().getRealm();
@@ -236,7 +183,7 @@ public class PolicyEvaluationService {
         UserSessionModel userSession = null;
         if (subject != null) {
             UserModel userModel = keycloakSession.users().getUserById(subject, realm);
-            
+
             if (userModel == null) {
                 userModel = keycloakSession.users().getUserByUsername(subject, realm);
             }
@@ -296,6 +243,41 @@ public class PolicyEvaluationService {
         }
 
         return new CloseableKeycloakIdentity(accessToken, keycloakSession, userSession);
+    }
+
+    private static class CloseableKeycloakIdentity extends KeycloakIdentity {
+        private UserSessionModel userSession;
+
+        public CloseableKeycloakIdentity(AccessToken accessToken, KeycloakSession keycloakSession, UserSessionModel userSession) {
+            super(accessToken, keycloakSession);
+            this.userSession = userSession;
+        }
+
+        public void close() {
+            if (userSession != null) {
+                keycloakSession.sessions().removeUserSession(realm, userSession);
+            }
+
+        }
+
+        @Override
+        public String getId() {
+            if (userSession != null) {
+                return super.getId();
+            }
+
+            String issuedFor = accessToken.getIssuedFor();
+
+            if (issuedFor != null) {
+                UserModel serviceAccount = keycloakSession.users().getServiceAccount(realm.getClientByClientId(issuedFor));
+
+                if (serviceAccount != null) {
+                    return serviceAccount.getId();
+                }
+            }
+
+            return null;
+        }
     }
 
     public class EvaluationDecisionCollector extends DecisionPermissionCollector {

@@ -26,44 +26,44 @@ import javax.persistence.Table;
  * @author <a href="mailto:giriraj.sharma27@gmail.com">Giriraj Sharma</a>
  */
 @Entity
-@Table(name="ADMIN_EVENT_ENTITY")
+@Table(name = "ADMIN_EVENT_ENTITY")
 public class AdminEventEntity {
-    
+
     @Id
-    @Column(name="ID", length = 36)
+    @Column(name = "ID", length = 36)
     private String id;
-    
-    @Column(name="ADMIN_EVENT_TIME")
+
+    @Column(name = "ADMIN_EVENT_TIME")
     private long time;
-    
-    @Column(name="REALM_ID")
+
+    @Column(name = "REALM_ID")
     private String realmId;
-    
-    @Column(name="OPERATION_TYPE")
+
+    @Column(name = "OPERATION_TYPE")
     private String operationType;
 
-    @Column(name="RESOURCE_TYPE", length = 64)
+    @Column(name = "RESOURCE_TYPE", length = 64)
     private String resourceType;
-    
-    @Column(name="AUTH_REALM_ID")
+
+    @Column(name = "AUTH_REALM_ID")
     private String authRealmId;
-    
-    @Column(name="AUTH_CLIENT_ID")
+
+    @Column(name = "AUTH_CLIENT_ID")
     private String authClientId;
 
-    @Column(name="AUTH_USER_ID")
+    @Column(name = "AUTH_USER_ID")
     private String authUserId;
-    
-    @Column(name="IP_ADDRESS")
+
+    @Column(name = "IP_ADDRESS")
     private String authIpAddress;
-    
-    @Column(name="RESOURCE_PATH")
+
+    @Column(name = "RESOURCE_PATH")
     private String resourcePath;
 
-    @Column(name="REPRESENTATION", length = 25500)
+    @Column(name = "REPRESENTATION", length = 25500)
     private String representation;
 
-    @Column(name="ERROR")
+    @Column(name = "ERROR")
     private String error;
 
     public String getId() {

@@ -55,7 +55,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,10 +63,7 @@ import java.util.regex.Pattern;
  */
 public class AuthorizationEndpoint extends AuthorizationEndpointBase {
 
-    private static final Logger logger = Logger.getLogger(AuthorizationEndpoint.class);
-
     public static final String CODE_AUTH_TYPE = "code";
-
     /**
      * Prefix used to store additional HTTP GET params from original client request into {@link AuthenticationSessionModel} note to be available later in Authenticators, RequiredActions etc. Prefix is used to
      * prevent collisions with internally used notes.
@@ -75,24 +71,16 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
      * @see AuthenticationSessionModel#getClientNote(String)
      */
     public static final String LOGIN_SESSION_NOTE_ADDITIONAL_REQ_PARAMS_PREFIX = "client_request_param_";
-
+    private static final Logger logger = Logger.getLogger(AuthorizationEndpoint.class);
     // https://tools.ietf.org/html/rfc7636#section-4.2
     private static final Pattern VALID_CODE_CHALLENGE_PATTERN = Pattern.compile("^[0-9a-zA-Z\\-\\.~_]+$");
-
-    private enum Action {
-        REGISTER, CODE, FORGOT_CREDENTIALS
-    }
-
     private ClientModel client;
     private AuthenticationSessionModel authenticationSession;
-
     private Action action;
     private OIDCResponseType parsedResponseType;
     private OIDCResponseMode parsedResponseMode;
-
     private AuthorizationEndpointRequest request;
     private String redirectUri;
-
     public AuthorizationEndpoint(RealmModel realm, EventBuilder event) {
         super(realm, event);
         event.event(EventType.LOGIN);
@@ -422,7 +410,6 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
         }
     }
 
-
     private void updateAuthenticationSession() {
         authenticationSession.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
         authenticationSession.setRedirectUri(redirectUri);
@@ -431,23 +418,37 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
         authenticationSession.setClientNote(OIDCLoginProtocol.REDIRECT_URI_PARAM, request.getRedirectUriParam());
         authenticationSession.setClientNote(OIDCLoginProtocol.ISSUER, Urls.realmIssuer(session.getContext().getUri().getBaseUri(), realm.getName()));
 
-        if (request.getState() != null) authenticationSession.setClientNote(OIDCLoginProtocol.STATE_PARAM, request.getState());
-        if (request.getNonce() != null) authenticationSession.setClientNote(OIDCLoginProtocol.NONCE_PARAM, request.getNonce());
-        if (request.getMaxAge() != null) authenticationSession.setClientNote(OIDCLoginProtocol.MAX_AGE_PARAM, String.valueOf(request.getMaxAge()));
-        if (request.getScope() != null) authenticationSession.setClientNote(OIDCLoginProtocol.SCOPE_PARAM, request.getScope());
-        if (request.getLoginHint() != null) authenticationSession.setClientNote(OIDCLoginProtocol.LOGIN_HINT_PARAM, request.getLoginHint());
-        if (request.getPrompt() != null) authenticationSession.setClientNote(OIDCLoginProtocol.PROMPT_PARAM, request.getPrompt());
-        if (request.getIdpHint() != null) authenticationSession.setClientNote(AdapterConstants.KC_IDP_HINT, request.getIdpHint());
+        if (request.getState() != null)
+            authenticationSession.setClientNote(OIDCLoginProtocol.STATE_PARAM, request.getState());
+        if (request.getNonce() != null)
+            authenticationSession.setClientNote(OIDCLoginProtocol.NONCE_PARAM, request.getNonce());
+        if (request.getMaxAge() != null)
+            authenticationSession.setClientNote(OIDCLoginProtocol.MAX_AGE_PARAM, String.valueOf(request.getMaxAge()));
+        if (request.getScope() != null)
+            authenticationSession.setClientNote(OIDCLoginProtocol.SCOPE_PARAM, request.getScope());
+        if (request.getLoginHint() != null)
+            authenticationSession.setClientNote(OIDCLoginProtocol.LOGIN_HINT_PARAM, request.getLoginHint());
+        if (request.getPrompt() != null)
+            authenticationSession.setClientNote(OIDCLoginProtocol.PROMPT_PARAM, request.getPrompt());
+        if (request.getIdpHint() != null)
+            authenticationSession.setClientNote(AdapterConstants.KC_IDP_HINT, request.getIdpHint());
         if (request.getAction() != null) authenticationSession.setClientNote(Constants.KC_ACTION, request.getAction());
-        if (request.getResponseMode() != null) authenticationSession.setClientNote(OIDCLoginProtocol.RESPONSE_MODE_PARAM, request.getResponseMode());
-        if (request.getClaims()!= null) authenticationSession.setClientNote(OIDCLoginProtocol.CLAIMS_PARAM, request.getClaims());
-        if (request.getAcr() != null) authenticationSession.setClientNote(OIDCLoginProtocol.ACR_PARAM, request.getAcr());
-        if (request.getDisplay() != null) authenticationSession.setAuthNote(OAuth2Constants.DISPLAY, request.getDisplay());
-        if (request.getUiLocales() != null) authenticationSession.setAuthNote(LocaleSelectorProvider.CLIENT_REQUEST_LOCALE, request.getUiLocales());
+        if (request.getResponseMode() != null)
+            authenticationSession.setClientNote(OIDCLoginProtocol.RESPONSE_MODE_PARAM, request.getResponseMode());
+        if (request.getClaims() != null)
+            authenticationSession.setClientNote(OIDCLoginProtocol.CLAIMS_PARAM, request.getClaims());
+        if (request.getAcr() != null)
+            authenticationSession.setClientNote(OIDCLoginProtocol.ACR_PARAM, request.getAcr());
+        if (request.getDisplay() != null)
+            authenticationSession.setAuthNote(OAuth2Constants.DISPLAY, request.getDisplay());
+        if (request.getUiLocales() != null)
+            authenticationSession.setAuthNote(LocaleSelectorProvider.CLIENT_REQUEST_LOCALE, request.getUiLocales());
 
         // https://tools.ietf.org/html/rfc7636#section-4
-        if (request.getCodeChallenge() != null) authenticationSession.setClientNote(OIDCLoginProtocol.CODE_CHALLENGE_PARAM, request.getCodeChallenge());
-        if (request.getCodeChallengeMethod() != null) authenticationSession.setClientNote(OIDCLoginProtocol.CODE_CHALLENGE_METHOD_PARAM, request.getCodeChallengeMethod());
+        if (request.getCodeChallenge() != null)
+            authenticationSession.setClientNote(OIDCLoginProtocol.CODE_CHALLENGE_PARAM, request.getCodeChallenge());
+        if (request.getCodeChallengeMethod() != null)
+            authenticationSession.setClientNote(OIDCLoginProtocol.CODE_CHALLENGE_METHOD_PARAM, request.getCodeChallengeMethod());
 
         if (request.getAdditionalReqParams() != null) {
             for (String paramName : request.getAdditionalReqParams().keySet()) {
@@ -455,7 +456,6 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
             }
         }
     }
-
 
     private Response buildAuthorizationCodeAuthorizationResponse() {
         this.event.event(EventType.LOGIN);
@@ -486,6 +486,10 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
         authenticationSession.setClientNote(APP_INITIATED_FLOW, LoginActionsService.RESET_CREDENTIALS_PATH);
 
         return processor.authenticate();
+    }
+
+    private enum Action {
+        REGISTER, CODE, FORGOT_CREDENTIALS
     }
 
 }

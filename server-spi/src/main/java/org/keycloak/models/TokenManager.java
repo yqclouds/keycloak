@@ -44,6 +44,8 @@ public interface TokenManager {
     <T> T decodeClientJWT(String token, ClientModel client, Class<T> clazz);
 
     String encodeAndEncrypt(Token token);
+
     String cekManagementAlgorithm(TokenCategory category);
+
     String encryptAlgorithm(TokenCategory category);
 }

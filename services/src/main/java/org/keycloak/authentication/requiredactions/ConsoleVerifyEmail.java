@@ -18,9 +18,9 @@
 package org.keycloak.authentication.requiredactions;
 
 import org.jboss.logging.Logger;
+import org.keycloak.authentication.ConsoleDisplayMode;
 import org.keycloak.authentication.RequiredActionContext;
 import org.keycloak.authentication.RequiredActionProvider;
-import org.keycloak.authentication.ConsoleDisplayMode;
 import org.keycloak.common.util.RandomString;
 import org.keycloak.email.EmailException;
 import org.keycloak.email.EmailTemplateProvider;
@@ -28,12 +28,17 @@ import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
-import org.keycloak.models.*;
+import org.keycloak.models.Constants;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.validation.Validation;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilderException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,6 +49,8 @@ import java.util.Map;
 public class ConsoleVerifyEmail implements RequiredActionProvider {
     public static final ConsoleVerifyEmail SINGLETON = new ConsoleVerifyEmail();
     private static final Logger logger = Logger.getLogger(ConsoleVerifyEmail.class);
+    public static String EMAIL_CODE = "email_code";
+
     @Override
     public void evaluateTriggers(RequiredActionContext context) {
         if (context.getRealm().isVerifyEmail() && !context.getUser().isEmailVerified()) {
@@ -72,7 +79,6 @@ public class ConsoleVerifyEmail implements RequiredActionProvider {
         context.challenge(challenge);
     }
 
-
     @Override
     public void processAction(RequiredActionContext context) {
         EventBuilder event = context.getEvent().clone().event(EventType.VERIFY_EMAIL).detail(Details.EMAIL, context.getUser().getEmail());
@@ -96,13 +102,11 @@ public class ConsoleVerifyEmail implements RequiredActionProvider {
         context.success();
     }
 
-
     @Override
     public void close() {
 
     }
 
-    public static String EMAIL_CODE="email_code";
     protected ConsoleDisplayMode challenge(RequiredActionContext context) {
         return ConsoleDisplayMode.challenge(context)
                 .header()
@@ -111,7 +115,7 @@ public class ConsoleVerifyEmail implements RequiredActionProvider {
                 .challenge();
     }
 
-     private Response sendVerifyEmail(RequiredActionContext context) throws UriBuilderException, IllegalArgumentException {
+    private Response sendVerifyEmail(RequiredActionContext context) throws UriBuilderException, IllegalArgumentException {
         KeycloakSession session = context.getSession();
         UserModel user = context.getUser();
         AuthenticationSessionModel authSession = context.getAuthenticationSession();
@@ -125,11 +129,11 @@ public class ConsoleVerifyEmail implements RequiredActionProvider {
 
         try {
             session
-              .getProvider(EmailTemplateProvider.class)
-              .setAuthenticationSession(authSession)
-              .setRealm(realm)
-              .setUser(user)
-              .send("emailVerificationSubject", "email-verification-with-code.ftl", attributes);
+                    .getProvider(EmailTemplateProvider.class)
+                    .setAuthenticationSession(authSession)
+                    .setRealm(realm)
+                    .setUser(user)
+                    .send("emailVerificationSubject", "email-verification-with-code.ftl", attributes);
             event.success();
         } catch (EmailException e) {
             logger.error("Failed to send verification email", e);

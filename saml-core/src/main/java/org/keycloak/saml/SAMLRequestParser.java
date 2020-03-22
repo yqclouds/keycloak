@@ -18,7 +18,6 @@
 package org.keycloak.saml;
 
 import org.jboss.logging.Logger;
-
 import org.keycloak.common.util.StreamUtil;
 import org.keycloak.saml.common.PicketLinkLogger;
 import org.keycloak.saml.common.PicketLinkLoggerFactory;

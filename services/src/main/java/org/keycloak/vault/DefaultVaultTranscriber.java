@@ -30,10 +30,9 @@ import java.util.regex.Pattern;
  * and convert them into other types. By default, the {@link VaultProvider} provides raw secrets through a {@link ByteBuffer}.
  * This class offers methods to convert the raw secrets into other types (such as {@link VaultCharSecret} or {@link WeakReference<String>}).
  *
+ * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  * @see VaultRawSecret
  * @see VaultCharSecret
- *
- * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
 public class DefaultVaultTranscriber implements VaultTranscriber {
 

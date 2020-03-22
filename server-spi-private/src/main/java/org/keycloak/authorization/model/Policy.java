@@ -89,6 +89,7 @@ public interface Policy {
     void setConfig(Map<String, String> config);
 
     void removeConfig(String name);
+
     void putConfig(String name, String value);
 
     /**
@@ -124,7 +125,7 @@ public interface Policy {
      *
      * @return a resource server
      */
-     ResourceServer getResourceServer();
+    ResourceServer getResourceServer();
 
     /**
      * Returns the {@link Policy} instances associated with this policy and used to evaluate authorization decisions when

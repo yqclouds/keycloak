@@ -17,15 +17,10 @@
 
 package org.keycloak.utils;
 
-import java.util.Map;
-import java.util.Set;
-
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientSessionContext;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
+import org.keycloak.models.*;
 import org.keycloak.representations.AccessToken;
+
+import java.util.Map;
 
 /**
  * Helper class to ensure that all the user's permitted roles (including composite roles) are loaded just once per request.

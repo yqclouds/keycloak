@@ -25,11 +25,7 @@ import org.keycloak.protocol.saml.SamlProtocol;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.saml.common.constants.JBossSAMLURIConstants;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -54,7 +50,7 @@ public class AttributeStatementHelper {
     }
 
     public static void addAttributes(AttributeStatementType attributeStatement, ProtocolMapperModel mappingModel,
-                                    Collection<String> attributeValues) {
+                                     Collection<String> attributeValues) {
 
         AttributeType attribute = createAttributeType(mappingModel);
         attributeValues.forEach(attribute::addAttributeValue);
@@ -68,7 +64,8 @@ public class AttributeStatementHelper {
         String attributeType = mappingModel.getConfig().get(SAML_ATTRIBUTE_NAMEFORMAT);
         String attributeNameFormat = JBossSAMLURIConstants.ATTRIBUTE_FORMAT_BASIC.get();
         if (URI_REFERENCE.equals(attributeType)) attributeNameFormat = JBossSAMLURIConstants.ATTRIBUTE_FORMAT_URI.get();
-        else if (UNSPECIFIED.equals(attributeType)) attributeNameFormat = JBossSAMLURIConstants.ATTRIBUTE_FORMAT_UNSPECIFIED.get();
+        else if (UNSPECIFIED.equals(attributeType))
+            attributeNameFormat = JBossSAMLURIConstants.ATTRIBUTE_FORMAT_UNSPECIFIED.get();
         attribute.setNameFormat(attributeNameFormat);
         String friendlyName = mappingModel.getConfig().get(FRIENDLY_NAME);
         if (friendlyName != null && !friendlyName.trim().equals("")) attribute.setFriendlyName(friendlyName);
@@ -99,7 +96,8 @@ public class AttributeStatementHelper {
         configProperties.add(property);
 
     }
-    public static ProtocolMapperModel createAttributeMapper(String name, String userAttribute, String samlAttributeName, String nameFormat,  String friendlyName, String mapperId) {
+
+    public static ProtocolMapperModel createAttributeMapper(String name, String userAttribute, String samlAttributeName, String nameFormat, String friendlyName, String mapperId) {
         ProtocolMapperModel mapper = new ProtocolMapperModel();
         mapper.setName(name);
         mapper.setProtocolMapper(mapperId);

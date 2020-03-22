@@ -47,6 +47,7 @@ public class ExtensionsType {
 
     /**
      * Function is obsoleted with getAny
+     *
      * @return
      */
     @Deprecated
@@ -56,6 +57,7 @@ public class ExtensionsType {
 
     /**
      * Function is obsoleted with addExtension
+     *
      * @return
      */
     @Deprecated

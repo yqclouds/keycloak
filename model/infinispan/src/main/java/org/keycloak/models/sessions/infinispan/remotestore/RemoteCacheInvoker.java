@@ -17,18 +17,12 @@
 
 package org.keycloak.models.sessions.infinispan.remotestore;
 
-import org.infinispan.client.hotrod.exceptions.HotRodClientException;
-import org.keycloak.common.util.Retry;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.VersionedValue;
+import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.jboss.logging.Logger;
+import org.keycloak.common.util.Retry;
 import org.keycloak.connections.infinispan.TopologyInfo;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
@@ -37,6 +31,12 @@ import org.keycloak.models.sessions.infinispan.changes.SessionUpdateTask;
 import org.keycloak.models.sessions.infinispan.entities.SessionEntity;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
@@ -44,7 +44,7 @@ public class RemoteCacheInvoker {
 
     public static final Logger logger = Logger.getLogger(RemoteCacheInvoker.class);
 
-    private final Map<String, RemoteCacheContext> remoteCaches =  new HashMap<>();
+    private final Map<String, RemoteCacheContext> remoteCaches = new HashMap<>();
 
 
     public void addRemoteCache(String cacheName, RemoteCache remoteCache, MaxIdleTimeLoader maxIdleLoader) {
@@ -129,7 +129,7 @@ public class RemoteCacheInvoker {
                 replace(topology, remoteCache, task.getLifespanMs(), maxIdleMs, key, task);
                 break;
             default:
-                throw new IllegalStateException("Unsupported state " +  operation);
+                throw new IllegalStateException("Unsupported state " + operation);
         }
     }
 
@@ -179,6 +179,13 @@ public class RemoteCacheInvoker {
     }
 
 
+    @FunctionalInterface
+    public interface MaxIdleTimeLoader {
+
+        long getMaxIdleTimeMs(RealmModel realm);
+
+    }
+
     private class RemoteCacheContext {
 
         private final RemoteCache remoteCache;
@@ -188,14 +195,6 @@ public class RemoteCacheInvoker {
             this.remoteCache = remoteCache;
             this.maxIdleTimeLoader = maxIdleLoader;
         }
-
-    }
-
-
-    @FunctionalInterface
-    public interface MaxIdleTimeLoader {
-
-        long getMaxIdleTimeMs(RealmModel realm);
 
     }
 

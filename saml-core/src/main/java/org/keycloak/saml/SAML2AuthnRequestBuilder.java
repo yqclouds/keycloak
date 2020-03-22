@@ -18,6 +18,7 @@ package org.keycloak.saml;
 
 import org.keycloak.dom.saml.v2.assertion.NameIDType;
 import org.keycloak.dom.saml.v2.protocol.AuthnRequestType;
+import org.keycloak.dom.saml.v2.protocol.ExtensionsType;
 import org.keycloak.saml.processing.api.saml.v2.request.SAML2Request;
 import org.keycloak.saml.processing.core.saml.v2.common.IDGenerator;
 import org.keycloak.saml.processing.core.saml.v2.util.XMLTimeUtil;
@@ -26,17 +27,20 @@ import org.w3c.dom.Document;
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
-import org.keycloak.dom.saml.v2.protocol.ExtensionsType;
 
 /**
  * @author pedroigor
  */
 public class SAML2AuthnRequestBuilder implements SamlProtocolExtensionsAwareBuilder<SAML2AuthnRequestBuilder> {
 
+    protected final List<NodeGenerator> extensions = new LinkedList<>();
     private final AuthnRequestType authnRequestType;
     protected String destination;
     protected String issuer;
-    protected final List<NodeGenerator> extensions = new LinkedList<>();
+
+    public SAML2AuthnRequestBuilder() {
+        this.authnRequestType = new AuthnRequestType(IDGenerator.create("ID_"), XMLTimeUtil.getIssueInstant());
+    }
 
     public SAML2AuthnRequestBuilder destination(String destination) {
         this.destination = destination;
@@ -52,10 +56,6 @@ public class SAML2AuthnRequestBuilder implements SamlProtocolExtensionsAwareBuil
     public SAML2AuthnRequestBuilder addExtension(NodeGenerator extension) {
         this.extensions.add(extension);
         return this;
-    }
-
-    public SAML2AuthnRequestBuilder() {
-        this.authnRequestType = new AuthnRequestType(IDGenerator.create("ID_"), XMLTimeUtil.getIssueInstant());
     }
 
     public SAML2AuthnRequestBuilder assertionConsumerUrl(String assertionConsumerUrl) {
@@ -107,7 +107,7 @@ public class SAML2AuthnRequestBuilder implements SamlProtocolExtensionsAwareBuil
 
         res.setDestination(URI.create(this.destination));
 
-        if (! this.extensions.isEmpty()) {
+        if (!this.extensions.isEmpty()) {
             ExtensionsType extensionsType = new ExtensionsType();
             for (NodeGenerator extension : this.extensions) {
                 extensionsType.addExtension(extension);

@@ -1,13 +1,13 @@
 /*
  * Copyright 2017 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,7 +19,9 @@ package org.keycloak.authentication.actiontoken.execactions;
 import org.keycloak.TokenVerifier.Predicate;
 import org.keycloak.authentication.RequiredActionFactory;
 import org.keycloak.authentication.RequiredActionProvider;
-import org.keycloak.authentication.actiontoken.*;
+import org.keycloak.authentication.actiontoken.AbstractActionTokenHander;
+import org.keycloak.authentication.actiontoken.ActionTokenContext;
+import org.keycloak.authentication.actiontoken.TokenUtils;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventType;
 import org.keycloak.forms.login.LoginFormsProvider;
@@ -31,38 +33,38 @@ import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
-import java.util.Objects;
+
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import java.util.Objects;
 
 /**
- *
  * @author hmlnarik
  */
 public class ExecuteActionsActionTokenHandler extends AbstractActionTokenHander<ExecuteActionsActionToken> {
 
     public ExecuteActionsActionTokenHandler() {
         super(
-          ExecuteActionsActionToken.TOKEN_TYPE,
-          ExecuteActionsActionToken.class,
-          Messages.INVALID_CODE,
-          EventType.EXECUTE_ACTIONS,
-          Errors.NOT_ALLOWED
+                ExecuteActionsActionToken.TOKEN_TYPE,
+                ExecuteActionsActionToken.class,
+                Messages.INVALID_CODE,
+                EventType.EXECUTE_ACTIONS,
+                Errors.NOT_ALLOWED
         );
     }
 
     @Override
     public Predicate<? super ExecuteActionsActionToken>[] getVerifiers(ActionTokenContext<ExecuteActionsActionToken> tokenContext) {
         return TokenUtils.predicates(
-          TokenUtils.checkThat(
-            // either redirect URI is not specified or must be valid for the client
-            t -> t.getRedirectUri() == null
-                 || RedirectUtils.verifyRedirectUri(tokenContext.getSession(), t.getRedirectUri(),
-                      tokenContext.getAuthenticationSession().getClient()) != null,
-            Errors.INVALID_REDIRECT_URI,
-            Messages.INVALID_REDIRECT_URI
-          )
+                TokenUtils.checkThat(
+                        // either redirect URI is not specified or must be valid for the client
+                        t -> t.getRedirectUri() == null
+                                || RedirectUtils.verifyRedirectUri(tokenContext.getSession(), t.getRedirectUri(),
+                                tokenContext.getAuthenticationSession().getClient()) != null,
+                        Errors.INVALID_REDIRECT_URI,
+                        Messages.INVALID_REDIRECT_URI
+                )
         );
     }
 
@@ -113,16 +115,16 @@ public class ExecuteActionsActionTokenHandler extends AbstractActionTokenHander<
         KeycloakSessionFactory sessionFactory = tokenContext.getSession().getKeycloakSessionFactory();
 
         return token.getRequiredActions().stream()
-          .map(actionName -> realm.getRequiredActionProviderByAlias(actionName))    // get realm-specific model from action name and filter out irrelevant
-          .filter(Objects::nonNull)
-          .filter(RequiredActionProviderModel::isEnabled)
+                .map(actionName -> realm.getRequiredActionProviderByAlias(actionName))    // get realm-specific model from action name and filter out irrelevant
+                .filter(Objects::nonNull)
+                .filter(RequiredActionProviderModel::isEnabled)
 
-          .map(RequiredActionProviderModel::getProviderId)      // get provider ID from model
+                .map(RequiredActionProviderModel::getProviderId)      // get provider ID from model
 
-          .map(providerId -> (RequiredActionFactory) sessionFactory.getProviderFactory(RequiredActionProvider.class, providerId))
-          .filter(Objects::nonNull)
+                .map(providerId -> (RequiredActionFactory) sessionFactory.getProviderFactory(RequiredActionProvider.class, providerId))
+                .filter(Objects::nonNull)
 
-          .noneMatch(RequiredActionFactory::isOneTimeAction);
+                .noneMatch(RequiredActionFactory::isOneTimeAction);
     }
 
 

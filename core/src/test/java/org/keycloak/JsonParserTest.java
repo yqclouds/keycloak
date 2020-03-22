@@ -39,6 +39,8 @@ import java.util.regex.Pattern;
  */
 public class JsonParserTest {
 
+    static Pattern substitution = Pattern.compile("\\$\\{([^}]+)\\}");
+
     @Test
     public void regex() {
         Pattern p = Pattern.compile(".*(?!\\.pdf)");
@@ -85,7 +87,7 @@ public class JsonParserTest {
         Assert.assertNotNull(test.getPhoneNumber());
         Assert.assertNotNull(test.getOtherClaims().get("yo"));
         Assert.assertNull(test.getOtherClaims().get("phone_number"));
-        nested = (Map<String, String>)test.getOtherClaims().get("nested");
+        nested = (Map<String, String>) test.getOtherClaims().get("nested");
         Assert.assertNotNull(nested);
         Assert.assertNotNull(nested.get("foo"));
     }
@@ -107,8 +109,6 @@ public class JsonParserTest {
         Assert.assertEquals(100, config.getCorsMaxAge());
         Assert.assertEquals(200, config.getConnectionPoolSize());
     }
-
-    static Pattern substitution = Pattern.compile("\\$\\{([^}]+)\\}");
 
     @Test
     public void testSub() {

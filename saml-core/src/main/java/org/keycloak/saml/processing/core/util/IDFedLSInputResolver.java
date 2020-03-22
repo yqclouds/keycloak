@@ -16,20 +16,16 @@
  */
 package org.keycloak.saml.processing.core.util;
 
+import org.jboss.logging.Logger;
 import org.keycloak.saml.common.util.SecurityActions;
+import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSResourceResolver;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import org.jboss.logging.Logger;
-import org.w3c.dom.ls.LSInput;
-import org.w3c.dom.ls.LSResourceResolver;
+import java.util.*;
 
 /**
  * An LSResource Resolver for schema validation
@@ -150,6 +146,9 @@ public class IDFedLSInputResolver implements LSResourceResolver {
             return baseURI;
         }
 
+        public void setBaseURI(String baseURI) {
+        }
+
         public InputStream getByteStream() {
             URL url = SecurityActions.loadResource(getClass(), loc);
             InputStream is;
@@ -164,49 +163,46 @@ public class IDFedLSInputResolver implements LSResourceResolver {
             return is;
         }
 
+        public void setByteStream(InputStream byteStream) {
+        }
+
         public boolean getCertifiedText() {
             return false;
+        }
+
+        public void setCertifiedText(boolean certifiedText) {
         }
 
         public Reader getCharacterStream() {
             return null;
         }
 
+        public void setCharacterStream(Reader characterStream) {
+        }
+
         public String getEncoding() {
             return null;
+        }
+
+        public void setEncoding(String encoding) {
         }
 
         public String getPublicId() {
             return publicId;
         }
 
+        public void setPublicId(String publicId) {
+        }
+
         public String getStringData() {
             return null;
         }
 
+        public void setStringData(String stringData) {
+        }
+
         public String getSystemId() {
             return systemId;
-        }
-
-        public void setBaseURI(String baseURI) {
-        }
-
-        public void setByteStream(InputStream byteStream) {
-        }
-
-        public void setCertifiedText(boolean certifiedText) {
-        }
-
-        public void setCharacterStream(Reader characterStream) {
-        }
-
-        public void setEncoding(String encoding) {
-        }
-
-        public void setPublicId(String publicId) {
-        }
-
-        public void setStringData(String stringData) {
         }
 
         public void setSystemId(String systemId) {

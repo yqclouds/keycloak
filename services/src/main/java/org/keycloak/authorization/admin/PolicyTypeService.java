@@ -16,12 +16,6 @@
  */
 package org.keycloak.authorization.admin;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
-import javax.ws.rs.Path;
-
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.model.Policy;
@@ -30,9 +24,14 @@ import org.keycloak.authorization.policy.provider.PolicyProviderAdminService;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.resources.admin.AdminEventBuilder;
+import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.util.JsonSerialization;
+
+import javax.ws.rs.Path;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -61,7 +60,7 @@ public class PolicyTypeService extends PolicyService {
 
     @Override
     protected Object doCreatePolicyResource(Policy policy) {
-        return new PolicyTypeResourceService(policy, resourceServer,authorization, auth, adminEvent);
+        return new PolicyTypeResourceService(policy, resourceServer, authorization, auth, adminEvent);
     }
 
     @Override
@@ -93,7 +92,7 @@ public class PolicyTypeService extends PolicyService {
 
     @Override
     protected List<Object> doSearch(Integer firstResult, Integer maxResult, String fields, Map<String, String[]> filters) {
-        filters.put("type", new String[] {type});
+        filters.put("type", new String[]{type});
         return super.doSearch(firstResult, maxResult, fields, filters);
     }
 }

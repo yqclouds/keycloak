@@ -102,6 +102,10 @@ public class UnixUser {
         this.groups = groups;
     }
 
+    public static boolean exists(String name) {
+        return libc.getpwnam(name) != null;
+    }
+
     /**
      * Gets the unix account name. Never null.
      */
@@ -151,9 +155,5 @@ public class UnixUser {
      */
     public Set<String> getGroups() {
         return Collections.unmodifiableSet(groups);
-    }
-
-    public static boolean exists(String name) {
-        return libc.getpwnam(name) != null;
     }
 }

@@ -15,6 +15,7 @@ public class RealmListQuery extends AbstractRevisioned implements RealmQuery {
         realms = new HashSet<>();
         realms.add(realm);
     }
+
     public RealmListQuery(Long revision, String id, Set<String> realms) {
         super(revision, id);
         this.realms = realms;

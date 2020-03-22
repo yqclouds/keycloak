@@ -16,29 +16,28 @@
  */
 package org.keycloak.storage.jpa;
 
-import java.util.regex.Pattern;
 import org.jboss.logging.Logger;
 
+import java.util.regex.Pattern;
+
 /**
- *
  * @author hmlnarik
  */
 public class KeyUtils {
 
-    private static final Logger LOG = Logger.getLogger(KeyUtils.class);
-
     public static final Pattern UUID_PATTERN = Pattern.compile("[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}");
-
     public static final Pattern EXPECTED_KEY_PATTERN = Pattern.compile(
-      UUID_PATTERN.pattern()
-      + "|"
-      + "f:" + UUID_PATTERN.pattern() + ":.*"
+            UUID_PATTERN.pattern()
+                    + "|"
+                    + "f:" + UUID_PATTERN.pattern() + ":.*"
     );
+    private static final Logger LOG = Logger.getLogger(KeyUtils.class);
 
     /**
      * Returns {@code} true when the key is {@code null} or either a plain UUID or a key formatted as "f:[UUID]:any_string"
+     *
      * @param key String representation of the key
-     * @return 
+     * @return
      */
     public static boolean isValidKey(String key) {
         return key == null || EXPECTED_KEY_PATTERN.matcher(key).matches();
@@ -46,10 +45,11 @@ public class KeyUtils {
 
     /**
      * Logs an warning when the key is not a valid key
+     *
      * @param key String representation of the key
      */
     public static void assertValidKey(String key) throws IllegalArgumentException {
-        if (! isValidKey(key)) {
+        if (!isValidKey(key)) {
             LOG.warnf("The given key is not a valid key per specification, future migration might fail: %s", key);
         }
     }

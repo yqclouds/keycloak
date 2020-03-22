@@ -29,7 +29,7 @@ public class PolicyProviderRepresentation {
         return this.type;
     }
 
-    public void setType( String type) {
+    public void setType(String type) {
         this.type = type;
     }
 
@@ -37,7 +37,7 @@ public class PolicyProviderRepresentation {
         return this.name;
     }
 
-    public void setName( String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -45,7 +45,7 @@ public class PolicyProviderRepresentation {
         return this.group;
     }
 
-    public void setGroup( String group) {
+    public void setGroup(String group) {
         this.group = group;
     }
 }

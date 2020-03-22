@@ -31,9 +31,13 @@ public interface RealmProvider extends Provider, ClientProvider {
 
     // Note: The reason there are so many query methods here is for layering a cache on top of an persistent KeycloakSession
     MigrationModel getMigrationModel();
+
     RealmModel createRealm(String name);
+
     RealmModel createRealm(String id, String name);
+
     RealmModel getRealm(String id);
+
     RealmModel getRealmByName(String name);
 
     void moveGroup(RealmModel realm, GroupModel group, GroupModel toParent);
@@ -45,7 +49,7 @@ public interface RealmProvider extends Provider, ClientProvider {
     Long getClientsCount(RealmModel realm);
 
     Long getGroupsCountByNameContaining(RealmModel realm, String search);
-    
+
     List<GroupModel> getGroupsByRole(RealmModel realm, RoleModel role, int firstResult, int maxResults);
 
     List<GroupModel> getTopLevelGroups(RealmModel realm);
@@ -79,14 +83,14 @@ public interface RealmProvider extends Provider, ClientProvider {
     RoleModel getRealmRole(RealmModel realm, String name);
 
     Set<RoleModel> getRealmRoles(RealmModel realm);
-    
+
     Set<RoleModel> getRealmRoles(RealmModel realm, Integer first, Integer max);
-    
+
     Set<RoleModel> getClientRoles(RealmModel realm, ClientModel client, Integer first, Integer max);
-    
+
     Set<RoleModel> searchForClientRoles(RealmModel realm, ClientModel client, String search, Integer first,
-            Integer max);
-    
+                                        Integer max);
+
     Set<RoleModel> searchForRoles(RealmModel realm, String search, Integer first, Integer max);
 
     boolean removeRole(RealmModel realm, RoleModel role);
@@ -94,20 +98,28 @@ public interface RealmProvider extends Provider, ClientProvider {
     RoleModel getRoleById(String id, RealmModel realm);
 
     ClientScopeModel getClientScopeById(String id, RealmModel realm);
+
     GroupModel getGroupById(String id, RealmModel realm);
 
 
-
     List<RealmModel> getRealms();
+
     List<RealmModel> getRealmsWithProviderType(Class<?> type);
+
     boolean removeRealm(String id);
+
     void close();
 
     ClientInitialAccessModel createClientInitialAccessModel(RealmModel realm, int expiration, int count);
+
     ClientInitialAccessModel getClientInitialAccessModel(RealmModel realm, String id);
+
     void removeClientInitialAccessModel(RealmModel realm, String id);
+
     List<ClientInitialAccessModel> listClientInitialAccess(RealmModel realm);
+
     void removeExpiredClientInitialAccess();
+
     void decreaseRemainingCount(RealmModel realm, ClientInitialAccessModel clientInitialAccess); // Separate provider method to ensure we decrease remainingCount atomically instead of doing classic update
 
 }

@@ -19,13 +19,7 @@ package org.keycloak.admin.client.resource;
 
 import org.keycloak.representations.idm.ClientRepresentation;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -53,10 +47,10 @@ public interface ClientsResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     List<ClientRepresentation> findAll(@QueryParam("clientId") String clientId,
-                                                 @QueryParam("viewableOnly") Boolean viewableOnly,
-                                                 @QueryParam("search") Boolean search,
-                                                 @QueryParam("first") Integer firstResult,
-                                                 @QueryParam("max") Integer maxResults);
+                                       @QueryParam("viewableOnly") Boolean viewableOnly,
+                                       @QueryParam("search") Boolean search,
+                                       @QueryParam("first") Integer firstResult,
+                                       @QueryParam("max") Integer maxResults);
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

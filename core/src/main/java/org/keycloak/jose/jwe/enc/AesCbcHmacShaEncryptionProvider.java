@@ -17,26 +17,21 @@
 
 package org.keycloak.jose.jwe.enc;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
-import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.AlgorithmParameterSpec;
-import java.util.Arrays;
+import org.keycloak.jose.jwe.JWE;
+import org.keycloak.jose.jwe.JWEKeyStorage;
+import org.keycloak.jose.jwe.JWEUtils;
 
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-
-import org.keycloak.jose.jwe.JWE;
-import org.keycloak.jose.jwe.JWEKeyStorage;
-import org.keycloak.jose.jwe.JWEUtils;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
+import java.security.*;
+import java.security.spec.AlgorithmParameterSpec;
+import java.util.Arrays;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -63,7 +58,7 @@ public abstract class AesCbcHmacShaEncryptionProvider implements JWEEncryptionPr
 
         int expectedAesKeyLength = getExpectedAesKeyLength();
         if (expectedAesKeyLength != aesKey.getEncoded().length) {
-            throw new IllegalStateException("Length of aes key should be " + expectedAesKeyLength +", but was " + aesKey.getEncoded().length);
+            throw new IllegalStateException("Length of aes key should be " + expectedAesKeyLength + ", but was " + aesKey.getEncoded().length);
         }
 
         byte[] cipherBytes = encryptBytes(contentBytes, initializationVector, aesKey);
@@ -89,7 +84,7 @@ public abstract class AesCbcHmacShaEncryptionProvider implements JWEEncryptionPr
 
         int expectedAesKeyLength = getExpectedAesKeyLength();
         if (expectedAesKeyLength != aesKey.getEncoded().length) {
-            throw new IllegalStateException("Length of aes key should be " + expectedAesKeyLength +", but was " + aesKey.getEncoded().length);
+            throw new IllegalStateException("Length of aes key should be " + expectedAesKeyLength + ", but was " + aesKey.getEncoded().length);
         }
 
         byte[] aad = jwe.getBase64Header().getBytes(StandardCharsets.UTF_8);
@@ -143,15 +138,15 @@ public abstract class AesCbcHmacShaEncryptionProvider implements JWEEncryptionPr
 
         byte[] concatenatedHmacInput = new byte[aadBytes.length + ivBytes.length + cipherBytes.length + al.length];
         System.arraycopy(aadBytes, 0, concatenatedHmacInput, 0, aadBytes.length);
-        System.arraycopy(ivBytes, 0, concatenatedHmacInput, aadBytes.length, ivBytes.length );
-        System.arraycopy(cipherBytes, 0, concatenatedHmacInput, aadBytes.length + ivBytes.length , cipherBytes.length);
+        System.arraycopy(ivBytes, 0, concatenatedHmacInput, aadBytes.length, ivBytes.length);
+        System.arraycopy(cipherBytes, 0, concatenatedHmacInput, aadBytes.length + ivBytes.length, cipherBytes.length);
         System.arraycopy(al, 0, concatenatedHmacInput, aadBytes.length + ivBytes.length + cipherBytes.length, al.length);
 
         String hmacShaAlg = getHmacShaAlgorithm();
         Mac macImpl = Mac.getInstance(hmacShaAlg);
         macImpl.init(hmacKeySpec);
         macImpl.update(concatenatedHmacInput);
-        byte[] macEncoded =  macImpl.doFinal();
+        byte[] macEncoded = macImpl.doFinal();
 
         int authTagLength = getAuthenticationTagLength();
         return Arrays.copyOf(macEncoded, authTagLength);
@@ -195,7 +190,6 @@ public abstract class AesCbcHmacShaEncryptionProvider implements JWEEncryptionPr
 
         return result;
     }
-
 
 
     public static class Aes128CbcHmacSha256Provider extends AesCbcHmacShaEncryptionProvider {

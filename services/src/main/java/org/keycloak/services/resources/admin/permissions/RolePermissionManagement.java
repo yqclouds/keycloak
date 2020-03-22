@@ -19,7 +19,6 @@ package org.keycloak.services.resources.admin.permissions;
 import org.keycloak.authorization.model.Policy;
 import org.keycloak.authorization.model.Resource;
 import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.models.RoleContainerModel;
 import org.keycloak.models.RoleModel;
 
 import java.util.Map;
@@ -34,6 +33,7 @@ public interface RolePermissionManagement {
     public static final String MAP_ROLE_COMPOSITE_SCOPE = "map-role-composite";
 
     boolean isPermissionsEnabled(RoleModel role);
+
     void setPermissionsEnabled(RoleModel role, boolean enable);
 
     Map<String, String> getPermissions(RoleModel role);

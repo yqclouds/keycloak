@@ -36,21 +36,21 @@ public class SAMLAuthnAuthorityDescriptorParser extends SAMLRoleDecriptorTypePar
     @Override
     protected void processSubElement(XMLEventReader xmlEventReader, AuthnAuthorityDescriptorType target, SAMLMetadataQNames element, StartElement elementDetail) throws ParsingException {
         switch (element) {
-        case AUTHN_QUERY_SERVICE:
-            target.addAuthnQueryService(SAMLAuthnQueryServiceParser.getInstance().parse(xmlEventReader));
-            break;
+            case AUTHN_QUERY_SERVICE:
+                target.addAuthnQueryService(SAMLAuthnQueryServiceParser.getInstance().parse(xmlEventReader));
+                break;
 
-        case ASSERTION_ID_REQUEST_SERVICE:
-            target.addAssertionIDRequestService(SAMLAssertinIDRequestServiceParser.getInstance().parse(xmlEventReader));
-            break;
+            case ASSERTION_ID_REQUEST_SERVICE:
+                target.addAssertionIDRequestService(SAMLAssertinIDRequestServiceParser.getInstance().parse(xmlEventReader));
+                break;
 
-        case NAMEID_FORMAT:
-            StaxParserUtil.advance(xmlEventReader);
-            target.addNameIDFormat(StaxParserUtil.getElementText(xmlEventReader));
-            break;
+            case NAMEID_FORMAT:
+                StaxParserUtil.advance(xmlEventReader);
+                target.addNameIDFormat(StaxParserUtil.getElementText(xmlEventReader));
+                break;
 
-        default:
-            super.processSubElement(xmlEventReader, target, element, elementDetail);
+            default:
+                super.processSubElement(xmlEventReader, target, element, elementDetail);
         }
     }
 }

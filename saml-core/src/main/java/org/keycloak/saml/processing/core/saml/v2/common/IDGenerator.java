@@ -42,9 +42,7 @@ public class IDGenerator {
      * Create an id that is prefixed by a string
      *
      * @param prefix
-     *
      * @return an id
-     *
      * @throws IllegalArgumentException when prefix is null
      */
     public static String create(String prefix) {

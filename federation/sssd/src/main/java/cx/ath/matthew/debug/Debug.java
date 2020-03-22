@@ -46,10 +46,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -65,11 +65,7 @@ package cx.ath.matthew.debug;
 
 import cx.ath.matthew.utils.Hexdump;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -98,24 +94,6 @@ import java.util.Properties;
  * </pre>
  */
 public class Debug {
-    /**
-     * This interface can be used to provide custom printing filters
-     * for certain classes.
-     */
-    public static interface FilterCommand {
-        /**
-         * Called to print debug messages with a custom filter.
-         *
-         * @param output   The PrintStream to output to.
-         * @param level    The debug level of this message.
-         * @param location The textual location of the message.
-         * @param extra    Extra information such as timing details.
-         * @param message  The debug message.
-         * @param lines    Other lines of a multiple-line debug message.
-         */
-        public void filter(PrintStream output, int level, String location, String extra, String message, String[] lines);
-    }
-
     /**
      * Highest priority messages
      */
@@ -667,5 +645,23 @@ public class Debug {
                     debugout.println(s);
         } else
             f.filter(debugout, level, loc, extra, message, lines);
+    }
+
+    /**
+     * This interface can be used to provide custom printing filters
+     * for certain classes.
+     */
+    public static interface FilterCommand {
+        /**
+         * Called to print debug messages with a custom filter.
+         *
+         * @param output   The PrintStream to output to.
+         * @param level    The debug level of this message.
+         * @param location The textual location of the message.
+         * @param extra    Extra information such as timing details.
+         * @param message  The debug message.
+         * @param lines    Other lines of a multiple-line debug message.
+         */
+        public void filter(PrintStream output, int level, String location, String extra, String message, String[] lines);
     }
 }

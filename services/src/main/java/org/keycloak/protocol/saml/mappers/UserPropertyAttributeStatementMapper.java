@@ -18,11 +18,7 @@
 package org.keycloak.protocol.saml.mappers;
 
 import org.keycloak.dom.saml.v2.assertion.AttributeStatementType;
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 
@@ -36,6 +32,7 @@ import java.util.List;
  * @version $Revision: 1 $
  */
 public class UserPropertyAttributeStatementMapper extends AbstractSAMLProtocolMapper implements SAMLAttributeStatementMapper {
+    public static final String PROVIDER_ID = "saml-user-property-mapper";
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
 
     static {
@@ -49,12 +46,19 @@ public class UserPropertyAttributeStatementMapper extends AbstractSAMLProtocolMa
 
     }
 
-    public static final String PROVIDER_ID = "saml-user-property-mapper";
+    public static ProtocolMapperModel createAttributeMapper(String name, String userAttribute,
+                                                            String samlAttributeName, String nameFormat, String friendlyName,
+                                                            boolean consentRequired, String consentText) {
+        String mapperId = PROVIDER_ID;
+        return AttributeStatementHelper.createAttributeMapper(name, userAttribute, samlAttributeName, nameFormat, friendlyName,
+                mapperId);
 
+    }
 
     public List<ProviderConfigProperty> getConfigProperties() {
         return configProperties;
     }
+
     @Override
     public String getId() {
         return PROVIDER_ID;
@@ -87,14 +91,5 @@ public class UserPropertyAttributeStatementMapper extends AbstractSAMLProtocolMa
         if (propertyValue == null) return;
 
         AttributeStatementHelper.addAttribute(attributeStatement, mappingModel, propertyValue);
-    }
-
-    public static ProtocolMapperModel createAttributeMapper(String name, String userAttribute,
-                                                            String samlAttributeName, String nameFormat, String friendlyName,
-                                                            boolean consentRequired, String consentText) {
-        String mapperId = PROVIDER_ID;
-        return AttributeStatementHelper.createAttributeMapper(name, userAttribute, samlAttributeName, nameFormat, friendlyName,
-                mapperId);
-
     }
 }

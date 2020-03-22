@@ -41,7 +41,7 @@ public abstract class AbstractLoginProtocolFactory implements LoginProtocolFacto
             @Override
             public void onEvent(ProviderEvent event) {
                 if (event instanceof RealmModel.ClientCreationEvent) {
-                    ClientModel client = ((RealmModel.ClientCreationEvent)event).getCreatedClient();
+                    ClientModel client = ((RealmModel.ClientCreationEvent) event).getCreatedClient();
                     addDefaultClientScopes(client.getRealm(), client);
                     addDefaults(client);
                 }

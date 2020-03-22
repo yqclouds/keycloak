@@ -19,7 +19,6 @@ package org.keycloak.representations.idm;
 import java.util.Map;
 
 /**
- *
  * @author Stan Silvert ssilvert@redhat.com (C) 2016 Red Hat Inc.
  */
 public class EventRepresentation {

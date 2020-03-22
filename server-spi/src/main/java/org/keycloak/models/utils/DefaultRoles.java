@@ -43,6 +43,7 @@ public class DefaultRoles {
         return set;
 
     }
+
     public static void addDefaultRoles(RealmModel realm, UserModel userModel) {
         for (RoleModel role : getDefaultRoles(realm)) {
             userModel.grantRole(role);

@@ -30,5 +30,5 @@ import org.keycloak.representations.IDToken;
 public interface OIDCIDTokenMapper {
 
     IDToken transformIDToken(IDToken token, ProtocolMapperModel mappingModel, KeycloakSession session,
-                               UserSessionModel userSession, ClientSessionContext clientSession);
+                             UserSessionModel userSession, ClientSessionContext clientSession);
 }

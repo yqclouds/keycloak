@@ -17,15 +17,14 @@
 
 package org.keycloak.services.managers;
 
-import java.util.AbstractMap.SimpleEntry;
-import java.util.List;
-import java.util.Objects;
-
 import org.jboss.logging.Logger;
 import org.keycloak.models.AuthenticatedClientSessionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserSessionModel;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>

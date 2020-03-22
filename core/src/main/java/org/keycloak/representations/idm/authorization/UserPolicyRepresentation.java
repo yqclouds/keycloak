@@ -36,7 +36,7 @@ public class UserPolicyRepresentation extends AbstractPolicyRepresentation {
     }
 
     public void setUsers(Set<String> users) {
-        this.users= users;
+        this.users = users;
     }
 
     public void addUser(String name) {

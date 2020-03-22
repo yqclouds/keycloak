@@ -19,11 +19,7 @@ package org.keycloak.storage.ldap.mappers.msadlds;
 
 import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.models.LDAPConstants;
-import org.keycloak.models.ModelException;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserCredentialModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.UserModelDelegate;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.ldap.LDAPStorageProvider;
@@ -84,7 +80,7 @@ public class MSADLDSUserAccountControlStorageMapper extends AbstractLDAPStorageM
         ldapUser.removeReadOnlyAttributeName(LDAPConstants.PWD_LAST_SET);
 
         ldapUser.setSingleAttribute(LDAPConstants.PWD_LAST_SET, "-1");
-        
+
         if (user.isEnabled()) {
             // TODO: Use removeAttribute once available
             ldapUser.setSingleAttribute(LDAPConstants.MSDS_USER_ACCOUNT_DISABLED, "FALSE");
@@ -203,7 +199,7 @@ public class MSADLDSUserAccountControlStorageMapper extends AbstractLDAPStorageM
                     logger.debugf("Setting msDS-UserAccountDisabled of user '%s' to value 'TRUE'", ldapUser.getDn().toString());
                     ldapUser.setSingleAttribute(LDAPConstants.MSDS_USER_ACCOUNT_DISABLED, "TRUE");
                 }
-                
+
                 ldapProvider.getLdapIdentityStore().update(ldapUser);
             }
         }

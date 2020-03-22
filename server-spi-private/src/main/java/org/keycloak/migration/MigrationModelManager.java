@@ -17,50 +17,26 @@
 
 package org.keycloak.migration;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.regex.Pattern;
 import org.jboss.logging.Logger;
 import org.keycloak.common.Version;
-import org.keycloak.migration.migrators.MigrateTo1_2_0;
-import org.keycloak.migration.migrators.MigrateTo1_3_0;
-import org.keycloak.migration.migrators.MigrateTo1_4_0;
-import org.keycloak.migration.migrators.MigrateTo1_5_0;
-import org.keycloak.migration.migrators.MigrateTo1_6_0;
-import org.keycloak.migration.migrators.MigrateTo1_7_0;
-import org.keycloak.migration.migrators.MigrateTo1_8_0;
-import org.keycloak.migration.migrators.MigrateTo1_9_0;
-import org.keycloak.migration.migrators.MigrateTo1_9_2;
-import org.keycloak.migration.migrators.MigrateTo2_0_0;
-import org.keycloak.migration.migrators.MigrateTo2_1_0;
-import org.keycloak.migration.migrators.MigrateTo2_2_0;
-import org.keycloak.migration.migrators.MigrateTo2_3_0;
-import org.keycloak.migration.migrators.MigrateTo2_5_0;
-import org.keycloak.migration.migrators.MigrateTo3_0_0;
-import org.keycloak.migration.migrators.MigrateTo3_1_0;
-import org.keycloak.migration.migrators.MigrateTo3_2_0;
-import org.keycloak.migration.migrators.MigrateTo3_4_0;
-import org.keycloak.migration.migrators.MigrateTo3_4_1;
-import org.keycloak.migration.migrators.MigrateTo3_4_2;
-import org.keycloak.migration.migrators.MigrateTo4_0_0;
-import org.keycloak.migration.migrators.MigrateTo4_2_0;
-import org.keycloak.migration.migrators.MigrateTo4_6_0;
-import org.keycloak.migration.migrators.MigrateTo6_0_0;
-import org.keycloak.migration.migrators.MigrateTo8_0_0;
-import org.keycloak.migration.migrators.MigrateTo8_0_2;
-import org.keycloak.migration.migrators.MigrateTo9_0_0;
-import org.keycloak.migration.migrators.Migration;
+import org.keycloak.migration.migrators.*;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.representations.idm.RealmRepresentation;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public class MigrationModelManager {
-    private static Logger logger = Logger.getLogger(MigrationModelManager.class);
-
+    public static final ModelVersion RHSSO_VERSION_7_0_KEYCLOAK_VERSION = new ModelVersion("1.9.8");
+    public static final ModelVersion RHSSO_VERSION_7_1_KEYCLOAK_VERSION = new ModelVersion("2.5.5");
+    public static final ModelVersion RHSSO_VERSION_7_2_KEYCLOAK_VERSION = new ModelVersion("3.4.3");
+    public static final ModelVersion RHSSO_VERSION_7_3_KEYCLOAK_VERSION = new ModelVersion("4.8.3");
     private static final Migration[] migrations = {
             new MigrateTo1_2_0(),
             new MigrateTo1_3_0(),
@@ -90,12 +66,21 @@ public class MigrationModelManager {
             new MigrateTo8_0_2(),
             new MigrateTo9_0_0()
     };
+    private static final Map<Pattern, ModelVersion> PATTERN_MATCHER = new LinkedHashMap<>();
+    private static Logger logger = Logger.getLogger(MigrationModelManager.class);
+
+    static {
+        PATTERN_MATCHER.put(Pattern.compile("^7\\.0\\.\\d+\\.GA$"), RHSSO_VERSION_7_0_KEYCLOAK_VERSION);
+        PATTERN_MATCHER.put(Pattern.compile("^7\\.1\\.\\d+\\.GA$"), RHSSO_VERSION_7_1_KEYCLOAK_VERSION);
+        PATTERN_MATCHER.put(Pattern.compile("^7\\.2\\.\\d+\\.GA$"), RHSSO_VERSION_7_2_KEYCLOAK_VERSION);
+        PATTERN_MATCHER.put(Pattern.compile("^7\\.3\\.\\d+\\.GA$"), RHSSO_VERSION_7_3_KEYCLOAK_VERSION);
+    }
 
     public static void migrate(KeycloakSession session) {
         MigrationModel model = session.realms().getMigrationModel();
 
         ModelVersion currentVersion = new ModelVersion(Version.VERSION_KEYCLOAK);
-        ModelVersion latestUpdate = migrations[migrations.length-1].getVersion();
+        ModelVersion latestUpdate = migrations[migrations.length - 1].getVersion();
         ModelVersion databaseVersion = model.getStoredVersion() != null ? new ModelVersion(model.getStoredVersion()) : null;
 
         if (databaseVersion == null || databaseVersion.lessThan(latestUpdate)) {
@@ -114,19 +99,6 @@ public class MigrationModelManager {
         }
 
         Version.RESOURCES_VERSION = model.getResourcesTag();
-    }
-
-    public static final ModelVersion RHSSO_VERSION_7_0_KEYCLOAK_VERSION = new ModelVersion("1.9.8");
-    public static final ModelVersion RHSSO_VERSION_7_1_KEYCLOAK_VERSION = new ModelVersion("2.5.5");
-    public static final ModelVersion RHSSO_VERSION_7_2_KEYCLOAK_VERSION = new ModelVersion("3.4.3");
-    public static final ModelVersion RHSSO_VERSION_7_3_KEYCLOAK_VERSION = new ModelVersion("4.8.3");
-
-    private static final Map<Pattern, ModelVersion> PATTERN_MATCHER = new LinkedHashMap<>();
-    static {
-        PATTERN_MATCHER.put(Pattern.compile("^7\\.0\\.\\d+\\.GA$"), RHSSO_VERSION_7_0_KEYCLOAK_VERSION);
-        PATTERN_MATCHER.put(Pattern.compile("^7\\.1\\.\\d+\\.GA$"), RHSSO_VERSION_7_1_KEYCLOAK_VERSION);
-        PATTERN_MATCHER.put(Pattern.compile("^7\\.2\\.\\d+\\.GA$"), RHSSO_VERSION_7_2_KEYCLOAK_VERSION);
-        PATTERN_MATCHER.put(Pattern.compile("^7\\.3\\.\\d+\\.GA$"), RHSSO_VERSION_7_3_KEYCLOAK_VERSION);
     }
 
     public static void migrateImport(KeycloakSession session, RealmModel realm, RealmRepresentation rep, boolean skipUserDependent) {

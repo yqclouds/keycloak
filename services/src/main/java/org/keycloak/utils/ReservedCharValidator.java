@@ -16,35 +16,37 @@
  */
 package org.keycloak.utils;
 
-import javax.ws.rs.BadRequestException;
 import org.jboss.logging.Logger;
 
+import javax.ws.rs.BadRequestException;
+
 /**
- *
  * @author Stan Silvert
  */
 public class ReservedCharValidator {
     protected static final Logger logger = Logger.getLogger(ReservedCharValidator.class);
-    
+
     // https://tools.ietf.org/html/rfc3986#section-2.2
-    private static final String[] RESERVED_CHARS = { ":", "/", "?", "#", "[", "@", "!", "$", 
-                                                   "&", "(", ")", "*", "+", ",", ";", "=", 
-                                                   "]", "[", "\\" };
-    private ReservedCharValidator() {}
-    
+    private static final String[] RESERVED_CHARS = {":", "/", "?", "#", "[", "@", "!", "$",
+            "&", "(", ")", "*", "+", ",", ";", "=",
+            "]", "[", "\\"};
+
+    private ReservedCharValidator() {
+    }
+
     public static void validate(String str) throws ReservedCharException {
         if (str == null) return;
-        
+
         for (String c : RESERVED_CHARS) {
             if (str.contains(c)) {
                 String message = "Character '" + c + "' not allowed.";
                 ReservedCharException e = new ReservedCharException(message);
                 logger.warn(message, e);
                 throw e;
-            } 
+            }
         }
     }
-    
+
     public static class ReservedCharException extends BadRequestException {
         ReservedCharException(String msg) {
             super(msg);

@@ -36,18 +36,13 @@ import java.util.List;
 public class OfflinePersistentUserSessionLoader implements SessionLoader<OfflinePersistentLoaderContext,
         OfflinePersistentWorkerContext, OfflinePersistentWorkerResult>, Serializable {
 
-    // Placeholder String used in the searching conditions to identify very first session
-    private static final String FIRST_SESSION_ID = "000";
-
-    private static final Logger log = Logger.getLogger(OfflinePersistentUserSessionLoader.class);
-
     // Cross-DC aware flag
     public static final String PERSISTENT_SESSIONS_LOADED = "PERSISTENT_SESSIONS_LOADED";
-
     // Just local-DC aware flag
     public static final String PERSISTENT_SESSIONS_LOADED_IN_CURRENT_DC = "PERSISTENT_SESSIONS_LOADED_IN_CURRENT_DC";
-
-
+    // Placeholder String used in the searching conditions to identify very first session
+    private static final String FIRST_SESSION_ID = "000";
+    private static final Logger log = Logger.getLogger(OfflinePersistentUserSessionLoader.class);
     private final int sessionsPerSegment;
 
     public OfflinePersistentUserSessionLoader(int sessionsPerSegment) {
@@ -111,8 +106,8 @@ public class OfflinePersistentUserSessionLoader implements SessionLoader<Offline
             session.sessions().importUserSessions(sessions, true);
         }
 
-        int lastCreatedOn = lastSession==null ? Time.currentTime() + 100000 : lastSession.getStarted();
-        String lastSessionId = lastSession==null ? FIRST_SESSION_ID : lastSession.getId();
+        int lastCreatedOn = lastSession == null ? Time.currentTime() + 100000 : lastSession.getStarted();
+        String lastSessionId = lastSession == null ? FIRST_SESSION_ID : lastSession.getId();
 
         log.tracef("Sessions imported to infinispan - segment: %d, lastCreatedOn: %d, lastSessionId: %s", ctx.getSegment(), lastCreatedOn, lastSessionId);
 

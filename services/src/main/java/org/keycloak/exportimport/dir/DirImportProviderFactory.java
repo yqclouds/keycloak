@@ -34,7 +34,7 @@ public class DirImportProviderFactory implements ImportProviderFactory {
     @Override
     public ImportProvider create(KeycloakSession session) {
         String dir = ExportImportConfig.getDir();
-        return dir!=null ? new DirImportProvider(new File(dir)) : new DirImportProvider();
+        return dir != null ? new DirImportProvider(new File(dir)) : new DirImportProvider();
     }
 
     @Override

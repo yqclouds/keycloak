@@ -17,16 +17,11 @@
 
 package org.keycloak.representations.idm.authorization;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.keycloak.json.StringListMapDeserializer;
+
+import java.util.*;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -69,13 +64,13 @@ public class PermissionRequest {
         this.scopes = scopes;
     }
 
+    public String getResourceServerId() {
+        return resourceServerId;
+    }
+
     @JsonProperty("resource_server_id")
     public void setResourceServerId(String resourceServerId) {
         this.resourceServerId = resourceServerId;
-    }
-
-    public String getResourceServerId() {
-        return resourceServerId;
     }
 
     public Map<String, List<String>> getClaims() {

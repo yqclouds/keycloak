@@ -17,14 +17,6 @@
 
 package org.keycloak.keys.infinispan;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-
 import org.infinispan.Cache;
 import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterProvider;
@@ -35,6 +27,14 @@ import org.keycloak.keys.PublicKeyStorageProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakTransaction;
 import org.keycloak.models.cache.infinispan.ClearCacheEvent;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 
 /**
@@ -50,7 +50,7 @@ public class InfinispanPublicKeyStorageProvider implements PublicKeyStorageProvi
 
     private final Map<String, FutureTask<PublicKeysEntry>> tasksInProgress;
 
-    private final int minTimeBetweenRequests ;
+    private final int minTimeBetweenRequests;
 
     private Set<String> invalidations = new HashSet<>();
 
@@ -146,7 +146,7 @@ public class InfinispanPublicKeyStorageProvider implements PublicKeyStorageProvi
             }
         }
 
-        int lastRequestTime = entry==null ? 0 : entry.getLastRequestTime();
+        int lastRequestTime = entry == null ? 0 : entry.getLastRequestTime();
         int currentTime = Time.currentTime();
 
         // Check if we are allowed to send request
@@ -185,7 +185,7 @@ public class InfinispanPublicKeyStorageProvider implements PublicKeyStorageProvi
             log.warnf("Won't load the keys for model '%s' . Last request time was %d", modelKey, lastRequestTime);
         }
 
-        Set<String> availableKids = entry==null ? Collections.emptySet() : entry.getCurrentKeys().keySet();
+        Set<String> availableKids = entry == null ? Collections.emptySet() : entry.getCurrentKeys().keySet();
         log.warnf("PublicKey wasn't found in the storage. Requested kid: '%s' . Available kids: '%s'", kid, availableKids);
 
         return null;
@@ -202,7 +202,7 @@ public class InfinispanPublicKeyStorageProvider implements PublicKeyStorageProvi
 
     private KeyWrapper getPublicKeyByAlg(Map<String, KeyWrapper> publicKeys, String algorithm) {
         if (algorithm == null) return null;
-        for(KeyWrapper keyWrapper : publicKeys.values())
+        for (KeyWrapper keyWrapper : publicKeys.values())
             if (algorithm.equals(keyWrapper.getAlgorithm())) return keyWrapper;
         return null;
     }
@@ -226,7 +226,7 @@ public class InfinispanPublicKeyStorageProvider implements PublicKeyStorageProvi
         public PublicKeysEntry call() throws Exception {
             PublicKeysEntry entry = keys.get(modelKey);
 
-            int lastRequestTime = entry==null ? 0 : entry.getLastRequestTime();
+            int lastRequestTime = entry == null ? 0 : entry.getLastRequestTime();
             int currentTime = Time.currentTime();
 
             // Check again if we are allowed to send request. There is a chance other task was already finished and removed from tasksInProgress in the meantime.

@@ -27,11 +27,12 @@ import java.util.Set;
  */
 public interface CredentialInputUpdater {
     boolean supportsCredentialType(String credentialType);
+
     boolean updateCredential(RealmModel realm, UserModel user, CredentialInput input);
+
     void disableCredentialType(RealmModel realm, UserModel user, String credentialType);
 
     /**
-     *
      * Returns a set of credential types that can be disabled by disableCredentialType() method
      *
      * @param realm

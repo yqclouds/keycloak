@@ -20,10 +20,7 @@ package org.keycloak.services.resources.admin;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.common.util.PemUtils;
 import org.keycloak.crypto.KeyWrapper;
-import org.keycloak.jose.jws.AlgorithmType;
-import org.keycloak.keys.SecretKeyMetadata;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeyManager;
 import org.keycloak.models.RealmModel;
 import org.keycloak.representations.idm.KeysMetadataRepresentation;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
@@ -33,12 +30,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 /**
- * @resource Key
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
+ * @resource Key
  */
 public class KeyResource {
 

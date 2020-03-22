@@ -33,35 +33,33 @@ public class SAMLEncryptionMethodParser extends AbstractStaxSamlMetadataParser<E
 
     @Override
     protected void processSubElement(XMLEventReader xmlEventReader, EncryptionMethodType target, SAMLMetadataQNames element, StartElement elementDetail) throws ParsingException {
-        switch(element) {
-            case KEY_SIZE:
-                {
-                    StaxParserUtil.advance(xmlEventReader);
-                    BigInteger keySize = BigInteger.valueOf(Long.valueOf(StaxParserUtil.getElementText(xmlEventReader)));
+        switch (element) {
+            case KEY_SIZE: {
+                StaxParserUtil.advance(xmlEventReader);
+                BigInteger keySize = BigInteger.valueOf(Long.valueOf(StaxParserUtil.getElementText(xmlEventReader)));
 
-                    EncryptionMethodType.EncryptionMethod encMethod = target.getEncryptionMethod();
-                    if (encMethod == null) {
-                        encMethod = new EncryptionMethodType.EncryptionMethod();
-                        target.setEncryptionMethod(encMethod);
-                    }
-
-                    encMethod.setKeySize(keySize);
+                EncryptionMethodType.EncryptionMethod encMethod = target.getEncryptionMethod();
+                if (encMethod == null) {
+                    encMethod = new EncryptionMethodType.EncryptionMethod();
+                    target.setEncryptionMethod(encMethod);
                 }
-                break;
 
-            case OAEP_PARAMS:
-                {
-                    StaxParserUtil.advance(xmlEventReader);
-                    byte[] OAEPparams = StaxParserUtil.getElementText(xmlEventReader).getBytes(GeneralConstants.SAML_CHARSET);
-                    EncryptionMethodType.EncryptionMethod encMethod = target.getEncryptionMethod();
-                    if (encMethod == null){
-                        encMethod = new EncryptionMethodType.EncryptionMethod();
-                        target.setEncryptionMethod(encMethod);
-                    }
+                encMethod.setKeySize(keySize);
+            }
+            break;
 
-                    encMethod.setOAEPparams(OAEPparams);
+            case OAEP_PARAMS: {
+                StaxParserUtil.advance(xmlEventReader);
+                byte[] OAEPparams = StaxParserUtil.getElementText(xmlEventReader).getBytes(GeneralConstants.SAML_CHARSET);
+                EncryptionMethodType.EncryptionMethod encMethod = target.getEncryptionMethod();
+                if (encMethod == null) {
+                    encMethod = new EncryptionMethodType.EncryptionMethod();
+                    target.setEncryptionMethod(encMethod);
                 }
-                break;
+
+                encMethod.setOAEPparams(OAEPparams);
+            }
+            break;
 
             default:
                 throw LOGGER.parserUnknownTag(StaxParserUtil.getElementName(elementDetail), elementDetail.getLocation());

@@ -1,11 +1,9 @@
 package org.keycloak.models.cache.infinispan.stream;
 
-import org.keycloak.models.cache.infinispan.entities.CachedClient;
-import org.keycloak.models.cache.infinispan.entities.CachedClientScope;
-import org.keycloak.models.cache.infinispan.entities.CachedGroup;
-import org.keycloak.models.cache.infinispan.entities.CachedRole;
-import org.keycloak.models.cache.infinispan.entities.Revisioned;
-import org.keycloak.models.cache.infinispan.entities.RoleQuery;
+import org.infinispan.commons.marshall.Externalizer;
+import org.infinispan.commons.marshall.MarshallUtil;
+import org.infinispan.commons.marshall.SerializeWith;
+import org.keycloak.models.cache.infinispan.entities.*;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -13,9 +11,6 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.function.Predicate;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.MarshallUtil;
-import org.infinispan.commons.marshall.SerializeWith;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -39,24 +34,24 @@ public class HasRolePredicate implements Predicate<Map.Entry<String, Revisioned>
         Object value = entry.getValue();
         if (value == null) return false;
         if (value instanceof CachedRole) {
-            CachedRole cachedRole = (CachedRole)value;
+            CachedRole cachedRole = (CachedRole) value;
             if (cachedRole.getComposites().contains(role)) return true;
         }
         if (value instanceof CachedGroup) {
-            CachedGroup cachedRole = (CachedGroup)value;
+            CachedGroup cachedRole = (CachedGroup) value;
             if (cachedRole.getRoleMappings(null).contains(role)) return true;
         }
         if (value instanceof RoleQuery) {
-            RoleQuery roleQuery = (RoleQuery)value;
+            RoleQuery roleQuery = (RoleQuery) value;
             if (roleQuery.getRoles().contains(role)) return true;
         }
         if (value instanceof CachedClient) {
-            CachedClient cachedClient = (CachedClient)value;
+            CachedClient cachedClient = (CachedClient) value;
             if (cachedClient.getScope().contains(role)) return true;
 
         }
         if (value instanceof CachedClientScope) {
-            CachedClientScope cachedClientScope = (CachedClientScope)value;
+            CachedClientScope cachedClientScope = (CachedClientScope) value;
             if (cachedClientScope.getScope().contains(role)) return true;
 
         }

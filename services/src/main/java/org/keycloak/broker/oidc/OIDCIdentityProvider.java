@@ -36,12 +36,7 @@ import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.jose.jws.JWSInputException;
 import org.keycloak.jose.jws.crypto.RSAProvider;
 import org.keycloak.keys.loader.PublicKeyStorageManager;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.FederatedIdentityModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.representations.AccessTokenResponse;
@@ -60,22 +55,14 @@ import org.keycloak.vault.VaultStringSecret;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.*;
 import java.io.IOException;
 import java.security.PublicKey;
-import java.util.UUID;
 
 /**
  * @author Pedro Igor
  */
 public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIdentityProviderConfig> implements ExchangeExternalToken {
-    protected static final Logger logger = Logger.getLogger(OIDCIdentityProvider.class);
-
     public static final String SCOPE_OPENID = "openid";
     public static final String FEDERATED_ID_TOKEN = "FEDERATED_ID_TOKEN";
     public static final String USER_INFO = "UserInfo";
@@ -83,7 +70,9 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
     public static final String VALIDATED_ID_TOKEN = "VALIDATED_ID_TOKEN";
     public static final String ACCESS_TOKEN_EXPIRATION = "accessTokenExpiration";
     public static final String EXCHANGE_PROVIDER = "EXCHANGE_PROVIDER";
+    protected static final Logger logger = Logger.getLogger(OIDCIdentityProvider.class);
     private static final String BROKER_NONCE_PARAM = "BROKER_NONCE";
+    private static final MediaType APPLICATION_JWT_TYPE = MediaType.valueOf("application/jwt");
 
     public OIDCIdentityProvider(KeycloakSession session, OIDCIdentityProviderConfig config) {
         super(session, config);
@@ -141,7 +130,6 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
             logger.warn("Failed backchannel broker logout to: " + url, e);
         }
     }
-
 
     @Override
     public Response keycloakInitiatedBrowserLogout(KeycloakSession session, UserSessionModel userSession, UriInfo uriInfo, RealmModel realm) {
@@ -312,43 +300,6 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
         }
     }
 
-    protected class OIDCEndpoint extends Endpoint {
-        public OIDCEndpoint(AuthenticationCallback callback, RealmModel realm, EventBuilder event) {
-            super(callback, realm, event);
-        }
-
-
-        @GET
-        @Path("logout_response")
-        public Response logoutResponse(@QueryParam("state") String state) {
-            if (state == null){
-                logger.error("no state parameter returned");
-                EventBuilder event = new EventBuilder(realm, session, clientConnection);
-                event.event(EventType.LOGOUT);
-                event.error(Errors.USER_SESSION_NOT_FOUND);
-                return ErrorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.IDENTITY_PROVIDER_UNEXPECTED_ERROR);
-
-            }
-            UserSessionModel userSession = session.sessions().getUserSession(realm, state);
-            if (userSession == null) {
-                logger.error("no valid user session");
-                EventBuilder event = new EventBuilder(realm, session, clientConnection);
-                event.event(EventType.LOGOUT);
-                event.error(Errors.USER_SESSION_NOT_FOUND);
-                return ErrorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.IDENTITY_PROVIDER_UNEXPECTED_ERROR);
-            }
-            if (userSession.getState() != UserSessionModel.State.LOGGING_OUT) {
-                logger.error("usersession in different state");
-                EventBuilder event = new EventBuilder(realm, session, clientConnection);
-                event.event(EventType.LOGOUT);
-                event.error(Errors.USER_SESSION_NOT_FOUND);
-                return ErrorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.SESSION_NOT_ACTIVE);
-            }
-            return AuthenticationManager.finishBrowserLogout(session, realm, userSession, session.getContext().getUri(), clientConnection, headers);
-        }
-    }
-
-
     @Override
     public BrokeredIdentityContext getFederatedIdentity(String response) {
         AccessTokenResponse tokenResponse = null;
@@ -367,7 +318,7 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
             BrokeredIdentityContext identity = extractIdentity(tokenResponse, accessToken, idToken);
 
             identity.getContextData().put(BROKER_NONCE_PARAM, idToken.getOtherClaims().get(OIDCLoginProtocol.NONCE_PARAM));
-            
+
             if (getConfig().isStoreToken()) {
                 if (tokenResponse.getExpiresIn() > 0) {
                     long accessTokenExpiration = Time.currentTime() + tokenResponse.getExpiresIn();
@@ -382,8 +333,6 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
             throw new IdentityBrokerException("Could not fetch attributes from userinfo endpoint.", e);
         }
     }
-
-    private static final MediaType APPLICATION_JWT_TYPE = MediaType.valueOf("application/jwt");
 
     protected BrokeredIdentityContext extractIdentity(AccessTokenResponse tokenResponse, String accessToken, JsonWebToken idToken) throws IOException {
         String id = idToken.getSubject();
@@ -460,7 +409,7 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
         }
         if (tokenResponse != null) identity.getContextData().put(FEDERATED_ACCESS_TOKEN_RESPONSE, tokenResponse);
         if (tokenResponse != null) processAccessTokenResponse(identity, tokenResponse);
-        
+
         return identity;
     }
 
@@ -485,7 +434,7 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
             }
             throw new IdentityBrokerException("Failed to invoke url [" + url + "]: " + msg);
         }
-        return  response;
+        return response;
     }
 
     private String verifyAccessToken(AccessTokenResponse tokenResponse) {
@@ -541,7 +490,7 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
         if (!ignoreAudience && !token.hasAudience(getConfig().getClientId())) {
             throw new IdentityBrokerException("Wrong audience from token.");
         }
-        
+
         if (!ignoreAudience && (token.getIssuedFor() != null && !getConfig().getClientId().equals(token.getIssuedFor()))) {
             throw new IdentityBrokerException("Token issued for does not match client id");
         }
@@ -736,14 +685,14 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
 
         authenticationSession.setClientNote(BROKER_NONCE_PARAM, nonce);
         uriBuilder.queryParam(OIDCLoginProtocol.NONCE_PARAM, nonce);
-        
+
         return uriBuilder;
     }
 
     @Override
     public void preprocessFederatedIdentity(KeycloakSession session, RealmModel realm, BrokeredIdentityContext context) {
         AuthenticationSessionModel authenticationSession = session.getContext().getAuthenticationSession();
-        
+
         if (authenticationSession == null) {
             // no interacting with the brokered OP, likely doing token exchanges
             return;
@@ -759,6 +708,42 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
 
         if (!nonce.equals(expectedNonce)) {
             throw new ErrorResponseException(OAuthErrorException.INVALID_TOKEN, "invalid nonce", Response.Status.BAD_REQUEST);
+        }
+    }
+
+    protected class OIDCEndpoint extends Endpoint {
+        public OIDCEndpoint(AuthenticationCallback callback, RealmModel realm, EventBuilder event) {
+            super(callback, realm, event);
+        }
+
+
+        @GET
+        @Path("logout_response")
+        public Response logoutResponse(@QueryParam("state") String state) {
+            if (state == null) {
+                logger.error("no state parameter returned");
+                EventBuilder event = new EventBuilder(realm, session, clientConnection);
+                event.event(EventType.LOGOUT);
+                event.error(Errors.USER_SESSION_NOT_FOUND);
+                return ErrorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.IDENTITY_PROVIDER_UNEXPECTED_ERROR);
+
+            }
+            UserSessionModel userSession = session.sessions().getUserSession(realm, state);
+            if (userSession == null) {
+                logger.error("no valid user session");
+                EventBuilder event = new EventBuilder(realm, session, clientConnection);
+                event.event(EventType.LOGOUT);
+                event.error(Errors.USER_SESSION_NOT_FOUND);
+                return ErrorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.IDENTITY_PROVIDER_UNEXPECTED_ERROR);
+            }
+            if (userSession.getState() != UserSessionModel.State.LOGGING_OUT) {
+                logger.error("usersession in different state");
+                EventBuilder event = new EventBuilder(realm, session, clientConnection);
+                event.event(EventType.LOGOUT);
+                event.error(Errors.USER_SESSION_NOT_FOUND);
+                return ErrorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.SESSION_NOT_ACTIVE);
+            }
+            return AuthenticationManager.finishBrowserLogout(session, realm, userSession, session.getContext().getUri(), clientConnection, headers);
         }
     }
 }

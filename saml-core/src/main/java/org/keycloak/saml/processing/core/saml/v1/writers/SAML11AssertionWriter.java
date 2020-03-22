@@ -16,24 +16,7 @@
  */
 package org.keycloak.saml.processing.core.saml.v1.writers;
 
-import org.keycloak.dom.saml.v1.assertion.SAML11ActionType;
-import org.keycloak.dom.saml.v1.assertion.SAML11AdviceType;
-import org.keycloak.dom.saml.v1.assertion.SAML11AssertionType;
-import org.keycloak.dom.saml.v1.assertion.SAML11AttributeStatementType;
-import org.keycloak.dom.saml.v1.assertion.SAML11AttributeType;
-import org.keycloak.dom.saml.v1.assertion.SAML11AudienceRestrictionCondition;
-import org.keycloak.dom.saml.v1.assertion.SAML11AuthenticationStatementType;
-import org.keycloak.dom.saml.v1.assertion.SAML11AuthorityBindingType;
-import org.keycloak.dom.saml.v1.assertion.SAML11AuthorizationDecisionStatementType;
-import org.keycloak.dom.saml.v1.assertion.SAML11ConditionAbstractType;
-import org.keycloak.dom.saml.v1.assertion.SAML11ConditionsType;
-import org.keycloak.dom.saml.v1.assertion.SAML11EvidenceType;
-import org.keycloak.dom.saml.v1.assertion.SAML11NameIdentifierType;
-import org.keycloak.dom.saml.v1.assertion.SAML11StatementAbstractType;
-import org.keycloak.dom.saml.v1.assertion.SAML11SubjectConfirmationType;
-import org.keycloak.dom.saml.v1.assertion.SAML11SubjectLocalityType;
-import org.keycloak.dom.saml.v1.assertion.SAML11SubjectStatementType;
-import org.keycloak.dom.saml.v1.assertion.SAML11SubjectType;
+import org.keycloak.dom.saml.v1.assertion.*;
 import org.keycloak.dom.saml.v1.assertion.SAML11SubjectType.SAML11SubjectTypeChoice;
 import org.keycloak.dom.saml.v2.assertion.StatementAbstractType;
 import org.keycloak.dom.saml.v2.metadata.LocalizedNameType;
@@ -70,7 +53,6 @@ public class SAML11AssertionWriter extends BaseSAML11Writer {
      *
      * @param assertion
      * @param out
-     *
      * @throws ProcessingException
      */
     public void write(SAML11AssertionType assertion) throws ProcessingException {
@@ -153,7 +135,6 @@ public class SAML11AssertionWriter extends BaseSAML11Writer {
      *
      * @param statement
      * @param out
-     *
      * @throws ProcessingException
      */
     public void write(StatementAbstractType statement) throws ProcessingException {
@@ -188,7 +169,6 @@ public class SAML11AssertionWriter extends BaseSAML11Writer {
      *
      * @param authnStatement
      * @param out
-     *
      * @throws ProcessingException
      */
     public void write(SAML11AuthenticationStatementType authnStatement) throws ProcessingException {
@@ -278,7 +258,6 @@ public class SAML11AssertionWriter extends BaseSAML11Writer {
      *
      * @param subject
      * @param out
-     *
      * @throws ProcessingException
      */
     public void write(SAML11SubjectType subject) throws ProcessingException {
@@ -361,7 +340,6 @@ public class SAML11AssertionWriter extends BaseSAML11Writer {
      *
      * @param attributeType
      * @param out
-     *
      * @throws ProcessingException
      */
     public void write(SAML11AttributeType attributeType) throws ProcessingException {

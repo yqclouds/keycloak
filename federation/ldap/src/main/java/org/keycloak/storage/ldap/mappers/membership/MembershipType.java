@@ -30,12 +30,7 @@ import org.keycloak.storage.ldap.idm.query.internal.LDAPQuery;
 import org.keycloak.storage.ldap.idm.query.internal.LDAPQueryConditionsBuilder;
 import org.keycloak.storage.ldap.mappers.membership.group.GroupLDAPStorageMapper;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -46,7 +41,6 @@ public enum MembershipType {
      * Used if LDAP role has it's members declared in form of their full DN. For example ( "member: uid=john,ou=users,dc=example,dc=com" )
      */
     DN {
-
         @Override
         public Set<LDAPDn> getLDAPSubgroups(GroupLDAPStorageMapper groupMapper, LDAPObject ldapGroup) {
             CommonLDAPGroupMapperConfig config = groupMapper.getConfig();
@@ -126,7 +120,6 @@ public enum MembershipType {
      * Used if LDAP role has it's members declared in form of pure user uids. For example ( "memberUid: john" )
      */
     UID {
-
         // Group inheritance not supported for this config
         @Override
         public Set<LDAPDn> getLDAPSubgroups(GroupLDAPStorageMapper groupMapper, LDAPObject ldapGroup) {

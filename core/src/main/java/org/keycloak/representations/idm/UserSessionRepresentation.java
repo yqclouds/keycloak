@@ -48,7 +48,7 @@ public class UserSessionRepresentation {
     public void setUsername(String username) {
         this.username = username;
     }
-    
+
     public String getUserId() {
         return userId;
     }

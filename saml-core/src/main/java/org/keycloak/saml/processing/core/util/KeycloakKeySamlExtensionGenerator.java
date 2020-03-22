@@ -17,15 +17,15 @@
 
 package org.keycloak.saml.processing.core.util;
 
-import java.util.Objects;
-import javax.xml.stream.XMLStreamWriter;
 import org.keycloak.saml.SamlProtocolExtensionsAwareBuilder;
 import org.keycloak.saml.common.exceptions.ProcessingException;
 import org.keycloak.saml.common.util.StaxUtil;
 import org.w3c.dom.Element;
 
+import javax.xml.stream.XMLStreamWriter;
+import java.util.Objects;
+
 /**
- *
  * @author hmlnarik
  */
 public class KeycloakKeySamlExtensionGenerator implements SamlProtocolExtensionsAwareBuilder.NodeGenerator {
@@ -44,6 +44,24 @@ public class KeycloakKeySamlExtensionGenerator implements SamlProtocolExtensions
         this.keyId = keyId;
     }
 
+    /**
+     * Checks that the given element is indeed a Keycloak extension {@code KeyInfo} element and
+     * returns a content of {@code MessageSigningKeyId} attribute in the given element.
+     *
+     * @param element Element to obtain the key info from.
+     * @return {@code null} if the element is unknown or there is {@code MessageSigningKeyId} attribute unset,
+     * value of the {@code MessageSigningKeyId} attribute otherwise.
+     */
+    public static String getMessageSigningKeyIdFromElement(Element element) {
+        if (Objects.equals(element.getNamespaceURI(), NS_URI) &&
+                Objects.equals(element.getLocalName(), KC_KEY_INFO_ELEMENT_NAME) &&
+                element.hasAttribute(KEY_ID_ATTRIBUTE_NAME)) {
+            return element.getAttribute(KEY_ID_ATTRIBUTE_NAME);
+        }
+
+        return null;
+    }
+
     @Override
     public void write(XMLStreamWriter writer) throws ProcessingException {
         StaxUtil.writeStartElement(writer, NS_PREFIX, KC_KEY_INFO_ELEMENT_NAME, NS_URI);
@@ -53,23 +71,6 @@ public class KeycloakKeySamlExtensionGenerator implements SamlProtocolExtensions
         }
         StaxUtil.writeEndElement(writer);
         StaxUtil.flush(writer);
-    }
-
-    /**
-     * Checks that the given element is indeed a Keycloak extension {@code KeyInfo} element and
-     * returns a content of {@code MessageSigningKeyId} attribute in the given element.
-     * @param element Element to obtain the key info from.
-     * @return {@code null} if the element is unknown or there is {@code MessageSigningKeyId} attribute unset,
-     *   value of the {@code MessageSigningKeyId} attribute otherwise.
-     */
-    public static String getMessageSigningKeyIdFromElement(Element element) {
-        if (Objects.equals(element.getNamespaceURI(), NS_URI) &&
-          Objects.equals(element.getLocalName(), KC_KEY_INFO_ELEMENT_NAME) &&
-          element.hasAttribute(KEY_ID_ATTRIBUTE_NAME)) {
-            return element.getAttribute(KEY_ID_ATTRIBUTE_NAME);
-        }
-
-        return null;
     }
 
 }

@@ -19,7 +19,10 @@ package org.keycloak.storage.ldap.mappers;
 
 import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.models.*;
+import org.keycloak.models.GroupModel;
+import org.keycloak.models.ModelException;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.UserModelDelegate;
 import org.keycloak.storage.ldap.LDAPStorageProvider;
@@ -34,9 +37,8 @@ import java.util.Set;
  */
 public class HardcodedLDAPGroupStorageMapper extends AbstractLDAPStorageMapper {
 
-    private static final Logger logger = Logger.getLogger(HardcodedLDAPGroupStorageMapper.class);
-
     public static final String GROUP = "group";
+    private static final Logger logger = Logger.getLogger(HardcodedLDAPGroupStorageMapper.class);
 
     public HardcodedLDAPGroupStorageMapper(ComponentModel mapperModel, LDAPStorageProvider ldapProvider) {
         super(mapperModel, ldapProvider);

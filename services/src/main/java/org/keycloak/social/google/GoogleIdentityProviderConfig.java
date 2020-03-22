@@ -29,7 +29,7 @@ public class GoogleIdentityProviderConfig extends OIDCIdentityProviderConfig {
     }
 
     public GoogleIdentityProviderConfig() {
-        
+
     }
 
     public boolean isUserIp() {
@@ -55,7 +55,7 @@ public class GoogleIdentityProviderConfig extends OIDCIdentityProviderConfig {
         String offlineAccess = getConfig().get("offlineAccess");
         return offlineAccess == null ? false : Boolean.valueOf(offlineAccess);
     }
-    
+
     public void setOfflineAccess(boolean offlineAccess) {
         getConfig().put("offlineAccess", String.valueOf(offlineAccess));
     }

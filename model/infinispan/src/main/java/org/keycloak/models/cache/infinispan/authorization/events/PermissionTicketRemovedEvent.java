@@ -17,10 +17,10 @@
 
 package org.keycloak.models.cache.infinispan.authorization.events;
 
-import java.util.Set;
-
 import org.keycloak.models.cache.infinispan.authorization.StoreFactoryCacheManager;
 import org.keycloak.models.cache.infinispan.events.InvalidationEvent;
+
+import java.util.Set;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>

@@ -35,9 +35,8 @@ public interface ScopeStore {
      * Creates a new {@link Scope} instance. The new instance is not necessarily persisted though, which may require
      * a call to the {#save} method to actually make it persistent.
      *
-     * @param name the name of the scope
+     * @param name           the name of the scope
      * @param resourceServer the resource server to which this scope belongs
-     *
      * @return a new instance of {@link Scope}
      */
     Scope create(String name, ResourceServer resourceServer);
@@ -46,10 +45,9 @@ public interface ScopeStore {
      * Creates a new {@link Scope} instance. The new instance is not necessarily persisted though, which may require
      * a call to the {#save} method to actually make it persistent.
      *
-     * @param id the id of the scope
-     * @param name the name of the scope
+     * @param id             the id of the scope
+     * @param name           the name of the scope
      * @param resourceServer the resource server to which this scope belongs
-     *
      * @return a new instance of {@link Scope}
      */
     Scope create(String id, String name, ResourceServer resourceServer);
@@ -64,7 +62,7 @@ public interface ScopeStore {
     /**
      * Returns a {@link Scope} with the given <code>id</code>
      *
-     * @param id the identifier of the scope
+     * @param id               the identifier of the scope
      * @param resourceServerId the resource server id
      * @return a scope with the given identifier.
      */
@@ -73,8 +71,7 @@ public interface ScopeStore {
     /**
      * Returns a {@link Scope} with the given <code>name</code>
      *
-     * @param name the name of the scope
-     *
+     * @param name             the name of the scope
      * @param resourceServerId the resource server id
      * @return a scope with the given name.
      */
@@ -84,7 +81,6 @@ public interface ScopeStore {
      * Returns a list of {@link Scope} associated with a {@link ResourceServer} with the given <code>resourceServerId</code>.
      *
      * @param resourceServerId the identifier of a resource server
-     *
      * @return a list of scopes that belong to the given resource server
      */
     List<Scope> findByResourceServer(String id);
@@ -92,9 +88,8 @@ public interface ScopeStore {
     /**
      * Returns a list of {@link Scope} associated with a {@link ResourceServer} with the given <code>resourceServerId</code>.
      *
-     * @param attributes a map holding the attributes that will be used as a filter
+     * @param attributes       a map holding the attributes that will be used as a filter
      * @param resourceServerId the identifier of a resource server
-     *
      * @return a list of scopes that belong to the given resource server
      */
     List<Scope> findByResourceServer(Map<String, String[]> attributes, String resourceServerId, int firstResult, int maxResult);

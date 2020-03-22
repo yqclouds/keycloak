@@ -28,6 +28,7 @@ public class Time {
 
     /**
      * Returns current time in seconds adjusted by adding {@link #offset) seconds.
+     *
      * @return see description
      */
     public static int currentTime() {
@@ -36,6 +37,7 @@ public class Time {
 
     /**
      * Returns current time in milliseconds adjusted by adding {@link #offset) seconds.
+     *
      * @return see description
      */
     public static long currentTimeMillis() {
@@ -44,6 +46,7 @@ public class Time {
 
     /**
      * Returns {@link Date} object, its value set to time
+     *
      * @param time Time in milliseconds since the epoch
      * @return see description
      */
@@ -53,6 +56,7 @@ public class Time {
 
     /**
      * Returns {@link Date} object, its value set to time
+     *
      * @param time Time in milliseconds since the epoch
      * @return see description
      */
@@ -62,6 +66,7 @@ public class Time {
 
     /**
      * Returns time in milliseconds for a time in seconds. No adjustment is made to the parameter.
+     *
      * @param time Time in seconds since the epoch
      * @return Time in milliseconds
      */
@@ -78,6 +83,7 @@ public class Time {
 
     /**
      * Sets time offset in seconds that will be added to {@link #currentTime()} and {@link #currentTimeMillis()}.
+     *
      * @param offset Offset (in seconds)
      */
     public static void setOffset(int offset) {

@@ -28,11 +28,6 @@ import java.util.Set;
  */
 public interface RoleContainerModel {
 
-    interface RoleRemovedEvent extends ProviderEvent {
-        RoleModel getRole();
-        KeycloakSession getKeycloakSession();
-    }
-
     String getId();
 
     RoleModel getRole(String name);
@@ -44,11 +39,11 @@ public interface RoleContainerModel {
     boolean removeRole(RoleModel role);
 
     Set<RoleModel> getRoles();
-    
+
     Set<RoleModel> getRoles(Integer firstResult, Integer maxResults);
 
     Set<RoleModel> searchForRoles(String search, Integer first, Integer max);
-    
+
     List<String> getDefaultRoles();
 
     void addDefaultRole(String name);
@@ -56,5 +51,11 @@ public interface RoleContainerModel {
     void updateDefaultRoles(String... defaultRoles);
 
     void removeDefaultRoles(String... defaultRoles);
+
+    interface RoleRemovedEvent extends ProviderEvent {
+        RoleModel getRole();
+
+        KeycloakSession getKeycloakSession();
+    }
 
 }

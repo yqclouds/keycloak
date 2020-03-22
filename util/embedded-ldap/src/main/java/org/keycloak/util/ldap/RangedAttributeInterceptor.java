@@ -17,10 +17,6 @@
 
 package org.keycloak.util.ldap;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 import org.apache.directory.api.ldap.model.cursor.ClosureMonitor;
 import org.apache.directory.api.ldap.model.cursor.CursorException;
 import org.apache.directory.api.ldap.model.entry.Attribute;
@@ -34,20 +30,74 @@ import org.apache.directory.server.core.api.filtering.EntryFilteringCursor;
 import org.apache.directory.server.core.api.interceptor.BaseInterceptor;
 import org.apache.directory.server.core.api.interceptor.context.SearchOperationContext;
 
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 /**
  * <p>Ranged interceptor to emulate the behavior of AD. AD has a limit in
- * the number of attributes that return (15000 by default in MaxValRange). 
+ * the number of attributes that return (15000 by default in MaxValRange).
  * See this MS link for AD limits:</p>
- *
+ * <p>
  * https://support.microsoft.com/en-us/help/315071/how-to-view-and-set-ldap-policy-in-active-directory-by-using-ntdsutil
  *
  * <p>And this other link to know how range attribute search works:</p>
- *
+ * <p>
  * https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ldap/searching-using-range-retrieval
  *
  * @author rmartinc
  */
 public class RangedAttributeInterceptor extends BaseInterceptor {
+
+    private final String name;
+    private final int max;
+    public RangedAttributeInterceptor(String name, int max) {
+        this.name = name;
+        this.max = max - 1;
+    }
+
+    @Override
+    public EntryFilteringCursor search(SearchOperationContext sc) throws LdapException {
+        Set<AttributeTypeOptions> attrs = sc.getReturningAttributes();
+        Integer lmin = null, lmax = max;
+        if (attrs != null) {
+            for (AttributeTypeOptions attr : attrs) {
+                if (attr.getAttributeType().getName().equalsIgnoreCase(name)) {
+                    if (attr.getOptions() != null) {
+                        for (String option : attr.getOptions()) {
+                            if (option.startsWith("range=")) {
+                                String[] ranges = option.substring(6).split("-");
+                                if (ranges.length == 2) {
+                                    try {
+                                        lmin = Integer.parseInt(ranges[0]);
+                                        if (lmin < 0) {
+                                            lmin = 0;
+                                        }
+                                        if ("*".equals(ranges[1])) {
+                                            lmax = lmin + max;
+                                        } else {
+                                            lmax = Integer.parseInt(ranges[1]);
+                                            if (lmax < lmin) {
+                                                lmax = lmin;
+                                            } else if (lmax > lmin + max) {
+                                                lmax = lmin + max;
+                                            }
+                                        }
+                                    } catch (NumberFormatException e) {
+                                        lmin = null;
+                                        lmax = max;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        return new RangedEntryFilteringCursor(super.next(sc), name, lmin, lmax);
+    }
 
     private class RangedEntryFilteringCursor implements EntryFilteringCursor {
 
@@ -67,9 +117,9 @@ public class RangedAttributeInterceptor extends BaseInterceptor {
         private Entry prepareEntry(Entry e) {
             Attribute attr = e.get(name);
             if (attr != null) {
-                int start = (min != null)? min : 0;
-                start = (start < attr.size())? start : attr.size() - 1;
-                int end = (max != null && max < attr.size() - 1)? max : attr.size() - 1;
+                int start = (min != null) ? min : 0;
+                start = (start < attr.size()) ? start : attr.size() - 1;
+                int end = (max != null && max < attr.size() - 1) ? max : attr.size() - 1;
                 if (start != 0 || end != attr.size() - 1) {
                     // some values should be stripped out
                     Iterator<Value<?>> it = attr.iterator();
@@ -80,7 +130,7 @@ public class RangedAttributeInterceptor extends BaseInterceptor {
                             valuesToRemove.add(v);
                         }
                     }
-                    attr.setUpId(attr.getUpId() + ";range=" + start + "-" + ((end == attr.size() - 1)? "*" : end));
+                    attr.setUpId(attr.getUpId() + ";range=" + start + "-" + ((end == attr.size() - 1) ? "*" : end));
                     attr.remove(valuesToRemove.toArray(new Value<?>[0]));
                 } else if (min != null) {
                     // range explicitly requested although no value stripped
@@ -204,55 +254,5 @@ public class RangedAttributeInterceptor extends BaseInterceptor {
         public Iterator<Entry> iterator() {
             return c.iterator();
         }
-    }
-
-    private final String name;
-    private final int max;
-
-    public RangedAttributeInterceptor(String name, int max) {
-        this.name = name;
-        this.max = max - 1;
-    }
-
-    @Override
-    public EntryFilteringCursor search(SearchOperationContext sc) throws LdapException {
-        Set<AttributeTypeOptions> attrs = sc.getReturningAttributes();
-        Integer lmin = null, lmax = max;
-        if (attrs != null) {
-            for (AttributeTypeOptions attr : attrs) {
-                if (attr.getAttributeType().getName().equalsIgnoreCase(name)) {
-                    if (attr.getOptions() != null) {
-                        for (String option : attr.getOptions()) {
-                            if (option.startsWith("range=")) {
-                                String[] ranges = option.substring(6).split("-");
-                                if (ranges.length == 2) {
-                                    try {
-                                        lmin = Integer.parseInt(ranges[0]);
-                                        if (lmin < 0) {
-                                            lmin = 0;
-                                        }
-                                        if ("*".equals(ranges[1])) {
-                                            lmax = lmin + max;
-                                        } else {
-                                            lmax = Integer.parseInt(ranges[1]);
-                                            if (lmax < lmin) {
-                                                lmax = lmin;
-                                            } else if (lmax > lmin + max) {
-                                                lmax = lmin + max;
-                                            }
-                                        }
-                                    } catch (NumberFormatException e) {
-                                        lmin = null;
-                                        lmax = max;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    break;
-                }
-            }
-        }
-        return new RangedEntryFilteringCursor(super.next(sc), name, lmin, lmax);
     }
 }

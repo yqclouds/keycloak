@@ -23,28 +23,15 @@ import org.jboss.aesh.console.command.CommandException;
 import org.jboss.aesh.console.command.CommandResult;
 import org.jboss.aesh.console.command.invocation.CommandInvocation;
 import org.keycloak.client.admin.cli.config.ConfigData;
-import org.keycloak.client.admin.cli.operations.ClientOperations;
-import org.keycloak.client.admin.cli.operations.GroupOperations;
-import org.keycloak.client.admin.cli.operations.RoleOperations;
-import org.keycloak.client.admin.cli.operations.LocalSearch;
-import org.keycloak.client.admin.cli.operations.UserOperations;
+import org.keycloak.client.admin.cli.operations.*;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.keycloak.client.admin.cli.util.AuthUtil.ensureToken;
-import static org.keycloak.client.admin.cli.util.ConfigUtil.DEFAULT_CONFIG_FILE_STRING;
-import static org.keycloak.client.admin.cli.util.ConfigUtil.credentialsAvailable;
-import static org.keycloak.client.admin.cli.util.ConfigUtil.loadConfig;
-import static org.keycloak.client.admin.cli.util.OsUtil.CMD;
-import static org.keycloak.client.admin.cli.util.OsUtil.EOL;
-import static org.keycloak.client.admin.cli.util.OsUtil.PROMPT;
+import static org.keycloak.client.admin.cli.util.ConfigUtil.*;
+import static org.keycloak.client.admin.cli.util.OsUtil.*;
 
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
@@ -78,6 +65,73 @@ public class RemoveRolesCmd extends AbstractAuthOptionsCmd {
 
     @Option(name = "cid", description = "Target client's 'id'")
     String cid;
+
+    public static String usage() {
+        StringWriter sb = new StringWriter();
+        PrintWriter out = new PrintWriter(sb);
+        out.println("Usage: " + CMD + " remove-roles (--uusername USERNAME | --uid ID) [--cclientid CLIENT_ID | --cid ID] (--rolename NAME | --roleid ID)+ [ARGUMENTS]");
+        out.println("       " + CMD + " remove-roles (--gname NAME | --gpath PATH | --gid ID) [--cclientid CLIENT_ID | --cid ID] (--rolename NAME | --roleid ID)+ [ARGUMENTS]");
+        out.println("       " + CMD + " remove-roles (--rname ROLE_NAME | --rid ROLE_ID) [--cclientid CLIENT_ID | --cid ID] (--rolename NAME | --roleid ID)+ [ARGUMENTS]");
+        out.println();
+        out.println("Command to remove realm or client roles from a user, a group or a composite role.");
+        out.println();
+        out.println("Use `" + CMD + " config credentials` to establish an authenticated session, or use CREDENTIALS OPTIONS");
+        out.println("to perform one time authentication.");
+        out.println();
+        out.println("If client is specified using --cclientid or --cid then roles to remove are client roles, otherwise they are realm roles.");
+        out.println("Either a user, or a group needs to be specified. If user is specified using --uusername or --uid then roles are removed");
+        out.println("from a specific user. If group is specified using --gname, --gpath or --gid then roles are removed from a specific group.");
+        out.println("If composite role is specified using --rname or --rid then roles are removed from a specific composite role.");
+        out.println("One or more roles have to be specified using --rolename or --roleid to be removed from a group, a user or a composite role.");
+        out.println();
+        out.println("Arguments:");
+        out.println();
+        out.println("  Global options:");
+        out.println("    -x                    Print full stack trace when exiting with error");
+        out.println("    --config              Path to the config file (" + DEFAULT_CONFIG_FILE_STRING + " by default)");
+        out.println("    --no-config           Don't use config file - no authentication info is loaded or saved");
+        out.println("    --token               Token to use to invoke on Keycloak.  Other credential may be ignored if this flag is set.");
+        out.println("    --truststore PATH     Path to a truststore containing trusted certificates");
+        out.println("    --trustpass PASSWORD  Truststore password (prompted for if not specified and --truststore is used)");
+        out.println("    CREDENTIALS OPTIONS   Same set of options as accepted by '" + CMD + " config credentials' in order to establish");
+        out.println("                          an authenticated sessions. In combination with --no-config option this allows transient");
+        out.println("                          (on-the-fly) authentication to be performed which leaves no tokens in config file.");
+        out.println();
+        out.println("  Command specific options:");
+        out.println("    --uusername           User's 'username'. If more than one user exists with the same username");
+        out.println("                          you'll have to use --uid to specify the target user");
+        out.println("    --uid                 User's 'id' attribute");
+        out.println("    --gname               Group's 'name'. If more than one group exists with the same name you'll have");
+        out.println("                          to use --gid, or --gpath to specify the target group");
+        out.println("    --gpath               Group's 'path' attribute");
+        out.println("    --gid                 Group's 'id' attribute");
+        out.println("    --rname               Composite role's 'name' attribute");
+        out.println("    --rid                 Composite role's 'id' attribute");
+        out.println("    --cclientid           Client's 'clientId' attribute");
+        out.println("    --cid                 Client's 'id' attribute");
+        out.println("    --rolename            Role's 'name' attribute");
+        out.println("    --roleid              Role's 'id' attribute");
+        out.println("    -a, --admin-root URL      URL of Admin REST endpoint root if not default - e.g. http://localhost:8080/auth/admin");
+        out.println("    -r, --target-realm REALM  Target realm to issue requests against if not the one authenticated against");
+        out.println();
+        out.println("Examples:");
+        out.println();
+        out.println("Remove 'offline_access' realm role from a user:");
+        out.println("  " + PROMPT + " " + CMD + " remove-roles -r demorealm --uusername testuser --rolename offline_access");
+        out.println();
+        out.println("Remove 'realm-management' client roles 'view-users', 'view-clients' and 'view-realm' from a user:");
+        out.println("  " + PROMPT + " " + CMD + " remove-roles -r demorealm --uusername testuser --cclientid realm-management --rolename view-users --rolename view-clients --rolename view-realm");
+        out.println();
+        out.println("Remove 'uma_authorization' realm role to a group:");
+        out.println("  " + PROMPT + " " + CMD + " remove-roles -r demorealm --gname PowerUsers --rolename uma_authorization");
+        out.println();
+        out.println("Remove 'realm-management' client roles 'realm-admin' from a group:");
+        out.println("  " + PROMPT + " " + CMD + " remove-roles -r demorealm --gname PowerUsers --cclientid realm-management --rolename realm-admin");
+        out.println();
+        out.println();
+        out.println("Use '" + CMD + " help' for general information and a list of commands");
+        return sb.toString();
+    }
 
     @Override
     public CommandResult execute(CommandInvocation commandInvocation) throws CommandException, InterruptedException {
@@ -313,72 +367,5 @@ public class RemoveRolesCmd extends AbstractAuthOptionsCmd {
 
     protected String help() {
         return usage();
-    }
-
-    public static String usage() {
-        StringWriter sb = new StringWriter();
-        PrintWriter out = new PrintWriter(sb);
-        out.println("Usage: " + CMD + " remove-roles (--uusername USERNAME | --uid ID) [--cclientid CLIENT_ID | --cid ID] (--rolename NAME | --roleid ID)+ [ARGUMENTS]");
-        out.println("       " + CMD + " remove-roles (--gname NAME | --gpath PATH | --gid ID) [--cclientid CLIENT_ID | --cid ID] (--rolename NAME | --roleid ID)+ [ARGUMENTS]");
-        out.println("       " + CMD + " remove-roles (--rname ROLE_NAME | --rid ROLE_ID) [--cclientid CLIENT_ID | --cid ID] (--rolename NAME | --roleid ID)+ [ARGUMENTS]");
-        out.println();
-        out.println("Command to remove realm or client roles from a user, a group or a composite role.");
-        out.println();
-        out.println("Use `" + CMD + " config credentials` to establish an authenticated session, or use CREDENTIALS OPTIONS");
-        out.println("to perform one time authentication.");
-        out.println();
-        out.println("If client is specified using --cclientid or --cid then roles to remove are client roles, otherwise they are realm roles.");
-        out.println("Either a user, or a group needs to be specified. If user is specified using --uusername or --uid then roles are removed");
-        out.println("from a specific user. If group is specified using --gname, --gpath or --gid then roles are removed from a specific group.");
-        out.println("If composite role is specified using --rname or --rid then roles are removed from a specific composite role.");
-        out.println("One or more roles have to be specified using --rolename or --roleid to be removed from a group, a user or a composite role.");
-        out.println();
-        out.println("Arguments:");
-        out.println();
-        out.println("  Global options:");
-        out.println("    -x                    Print full stack trace when exiting with error");
-        out.println("    --config              Path to the config file (" + DEFAULT_CONFIG_FILE_STRING + " by default)");
-        out.println("    --no-config           Don't use config file - no authentication info is loaded or saved");
-        out.println("    --token               Token to use to invoke on Keycloak.  Other credential may be ignored if this flag is set.");
-        out.println("    --truststore PATH     Path to a truststore containing trusted certificates");
-        out.println("    --trustpass PASSWORD  Truststore password (prompted for if not specified and --truststore is used)");
-        out.println("    CREDENTIALS OPTIONS   Same set of options as accepted by '" + CMD + " config credentials' in order to establish");
-        out.println("                          an authenticated sessions. In combination with --no-config option this allows transient");
-        out.println("                          (on-the-fly) authentication to be performed which leaves no tokens in config file.");
-        out.println();
-        out.println("  Command specific options:");
-        out.println("    --uusername           User's 'username'. If more than one user exists with the same username");
-        out.println("                          you'll have to use --uid to specify the target user");
-        out.println("    --uid                 User's 'id' attribute");
-        out.println("    --gname               Group's 'name'. If more than one group exists with the same name you'll have");
-        out.println("                          to use --gid, or --gpath to specify the target group");
-        out.println("    --gpath               Group's 'path' attribute");
-        out.println("    --gid                 Group's 'id' attribute");
-        out.println("    --rname               Composite role's 'name' attribute");
-        out.println("    --rid                 Composite role's 'id' attribute");
-        out.println("    --cclientid           Client's 'clientId' attribute");
-        out.println("    --cid                 Client's 'id' attribute");
-        out.println("    --rolename            Role's 'name' attribute");
-        out.println("    --roleid              Role's 'id' attribute");
-        out.println("    -a, --admin-root URL      URL of Admin REST endpoint root if not default - e.g. http://localhost:8080/auth/admin");
-        out.println("    -r, --target-realm REALM  Target realm to issue requests against if not the one authenticated against");
-        out.println();
-        out.println("Examples:");
-        out.println();
-        out.println("Remove 'offline_access' realm role from a user:");
-        out.println("  " + PROMPT + " " + CMD + " remove-roles -r demorealm --uusername testuser --rolename offline_access");
-        out.println();
-        out.println("Remove 'realm-management' client roles 'view-users', 'view-clients' and 'view-realm' from a user:");
-        out.println("  " + PROMPT + " " + CMD + " remove-roles -r demorealm --uusername testuser --cclientid realm-management --rolename view-users --rolename view-clients --rolename view-realm");
-        out.println();
-        out.println("Remove 'uma_authorization' realm role to a group:");
-        out.println("  " + PROMPT + " " + CMD + " remove-roles -r demorealm --gname PowerUsers --rolename uma_authorization");
-        out.println();
-        out.println("Remove 'realm-management' client roles 'realm-admin' from a group:");
-        out.println("  " + PROMPT + " " + CMD + " remove-roles -r demorealm --gname PowerUsers --cclientid realm-management --rolename realm-admin");
-        out.println();
-        out.println();
-        out.println("Use '" + CMD + " help' for general information and a list of commands");
-        return sb.toString();
     }
 }

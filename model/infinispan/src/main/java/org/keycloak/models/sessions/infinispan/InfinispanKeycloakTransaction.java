@@ -1,13 +1,13 @@
 /*
  * Copyright 2017 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,16 +16,16 @@
  */
 package org.keycloak.models.sessions.infinispan;
 
+import org.infinispan.Cache;
+import org.infinispan.context.Flag;
+import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterProvider;
-import org.infinispan.context.Flag;
 import org.keycloak.models.KeycloakTransaction;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import org.infinispan.Cache;
-import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -33,14 +33,25 @@ import org.jboss.logging.Logger;
 public class InfinispanKeycloakTransaction implements KeycloakTransaction {
 
     private final static Logger log = Logger.getLogger(InfinispanKeycloakTransaction.class);
-
-    public enum CacheOperation {
-        ADD, ADD_WITH_LIFESPAN, REMOVE, REPLACE, ADD_IF_ABSENT // ADD_IF_ABSENT throws an exception if there is existing value
-    }
-
+    private final Map<Object, CacheTask> tasks = new LinkedHashMap<>();
     private boolean active;
     private boolean rollback;
-    private final Map<Object, CacheTask> tasks = new LinkedHashMap<>();
+
+    private static <K, V> Object getTaskKey(Cache<K, V> cache, K key) {
+        if (key instanceof String) {
+            return new StringBuilder(cache.getName())
+                    .append("::")
+                    .append(key).toString();
+        } else {
+            return key;
+        }
+    }
+
+    // Ignore return values. Should have better performance within cluster / cross-dc env
+    private static <K, V> Cache<K, V> decorateCache(Cache<K, V> cache) {
+        return cache.getAdvancedCache()
+                .withFlags(Flag.IGNORE_RETURN_VALUES, Flag.SKIP_REMOTE_LOOKUP);
+    }
 
     @Override
     public void begin() {
@@ -215,14 +226,8 @@ public class InfinispanKeycloakTransaction implements KeycloakTransaction {
         return cache.get(key);
     }
 
-    private static <K, V> Object getTaskKey(Cache<K, V> cache, K key) {
-        if (key instanceof String) {
-            return new StringBuilder(cache.getName())
-                    .append("::")
-                    .append(key).toString();
-        } else {
-            return key;
-        }
+    public enum CacheOperation {
+        ADD, ADD_WITH_LIFESPAN, REMOVE, REPLACE, ADD_IF_ABSENT // ADD_IF_ABSENT throws an exception if there is existing value
     }
 
     public interface CacheTask {
@@ -243,11 +248,5 @@ public class InfinispanKeycloakTransaction implements KeycloakTransaction {
         public void setValue(V value) {
             this.value = value;
         }
-    }
-
-    // Ignore return values. Should have better performance within cluster / cross-dc env
-    private static <K, V> Cache<K, V> decorateCache(Cache<K, V> cache) {
-        return cache.getAdvancedCache()
-                .withFlags(Flag.IGNORE_RETURN_VALUES, Flag.SKIP_REMOTE_LOOKUP);
     }
 }

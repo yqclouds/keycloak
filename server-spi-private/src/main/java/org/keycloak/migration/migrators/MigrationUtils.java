@@ -17,25 +17,14 @@
 
 package org.keycloak.migration.migrators;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import org.keycloak.Config;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.OAuthErrorException;
-import org.keycloak.models.AdminRoles;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.Constants;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ProtocolMapperContainerModel;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RequiredActionProviderModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserConsentModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -69,7 +58,7 @@ public class MigrationUtils {
 
         otpAction.setName("Configure OTP");
     }
-    
+
     public static void updateProtocolMappers(ProtocolMapperContainerModel client) {
         List<ProtocolMapperModel> toUpdate = new LinkedList<>();
         for (ProtocolMapperModel mapper : client.getProtocolMappers()) {

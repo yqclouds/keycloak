@@ -17,26 +17,28 @@
 
 package org.keycloak.models.sessions.infinispan.events;
 
+import org.infinispan.commons.marshall.MarshallUtil;
 import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.connections.infinispan.TopologyInfo;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
+
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import org.infinispan.commons.marshall.MarshallUtil;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public abstract class SessionClusterEvent implements ClusterEvent {
 
+    // Infinispan marshalling support for child classes
+    private static final int VERSION_1 = 1;
     private String realmId;
     private String eventKey;
     private boolean resendingEvent;
     private String siteId;
     private String nodeId;
-
 
     public static <T extends SessionClusterEvent> T createEvent(Class<T> eventClass, String eventKey, KeycloakSession session, String realmId, boolean resendingEvent) {
         try {
@@ -48,7 +50,6 @@ public abstract class SessionClusterEvent implements ClusterEvent {
         }
     }
 
-
     void setData(KeycloakSession session, String eventKey, String realmId, boolean resendingEvent) {
         this.realmId = realmId;
         this.eventKey = eventKey;
@@ -57,7 +58,6 @@ public abstract class SessionClusterEvent implements ClusterEvent {
         this.siteId = topology.getMySiteName();
         this.nodeId = topology.getMyNodeName();
     }
-
 
     public String getRealmId() {
         return realmId;
@@ -85,9 +85,6 @@ public abstract class SessionClusterEvent implements ClusterEvent {
         return String.format("%s [ realmId=%s ]", simpleClassName, realmId);
     }
 
-    // Infinispan marshalling support for child classes
-    private static final int VERSION_1 = 1;
-
     protected void marshallTo(ObjectOutput output) throws IOException {
         output.writeByte(VERSION_1);
 
@@ -100,6 +97,7 @@ public abstract class SessionClusterEvent implements ClusterEvent {
 
     /**
      * Sets the properties of this object from the input stream.
+     *
      * @param input
      * @throws IOException
      */

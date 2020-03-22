@@ -19,6 +19,7 @@ public class ResourceListQuery extends AbstractRevisioned implements ResourceQue
         resources = new HashSet<>();
         resources.add(resourceId);
     }
+
     public ResourceListQuery(Long revision, String id, Set<String> resources, String serverId) {
         super(revision, id);
         this.serverId = serverId;

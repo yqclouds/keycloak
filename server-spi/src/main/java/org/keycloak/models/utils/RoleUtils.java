@@ -35,7 +35,6 @@ import java.util.stream.StreamSupport;
 public class RoleUtils {
 
     /**
-     *
      * @param groups
      * @param targetGroup
      * @return true if targetGroup is in groups (directly or indirectly via parent child relationship)
@@ -45,7 +44,7 @@ public class RoleUtils {
 
         for (GroupModel mapping : groups) {
             GroupModel child = mapping;
-            while(child.getParent() != null) {
+            while (child.getParent() != null) {
                 if (child.getParent().equals(targetGroup)) return true;
                 child = child.getParent();
             }
@@ -70,7 +69,8 @@ public class RoleUtils {
     /**
      * Checks whether the {@code targetRole} is contained in the given group or its parents
      * (if requested)
-     * @param group Group to check role for
+     *
+     * @param group            Group to check role for
      * @param targetRole
      * @param checkParentGroup When {@code true}, also parent group is recursively checked for role
      * @return true if targetRole is in roles (directly or indirectly via composite role)
@@ -90,6 +90,7 @@ public class RoleUtils {
     /**
      * Checks whether the {@code targetRole} is contained in any of the {@code groups} or their parents
      * (if requested)
+     *
      * @param groups
      * @param targetRole
      * @param checkParentGroup When {@code true}, also parent group is recursively checked for role
@@ -106,6 +107,7 @@ public class RoleUtils {
 
     /**
      * Recursively expands composite roles into their composite.
+     *
      * @param role
      * @param visited Track roles, which were already visited. Those will be ignored and won't be added to the stream. Besides that,
      *                the "visited" set itself will be updated as a result of this method call and all the tracked roles will be added to it

@@ -5,14 +5,7 @@ import org.jboss.resteasy.specimpl.ResponseBuilderImpl;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.jose.jws.JWSBuilder;
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientSessionContext;
-import org.keycloak.models.KeyManager;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.protocol.LoginProtocol;
 import org.keycloak.protocol.ProtocolMapper;
@@ -33,15 +26,13 @@ import java.util.Date;
 import java.util.Map;
 
 public class DockerAuthV2Protocol implements LoginProtocol {
-    protected static final Logger logger = Logger.getLogger(DockerEndpoint.class);
-
     public static final String LOGIN_PROTOCOL = "docker-v2";
     public static final String ACCOUNT_PARAM = "account";
     public static final String SERVICE_PARAM = "service";
     public static final String SCOPE_PARAM = "scope";
     public static final String ISSUER = "docker.iss"; // don't want to overlap with OIDC notes
     public static final String ISO_8601_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
-
+    protected static final Logger logger = Logger.getLogger(DockerEndpoint.class);
     private KeycloakSession session;
     private RealmModel realm;
     private UriInfo uriInfo;

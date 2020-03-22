@@ -17,43 +17,33 @@
 
 package org.keycloak.models.jpa.entities;
 
+import javax.persistence.*;
 import java.io.Serializable;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 @NamedQueries({
-        @NamedQuery(name="deleteUserConsentClientScopesByRealm", query="delete from UserConsentClientScopeEntity grantedScope where grantedScope.userConsent IN (select consent from UserConsentEntity consent where consent.user IN (select user from UserEntity user where user.realmId = :realmId))"),
-        @NamedQuery(name="deleteUserConsentClientScopesByRealmAndLink", query="delete from UserConsentClientScopeEntity grantedScope where grantedScope.userConsent IN (select consent from UserConsentEntity consent where consent.user IN (select u from UserEntity u where u.realmId=:realmId and u.federationLink=:link))"),
-        @NamedQuery(name="deleteUserConsentClientScopesByUser", query="delete from UserConsentClientScopeEntity grantedScope where grantedScope.userConsent IN (select consent from UserConsentEntity consent where consent.user = :user)"),
-        @NamedQuery(name="deleteUserConsentClientScopesByClientScope", query="delete from UserConsentClientScopeEntity grantedScope where grantedScope.scopeId = :scopeId"),
-        @NamedQuery(name="deleteUserConsentClientScopesByClient", query="delete from UserConsentClientScopeEntity grantedScope where grantedScope.userConsent IN (select consent from UserConsentEntity consent where consent.clientId = :clientId)"),
-        @NamedQuery(name="deleteUserConsentClientScopesByExternalClient", query="delete from UserConsentClientScopeEntity grantedScope where grantedScope.userConsent IN (select consent from UserConsentEntity consent where consent.clientStorageProvider = :clientStorageProvider and consent.externalClientId = :externalClientId)"),
-        @NamedQuery(name="deleteUserConsentClientScopesByClientStorageProvider", query="delete from UserConsentClientScopeEntity grantedScope where grantedScope.userConsent IN (select consent from UserConsentEntity consent where consent.clientStorageProvider = :clientStorageProvider)"),
+        @NamedQuery(name = "deleteUserConsentClientScopesByRealm", query = "delete from UserConsentClientScopeEntity grantedScope where grantedScope.userConsent IN (select consent from UserConsentEntity consent where consent.user IN (select user from UserEntity user where user.realmId = :realmId))"),
+        @NamedQuery(name = "deleteUserConsentClientScopesByRealmAndLink", query = "delete from UserConsentClientScopeEntity grantedScope where grantedScope.userConsent IN (select consent from UserConsentEntity consent where consent.user IN (select u from UserEntity u where u.realmId=:realmId and u.federationLink=:link))"),
+        @NamedQuery(name = "deleteUserConsentClientScopesByUser", query = "delete from UserConsentClientScopeEntity grantedScope where grantedScope.userConsent IN (select consent from UserConsentEntity consent where consent.user = :user)"),
+        @NamedQuery(name = "deleteUserConsentClientScopesByClientScope", query = "delete from UserConsentClientScopeEntity grantedScope where grantedScope.scopeId = :scopeId"),
+        @NamedQuery(name = "deleteUserConsentClientScopesByClient", query = "delete from UserConsentClientScopeEntity grantedScope where grantedScope.userConsent IN (select consent from UserConsentEntity consent where consent.clientId = :clientId)"),
+        @NamedQuery(name = "deleteUserConsentClientScopesByExternalClient", query = "delete from UserConsentClientScopeEntity grantedScope where grantedScope.userConsent IN (select consent from UserConsentEntity consent where consent.clientStorageProvider = :clientStorageProvider and consent.externalClientId = :externalClientId)"),
+        @NamedQuery(name = "deleteUserConsentClientScopesByClientStorageProvider", query = "delete from UserConsentClientScopeEntity grantedScope where grantedScope.userConsent IN (select consent from UserConsentEntity consent where consent.clientStorageProvider = :clientStorageProvider)"),
 })
 @Entity
-@Table(name="USER_CONSENT_CLIENT_SCOPE")
+@Table(name = "USER_CONSENT_CLIENT_SCOPE")
 @IdClass(UserConsentClientScopeEntity.Key.class)
 public class UserConsentClientScopeEntity {
 
     @Id
-    @ManyToOne(fetch= FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_CONSENT_ID")
     protected UserConsentEntity userConsent;
 
     @Id
-    @Column(name="SCOPE_ID")
+    @Column(name = "SCOPE_ID")
     protected String scopeId;
 
     public UserConsentEntity getUserConsent() {
@@ -78,7 +68,7 @@ public class UserConsentClientScopeEntity {
         if (o == null) return false;
         if (!(o instanceof UserConsentClientScopeEntity)) return false;
 
-        UserConsentClientScopeEntity that = (UserConsentClientScopeEntity)o;
+        UserConsentClientScopeEntity that = (UserConsentClientScopeEntity) o;
         UserConsentClientScopeEntity.Key myKey = new UserConsentClientScopeEntity.Key(this.userConsent, this.scopeId);
         UserConsentClientScopeEntity.Key hisKey = new UserConsentClientScopeEntity.Key(that.userConsent, that.scopeId);
         return myKey.equals(hisKey);
@@ -119,7 +109,8 @@ public class UserConsentClientScopeEntity {
 
             UserConsentClientScopeEntity.Key key = (UserConsentClientScopeEntity.Key) o;
 
-            if (userConsent != null ? !userConsent.getId().equals(key.userConsent != null ? key.userConsent.getId() : null) : key.userConsent != null) return false;
+            if (userConsent != null ? !userConsent.getId().equals(key.userConsent != null ? key.userConsent.getId() : null) : key.userConsent != null)
+                return false;
             if (scopeId != null ? !scopeId.equals(key.scopeId) : key.scopeId != null) return false;
 
             return true;

@@ -18,12 +18,7 @@
 package org.keycloak.connections.jpa.updater.liquibase.lock;
 
 import liquibase.database.Database;
-import liquibase.database.core.DB2Database;
-import liquibase.database.core.H2Database;
-import liquibase.database.core.MSSQLDatabase;
-import liquibase.database.core.MySQLDatabase;
-import liquibase.database.core.OracleDatabase;
-import liquibase.database.core.PostgresDatabase;
+import liquibase.database.core.*;
 import liquibase.sql.Sql;
 import liquibase.sql.UnparsedSql;
 import liquibase.sqlgenerator.SqlGeneratorChain;
@@ -49,10 +44,10 @@ public class CustomLockDatabaseChangeLogGenerator extends LockDatabaseChangeLogG
     public Sql[] generateSql(LockDatabaseChangeLogStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
 
         Sql selectForUpdateSql = generateSelectForUpdate(database,
-                (statement instanceof CustomLockDatabaseChangeLogStatement)?
+                (statement instanceof CustomLockDatabaseChangeLogStatement) ?
                         ((CustomLockDatabaseChangeLogStatement) statement).getId() : 1);
 
-        return new Sql[] { selectForUpdateSql };
+        return new Sql[]{selectForUpdateSql};
     }
 
 
@@ -62,7 +57,7 @@ public class CustomLockDatabaseChangeLogGenerator extends LockDatabaseChangeLogG
         String rawLockTableName = database.getDatabaseChangeLogLockTableName();
 
         String lockTableName = database.escapeTableName(catalog, schema, rawLockTableName);
-        String idColumnName  = database.escapeColumnName(catalog, schema, rawLockTableName, "ID");
+        String idColumnName = database.escapeColumnName(catalog, schema, rawLockTableName, "ID");
 
         String sqlBase = "SELECT " + idColumnName + " FROM " + lockTableName;
         String sqlWhere = " WHERE " + idColumnName + "=" + id;
@@ -74,14 +69,14 @@ public class CustomLockDatabaseChangeLogGenerator extends LockDatabaseChangeLogG
         } else if (database instanceof MSSQLDatabase) {
             sql = sqlBase + " WITH (UPDLOCK, ROWLOCK)" + sqlWhere;
         } else if (database instanceof DB2Database) {
-            sql = sqlBase + sqlWhere +  " FOR READ ONLY WITH RS USE AND KEEP UPDATE LOCKS";
+            sql = sqlBase + sqlWhere + " FOR READ ONLY WITH RS USE AND KEEP UPDATE LOCKS";
         } else {
             sql = sqlBase + sqlWhere;
             logger.warnf("No direct support for database %s . Database lock may not work correctly", database.getClass().getName());
         }
 
         logger.debugf("SQL command for pessimistic lock: %s", sql);
-        
+
         return new UnparsedSql(sql);
     }
 

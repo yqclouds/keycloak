@@ -21,7 +21,7 @@ import org.w3c.dom.Document;
 
 /**
  * A Holder class that can store the SAML object as well as the corresponding DOM object.
- *
+ * <p>
  * Users of this class need to make it threadsafe by having one instance per thread (ThreadLocal)
  *
  * @author Anil.Saldhana@redhat.com

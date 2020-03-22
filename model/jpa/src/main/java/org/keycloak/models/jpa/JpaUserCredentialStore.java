@@ -28,11 +28,10 @@ import org.keycloak.models.jpa.entities.UserEntity;
 import org.keycloak.models.utils.KeycloakModelUtils;
 
 import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
-
 import java.util.ArrayList;
 import java.util.List;
-import javax.persistence.LockModeType;
 import java.util.stream.Collectors;
 
 /**
@@ -45,9 +44,8 @@ public class JpaUserCredentialStore implements UserCredentialStore {
     public static final int PRIORITY_DIFFERENCE = 10;
 
     protected static final Logger logger = Logger.getLogger(JpaUserCredentialStore.class);
-
-    private final KeycloakSession session;
     protected final EntityManager em;
+    private final KeycloakSession session;
 
     public JpaUserCredentialStore(KeycloakSession session, EntityManager em) {
         this.session = session;
@@ -197,7 +195,7 @@ public class JpaUserCredentialStore implements UserCredentialStore {
             if (id.equals(credential.getId())) {
                 ourCredentialIndex = i;
                 ourCredential = credential;
-            } else if(newPreviousCredentialId != null && newPreviousCredentialId.equals(credential.getId())) {
+            } else if (newPreviousCredentialId != null && newPreviousCredentialId.equals(credential.getId())) {
                 newPreviousCredentialIndex = i;
             }
             i++;
@@ -214,7 +212,7 @@ public class JpaUserCredentialStore implements UserCredentialStore {
         }
 
         // 3 - Compute index where we move our credential
-        int toMoveIndex = newPreviousCredentialId==null ? 0 : newPreviousCredentialIndex + 1;
+        int toMoveIndex = newPreviousCredentialId == null ? 0 : newPreviousCredentialIndex + 1;
 
         // 4 - Insert our credential to new position, remove it from the old position
         newList.add(toMoveIndex, ourCredential);

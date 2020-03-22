@@ -22,11 +22,7 @@ import org.apache.http.conn.ssl.StrictHostnameVerifier;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.*;
 
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
@@ -57,7 +53,7 @@ public class JSSETruststoreConfigurator {
         }
 
         if (sslFactory == null) {
-            synchronized(this) {
+            synchronized (this) {
                 if (sslFactory == null) {
                     try {
                         SSLContext sslctx = SSLContext.getInstance("TLS");

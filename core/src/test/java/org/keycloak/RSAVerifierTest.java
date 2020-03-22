@@ -35,14 +35,7 @@ import javax.security.auth.x500.X500Principal;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigInteger;
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PublicKey;
-import java.security.Security;
-import java.security.SignatureException;
+import java.security.*;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 
@@ -56,11 +49,12 @@ public class RSAVerifierTest {
     private static KeyPair badPair;
     private static KeyPair clientPair;
     private static X509Certificate[] clientCertificateChain;
-    private AccessToken token;
 
     static {
         if (Security.getProvider("BC") == null) Security.addProvider(new BouncyCastleProvider());
     }
+
+    private AccessToken token;
 
     public static X509Certificate generateTestCertificate(String subject, String issuer, KeyPair pair) throws InvalidKeyException,
             NoSuchProviderException, SignatureException {
@@ -128,27 +122,24 @@ public class RSAVerifierTest {
     }
 
 
-   // @Test
-   public void testSpeed() throws Exception
-   {
-       // Took 44 seconds with 50000 iterations
-      byte[] tokenBytes = JsonSerialization.writeValueAsBytes(token);
+    // @Test
+    public void testSpeed() throws Exception {
+        // Took 44 seconds with 50000 iterations
+        byte[] tokenBytes = JsonSerialization.writeValueAsBytes(token);
 
-      long start = System.currentTimeMillis();
-      int count = 50000;
-      for (int i = 0; i < count; i++)
-      {
-          String encoded = new JWSBuilder()
-                  .content(tokenBytes)
-                  .rsa256(idpPair.getPrivate());
+        long start = System.currentTimeMillis();
+        int count = 50000;
+        for (int i = 0; i < count; i++) {
+            String encoded = new JWSBuilder()
+                    .content(tokenBytes)
+                    .rsa256(idpPair.getPrivate());
 
-          verifySkeletonKeyToken(encoded);
+            verifySkeletonKeyToken(encoded);
 
-      }
-      long end = System.currentTimeMillis() - start;
-      System.out.println("took: " + end);
-   }
-
+        }
+        long end = System.currentTimeMillis() - start;
+        System.out.println("took: " + end);
+    }
 
 
     @Test

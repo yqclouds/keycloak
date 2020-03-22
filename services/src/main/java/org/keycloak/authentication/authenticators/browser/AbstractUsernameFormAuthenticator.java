@@ -44,10 +44,9 @@ import javax.ws.rs.core.Response;
  */
 public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuthenticator {
 
-    private static final Logger logger = Logger.getLogger(AbstractUsernameFormAuthenticator.class);
-
     public static final String REGISTRATION_FORM_ACTION = "registration_form";
     public static final String ATTEMPTED_USERNAME = "ATTEMPTED_USERNAME";
+    private static final Logger logger = Logger.getLogger(AbstractUsernameFormAuthenticator.class);
 
     @Override
     public void action(AuthenticationFlowContext context) {
@@ -122,7 +121,7 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
     }
 
 
-    public boolean validateUserAndPassword(AuthenticationFlowContext context, MultivaluedMap<String, String> inputData)  {
+    public boolean validateUserAndPassword(AuthenticationFlowContext context, MultivaluedMap<String, String> inputData) {
         context.clearUser();
         UserModel user = getUser(context, inputData);
         return user != null && validatePassword(context, user, inputData) && validateUser(context, user, inputData);
@@ -191,7 +190,7 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
     public boolean validatePassword(AuthenticationFlowContext context, UserModel user, MultivaluedMap<String, String> inputData, boolean clearUser) {
         String password = inputData.getFirst(CredentialRepresentation.PASSWORD);
         if (password == null || password.isEmpty()) {
-            return badPasswordHandler(context, user, clearUser,true);
+            return badPasswordHandler(context, user, clearUser, true);
         }
 
         if (isTemporarilyDisabledByBruteForce(context, user)) return false;
@@ -199,18 +198,18 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
         if (password != null && !password.isEmpty() && context.getSession().userCredentialManager().isValid(context.getRealm(), user, UserCredentialModel.password(password))) {
             return true;
         } else {
-            return badPasswordHandler(context, user, clearUser,false);
+            return badPasswordHandler(context, user, clearUser, false);
         }
     }
 
     // Set up AuthenticationFlowContext error.
-    private boolean badPasswordHandler(AuthenticationFlowContext context, UserModel user, boolean clearUser,boolean isEmptyPassword) {
+    private boolean badPasswordHandler(AuthenticationFlowContext context, UserModel user, boolean clearUser, boolean isEmptyPassword) {
         context.getEvent().user(user);
         context.getEvent().error(Errors.INVALID_USER_CREDENTIALS);
         Response challengeResponse = challenge(context, getDefaultChallengeMessage(context));
-        if(isEmptyPassword) {
+        if (isEmptyPassword) {
             context.forceChallenge(challengeResponse);
-        }else{
+        } else {
             context.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS, challengeResponse);
         }
 

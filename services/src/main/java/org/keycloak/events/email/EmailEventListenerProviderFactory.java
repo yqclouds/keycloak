@@ -35,6 +35,7 @@ import java.util.Set;
 public class EmailEventListenerProviderFactory implements EventListenerProviderFactory {
 
     private static final Set<EventType> SUPPORTED_EVENTS = new HashSet<>();
+
     static {
         Collections.addAll(SUPPORTED_EVENTS, EventType.LOGIN_ERROR, EventType.UPDATE_PASSWORD, EventType.REMOVE_TOTP, EventType.UPDATE_TOTP);
     }

@@ -42,6 +42,24 @@ import java.util.List;
  */
 public class ReferenceList {
 
+    private List<References> referencesList = new ArrayList<>();
+
+    public void add(References ref) {
+        this.referencesList.add(ref);
+    }
+
+    public void addAll(List<References> refs) {
+        this.referencesList.addAll(refs);
+    }
+
+    public void remove(References ref) {
+        this.referencesList.remove(ref);
+    }
+
+    public List<References> getReferences() {
+        return Collections.unmodifiableList(referencesList);
+    }
+
     public static class References {
 
         private ReferenceType dataReference;
@@ -59,23 +77,5 @@ public class ReferenceList {
         public ReferenceType getKeyReference() {
             return keyReference;
         }
-    }
-
-    private List<References> referencesList = new ArrayList<>();
-
-    public void add(References ref) {
-        this.referencesList.add(ref);
-    }
-
-    public void addAll(List<References> refs) {
-        this.referencesList.addAll(refs);
-    }
-
-    public void remove(References ref) {
-        this.referencesList.remove(ref);
-    }
-
-    public List<References> getReferences() {
-        return Collections.unmodifiableList(referencesList);
     }
 }

@@ -19,11 +19,7 @@ package org.keycloak.protocol.saml.profile.ecp;
 
 import org.keycloak.dom.saml.v2.protocol.AuthnRequestType;
 import org.keycloak.events.EventBuilder;
-import org.keycloak.models.AuthenticationFlowModel;
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.DefaultAuthenticationFlows;
 import org.keycloak.protocol.saml.JaxrsSAML2BindingBuilder;
 import org.keycloak.protocol.saml.SamlConfigAttributes;
@@ -44,7 +40,6 @@ import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPHeaderElement;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>

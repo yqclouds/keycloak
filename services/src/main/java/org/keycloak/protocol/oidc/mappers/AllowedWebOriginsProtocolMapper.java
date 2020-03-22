@@ -17,20 +17,16 @@
 
 package org.keycloak.protocol.oidc.mappers;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientSessionContext;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.utils.WebOriginsUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.AccessToken;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Protocol mapper to add allowed web origins to the access token to the 'allowed-origins' claim
@@ -39,11 +35,17 @@ import org.keycloak.representations.AccessToken;
  */
 public class AllowedWebOriginsProtocolMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper {
 
+    public static final String PROVIDER_ID = "oidc-allowed-origins-mapper";
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
 
-
-    public static final String PROVIDER_ID = "oidc-allowed-origins-mapper";
-
+    public static ProtocolMapperModel createClaimMapper(String name) {
+        ProtocolMapperModel mapper = new ProtocolMapperModel();
+        mapper.setName(name);
+        mapper.setProtocolMapper(PROVIDER_ID);
+        mapper.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
+        mapper.setConfig(Collections.emptyMap());
+        return mapper;
+    }
 
     public List<ProviderConfigProperty> getConfigProperties() {
         return configProperties;
@@ -80,16 +82,6 @@ public class AllowedWebOriginsProtocolMapper extends AbstractOIDCProtocolMapper 
         }
 
         return token;
-    }
-
-
-    public static ProtocolMapperModel createClaimMapper(String name) {
-        ProtocolMapperModel mapper = new ProtocolMapperModel();
-        mapper.setName(name);
-        mapper.setProtocolMapper(PROVIDER_ID);
-        mapper.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
-        mapper.setConfig(Collections.emptyMap());
-        return mapper;
     }
 
 }

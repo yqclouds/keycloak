@@ -17,7 +17,6 @@
 
 package org.keycloak.migration.migrators;
 
-import org.keycloak.keys.KeyProvider;
 import org.keycloak.migration.ModelVersion;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;

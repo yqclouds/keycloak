@@ -19,52 +19,62 @@ package org.keycloak.models.jpa.entities;
 
 import org.hibernate.annotations.Nationalized;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.CascadeType;
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToOne;
-import javax.persistence.MapKeyColumn;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import javax.persistence.*;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 @Entity
-@Table(name="CLIENT", uniqueConstraints = {@UniqueConstraint(columnNames = {"REALM_ID", "CLIENT_ID"})})
+@Table(name = "CLIENT", uniqueConstraints = {@UniqueConstraint(columnNames = {"REALM_ID", "CLIENT_ID"})})
 @NamedQueries({
-        @NamedQuery(name="getClientsByRealm", query="select client from ClientEntity client where client.realm = :realm"),
-        @NamedQuery(name="getClientById", query="select client from ClientEntity client where client.id = :id and client.realm.id = :realm"),
-        @NamedQuery(name="getClientIdsByRealm", query="select client.id from ClientEntity client where client.realm.id = :realm order by client.clientId"),
-        @NamedQuery(name="getAlwaysDisplayInConsoleClients", query="select client.id from ClientEntity client where client.alwaysDisplayInConsole = true and client.realm.id = :realm  order by client.clientId"),
-        @NamedQuery(name="findClientIdByClientId", query="select client.id from ClientEntity client where client.clientId = :clientId and client.realm.id = :realm"),
-        @NamedQuery(name="searchClientsByClientId", query="select client.id from ClientEntity client where lower(client.clientId) like lower(concat('%',:clientId,'%')) and client.realm.id = :realm order by client.clientId"),
-        @NamedQuery(name="getRealmClientsCount", query="select count(client) from ClientEntity client where client.realm.id = :realm"),
-        @NamedQuery(name="findClientByClientId", query="select client from ClientEntity client where client.clientId = :clientId and client.realm.id = :realm"),
+        @NamedQuery(name = "getClientsByRealm", query = "select client from ClientEntity client where client.realm = :realm"),
+        @NamedQuery(name = "getClientById", query = "select client from ClientEntity client where client.id = :id and client.realm.id = :realm"),
+        @NamedQuery(name = "getClientIdsByRealm", query = "select client.id from ClientEntity client where client.realm.id = :realm order by client.clientId"),
+        @NamedQuery(name = "getAlwaysDisplayInConsoleClients", query = "select client.id from ClientEntity client where client.alwaysDisplayInConsole = true and client.realm.id = :realm  order by client.clientId"),
+        @NamedQuery(name = "findClientIdByClientId", query = "select client.id from ClientEntity client where client.clientId = :clientId and client.realm.id = :realm"),
+        @NamedQuery(name = "searchClientsByClientId", query = "select client.id from ClientEntity client where lower(client.clientId) like lower(concat('%',:clientId,'%')) and client.realm.id = :realm order by client.clientId"),
+        @NamedQuery(name = "getRealmClientsCount", query = "select count(client) from ClientEntity client where client.realm.id = :realm"),
+        @NamedQuery(name = "findClientByClientId", query = "select client from ClientEntity client where client.clientId = :clientId and client.realm.id = :realm"),
 })
 public class ClientEntity {
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "REALM_ID")
+    protected RealmEntity realm;
+    @ElementCollection
+    @Column(name = "VALUE")
+    @CollectionTable(name = "WEB_ORIGINS", joinColumns = {@JoinColumn(name = "CLIENT_ID")})
+    protected Set<String> webOrigins = new HashSet<String>();
+    @ElementCollection
+    @Column(name = "VALUE")
+    @CollectionTable(name = "REDIRECT_URIS", joinColumns = {@JoinColumn(name = "CLIENT_ID")})
+    protected Set<String> redirectUris = new HashSet<String>();
+    @OneToMany(cascade = {CascadeType.REMOVE}, orphanRemoval = true, mappedBy = "client")
+    protected Collection<ClientAttributeEntity> attributes = new ArrayList<>();
+    @ElementCollection
+    @MapKeyColumn(name = "BINDING_NAME")
+    @Column(name = "FLOW_ID", length = 4000)
+    @CollectionTable(name = "CLIENT_AUTH_FLOW_BINDINGS", joinColumns = {@JoinColumn(name = "CLIENT_ID")})
+    protected Map<String, String> authFlowBindings = new HashMap<String, String>();
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "SCOPE_MAPPING", joinColumns = {@JoinColumn(name = "CLIENT_ID")}, inverseJoinColumns = {@JoinColumn(name = "ROLE_ID")})
+    protected Set<RoleEntity> scopeMapping = new HashSet<>();
+    @OneToMany(cascade = {CascadeType.REMOVE}, orphanRemoval = true, mappedBy = "client")
+    Collection<ProtocolMapperEntity> protocolMappers = new ArrayList<ProtocolMapperEntity>();
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE}, orphanRemoval = true)
+    @JoinTable(name = "CLIENT_DEFAULT_ROLES", joinColumns = {@JoinColumn(name = "CLIENT_ID")}, inverseJoinColumns = {@JoinColumn(name = "ROLE_ID")})
+    Collection<RoleEntity> defaultRoles = new ArrayList<RoleEntity>();
+    @ElementCollection
+    @MapKeyColumn(name = "NAME")
+    @Column(name = "VALUE")
+    @CollectionTable(name = "CLIENT_NODE_REGISTRATIONS", joinColumns = {@JoinColumn(name = "CLIENT_ID")})
+    Map<String, Integer> registeredNodes = new HashMap<String, Integer>();
     @Id
-    @Column(name="ID", length = 36)
-    @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
+    @Column(name = "ID", length = 36)
+    @Access(AccessType.PROPERTY)
+    // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
     private String id;
     @Nationalized
     @Column(name = "NAME")
@@ -74,99 +84,48 @@ public class ClientEntity {
     private String description;
     @Column(name = "CLIENT_ID")
     private String clientId;
-    @Column(name="ENABLED")
+    @Column(name = "ENABLED")
     private boolean enabled;
     @Column(name = "ALWAYS_DISPLAY_IN_CONSOLE")
     private boolean alwaysDisplayInConsole;
-    @Column(name="SECRET")
+    @Column(name = "SECRET")
     private String secret;
-    @Column(name="REGISTRATION_TOKEN")
+    @Column(name = "REGISTRATION_TOKEN")
     private String registrationToken;
-    @Column(name="CLIENT_AUTHENTICATOR_TYPE")
+    @Column(name = "CLIENT_AUTHENTICATOR_TYPE")
     private String clientAuthenticatorType;
-    @Column(name="NOT_BEFORE")
+    @Column(name = "NOT_BEFORE")
     private int notBefore;
-    @Column(name="PUBLIC_CLIENT")
+    @Column(name = "PUBLIC_CLIENT")
     private boolean publicClient;
-    @Column(name="PROTOCOL")
+    @Column(name = "PROTOCOL")
     private String protocol;
-    @Column(name="FRONTCHANNEL_LOGOUT")
+    @Column(name = "FRONTCHANNEL_LOGOUT")
     private boolean frontchannelLogout;
-    @Column(name="FULL_SCOPE_ALLOWED")
+    @Column(name = "FULL_SCOPE_ALLOWED")
     private boolean fullScopeAllowed;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "REALM_ID")
-    protected RealmEntity realm;
-
-    @ElementCollection
-    @Column(name="VALUE")
-    @CollectionTable(name = "WEB_ORIGINS", joinColumns={ @JoinColumn(name="CLIENT_ID") })
-    protected Set<String> webOrigins = new HashSet<String>();
-
-    @ElementCollection
-    @Column(name="VALUE")
-    @CollectionTable(name = "REDIRECT_URIS", joinColumns={ @JoinColumn(name="CLIENT_ID") })
-    protected Set<String> redirectUris = new HashSet<String>();
-
-    @OneToMany(cascade ={CascadeType.REMOVE}, orphanRemoval = true, mappedBy = "client")
-    protected Collection<ClientAttributeEntity> attributes = new ArrayList<>();
-
-    @ElementCollection
-    @MapKeyColumn(name="BINDING_NAME")
-    @Column(name="FLOW_ID", length = 4000)
-    @CollectionTable(name="CLIENT_AUTH_FLOW_BINDINGS", joinColumns={ @JoinColumn(name="CLIENT_ID") })
-    protected Map<String, String> authFlowBindings = new HashMap<String, String>();
-
-    @OneToMany(cascade ={CascadeType.REMOVE}, orphanRemoval = true, mappedBy = "client")
-    Collection<ProtocolMapperEntity> protocolMappers = new ArrayList<ProtocolMapperEntity>();
-
-    @Column(name="SURROGATE_AUTH_REQUIRED")
+    @Column(name = "SURROGATE_AUTH_REQUIRED")
     private boolean surrogateAuthRequired;
-
-    @Column(name="ROOT_URL")
+    @Column(name = "ROOT_URL")
     private String rootUrl;
-
-    @Column(name="BASE_URL")
+    @Column(name = "BASE_URL")
     private String baseUrl;
-
-    @Column(name="MANAGEMENT_URL")
+    @Column(name = "MANAGEMENT_URL")
     private String managementUrl;
-
-    @Column(name="BEARER_ONLY")
+    @Column(name = "BEARER_ONLY")
     private boolean bearerOnly;
-
-    @Column(name="CONSENT_REQUIRED")
+    @Column(name = "CONSENT_REQUIRED")
     private boolean consentRequired;
-
-    @Column(name="STANDARD_FLOW_ENABLED")
+    @Column(name = "STANDARD_FLOW_ENABLED")
     private boolean standardFlowEnabled;
-
-    @Column(name="IMPLICIT_FLOW_ENABLED")
+    @Column(name = "IMPLICIT_FLOW_ENABLED")
     private boolean implicitFlowEnabled;
-
-    @Column(name="DIRECT_ACCESS_GRANTS_ENABLED")
+    @Column(name = "DIRECT_ACCESS_GRANTS_ENABLED")
     private boolean directAccessGrantsEnabled;
-
-    @Column(name="SERVICE_ACCOUNTS_ENABLED")
+    @Column(name = "SERVICE_ACCOUNTS_ENABLED")
     private boolean serviceAccountsEnabled;
-
-    @Column(name="NODE_REREG_TIMEOUT")
+    @Column(name = "NODE_REREG_TIMEOUT")
     private int nodeReRegistrationTimeout;
-
-    @OneToMany(fetch = FetchType.LAZY, cascade ={CascadeType.REMOVE}, orphanRemoval = true)
-    @JoinTable(name="CLIENT_DEFAULT_ROLES", joinColumns = { @JoinColumn(name="CLIENT_ID")}, inverseJoinColumns = { @JoinColumn(name="ROLE_ID")})
-    Collection<RoleEntity> defaultRoles = new ArrayList<RoleEntity>();
-
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinTable(name="SCOPE_MAPPING", joinColumns = { @JoinColumn(name="CLIENT_ID")}, inverseJoinColumns = { @JoinColumn(name="ROLE_ID")})
-    protected Set<RoleEntity> scopeMapping = new HashSet<>();
-
-    @ElementCollection
-    @MapKeyColumn(name="NAME")
-    @Column(name="VALUE")
-    @CollectionTable(name="CLIENT_NODE_REGISTRATIONS", joinColumns={ @JoinColumn(name="CLIENT_ID") })
-    Map<String, Integer> registeredNodes = new HashMap<String, Integer>();
 
     public RealmEntity getRealm() {
         return realm;

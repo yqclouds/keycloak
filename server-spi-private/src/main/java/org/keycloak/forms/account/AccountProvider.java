@@ -41,13 +41,13 @@ public interface AccountProvider extends Provider {
 
     Response createResponse(AccountPages page);
 
-    AccountProvider setError(Response.Status status, String message, Object ... parameters);
+    AccountProvider setError(Response.Status status, String message, Object... parameters);
 
     AccountProvider setErrors(Response.Status status, List<FormMessage> messages);
 
-    AccountProvider setSuccess(String message, Object ... parameters);
+    AccountProvider setSuccess(String message, Object... parameters);
 
-    AccountProvider setWarning(String message, Object ... parameters);
+    AccountProvider setWarning(String message, Object... parameters);
 
     AccountProvider setUser(UserModel user);
 

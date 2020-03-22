@@ -44,6 +44,7 @@ public class ResolveRelative {
             return UriBuilder.fromUri(frontendUrl).replacePath(url).build().toString();
         }
     }
+
     public static String resolveRootUrl(KeycloakSession session, String rootUrl) {
         String frontendUrl = session.getContext().getUri(UrlType.FRONTEND).getBaseUri().toString();
         String adminUrl = session.getContext().getUri(UrlType.ADMIN).getBaseUri().toString();

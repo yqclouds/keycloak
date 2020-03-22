@@ -28,8 +28,11 @@ import java.util.Set;
  */
 public interface UserGroupMembershipFederatedStorage {
     Set<GroupModel> getGroups(RealmModel realm, String userId);
+
     void joinGroup(RealmModel realm, String userId, GroupModel group);
+
     void leaveGroup(RealmModel realm, String userId, GroupModel group);
+
     List<String> getMembership(RealmModel realm, GroupModel group, int firstResult, int max);
 
 }

@@ -42,205 +42,198 @@ import java.util.List;
 public abstract class AbstractJsonUserAttributeMapper extends AbstractIdentityProviderMapper {
 
 
-	protected static final Logger logger = Logger.getLogger(AbstractJsonUserAttributeMapper.class);
+    /**
+     * Config param where name of mapping source JSON User Profile field is stored.
+     */
+    public static final String CONF_JSON_FIELD = "jsonField";
+    /**
+     * Config param where name of mapping target USer attribute is stored.
+     */
+    public static final String CONF_USER_ATTRIBUTE = "userAttribute";
+    /**
+     * Key in {@link BrokeredIdentityContext#getContextData()} where {@link JsonNode} with user profile is stored.
+     */
+    public static final String CONTEXT_JSON_NODE = OIDCIdentityProvider.USER_INFO;
+    protected static final Logger logger = Logger.getLogger(AbstractJsonUserAttributeMapper.class);
+    protected static final Logger LOGGER_DUMP_USER_PROFILE = Logger.getLogger("org.keycloak.social.user_profile_dump");
+    private static final String JSON_PATH_DELIMITER = ".";
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
 
-	protected static final Logger LOGGER_DUMP_USER_PROFILE = Logger.getLogger("org.keycloak.social.user_profile_dump");
+    static {
+        ProviderConfigProperty property;
+        ProviderConfigProperty property1;
+        property1 = new ProviderConfigProperty();
+        property1.setName(CONF_JSON_FIELD);
+        property1.setLabel("Social Profile JSON Field Path");
+        property1.setHelpText("Path of field in Social provider User Profile JSON data to get value from. You can use dot notation for nesting and square brackets for array index. Eg. 'contact.address[0].country'.");
+        property1.setType(ProviderConfigProperty.STRING_TYPE);
+        configProperties.add(property1);
+        property = new ProviderConfigProperty();
+        property.setName(CONF_USER_ATTRIBUTE);
+        property.setLabel("User Attribute Name");
+        property.setHelpText("User attribute name to store information into.");
+        property.setType(ProviderConfigProperty.STRING_TYPE);
+        configProperties.add(property);
+    }
 
-	private static final String JSON_PATH_DELIMITER = ".";
+    /**
+     * Store used profile JsonNode into user context for later use by this mapper. Profile data are dumped into special logger if enabled also to allow investigation of the structure.
+     *
+     * @param user     context to store profile data into
+     * @param profile  to store into context
+     * @param provider identification of social provider to be used in log dump
+     * @see #preprocessFederatedIdentity(KeycloakSession, RealmModel, IdentityProviderMapperModel, BrokeredIdentityContext)
+     * @see BrokeredIdentityContext#getContextData()
+     */
+    public static void storeUserProfileForMapper(BrokeredIdentityContext user, JsonNode profile, String provider) {
+        user.getContextData().put(AbstractJsonUserAttributeMapper.CONTEXT_JSON_NODE, profile);
+        if (LOGGER_DUMP_USER_PROFILE.isDebugEnabled())
+            LOGGER_DUMP_USER_PROFILE.debug("User Profile JSON Data for provider " + provider + ": " + profile);
+    }
 
-	/**
-	 * Config param where name of mapping source JSON User Profile field is stored.
-	 */
-	public static final String CONF_JSON_FIELD = "jsonField";
-	/**
-	 * Config param where name of mapping target USer attribute is stored.
-	 */
-	public static final String CONF_USER_ATTRIBUTE = "userAttribute";
+    protected static Object getJsonValue(IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
 
-	/**
-	 * Key in {@link BrokeredIdentityContext#getContextData()} where {@link JsonNode} with user profile is stored.
-	 */
-	public static final String CONTEXT_JSON_NODE = OIDCIdentityProvider.USER_INFO;
+        String jsonField = mapperModel.getConfig().get(CONF_JSON_FIELD);
+        if (jsonField == null || jsonField.trim().isEmpty()) {
+            logger.warnf("JSON field path is not configured for mapper %s", mapperModel.getName());
+            return null;
+        }
+        jsonField = jsonField.trim();
 
-	private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+        if (jsonField.startsWith(JSON_PATH_DELIMITER) || jsonField.endsWith(JSON_PATH_DELIMITER) || jsonField.startsWith("[")) {
+            logger.warnf("JSON field path is invalid %s", jsonField);
+            return null;
+        }
 
-	static {
-		ProviderConfigProperty property;
-		ProviderConfigProperty property1;
-		property1 = new ProviderConfigProperty();
-		property1.setName(CONF_JSON_FIELD);
-		property1.setLabel("Social Profile JSON Field Path");
-		property1.setHelpText("Path of field in Social provider User Profile JSON data to get value from. You can use dot notation for nesting and square brackets for array index. Eg. 'contact.address[0].country'.");
-		property1.setType(ProviderConfigProperty.STRING_TYPE);
-		configProperties.add(property1);
-		property = new ProviderConfigProperty();
-		property.setName(CONF_USER_ATTRIBUTE);
-		property.setLabel("User Attribute Name");
-		property.setHelpText("User attribute name to store information into.");
-		property.setType(ProviderConfigProperty.STRING_TYPE);
-		configProperties.add(property);
-	}
+        JsonNode profileJsonNode = (JsonNode) context.getContextData().get(CONTEXT_JSON_NODE);
 
-	/**
-	 * Store used profile JsonNode into user context for later use by this mapper. Profile data are dumped into special logger if enabled also to allow investigation of the structure.
-	 *
-	 * @param user context to store profile data into
-	 * @param profile to store into context
-	 * @param provider identification of social provider to be used in log dump
-	 *
-	 * @see #preprocessFederatedIdentity(KeycloakSession, RealmModel, IdentityProviderMapperModel, BrokeredIdentityContext)
-	 * @see BrokeredIdentityContext#getContextData()
-	 */
-	public static void storeUserProfileForMapper(BrokeredIdentityContext user, JsonNode profile, String provider) {
-		user.getContextData().put(AbstractJsonUserAttributeMapper.CONTEXT_JSON_NODE, profile);
-		if (LOGGER_DUMP_USER_PROFILE.isDebugEnabled())
-			LOGGER_DUMP_USER_PROFILE.debug("User Profile JSON Data for provider "+provider+": " + profile);
-	}
+        Object value = getJsonValue(profileJsonNode, jsonField);
 
-	@Override
-	public List<ProviderConfigProperty> getConfigProperties() {
-		return configProperties;
-	}
+        if (value == null) {
+            logger.debugf("User profile JSON value '%s' is not available.", jsonField);
+        }
 
-	@Override
-	public String getDisplayCategory() {
-		return "Attribute Importer";
-	}
+        return value;
+    }
 
-	@Override
-	public String getDisplayType() {
-		return "Attribute Importer";
-	}
+    public static Object getJsonValue(JsonNode baseNode, String fieldPath) {
+        logger.debug("Going to process JsonNode path " + fieldPath + " on data " + baseNode);
+        if (baseNode != null) {
 
-	@Override
-	public String getHelpText() {
-		return "Import user profile information if it exists in Social provider JSON data into the specified user attribute.";
-	}
+            List<String> fields = OIDCAttributeMapperHelper.splitClaimPath(fieldPath);
+            if (fields.isEmpty() || fieldPath.endsWith(".")) {
+                logger.debug("JSON path is invalid " + fieldPath);
+                return null;
+            }
 
-	@Override
-	public void preprocessFederatedIdentity(KeycloakSession session, RealmModel realm, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
-		String attribute = mapperModel.getConfig().get(CONF_USER_ATTRIBUTE);
-		if (attribute == null || attribute.trim().isEmpty()) {
-			logger.warnf("Attribute is not configured for mapper %s", mapperModel.getName());
-			return;
-		}
-		attribute = attribute.trim();
+            JsonNode currentNode = baseNode;
+            for (String currentFieldName : fields) {
 
-		Object value = getJsonValue(mapperModel, context);
-		if (value != null) {
-			if (value instanceof List) {
-				context.setUserAttribute(attribute, (List<String>) value);
-			} else {
-				context.setUserAttribute(attribute, value.toString());
-			}
-		}
-	}
+                // if array path, retrieve field name and index
+                String currentNodeName = currentFieldName;
+                int arrayIndex = -1;
+                if (currentFieldName.endsWith("]")) {
+                    int bi = currentFieldName.indexOf("[");
+                    if (bi == -1) {
+                        logger.debug("Invalid array index construct in " + currentFieldName);
+                        return null;
+                    }
+                    try {
+                        String is = currentFieldName.substring(bi + 1, currentFieldName.length() - 1).trim();
+                        arrayIndex = Integer.parseInt(is);
+                        if (arrayIndex < 0) throw new ArrayIndexOutOfBoundsException();
+                    } catch (Exception e) {
+                        logger.debug("Invalid array index construct in " + currentFieldName);
+                        return null;
+                    }
+                    currentNodeName = currentFieldName.substring(0, bi).trim();
+                }
 
-	@Override
-	public void updateBrokeredUser(KeycloakSession session, RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
-		// we do not update user profile from social provider
-	}
+                currentNode = currentNode.get(currentNodeName);
+                if (arrayIndex > -1 && currentNode.isArray()) {
+                    logger.debug("Going to take array node at index " + arrayIndex);
+                    currentNode = currentNode.get(arrayIndex);
+                }
 
-	protected static Object getJsonValue(IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
+                if (currentNode == null) {
+                    logger.debug("JsonNode not found for name " + currentFieldName);
+                    return null;
+                }
 
-		String jsonField = mapperModel.getConfig().get(CONF_JSON_FIELD);
-		if (jsonField == null || jsonField.trim().isEmpty()) {
-			logger.warnf("JSON field path is not configured for mapper %s", mapperModel.getName());
-			return null;
-		}
-		jsonField = jsonField.trim();
+                if (currentNode.isArray()) {
+                    List<String> values = new ArrayList<>();
+                    for (JsonNode childNode : currentNode) {
+                        if (childNode.isTextual()) {
+                            values.add(childNode.textValue());
+                        } else {
+                            logger.warn("JsonNode in array is not text value " + childNode);
+                        }
+                    }
+                    if (values.isEmpty()) {
+                        return null;
+                    }
+                    return values;
+                } else if (currentNode.isNull()) {
 
-		if (jsonField.startsWith(JSON_PATH_DELIMITER) || jsonField.endsWith(JSON_PATH_DELIMITER) || jsonField.startsWith("[")) {
-			logger.warnf("JSON field path is invalid %s", jsonField);
-			return null;
-		}
+                    logger.debug("JsonNode is null node for name " + currentFieldName);
+                    return null;
+                } else if (currentNode.isValueNode()) {
+                    String ret = currentNode.asText();
+                    if (ret != null && !ret.trim().isEmpty())
+                        return ret.trim();
+                    else
+                        return null;
 
-		JsonNode profileJsonNode = (JsonNode) context.getContextData().get(CONTEXT_JSON_NODE);
+                }
 
-		Object value = getJsonValue(profileJsonNode, jsonField);
+            }
+            return currentNode;
+        }
+        return null;
+    }
 
-		if (value == null) {
-			logger.debugf("User profile JSON value '%s' is not available.", jsonField);
-		}
+    @Override
+    public List<ProviderConfigProperty> getConfigProperties() {
+        return configProperties;
+    }
 
-		return value;
-	}
+    @Override
+    public String getDisplayCategory() {
+        return "Attribute Importer";
+    }
 
+    @Override
+    public String getDisplayType() {
+        return "Attribute Importer";
+    }
 
-	public static Object getJsonValue(JsonNode baseNode, String fieldPath) {
-		logger.debug("Going to process JsonNode path " + fieldPath + " on data " + baseNode);
-		if (baseNode != null) {
+    @Override
+    public String getHelpText() {
+        return "Import user profile information if it exists in Social provider JSON data into the specified user attribute.";
+    }
 
-			List<String> fields = OIDCAttributeMapperHelper.splitClaimPath(fieldPath);
-			if (fields.isEmpty() || fieldPath.endsWith(".")) {
-				logger.debug("JSON path is invalid " + fieldPath);
-				return null;
-			}
+    @Override
+    public void preprocessFederatedIdentity(KeycloakSession session, RealmModel realm, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
+        String attribute = mapperModel.getConfig().get(CONF_USER_ATTRIBUTE);
+        if (attribute == null || attribute.trim().isEmpty()) {
+            logger.warnf("Attribute is not configured for mapper %s", mapperModel.getName());
+            return;
+        }
+        attribute = attribute.trim();
 
-			JsonNode currentNode = baseNode;
-			for (String currentFieldName : fields) {
+        Object value = getJsonValue(mapperModel, context);
+        if (value != null) {
+            if (value instanceof List) {
+                context.setUserAttribute(attribute, (List<String>) value);
+            } else {
+                context.setUserAttribute(attribute, value.toString());
+            }
+        }
+    }
 
-				// if array path, retrieve field name and index
-				String currentNodeName = currentFieldName;
-				int arrayIndex = -1;
-				if (currentFieldName.endsWith("]")) {
-					int bi = currentFieldName.indexOf("[");
-					if (bi == -1) {
-						logger.debug("Invalid array index construct in " + currentFieldName);
-						return null;
-					}
-					try {
-						String is = currentFieldName.substring(bi + 1, currentFieldName.length() - 1).trim();
-						arrayIndex = Integer.parseInt(is);
-						if( arrayIndex < 0) throw new ArrayIndexOutOfBoundsException();
-					} catch (Exception e) {
-						logger.debug("Invalid array index construct in " + currentFieldName);
-						return null;
-					}
-					currentNodeName = currentFieldName.substring(0, bi).trim();
-				}
-
-				currentNode = currentNode.get(currentNodeName);
-				if (arrayIndex > -1 && currentNode.isArray()) {
-					logger.debug("Going to take array node at index " + arrayIndex);
-					currentNode = currentNode.get(arrayIndex);
-				}
-
-				if (currentNode == null) {
-					logger.debug("JsonNode not found for name " + currentFieldName);
-					return null;
-				}
-
-				if (currentNode.isArray()) {
-					List<String> values = new ArrayList<>();
-					for (JsonNode childNode : currentNode) {
-						if (childNode.isTextual()) {
-							values.add(childNode.textValue());
-						} else {
-							logger.warn("JsonNode in array is not text value " + childNode);
-						}
-					}
-					if (values.isEmpty()) {
-						return null;
-					}
-					return values ; 
-				} else if (currentNode.isNull()) {
-
-					logger.debug("JsonNode is null node for name " + currentFieldName);
-					return null;
-				} else if (currentNode.isValueNode()) {
-					String ret = currentNode.asText();
-					if (ret != null && !ret.trim().isEmpty())
-						return ret.trim();
-					else
-						return null;
-
-				}
-
-			}
-			return currentNode;
-		}
-		return null;
-	}
+    @Override
+    public void updateBrokeredUser(KeycloakSession session, RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
+        // we do not update user profile from social provider
+    }
 
 }

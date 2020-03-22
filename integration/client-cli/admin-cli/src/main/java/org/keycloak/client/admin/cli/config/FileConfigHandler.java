@@ -19,11 +19,7 @@ package org.keycloak.client.admin.cli.config;
 import org.keycloak.client.admin.cli.util.IoUtil;
 import org.keycloak.util.JsonSerialization;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
@@ -40,12 +36,22 @@ public class FileConfigHandler implements ConfigHandler {
     private static final long MAX_SIZE = 10 * 1024 * 1024;
     private static String configFile;
 
+    public static String getConfigFile() {
+        return configFile;
+    }
+
     public static void setConfigFile(String filename) {
         configFile = filename;
     }
 
-    public static String getConfigFile() {
-        return configFile;
+    public static void ensureFile() {
+        Path path = null;
+        try {
+            path = Paths.get(new File(configFile).getAbsolutePath());
+            IoUtil.ensureFile(path);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create config file: " + path, e);
+        }
     }
 
     public ConfigData loadConfig() {
@@ -61,16 +67,6 @@ public class FileConfigHandler implements ConfigHandler {
             }
         } catch (IOException e) {
             throw new RuntimeException("Failed to load " + configFile, e);
-        }
-    }
-
-    public static void ensureFile() {
-        Path path = null;
-        try {
-            path = Paths.get(new File(configFile).getAbsolutePath());
-            IoUtil.ensureFile(path);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to create config file: " + path, e);
         }
     }
 
@@ -106,7 +102,7 @@ public class FileConfigHandler implements ConfigHandler {
                         if (size > MAX_SIZE) {
                             printErr("Config file " + configFile + " is too big. It will be overwritten.");
                             file.setLength(0);
-                        } else if (size > 0){
+                        } else if (size > 0) {
                             byte[] buf = new byte[(int) size];
                             file.readFully(buf);
                             config = JsonSerialization.readValue(new ByteArrayInputStream(buf), ConfigData.class);
@@ -116,7 +112,7 @@ public class FileConfigHandler implements ConfigHandler {
                         op.update(config);
 
                         // save config to file
-                        byte [] content = JsonSerialization.writeValueAsPrettyString(config).getBytes("utf-8");
+                        byte[] content = JsonSerialization.writeValueAsPrettyString(config).getBytes("utf-8");
                         file.seek(0);
                         file.write(content);
                         file.setLength(content.length);

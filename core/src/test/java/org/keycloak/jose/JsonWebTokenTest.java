@@ -52,7 +52,7 @@ public class JsonWebTokenTest {
         // Token with no audience
         JsonWebToken s = new JsonWebToken();
         s.addAudience("audience-1");
-        assertArrayEquals(new String[] { "audience-1"}, s.getAudience());
+        assertArrayEquals(new String[]{"audience-1"}, s.getAudience());
 
         // Add to existing
         s.addAudience("audience-2");

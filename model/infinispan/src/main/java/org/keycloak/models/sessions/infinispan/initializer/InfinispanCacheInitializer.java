@@ -18,7 +18,9 @@
 package org.keycloak.models.sessions.infinispan.initializer;
 
 import org.infinispan.Cache;
+import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.distexec.DefaultExecutorService;
+import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.remoting.transport.Transport;
 import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
@@ -33,13 +35,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import org.infinispan.commons.CacheConfigurationException;
-import org.infinispan.factories.ComponentRegistry;
 
 /**
  * Startup initialization for reading persistent userSessions to be filled into infinispan/memory . In cluster,
  * the initialization is distributed among all cluster nodes, so the startup time is even faster
- *
+ * <p>
  * Implementation is pretty generic and doesn't contain any "userSession" specific stuff. All logic related to how are sessions loaded is in the SessionLoader implementation
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -130,7 +130,7 @@ public class InfinispanCacheInitializer extends BaseCacheInitializer {
             while (segmentToLoad < state.getSegmentsCount()) {
                 if (firstTryForSegment) {
                     // do not change the node count if it's not the first try
-                    int nodesCount = transport==null ? 1 : transport.getMembers().size();
+                    int nodesCount = transport == null ? 1 : transport.getMembers().size();
                     distributedWorkersCount = processors * nodesCount;
                 }
 

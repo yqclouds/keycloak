@@ -17,33 +17,24 @@
 
 package org.keycloak.models.sessions.infinispan.util;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.jboss.logging.Logger;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
- *
  * Helper to optimize marshalling/unmarhsalling of some types
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class KeycloakMarshallUtil {
 
-    private static final Logger log = Logger.getLogger(KeycloakMarshallUtil.class);
-
     public static final Externalizer<String> STRING_EXT = new StringExternalizer();
-
     public static final Externalizer<UUID> UUID_EXT = new Externalizer<UUID>() {
         @Override
         public void writeObject(ObjectOutput output, UUID uuid) throws IOException {
@@ -55,6 +46,7 @@ public class KeycloakMarshallUtil {
             return MarshallUtil.unmarshallUUID(input, true);
         }
     };
+    private static final Logger log = Logger.getLogger(KeycloakMarshallUtil.class);
 
     // MAP
 
@@ -89,7 +81,7 @@ public class KeycloakMarshallUtil {
 
             TYPED_MAP map = mapBuilder.build(size);
 
-            for (int i=0 ; i<size ; i++) {
+            for (int i = 0; i < size; i++) {
                 K key = keyExternalizer.readObject(input);
                 V value = valueExternalizer.readObject(input);
 
@@ -120,7 +112,7 @@ public class KeycloakMarshallUtil {
     }
 
     public static <E, T extends Collection<E>> T readCollection(ObjectInput input, Externalizer<E> valueExternalizer,
-                                          MarshallUtil.CollectionBuilder<E, T> colBuilder) throws ClassNotFoundException, IOException {
+                                                                MarshallUtil.CollectionBuilder<E, T> colBuilder) throws ClassNotFoundException, IOException {
         byte b = input.readByte();
         if (b == 0) {
             return null;
@@ -130,7 +122,7 @@ public class KeycloakMarshallUtil {
 
             T col = colBuilder.build(size);
 
-            for (int i=0 ; i<size ; i++) {
+            for (int i = 0; i < size; i++) {
                 E value = valueExternalizer.readObject(input);
                 col.add(value);
             }
@@ -141,7 +133,8 @@ public class KeycloakMarshallUtil {
 
     /**
      * Marshalls the given object with support of {@code null} values.
-     * @param obj Object to marshall (can be {@code null})
+     *
+     * @param obj    Object to marshall (can be {@code null})
      * @param output Output stream
      * @throws IOException
      */
@@ -156,6 +149,7 @@ public class KeycloakMarshallUtil {
 
     /**
      * Unmarshals the given object into {@code Integer} instance.
+     *
      * @param input Input stream
      * @return Unmarshalled value (can be {@code null})
      * @throws IOException

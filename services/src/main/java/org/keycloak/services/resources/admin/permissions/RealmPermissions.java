@@ -26,7 +26,6 @@ import org.keycloak.services.ForbiddenException;
 /**
  * Manages default policies for all users.
  *
- *
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
@@ -49,6 +48,7 @@ class RealmPermissions implements RealmPermissionEvaluator {
         return root.hasOneAdminRole(AdminRoles.MANAGE_REALM);
 
     }
+
     public boolean canViewRealmDefault() {
         return root.hasOneAdminRole(AdminRoles.MANAGE_REALM, AdminRoles.VIEW_REALM);
     }
@@ -57,6 +57,7 @@ class RealmPermissions implements RealmPermissionEvaluator {
         return root.hasOneAdminRole(AdminRoles.MANAGE_IDENTITY_PROVIDERS);
 
     }
+
     public boolean canViewIdentityProvidersDefault() {
         return root.hasOneAdminRole(AdminRoles.MANAGE_IDENTITY_PROVIDERS, AdminRoles.VIEW_IDENTITY_PROVIDERS);
     }
@@ -65,12 +66,15 @@ class RealmPermissions implements RealmPermissionEvaluator {
         return root.hasOneAdminRole(AdminRoles.MANAGE_AUTHORIZATION, AdminRoles.MANAGE_CLIENTS);
 
     }
+
     public boolean canViewAuthorizationDefault() {
         return root.hasOneAdminRole(AdminRoles.MANAGE_AUTHORIZATION, AdminRoles.VIEW_AUTHORIZATION);
     }
+
     public boolean canManageEventsDefault() {
         return root.hasOneAdminRole(AdminRoles.MANAGE_EVENTS);
     }
+
     public boolean canViewEventsDefault() {
         return root.hasOneAdminRole(AdminRoles.MANAGE_EVENTS, AdminRoles.VIEW_EVENTS);
     }
@@ -99,6 +103,7 @@ class RealmPermissions implements RealmPermissionEvaluator {
             throw new ForbiddenException();
         }
     }
+
     @Override
     public boolean canViewRealm() {
         return canViewRealmDefault();
@@ -153,6 +158,7 @@ class RealmPermissions implements RealmPermissionEvaluator {
             throw new ForbiddenException();
         }
     }
+
     @Override
     public void requireViewAuthorization() {
         if (!canViewAuthorization()) {
@@ -171,6 +177,7 @@ class RealmPermissions implements RealmPermissionEvaluator {
             throw new ForbiddenException();
         }
     }
+
     @Override
     public boolean canViewEvents() {
         return canViewEventsDefault();

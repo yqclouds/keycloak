@@ -18,7 +18,6 @@ package org.keycloak.services.resources.admin;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import javax.ws.rs.NotFoundException;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
@@ -32,12 +31,7 @@ import org.keycloak.representations.idm.ClientScopeRepresentation;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -47,18 +41,17 @@ import java.util.List;
 /**
  * Base resource class for managing a realm's client scopes.
  *
- * @resource Client Scopes
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
+ * @resource Client Scopes
  */
 public class ClientScopesResource {
     protected static final Logger logger = Logger.getLogger(ClientScopesResource.class);
     protected RealmModel realm;
-    private AdminPermissionEvaluator auth;
-    private AdminEventBuilder adminEvent;
-
     @Context
     protected KeycloakSession session;
+    private AdminPermissionEvaluator auth;
+    private AdminEventBuilder adminEvent;
 
     public ClientScopesResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.realm = realm;
@@ -68,7 +61,7 @@ public class ClientScopesResource {
 
     /**
      * Get client scopes belonging to the realm
-     *
+     * <p>
      * Returns a list of client scopes belonging to the realm
      */
     @GET
@@ -95,7 +88,7 @@ public class ClientScopesResource {
 
     /**
      * Create a new client scope
-     *
+     * <p>
      * Client Scope's name must be unique!
      *
      * @param rep

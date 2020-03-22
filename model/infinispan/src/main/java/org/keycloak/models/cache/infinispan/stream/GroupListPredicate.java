@@ -1,5 +1,8 @@
 package org.keycloak.models.cache.infinispan.stream;
 
+import org.infinispan.commons.marshall.Externalizer;
+import org.infinispan.commons.marshall.MarshallUtil;
+import org.infinispan.commons.marshall.SerializeWith;
 import org.keycloak.models.cache.infinispan.entities.GroupListQuery;
 import org.keycloak.models.cache.infinispan.entities.Revisioned;
 
@@ -9,9 +12,6 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.function.Predicate;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.MarshallUtil;
-import org.infinispan.commons.marshall.SerializeWith;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -35,7 +35,7 @@ public class GroupListPredicate implements Predicate<Map.Entry<String, Revisione
         Object value = entry.getValue();
         if (value == null) return false;
         if (value instanceof GroupListQuery) {
-            GroupListQuery groupList = (GroupListQuery)value;
+            GroupListQuery groupList = (GroupListQuery) value;
             if (groupList.getRealm().equals(realm)) return true;
         }
         return false;

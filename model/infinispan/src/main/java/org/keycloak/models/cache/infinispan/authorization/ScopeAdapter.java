@@ -29,6 +29,7 @@ public class ScopeAdapter implements Scope, CachedModel<Scope> {
     protected CachedScope cached;
     protected StoreFactoryCacheSession cacheSession;
     protected Scope updated;
+    protected boolean invalidated;
 
     public ScopeAdapter(CachedScope cached, StoreFactoryCacheSession cacheSession) {
         this.cached = cached;
@@ -44,8 +45,6 @@ public class ScopeAdapter implements Scope, CachedModel<Scope> {
         }
         return updated;
     }
-
-    protected boolean invalidated;
 
     protected void invalidateFlag() {
         invalidated = true;

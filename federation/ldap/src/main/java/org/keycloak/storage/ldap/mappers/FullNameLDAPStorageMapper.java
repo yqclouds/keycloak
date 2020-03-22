@@ -166,7 +166,7 @@ public class FullNameLDAPStorageMapper extends AbstractLDAPStorageMapper {
             return;
         }
 
-        EscapeStrategy escapeStrategy = firstNameCondition!=null ? firstNameCondition.getEscapeStrategy() : lastNameCondition.getEscapeStrategy();
+        EscapeStrategy escapeStrategy = firstNameCondition != null ? firstNameCondition.getEscapeStrategy() : lastNameCondition.getEscapeStrategy();
 
         EqualCondition fullNameCondition = new EqualCondition(ldapFullNameAttrName, fullName, escapeStrategy);
         query.addWhereCondition(fullNameCondition);

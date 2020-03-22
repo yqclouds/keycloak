@@ -24,7 +24,8 @@ public class CmdStdinContext<T> {
     private T result;
     private String content;
 
-    public CmdStdinContext() {}
+    public CmdStdinContext() {
+    }
 
     public T getResult() {
         return result;

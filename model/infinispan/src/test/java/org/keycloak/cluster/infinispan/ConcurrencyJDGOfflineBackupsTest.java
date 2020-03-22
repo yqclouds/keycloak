@@ -17,8 +17,6 @@
 
 package org.keycloak.cluster.infinispan;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.context.Flag;
@@ -29,6 +27,8 @@ import org.keycloak.common.util.Time;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.entities.UserSessionEntity;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -70,7 +70,7 @@ public class ConcurrencyJDGOfflineBackupsTest {
 
             AtomicInteger successCount = new AtomicInteger(0);
             AtomicInteger errorsCount = new AtomicInteger(0);
-            for (int i=0 ; i<100 ; i++) {
+            for (int i = 0; i < 100; i++) {
                 try {
                     cache1
                             .getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL) // will still invoke remoteStore . Just doesn't propagate to cluster

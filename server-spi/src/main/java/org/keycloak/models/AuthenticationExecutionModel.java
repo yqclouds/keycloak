@@ -21,19 +21,10 @@ import java.io.Serializable;
 import java.util.Comparator;
 
 /**
-* @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
-* @version $Revision: 1 $
-*/
+ * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
+ * @version $Revision: 1 $
+ */
 public class AuthenticationExecutionModel implements Serializable {
-
-    public static class ExecutionComparator implements Comparator<AuthenticationExecutionModel> {
-        public static final ExecutionComparator SINGLETON = new ExecutionComparator();
-
-        @Override
-        public int compare(AuthenticationExecutionModel o1, AuthenticationExecutionModel o2) {
-            return o1.priority - o2.priority;
-        }
-    }
 
     private String id;
     private String authenticatorConfig;
@@ -118,25 +109,22 @@ public class AuthenticationExecutionModel implements Serializable {
         this.authenticatorFlow = authenticatorFlow;
     }
 
-    public enum Requirement {
-        REQUIRED,
-        CONDITIONAL,
-        ALTERNATIVE,
-        DISABLED
-    }
-
     public boolean isRequired() {
         return requirement == Requirement.REQUIRED;
     }
+
     public boolean isConditional() {
         return requirement == Requirement.CONDITIONAL;
     }
+
     public boolean isAlternative() {
         return requirement == Requirement.ALTERNATIVE;
     }
+
     public boolean isDisabled() {
         return requirement == Requirement.DISABLED;
     }
+
     public boolean isEnabled() {
         return requirement != Requirement.DISABLED;
     }
@@ -156,5 +144,21 @@ public class AuthenticationExecutionModel implements Serializable {
     @Override
     public int hashCode() {
         return id != null ? id.hashCode() : 0;
+    }
+
+    public enum Requirement {
+        REQUIRED,
+        CONDITIONAL,
+        ALTERNATIVE,
+        DISABLED
+    }
+
+    public static class ExecutionComparator implements Comparator<AuthenticationExecutionModel> {
+        public static final ExecutionComparator SINGLETON = new ExecutionComparator();
+
+        @Override
+        public int compare(AuthenticationExecutionModel o1, AuthenticationExecutionModel o2) {
+            return o1.priority - o2.priority;
+        }
     }
 }

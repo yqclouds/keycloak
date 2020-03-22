@@ -17,12 +17,6 @@
 
 package org.keycloak.models.sessions.infinispan.remotestore;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.RejectedExecutionException;
-
 import org.infinispan.client.hotrod.event.ClientCacheEntryCreatedEvent;
 import org.infinispan.client.hotrod.event.ClientCacheEntryModifiedEvent;
 import org.infinispan.client.hotrod.event.ClientCacheEntryRemovedEvent;
@@ -30,6 +24,12 @@ import org.infinispan.client.hotrod.event.ClientEvent;
 import org.jboss.logging.Logger;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.common.util.Time;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 
 import static org.infinispan.client.hotrod.event.ClientEvent.Type.CLIENT_CACHE_ENTRY_CREATED;
 import static org.infinispan.client.hotrod.event.ClientEvent.Type.CLIENT_CACHE_ENTRY_REMOVED;
@@ -191,7 +191,7 @@ public class ClientListenerExecutorDecorator<K> {
                 case CLIENT_CACHE_ENTRY_MODIFIED:
 
                     boolean addd = true;
-                    for (int i=0 ; i<existingEvents.size() ; i++) {
+                    for (int i = 0; i < existingEvents.size(); i++) {
                         MyClientEventContext ctx = existingEvents.get(i);
                         if (ctx.event.type == CLIENT_CACHE_ENTRY_REMOVED) {
                             // Ignore.

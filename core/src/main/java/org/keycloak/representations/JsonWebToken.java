@@ -39,13 +39,13 @@ import java.util.Map;
  * @version $Revision: 1 $
  */
 public class JsonWebToken implements Serializable, Token {
+    @JsonProperty("azp")
+    public String issuedFor;
     @JsonProperty("jti")
     protected String id;
-
     protected Long exp;
     protected Long nbf;
     protected Long iat;
-
     @JsonProperty("iss")
     protected String issuer;
     @JsonProperty("aud")
@@ -56,8 +56,6 @@ public class JsonWebToken implements Serializable, Token {
     protected String subject;
     @JsonProperty("typ")
     protected String type;
-    @JsonProperty("azp")
-    public String issuedFor;
     protected Map<String, Object> otherClaims = new HashMap<>();
 
     public String getId() {
@@ -174,7 +172,7 @@ public class JsonWebToken implements Serializable, Token {
         this.iat = iat;
         return this;
     }
-    
+
     /**
      * @deprecated int will overflow with values after 2038. Use {@link #iat(Long)} ()} instead.
      */
@@ -217,7 +215,7 @@ public class JsonWebToken implements Serializable, Token {
 
     public JsonWebToken addAudience(String audience) {
         if (this.audience == null) {
-            this.audience = new String[] { audience };
+            this.audience = new String[]{audience};
         } else {
             // Check if audience is already there
             for (String aud : this.audience) {
@@ -237,13 +235,13 @@ public class JsonWebToken implements Serializable, Token {
         return subject;
     }
 
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
+
     public JsonWebToken subject(String subject) {
         this.subject = subject;
         return this;
-    }
-
-    public void setSubject(String subject) {
-        this.subject = subject;
     }
 
     public String getType() {

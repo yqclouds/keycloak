@@ -17,12 +17,7 @@
 
 package org.keycloak.saml;
 
-import org.keycloak.dom.saml.v2.assertion.AssertionType;
-import org.keycloak.dom.saml.v2.assertion.AudienceRestrictionType;
-import org.keycloak.dom.saml.v2.assertion.AuthnStatementType;
-import org.keycloak.dom.saml.v2.assertion.ConditionsType;
-import org.keycloak.dom.saml.v2.assertion.OneTimeUseType;
-import org.keycloak.dom.saml.v2.assertion.SubjectConfirmationDataType;
+import org.keycloak.dom.saml.v2.assertion.*;
 import org.keycloak.dom.saml.v2.protocol.ExtensionsType;
 import org.keycloak.dom.saml.v2.protocol.ResponseType;
 import org.keycloak.saml.common.PicketLinkLogger;
@@ -52,10 +47,10 @@ import static org.keycloak.saml.common.util.StringUtil.isNotNull;
  * Configuration Options:
  *
  * @author bburke@redhat.com
-*/
+ */
 public class SAML2LoginResponseBuilder implements SamlProtocolExtensionsAwareBuilder<SAML2LoginResponseBuilder> {
     protected static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
-
+    protected final List<NodeGenerator> extensions = new LinkedList<>();
     protected String destination;
     protected String issuer;
     protected int subjectExpiration;
@@ -69,7 +64,6 @@ public class SAML2LoginResponseBuilder implements SamlProtocolExtensionsAwareBui
     protected String authMethod;
     protected String requestIssuer;
     protected String sessionIndex;
-    protected final List<NodeGenerator> extensions = new LinkedList<>();
     protected boolean includeOneTimeUseCondition;
 
     public SAML2LoginResponseBuilder sessionIndex(String sessionIndex) {
@@ -211,13 +205,13 @@ public class SAML2LoginResponseBuilder implements SamlProtocolExtensionsAwareBui
         assertion.getConditions().addCondition(audience);
 
         //Update Conditions NotOnOrAfter
-        if(assertionExpiration > 0) {
+        if (assertionExpiration > 0) {
             ConditionsType conditions = assertion.getConditions();
             conditions.setNotOnOrAfter(XMLTimeUtil.add(conditions.getNotBefore(), assertionExpiration * 1000L));
         }
 
         //Update SubjectConfirmationData NotOnOrAfter
-        if(subjectExpiration > 0) {
+        if (subjectExpiration > 0) {
             SubjectConfirmationDataType subjectConfirmationData = assertion.getSubject().getConfirmation().get(0).getSubjectConfirmationData();
             subjectConfirmationData.setNotOnOrAfter(XMLTimeUtil.add(assertion.getConditions().getNotBefore(), subjectExpiration * 1000L));
         }

@@ -40,6 +40,7 @@ public interface FormAction extends Provider {
      * @param form
      */
     void buildPage(FormContext context, LoginFormsProvider form);
+
     /**
      * This is the first phase of form processing.  Each FormAction.validate() method is called.  This gives the
      * FormAction a chance to validate and challenge if user input is invalid.
@@ -74,7 +75,6 @@ public interface FormAction extends Provider {
 
     /**
      * Set actions to configure authenticator
-     *
      */
     void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user);
 

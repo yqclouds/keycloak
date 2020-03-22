@@ -16,24 +16,6 @@
  */
 package org.keycloak.services.resources.account.resources;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Link;
-import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authorization.model.PermissionTicket;
 import org.keycloak.authorization.store.PermissionTicketStore;
@@ -42,6 +24,14 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.managers.Auth;
 import org.keycloak.utils.MediaType;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.Link;
+import javax.ws.rs.core.Response;
+import java.util.*;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -62,14 +52,14 @@ public class ResourcesService extends AbstractResourceService {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getResources(@QueryParam("name") String name,
-            @QueryParam("first") Integer first,
-            @QueryParam("max") Integer max) {
+                                 @QueryParam("first") Integer first,
+                                 @QueryParam("max") Integer max) {
         Map<String, String[]> filters = new HashMap<>();
 
-        filters.put("owner", new String[] { user.getId() });
+        filters.put("owner", new String[]{user.getId()});
 
         if (name != null) {
-            filters.put("name", new String[] { name });
+            filters.put("name", new String[]{name});
         }
 
         return queryResponse((f, m) -> resourceStore.findByResourceServer(filters, null, f, m).stream()
@@ -80,27 +70,27 @@ public class ResourcesService extends AbstractResourceService {
      * Returns a list of {@link Resource} shared with the {@link #user}
      *
      * @param first the first result
-     * @param max the max result
+     * @param max   the max result
      * @return a list of {@link Resource} shared with the {@link #user}
      */
     @GET
     @Path("shared-with-me")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSharedWithMe(@QueryParam("name") String name,
-            @QueryParam("first") Integer first,
-            @QueryParam("max") Integer max) {
+                                    @QueryParam("first") Integer first,
+                                    @QueryParam("max") Integer max) {
         return queryResponse((f, m) -> toPermissions(ticketStore.findGrantedResources(auth.getUser().getId(), name, f, m), false)
                 .stream(), first, max);
     }
 
     /**
-     * Returns a list of {@link Resource} where the {@link #user} is the resource owner and the resource is 
+     * Returns a list of {@link Resource} where the {@link #user} is the resource owner and the resource is
      * shared with other users.
      *
      * @param first the first result
-     * @param max the max result
-     * @return a list of {@link Resource} where the {@link #user} is the resource owner and the resource is 
-     *      * shared with other users
+     * @param max   the max result
+     * @return a list of {@link Resource} where the {@link #user} is the resource owner and the resource is
+     * * shared with other users
      */
     @GET
     @Path("shared-with-others")
@@ -122,7 +112,7 @@ public class ResourcesService extends AbstractResourceService {
         if (!resource.getOwner().equals(user.getId())) {
             throw new BadRequestException("invalid_resource");
         }
-        
+
         return new ResourceService(resource, provider.getKeycloakSession(), user, auth, request);
     }
 
@@ -169,7 +159,7 @@ public class ResourcesService extends AbstractResourceService {
 
         return permissions;
     }
-    
+
     private Response queryResponse(BiFunction<Integer, Integer, Stream<?>> query, Integer first, Integer max) {
         if (first != null && max != null) {
             List result = query.apply(first, max + 1).collect(Collectors.toList());
@@ -187,7 +177,7 @@ public class ResourcesService extends AbstractResourceService {
 
     private Link[] createPageLinks(Integer first, Integer max, int resultSize) {
         if (resultSize == 0 || (first == 0 && resultSize <= max)) {
-            return new Link[] {};
+            return new Link[]{};
         }
 
         List<Link> links = new ArrayList();

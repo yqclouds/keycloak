@@ -24,16 +24,16 @@ import java.util.Set;
 
 /**
  * @author <a href="mailto:erik.mulder@docdatapayments.com">Erik Mulder</a>
- * 
+ * <p>
  * Classloader implementation to facilitate loading classes and resources from a collection of other classloaders.
  * Effectively it forms a proxy to one or more other classloaders.
- * 
+ * <p>
  * The way it works:
  * - Get all (unique) classloaders from all provided classes
  * - For each class or resource that is 'requested':
- *   - First try all provided classloaders and if we have a match, return that
- *   - If no match was found: proceed with 'normal' classloading in 'current classpath' scope
- * 
+ * - First try all provided classloaders and if we have a match, return that
+ * - If no match was found: proceed with 'normal' classloading in 'current classpath' scope
+ * <p>
  * In this particular context: only loadClass and getResource overrides are needed, since those
  * are the methods that a classloading and resource loading process will need.
  */
@@ -42,12 +42,12 @@ public class ProxyClassLoader extends ClassLoader {
     private Set<ClassLoader> classloaders;
 
     public ProxyClassLoader(Collection<Class<?>> classes, ClassLoader parentClassLoader) {
-    	super(parentClassLoader);
-    	init(classes);
+        super(parentClassLoader);
+        init(classes);
     }
-    
+
     public ProxyClassLoader(Collection<Class<?>> classes) {
-    	init(classes);
+        init(classes);
     }
 
     private void init(Collection<Class<?>> classes) {
@@ -56,7 +56,7 @@ public class ProxyClassLoader extends ClassLoader {
             classloaders.add(clazz.getClassLoader());
         }
     }
-    
+
     @Override
     public Class<?> loadClass(String name) throws ClassNotFoundException {
         for (ClassLoader classloader : classloaders) {

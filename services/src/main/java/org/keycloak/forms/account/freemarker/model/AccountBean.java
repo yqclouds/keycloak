@@ -65,11 +65,11 @@ public class AccountBean {
     }
 
     public String getFirstName() {
-        return profileFormData != null ?  profileFormData.getFirst("firstName") : user.getFirstName();
+        return profileFormData != null ? profileFormData.getFirst("firstName") : user.getFirstName();
     }
 
     public String getLastName() {
-        return profileFormData != null ?  profileFormData.getFirst("lastName") :user.getLastName();
+        return profileFormData != null ? profileFormData.getFirst("lastName") : user.getLastName();
     }
 
     public String getUsername() {
@@ -81,7 +81,7 @@ public class AccountBean {
     }
 
     public String getEmail() {
-        return profileFormData != null ?  profileFormData.getFirst("email") :user.getEmail();
+        return profileFormData != null ? profileFormData.getFirst("email") : user.getEmail();
     }
 
     public Map<String, String> getAttributes() {

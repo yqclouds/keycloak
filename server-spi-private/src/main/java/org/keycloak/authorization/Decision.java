@@ -26,11 +26,6 @@ import org.keycloak.authorization.policy.evaluation.Evaluation;
  */
 public interface Decision<D extends Evaluation> {
 
-    enum Effect {
-        PERMIT,
-        DENY
-    }
-
     void onDecision(D evaluation);
 
     default void onError(Throwable cause) {
@@ -41,5 +36,10 @@ public interface Decision<D extends Evaluation> {
     }
 
     default void onComplete(ResourcePermission permission) {
+    }
+
+    enum Effect {
+        PERMIT,
+        DENY
     }
 }

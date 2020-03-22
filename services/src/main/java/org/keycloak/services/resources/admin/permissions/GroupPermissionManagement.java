@@ -19,7 +19,6 @@ package org.keycloak.services.resources.admin.permissions;
 import org.keycloak.authorization.model.Policy;
 import org.keycloak.authorization.model.Resource;
 import org.keycloak.models.GroupModel;
-import org.keycloak.models.RoleModel;
 
 import java.util.Map;
 
@@ -29,14 +28,17 @@ import java.util.Map;
  */
 public interface GroupPermissionManagement {
     boolean isPermissionsEnabled(GroupModel group);
+
     void setPermissionsEnabled(GroupModel group, boolean enable);
 
     Policy viewMembersPermission(GroupModel group);
+
     Policy manageMembersPermission(GroupModel group);
 
     Policy manageMembershipPermission(GroupModel group);
 
     Policy viewPermission(GroupModel group);
+
     Policy managePermission(GroupModel group);
 
     Resource resource(GroupModel group);

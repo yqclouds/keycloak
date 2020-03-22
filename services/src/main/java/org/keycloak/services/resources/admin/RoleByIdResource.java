@@ -18,7 +18,6 @@ package org.keycloak.services.resources.admin;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import javax.ws.rs.NotFoundException;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.ClientModel;
@@ -31,14 +30,7 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluato
 import org.keycloak.services.resources.admin.permissions.AdminPermissionManagement;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
@@ -47,9 +39,9 @@ import java.util.Set;
 /**
  * Sometimes its easier to just interact with roles by their ID instead of container/role-name
  *
- * @resource Roles (by ID)
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
+ * @resource Roles (by ID)
  */
 public class RoleByIdResource extends RoleResource {
     protected static final Logger logger = Logger.getLogger(RoleByIdResource.class);
@@ -66,6 +58,14 @@ public class RoleByIdResource extends RoleResource {
         this.realm = realm;
         this.auth = auth;
         this.adminEvent = adminEvent;
+    }
+
+    public static ManagementPermissionReference toMgmtRef(RoleModel role, AdminPermissionManagement permissions) {
+        ManagementPermissionReference ref = new ManagementPermissionReference();
+        ref.setEnabled(true);
+        ref.setResource(permissions.roles().resource(role).getId());
+        ref.setScopePermissions(permissions.roles().getPermissions(role));
+        return ref;
     }
 
     /**
@@ -90,7 +90,7 @@ public class RoleByIdResource extends RoleResource {
         if (roleModel == null) {
             throw new NotFoundException("Could not find role with id");
         }
-       return roleModel;
+        return roleModel;
     }
 
     /**
@@ -118,7 +118,7 @@ public class RoleByIdResource extends RoleResource {
     /**
      * Update the role
      *
-     * @param id id of role
+     * @param id  id of role
      * @param rep
      */
     @Path("{role-id}")
@@ -155,7 +155,7 @@ public class RoleByIdResource extends RoleResource {
 
     /**
      * Get role's children
-     *
+     * <p>
      * Returns a set of role's children provided the role is a composite.
      *
      * @param id
@@ -202,7 +202,7 @@ public class RoleByIdResource extends RoleResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public Set<RoleRepresentation> getClientRoleComposites(final @PathParam("role-id") String id,
-                                                                final @PathParam("client") String client) {
+                                                           final @PathParam("client") String client) {
 
         RoleModel role = getRoleModel(id);
         auth.roles().requireView(role);
@@ -216,7 +216,7 @@ public class RoleByIdResource extends RoleResource {
     /**
      * Remove a set of roles from the role's composite
      *
-     * @param id Role id
+     * @param id    Role id
      * @param roles A set of roles to be removed
      */
     @Path("{role-id}/composites")
@@ -230,7 +230,6 @@ public class RoleByIdResource extends RoleResource {
 
     /**
      * Return object stating whether role Authoirzation permissions have been initialized or not and a reference
-     *
      *
      * @param id
      * @return
@@ -250,17 +249,8 @@ public class RoleByIdResource extends RoleResource {
         return toMgmtRef(role, permissions);
     }
 
-    public static ManagementPermissionReference toMgmtRef(RoleModel role, AdminPermissionManagement permissions) {
-        ManagementPermissionReference ref = new ManagementPermissionReference();
-        ref.setEnabled(true);
-        ref.setResource(permissions.roles().resource(role).getId());
-        ref.setScopePermissions(permissions.roles().getPermissions(role));
-        return ref;
-    }
-
     /**
      * Return object stating whether role Authoirzation permissions have been initialized or not and a reference
-     *
      *
      * @param id
      * @return initialized manage permissions reference

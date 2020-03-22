@@ -1,6 +1,5 @@
 package org.keycloak.vault;
 
-import java.lang.ref.WeakReference;
 import java.util.Optional;
 
 /**
@@ -20,18 +19,17 @@ public class DefaultVaultStringSecret implements VaultStringSecret {
         public void close() {
         }
     };
-
-    public static VaultStringSecret forString(Optional<String> secret) {
-        if (secret == null || ! secret.isPresent()) {
-            return EMPTY_VAULT_SECRET;
-        }
-        return new DefaultVaultStringSecret(secret.get());
-    }
-
     private String secret;
 
     private DefaultVaultStringSecret(final String secret) {
         this.secret = secret;
+    }
+
+    public static VaultStringSecret forString(Optional<String> secret) {
+        if (secret == null || !secret.isPresent()) {
+            return EMPTY_VAULT_SECRET;
+        }
+        return new DefaultVaultStringSecret(secret.get());
     }
 
     @Override

@@ -18,42 +18,26 @@ package org.keycloak.services.resources.admin;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import javax.ws.rs.NotFoundException;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ModelException;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleMapperModel;
-import org.keycloak.models.RoleModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.services.ErrorResponseException;
+import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * @resource Client Role Mappings
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
+ * @resource Client Role Mappings
  */
 public class ClientRoleMappingsResource {
     protected static final Logger logger = Logger.getLogger(ClientRoleMappingsResource.class);
@@ -64,14 +48,14 @@ public class ClientRoleMappingsResource {
     protected RoleMapperModel user;
     protected ClientModel client;
     protected AdminEventBuilder adminEvent;
-    private UriInfo uriInfo;
     protected AdminPermissionEvaluator.RequirePermissionCheck managePermission;
     protected AdminPermissionEvaluator.RequirePermissionCheck viewPermission;
+    private UriInfo uriInfo;
 
 
     public ClientRoleMappingsResource(UriInfo uriInfo, KeycloakSession session, RealmModel realm, AdminPermissionEvaluator auth,
                                       RoleMapperModel user, ClientModel client, AdminEventBuilder adminEvent,
-                                      AdminPermissionEvaluator.RequirePermissionCheck manageCheck, AdminPermissionEvaluator.RequirePermissionCheck viewCheck ) {
+                                      AdminPermissionEvaluator.RequirePermissionCheck manageCheck, AdminPermissionEvaluator.RequirePermissionCheck viewCheck) {
         this.uriInfo = uriInfo;
         this.session = session;
         this.realm = realm;
@@ -81,6 +65,20 @@ public class ClientRoleMappingsResource {
         this.managePermission = manageCheck;
         this.viewPermission = viewCheck;
         this.adminEvent = adminEvent.resource(ResourceType.CLIENT_ROLE_MAPPING);
+    }
+
+    public static List<RoleRepresentation> getAvailableRoles(RoleMapperModel mapper, Set<RoleModel> available) {
+        Set<RoleModel> roles = new HashSet<RoleModel>();
+        for (RoleModel roleModel : available) {
+            if (mapper.hasRole(roleModel)) continue;
+            roles.add(roleModel);
+        }
+
+        List<RoleRepresentation> mappings = new ArrayList<RoleRepresentation>();
+        for (RoleModel roleModel : roles) {
+            mappings.add(ModelToRepresentation.toBriefRepresentation(roleModel));
+        }
+        return mappings;
     }
 
     /**
@@ -104,7 +102,7 @@ public class ClientRoleMappingsResource {
 
     /**
      * Get effective client-level role mappings
-     *
+     * <p>
      * This recurses any composite roles
      *
      * @return
@@ -144,20 +142,6 @@ public class ClientRoleMappingsResource {
         return getAvailableRoles(user, available);
     }
 
-    public static List<RoleRepresentation> getAvailableRoles(RoleMapperModel mapper, Set<RoleModel> available) {
-        Set<RoleModel> roles = new HashSet<RoleModel>();
-        for (RoleModel roleModel : available) {
-            if (mapper.hasRole(roleModel)) continue;
-            roles.add(roleModel);
-        }
-
-        List<RoleRepresentation> mappings = new ArrayList<RoleRepresentation>();
-        for (RoleModel roleModel : roles) {
-            mappings.add(ModelToRepresentation.toBriefRepresentation(roleModel));
-        }
-        return mappings;
-    }
-
     /**
      * Add client-level roles to the user role mapping
      *
@@ -181,10 +165,10 @@ public class ClientRoleMappingsResource {
     }
 
     /**
-         * Delete client-level roles from user role mapping
-         *
-         * @param roles
-         */
+     * Delete client-level roles from user role mapping
+     *
+     * @param roles
+     */
     @DELETE
     @Consumes(MediaType.APPLICATION_JSON)
     public void deleteClientRoleMapping(List<RoleRepresentation> roles) {

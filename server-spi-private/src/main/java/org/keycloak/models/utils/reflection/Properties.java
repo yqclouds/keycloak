@@ -34,9 +34,7 @@ public class Properties {
      *
      * @param <V>
      * @param method
-     *
      * @return
-     *
      * @throws IllegalArgumentException if the method does not match JavaBean conventions
      * @see http://www.oracle.com/technetwork/java/javase/documentation/spec-136004.html
      */

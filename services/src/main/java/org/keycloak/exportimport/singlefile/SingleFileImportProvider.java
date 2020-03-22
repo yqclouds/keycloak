@@ -40,11 +40,9 @@ import java.util.Map;
 public class SingleFileImportProvider implements ImportProvider {
 
     private static final Logger logger = Logger.getLogger(SingleFileImportProvider.class);
-
-    private File file;
-
     // Allows to cache representation per provider to avoid parsing them twice
     protected Map<String, RealmRepresentation> realmReps;
+    private File file;
 
     public SingleFileImportProvider(File file) {
         this.file = file;

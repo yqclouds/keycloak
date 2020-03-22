@@ -35,12 +35,10 @@ import org.keycloak.models.cache.infinispan.events.InvalidationEvent;
  */
 public class InfinispanUserCacheProviderFactory implements UserCacheProviderFactory {
 
-    private static final Logger log = Logger.getLogger(InfinispanUserCacheProviderFactory.class);
     public static final String USER_CLEAR_CACHE_EVENTS = "USER_CLEAR_CACHE_EVENTS";
     public static final String USER_INVALIDATION_EVENTS = "USER_INVALIDATION_EVENTS";
-
+    private static final Logger log = Logger.getLogger(InfinispanUserCacheProviderFactory.class);
     protected volatile UserCacheManager userCache;
-
 
 
     @Override

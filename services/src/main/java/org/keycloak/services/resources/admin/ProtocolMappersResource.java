@@ -16,18 +16,11 @@
  */
 package org.keycloak.services.resources.admin;
 
-import static org.keycloak.protocol.ProtocolMapperUtils.isEnabled;
-
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import javax.ws.rs.NotFoundException;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ModelDuplicateException;
-import org.keycloak.models.ProtocolMapperContainerModel;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RealmModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.protocol.ProtocolMapper;
@@ -37,14 +30,7 @@ import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -53,12 +39,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
+import static org.keycloak.protocol.ProtocolMapperUtils.isEnabled;
+
 /**
  * Base resource for managing users
  *
- * @resource Protocol Mappers
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
+ * @resource Protocol Mappers
  */
 public class ProtocolMappersResource {
     protected static final Logger logger = Logger.getLogger(ProtocolMappersResource.class);
@@ -104,7 +92,8 @@ public class ProtocolMappersResource {
 
         List<ProtocolMapperRepresentation> mappers = new LinkedList<ProtocolMapperRepresentation>();
         for (ProtocolMapperModel mapper : client.getProtocolMappers()) {
-            if (isEnabled(session, mapper) && mapper.getProtocol().equals(protocol)) mappers.add(ModelToRepresentation.toRepresentation(mapper));
+            if (isEnabled(session, mapper) && mapper.getProtocol().equals(protocol))
+                mappers.add(ModelToRepresentation.toRepresentation(mapper));
         }
         return mappers;
     }
@@ -134,9 +123,9 @@ public class ProtocolMappersResource {
 
         return Response.created(session.getContext().getUri().getAbsolutePathBuilder().path(model.getId()).build()).build();
     }
+
     /**
      * Create multiple mappers
-     *
      */
     @Path("add-models")
     @POST
@@ -196,7 +185,7 @@ public class ProtocolMappersResource {
     /**
      * Update the mapper
      *
-     * @param id Mapper id
+     * @param id  Mapper id
      * @param rep
      */
     @PUT
@@ -236,7 +225,7 @@ public class ProtocolMappersResource {
 
     private void validateModel(ProtocolMapperModel model) {
         try {
-            ProtocolMapper mapper = (ProtocolMapper)session.getKeycloakSessionFactory().getProviderFactory(ProtocolMapper.class, model.getProtocolMapper());
+            ProtocolMapper mapper = (ProtocolMapper) session.getKeycloakSessionFactory().getProviderFactory(ProtocolMapper.class, model.getProtocolMapper());
             if (mapper != null) {
                 mapper.validateConfig(session, realm, client, model);
             } else {

@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class FullNameLDAPStorageMapperFactory extends AbstractLDAPStorageMapperFactory {
 
-    public static final String PROVIDER_ID =  "full-name-ldap-mapper";
+    public static final String PROVIDER_ID = "full-name-ldap-mapper";
 
     protected static final List<ProviderConfigProperty> configProperties;
 
@@ -53,25 +53,25 @@ public class FullNameLDAPStorageMapperFactory extends AbstractLDAPStorageMapperF
 
         return ProviderConfigurationBuilder.create()
                 .property().name(FullNameLDAPStorageMapper.LDAP_FULL_NAME_ATTRIBUTE)
-                           .label("LDAP Full Name Attribute")
-                           .helpText("Name of LDAP attribute, which contains fullName of user. Usually it will be 'cn' ")
-                           .type(ProviderConfigProperty.STRING_TYPE)
-                           .defaultValue(LDAPConstants.CN)
-                           .add()
+                .label("LDAP Full Name Attribute")
+                .helpText("Name of LDAP attribute, which contains fullName of user. Usually it will be 'cn' ")
+                .type(ProviderConfigProperty.STRING_TYPE)
+                .defaultValue(LDAPConstants.CN)
+                .add()
                 .property().name(FullNameLDAPStorageMapper.READ_ONLY)
-                           .label("Read Only")
-                           .helpText("For Read-only is data imported from LDAP to Keycloak DB, but it's not saved back to LDAP when user is updated in Keycloak.")
-                           .type(ProviderConfigProperty.BOOLEAN_TYPE)
-                           .defaultValue(String.valueOf(readOnly))
+                .label("Read Only")
+                .helpText("For Read-only is data imported from LDAP to Keycloak DB, but it's not saved back to LDAP when user is updated in Keycloak.")
+                .type(ProviderConfigProperty.BOOLEAN_TYPE)
+                .defaultValue(String.valueOf(readOnly))
                 .add()
                 .property().name(FullNameLDAPStorageMapper.WRITE_ONLY)
-                           .label("Write Only")
-                           .helpText("For Write-only is data propagated to LDAP when user is created or updated in Keycloak. But this mapper is not used to propagate data from LDAP back into Keycloak. " +
+                .label("Write Only")
+                .helpText("For Write-only is data propagated to LDAP when user is created or updated in Keycloak. But this mapper is not used to propagate data from LDAP back into Keycloak. " +
                         "This setting is useful if you configured separate firstName and lastName attribute mappers and you want to use those to read attribute from LDAP into Keycloak")
-                           .type(ProviderConfigProperty.BOOLEAN_TYPE)
-                           .defaultValue(String.valueOf(!readOnly))
-                            .add()
-                           .build();
+                .type(ProviderConfigProperty.BOOLEAN_TYPE)
+                .defaultValue(String.valueOf(!readOnly))
+                .add()
+                .build();
     }
 
     @Override

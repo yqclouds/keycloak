@@ -27,7 +27,7 @@ import java.util.Set;
 
 /**
  * Factory for creating ClientAuthenticator instances.  This is a singleton and created when Keycloak boots.
- *
+ * <p>
  * You must specify a file
  * META-INF/services/org.keycloak.authentication.ClientAuthenticatorFactory in the jar that this class is contained in
  * This file must have the fully qualified class name of all your ClientAuthenticatorFactory classes

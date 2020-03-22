@@ -19,15 +19,7 @@ package org.keycloak.storage.ldap.mappers.membership.group;
 
 import org.jboss.logging.Logger;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -40,7 +32,7 @@ public class GroupTreeResolver {
     /**
      * Fully resolves list of group trees to be used in Keycloak. The input is group info (usually from LDAP) where each "Group" object contains
      * just it's name and direct children.
-     *
+     * <p>
      * The operation also performs validation as rules for LDAP are less strict than for Keycloak (In LDAP, the recursion is possible and multiple parents of single group is also allowed)
      *
      * @param groups
@@ -138,7 +130,7 @@ public class GroupTreeResolver {
         Group group = asMap.get(groupName);
 
         List<GroupTreeEntry> children = new LinkedList<>();
-        GroupTreeEntry result =  new GroupTreeEntry(group.getGroupName(), children);
+        GroupTreeEntry result = new GroupTreeEntry(group.getGroupName(), children);
 
         for (String childrenName : group.getChildrenNames()) {
             List<String> subtreeCopy = new LinkedList<>(currentSubtree);
@@ -149,7 +141,6 @@ public class GroupTreeResolver {
 
         return result;
     }
-
 
 
     // static classes

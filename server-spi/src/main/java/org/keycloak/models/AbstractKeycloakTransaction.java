@@ -80,12 +80,11 @@ public abstract class AbstractKeycloakTransaction implements KeycloakTransaction
         return state;
     }
 
-    public enum TransactionState {
-        NOT_STARTED, STARTED, ROLLBACK_ONLY, FINISHED
-    }
-
-
     protected abstract void commitImpl();
 
     protected abstract void rollbackImpl();
+
+    public enum TransactionState {
+        NOT_STARTED, STARTED, ROLLBACK_ONLY, FINISHED
+    }
 }

@@ -32,22 +32,20 @@ import java.util.Set;
  */
 abstract class AuthzEndpointRequestParser {
 
-    private static final Logger logger = Logger.getLogger(AuthzEndpointRequestParser.class);
-
     /**
      * Max number of additional req params copied into client session note to prevent DoS attacks
-     *
      */
     public static final int ADDITIONAL_REQ_PARAMS_MAX_MUMBER = 5;
-
     /**
      * Max size of additional req param value copied into client session note to prevent DoS attacks - params with longer value are ignored
-     *
      */
     public static final int ADDITIONAL_REQ_PARAMS_MAX_SIZE = 200;
-
-    /** Set of known protocol GET params not to be stored into additionalReqParams} */
+    private static final Logger logger = Logger.getLogger(AuthzEndpointRequestParser.class);
+    /**
+     * Set of known protocol GET params not to be stored into additionalReqParams}
+     */
     private static final Set<String> KNOWN_REQ_PARAMS = new HashSet<>();
+
     static {
         KNOWN_REQ_PARAMS.add(OIDCLoginProtocol.CLIENT_ID_PARAM);
         KNOWN_REQ_PARAMS.add(OIDCLoginProtocol.RESPONSE_TYPE_PARAM);
@@ -125,7 +123,7 @@ abstract class AuthzEndpointRequestParser {
     }
 
     protected <T> T replaceIfNotNull(T previousVal, T newVal) {
-        return newVal==null ? previousVal : newVal;
+        return newVal == null ? previousVal : newVal;
     }
 
     protected abstract String getParameter(String paramName);

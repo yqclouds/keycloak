@@ -19,11 +19,7 @@ package org.keycloak.common.util;
 
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,10 +29,13 @@ import java.util.regex.Pattern;
  */
 public class KeycloakUriBuilder {
 
+    private static final Pattern opaqueUri = Pattern.compile("^([^:/?#]+):([^/].*)");
+    private static final Pattern hierarchicalUri = Pattern.compile("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
+    private static final Pattern hostPortPattern = Pattern.compile("([^/:]+):(\\d+)");
+    private static final Pattern PARAM_REPLACEMENT = Pattern.compile("_resteasy_uri_parameter");
     private String host;
     private String scheme;
     private int port = -1;
-
     private String userInfo;
     private String path;
     private String query;
@@ -55,26 +54,6 @@ public class KeycloakUriBuilder {
     public static KeycloakUriBuilder fromPath(String path) throws IllegalArgumentException {
         return new KeycloakUriBuilder().path(path);
     }
-
-
-    public KeycloakUriBuilder clone() {
-        KeycloakUriBuilder impl = new KeycloakUriBuilder();
-        impl.host = host;
-        impl.scheme = scheme;
-        impl.port = port;
-        impl.userInfo = userInfo;
-        impl.path = path;
-        impl.query = query;
-        impl.fragment = fragment;
-        impl.ssp = ssp;
-        impl.authority = authority;
-
-        return impl;
-    }
-
-    private static final Pattern opaqueUri = Pattern.compile("^([^:/?#]+):([^/].*)");
-    private static final Pattern hierarchicalUri = Pattern.compile("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
-    private static final Pattern hostPortPattern = Pattern.compile("([^/:]+):(\\d+)");
 
     public static boolean compare(String s1, String s2) {
         if (s1 == s2) return true;
@@ -119,6 +98,52 @@ public class KeycloakUriBuilder {
     public static KeycloakUriBuilder fromTemplate(String uriTemplate) {
         KeycloakUriBuilder impl = new KeycloakUriBuilder();
         impl.uriTemplate(uriTemplate);
+        return impl;
+    }
+
+    protected static String paths(boolean encode, String basePath, String... segments) {
+        String path = basePath;
+        if (path == null) path = "";
+        for (String segment : segments) {
+            if ("".equals(segment)) continue;
+            if (path.endsWith("/")) {
+                if (segment.startsWith("/")) {
+                    segment = segment.substring(1);
+                    if ("".equals(segment)) continue;
+                }
+                if (encode) segment = Encode.encodePath(segment);
+                path += segment;
+            } else {
+                if (encode) segment = Encode.encodePath(segment);
+                if ("".equals(path)) {
+                    path = segment;
+                } else if (segment.startsWith("/")) {
+                    path += segment;
+                } else {
+                    path += "/" + segment;
+                }
+            }
+
+        }
+        return path;
+    }
+
+    public static Matcher createUriParamMatcher(String string) {
+        return PathHelper.URI_PARAM_PATTERN.matcher(PathHelper.replaceEnclosedCurlyBraces(string));
+    }
+
+    public KeycloakUriBuilder clone() {
+        KeycloakUriBuilder impl = new KeycloakUriBuilder();
+        impl.host = host;
+        impl.scheme = scheme;
+        impl.port = port;
+        impl.userInfo = userInfo;
+        impl.path = path;
+        impl.query = query;
+        impl.fragment = fragment;
+        impl.ssp = ssp;
+        impl.authority = authority;
+
         return impl;
     }
 
@@ -290,33 +315,6 @@ public class KeycloakUriBuilder {
         return this;
     }
 
-    protected static String paths(boolean encode, String basePath, String... segments) {
-        String path = basePath;
-        if (path == null) path = "";
-        for (String segment : segments) {
-            if ("".equals(segment)) continue;
-            if (path.endsWith("/")) {
-                if (segment.startsWith("/")) {
-                    segment = segment.substring(1);
-                    if ("".equals(segment)) continue;
-                }
-                if (encode) segment = Encode.encodePath(segment);
-                path += segment;
-            } else {
-                if (encode) segment = Encode.encodePath(segment);
-                if ("".equals(path)) {
-                    path = segment;
-                } else if (segment.startsWith("/")) {
-                    path += segment;
-                } else {
-                    path += "/" + segment;
-                }
-            }
-
-        }
-        return path;
-    }
-
     public KeycloakUriBuilder path(String segment) throws IllegalArgumentException {
         if (segment == null) throw new IllegalArgumentException("path was null");
         path = paths(true, path, segment);
@@ -429,7 +427,7 @@ public class KeycloakUriBuilder {
                 if ("".equals(host)) throw new RuntimeException("empty host name");
                 replaceParameter(paramMap, fromEncodedMap, isTemplate, host, buffer, encodeSlash);
             }
-            if (port != -1 && (scheme == null || (scheme.equals("http") && port != 80) || (scheme.equals("https") && port != 443)) ) {
+            if (port != -1 && (scheme == null || (scheme.equals("http") && port != 80) || (scheme.equals("https") && port != 443))) {
                 buffer.append(":").append(Integer.toString(port));
             }
         } else if (authority != null) {
@@ -474,10 +472,6 @@ public class KeycloakUriBuilder {
         }
         matcher.appendTail(buffer);
         return buffer;
-    }
-
-    public static Matcher createUriParamMatcher(String string) {
-        return PathHelper.URI_PARAM_PATTERN.matcher(PathHelper.replaceEnclosedCurlyBraces(string));
     }
 
     protected StringBuffer replaceParameter(Map<String, ?> paramMap, boolean fromEncodedMap, boolean isTemplate, String string, StringBuffer buffer, boolean encodeSlash) {
@@ -605,9 +599,6 @@ public class KeycloakUriBuilder {
         }
         return this;
     }
-
-    private static final Pattern PARAM_REPLACEMENT = Pattern.compile("_resteasy_uri_parameter");
-
 
     public KeycloakUriBuilder queryParam(String name, Object... values) throws IllegalArgumentException {
         if (name == null) throw new IllegalArgumentException("name parameter is null");

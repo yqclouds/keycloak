@@ -17,33 +17,25 @@
 
 package org.keycloak.models.jpa.entities;
 
+import javax.persistence.*;
 import java.io.Serializable;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@Table(name="CLIENT_ATTRIBUTES")
+@Table(name = "CLIENT_ATTRIBUTES")
 @Entity
 @IdClass(ClientAttributeEntity.Key.class)
 public class ClientAttributeEntity {
 
     @Id
-    @ManyToOne(fetch= FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "CLIENT_ID")
     protected ClientEntity client;
 
     @Id
-    @Column(name="NAME")
+    @Column(name = "NAME")
     protected String name;
 
     @Column(name = "VALUE", length = 4000)
@@ -73,6 +65,27 @@ public class ClientAttributeEntity {
         this.value = value;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof ClientAttributeEntity)) return false;
+
+        ClientAttributeEntity key = (ClientAttributeEntity) o;
+
+        if (client != null ? !client.getId().equals(key.client != null ? key.client.getId() : null) : key.client != null)
+            return false;
+        if (name != null ? !name.equals(key.name != null ? key.name : null) : key.name != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = client != null ? client.getId().hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        return result;
+    }
 
     public static class Key implements Serializable {
 
@@ -103,7 +116,8 @@ public class ClientAttributeEntity {
 
             ClientAttributeEntity.Key key = (ClientAttributeEntity.Key) o;
 
-            if (client != null ? !client.getId().equals(key.client != null ? key.client.getId() : null) : key.client != null) return false;
+            if (client != null ? !client.getId().equals(key.client != null ? key.client.getId() : null) : key.client != null)
+                return false;
             if (name != null ? !name.equals(key.name != null ? key.name : null) : key.name != null) return false;
 
             return true;
@@ -115,27 +129,5 @@ public class ClientAttributeEntity {
             result = 31 * result + (name != null ? name.hashCode() : 0);
             return result;
         }
-    }
-
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!(o instanceof ClientAttributeEntity)) return false;
-
-        ClientAttributeEntity key = (ClientAttributeEntity) o;
-
-        if (client != null ? !client.getId().equals(key.client != null ? key.client.getId() : null) : key.client != null) return false;
-        if (name != null ? !name.equals(key.name != null ? key.name : null) : key.name != null) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = client != null ? client.getId().hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        return result;
     }
 }

@@ -20,29 +20,9 @@ package org.keycloak.models.cache.infinispan.entities;
 import org.keycloak.common.enums.SslRequired;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.models.AuthenticationExecutionModel;
-import org.keycloak.models.AuthenticationFlowModel;
-import org.keycloak.models.AuthenticatorConfigModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.GroupModel;
-import org.keycloak.models.IdentityProviderMapperModel;
-import org.keycloak.models.IdentityProviderModel;
-import org.keycloak.models.OTPPolicy;
-import org.keycloak.models.PasswordPolicy;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RequiredActionProviderModel;
-import org.keycloak.models.RequiredCredentialModel;
-import org.keycloak.models.WebAuthnPolicy;
+import org.keycloak.models.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -138,12 +118,6 @@ public class CachedRealm extends AbstractExtendableRevisioned {
     protected Set<String> adminEnabledEventOperations = new HashSet<>();
     protected boolean adminEventsDetailsEnabled;
     protected List<String> defaultRoles;
-    private boolean allowUserManagedAccess;
-
-    public Set<IdentityProviderMapperModel> getIdentityProviderMapperSet() {
-        return identityProviderMapperSet;
-    }
-
     protected List<String> defaultGroups = new LinkedList<>();
     protected List<String> clientScopes = new LinkedList<>();
     protected List<String> defaultDefaultClientScopes = new LinkedList<>();
@@ -153,9 +127,8 @@ public class CachedRealm extends AbstractExtendableRevisioned {
     protected String defaultLocale;
     protected MultivaluedHashMap<String, IdentityProviderMapperModel> identityProviderMappers = new MultivaluedHashMap<>();
     protected Set<IdentityProviderMapperModel> identityProviderMapperSet;
-
     protected Map<String, String> attributes;
-
+    private boolean allowUserManagedAccess;
     private Map<String, Integer> userActionTokenLifespans;
 
     public CachedRealm(Long revision, RealmModel model) {
@@ -231,7 +204,6 @@ public class CachedRealm extends AbstractExtendableRevisioned {
         }
 
 
-
         smtpConfig = model.getSmtpConfig();
         browserSecurityHeaders = model.getBrowserSecurityHeaders();
 
@@ -300,6 +272,10 @@ public class CachedRealm extends AbstractExtendableRevisioned {
         } catch (UnsupportedOperationException ex) {
         }
 
+    }
+
+    public Set<IdentityProviderMapperModel> getIdentityProviderMapperSet() {
+        return identityProviderMapperSet;
     }
 
     protected void cacheClientScopes(RealmModel model) {
@@ -389,11 +365,11 @@ public class CachedRealm extends AbstractExtendableRevisioned {
     public boolean isVerifyEmail() {
         return verifyEmail;
     }
-    
+
     public boolean isLoginWithEmailAllowed() {
         return loginWithEmailAllowed;
     }
-    
+
     public boolean isDuplicateEmailsAllowed() {
         return duplicateEmailsAllowed;
     }
@@ -482,6 +458,7 @@ public class CachedRealm extends AbstractExtendableRevisioned {
     /**
      * This method is supposed to return user lifespan based on the action token ID
      * provided. If nothing is provided, it will return the default lifespan.
+     *
      * @param actionTokenId
      * @return lifespan
      */
@@ -594,7 +571,7 @@ public class CachedRealm extends AbstractExtendableRevisioned {
     public AuthenticationExecutionModel getAuthenticationExecutionByFlowId(String flowId) {
         return executionsByFlowId.get(flowId);
     }
-    
+
     public Map<String, AuthenticationExecutionModel> getExecutionsById() {
         return executionsById;
     }

@@ -17,19 +17,8 @@
 
 package org.keycloak.connections.httpclient;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-
-import javax.net.ssl.SSLPeerUnverifiedException;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -43,76 +32,85 @@ import org.keycloak.services.DefaultKeycloakSessionFactory;
 import org.keycloak.services.util.JsonConfigProvider;
 import org.keycloak.services.util.JsonConfigProvider.JsonScope;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.net.ssl.SSLPeerUnverifiedException;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class DefaultHttpClientFactoryTest {
-	private static final String DISABLE_TRUST_MANAGER_PROPERTY = "disable-trust-manager";
-	private static final String TEST_DOMAIN = "www.google.com";
+    private static final String DISABLE_TRUST_MANAGER_PROPERTY = "disable-trust-manager";
+    private static final String TEST_DOMAIN = "www.google.com";
 
-	@Test
-	public void createHttpClientProviderWithDisableTrustManager() throws IOException{
-		Map<String, String> values = new HashMap<>();
-		values.put(DISABLE_TRUST_MANAGER_PROPERTY, "true");
-		DefaultHttpClientFactory factory = new DefaultHttpClientFactory();
-		factory.init(scope(values));
-		KeycloakSession session = new DefaultKeycloakSession(new DefaultKeycloakSessionFactory());
-		HttpClientProvider provider = factory.create(session);
-		CloseableHttpResponse response;
-		try(CloseableHttpClient httpClient = (CloseableHttpClient) provider.getHttpClient()){
-			Optional<String> testURL = getTestURL();
-			Assume.assumeTrue( "Could not get test url for domain", testURL.isPresent() );
-			response = httpClient.execute(new HttpGet(testURL.get()));
-		}
-		assertEquals(HttpStatus.SC_OK,response.getStatusLine().getStatusCode());
-	}
+    @Test
+    public void createHttpClientProviderWithDisableTrustManager() throws IOException {
+        Map<String, String> values = new HashMap<>();
+        values.put(DISABLE_TRUST_MANAGER_PROPERTY, "true");
+        DefaultHttpClientFactory factory = new DefaultHttpClientFactory();
+        factory.init(scope(values));
+        KeycloakSession session = new DefaultKeycloakSession(new DefaultKeycloakSessionFactory());
+        HttpClientProvider provider = factory.create(session);
+        CloseableHttpResponse response;
+        try (CloseableHttpClient httpClient = (CloseableHttpClient) provider.getHttpClient()) {
+            Optional<String> testURL = getTestURL();
+            Assume.assumeTrue("Could not get test url for domain", testURL.isPresent());
+            response = httpClient.execute(new HttpGet(testURL.get()));
+        }
+        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+    }
 
-	@Test(expected = SSLPeerUnverifiedException.class)
-	public void createHttpClientProviderWithUnvailableURL() throws IOException {
-		DefaultHttpClientFactory factory = new DefaultHttpClientFactory();
-		factory.init(scope(new HashMap<>()));
-		KeycloakSession session = new DefaultKeycloakSession(new DefaultKeycloakSessionFactory());
-		HttpClientProvider provider = factory.create(session);
-		try (CloseableHttpClient httpClient = (CloseableHttpClient) provider.getHttpClient()) {
-			Optional<String> testURL = getTestURL();
-			Assume.assumeTrue("Could not get test url for domain", testURL.isPresent());
-			httpClient.execute(new HttpGet(testURL.get()));
-		}
-	}
+    @Test(expected = SSLPeerUnverifiedException.class)
+    public void createHttpClientProviderWithUnvailableURL() throws IOException {
+        DefaultHttpClientFactory factory = new DefaultHttpClientFactory();
+        factory.init(scope(new HashMap<>()));
+        KeycloakSession session = new DefaultKeycloakSession(new DefaultKeycloakSessionFactory());
+        HttpClientProvider provider = factory.create(session);
+        try (CloseableHttpClient httpClient = (CloseableHttpClient) provider.getHttpClient()) {
+            Optional<String> testURL = getTestURL();
+            Assume.assumeTrue("Could not get test url for domain", testURL.isPresent());
+            httpClient.execute(new HttpGet(testURL.get()));
+        }
+    }
 
-	private JsonScope scope(Map<String, String> properties) {
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			JsonNode config = mapper.readTree(json(properties));
-			return new JsonConfigProvider(config,new Properties()).new JsonScope(config);
-		} catch (IOException e) {
-			fail("Could not parse json");
-		}
-		return null;
-	}
+    private JsonScope scope(Map<String, String> properties) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            JsonNode config = mapper.readTree(json(properties));
+            return new JsonConfigProvider(config, new Properties()).new JsonScope(config);
+        } catch (IOException e) {
+            fail("Could not parse json");
+        }
+        return null;
+    }
 
-	private String json(Map<String, String> properties) {
-		String[] params = properties.entrySet().stream().map(e -> param(e.getKey(), e.getValue())).toArray(String[]::new);
+    private String json(Map<String, String> properties) {
+        String[] params = properties.entrySet().stream().map(e -> param(e.getKey(), e.getValue())).toArray(String[]::new);
 
-		StringBuilder sb = new StringBuilder();
-		sb.append("{");
-		sb.append(StringUtils.join(params, ','));
-		sb.append("}");
-		
-		return sb.toString();
-	}
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        sb.append(StringUtils.join(params, ','));
+        sb.append("}");
 
-	private String param(String key, String value) {
-		return "\"" + key + "\"" + " : " + "\"" + value + "\"";
-	}
+        return sb.toString();
+    }
 
-	private Optional<String> getTestURL() {
-		try {
-			// Convert domain name to ip to make request by ip
-			return Optional.of("https://" + InetAddress.getByName(TEST_DOMAIN).getHostAddress());
-		} catch (UnknownHostException e) {
-			return Optional.empty();
-		}
-	}
+    private String param(String key, String value) {
+        return "\"" + key + "\"" + " : " + "\"" + value + "\"";
+    }
+
+    private Optional<String> getTestURL() {
+        try {
+            // Convert domain name to ip to make request by ip
+            return Optional.of("https://" + InetAddress.getByName(TEST_DOMAIN).getHostAddress());
+        } catch (UnknownHostException e) {
+            return Optional.empty();
+        }
+    }
 
 }

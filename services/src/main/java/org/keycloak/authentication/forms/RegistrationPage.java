@@ -43,6 +43,10 @@ public class RegistrationPage implements FormAuthenticator, FormAuthenticatorFac
     public static final String FIELD_LAST_NAME = "lastName";
     public static final String FIELD_FIRST_NAME = "firstName";
     public static final String PROVIDER_ID = "registration-page-form";
+    private static AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionModel.Requirement.REQUIRED,
+            AuthenticationExecutionModel.Requirement.DISABLED
+    };
 
     @Override
     public Response render(FormContext context, LoginFormsProvider form) {
@@ -79,10 +83,6 @@ public class RegistrationPage implements FormAuthenticator, FormAuthenticatorFac
         return false;
     }
 
-    private static AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED,
-            AuthenticationExecutionModel.Requirement.DISABLED
-    };
     @Override
     public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {
         return REQUIREMENT_CHOICES;

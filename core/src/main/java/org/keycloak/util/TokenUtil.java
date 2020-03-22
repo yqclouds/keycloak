@@ -18,11 +18,7 @@
 package org.keycloak.util;
 
 import org.keycloak.OAuth2Constants;
-import org.keycloak.jose.jwe.JWE;
-import org.keycloak.jose.jwe.JWEConstants;
-import org.keycloak.jose.jwe.JWEException;
-import org.keycloak.jose.jwe.JWEHeader;
-import org.keycloak.jose.jwe.JWEKeyStorage;
+import org.keycloak.jose.jwe.*;
 import org.keycloak.jose.jwe.alg.JWEAlgorithmProvider;
 import org.keycloak.jose.jwe.enc.JWEEncryptionProvider;
 import org.keycloak.jose.jws.JWSInput;
@@ -97,7 +93,6 @@ public class TokenUtil {
     }
 
 
-
     /**
      * Return refresh token or offline token
      *
@@ -133,13 +128,17 @@ public class TokenUtil {
         int keyLength = aesKey.getEncoded().length;
         String encAlgorithm;
         switch (keyLength) {
-            case 16: encAlgorithm = JWEConstants.A128CBC_HS256;
+            case 16:
+                encAlgorithm = JWEConstants.A128CBC_HS256;
                 break;
-            case 24: encAlgorithm = JWEConstants.A192CBC_HS384;
+            case 24:
+                encAlgorithm = JWEConstants.A192CBC_HS384;
                 break;
-            case 32: encAlgorithm = JWEConstants.A256CBC_HS512;
+            case 32:
+                encAlgorithm = JWEConstants.A256CBC_HS512;
                 break;
-            default: throw new IllegalArgumentException("Bad size for Encryption key: " + aesKey + ". Valid sizes are 16, 24, 32.");
+            default:
+                throw new IllegalArgumentException("Bad size for Encryption key: " + aesKey + ". Valid sizes are 16, 24, 32.");
         }
 
         try {
@@ -194,7 +193,7 @@ public class TokenUtil {
     public static byte[] jweKeyEncryptionVerifyAndDecode(Key decryptionKEK, String encodedContent) throws JWEException {
         JWE jwe = new JWE();
         jwe.getKeyStorage()
-            .setDecryptionKey(decryptionKEK);
+                .setDecryptionKey(decryptionKEK);
         jwe.verifyAndDecodeJwe(encodedContent);
         return jwe.getContent();
     }
@@ -202,7 +201,7 @@ public class TokenUtil {
     public static byte[] jweKeyEncryptionVerifyAndDecode(Key decryptionKEK, String encodedContent, JWEAlgorithmProvider algorithmProvider, JWEEncryptionProvider encryptionProvider) throws JWEException {
         JWE jwe = new JWE();
         jwe.getKeyStorage()
-            .setDecryptionKey(decryptionKEK);
+                .setDecryptionKey(decryptionKEK);
         jwe.verifyAndDecodeJwe(encodedContent, algorithmProvider, encryptionProvider);
         return jwe.getContent();
     }

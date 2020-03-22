@@ -95,16 +95,18 @@ public class ComponentUtil {
         ComponentFactory factory = getComponentFactory(session, model);
         factory.onCreate(session, realm, model);
         if (factory instanceof UserStorageProviderFactory) {
-            ((OnCreateComponent)session.userStorageManager()).onCreate(session, realm, model);
+            ((OnCreateComponent) session.userStorageManager()).onCreate(session, realm, model);
         }
     }
+
     public static void notifyUpdated(KeycloakSession session, RealmModel realm, ComponentModel oldModel, ComponentModel newModel) {
         ComponentFactory factory = getComponentFactory(session, newModel);
         factory.onUpdate(session, realm, oldModel, newModel);
         if (factory instanceof UserStorageProviderFactory) {
-            ((OnUpdateComponent)session.userStorageManager()).onUpdate(session, realm, oldModel, newModel);
+            ((OnUpdateComponent) session.userStorageManager()).onUpdate(session, realm, oldModel, newModel);
         }
     }
+
     public static void notifyPreRemove(KeycloakSession session, RealmModel realm, ComponentModel model) {
         try {
             ComponentFactory factory = getComponentFactory(session, model);

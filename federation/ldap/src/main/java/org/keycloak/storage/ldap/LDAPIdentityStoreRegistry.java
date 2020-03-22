@@ -28,7 +28,6 @@ import org.keycloak.storage.ldap.mappers.LDAPConfigDecorator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -38,6 +37,32 @@ public class LDAPIdentityStoreRegistry {
     private static final Logger logger = Logger.getLogger(LDAPIdentityStoreRegistry.class);
 
     private Map<String, LDAPIdentityStoreContext> ldapStores = new ConcurrentHashMap<>();
+
+    /**
+     * Create LDAPIdentityStore to be cached in the local registry
+     */
+    public static LDAPIdentityStore createLdapIdentityStore(KeycloakSession session, LDAPConfig cfg) {
+        checkSystemProperty("com.sun.jndi.ldap.connect.pool.authentication", cfg.getConnectionPoolingAuthentication(), "none simple");
+        checkSystemProperty("com.sun.jndi.ldap.connect.pool.initsize", cfg.getConnectionPoolingInitSize(), "1");
+        checkSystemProperty("com.sun.jndi.ldap.connect.pool.maxsize", cfg.getConnectionPoolingMaxSize(), "1000");
+        checkSystemProperty("com.sun.jndi.ldap.connect.pool.prefsize", cfg.getConnectionPoolingPrefSize(), "5");
+        checkSystemProperty("com.sun.jndi.ldap.connect.pool.timeout", cfg.getConnectionPoolingTimeout(), "300000");
+        checkSystemProperty("com.sun.jndi.ldap.connect.pool.protocol", cfg.getConnectionPoolingProtocol(), "plain");
+        checkSystemProperty("com.sun.jndi.ldap.connect.pool.debug", cfg.getConnectionPoolingDebug(), "off");
+
+        return new LDAPIdentityStore(session, cfg);
+    }
+
+    private static void checkSystemProperty(String name, String cfgValue, String defaultValue) {
+        String value = System.getProperty(name);
+        if (cfgValue != null) {
+            value = cfgValue;
+        }
+        if (value == null) {
+            value = defaultValue;
+        }
+        System.setProperty(name, value);
+    }
 
     public LDAPIdentityStore getLdapStore(KeycloakSession session, ComponentModel ldapModel, Map<ComponentModel, LDAPConfigDecorator> configDecorators) {
         LDAPIdentityStoreContext context = ldapStores.get(ldapModel.getId());
@@ -77,41 +102,13 @@ public class LDAPIdentityStoreRegistry {
         }
     }
 
-    /**
-     * Create LDAPIdentityStore to be cached in the local registry
-     */
-    public static LDAPIdentityStore createLdapIdentityStore(KeycloakSession session, LDAPConfig cfg) {
-        checkSystemProperty("com.sun.jndi.ldap.connect.pool.authentication", cfg.getConnectionPoolingAuthentication(), "none simple");
-        checkSystemProperty("com.sun.jndi.ldap.connect.pool.initsize", cfg.getConnectionPoolingInitSize(), "1");
-        checkSystemProperty("com.sun.jndi.ldap.connect.pool.maxsize", cfg.getConnectionPoolingMaxSize(), "1000");
-        checkSystemProperty("com.sun.jndi.ldap.connect.pool.prefsize", cfg.getConnectionPoolingPrefSize(), "5");
-        checkSystemProperty("com.sun.jndi.ldap.connect.pool.timeout", cfg.getConnectionPoolingTimeout(), "300000");
-        checkSystemProperty("com.sun.jndi.ldap.connect.pool.protocol", cfg.getConnectionPoolingProtocol(), "plain");
-        checkSystemProperty("com.sun.jndi.ldap.connect.pool.debug", cfg.getConnectionPoolingDebug(), "off");
-
-        return new LDAPIdentityStore(session, cfg);
-    }
-
-    private static void checkSystemProperty(String name, String cfgValue, String defaultValue) {
-        String value = System.getProperty(name);
-        if(cfgValue != null) {
-            value = cfgValue;
-        }
-        if(value == null) {
-            value = defaultValue;
-        }
-        System.setProperty(name, value);
-    }
-
-
     private class LDAPIdentityStoreContext {
 
+        private LDAPConfig config;
+        private LDAPIdentityStore store;
         private LDAPIdentityStoreContext(LDAPConfig config, LDAPIdentityStore store) {
             this.config = config;
             this.store = store;
         }
-
-        private LDAPConfig config;
-        private LDAPIdentityStore store;
     }
 }

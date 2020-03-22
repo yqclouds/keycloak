@@ -31,7 +31,6 @@ public interface ResourceServerStore {
      * <p>Creates a {@link ResourceServer} instance backed by this persistent storage implementation.
      *
      * @param clientId the client id acting as a resource server
-     *
      * @return an instance backed by the underlying storage implementation
      */
     ResourceServer create(String clientId);
@@ -47,7 +46,6 @@ public interface ResourceServerStore {
      * Returns a {@link ResourceServer} instance based on its identifier.
      *
      * @param id the identifier of an existing resource server instance
-     *
      * @return the resource server instance with the given identifier or null if no instance was found
      */
     ResourceServer findById(String id);

@@ -17,13 +17,14 @@
 
 package org.keycloak.authentication.authenticators.x509;
 
-import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.security.cert.X509Certificate;
 import org.junit.Assert;
 import org.junit.Test;
 import org.keycloak.common.util.PemUtils;
 import org.keycloak.common.util.StreamUtil;
+
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.security.cert.X509Certificate;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -36,7 +37,7 @@ public class SubjectAltNameIdentityExtractorTest {
 
         X509Certificate cert = getCertificate();
 
-        Object upn = extractor.extractUserIdentity(new X509Certificate[] { cert});
+        Object upn = extractor.extractUserIdentity(new X509Certificate[]{cert});
         Assert.assertEquals("test-user@some-company-domain", upn);
     }
 
@@ -47,7 +48,7 @@ public class SubjectAltNameIdentityExtractorTest {
 
         X509Certificate cert = getCertificate();
 
-        Object upn = extractor.extractUserIdentity(new X509Certificate[] { cert});
+        Object upn = extractor.extractUserIdentity(new X509Certificate[]{cert});
         Assert.assertEquals("test@somecompany.com", upn);
     }
 

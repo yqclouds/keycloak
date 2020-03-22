@@ -32,7 +32,6 @@ public interface CachedModel<Model> {
 
     /**
      * Invalidate the cache for this model
-     *
      */
     void invalidate();
 

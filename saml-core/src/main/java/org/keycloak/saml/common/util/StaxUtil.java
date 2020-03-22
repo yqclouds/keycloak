@@ -20,11 +20,7 @@ import org.keycloak.saml.common.PicketLinkLogger;
 import org.keycloak.saml.common.PicketLinkLoggerFactory;
 import org.keycloak.saml.common.constants.GeneralConstants;
 import org.keycloak.saml.common.exceptions.ProcessingException;
-import org.w3c.dom.Attr;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
+import org.w3c.dom.*;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventWriter;
@@ -52,7 +48,6 @@ public class StaxUtil {
      * Flush the stream writer
      *
      * @param writer
-     *
      * @throws org.keycloak.saml.common.exceptions.ProcessingException
      */
     public static void flush(XMLStreamWriter writer) throws ProcessingException {
@@ -67,9 +62,7 @@ public class StaxUtil {
      * Get an {@code XMLEventWriter}
      *
      * @param outStream
-     *
      * @return
-     *
      * @throws ProcessingException
      */
     public static XMLEventWriter getXMLEventWriter(final OutputStream outStream) throws ProcessingException {
@@ -85,9 +78,7 @@ public class StaxUtil {
      * Get an {@code XMLStreamWriter}
      *
      * @param outStream
-     *
      * @return
-     *
      * @throws ProcessingException
      */
     public static XMLStreamWriter getXMLStreamWriter(final OutputStream outStream) throws ProcessingException {
@@ -103,9 +94,7 @@ public class StaxUtil {
      * Get an {@code XMLStreamWriter}
      *
      * @param writer {@code Writer}
-     *
      * @return
-     *
      * @throws ProcessingException
      */
     public static XMLStreamWriter getXMLStreamWriter(final Writer writer) throws ProcessingException {
@@ -132,7 +121,6 @@ public class StaxUtil {
      * @param writer
      * @param prefix
      * @param nsURI
-     *
      * @throws ProcessingException
      */
     public static void setPrefix(XMLStreamWriter writer, String prefix, String nsURI) throws ProcessingException {
@@ -147,9 +135,8 @@ public class StaxUtil {
      * Write an attribute
      *
      * @param writer
-     * @param attributeName QName of the attribute
+     * @param attributeName  QName of the attribute
      * @param attributeValue
-     *
      * @throws ProcessingException
      */
     public static void writeAttribute(XMLStreamWriter writer, String attributeName, QName attributeValue)
@@ -161,9 +148,8 @@ public class StaxUtil {
      * Write an attribute
      *
      * @param writer
-     * @param attributeName QName of the attribute
+     * @param attributeName  QName of the attribute
      * @param attributeValue
-     *
      * @throws ProcessingException
      */
     public static void writeAttribute(XMLStreamWriter writer, QName attributeName, String attributeValue)
@@ -181,8 +167,7 @@ public class StaxUtil {
      *
      * @param writer
      * @param localName localpart
-     * @param value value of the attribute
-     *
+     * @param value     value of the attribute
      * @throws ProcessingException
      */
     public static void writeAttribute(XMLStreamWriter writer, String localName, String value) throws ProcessingException {
@@ -198,9 +183,8 @@ public class StaxUtil {
      *
      * @param writer
      * @param localName localpart
-     * @param type typically xsi:type
-     * @param value value of the attribute
-     *
+     * @param type      typically xsi:type
+     * @param value     value of the attribute
      * @throws ProcessingException
      */
     public static void writeAttribute(XMLStreamWriter writer, String localName, String type, String value)
@@ -216,11 +200,10 @@ public class StaxUtil {
      * Write an xml attribute
      *
      * @param writer
-     * @param prefix prefix for the attribute
+     * @param prefix    prefix for the attribute
      * @param localName localpart
-     * @param type typically xsi:type
-     * @param value value of the attribute
-     *
+     * @param type      typically xsi:type
+     * @param value     value of the attribute
      * @throws ProcessingException
      */
     public static void writeAttribute(XMLStreamWriter writer, String prefix, String localName, String type, String value)
@@ -237,7 +220,6 @@ public class StaxUtil {
      *
      * @param writer
      * @param value
-     *
      * @throws ProcessingException
      */
     public static void writeCharacters(XMLStreamWriter writer, String value) throws ProcessingException {
@@ -253,7 +235,6 @@ public class StaxUtil {
      *
      * @param writer
      * @param value
-     *
      * @throws ProcessingException
      */
     public static void writeCData(XMLStreamWriter writer, String value) throws ProcessingException {
@@ -269,7 +250,6 @@ public class StaxUtil {
      *
      * @param writer
      * @param ns
-     *
      * @throws ProcessingException
      */
     public static void writeDefaultNameSpace(XMLStreamWriter writer, String ns) throws ProcessingException {
@@ -285,7 +265,6 @@ public class StaxUtil {
      *
      * @param writer
      * @param node
-     *
      * @throws ProcessingException
      */
     public static void writeDOMNode(XMLStreamWriter writer, Node node) throws ProcessingException {
@@ -320,7 +299,6 @@ public class StaxUtil {
      *
      * @param writer
      * @param domElement
-     *
      * @throws ProcessingException
      */
     public static void writeDOMElement(XMLStreamWriter writer, Element domElement) throws ProcessingException {
@@ -341,10 +319,10 @@ public class StaxUtil {
         writeStartElement(writer, domElementPrefix, domElement.getLocalName(), domElementNS);
 
         // Should we register namespace
-        if (! domElementPrefix.isEmpty() && !registeredNSStack.get().contains(domElementNS)) {
+        if (!domElementPrefix.isEmpty() && !registeredNSStack.get().contains(domElementNS)) {
             // writeNameSpace(writer, domElementPrefix, domElementNS );
             registeredNSStack.get().push(domElementNS);
-        } else if (domElementPrefix.isEmpty() && ! domElementNS.isEmpty()) {
+        } else if (domElementPrefix.isEmpty() && !domElementNS.isEmpty()) {
             writeNameSpace(writer, "xmlns", domElementNS);
         }
 
@@ -381,8 +359,7 @@ public class StaxUtil {
      *
      * @param writer
      * @param prefix prefix
-     * @param ns Namespace URI
-     *
+     * @param ns     Namespace URI
      * @throws ProcessingException
      */
     public static void writeNameSpace(XMLStreamWriter writer, String prefix, String ns) throws ProcessingException {
@@ -400,7 +377,6 @@ public class StaxUtil {
      * @param prefix
      * @param localPart
      * @param ns
-     *
      * @throws ProcessingException
      */
     public static void writeStartElement(XMLStreamWriter writer, String prefix, String localPart, String ns)
@@ -417,7 +393,6 @@ public class StaxUtil {
      * tag. </p>
      *
      * @param writer
-     *
      * @throws ProcessingException
      */
     public static void writeEndElement(XMLStreamWriter writer) throws ProcessingException {

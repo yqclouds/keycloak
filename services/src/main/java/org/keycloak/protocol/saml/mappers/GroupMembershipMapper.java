@@ -19,11 +19,7 @@ package org.keycloak.protocol.saml.mappers;
 
 import org.keycloak.dom.saml.v2.assertion.AttributeStatementType;
 import org.keycloak.dom.saml.v2.assertion.AttributeType;
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.GroupModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.protocol.saml.SamlProtocol;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -85,6 +81,28 @@ public class GroupMembershipMapper extends AbstractSAMLProtocolMapper implements
 
     }
 
+    public static boolean useFullPath(ProtocolMapperModel mappingModel) {
+        return "true".equals(mappingModel.getConfig().get("full.path"));
+    }
+
+    public static ProtocolMapperModel create(String name, String samlAttributeName, String nameFormat, String friendlyName, boolean singleAttribute) {
+        ProtocolMapperModel mapper = new ProtocolMapperModel();
+        mapper.setName(name);
+        mapper.setProtocolMapper(PROVIDER_ID);
+        mapper.setProtocol(SamlProtocol.LOGIN_PROTOCOL);
+        Map<String, String> config = new HashMap<String, String>();
+        config.put(AttributeStatementHelper.SAML_ATTRIBUTE_NAME, samlAttributeName);
+        if (friendlyName != null) {
+            config.put(AttributeStatementHelper.FRIENDLY_NAME, friendlyName);
+        }
+        if (nameFormat != null) {
+            config.put(AttributeStatementHelper.SAML_ATTRIBUTE_NAMEFORMAT, nameFormat);
+        }
+        config.put(SINGLE_GROUP_ATTRIBUTE, Boolean.toString(singleAttribute));
+        mapper.setConfig(config);
+
+        return mapper;
+    }
 
     @Override
     public String getDisplayCategory() {
@@ -110,11 +128,6 @@ public class GroupMembershipMapper extends AbstractSAMLProtocolMapper implements
     public String getId() {
         return PROVIDER_ID;
     }
-
-    public static boolean useFullPath(ProtocolMapperModel mappingModel) {
-        return "true".equals(mappingModel.getConfig().get("full.path"));
-    }
-
 
     @Override
     public void transformAttributeStatement(AttributeStatementType attributeStatement, ProtocolMapperModel mappingModel, KeycloakSession session, UserSessionModel userSession, AuthenticatedClientSessionModel clientSession) {
@@ -143,25 +156,6 @@ public class GroupMembershipMapper extends AbstractSAMLProtocolMapper implements
             }
             attributeType.addAttributeValue(groupName);
         }
-    }
-
-    public static ProtocolMapperModel create(String name, String samlAttributeName, String nameFormat, String friendlyName, boolean singleAttribute) {
-        ProtocolMapperModel mapper = new ProtocolMapperModel();
-        mapper.setName(name);
-        mapper.setProtocolMapper(PROVIDER_ID);
-        mapper.setProtocol(SamlProtocol.LOGIN_PROTOCOL);
-        Map<String, String> config = new HashMap<String, String>();
-        config.put(AttributeStatementHelper.SAML_ATTRIBUTE_NAME, samlAttributeName);
-        if (friendlyName != null) {
-            config.put(AttributeStatementHelper.FRIENDLY_NAME, friendlyName);
-        }
-        if (nameFormat != null) {
-            config.put(AttributeStatementHelper.SAML_ATTRIBUTE_NAMEFORMAT, nameFormat);
-        }
-        config.put(SINGLE_GROUP_ATTRIBUTE, Boolean.toString(singleAttribute));
-        mapper.setConfig(config);
-
-        return mapper;
     }
 
 }

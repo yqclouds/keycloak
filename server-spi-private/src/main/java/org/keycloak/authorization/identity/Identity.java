@@ -48,7 +48,6 @@ public interface Identity {
      * Indicates if this identity is granted with a realm role with the given <code>roleName</code>.
      *
      * @param roleName the name of the role
-     *
      * @return true if the identity has the given role. Otherwise, it returns false.
      */
     default boolean hasRealmRole(String roleName) {
@@ -60,7 +59,6 @@ public interface Identity {
      *
      * @param clientId the client id
      * @param roleName the name of the role
-     *
      * @return true if the identity has the given role. Otherwise, it returns false.
      */
     default boolean hasClientRole(String clientId, String roleName) {

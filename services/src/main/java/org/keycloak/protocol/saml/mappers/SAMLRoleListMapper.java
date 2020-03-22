@@ -30,5 +30,5 @@ import org.keycloak.models.UserSessionModel;
 public interface SAMLRoleListMapper {
 
     void mapRoles(AttributeStatementType roleAttributeStatement, ProtocolMapperModel mappingModel, KeycloakSession session,
-                                     UserSessionModel userSession, ClientSessionContext clientSessionCtx );
+                  UserSessionModel userSession, ClientSessionContext clientSessionCtx);
 }

@@ -18,8 +18,6 @@
 
 package org.keycloak.migration.migrators;
 
-import java.util.LinkedList;
-
 import org.jboss.logging.Logger;
 import org.keycloak.migration.ModelVersion;
 import org.keycloak.models.AuthenticationExecutionModel;
@@ -27,6 +25,8 @@ import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.representations.idm.RealmRepresentation;
+
+import java.util.LinkedList;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>

@@ -17,6 +17,9 @@
 
 package org.keycloak.models.sessions.infinispan.initializer;
 
+import org.infinispan.commons.marshall.Externalizer;
+import org.infinispan.commons.marshall.MarshallUtil;
+import org.infinispan.commons.marshall.SerializeWith;
 import org.jboss.logging.Logger;
 import org.keycloak.models.sessions.infinispan.entities.SessionEntity;
 
@@ -27,9 +30,6 @@ import java.util.BitSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.MarshallUtil;
-import org.infinispan.commons.marshall.SerializeWith;
 
 /**
  * Note that this state is <b>NOT</b> thread safe. Currently it is only used from single thread so it's fine
@@ -62,19 +62,24 @@ public class InitializerState extends SessionEntity {
 
     /**
      * Getter for the segments count.
+     *
      * @return The number of segments of the state
      */
     public int getSegmentsCount() {
         return segmentsCount;
     }
 
-    /** Return true just if computation is entirely finished (all segments are true) */
+    /**
+     * Return true just if computation is entirely finished (all segments are true)
+     */
     public boolean isFinished() {
         return segments.cardinality() == segmentsCount;
     }
 
-    /** Return next un-finished segments in the next row of segments.
-     * @param segmentToLoad The segment we are loading
+    /**
+     * Return next un-finished segments in the next row of segments.
+     *
+     * @param segmentToLoad   The segment we are loading
      * @param maxSegmentCount The max segment to load
      * @return The list of segments to work on this step
      */
@@ -98,7 +103,7 @@ public class InitializerState extends SessionEntity {
         int nonFinished = segmentsCount - finished;
 
         return "finished segments count: " + finished
-          + (", non-finished segments count: " + nonFinished);
+                + (", non-finished segments count: " + nonFinished);
     }
 
     @Override
@@ -124,7 +129,7 @@ public class InitializerState extends SessionEntity {
         if (this.segmentsCount != other.segmentsCount) {
             return false;
         }
-        if ( ! Objects.equals(this.segments, other.segments)) {
+        if (!Objects.equals(this.segments, other.segments)) {
             return false;
         }
         return true;
@@ -155,9 +160,9 @@ public class InitializerState extends SessionEntity {
 
         public InitializerState readObjectVersion1(ObjectInput input) throws IOException {
             return new InitializerState(
-              MarshallUtil.unmarshallString(input),
-              input.readInt(),
-              BitSet.valueOf(MarshallUtil.unmarshallByteArray(input))
+                    MarshallUtil.unmarshallString(input),
+                    input.readInt(),
+                    BitSet.valueOf(MarshallUtil.unmarshallByteArray(input))
             );
         }
 

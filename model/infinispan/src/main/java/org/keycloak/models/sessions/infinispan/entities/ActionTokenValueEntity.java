@@ -1,13 +1,13 @@
 /*
  * Copyright 2017 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,12 +16,16 @@
  */
 package org.keycloak.models.sessions.infinispan.entities;
 
-import org.keycloak.models.ActionTokenValueModel;
-
-import java.io.*;
-import java.util.*;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
+import org.keycloak.models.ActionTokenValueModel;
+
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author hmlnarik
@@ -59,7 +63,7 @@ public class ActionTokenValueEntity implements ActionTokenValueModel {
             output.writeByte(VERSION_1);
 
             output.writeBoolean(t.notes.isEmpty());
-            if (! t.notes.isEmpty()) {
+            if (!t.notes.isEmpty()) {
                 output.writeObject(t.notes);
             }
         }
@@ -67,14 +71,14 @@ public class ActionTokenValueEntity implements ActionTokenValueModel {
         @Override
         public ActionTokenValueEntity readObject(ObjectInput input) throws IOException, ClassNotFoundException {
             byte version = input.readByte();
-            
+
             if (version != VERSION_1) {
                 throw new IOException("Invalid version: " + version);
             }
             boolean notesEmpty = input.readBoolean();
 
             Map<String, String> notes = notesEmpty ? Collections.EMPTY_MAP : (Map<String, String>) input.readObject();
-            
+
             return new ActionTokenValueEntity(notes);
         }
     }

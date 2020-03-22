@@ -1,13 +1,13 @@
 /*
  * Copyright 2017 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,56 +16,52 @@
  */
 package org.keycloak.authentication.actiontoken;
 
+import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.authentication.AuthenticationProcessor;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.events.EventBuilder;
-import org.keycloak.models.*;
+import org.keycloak.models.AuthenticationFlowModel;
+import org.keycloak.models.ClientModel;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.SystemClientUtil;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.representations.JsonWebToken;
 import org.keycloak.services.Urls;
 import org.keycloak.services.managers.AuthenticationSessionManager;
 import org.keycloak.sessions.AuthenticationSessionModel;
+import org.keycloak.sessions.RootAuthenticationSessionModel;
+
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilderException;
 import javax.ws.rs.core.UriInfo;
-import org.jboss.resteasy.spi.HttpRequest;
-import org.keycloak.sessions.RootAuthenticationSessionModel;
 
 /**
- *
  * @author hmlnarik
  */
 public class ActionTokenContext<T extends JsonWebToken> {
 
-    @FunctionalInterface
-    public interface ProcessAuthenticateFlow {
-        Response processFlow(boolean action, String execution, AuthenticationSessionModel authSession, String flowPath, AuthenticationFlowModel flow, String errorMessage, AuthenticationProcessor processor);
-    };
-
-    @FunctionalInterface
-    public interface ProcessBrokerFlow {
-        Response brokerLoginFlow(String authSessionId, String code, String execution, String clientId, String tabId, String flowPath);
-    };
-
     private final KeycloakSession session;
+
+    ;
     private final RealmModel realm;
+
+    ;
     private final UriInfo uriInfo;
     private final ClientConnection clientConnection;
     private final HttpRequest request;
-    private EventBuilder event;
     private final ActionTokenHandler<T> handler;
+    private final ProcessAuthenticateFlow processAuthenticateFlow;
+    private final ProcessBrokerFlow processBrokerFlow;
+    private EventBuilder event;
     private AuthenticationSessionModel authenticationSession;
     private boolean authenticationSessionFresh;
     private String executionId;
-    private final ProcessAuthenticateFlow processAuthenticateFlow;
-    private final ProcessBrokerFlow processBrokerFlow;
-
     public ActionTokenContext(KeycloakSession session, RealmModel realm, UriInfo uriInfo,
-      ClientConnection clientConnection, HttpRequest request,
-      EventBuilder event, ActionTokenHandler<T> handler, String executionId,
-      ProcessAuthenticateFlow processFlow, ProcessBrokerFlow processBrokerFlow) {
+                              ClientConnection clientConnection, HttpRequest request,
+                              EventBuilder event, ActionTokenHandler<T> handler, String executionId,
+                              ProcessAuthenticateFlow processFlow, ProcessBrokerFlow processBrokerFlow) {
         this.session = session;
         this.realm = realm;
         this.uriInfo = uriInfo;
@@ -107,12 +103,12 @@ public class ActionTokenContext<T extends JsonWebToken> {
     }
 
     public AuthenticationSessionModel createAuthenticationSessionForClient(String clientId)
-      throws UriBuilderException, IllegalArgumentException {
+            throws UriBuilderException, IllegalArgumentException {
         AuthenticationSessionModel authSession;
 
         // set up the account service as the endpoint to call.
         ClientModel client = clientId != null ? realm.getClientByClientId(clientId) : SystemClientUtil.getSystemClient(realm);
-        
+
         RootAuthenticationSessionModel rootAuthSession = new AuthenticationSessionManager(session).createAuthenticationSession(realm, true);
         authSession = rootAuthSession.createAuthenticationSession(client);
 
@@ -163,5 +159,15 @@ public class ActionTokenContext<T extends JsonWebToken> {
     public Response brokerFlow(String authSessionId, String code, String flowPath) {
         ClientModel client = authenticationSession.getClient();
         return processBrokerFlow.brokerLoginFlow(authSessionId, code, getExecutionId(), client.getClientId(), authenticationSession.getTabId(), flowPath);
+    }
+
+    @FunctionalInterface
+    public interface ProcessAuthenticateFlow {
+        Response processFlow(boolean action, String execution, AuthenticationSessionModel authSession, String flowPath, AuthenticationFlowModel flow, String errorMessage, AuthenticationProcessor processor);
+    }
+
+    @FunctionalInterface
+    public interface ProcessBrokerFlow {
+        Response brokerLoginFlow(String authSessionId, String code, String execution, String clientId, String tabId, String flowPath);
     }
 }

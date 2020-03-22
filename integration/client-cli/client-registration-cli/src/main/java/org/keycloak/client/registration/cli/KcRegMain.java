@@ -8,8 +8,8 @@ import org.jboss.aesh.console.command.registry.CommandRegistry;
 import org.jboss.aesh.console.settings.Settings;
 import org.jboss.aesh.console.settings.SettingsBuilder;
 import org.keycloak.client.registration.cli.aesh.AeshEnhancer;
-import org.keycloak.client.registration.cli.aesh.ValveInputStream;
 import org.keycloak.client.registration.cli.aesh.Globals;
+import org.keycloak.client.registration.cli.aesh.ValveInputStream;
 import org.keycloak.client.registration.cli.commands.KcRegCmd;
 
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ import java.util.Arrays;
  */
 public class KcRegMain {
 
-    public static void main(String [] args) {
+    public static void main(String[] args) {
 
         Globals.stdin = new ValveInputStream();
 

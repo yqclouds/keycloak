@@ -19,11 +19,7 @@ package org.keycloak.storage.ldap.mappers.membership.group;
 
 import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.models.GroupModel;
-import org.keycloak.models.ModelException;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.RoleUtils;
 import org.keycloak.models.utils.UserModelDelegate;
@@ -36,22 +32,10 @@ import org.keycloak.storage.ldap.idm.query.Condition;
 import org.keycloak.storage.ldap.idm.query.internal.LDAPQuery;
 import org.keycloak.storage.ldap.idm.query.internal.LDAPQueryConditionsBuilder;
 import org.keycloak.storage.ldap.mappers.AbstractLDAPStorageMapper;
-import org.keycloak.storage.ldap.mappers.membership.CommonLDAPGroupMapper;
-import org.keycloak.storage.ldap.mappers.membership.CommonLDAPGroupMapperConfig;
-import org.keycloak.storage.ldap.mappers.membership.LDAPGroupMapperMode;
-import org.keycloak.storage.ldap.mappers.membership.MembershipType;
-import org.keycloak.storage.ldap.mappers.membership.UserRolesRetrieveStrategy;
+import org.keycloak.storage.ldap.mappers.membership.*;
 import org.keycloak.storage.user.SynchronizationResult;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -86,7 +70,6 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
     public CommonLDAPGroupMapperConfig getConfig() {
         return config;
     }
-
 
 
     // LDAP Group CRUD operations
@@ -358,7 +341,7 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
 
         for (String attrName : groupAttributes) {
             Set<String> attrValues = ldapGroup.getAttributeAsSet(attrName);
-            if (attrValues==null) {
+            if (attrValues == null) {
                 kcGroup.removeAttribute(attrName);
             } else {
                 kcGroup.setAttribute(attrName, new LinkedList<>(attrValues));

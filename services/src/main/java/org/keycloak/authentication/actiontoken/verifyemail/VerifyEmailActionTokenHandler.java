@@ -1,13 +1,13 @@
 /*
  * Copyright 2017 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,10 +16,14 @@
  */
 package org.keycloak.authentication.actiontoken.verifyemail;
 
-import org.keycloak.authentication.actiontoken.AbstractActionTokenHander;
 import org.keycloak.TokenVerifier.Predicate;
-import org.keycloak.authentication.actiontoken.*;
-import org.keycloak.events.*;
+import org.keycloak.authentication.actiontoken.AbstractActionTokenHander;
+import org.keycloak.authentication.actiontoken.ActionTokenContext;
+import org.keycloak.authentication.actiontoken.TokenUtils;
+import org.keycloak.events.Details;
+import org.keycloak.events.Errors;
+import org.keycloak.events.EventBuilder;
+import org.keycloak.events.EventType;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.Constants;
 import org.keycloak.models.KeycloakSession;
@@ -32,34 +36,36 @@ import org.keycloak.services.managers.AuthenticationSessionManager;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
-import java.util.Objects;
+
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import java.util.Objects;
 
 /**
  * Action token handler for verification of e-mail address.
+ *
  * @author hmlnarik
  */
 public class VerifyEmailActionTokenHandler extends AbstractActionTokenHander<VerifyEmailActionToken> {
 
     public VerifyEmailActionTokenHandler() {
         super(
-          VerifyEmailActionToken.TOKEN_TYPE,
-          VerifyEmailActionToken.class,
-          Messages.STALE_VERIFY_EMAIL_LINK,
-          EventType.VERIFY_EMAIL,
-          Errors.INVALID_TOKEN
+                VerifyEmailActionToken.TOKEN_TYPE,
+                VerifyEmailActionToken.class,
+                Messages.STALE_VERIFY_EMAIL_LINK,
+                EventType.VERIFY_EMAIL,
+                Errors.INVALID_TOKEN
         );
     }
 
     @Override
     public Predicate<? super VerifyEmailActionToken>[] getVerifiers(ActionTokenContext<VerifyEmailActionToken> tokenContext) {
         return TokenUtils.predicates(
-          TokenUtils.checkThat(
-            t -> Objects.equals(t.getEmail(), tokenContext.getAuthenticationSession().getAuthenticatedUser().getEmail()),
-            Errors.INVALID_EMAIL, getDefaultErrorMessage()
-          )
+                TokenUtils.checkThat(
+                        t -> Objects.equals(t.getEmail(), tokenContext.getAuthenticationSession().getAuthenticatedUser().getEmail()),
+                        Errors.INVALID_EMAIL, getDefaultErrorMessage()
+                )
         );
     }
 

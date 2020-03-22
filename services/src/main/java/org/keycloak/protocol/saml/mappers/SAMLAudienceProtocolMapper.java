@@ -17,9 +17,6 @@
 
 package org.keycloak.protocol.saml.mappers;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import org.jboss.logging.Logger;
 import org.keycloak.dom.saml.v2.assertion.AudienceRestrictionType;
 import org.keycloak.dom.saml.v2.protocol.ResponseType;
@@ -28,6 +25,10 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.UserSessionModel;
 import org.keycloak.provider.ProviderConfigProperty;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * SAML mapper to add a audience restriction into the assertion, to another
@@ -38,19 +39,14 @@ import org.keycloak.provider.ProviderConfigProperty;
  */
 public class SAMLAudienceProtocolMapper extends AbstractSAMLProtocolMapper implements SAMLLoginResponseMapper {
 
-    protected static final Logger logger = Logger.getLogger(SAMLAudienceProtocolMapper.class);
-
     public static final String PROVIDER_ID = "saml-audience-mapper";
-
     public static final String AUDIENCE_CATEGORY = "Audience mapper";
-
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
-
     public static final String INCLUDED_CLIENT_AUDIENCE = "included.client.audience";
+    public static final String INCLUDED_CUSTOM_AUDIENCE = "included.custom.audience";
+    protected static final Logger logger = Logger.getLogger(SAMLAudienceProtocolMapper.class);
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
     private static final String INCLUDED_CLIENT_AUDIENCE_LABEL = "included.client.audience.label";
     private static final String INCLUDED_CLIENT_AUDIENCE_HELP_TEXT = "included.client.audience.tooltip";
-
-    public static final String INCLUDED_CUSTOM_AUDIENCE = "included.custom.audience";
     private static final String INCLUDED_CUSTOM_AUDIENCE_LABEL = "included.custom.audience.label";
     private static final String INCLUDED_CUSTOM_AUDIENCE_HELP_TEXT = "included.custom.audience.tooltip";
 
@@ -69,6 +65,19 @@ public class SAMLAudienceProtocolMapper extends AbstractSAMLProtocolMapper imple
         property.setHelpText(INCLUDED_CUSTOM_AUDIENCE_HELP_TEXT);
         property.setType(ProviderConfigProperty.STRING_TYPE);
         configProperties.add(property);
+    }
+
+    protected static AudienceRestrictionType locateAudienceRestriction(ResponseType response) {
+        try {
+            return response.getAssertions().get(0).getAssertion().getConditions().getConditions()
+                    .stream()
+                    .filter(AudienceRestrictionType.class::isInstance)
+                    .map(AudienceRestrictionType.class::cast)
+                    .findFirst().orElse(null);
+        } catch (NullPointerException | IndexOutOfBoundsException e) {
+            logger.warn("Invalid SAML ResponseType to add the audience restriction", e);
+            return null;
+        }
     }
 
     @Override
@@ -96,23 +105,10 @@ public class SAMLAudienceProtocolMapper extends AbstractSAMLProtocolMapper imple
         return "Add specified audience to the audience conditions in the assertion.";
     }
 
-    protected static AudienceRestrictionType locateAudienceRestriction(ResponseType response) {
-        try {
-            return response.getAssertions().get(0).getAssertion().getConditions().getConditions()
-                    .stream()
-                    .filter(AudienceRestrictionType.class::isInstance)
-                    .map(AudienceRestrictionType.class::cast)
-                    .findFirst().orElse(null);
-        } catch (NullPointerException | IndexOutOfBoundsException e) {
-            logger.warn("Invalid SAML ResponseType to add the audience restriction", e);
-            return null;
-        }
-    }
-
     @Override
     public ResponseType transformLoginResponse(ResponseType response,
-            ProtocolMapperModel mappingModel, KeycloakSession session,
-            UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
+                                               ProtocolMapperModel mappingModel, KeycloakSession session,
+                                               UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
         // read configuration as in OIDC (first clientId, then custom)
         String audience = mappingModel.getConfig().get(INCLUDED_CLIENT_AUDIENCE);
         if (audience == null || audience.isEmpty()) {

@@ -31,29 +31,28 @@ public interface RequiredActionProvider extends Provider {
     /**
      * Determines what type of support is provided for application-initiated
      * actions.
-     * 
+     *
      * @return InititatedActionsSupport
      */
     default InitiatedActionSupport initiatedActionSupport() {
         return InitiatedActionSupport.NOT_SUPPORTED;
     }
-    
+
     /**
      * Callback to let the action know that an application-initiated action
      * was canceled.
-     * 
-     * @param session The Keycloak session.
+     *
+     * @param session     The Keycloak session.
      * @param authSession The authentication session.
-     * 
      */
     default void initiatedActionCanceled(KeycloakSession session, AuthenticationSessionModel authSession) {
         return;
     }
-    
+
     /**
      * Called every time a user authenticates.  This checks to see if this required action should be triggered.
      * The implementation of this method is responsible for setting the required action on the UserModel.
-     *
+     * <p>
      * For example, the UpdatePassword required actions checks the password policies to see if the password has expired.
      *
      * @param context

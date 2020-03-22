@@ -41,13 +41,15 @@ public interface AuthenticationSessionProvider extends Provider {
     void removeRootAuthenticationSession(RealmModel realm, RootAuthenticationSessionModel authenticationSession);
 
     void removeExpired(RealmModel realm);
+
     void onRealmRemoved(RealmModel realm);
+
     void onClientRemoved(RealmModel realm, ClientModel client);
 
     /**
      * Requests update of authNotes of a root authentication session that is not owned
      * by this instance but might exist somewhere in the cluster.
-     * 
+     *
      * @param compoundId
      * @param authNotesFragment Map with authNote values. Auth note is removed if the corresponding value in the map is {@code null}.
      */

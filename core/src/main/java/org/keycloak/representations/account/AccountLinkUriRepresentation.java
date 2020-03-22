@@ -19,7 +19,6 @@ package org.keycloak.representations.account;
 import java.net.URI;
 
 /**
- *
  * @author Stan Silvert
  */
 public class AccountLinkUriRepresentation {

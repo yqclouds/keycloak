@@ -7,12 +7,7 @@ import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class PairwiseSubMapperUtils {

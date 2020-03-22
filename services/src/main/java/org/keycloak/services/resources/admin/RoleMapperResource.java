@@ -18,17 +18,10 @@ package org.keycloak.services.resources.admin;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import javax.ws.rs.NotFoundException;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ModelException;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleContainerModel;
-import org.keycloak.models.RoleMapperModel;
-import org.keycloak.models.RoleModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.ClientMappingsRepresentation;
 import org.keycloak.representations.idm.MappingsRepresentation;
@@ -36,57 +29,39 @@ import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * Base resource for managing users
  *
- * @resource Role Mapper
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @author <a href="mailto:mpaulosnunes@gmail.com">Miguel P. Nunes</a>
  * @version $Revision: 1 $
+ * @resource Role Mapper
  */
 public class RoleMapperResource {
 
     protected static final Logger logger = Logger.getLogger(RoleMapperResource.class);
 
     protected RealmModel realm;
-
-    private RoleMapperModel roleMapper;
-
-    private AdminEventBuilder adminEvent;
-
     protected AdminPermissionEvaluator.RequirePermissionCheck managePermission;
     protected AdminPermissionEvaluator.RequirePermissionCheck viewPermission;
-    private AdminPermissionEvaluator auth;
-
     @Context
     protected ClientConnection clientConnection;
-
     @Context
     protected KeycloakSession session;
-
     @Context
     protected HttpHeaders headers;
+    private RoleMapperModel roleMapper;
+    private AdminEventBuilder adminEvent;
+    private AdminPermissionEvaluator auth;
 
     public RoleMapperResource(RealmModel realm,
                               AdminPermissionEvaluator auth,
@@ -166,7 +141,7 @@ public class RoleMapperResource {
 
     /**
      * Get effective realm-level role mappings
-     *
+     * <p>
      * This will recurse all composite roles to get the result.
      *
      * @return
@@ -182,7 +157,7 @@ public class RoleMapperResource {
         List<RoleRepresentation> realmMappingsRep = new ArrayList<RoleRepresentation>();
         for (RoleModel roleModel : roles) {
             if (roleMapper.hasRole(roleModel)) {
-               realmMappingsRep.add(ModelToRepresentation.toBriefRepresentation(roleModel));
+                realmMappingsRep.add(ModelToRepresentation.toBriefRepresentation(roleModel));
             }
         }
         return realmMappingsRep;
@@ -202,7 +177,7 @@ public class RoleMapperResource {
 
         Set<RoleModel> available = realm.getRoles();
         Set<RoleModel> set = available.stream().filter(r ->
-            canMapRole(r)
+                canMapRole(r)
         ).collect(Collectors.toSet());
         return ClientRoleMappingsResource.getAvailableRoles(roleMapper, set);
     }

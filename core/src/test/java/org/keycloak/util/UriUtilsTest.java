@@ -20,9 +20,7 @@ package org.keycloak.util;
 import org.junit.Test;
 import org.keycloak.common.util.UriUtils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -63,14 +61,14 @@ public class UriUtilsTest {
     }
 
     @Test
-    public void testStripQueryParam(){
-        assertEquals("http://localhost",UriUtils.stripQueryParam("http://localhost?login_hint=michael","login_hint"));
-        assertEquals("http://localhost",UriUtils.stripQueryParam("http://localhost?login_hint=michael@me.com","login_hint"));
-        assertEquals("http://localhost?param=test",UriUtils.stripQueryParam("http://localhost?param=test&login_hint=michael","login_hint"));
-        assertEquals("http://localhost?param=test",UriUtils.stripQueryParam("http://localhost?param=test&login_hint=michael@me.com","login_hint"));
+    public void testStripQueryParam() {
+        assertEquals("http://localhost", UriUtils.stripQueryParam("http://localhost?login_hint=michael", "login_hint"));
+        assertEquals("http://localhost", UriUtils.stripQueryParam("http://localhost?login_hint=michael@me.com", "login_hint"));
+        assertEquals("http://localhost?param=test", UriUtils.stripQueryParam("http://localhost?param=test&login_hint=michael", "login_hint"));
+        assertEquals("http://localhost?param=test", UriUtils.stripQueryParam("http://localhost?param=test&login_hint=michael@me.com", "login_hint"));
         assertEquals("http://localhost?param=test", UriUtils.stripQueryParam("http://localhost?login_hint=michael&param=test", "login_hint"));
-        assertEquals("http://localhost?param=test",UriUtils.stripQueryParam("http://localhost?login_hint=michael@me.com&param=test","login_hint"));
-        assertEquals("http://localhost?pre=test&param=test",UriUtils.stripQueryParam("http://localhost?pre=test&login_hint=michael&param=test","login_hint"));
-        assertEquals("http://localhost?pre=test&param=test",UriUtils.stripQueryParam("http://localhost?pre=test&login_hint=michael@me.com&param=test","login_hint"));
+        assertEquals("http://localhost?param=test", UriUtils.stripQueryParam("http://localhost?login_hint=michael@me.com&param=test", "login_hint"));
+        assertEquals("http://localhost?pre=test&param=test", UriUtils.stripQueryParam("http://localhost?pre=test&login_hint=michael&param=test", "login_hint"));
+        assertEquals("http://localhost?pre=test&param=test", UriUtils.stripQueryParam("http://localhost?pre=test&login_hint=michael@me.com&param=test", "login_hint"));
     }
 }

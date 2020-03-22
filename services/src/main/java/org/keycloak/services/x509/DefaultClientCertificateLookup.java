@@ -20,11 +20,13 @@ package org.keycloak.services.x509;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
+
 import java.security.cert.X509Certificate;
 
 /**
  * The provider retrieves a client certificate and the certificate chain
  * (if any) from the incoming TLS connection.
+ *
  * @author <a href="mailto:brat000012001@gmail.com">Peter Nalyvayko</a>
  * @version $Revision: 1 $
  * @since 3/26/2017
@@ -32,9 +34,8 @@ import java.security.cert.X509Certificate;
 
 public class DefaultClientCertificateLookup implements X509ClientCertificateLookup {
 
-    private static final Logger logger = Logger.getLogger(DefaultClientCertificateLookup.class);
-
     public static final String JAVAX_SERVLET_REQUEST_X509_CERTIFICATE = "javax.servlet.request.X509Certificate";
+    private static final Logger logger = Logger.getLogger(DefaultClientCertificateLookup.class);
 
     public DefaultClientCertificateLookup() {
     }

@@ -15,15 +15,15 @@
  */
 package org.keycloak.forms.login.freemarker.model;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.WebAuthnCredentialModel;
+
+import java.util.LinkedList;
+import java.util.List;
 
 public class WebAuthnAuthenticatorsBean {
     private List<WebAuthnAuthenticatorBean> authenticators = new LinkedList<WebAuthnAuthenticatorBean>();
@@ -34,7 +34,7 @@ public class WebAuthnAuthenticatorsBean {
             WebAuthnCredentialModel webAuthnCredential = WebAuthnCredentialModel.createFromCredentialModel(credential);
 
             String credentialId = Base64Url.encodeBase64ToBase64Url(webAuthnCredential.getWebAuthnCredentialData().getCredentialId());
-            String label = (webAuthnCredential.getUserLabel()==null || webAuthnCredential.getUserLabel().isEmpty()) ? "label missing" : webAuthnCredential.getUserLabel();
+            String label = (webAuthnCredential.getUserLabel() == null || webAuthnCredential.getUserLabel().isEmpty()) ? "label missing" : webAuthnCredential.getUserLabel();
             authenticators.add(new WebAuthnAuthenticatorBean(credentialId, label));
         }
     }

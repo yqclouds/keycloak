@@ -18,7 +18,6 @@
 package org.keycloak.protocol.oidc.endpoints.request;
 
 import javax.ws.rs.core.MultivaluedMap;
-
 import java.util.Set;
 
 /**
@@ -46,7 +45,7 @@ class AuthzEndpointQueryStringParser extends AuthzEndpointRequestParser {
     protected Integer getIntParameter(String paramName) {
         checkDuplicated(requestParams, paramName);
         String paramVal = requestParams.getFirst(paramName);
-        return paramVal==null ? null : Integer.parseInt(paramVal);
+        return paramVal == null ? null : Integer.parseInt(paramVal);
     }
 
     public String getInvalidRequestMessage() {

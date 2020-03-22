@@ -17,11 +17,7 @@
 
 package org.keycloak.client.registration.cli.util;
 
-import org.keycloak.client.registration.cli.config.ConfigData;
-import org.keycloak.client.registration.cli.config.ConfigHandler;
-import org.keycloak.client.registration.cli.config.ConfigUpdateOperation;
-import org.keycloak.client.registration.cli.config.InMemoryConfigHandler;
-import org.keycloak.client.registration.cli.config.RealmConfigData;
+import org.keycloak.client.registration.cli.config.*;
 import org.keycloak.representations.AccessTokenResponse;
 
 /**

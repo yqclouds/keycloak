@@ -202,7 +202,7 @@ public class BrokeredIdentityContext {
         if (name != null) {
             int i = name.lastIndexOf(' ');
             if (i != -1) {
-                firstName  = name.substring(0, i);
+                firstName = name.substring(0, i);
                 lastName = name.substring(i + 1);
             } else {
                 firstName = name;

@@ -35,6 +35,7 @@ public interface X509ClientCertificateLookup extends Provider {
     /**
      * Returns a client certificate, and optionally any certificates
      * in the certificate chain.
+     *
      * @return
      */
     X509Certificate[] getCertificateChain(HttpRequest httpRequest) throws GeneralSecurityException;

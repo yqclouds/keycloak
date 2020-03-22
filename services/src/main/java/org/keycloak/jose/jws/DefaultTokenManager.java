@@ -16,20 +16,11 @@
  */
 package org.keycloak.jose.jws;
 
-import java.io.UnsupportedEncodingException;
-import java.security.Key;
-
 import org.jboss.logging.Logger;
 import org.keycloak.Token;
 import org.keycloak.TokenCategory;
 import org.keycloak.crypto.Algorithm;
-import org.keycloak.crypto.CekManagementProvider;
-import org.keycloak.crypto.ClientSignatureVerifierProvider;
-import org.keycloak.crypto.ContentEncryptionProvider;
-import org.keycloak.crypto.KeyUse;
-import org.keycloak.crypto.KeyWrapper;
-import org.keycloak.crypto.SignatureProvider;
-import org.keycloak.crypto.SignatureSignerContext;
+import org.keycloak.crypto.*;
 import org.keycloak.jose.jwe.JWEException;
 import org.keycloak.jose.jwe.alg.JWEAlgorithmProvider;
 import org.keycloak.jose.jwe.enc.JWEEncryptionProvider;
@@ -41,6 +32,9 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.TokenManager;
 import org.keycloak.protocol.oidc.OIDCConfigAttributes;
 import org.keycloak.util.TokenUtil;
+
+import java.io.UnsupportedEncodingException;
+import java.security.Key;
 
 public class DefaultTokenManager implements TokenManager {
 

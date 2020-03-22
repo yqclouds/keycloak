@@ -29,7 +29,7 @@ public interface UserRoleMappingsFederatedStorage {
 
     void grantRole(RealmModel realm, String userId, RoleModel role);
 
-    Set<RoleModel> getRoleMappings(RealmModel realm,String userId);
+    Set<RoleModel> getRoleMappings(RealmModel realm, String userId);
 
     void deleteRoleMapping(RealmModel realm, String userId, RoleModel role);
 }

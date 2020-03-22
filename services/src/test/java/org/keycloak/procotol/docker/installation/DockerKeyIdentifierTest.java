@@ -1,9 +1,7 @@
 package org.keycloak.procotol.docker.installation;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
-import org.keycloak.models.utils.Base32;
 import org.keycloak.protocol.docker.DockerKeyIdentifier;
 
 import java.security.KeyPair;
@@ -16,6 +14,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Docker gets really unhappy if the key identifier is not in the format documented here:
+ *
  * @see https://github.com/docker/libtrust/blob/master/key.go#L24
  */
 public class DockerKeyIdentifierTest {

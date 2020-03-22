@@ -35,19 +35,19 @@ import org.apache.directory.server.core.DefaultDirectoryService;
 import org.apache.directory.server.core.api.CacheService;
 import org.apache.directory.server.core.api.DirectoryService;
 import org.apache.directory.server.core.api.InstanceLayout;
+import org.apache.directory.server.core.api.interceptor.Interceptor;
 import org.apache.directory.server.core.api.partition.Partition;
 import org.apache.directory.server.core.api.schema.SchemaPartition;
 import org.apache.directory.server.core.factory.AvlPartitionFactory;
 import org.apache.directory.server.core.factory.DirectoryServiceFactory;
 import org.apache.directory.server.core.factory.PartitionFactory;
+import org.apache.directory.server.core.normalization.NormalizationInterceptor;
 import org.apache.directory.server.i18n.I18n;
 import org.jboss.logging.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import org.apache.directory.server.core.api.interceptor.Interceptor;
-import org.apache.directory.server.core.normalization.NormalizationInterceptor;
 
 /**
  * Factory for a fast (mostly in-memory-only) ApacheDS DirectoryService. Use only for tests!!

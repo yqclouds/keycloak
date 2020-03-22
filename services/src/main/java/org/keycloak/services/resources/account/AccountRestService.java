@@ -19,20 +19,14 @@ package org.keycloak.services.resources.account;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.common.ClientConnection;
+import org.keycloak.common.Profile;
 import org.keycloak.common.util.StringPropertyReplacer;
+import org.keycloak.credential.CredentialModel;
 import org.keycloak.events.Details;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventStoreProvider;
 import org.keycloak.events.EventType;
-import org.keycloak.models.AccountRoles;
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserConsentModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.representations.account.ClientRepresentation;
 import org.keycloak.representations.account.ConsentRepresentation;
 import org.keycloak.representations.account.ConsentScopeRepresentation;
@@ -43,58 +37,36 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.Cors;
 import org.keycloak.services.resources.account.resources.ResourcesService;
 import org.keycloak.storage.ReadOnlyException;
+import org.keycloak.theme.Theme;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.OPTIONS;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
-
-import org.keycloak.common.Profile;
-import org.keycloak.credential.CredentialModel;
-import org.keycloak.theme.Theme;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class AccountRestService {
 
-    @Context
-    private HttpRequest request;
+    private final KeycloakSession session;
+    private final ClientModel client;
+    private final EventBuilder event;
+    private final RealmModel realm;
+    private final UserModel user;
+    private final Locale locale;
     @Context
     protected HttpHeaders headers;
     @Context
     protected ClientConnection clientConnection;
-
-    private final KeycloakSession session;
-    private final ClientModel client;
-    private final EventBuilder event;
+    @Context
+    private HttpRequest request;
     private EventStoreProvider eventStore;
     private Auth auth;
-    
-    private final RealmModel realm;
-    private final UserModel user;
-    private final Locale locale;
 
     public AccountRestService(KeycloakSession session, Auth auth, ClientModel client, EventBuilder event) {
         this.session = session;
@@ -105,7 +77,13 @@ public class AccountRestService {
         this.event = event;
         this.locale = session.getContext().resolveLocale(user);
     }
-    
+
+    private static void checkAccountApiEnabled() {
+        if (!Profile.isFeatureEnabled(Profile.Feature.ACCOUNT_API)) {
+            throw new NotFoundException();
+        }
+    }
+
     public void init() {
         eventStore = session.getProvider(EventStoreProvider.class);
     }
@@ -241,14 +219,14 @@ public class AccountRestService {
         return new AccountCredentialResource(session, event, user, auth);
     }
 
+    // TODO Federated identities
+
     @Path("/resources")
     public ResourcesService resources() {
         checkAccountApiEnabled();
         auth.requireOneOf(AccountRoles.MANAGE_ACCOUNT, AccountRoles.VIEW_PROFILE);
         return new ResourcesService(session, user, auth, request);
     }
-
-    // TODO Federated identities
 
     /**
      * Returns the applications with the given id in the specified realm.
@@ -268,12 +246,12 @@ public class AccountRestService {
         }
 
         List<String> inUseClients = new LinkedList<>();
-        if(!session.sessions().getUserSessions(realm, client).isEmpty()) {
+        if (!session.sessions().getUserSessions(realm, client).isEmpty()) {
             inUseClients.add(clientId);
         }
 
         List<String> offlineClients = new LinkedList<>();
-        if(session.sessions().getOfflineSessionsCount(realm, client) > 0) {
+        if (session.sessions().getOfflineSessionsCount(realm, client) > 0) {
             offlineClients.add(clientId);
         }
 
@@ -293,7 +271,7 @@ public class AccountRestService {
         representation.setOfflineAccess(offlineClients.contains(model.getClientId()));
         representation.setBaseUrl(model.getBaseUrl());
         UserConsentModel consentModel = consents.get(model.getClientId());
-        if(consentModel != null) {
+        if (consentModel != null) {
             representation.setConsent(modelToRepresentation(consentModel));
         }
         return representation;
@@ -398,15 +376,15 @@ public class AccountRestService {
                                   final ConsentRepresentation consent) {
         return upsert(clientId, consent);
     }
-    
+
     @Path("/totp/remove")
     @DELETE
     public Response removeTOTP() {
         auth.require(AccountRoles.MANAGE_ACCOUNT);
-        
+
         session.userCredentialManager().disableCredentialType(realm, user, CredentialModel.OTP);
         event.event(EventType.REMOVE_TOTP).client(auth.getClient()).user(auth.getUser()).success();
-        
+
         return Cors.add(request, Response.accepted()).build();
     }
 
@@ -475,11 +453,13 @@ public class AccountRestService {
         }
         return consent;
     }
-    
+
     @Path("/linked-accounts")
     public LinkedAccountsResource linkedAccounts() {
         return new LinkedAccountsResource(session, request, client, auth, event, user);
     }
+
+    // TODO Logs
 
     @Path("/applications")
     @GET
@@ -492,7 +472,7 @@ public class AccountRestService {
         Set<ClientModel> clients = new HashSet<ClientModel>();
         List<String> inUseClients = new LinkedList<String>();
         List<UserSessionModel> sessions = session.sessions().getUserSessions(realm, user);
-        for(UserSessionModel s : sessions) {
+        for (UserSessionModel s : sessions) {
             for (AuthenticatedClientSessionModel a : s.getAuthenticatedClientSessions().values()) {
                 ClientModel client = a.getClient();
                 clients.add(client);
@@ -502,8 +482,8 @@ public class AccountRestService {
 
         List<String> offlineClients = new LinkedList<String>();
         List<UserSessionModel> offlineSessions = session.sessions().getOfflineUserSessions(realm, user);
-        for(UserSessionModel s : offlineSessions) {
-            for(AuthenticatedClientSessionModel a : s.getAuthenticatedClientSessions().values()) {
+        for (UserSessionModel s : offlineSessions) {
+            for (AuthenticatedClientSessionModel a : s.getAuthenticatedClientSessions().values()) {
                 ClientModel client = a.getClient();
                 clients.add(client);
                 offlineClients.add(client.getClientId());
@@ -519,7 +499,7 @@ public class AccountRestService {
         }
 
         List<ClientModel> alwaysDisplayClients = realm.getAlwaysDisplayInConsoleClients();
-        for(ClientModel client : alwaysDisplayClients) {
+        for (ClientModel client : alwaysDisplayClients) {
             clients.add(client);
         }
 
@@ -532,13 +512,5 @@ public class AccountRestService {
         }
 
         return Cors.add(request, Response.ok(apps)).auth().allowedOrigins(auth.getToken()).build();
-    }
-
-    // TODO Logs
-    
-    private static void checkAccountApiEnabled() {
-        if (!Profile.isFeatureEnabled(Profile.Feature.ACCOUNT_API)) {
-            throw new NotFoundException();
-        }
     }
 }

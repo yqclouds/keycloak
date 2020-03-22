@@ -55,7 +55,7 @@ public class AuthenticationFlowException extends RuntimeException {
         this.error = error;
     }
 
-    public AuthenticationFlowException(List<AuthenticationFlowException> afeList){
+    public AuthenticationFlowException(List<AuthenticationFlowException> afeList) {
         this.error = AuthenticationFlowError.INTERNAL_ERROR;
         this.afeList = afeList;
     }

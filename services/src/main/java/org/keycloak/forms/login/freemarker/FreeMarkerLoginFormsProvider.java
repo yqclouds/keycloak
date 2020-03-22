@@ -26,28 +26,8 @@ import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.common.util.ObjectUtil;
 import org.keycloak.forms.login.LoginFormsPages;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.forms.login.freemarker.model.AuthenticationContextBean;
-import org.keycloak.forms.login.freemarker.model.ClientBean;
-import org.keycloak.forms.login.freemarker.model.CodeBean;
-import org.keycloak.forms.login.freemarker.model.IdentityProviderBean;
-import org.keycloak.forms.login.freemarker.model.LoginBean;
-import org.keycloak.forms.login.freemarker.model.OAuthGrantBean;
-import org.keycloak.forms.login.freemarker.model.ProfileBean;
-import org.keycloak.forms.login.freemarker.model.RealmBean;
-import org.keycloak.forms.login.freemarker.model.RegisterBean;
-import org.keycloak.forms.login.freemarker.model.RequiredActionUrlFormatterMethod;
-import org.keycloak.forms.login.freemarker.model.SAMLPostFormBean;
-import org.keycloak.forms.login.freemarker.model.TotpBean;
-import org.keycloak.forms.login.freemarker.model.TotpLoginBean;
-import org.keycloak.forms.login.freemarker.model.UrlBean;
-import org.keycloak.forms.login.freemarker.model.X509ConfirmBean;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.Constants;
-import org.keycloak.models.IdentityProviderModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.forms.login.freemarker.model.*;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.FormMessage;
 import org.keycloak.services.Urls;
 import org.keycloak.services.messages.Messages;
@@ -57,12 +37,7 @@ import org.keycloak.theme.BrowserSecurityHeaderSetup;
 import org.keycloak.theme.FreeMarkerException;
 import org.keycloak.theme.FreeMarkerUtil;
 import org.keycloak.theme.Theme;
-import org.keycloak.theme.beans.AdvancedMessageFormatterMethod;
-import org.keycloak.theme.beans.LocaleBean;
-import org.keycloak.theme.beans.MessageBean;
-import org.keycloak.theme.beans.MessageFormatterMethod;
-import org.keycloak.theme.beans.MessageType;
-import org.keycloak.theme.beans.MessagesPerFieldBean;
+import org.keycloak.theme.beans.*;
 import org.keycloak.utils.MediaType;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -72,14 +47,7 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.net.URI;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 
 import static org.keycloak.models.UserModel.RequiredAction.UPDATE_PASSWORD;
 
@@ -89,7 +57,7 @@ import static org.keycloak.models.UserModel.RequiredAction.UPDATE_PASSWORD;
 public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
 
     private static final Logger logger = Logger.getLogger(FreeMarkerLoginFormsProvider.class);
-
+    protected final Map<String, Object> attributes = new HashMap<>();
     protected String accessCode;
     protected Response.Status status;
     protected javax.ws.rs.core.MediaType contentType;
@@ -98,24 +66,19 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
     protected URI actionUri;
     protected String execution;
     protected AuthenticationFlowContext context;
-
     protected List<FormMessage> messages = null;
     protected MessageType messageType = MessageType.ERROR;
-
     protected MultivaluedMap<String, String> formData;
-
     protected KeycloakSession session;
-    /** authenticationSession can be null for some renderings, mainly error pages */
+    /**
+     * authenticationSession can be null for some renderings, mainly error pages
+     */
     protected AuthenticationSessionModel authenticationSession;
     protected RealmModel realm;
     protected ClientModel client;
     protected UriInfo uriInfo;
-
     protected FreeMarkerUtil freeMarker;
-
     protected UserModel user;
-
-    protected final Map<String, Object> attributes = new HashMap<>();
 
     public FreeMarkerLoginFormsProvider(KeycloakSession session, FreeMarkerUtil freeMarker) {
         this.session = session;
@@ -236,7 +199,7 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
 
         return processTemplate(theme, Templates.getTemplate(page), locale);
     }
-    
+
     @Override
     public Response createForm(String form) {
         Theme theme;
@@ -260,9 +223,9 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
 
     /**
      * Prepare base uri builder for later use
-     * 
+     *
      * @param resetRequestUriParams - for some reason Resteasy 2.3.7 doesn't like query params and form params with the same name and will null out the code form param, so we have to reset them for some pages
-     * @return base uri builder  
+     * @return base uri builder
      */
     protected UriBuilder prepareBaseUriBuilder(boolean resetRequestUriParams) {
         String requestURI = uriInfo.getBaseUri().getPath();
@@ -282,7 +245,7 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
 
     /**
      * Get Theme used for page rendering.
-     * 
+     *
      * @return theme for page rendering, never null
      * @throws IOException in case of Theme loading problem
      */
@@ -292,8 +255,8 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
 
     /**
      * Load message bundle and place it into <code>msg</code> template attribute. Also load Theme properties and place them into <code>properties</code> template attribute.
-     * 
-     * @param theme actual Theme to load bundle from
+     *
+     * @param theme  actual Theme to load bundle from
      * @param locale to load bundle for
      * @return message bundle for other use
      */
@@ -318,8 +281,8 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
 
     /**
      * Handle messages to be shown on the page - set them to template attributes
-     * 
-     * @param locale to be used for message text loading
+     *
+     * @param locale         to be used for message text loading
      * @param messagesBundle to be used for message text loading
      * @see #messageType
      * @see #messages
@@ -377,13 +340,12 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
 
     /**
      * Create common attributes used in all templates.
-     * 
-     * @param theme actual Theme used (provided by <code>getTheme()</code>) 
-     * @param locale actual locale
+     *
+     * @param theme          actual Theme used (provided by <code>getTheme()</code>)
+     * @param locale         actual locale
      * @param messagesBundle actual message bundle (provided by <code>handleThemeResources()</code>)
      * @param baseUriBuilder actual base uri builder (provided by <code>prepareBaseUriBuilder()</code>)
-     * @param page in case if common page is rendered, is null if called from <code>createForm()</code>
-     * 
+     * @param page           in case if common page is rendered, is null if called from <code>createForm()</code>
      */
     protected void createCommonAttributes(Theme theme, Locale locale, Properties messagesBundle, UriBuilder baseUriBuilder, LoginFormsPages page) {
         URI baseUri = baseUriBuilder.build();
@@ -451,10 +413,10 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
 
     /**
      * Process FreeMarker template and prepare Response. Some fields are used for rendering also.
-     * 
-     * @param theme to be used (provided by <code>getTheme()</code>)
+     *
+     * @param theme        to be used (provided by <code>getTheme()</code>)
      * @param templateName name of the template to be rendered
-     * @param locale to be used
+     * @param locale       to be used
      * @return Response object to be returned to the browser, never null
      */
     protected Response processTemplate(Theme theme, String templateName, Locale locale) {
@@ -478,13 +440,17 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
         return createResponse(LoginFormsPages.LOGIN);
     }
 
-    public Response createLoginUsername(){
+    public Response createLoginUsername() {
         return createResponse(LoginFormsPages.LOGIN_USERNAME);
-    };
+    }
 
-    public Response createLoginPassword(){
+    ;
+
+    public Response createLoginPassword() {
         return createResponse(LoginFormsPages.LOGIN_PASSWORD);
-    };
+    }
+
+    ;
 
     @Override
     public Response createPasswordReset() {
@@ -723,7 +689,7 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
         return this;
     }
 
-    public LoginFormsProvider setAuthContext(AuthenticationFlowContext context){
+    public LoginFormsProvider setAuthContext(AuthenticationFlowContext context) {
         this.context = context;
         return this;
     }

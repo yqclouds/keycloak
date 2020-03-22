@@ -31,7 +31,7 @@ public class JndiEntityManagerLookup {
     public static EntityManager getSessionEntityManager(KeycloakSession session, String entityManagerFactoryJndiName) {
         EntityManagerFactory factory = null;
         try {
-            factory = (EntityManagerFactory)new InitialContext().lookup(entityManagerFactoryJndiName);
+            factory = (EntityManagerFactory) new InitialContext().lookup(entityManagerFactoryJndiName);
         } catch (NamingException e) {
             throw new RuntimeException(e);
         }

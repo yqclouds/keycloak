@@ -16,13 +16,12 @@
  */
 package org.keycloak.broker.oidc;
 
-import static org.keycloak.common.util.UriUtils.checkUrl;
-
 import org.keycloak.common.enums.SslRequired;
 import org.keycloak.models.IdentityProviderModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
+
+import static org.keycloak.common.util.UriUtils.checkUrl;
 
 /**
  * @author Pedro Igor
@@ -100,7 +99,7 @@ public class OAuth2IdentityProviderConfig extends IdentityProviderModel {
     public void setLoginHint(boolean loginHint) {
         getConfig().put("loginHint", String.valueOf(loginHint));
     }
-    
+
     public boolean isJWTAuthentication() {
         if (getClientAuthMethod().equals(OIDCLoginProtocol.CLIENT_SECRET_JWT)
                 || getClientAuthMethod().equals(OIDCLoginProtocol.PRIVATE_KEY_JWT)) {
@@ -109,7 +108,7 @@ public class OAuth2IdentityProviderConfig extends IdentityProviderModel {
         return false;
     }
 
-    public boolean isBasicAuthentication(){
+    public boolean isBasicAuthentication() {
         return getClientAuthMethod().equals(OIDCLoginProtocol.CLIENT_SECRET_BASIC);
     }
 
@@ -130,7 +129,7 @@ public class OAuth2IdentityProviderConfig extends IdentityProviderModel {
     }
 
     public void setForwardParameters(String forwardParameters) {
-       getConfig().put("forwardParameters", forwardParameters);
+        getConfig().put("forwardParameters", forwardParameters);
     }
 
     @Override

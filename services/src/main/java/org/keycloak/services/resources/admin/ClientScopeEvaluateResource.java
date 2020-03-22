@@ -17,36 +17,11 @@
 
 package org.keycloak.services.resources.admin;
 
-import static org.keycloak.protocol.ProtocolMapperUtils.isEnabled;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.common.ClientConnection;
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.ClientSessionContext;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ProtocolMapperContainerModel;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleContainerModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.TokenManager;
 import org.keycloak.representations.AccessToken;
@@ -56,6 +31,15 @@ import org.keycloak.services.managers.AuthenticationSessionManager;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
+import static org.keycloak.protocol.ProtocolMapperUtils.isEnabled;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -73,7 +57,7 @@ public class ClientScopeEvaluateResource {
     private final ClientConnection clientConnection;
 
     public ClientScopeEvaluateResource(KeycloakSession session, UriInfo uriInfo, RealmModel realm, AdminPermissionEvaluator auth,
-                                 ClientModel client, ClientConnection clientConnection) {
+                                       ClientModel client, ClientConnection clientConnection) {
         this.uriInfo = uriInfo;
         this.realm = realm;
         this.client = client;
@@ -84,7 +68,6 @@ public class ClientScopeEvaluateResource {
 
 
     /**
-     *
      * @param scopeParam
      * @param roleContainerId either realm name OR client UUID
      * @return
@@ -151,7 +134,6 @@ public class ClientScopeEvaluateResource {
 
         return protocolMappers;
     }
-
 
 
     /**

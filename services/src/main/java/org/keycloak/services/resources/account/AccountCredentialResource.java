@@ -4,13 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
-import org.keycloak.credential.CredentialModel;
-import org.keycloak.credential.CredentialProvider;
-import org.keycloak.credential.CredentialTypeMetadata;
-import org.keycloak.credential.CredentialTypeMetadataContext;
-import org.keycloak.credential.PasswordCredentialProvider;
-import org.keycloak.credential.PasswordCredentialProviderFactory;
-import org.keycloak.credential.UserCredentialStoreManager;
+import org.keycloak.credential.*;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.models.*;
@@ -21,23 +15,10 @@ import org.keycloak.services.managers.Auth;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.utils.MediaType;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.keycloak.models.AuthenticationExecutionModel.Requirement.DISABLED;
@@ -64,89 +45,11 @@ public class AccountCredentialResource {
         realm = session.getContext().getRealm();
     }
 
-
-    public static class CredentialContainer {
-        // ** category, displayName and helptext attributes can be ordinary UI text or a key into
-        //    a localized message bundle.  Typically, it will be a key, but
-        //    the UI will work just fine if you don't care about localization
-        //    and you want to just send UI text.
-        //
-        //    Also, the ${} shown in Apicurio is not needed.
-        private String type;
-        private String category; // **
-        private String displayName;
-        private String helptext;  // **
-        private String iconCssClass;
-        private String createAction;
-        private String updateAction;
-        private boolean removeable;
-        private List<CredentialRepresentation> userCredentials;
-        private CredentialTypeMetadata metadata;
-
-        public CredentialContainer() {
-        }
-
-        public CredentialContainer(CredentialTypeMetadata metadata, List<CredentialRepresentation> userCredentials) {
-            this.metadata = metadata;
-            this.type = metadata.getType();
-            this.category = metadata.getCategory().toString();
-            this.displayName = metadata.getDisplayName();
-            this.helptext = metadata.getHelpText();
-            this.iconCssClass = metadata.getIconCssClass();
-            this.createAction = metadata.getCreateAction();
-            this.updateAction = metadata.getUpdateAction();
-            this.removeable = metadata.isRemoveable();
-            this.userCredentials = userCredentials;
-        }
-
-        public String getCategory() {
-            return category;
-        }
-        
-        public String getType() {
-            return type;
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public String getHelptext() {
-            return helptext;
-        }
-
-        public String getIconCssClass() {
-            return iconCssClass;
-        }
-
-        public String getCreateAction() {
-            return createAction;
-        }
-
-        public String getUpdateAction() {
-            return updateAction;
-        }
-
-        public boolean isRemoveable() {
-            return removeable;
-        }
-
-        public List<CredentialRepresentation> getUserCredentials() {
-            return userCredentials;
-        }
-
-        @JsonIgnore
-        public CredentialTypeMetadata getMetadata() {
-            return metadata;
-        }
-    }
-
-
     /**
      * Retrieve the list of credentials available to the current logged in user. It will return only credentials of enabled types,
      * which user can use to authenticate in some authentication flow.
      *
-     * @param type Allows to filter just single credential type, which will be specified as this parameter. If null, it will return all credential types
+     * @param type            Allows to filter just single credential type, which will be specified as this parameter. If null, it will return all credential types
      * @param userCredentials specifies if user credentials should be returned. If true, they will be returned in the "userCredentials" attribute of
      *                        particular credential. Defaults to true.
      * @return
@@ -282,12 +185,11 @@ public class AccountCredentialResource {
         session.userCredentialManager().removeStoredCredential(realm, user, credentialId);
     }
 
-
     /**
      * Update a user label of specified credential of current user
      *
      * @param credentialId ID of the credential, which will be updated
-     * @param userLabel new user label
+     * @param userLabel    new user label
      */
     @PUT
     @Consumes(javax.ws.rs.core.MediaType.TEXT_PLAIN)
@@ -295,6 +197,29 @@ public class AccountCredentialResource {
     public void setLabel(final @PathParam("credentialId") String credentialId, String userLabel) {
         auth.require(AccountRoles.MANAGE_ACCOUNT);
         session.userCredentialManager().updateCredentialLabel(realm, user, credentialId, userLabel);
+    }
+
+    @GET
+    @Path("password")
+    @Produces(MediaType.APPLICATION_JSON)
+    public PasswordDetails passwordDetails() throws IOException {
+        auth.requireOneOf(AccountRoles.MANAGE_ACCOUNT, AccountRoles.VIEW_PROFILE);
+
+        PasswordCredentialProvider passwordProvider = (PasswordCredentialProvider) session.getProvider(CredentialProvider.class, PasswordCredentialProviderFactory.PROVIDER_ID);
+        CredentialModel password = passwordProvider.getPassword(realm, user);
+
+        PasswordDetails details = new PasswordDetails();
+        if (password != null) {
+            details.setRegistered(true);
+            Long createdDate = password.getCreatedDate();
+            if (createdDate != null) {
+                details.setLastUpdate(createdDate);
+            }
+        } else {
+            details.setRegistered(false);
+        }
+
+        return details;
     }
 
     // TODO: This is kept here for now and commented.
@@ -320,35 +245,12 @@ public class AccountCredentialResource {
 //        session.userCredentialManager().moveCredentialTo(realm, user, credentialId, newPreviousCredentialId);
 //    }
 
-    @GET
-    @Path("password")
-    @Produces(MediaType.APPLICATION_JSON)
-    public PasswordDetails passwordDetails() throws IOException {
-        auth.requireOneOf(AccountRoles.MANAGE_ACCOUNT, AccountRoles.VIEW_PROFILE);
-        
-        PasswordCredentialProvider passwordProvider = (PasswordCredentialProvider) session.getProvider(CredentialProvider.class, PasswordCredentialProviderFactory.PROVIDER_ID);
-        CredentialModel password = passwordProvider.getPassword(realm, user);
-
-        PasswordDetails details = new PasswordDetails();
-        if (password != null) {
-            details.setRegistered(true);
-            Long createdDate = password.getCreatedDate();
-            if (createdDate != null) {
-                details.setLastUpdate(createdDate);
-            }
-        } else {
-            details.setRegistered(false);
-        }
-
-        return details;
-    }
-
     @POST
     @Path("password")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response passwordUpdate(PasswordUpdate update) {
         auth.require(AccountRoles.MANAGE_ACCOUNT);
-        
+
         event.event(EventType.UPDATE_PASSWORD);
 
         UserCredentialModel cred = UserCredentialModel.password(update.getCurrentPassword());
@@ -356,11 +258,11 @@ public class AccountCredentialResource {
             event.error(org.keycloak.events.Errors.INVALID_USER_CREDENTIALS);
             return ErrorResponse.error(Messages.INVALID_PASSWORD_EXISTING, Response.Status.BAD_REQUEST);
         }
-        
+
         if (update.getNewPassword() == null) {
             return ErrorResponse.error(Messages.INVALID_PASSWORD_EXISTING, Response.Status.BAD_REQUEST);
         }
-        
+
         String confirmation = update.getConfirmation();
         if ((confirmation != null) && !update.getNewPassword().equals(confirmation)) {
             return ErrorResponse.error(Messages.NOTMATCH_PASSWORD, Response.Status.BAD_REQUEST);
@@ -375,6 +277,82 @@ public class AccountCredentialResource {
         event.client(auth.getClient()).user(auth.getUser()).success();
 
         return Response.ok().build();
+    }
+
+    public static class CredentialContainer {
+        // ** category, displayName and helptext attributes can be ordinary UI text or a key into
+        //    a localized message bundle.  Typically, it will be a key, but
+        //    the UI will work just fine if you don't care about localization
+        //    and you want to just send UI text.
+        //
+        //    Also, the ${} shown in Apicurio is not needed.
+        private String type;
+        private String category; // **
+        private String displayName;
+        private String helptext;  // **
+        private String iconCssClass;
+        private String createAction;
+        private String updateAction;
+        private boolean removeable;
+        private List<CredentialRepresentation> userCredentials;
+        private CredentialTypeMetadata metadata;
+
+        public CredentialContainer() {
+        }
+
+        public CredentialContainer(CredentialTypeMetadata metadata, List<CredentialRepresentation> userCredentials) {
+            this.metadata = metadata;
+            this.type = metadata.getType();
+            this.category = metadata.getCategory().toString();
+            this.displayName = metadata.getDisplayName();
+            this.helptext = metadata.getHelpText();
+            this.iconCssClass = metadata.getIconCssClass();
+            this.createAction = metadata.getCreateAction();
+            this.updateAction = metadata.getUpdateAction();
+            this.removeable = metadata.isRemoveable();
+            this.userCredentials = userCredentials;
+        }
+
+        public String getCategory() {
+            return category;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public String getHelptext() {
+            return helptext;
+        }
+
+        public String getIconCssClass() {
+            return iconCssClass;
+        }
+
+        public String getCreateAction() {
+            return createAction;
+        }
+
+        public String getUpdateAction() {
+            return updateAction;
+        }
+
+        public boolean isRemoveable() {
+            return removeable;
+        }
+
+        public List<CredentialRepresentation> getUserCredentials() {
+            return userCredentials;
+        }
+
+        @JsonIgnore
+        public CredentialTypeMetadata getMetadata() {
+            return metadata;
+        }
     }
 
     public static class PasswordDetails {
@@ -421,7 +399,7 @@ public class AccountCredentialResource {
         public void setNewPassword(String newPassword) {
             this.newPassword = newPassword;
         }
-        
+
         public String getConfirmation() {
             return confirmation;
         }

@@ -16,19 +16,21 @@
  */
 package org.keycloak.saml.processing.api.util;
 
-import java.security.cert.X509Certificate;
 import javax.xml.crypto.dsig.keyinfo.KeyInfo;
 import javax.xml.crypto.dsig.keyinfo.KeyName;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
+import java.security.cert.X509Certificate;
 
 /**
  * Tools for {@link KeyInfo} object manipulation.
+ *
  * @author hmlnarik
  */
 public class KeyInfoTools {
 
     /**
      * Returns the first object of the given class from the given Iterable.
+     *
      * @param <T>
      * @param objects
      * @param clazz

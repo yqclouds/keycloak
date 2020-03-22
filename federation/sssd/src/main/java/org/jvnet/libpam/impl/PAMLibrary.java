@@ -23,12 +23,7 @@
  */
 package org.jvnet.libpam.impl;
 
-import com.sun.jna.Callback;
-import com.sun.jna.Library;
-import com.sun.jna.Native;
-import com.sun.jna.Pointer;
-import com.sun.jna.PointerType;
-import com.sun.jna.Structure;
+import com.sun.jna.*;
 import com.sun.jna.ptr.PointerByReference;
 
 import java.util.Arrays;
@@ -45,6 +40,32 @@ import static org.jvnet.libpam.impl.CLibrary.libc;
  * @author Kohsuke Kawaguchi
  */
 public interface PAMLibrary extends Library {
+    final int PAM_USER = 2;
+    // error code
+    final int PAM_SUCCESS = 0;
+    final int PAM_CONV_ERR = 6;
+    final int PAM_PROMPT_ECHO_OFF = 1; /* Echo off when getting response */
+    final int PAM_PROMPT_ECHO_ON = 2; /* Echo on when getting response */
+    final int PAM_ERROR_MSG = 3; /* Error message */
+    final int PAM_TEXT_INFO = 4; /* Textual information */
+    public static final PAMLibrary libpam = (PAMLibrary) Native.loadLibrary("pam", PAMLibrary.class);
+
+    int pam_start(String service, String user, pam_conv conv, PointerByReference/* pam_handle_t** */ pamh_p);
+
+    int pam_end(pam_handle_t handle, int pam_status);
+
+    int pam_set_item(pam_handle_t handle, int item_type, String item);
+
+    int pam_get_item(pam_handle_t handle, int item_type, PointerByReference item);
+
+    int pam_authenticate(pam_handle_t handle, int flags);
+
+    int pam_setcred(pam_handle_t handle, int flags);
+
+    int pam_acct_mgmt(pam_handle_t handle, int flags);
+
+    String pam_strerror(pam_handle_t handle, int pam_error);
+
     class pam_handle_t extends PointerType {
         public pam_handle_t() {
         }
@@ -72,6 +93,7 @@ public interface PAMLibrary extends Library {
     }
 
     class pam_response extends Structure {
+        public static final int SIZE = new pam_response().size();
         /**
          * This is really a string, but this field needs to be malloc-ed by the conversation
          * method, and to be freed by the caler, so I bind it to {@link Pointer} here.
@@ -105,11 +127,19 @@ public interface PAMLibrary extends Library {
         protected List getFieldOrder() {
             return Arrays.asList("resp", "resp_retcode");
         }
-
-        public static final int SIZE = new pam_response().size();
     }
 
     class pam_conv extends Structure {
+        public PamCallback conv;
+        public Pointer _;
+        public pam_conv(PamCallback conv) {
+            this.conv = conv;
+        }
+
+        protected List getFieldOrder() {
+            return Arrays.asList("conv", "_");
+        }
+
         public interface PamCallback extends Callback {
             /**
              * According to http://www.netbsd.org/docs/guide/en/chap-pam.html#pam-sample-conv,
@@ -118,46 +148,5 @@ public interface PAMLibrary extends Library {
              */
             int callback(int num_msg, Pointer msg, Pointer resp, Pointer _);
         }
-
-        public PamCallback conv;
-        public Pointer _;
-
-        public pam_conv(PamCallback conv) {
-            this.conv = conv;
-        }
-
-        protected List getFieldOrder() {
-            return Arrays.asList("conv", "_");
-        }
     }
-
-    int pam_start(String service, String user, pam_conv conv, PointerByReference/* pam_handle_t** */ pamh_p);
-
-    int pam_end(pam_handle_t handle, int pam_status);
-
-    int pam_set_item(pam_handle_t handle, int item_type, String item);
-
-    int pam_get_item(pam_handle_t handle, int item_type, PointerByReference item);
-
-    int pam_authenticate(pam_handle_t handle, int flags);
-
-    int pam_setcred(pam_handle_t handle, int flags);
-
-    int pam_acct_mgmt(pam_handle_t handle, int flags);
-
-    String pam_strerror(pam_handle_t handle, int pam_error);
-
-    final int PAM_USER = 2;
-
-    // error code
-    final int PAM_SUCCESS = 0;
-    final int PAM_CONV_ERR = 6;
-
-
-    final int PAM_PROMPT_ECHO_OFF = 1; /* Echo off when getting response */
-    final int PAM_PROMPT_ECHO_ON = 2; /* Echo on when getting response */
-    final int PAM_ERROR_MSG = 3; /* Error message */
-    final int PAM_TEXT_INFO = 4; /* Textual information */
-
-    public static final PAMLibrary libpam = (PAMLibrary) Native.loadLibrary("pam", PAMLibrary.class);
 }

@@ -20,16 +20,8 @@ package org.keycloak.saml.common;
 import org.jboss.logging.Logger;
 import org.keycloak.saml.common.constants.GeneralConstants;
 import org.keycloak.saml.common.constants.WSTrustConstants;
-import org.keycloak.saml.common.exceptions.ConfigurationException;
-import org.keycloak.saml.common.exceptions.ParsingException;
-import org.keycloak.saml.common.exceptions.ProcessingException;
-import org.keycloak.saml.common.exceptions.TrustKeyConfigurationException;
-import org.keycloak.saml.common.exceptions.TrustKeyProcessingException;
-import org.keycloak.saml.common.exceptions.fed.AssertionExpiredException;
-import org.keycloak.saml.common.exceptions.fed.IssueInstantMissingException;
-import org.keycloak.saml.common.exceptions.fed.IssuerNotTrustedException;
-import org.keycloak.saml.common.exceptions.fed.SignatureValidationException;
-import org.keycloak.saml.common.exceptions.fed.WSTrustException;
+import org.keycloak.saml.common.exceptions.*;
+import org.keycloak.saml.common.exceptions.fed.*;
 import org.w3c.dom.Element;
 
 import javax.security.auth.login.LoginException;
@@ -40,8 +32,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 
 /**
- *@author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
- *
+ * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  */
 
 /**@author <a href="mailto:psilva@redhat.com">Pedro Silva</a> */
@@ -2114,7 +2105,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlSPSettingCanonicalizationMethod(String canonicalizationMethod) {
-        logger.info("Service Provider is setting the CanonicalizationMethod on XMLSignatureUtil::" +  canonicalizationMethod);
+        logger.info("Service Provider is setting the CanonicalizationMethod on XMLSignatureUtil::" + canonicalizationMethod);
     }
 
     /*
@@ -2335,7 +2326,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
 
     @Override
     public IllegalArgumentException cannotParseParameterValue(String parameter, Throwable e) {
-        return new IllegalArgumentException("Cannot parse: " + parameter , e);
+        return new IllegalArgumentException("Cannot parse: " + parameter, e);
     }
 
     @Override
@@ -2385,8 +2376,8 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
 
     @Override
     public ProcessingException samlExtensionUnknownChild(Class<?> clazz) {
-        return new ProcessingException("Unknown child type specified for extension: " 
-          + (clazz == null ? "<null>" : clazz.getSimpleName())
-          + ".");
+        return new ProcessingException("Unknown child type specified for extension: "
+                + (clazz == null ? "<null>" : clazz.getSimpleName())
+                + ".");
     }
 }

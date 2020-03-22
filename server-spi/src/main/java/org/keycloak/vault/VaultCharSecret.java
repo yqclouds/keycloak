@@ -31,7 +31,7 @@ public interface VaultCharSecret extends AutoCloseable {
      * Returns the secret enclosed in a {@link CharBuffer}.
      *
      * @return If the secret was successfully resolved by vault, returns an {@link Optional} containing the value returned
-     *         by the vault as a {@link CharBuffer} (a valid value can be {@code null}), or an empty {@link Optional}
+     * by the vault as a {@link CharBuffer} (a valid value can be {@code null}), or an empty {@link Optional}
      */
     Optional<CharBuffer> get();
 
@@ -39,12 +39,12 @@ public interface VaultCharSecret extends AutoCloseable {
      * Returns the secret in its {@code char[]} form.
      *
      * @return If the secret was successfully resolved by vault, returns an {@link Optional} containing the value returned
-     *         by the vault as a {@code char[]} (a valid value can be {@code null}), or an empty {@link Optional}.
+     * by the vault as a {@code char[]} (a valid value can be {@code null}), or an empty {@link Optional}.
      */
     Optional<char[]> getAsArray();
 
     /**
-     *  Destroys the secret in memory by e.g. overwriting it with random garbage.
+     * Destroys the secret in memory by e.g. overwriting it with random garbage.
      */
     @Override
     void close();

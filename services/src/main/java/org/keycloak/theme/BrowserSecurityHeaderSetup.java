@@ -20,7 +20,6 @@ package org.keycloak.theme;
 import org.keycloak.models.BrowserSecurityHeaders;
 import org.keycloak.models.RealmModel;
 
-import javax.swing.text.html.Option;
 import javax.ws.rs.core.Response;
 import java.util.Map;
 
@@ -30,28 +29,9 @@ import java.util.Map;
  */
 public class BrowserSecurityHeaderSetup {
 
-    public static class Options {
-
-        private String allowedFrameSrc;
-
-        public static Options create() {
-            return new Options();
-        }
-
-        public Options allowFrameSrc(String source) {
-            allowedFrameSrc = source;
-            return this;
-        }
-
-        public Options build() {
-            return this;
-        }
-    }
-
     public static Response.ResponseBuilder headers(Response.ResponseBuilder builder, RealmModel realm) {
         return headers(builder, realm.getBrowserSecurityHeaders(), null);
     }
-
 
     public static Response.ResponseBuilder headers(Response.ResponseBuilder builder, RealmModel realm, Options options) {
         return headers(builder, realm.getBrowserSecurityHeaders(), options);
@@ -77,6 +57,24 @@ public class BrowserSecurityHeaderSetup {
             }
         }
         return builder;
+    }
+
+    public static class Options {
+
+        private String allowedFrameSrc;
+
+        public static Options create() {
+            return new Options();
+        }
+
+        public Options allowFrameSrc(String source) {
+            allowedFrameSrc = source;
+            return this;
+        }
+
+        public Options build() {
+            return this;
+        }
     }
 
 }

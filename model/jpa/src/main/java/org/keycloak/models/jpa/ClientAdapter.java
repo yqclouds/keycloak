@@ -17,35 +17,15 @@
 
 package org.keycloak.models.jpa;
 
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ModelDuplicateException;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleContainerModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.jpa.entities.ClientAttributeEntity;
-import org.keycloak.models.jpa.entities.ClientEntity;
-import org.keycloak.models.jpa.entities.ClientScopeClientMappingEntity;
-import org.keycloak.models.jpa.entities.ProtocolMapperEntity;
-import org.keycloak.models.jpa.entities.RoleEntity;
+import org.keycloak.models.*;
+import org.keycloak.models.jpa.entities.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
-
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -64,6 +44,13 @@ public class ClientAdapter implements ClientModel, JpaModel<ClientEntity> {
         this.realm = realm;
         this.em = em;
         this.entity = entity;
+    }
+
+    public static boolean contains(String str, String[] array) {
+        for (String s : array) {
+            if (str.equals(s)) return true;
+        }
+        return false;
     }
 
     public ClientEntity getEntity() {
@@ -91,10 +78,14 @@ public class ClientAdapter implements ClientModel, JpaModel<ClientEntity> {
     }
 
     @Override
-    public String getDescription() { return entity.getDescription(); }
+    public String getDescription() {
+        return entity.getDescription();
+    }
 
     @Override
-    public void setDescription(String description) { entity.setDescription(description); }
+    public void setDescription(String description) {
+        entity.setDescription(description);
+    }
 
     @Override
     public boolean isEnabled() {
@@ -152,8 +143,6 @@ public class ClientAdapter implements ClientModel, JpaModel<ClientEntity> {
         result.addAll(entity.getWebOrigins());
         return result;
     }
-
-
 
     @Override
     public void setWebOrigins(Set<String> webOrigins) {
@@ -392,14 +381,6 @@ public class ClientAdapter implements ClientModel, JpaModel<ClientEntity> {
             }
         }
         return clientScopes;
-    }
-
-
-    public static boolean contains(String str, String[] array) {
-        for (String s : array) {
-            if (str.equals(s)) return true;
-        }
-        return false;
     }
 
     @Override
@@ -663,12 +644,12 @@ public class ClientAdapter implements ClientModel, JpaModel<ClientEntity> {
     public Set<RoleModel> getRoles() {
         return session.realms().getClientRoles(realm, this);
     }
-    
+
     @Override
     public Set<RoleModel> getRoles(Integer first, Integer max) {
         return session.realms().getClientRoles(realm, this, first, max);
     }
-    
+
     @Override
     public Set<RoleModel> searchForRoles(String search, Integer first, Integer max) {
         return session.realms().searchForClientRoles(realm, this, search, first, max);
@@ -757,8 +738,6 @@ public class ClientAdapter implements ClientModel, JpaModel<ClientEntity> {
         }
         em.flush();
     }
-
-
 
 
     @Override

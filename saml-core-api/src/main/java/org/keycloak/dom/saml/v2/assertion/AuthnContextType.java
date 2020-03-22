@@ -18,11 +18,7 @@ package org.keycloak.dom.saml.v2.assertion;
 
 import java.io.Serializable;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * <p>
@@ -60,10 +56,8 @@ import java.util.Set;
 public class AuthnContextType implements Serializable {
 
     private final Set<URI> authenticatingAuthority = new LinkedHashSet<>();
-
-    private AuthnContextTypeSequence sequence;
-
     private final Set<URIType> URITypes = new HashSet<>();
+    private AuthnContextTypeSequence sequence;
 
     /**
      * Add an authenticating authority
@@ -162,11 +156,9 @@ public class AuthnContextType implements Serializable {
      */
     public class AuthnContextTypeSequence implements Serializable {
 
-        private AuthnContextClassRefType classRef;
-
-        private AuthnContextDeclType authnContextDecl;
-
         private final Set<URIType> URITypes = new HashSet<URIType>();
+        private AuthnContextClassRefType classRef;
+        private AuthnContextDeclType authnContextDecl;
 
         public AuthnContextClassRefType getClassRef() {
             return classRef;

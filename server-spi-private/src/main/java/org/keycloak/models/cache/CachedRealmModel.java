@@ -30,11 +30,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public interface CachedRealmModel extends RealmModel {
 
-    interface RealmCachedEvent extends ProviderEvent {
-        CachedRealmModel getRealm();
-        KeycloakSession getKeycloakSession();
-    }
-
     /**
      * Invalidates the cache for this model and returns a delegate that represents the actual data provider
      *
@@ -44,7 +39,6 @@ public interface CachedRealmModel extends RealmModel {
 
     /**
      * Invalidate the cache for this model
-     *
      */
     void invalidate();
 
@@ -61,4 +55,10 @@ public interface CachedRealmModel extends RealmModel {
      * @return
      */
     ConcurrentHashMap getCachedWith();
+
+    interface RealmCachedEvent extends ProviderEvent {
+        CachedRealmModel getRealm();
+
+        KeycloakSession getKeycloakSession();
+    }
 }

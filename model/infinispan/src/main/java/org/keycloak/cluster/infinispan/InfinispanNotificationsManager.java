@@ -17,16 +17,6 @@
 
 package org.keycloak.cluster.infinispan;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
-
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryCreated;
@@ -36,6 +26,7 @@ import org.infinispan.client.hotrod.annotation.ClientListener;
 import org.infinispan.client.hotrod.event.ClientCacheEntryCreatedEvent;
 import org.infinispan.client.hotrod.event.ClientCacheEntryModifiedEvent;
 import org.infinispan.client.hotrod.event.ClientCacheEntryRemovedEvent;
+import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.context.Flag;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
@@ -53,7 +44,12 @@ import org.keycloak.common.util.ConcurrentMultivaluedHashMap;
 import org.keycloak.common.util.Retry;
 import org.keycloak.executors.ExecutorsProvider;
 import org.keycloak.models.KeycloakSession;
-import org.infinispan.client.hotrod.exceptions.HotRodClientException;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.*;
 
 /**
  * Impl for sending infinispan messages across cluster and listening to them
@@ -101,7 +97,7 @@ public class InfinispanNotificationsManager {
             }
         }
 
-        ExecutorService listenersExecutor = workRemoteCache==null ? null : session.getProvider(ExecutorsProvider.class).getExecutor("work-cache-event-listener");
+        ExecutorService listenersExecutor = workRemoteCache == null ? null : session.getProvider(ExecutorsProvider.class).getExecutor("work-cache-event-listener");
         InfinispanNotificationsManager manager = new InfinispanNotificationsManager(workCache, workRemoteCache, myAddress, mySite, listenersExecutor);
 
         // We need CacheEntryListener for communication within current DC
@@ -159,20 +155,70 @@ public class InfinispanNotificationsManager {
                 try {
                     workRemoteCache.put(eventKey, wrappedEvent, 120, TimeUnit.SECONDS);
                 } catch (HotRodClientException re) {
-                if (logger.isDebugEnabled()) {
-                    logger.debugf(re, "Failed sending notification to remote cache '%s'. Key: '%s', iteration '%s'. Will try to retry the task",
-                            workRemoteCache.getName(), eventKey, iteration);
+                    if (logger.isDebugEnabled()) {
+                        logger.debugf(re, "Failed sending notification to remote cache '%s'. Key: '%s', iteration '%s'. Will try to retry the task",
+                                workRemoteCache.getName(), eventKey, iteration);
+                    }
+
+                    // Rethrow the exception. Retry will take care of handle the exception and eventually retry the operation.
+                    throw re;
                 }
 
-                // Rethrow the exception. Retry will take care of handle the exception and eventually retry the operation.
-                throw re;
-            }
-
-        }, 10, 10);
+            }, 10, 10);
 
         }
     }
 
+    private void eventReceived(String key, Serializable obj) {
+        if (!(obj instanceof WrapperClusterEvent)) {
+            if (obj == null) {
+                logger.warnf("Event object wasn't available in remote cache after event was received. Event key: %s", key);
+            }
+            return;
+        }
+
+        WrapperClusterEvent event = (WrapperClusterEvent) obj;
+
+        if (event.isIgnoreSender()) {
+            if (this.myAddress.equals(event.getSender())) {
+                return;
+            }
+        }
+
+        if (event.isIgnoreSenderSite()) {
+            if (this.mySite == null || this.mySite.equals(event.getSenderSite())) {
+                return;
+            }
+        }
+
+        String eventKey = event.getEventKey();
+
+        if (logger.isTraceEnabled()) {
+            logger.tracef("Received event: %s", event);
+        }
+
+        ClusterEvent wrappedEvent = event.getDelegateEvent();
+
+        List<ClusterListener> myListeners = listeners.get(eventKey);
+        if (myListeners != null) {
+            for (ClusterListener listener : myListeners) {
+                listener.eventReceived(wrappedEvent);
+            }
+        }
+    }
+
+    void taskFinished(String taskKey, boolean success) {
+        TaskCallback callback = taskCallbacks.remove(taskKey);
+
+        if (callback != null) {
+            if (logger.isDebugEnabled()) {
+                logger.debugf("Finished task '%s' with '%b'", taskKey, success);
+            }
+            callback.setSuccess(success);
+            callback.getTaskCompletedLatch().countDown();
+        }
+
+    }
 
     @Listener(observation = Listener.Observation.POST)
     public class CacheEntryListener {
@@ -193,7 +239,6 @@ public class InfinispanNotificationsManager {
         }
 
     }
-
 
     @ClientListener
     public class HotRodListener {
@@ -239,58 +284,6 @@ public class InfinispanNotificationsManager {
                 logger.errorf("Rejected submitting of the event for key: %s. Value: %s, Server going to shutdown or pool exhausted. Pool: %s", key, workCache.get(key), listenersExecutor.toString());
                 throw ree;
             }
-        }
-
-    }
-
-    private void eventReceived(String key, Serializable obj) {
-        if (!(obj instanceof WrapperClusterEvent)) {
-            if (obj == null) {
-                logger.warnf("Event object wasn't available in remote cache after event was received. Event key: %s", key);
-            }
-            return;
-        }
-
-        WrapperClusterEvent event = (WrapperClusterEvent) obj;
-
-        if (event.isIgnoreSender()) {
-            if (this.myAddress.equals(event.getSender())) {
-                return;
-            }
-        }
-
-        if (event.isIgnoreSenderSite()) {
-            if (this.mySite == null || this.mySite.equals(event.getSenderSite())) {
-                return;
-            }
-        }
-
-        String eventKey = event.getEventKey();
-
-        if (logger.isTraceEnabled()) {
-            logger.tracef("Received event: %s", event);
-        }
-
-        ClusterEvent wrappedEvent = event.getDelegateEvent();
-
-        List<ClusterListener> myListeners = listeners.get(eventKey);
-        if (myListeners != null) {
-            for (ClusterListener listener : myListeners) {
-                listener.eventReceived(wrappedEvent);
-            }
-        }
-    }
-
-
-    void taskFinished(String taskKey, boolean success) {
-        TaskCallback callback = taskCallbacks.remove(taskKey);
-
-        if (callback != null) {
-            if (logger.isDebugEnabled()) {
-                logger.debugf("Finished task '%s' with '%b'", taskKey, success);
-            }
-            callback.setSuccess(success);
-            callback.getTaskCompletedLatch().countDown();
         }
 
     }

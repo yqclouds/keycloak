@@ -76,9 +76,9 @@ public class ConfigData {
     }
 
     public void setEndpoints(Map<String, Map<String, RealmConfigData>> endpoints) {
-        for (Map.Entry<String, Map<String, RealmConfigData>> entry: endpoints.entrySet()) {
+        for (Map.Entry<String, Map<String, RealmConfigData>> entry : endpoints.entrySet()) {
             String endpoint = entry.getKey();
-            for (Map.Entry<String, RealmConfigData> sub: entry.getValue().entrySet()) {
+            for (Map.Entry<String, RealmConfigData> sub : entry.getValue().entrySet()) {
                 RealmConfigData rdata = sub.getValue();
                 rdata.serverUrl(endpoint);
                 rdata.realm(sub.getKey());
@@ -148,7 +148,7 @@ public class ConfigData {
         data.trustpass = trustpass;
         data.endpoints = new HashMap<>();
 
-        for (Map.Entry<String, Map<String, RealmConfigData>> item: endpoints.entrySet()) {
+        for (Map.Entry<String, Map<String, RealmConfigData>> item : endpoints.entrySet()) {
 
             Map<String, RealmConfigData> nuitems = new HashMap<>();
             Map<String, RealmConfigData> curitems = item.getValue();

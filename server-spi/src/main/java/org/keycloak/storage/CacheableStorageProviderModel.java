@@ -51,6 +51,51 @@ public class CacheableStorageProviderModel extends PrioritizedComponentModel {
         super(copy);
     }
 
+    public static long dailyTimeout(int hour, int minute) {
+        Calendar cal = Calendar.getInstance();
+        Calendar cal2 = Calendar.getInstance();
+        cal.setTimeInMillis(Time.currentTimeMillis());
+        cal2.setTimeInMillis(Time.currentTimeMillis());
+        cal2.set(Calendar.HOUR_OF_DAY, hour);
+        cal2.set(Calendar.MINUTE, minute);
+        if (cal2.getTimeInMillis() < cal.getTimeInMillis()) {
+            int add = (24 * 60 * 60 * 1000);
+            cal.add(Calendar.MILLISECOND, add);
+        } else {
+            cal = cal2;
+        }
+        return cal.getTimeInMillis();
+    }
+
+    public static long dailyEvictionBoundary(int hour, int minute) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(Time.currentTimeMillis());
+        cal.set(Calendar.HOUR_OF_DAY, hour);
+        cal.set(Calendar.MINUTE, minute);
+        if (cal.getTimeInMillis() > Time.currentTimeMillis()) {
+            // if daily evict for today hasn't happened yet set boundary
+            // to yesterday's time of eviction
+            cal.add(Calendar.DAY_OF_YEAR, -1);
+        }
+        return cal.getTimeInMillis();
+    }
+
+    public static long weeklyTimeout(int day, int hour, int minute) {
+        Calendar cal = Calendar.getInstance();
+        Calendar cal2 = Calendar.getInstance();
+        cal.setTimeInMillis(Time.currentTimeMillis());
+        cal2.setTimeInMillis(Time.currentTimeMillis());
+        cal2.set(Calendar.HOUR_OF_DAY, hour);
+        cal2.set(Calendar.MINUTE, minute);
+        cal2.set(Calendar.DAY_OF_WEEK, day);
+        if (cal2.getTimeInMillis() < cal.getTimeInMillis()) {
+            int add = (7 * 24 * 60 * 60 * 1000);
+            cal2.add(Calendar.MILLISECOND, add);
+        }
+
+        return cal2.getTimeInMillis();
+    }
+
     public CachePolicy getCachePolicy() {
         if (cachePolicy == null) {
             String str = getConfig().getFirst(CACHE_POLICY);
@@ -143,11 +188,6 @@ public class CacheableStorageProviderModel extends PrioritizedComponentModel {
         getConfig().putSingle(CACHE_INVALID_BEFORE, Long.toString(cacheInvalidBefore));
     }
 
-    public void setEnabled(boolean flag) {
-        enabled = flag;
-        getConfig().putSingle(ENABLED, Boolean.toString(flag));
-    }
-
     public boolean isEnabled() {
         if (enabled == null) {
             String val = getConfig().getFirst(ENABLED);
@@ -159,6 +199,11 @@ public class CacheableStorageProviderModel extends PrioritizedComponentModel {
         }
         return enabled;
 
+    }
+
+    public void setEnabled(boolean flag) {
+        enabled = flag;
+        getConfig().putSingle(ENABLED, Boolean.toString(flag));
     }
 
     public long getLifespan() {
@@ -215,53 +260,6 @@ public class CacheableStorageProviderModel extends PrioritizedComponentModel {
         }
         return invalidate;
     }
-
-
-    public static long dailyTimeout(int hour, int minute) {
-        Calendar cal = Calendar.getInstance();
-        Calendar cal2 = Calendar.getInstance();
-        cal.setTimeInMillis(Time.currentTimeMillis());
-        cal2.setTimeInMillis(Time.currentTimeMillis());
-        cal2.set(Calendar.HOUR_OF_DAY, hour);
-        cal2.set(Calendar.MINUTE, minute);
-        if (cal2.getTimeInMillis() < cal.getTimeInMillis()) {
-            int add = (24 * 60 * 60 * 1000);
-            cal.add(Calendar.MILLISECOND, add);
-        } else {
-            cal = cal2;
-        }
-        return cal.getTimeInMillis();
-    }
-
-    public static long dailyEvictionBoundary(int hour, int minute) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(Time.currentTimeMillis());
-        cal.set(Calendar.HOUR_OF_DAY, hour);
-        cal.set(Calendar.MINUTE, minute);
-        if (cal.getTimeInMillis() > Time.currentTimeMillis()) {
-            // if daily evict for today hasn't happened yet set boundary
-            // to yesterday's time of eviction
-            cal.add(Calendar.DAY_OF_YEAR, -1);
-        }
-        return cal.getTimeInMillis();
-    }
-
-    public static long weeklyTimeout(int day, int hour, int minute) {
-        Calendar cal = Calendar.getInstance();
-        Calendar cal2 = Calendar.getInstance();
-        cal.setTimeInMillis(Time.currentTimeMillis());
-        cal2.setTimeInMillis(Time.currentTimeMillis());
-        cal2.set(Calendar.HOUR_OF_DAY, hour);
-        cal2.set(Calendar.MINUTE, minute);
-        cal2.set(Calendar.DAY_OF_WEEK, day);
-        if (cal2.getTimeInMillis() < cal.getTimeInMillis()) {
-            int add = (7 * 24 * 60 * 60 * 1000);
-            cal2.add(Calendar.MILLISECOND, add);
-        }
-
-        return cal2.getTimeInMillis();
-    }
-
 
 
     public enum CachePolicy {

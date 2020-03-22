@@ -26,12 +26,14 @@ import java.util.Set;
 public interface RoleMapperModel {
     /**
      * Returns set of realm roles that are directly set to this object.
+     *
      * @return see description
      */
     Set<RoleModel> getRealmRoleMappings();
 
     /**
      * Returns set of client roles that are directly set to this object for the given client.
+     *
      * @param app Client to get the roles for
      * @return see description
      */
@@ -46,6 +48,7 @@ public interface RoleMapperModel {
      *  <li>R is not assigned to this object but this object belongs to a group G which is assigned the role R</li>
      *  <li>R is not assigned to this object but this object belongs to a group G, and G belongs to group H which is assigned the role R</li>
      * </ul>
+     *
      * @param role
      * @return see description
      */
@@ -53,18 +56,21 @@ public interface RoleMapperModel {
 
     /**
      * Grants the given role to this object.
+     *
      * @param role
      */
     void grantRole(RoleModel role);
 
     /**
      * Returns set of all role (both realm all client) that are directly set to this object.
+     *
      * @return
      */
     Set<RoleModel> getRoleMappings();
 
     /**
      * Removes the given role mapping from this object.
+     *
      * @param role Role to remove
      */
     void deleteRoleMapping(RoleModel role);

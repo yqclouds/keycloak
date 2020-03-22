@@ -30,7 +30,6 @@ public class RandomSecret {
      * </p>
      *
      * @param size the size of the secret to be created, in bytes.
-     *
      * @return a {@code byte[]} containing the generated secret.
      */
     public static byte[] createRandomSecret(final int size) {

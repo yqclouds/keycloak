@@ -17,10 +17,8 @@ import java.nio.file.Paths;
  */
 public class FilesPlainTextVaultProviderFactory extends AbstractVaultProviderFactory {
 
-    private static final Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass());
-
     public static final String PROVIDER_ID = "files-plaintext";
-
+    private static final Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass());
     private String vaultDirectory;
     private Path vaultPath;
 

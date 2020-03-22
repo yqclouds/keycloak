@@ -17,8 +17,9 @@
 
 package org.keycloak.config;
 
-import java.util.Optional;
 import org.keycloak.Config;
+
+import java.util.Optional;
 
 public interface ConfigProviderFactory {
 

@@ -18,6 +18,7 @@
 package org.keycloak.saml;
 
 import org.keycloak.dom.saml.v2.assertion.NameIDType;
+import org.keycloak.dom.saml.v2.protocol.ExtensionsType;
 import org.keycloak.dom.saml.v2.protocol.StatusCodeType;
 import org.keycloak.dom.saml.v2.protocol.StatusResponseType;
 import org.keycloak.dom.saml.v2.protocol.StatusType;
@@ -32,7 +33,6 @@ import org.w3c.dom.Document;
 
 import java.util.LinkedList;
 import java.util.List;
-import org.keycloak.dom.saml.v2.protocol.ExtensionsType;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -40,10 +40,10 @@ import org.keycloak.dom.saml.v2.protocol.ExtensionsType;
  */
 public class SAML2LogoutResponseBuilder implements SamlProtocolExtensionsAwareBuilder<SAML2LogoutResponseBuilder> {
 
+    protected final List<NodeGenerator> extensions = new LinkedList<>();
     protected String logoutRequestID;
     protected String destination;
     protected String issuer;
-    protected final List<NodeGenerator> extensions = new LinkedList<>();
 
     public SAML2LogoutResponseBuilder logoutRequestID(String logoutRequestID) {
         this.logoutRequestID = logoutRequestID;
@@ -83,7 +83,7 @@ public class SAML2LogoutResponseBuilder implements SamlProtocolExtensionsAwareBu
         statusResponse.setIssuer(issuer);
         statusResponse.setDestination(destination);
 
-        if (! this.extensions.isEmpty()) {
+        if (!this.extensions.isEmpty()) {
             ExtensionsType extensionsType = new ExtensionsType();
             for (NodeGenerator extension : this.extensions) {
                 extensionsType.addExtension(extension);

@@ -41,6 +41,7 @@ public class AuthenticationFlowResolver {
         }
         return authSession.getRealm().getBrowserFlow();
     }
+
     public static AuthenticationFlowModel resolveDirectGrantFlow(AuthenticationSessionModel authSession) {
         AuthenticationFlowModel flow = null;
         ClientModel client = authSession.getClient();

@@ -31,19 +31,13 @@ import org.keycloak.storage.ldap.mappers.LDAPStorageMapper;
 import javax.naming.NamingException;
 import javax.naming.directory.SearchControls;
 import javax.naming.ldap.LdapContext;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static java.util.Collections.unmodifiableSet;
 
 /**
  * Default IdentityQuery implementation.
- *
+ * <p>
  * LDAPQuery should be closed after use in case that pagination was used (initPagination was called)
  * Closing LDAPQuery is very important in case ldapContextManager contains VaultSecret
  *
@@ -54,24 +48,19 @@ public class LDAPQuery implements AutoCloseable {
     private static final Logger logger = Logger.getLogger(LDAPQuery.class);
 
     private final LDAPStorageProvider ldapFedProvider;
-
+    private final Set<Condition> conditions = new LinkedHashSet<Condition>();
+    private final Set<Sort> ordering = new LinkedHashSet<Sort>();
+    private final Set<String> returningLdapAttributes = new LinkedHashSet<String>();
+    // Contains just those returningLdapAttributes, which are read-only. They will be marked as read-only in returned LDAPObject instances as well
+    // NOTE: names of attributes are lower-cased to avoid case sensitivity issues (LDAP searching is usually case-insensitive, so we want to be as well)
+    private final Set<String> returningReadOnlyLdapAttributes = new LinkedHashSet<String>();
+    private final Set<String> objectClasses = new LinkedHashSet<String>();
+    private final List<ComponentModel> mappers = new ArrayList<>();
     private int offset;
     private int limit;
     private PaginationContext paginationContext;
     private LDAPContextManager ldapContextManager;
     private String searchDn;
-    private final Set<Condition> conditions = new LinkedHashSet<Condition>();
-    private final Set<Sort> ordering = new LinkedHashSet<Sort>();
-
-    private final Set<String> returningLdapAttributes = new LinkedHashSet<String>();
-
-    // Contains just those returningLdapAttributes, which are read-only. They will be marked as read-only in returned LDAPObject instances as well
-    // NOTE: names of attributes are lower-cased to avoid case sensitivity issues (LDAP searching is usually case-insensitive, so we want to be as well)
-    private final Set<String> returningReadOnlyLdapAttributes = new LinkedHashSet<String>();
-    private final Set<String> objectClasses = new LinkedHashSet<String>();
-
-    private final List<ComponentModel> mappers = new ArrayList<>();
-
     private int searchScope = SearchControls.SUBTREE_SCOPE;
 
     public LDAPQuery(LDAPStorageProvider ldapProvider) {
@@ -85,11 +74,6 @@ public class LDAPQuery implements AutoCloseable {
 
     public LDAPQuery sortBy(Sort... sorts) {
         this.ordering.addAll(Arrays.asList(sorts));
-        return this;
-    }
-
-    public LDAPQuery setSearchDn(String searchDn) {
-        this.searchDn = searchDn;
         return this;
     }
 
@@ -113,17 +97,17 @@ public class LDAPQuery implements AutoCloseable {
         return this;
     }
 
-    public LDAPQuery setSearchScope(int searchScope) {
-        this.searchScope = searchScope;
-        return this;
-    }
-
     public Set<Sort> getSorting() {
         return unmodifiableSet(this.ordering);
     }
 
     public String getSearchDn() {
         return this.searchDn;
+    }
+
+    public LDAPQuery setSearchDn(String searchDn) {
+        this.searchDn = searchDn;
+        return this;
     }
 
     public Set<String> getObjectClasses() {
@@ -146,18 +130,32 @@ public class LDAPQuery implements AutoCloseable {
         return searchScope;
     }
 
+    public LDAPQuery setSearchScope(int searchScope) {
+        this.searchScope = searchScope;
+        return this;
+    }
+
     public int getLimit() {
         return limit;
+    }
+
+    public LDAPQuery setLimit(int limit) {
+        this.limit = limit;
+        return this;
     }
 
     public int getOffset() {
         return offset;
     }
 
+    public LDAPQuery setOffset(int offset) {
+        this.offset = offset;
+        return this;
+    }
+
     public PaginationContext getPaginationContext() {
         return paginationContext;
     }
-
 
     public List<LDAPObject> getResultList() {
 
@@ -195,16 +193,6 @@ public class LDAPQuery implements AutoCloseable {
 
     public int getResultCount() {
         return ldapFedProvider.getLdapIdentityStore().countQueryResults(this);
-    }
-
-    public LDAPQuery setOffset(int offset) {
-        this.offset = offset;
-        return this;
-    }
-
-    public LDAPQuery setLimit(int limit) {
-        this.limit = limit;
-        return this;
     }
 
     public LDAPQuery initPagination() throws NamingException {

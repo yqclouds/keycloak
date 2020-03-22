@@ -18,9 +18,9 @@
 package org.keycloak.representations.idm;
 
 /**
-* @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
-* @version $Revision: 1 $
-*/
+ * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
+ * @version $Revision: 1 $
+ */
 public class AuthenticationExecutionExportRepresentation extends AbstractAuthenticationExecutionRepresentation {
 
     private String flowAlias;

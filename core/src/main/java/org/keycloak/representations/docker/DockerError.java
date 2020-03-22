@@ -6,23 +6,23 @@ import java.util.List;
 
 /**
  * JSON Representation of a Docker Error in the following format:
- *
- *
+ * <p>
+ * <p>
  * {
- *  "code": "UNAUTHORIZED",
- *  "message": "access to the requested resource is not authorized",
- *  "detail": [
- *    {
- *      "Type": "repository",
- *      "Name": "samalba/my-app",
- *      "Action": "pull"
- *    },
- *    {
- *      "Type": "repository",
- *      "Name": "samalba/my-app",
- *      "Action": "push"
- *    }
- *  ]
+ * "code": "UNAUTHORIZED",
+ * "message": "access to the requested resource is not authorized",
+ * "detail": [
+ * {
+ * "Type": "repository",
+ * "Name": "samalba/my-app",
+ * "Action": "pull"
+ * },
+ * {
+ * "Type": "repository",
+ * "Name": "samalba/my-app",
+ * "Action": "push"
+ * }
+ * ]
  * }
  */
 public class DockerError {

@@ -1,10 +1,6 @@
 package org.keycloak.crypto;
 
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Integer;
-import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERSequenceGenerator;
+import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.x9.X9IntegerConverter;
 import org.keycloak.common.VerificationException;
 import org.keycloak.models.KeycloakSession;
@@ -21,16 +17,6 @@ public class ECDSASignatureProvider implements SignatureProvider {
     public ECDSASignatureProvider(KeycloakSession session, String algorithm) {
         this.session = session;
         this.algorithm = algorithm;
-    }
-
-    @Override
-    public SignatureSignerContext signer() throws SignatureException {
-        return new ServerECDSASignatureSignerContext(session, algorithm);
-    }
-
-    @Override
-    public SignatureVerifierContext verifier(String kid) throws VerificationException {
-        return new ServerECDSASignatureVerifierContext(session, kid, algorithm);
     }
 
     public static byte[] concatenatedRSToASN1DER(final byte[] signature, int signLength) throws IOException {
@@ -74,6 +60,16 @@ public class ECDSASignatureProvider implements SignatureProvider {
         System.arraycopy(s, 0, concatenatedSignatureValue, len, len);
 
         return concatenatedSignatureValue;
+    }
+
+    @Override
+    public SignatureSignerContext signer() throws SignatureException {
+        return new ServerECDSASignatureSignerContext(session, algorithm);
+    }
+
+    @Override
+    public SignatureVerifierContext verifier(String kid) throws VerificationException {
+        return new ServerECDSASignatureVerifierContext(session, kid, algorithm);
     }
 
     public enum ECDSA {

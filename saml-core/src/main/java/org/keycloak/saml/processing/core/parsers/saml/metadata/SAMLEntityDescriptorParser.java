@@ -16,13 +16,7 @@
  */
 package org.keycloak.saml.processing.core.parsers.saml.metadata;
 
-import org.keycloak.dom.saml.v2.metadata.AttributeAuthorityDescriptorType;
-import org.keycloak.dom.saml.v2.metadata.AuthnAuthorityDescriptorType;
-import org.keycloak.dom.saml.v2.metadata.EntityDescriptorType;
-import org.keycloak.dom.saml.v2.metadata.IDPSSODescriptorType;
-import org.keycloak.dom.saml.v2.metadata.PDPDescriptorType;
-import org.keycloak.dom.saml.v2.metadata.RoleDescriptorType;
-import org.keycloak.dom.saml.v2.metadata.SPSSODescriptorType;
+import org.keycloak.dom.saml.v2.metadata.*;
 import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.util.StaxParserUtil;
 
@@ -72,55 +66,50 @@ public class SAMLEntityDescriptorParser extends AbstractStaxSamlMetadataParser<E
                 target.setExtensions(SAMLExtensionsParser.getInstance().parse(xmlEventReader));
                 break;
 
-            case IDP_SSO_DESCRIPTOR:
-                {
-                    IDPSSODescriptorType idpSSO = SAMLIDPSSODescriptorParser.getInstance().parse(xmlEventReader);
+            case IDP_SSO_DESCRIPTOR: {
+                IDPSSODescriptorType idpSSO = SAMLIDPSSODescriptorParser.getInstance().parse(xmlEventReader);
 
-                    EntityDescriptorType.EDTDescriptorChoiceType edtDescChoice = new EntityDescriptorType.EDTDescriptorChoiceType(idpSSO);
-                    EntityDescriptorType.EDTChoiceType edtChoice = EntityDescriptorType.EDTChoiceType.oneValue(edtDescChoice);
-                    target.addChoiceType(edtChoice);
-                }
-                break;
+                EntityDescriptorType.EDTDescriptorChoiceType edtDescChoice = new EntityDescriptorType.EDTDescriptorChoiceType(idpSSO);
+                EntityDescriptorType.EDTChoiceType edtChoice = EntityDescriptorType.EDTChoiceType.oneValue(edtDescChoice);
+                target.addChoiceType(edtChoice);
+            }
+            break;
 
-            case SP_SSO_DESCRIPTOR:
-                {
-                    SPSSODescriptorType spSSO = SAMLSPSSODescriptorParser.getInstance().parse(xmlEventReader);
+            case SP_SSO_DESCRIPTOR: {
+                SPSSODescriptorType spSSO = SAMLSPSSODescriptorParser.getInstance().parse(xmlEventReader);
 
-                    EntityDescriptorType.EDTDescriptorChoiceType edtDescChoice = new EntityDescriptorType.EDTDescriptorChoiceType(spSSO);
-                    EntityDescriptorType.EDTChoiceType edtChoice = EntityDescriptorType.EDTChoiceType.oneValue(edtDescChoice);
-                    target.addChoiceType(edtChoice);
-                }
-                break;
+                EntityDescriptorType.EDTDescriptorChoiceType edtDescChoice = new EntityDescriptorType.EDTDescriptorChoiceType(spSSO);
+                EntityDescriptorType.EDTChoiceType edtChoice = EntityDescriptorType.EDTChoiceType.oneValue(edtDescChoice);
+                target.addChoiceType(edtChoice);
+            }
+            break;
 
-            case ATTRIBUTE_AUTHORITY_DESCRIPTOR:
-                {
-                    AttributeAuthorityDescriptorType attrAuthority = SAMLAttributeAuthorityDescriptorParser.getInstance().parse(xmlEventReader);
+            case ATTRIBUTE_AUTHORITY_DESCRIPTOR: {
+                AttributeAuthorityDescriptorType attrAuthority = SAMLAttributeAuthorityDescriptorParser.getInstance().parse(xmlEventReader);
 
-                    EntityDescriptorType.EDTDescriptorChoiceType edtDescChoice = new EntityDescriptorType.EDTDescriptorChoiceType(attrAuthority);
-                    EntityDescriptorType.EDTChoiceType edtChoice = EntityDescriptorType.EDTChoiceType.oneValue(edtDescChoice);
-                    target.addChoiceType(edtChoice);
-                }
-                break;
+                EntityDescriptorType.EDTDescriptorChoiceType edtDescChoice = new EntityDescriptorType.EDTDescriptorChoiceType(attrAuthority);
+                EntityDescriptorType.EDTChoiceType edtChoice = EntityDescriptorType.EDTChoiceType.oneValue(edtDescChoice);
+                target.addChoiceType(edtChoice);
+            }
+            break;
 
-            case AUTHN_AUTHORITY_DESCRIPTOR:
-                {
-                    AuthnAuthorityDescriptorType authAuthority = SAMLAuthnAuthorityDescriptorParser.getInstance().parse(xmlEventReader);
+            case AUTHN_AUTHORITY_DESCRIPTOR: {
+                AuthnAuthorityDescriptorType authAuthority = SAMLAuthnAuthorityDescriptorParser.getInstance().parse(xmlEventReader);
 
-                    EntityDescriptorType.EDTDescriptorChoiceType edtDescChoice = new EntityDescriptorType.EDTDescriptorChoiceType(authAuthority);
-                    EntityDescriptorType.EDTChoiceType edtChoice = EntityDescriptorType.EDTChoiceType.oneValue(edtDescChoice);
-                    target.addChoiceType(edtChoice);
-                }
-                break;
+                EntityDescriptorType.EDTDescriptorChoiceType edtDescChoice = new EntityDescriptorType.EDTDescriptorChoiceType(authAuthority);
+                EntityDescriptorType.EDTChoiceType edtChoice = EntityDescriptorType.EDTChoiceType.oneValue(edtDescChoice);
+                target.addChoiceType(edtChoice);
+            }
+            break;
 
-            case PDP_DESCRIPTOR:
-                {
-                    PDPDescriptorType pdpDescriptor = SAMLPDPDescriptorParser.getInstance().parse(xmlEventReader);
+            case PDP_DESCRIPTOR: {
+                PDPDescriptorType pdpDescriptor = SAMLPDPDescriptorParser.getInstance().parse(xmlEventReader);
 
-                    EntityDescriptorType.EDTDescriptorChoiceType edtDescChoice = new EntityDescriptorType.EDTDescriptorChoiceType(pdpDescriptor);
-                    EntityDescriptorType.EDTChoiceType edtChoice = EntityDescriptorType.EDTChoiceType.oneValue(edtDescChoice);
-                    target.addChoiceType(edtChoice);
-                }
-                break;
+                EntityDescriptorType.EDTDescriptorChoiceType edtDescChoice = new EntityDescriptorType.EDTDescriptorChoiceType(pdpDescriptor);
+                EntityDescriptorType.EDTChoiceType edtChoice = EntityDescriptorType.EDTChoiceType.oneValue(edtDescChoice);
+                target.addChoiceType(edtChoice);
+            }
+            break;
             case ROLE_DESCRIPTOR:
             case AFFILIATION_DESCRIPTOR:
             case ADDITIONAL_METADATA_LOCATION:

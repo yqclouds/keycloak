@@ -19,17 +19,7 @@ package org.keycloak.models.jpa.entities;
 
 import org.keycloak.models.AuthenticationExecutionModel;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -38,12 +28,13 @@ import javax.persistence.Table;
 @NamedQueries({
         @NamedQuery(name = "authenticationFlowExecution", query = "select authExec from AuthenticationExecutionEntity authExec where authExec.flowId = :flowId")
 })
-@Table(name="AUTHENTICATION_EXECUTION")
+@Table(name = "AUTHENTICATION_EXECUTION")
 @Entity
 public class AuthenticationExecutionEntity {
     @Id
-    @Column(name="ID", length = 36)
-    @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
+    @Column(name = "ID", length = 36)
+    @Access(AccessType.PROPERTY)
+    // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
     protected String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -54,22 +45,22 @@ public class AuthenticationExecutionEntity {
     @JoinColumn(name = "FLOW_ID")
     protected AuthenticationFlowEntity parentFlow;
 
-    @Column(name="AUTHENTICATOR")
+    @Column(name = "AUTHENTICATOR")
     protected String authenticator;
 
-    @Column(name="AUTH_CONFIG")
+    @Column(name = "AUTH_CONFIG")
     protected String authenticatorConfig;
 
-    @Column(name="AUTH_FLOW_ID")
+    @Column(name = "AUTH_FLOW_ID")
     protected String flowId;
 
-    @Column(name="REQUIREMENT")
+    @Column(name = "REQUIREMENT")
     protected AuthenticationExecutionModel.Requirement requirement;
 
-    @Column(name="PRIORITY")
+    @Column(name = "PRIORITY")
     protected int priority;
 
-    @Column(name="AUTHENTICATOR_FLOW")
+    @Column(name = "AUTHENTICATOR_FLOW")
     private boolean autheticatorFlow;
 
     public String getId() {

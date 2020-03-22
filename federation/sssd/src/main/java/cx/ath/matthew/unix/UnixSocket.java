@@ -2,17 +2,17 @@
  * Java Unix Sockets Library
  *
  * Copyright (c) Matthew Johnson 2004
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -20,7 +20,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- * 
+ *
  * To Contact the author, please email src@matthew.ath.cx
  *
  */
@@ -37,6 +37,46 @@ import java.io.OutputStream;
  */
 public class UnixSocket {
 
+    private UnixSocketAddress address = null;
+    private USOutputStream os = null;
+    private USInputStream is = null;
+    private boolean closed = false;
+    private boolean connected = false;
+    private boolean passcred = false;
+    private int sock = 0;
+    private boolean blocking = true;
+    private int uid = -1;
+    private int pid = -1;
+    private int gid = -1;
+    UnixSocket(int sock, UnixSocketAddress address) {
+        this.sock = sock;
+        this.address = address;
+        this.connected = true;
+        this.os = new USOutputStream(sock, this);
+        this.is = new USInputStream(sock, this);
+    }
+    /**
+     * Create an unconnected socket.
+     */
+    public UnixSocket() {
+    }
+    /**
+     * Create a socket connected to the given address.
+     *
+     * @param address The Unix Socket address to connect to
+     */
+    public UnixSocket(UnixSocketAddress address) throws IOException {
+        connect(address);
+    }
+    /**
+     * Create a socket connected to the given address.
+     *
+     * @param address The Unix Socket address to connect to
+     */
+    public UnixSocket(String address) throws IOException {
+        this(new UnixSocketAddress(address));
+    }
+
     private native void native_set_pass_cred(int sock, boolean passcred) throws IOException;
 
     private native int native_connect(String address, boolean abs) throws IOException;
@@ -52,50 +92,6 @@ public class UnixSocket {
     private native void native_send_creds(int sock, byte data) throws IOException;
 
     private native byte native_recv_creds(int sock, int[] creds) throws IOException;
-
-    private UnixSocketAddress address = null;
-    private USOutputStream os = null;
-    private USInputStream is = null;
-    private boolean closed = false;
-    private boolean connected = false;
-    private boolean passcred = false;
-    private int sock = 0;
-    private boolean blocking = true;
-    private int uid = -1;
-    private int pid = -1;
-    private int gid = -1;
-
-    UnixSocket(int sock, UnixSocketAddress address) {
-        this.sock = sock;
-        this.address = address;
-        this.connected = true;
-        this.os = new USOutputStream(sock, this);
-        this.is = new USInputStream(sock, this);
-    }
-
-    /**
-     * Create an unconnected socket.
-     */
-    public UnixSocket() {
-    }
-
-    /**
-     * Create a socket connected to the given address.
-     *
-     * @param address The Unix Socket address to connect to
-     */
-    public UnixSocket(UnixSocketAddress address) throws IOException {
-        connect(address);
-    }
-
-    /**
-     * Create a socket connected to the given address.
-     *
-     * @param address The Unix Socket address to connect to
-     */
-    public UnixSocket(String address) throws IOException {
-        this(new UnixSocketAddress(address));
-    }
 
     /**
      * Connect the socket to this address.
@@ -212,6 +208,18 @@ public class UnixSocket {
     }
 
     /**
+     * Set the credential passing status.
+     * (Only does anything on linux, for other OS, you need
+     * to use send/recv credentials)
+     *
+     * @param enable Set to true for credentials to be passed.
+     */
+    public void setPassCred(boolean enable) throws IOException {
+        native_set_pass_cred(sock, enable);
+        passcred = enable;
+    }
+
+    /**
      * Return the uid of the remote process.
      * Some data must have been received on the socket to do this.
      * Either setPassCred must be called on Linux first, or recvCredentialByte
@@ -251,18 +259,6 @@ public class UnixSocket {
         if (-1 == pid)
             pid = native_getPID(sock);
         return pid;
-    }
-
-    /**
-     * Set the credential passing status.
-     * (Only does anything on linux, for other OS, you need
-     * to use send/recv credentials)
-     *
-     * @param enable Set to true for credentials to be passed.
-     */
-    public void setPassCred(boolean enable) throws IOException {
-        native_set_pass_cred(sock, enable);
-        passcred = enable;
     }
 
     /**

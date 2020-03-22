@@ -38,8 +38,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * @resource Client Registration Policy
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
+ * @resource Client Registration Policy
  */
 public class ClientRegistrationPolicyResource {
 
@@ -83,7 +83,6 @@ public class ClientRegistrationPolicyResource {
 
         }).collect(Collectors.toList());
     }
-
 
 
 }

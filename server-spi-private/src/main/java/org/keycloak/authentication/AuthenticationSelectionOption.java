@@ -30,7 +30,7 @@ public class AuthenticationSelectionOption {
         return authExec;
     }
 
-    public String getAuthExecId(){
+    public String getAuthExecId() {
         return authExec.getId();
     }
 

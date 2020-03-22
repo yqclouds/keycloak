@@ -31,16 +31,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyPair;
-import java.security.PrivateKey;
 import java.util.UUID;
 
 import static java.lang.System.currentTimeMillis;
 import static org.keycloak.client.registration.cli.util.ConfigUtil.checkAuthInfo;
 import static org.keycloak.client.registration.cli.util.ConfigUtil.saveMergeConfig;
-import static org.keycloak.client.registration.cli.util.HttpUtil.APPLICATION_FORM_URL_ENCODED;
-import static org.keycloak.client.registration.cli.util.HttpUtil.APPLICATION_JSON;
-import static org.keycloak.client.registration.cli.util.HttpUtil.doPost;
-import static org.keycloak.client.registration.cli.util.HttpUtil.urlencode;
+import static org.keycloak.client.registration.cli.util.HttpUtil.*;
 
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>

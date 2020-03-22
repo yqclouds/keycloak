@@ -30,11 +30,7 @@ import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.ModelException;
-import org.keycloak.models.UserCredentialModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.validation.Validation;
 
@@ -48,27 +44,27 @@ import java.util.concurrent.TimeUnit;
  */
 public class UpdatePassword implements RequiredActionProvider, RequiredActionFactory, DisplayTypeRequiredActionFactory {
     private static final Logger logger = Logger.getLogger(UpdatePassword.class);
-    
+
     @Override
     public InitiatedActionSupport initiatedActionSupport() {
         return InitiatedActionSupport.SUPPORTED;
     }
-    
+
     @Override
     public void evaluateTriggers(RequiredActionContext context) {
         int daysToExpirePassword = context.getRealm().getPasswordPolicy().getDaysToExpirePassword();
-        if(daysToExpirePassword != -1) {
-            PasswordCredentialProvider passwordProvider = (PasswordCredentialProvider)context.getSession().getProvider(CredentialProvider.class, PasswordCredentialProviderFactory.PROVIDER_ID);
+        if (daysToExpirePassword != -1) {
+            PasswordCredentialProvider passwordProvider = (PasswordCredentialProvider) context.getSession().getProvider(CredentialProvider.class, PasswordCredentialProviderFactory.PROVIDER_ID);
             CredentialModel password = passwordProvider.getPassword(context.getRealm(), context.getUser());
             if (password != null) {
-                if(password.getCreatedDate() == null) {
+                if (password.getCreatedDate() == null) {
                     context.getUser().addRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD);
                     logger.debug("User is required to update password");
                 } else {
                     long timeElapsed = Time.toMillis(Time.currentTime()) - password.getCreatedDate();
                     long timeToExpire = TimeUnit.DAYS.toMillis(daysToExpirePassword);
 
-                    if(timeElapsed > timeToExpire) {
+                    if (timeElapsed > timeToExpire) {
                         context.getUser().addRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD);
                         logger.debug("User is required to update password");
                     }

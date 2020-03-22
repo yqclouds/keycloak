@@ -45,6 +45,19 @@ public class AgreementMethodType {
 
     protected String algorithm;
 
+    public AgreementMethodType(String algo) {
+        this.algorithm = algo;
+    }
+
+    /**
+     * Gets the value of the algorithm property.
+     *
+     * @return possible object is {@link String }
+     */
+    public String getAlgorithm() {
+        return algorithm;
+    }
+
     public static class AggrementMethod {
 
         protected byte[] kANonce;
@@ -68,19 +81,6 @@ public class AgreementMethodType {
         public KeyInfoType getRecipientKeyInfo() {
             return recipientKeyInfo;
         }
-    }
-
-    public AgreementMethodType(String algo) {
-        this.algorithm = algo;
-    }
-
-    /**
-     * Gets the value of the algorithm property.
-     *
-     * @return possible object is {@link String }
-     */
-    public String getAlgorithm() {
-        return algorithm;
     }
 
 }

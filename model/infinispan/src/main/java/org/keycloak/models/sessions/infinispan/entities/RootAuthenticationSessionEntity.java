@@ -17,15 +17,16 @@
 
 package org.keycloak.models.sessions.infinispan.entities;
 
+import org.infinispan.commons.marshall.Externalizer;
+import org.infinispan.commons.marshall.MarshallUtil;
+import org.infinispan.commons.marshall.SerializeWith;
 import org.keycloak.models.sessions.infinispan.util.KeycloakMarshallUtil;
+
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.MarshallUtil;
-import org.infinispan.commons.marshall.SerializeWith;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -121,12 +122,12 @@ public class RootAuthenticationSessionEntity extends SessionEntity {
 
         public RootAuthenticationSessionEntity readObjectVersion1(ObjectInput input) throws IOException, ClassNotFoundException {
             return new RootAuthenticationSessionEntity(
-              MarshallUtil.unmarshallString(input),     // realmId
+                    MarshallUtil.unmarshallString(input),     // realmId
 
-              MarshallUtil.unmarshallString(input),     // id
-              input.readInt(),                          // timestamp
+                    MarshallUtil.unmarshallString(input),     // id
+                    input.readInt(),                          // timestamp
 
-              KeycloakMarshallUtil.readMap(input, KeycloakMarshallUtil.STRING_EXT, AuthenticationSessionEntity.ExternalizerImpl.INSTANCE, size -> new ConcurrentHashMap<>(size)) // authenticationSessions
+                    KeycloakMarshallUtil.readMap(input, KeycloakMarshallUtil.STRING_EXT, AuthenticationSessionEntity.ExternalizerImpl.INSTANCE, size -> new ConcurrentHashMap<>(size)) // authenticationSessions
             );
         }
     }

@@ -18,17 +18,13 @@
 package org.keycloak.protocol.saml.mappers;
 
 import org.keycloak.dom.saml.v2.assertion.AttributeStatementType;
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 
-import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -38,6 +34,7 @@ import java.util.List;
  * @version $Revision: 1 $
  */
 public class UserAttributeStatementMapper extends AbstractSAMLProtocolMapper implements SAMLAttributeStatementMapper {
+    public static final String PROVIDER_ID = "saml-user-attribute-mapper";
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
 
     static {
@@ -57,12 +54,18 @@ public class UserAttributeStatementMapper extends AbstractSAMLProtocolMapper imp
         configProperties.add(property);
     }
 
-    public static final String PROVIDER_ID = "saml-user-attribute-mapper";
+    public static ProtocolMapperModel createAttributeMapper(String name, String userAttribute,
+                                                            String samlAttributeName, String nameFormat, String friendlyName) {
+        String mapperId = PROVIDER_ID;
+        return AttributeStatementHelper.createAttributeMapper(name, userAttribute, samlAttributeName, nameFormat, friendlyName,
+                mapperId);
 
+    }
 
     public List<ProviderConfigProperty> getConfigProperties() {
         return configProperties;
     }
+
     @Override
     public String getId() {
         return PROVIDER_ID;
@@ -91,14 +94,6 @@ public class UserAttributeStatementMapper extends AbstractSAMLProtocolMapper imp
         Collection<String> attributeValues = KeycloakModelUtils.resolveAttribute(user, attributeName, aggregateAttrs);
         if (attributeValues.isEmpty()) return;
         AttributeStatementHelper.addAttributes(attributeStatement, mappingModel, attributeValues);
-    }
-
-    public static ProtocolMapperModel createAttributeMapper(String name, String userAttribute,
-                                                            String samlAttributeName, String nameFormat, String friendlyName) {
-        String mapperId = PROVIDER_ID;
-        return AttributeStatementHelper.createAttributeMapper(name, userAttribute, samlAttributeName, nameFormat, friendlyName,
-                mapperId);
-
     }
 
 }

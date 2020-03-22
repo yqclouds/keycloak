@@ -26,7 +26,7 @@ import java.util.Map;
 
 /**
  * Helper base class for ClientModel implementations for ClientStorageProvider implementations.
- *
+ * <p>
  * Contains default implementations of some methods
  *
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -116,7 +116,6 @@ public abstract class AbstractClientStorageAdapter extends UnsupportedOperations
 
     /**
      * Overriding implementations should call super.updateClient() as this fires off an update event.
-     *
      */
     @Override
     public void updateClient() {

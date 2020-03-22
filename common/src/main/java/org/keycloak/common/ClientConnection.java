@@ -26,9 +26,12 @@ package org.keycloak.common;
 public interface ClientConnection {
 
     String getRemoteAddr();
+
     String getRemoteHost();
+
     int getRemotePort();
 
     String getLocalAddr();
+
     int getLocalPort();
 }

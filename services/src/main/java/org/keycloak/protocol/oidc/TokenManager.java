@@ -35,18 +35,7 @@ import org.keycloak.events.EventBuilder;
 import org.keycloak.jose.jws.JWSInputException;
 import org.keycloak.jose.jws.crypto.HashUtils;
 import org.keycloak.migration.migrators.MigrationUtils;
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.ClientSessionContext;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserConsentModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
-import org.keycloak.models.UserSessionProvider;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.RoleUtils;
 import org.keycloak.protocol.ProtocolMapper;
@@ -55,11 +44,7 @@ import org.keycloak.protocol.oidc.mappers.OIDCAccessTokenMapper;
 import org.keycloak.protocol.oidc.mappers.OIDCIDTokenMapper;
 import org.keycloak.protocol.oidc.mappers.UserInfoTokenMapper;
 import org.keycloak.protocol.oidc.utils.OIDCResponseType;
-import org.keycloak.representations.AccessToken;
-import org.keycloak.representations.AccessTokenResponse;
-import org.keycloak.representations.IDToken;
-import org.keycloak.representations.JsonWebToken;
-import org.keycloak.representations.RefreshToken;
+import org.keycloak.representations.*;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.managers.AuthenticationSessionManager;
@@ -73,11 +58,7 @@ import org.keycloak.util.TokenUtil;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Stateless object that creates tokens and manages oauth access codes
@@ -89,18 +70,132 @@ public class TokenManager {
     private static final Logger logger = Logger.getLogger(TokenManager.class);
     private static final String JWT = "JWT";
 
-    public static class TokenValidation {
-        public final UserModel user;
-        public final UserSessionModel userSession;
-        public final ClientSessionContext clientSessionCtx;
-        public final AccessToken newToken;
+    public static ClientSessionContext attachAuthenticationSession(KeycloakSession session, UserSessionModel userSession, AuthenticationSessionModel authSession) {
+        ClientModel client = authSession.getClient();
 
-        public TokenValidation(UserModel user, UserSessionModel userSession, ClientSessionContext clientSessionCtx, AccessToken newToken) {
-            this.user = user;
-            this.userSession = userSession;
-            this.clientSessionCtx = clientSessionCtx;
-            this.newToken = newToken;
+        AuthenticatedClientSessionModel clientSession = userSession.getAuthenticatedClientSessionByClient(client.getId());
+        if (clientSession == null) {
+            clientSession = session.sessions().createClientSession(userSession.getRealm(), client, userSession);
         }
+
+        clientSession.setRedirectUri(authSession.getRedirectUri());
+        clientSession.setProtocol(authSession.getProtocol());
+
+        Set<String> clientScopeIds = authSession.getClientScopes();
+
+        Map<String, String> transferredNotes = authSession.getClientNotes();
+        for (Map.Entry<String, String> entry : transferredNotes.entrySet()) {
+            clientSession.setNote(entry.getKey(), entry.getValue());
+        }
+
+        Map<String, String> transferredUserSessionNotes = authSession.getUserSessionNotes();
+        for (Map.Entry<String, String> entry : transferredUserSessionNotes.entrySet()) {
+            userSession.setNote(entry.getKey(), entry.getValue());
+        }
+
+        clientSession.setTimestamp(Time.currentTime());
+
+        // Remove authentication session now
+        new AuthenticationSessionManager(session).removeAuthenticationSession(userSession.getRealm(), authSession, true);
+
+        ClientSessionContext clientSessionCtx = DefaultClientSessionContext.fromClientSessionAndClientScopeIds(clientSession, clientScopeIds, session);
+        return clientSessionCtx;
+    }
+
+    public static void dettachClientSession(UserSessionProvider sessions, RealmModel realm, AuthenticatedClientSessionModel clientSession) {
+        UserSessionModel userSession = clientSession.getUserSession();
+        if (userSession == null) {
+            return;
+        }
+
+        clientSession.detachFromUserSession();
+
+        // TODO: Might need optimization to prevent loading client sessions from cache in getAuthenticatedClientSessions()
+        if (userSession.getAuthenticatedClientSessions().isEmpty()) {
+            sessions.removeUserSession(realm, userSession);
+        }
+    }
+
+    public static Set<RoleModel> getAccess(UserModel user, ClientModel client, Set<ClientScopeModel> clientScopes) {
+        Set<RoleModel> roleMappings = RoleUtils.getDeepUserRoleMappings(user);
+
+        if (client.isFullScopeAllowed()) {
+            if (logger.isTraceEnabled()) {
+                logger.tracef("Using full scope for client %s", client.getClientId());
+            }
+            return roleMappings;
+        } else {
+
+            // 1 - Client roles of this client itself
+            Set<RoleModel> scopeMappings = new HashSet<>(client.getRoles());
+
+            // 2 - Role mappings of client itself + default client scopes + optional client scopes requested by scope parameter (if applyScopeParam is true)
+            for (ClientScopeModel clientScope : clientScopes) {
+                if (logger.isTraceEnabled()) {
+                    logger.tracef("Adding client scope role mappings of client scope '%s' to client '%s'", clientScope.getName(), client.getClientId());
+                }
+                scopeMappings.addAll(clientScope.getScopeMappings());
+            }
+
+            // 3 - Expand scope mappings
+            scopeMappings = RoleUtils.expandCompositeRoles(scopeMappings);
+
+            // Intersection of expanded user roles and expanded scopeMappings
+            roleMappings.retainAll(scopeMappings);
+
+            return roleMappings;
+        }
+    }
+
+    /**
+     * Return client itself + all default client scopes of client + optional client scopes requested by scope parameter
+     **/
+    public static Set<ClientScopeModel> getRequestedClientScopes(String scopeParam, ClientModel client) {
+        // Add all default client scopes automatically
+        Set<ClientScopeModel> clientScopes = new HashSet<>(client.getClientScopes(true, true).values());
+
+        // Add client itself
+        clientScopes.add(client);
+
+        if (scopeParam == null) {
+            return clientScopes;
+        }
+
+        // Add optional client scopes requested by scope parameter
+        String[] scopes = scopeParam.split(" ");
+        Collection<String> scopeParamParts = Arrays.asList(scopes);
+        Map<String, ClientScopeModel> allOptionalScopes = client.getClientScopes(false, true);
+        for (String scopeParamPart : scopeParamParts) {
+            ClientScopeModel scope = allOptionalScopes.get(scopeParamPart);
+            if (scope != null) {
+                clientScopes.add(scope);
+            }
+        }
+
+        return clientScopes;
+    }
+
+    // Check if user still has granted consents to all requested client scopes
+    public static boolean verifyConsentStillAvailable(KeycloakSession session, UserModel user, ClientModel client, Set<ClientScopeModel> requestedClientScopes) {
+        if (!client.isConsentRequired()) {
+            return true;
+        }
+
+        UserConsentModel grantedConsent = session.users().getConsentByClient(client.getRealm(), user.getId(), client.getId());
+
+        for (ClientScopeModel requestedScope : requestedClientScopes) {
+            if (!requestedScope.isDisplayOnConsentScreen()) {
+                continue;
+            }
+
+            if (!grantedConsent.getGrantedClientScopes().contains(requestedScope)) {
+                logger.debugf("Client '%s' no longer has requested consent from user '%s' for client scope '%s'",
+                        client.getClientId(), user.getUsername(), requestedScope.getName());
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public TokenValidation validateToken(KeycloakSession session, UriInfo uriInfo, ClientConnection connection, RealmModel realm,
@@ -251,7 +346,7 @@ public class TokenManager {
         }
         try {
             TokenVerifier.createWithoutSignature(token)
-                    .withChecks(NotBeforeCheck.forModel(session ,realm, user))
+                    .withChecks(NotBeforeCheck.forModel(session, realm, user))
                     .verify();
         } catch (VerificationException e) {
             return false;
@@ -262,7 +357,6 @@ public class TokenManager {
         }
         return true;
     }
-
 
     public RefreshResult refreshAccessToken(KeycloakSession session, UriInfo uriInfo, ClientConnection connection, RealmModel realm, ClientModel authorizedClient,
                                             String encodedRefreshToken, EventBuilder event, HttpHeaders headers, HttpRequest request) throws OAuthErrorException {
@@ -318,7 +412,7 @@ public class TokenManager {
     }
 
     private void validateTokenReuse(KeycloakSession session, RealmModel realm, RefreshToken refreshToken,
-            TokenValidation validation) throws OAuthErrorException {
+                                    TokenValidation validation) throws OAuthErrorException {
         if (realm.isRevokeRefreshToken()) {
             AuthenticatedClientSessionModel clientSession = validation.clientSessionCtx.getClientSession();
 
@@ -416,136 +510,6 @@ public class TokenManager {
         return token;
     }
 
-
-    public static ClientSessionContext attachAuthenticationSession(KeycloakSession session, UserSessionModel userSession, AuthenticationSessionModel authSession) {
-        ClientModel client = authSession.getClient();
-
-        AuthenticatedClientSessionModel clientSession = userSession.getAuthenticatedClientSessionByClient(client.getId());
-        if (clientSession == null) {
-            clientSession = session.sessions().createClientSession(userSession.getRealm(), client, userSession);
-        }
-
-        clientSession.setRedirectUri(authSession.getRedirectUri());
-        clientSession.setProtocol(authSession.getProtocol());
-
-        Set<String> clientScopeIds = authSession.getClientScopes();
-
-        Map<String, String> transferredNotes = authSession.getClientNotes();
-        for (Map.Entry<String, String> entry : transferredNotes.entrySet()) {
-            clientSession.setNote(entry.getKey(), entry.getValue());
-        }
-
-        Map<String, String> transferredUserSessionNotes = authSession.getUserSessionNotes();
-        for (Map.Entry<String, String> entry : transferredUserSessionNotes.entrySet()) {
-            userSession.setNote(entry.getKey(), entry.getValue());
-        }
-
-        clientSession.setTimestamp(Time.currentTime());
-
-        // Remove authentication session now
-        new AuthenticationSessionManager(session).removeAuthenticationSession(userSession.getRealm(), authSession, true);
-
-        ClientSessionContext clientSessionCtx = DefaultClientSessionContext.fromClientSessionAndClientScopeIds(clientSession, clientScopeIds, session);
-        return clientSessionCtx;
-    }
-
-
-    public static void dettachClientSession(UserSessionProvider sessions, RealmModel realm, AuthenticatedClientSessionModel clientSession) {
-        UserSessionModel userSession = clientSession.getUserSession();
-        if (userSession == null) {
-            return;
-        }
-
-        clientSession.detachFromUserSession();
-
-        // TODO: Might need optimization to prevent loading client sessions from cache in getAuthenticatedClientSessions()
-        if (userSession.getAuthenticatedClientSessions().isEmpty()) {
-            sessions.removeUserSession(realm, userSession);
-        }
-    }
-
-
-    public static Set<RoleModel> getAccess(UserModel user, ClientModel client, Set<ClientScopeModel> clientScopes) {
-        Set<RoleModel> roleMappings = RoleUtils.getDeepUserRoleMappings(user);
-
-        if (client.isFullScopeAllowed()) {
-            if (logger.isTraceEnabled()) {
-                logger.tracef("Using full scope for client %s", client.getClientId());
-            }
-            return roleMappings;
-        } else {
-
-            // 1 - Client roles of this client itself
-            Set<RoleModel> scopeMappings = new HashSet<>(client.getRoles());
-
-            // 2 - Role mappings of client itself + default client scopes + optional client scopes requested by scope parameter (if applyScopeParam is true)
-            for (ClientScopeModel clientScope : clientScopes) {
-                if (logger.isTraceEnabled()) {
-                    logger.tracef("Adding client scope role mappings of client scope '%s' to client '%s'", clientScope.getName(), client.getClientId());
-                }
-                scopeMappings.addAll(clientScope.getScopeMappings());
-            }
-
-            // 3 - Expand scope mappings
-            scopeMappings = RoleUtils.expandCompositeRoles(scopeMappings);
-
-            // Intersection of expanded user roles and expanded scopeMappings
-            roleMappings.retainAll(scopeMappings);
-
-            return roleMappings;
-        }
-    }
-
-
-    /** Return client itself + all default client scopes of client + optional client scopes requested by scope parameter **/
-    public static Set<ClientScopeModel> getRequestedClientScopes(String scopeParam, ClientModel client) {
-        // Add all default client scopes automatically
-        Set<ClientScopeModel> clientScopes = new HashSet<>(client.getClientScopes(true, true).values());
-
-        // Add client itself
-        clientScopes.add(client);
-
-        if (scopeParam == null) {
-            return clientScopes;
-        }
-
-        // Add optional client scopes requested by scope parameter
-        String[] scopes = scopeParam.split(" ");
-        Collection<String> scopeParamParts = Arrays.asList(scopes);
-        Map<String, ClientScopeModel> allOptionalScopes = client.getClientScopes(false, true);
-        for (String scopeParamPart : scopeParamParts) {
-            ClientScopeModel scope = allOptionalScopes.get(scopeParamPart);
-            if (scope != null) {
-                clientScopes.add(scope);
-            }
-        }
-
-        return clientScopes;
-    }
-
-    // Check if user still has granted consents to all requested client scopes
-    public static boolean verifyConsentStillAvailable(KeycloakSession session, UserModel user, ClientModel client, Set<ClientScopeModel> requestedClientScopes) {
-        if (!client.isConsentRequired()) {
-            return true;
-        }
-
-        UserConsentModel grantedConsent = session.users().getConsentByClient(client.getRealm(), user.getId(), client.getId());
-
-        for (ClientScopeModel requestedScope : requestedClientScopes) {
-            if (!requestedScope.isDisplayOnConsentScreen()) {
-                continue;
-            }
-
-            if (!grantedConsent.getGrantedClientScopes().contains(requestedScope)) {
-                logger.debugf("Client '%s' no longer has requested consent from user '%s' for client scope '%s'",
-                        client.getClientId(), user.getUsername(), requestedScope.getName());
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     public AccessToken transformAccessToken(KeycloakSession session, AccessToken token,
                                             UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
 
@@ -561,7 +525,7 @@ public class TokenManager {
     }
 
     public AccessToken transformUserInfoAccessToken(KeycloakSession session, AccessToken token,
-                                            UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
+                                                    UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
 
         for (Map.Entry<ProtocolMapperModel, ProtocolMapper> entry : ProtocolMapperUtils.getSortedProtocolMappers(session, clientSessionCtx)) {
             ProtocolMapperModel mapping = entry.getKey();
@@ -576,7 +540,7 @@ public class TokenManager {
     }
 
     public void transformIDToken(KeycloakSession session, IDToken token,
-                                      UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
+                                 UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
 
         for (Map.Entry<ProtocolMapperModel, ProtocolMapper> entry : ProtocolMapperUtils.getSortedProtocolMappers(session, clientSessionCtx)) {
             ProtocolMapperModel mapping = entry.getKey();
@@ -619,7 +583,7 @@ public class TokenManager {
         return token;
     }
 
-    private int getTokenExpiration(RealmModel realm, ClientModel client,  UserSessionModel userSession, AuthenticatedClientSessionModel clientSession) {
+    private int getTokenExpiration(RealmModel realm, ClientModel client, UserSessionModel userSession, AuthenticatedClientSessionModel clientSession) {
         boolean implicitFlow = false;
         String responseType = clientSession.getNote(OIDCLoginProtocol.RESPONSE_TYPE_PARAM);
         if (responseType != null) {
@@ -656,10 +620,64 @@ public class TokenManager {
         return expiration;
     }
 
-
     public AccessTokenResponseBuilder responseBuilder(RealmModel realm, ClientModel client, EventBuilder event, KeycloakSession session,
                                                       UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
         return new AccessTokenResponseBuilder(realm, client, event, session, userSession, clientSessionCtx);
+    }
+
+    public static class TokenValidation {
+        public final UserModel user;
+        public final UserSessionModel userSession;
+        public final ClientSessionContext clientSessionCtx;
+        public final AccessToken newToken;
+
+        public TokenValidation(UserModel user, UserSessionModel userSession, ClientSessionContext clientSessionCtx, AccessToken newToken) {
+            this.user = user;
+            this.userSession = userSession;
+            this.clientSessionCtx = clientSessionCtx;
+            this.newToken = newToken;
+        }
+    }
+
+    public static class NotBeforeCheck implements TokenVerifier.Predicate<JsonWebToken> {
+
+        private final int notBefore;
+
+        public NotBeforeCheck(int notBefore) {
+            this.notBefore = notBefore;
+        }
+
+        public static NotBeforeCheck forModel(ClientModel clientModel) {
+            if (clientModel != null) {
+
+                int notBeforeClient = clientModel.getNotBefore();
+                int notBeforeRealm = clientModel.getRealm().getNotBefore();
+
+                int notBefore = (notBeforeClient == 0 ? notBeforeRealm : (notBeforeRealm == 0 ? notBeforeClient :
+                        Math.min(notBeforeClient, notBeforeRealm)));
+
+                return new NotBeforeCheck(notBefore);
+            }
+
+            return new NotBeforeCheck(0);
+        }
+
+        public static NotBeforeCheck forModel(RealmModel realmModel) {
+            return new NotBeforeCheck(realmModel == null ? 0 : realmModel.getNotBefore());
+        }
+
+        public static NotBeforeCheck forModel(KeycloakSession session, RealmModel realmModel, UserModel userModel) {
+            return new NotBeforeCheck(session.users().getNotBeforeOfUser(realmModel, userModel));
+        }
+
+        @Override
+        public boolean test(JsonWebToken t) throws VerificationException {
+            if (t.getIssuedAt() < notBefore) {
+                throw new VerificationException("Stale token");
+            }
+
+            return true;
+        }
     }
 
     public class AccessTokenResponseBuilder {
@@ -705,6 +723,7 @@ public class TokenManager {
             this.accessToken = accessToken;
             return this;
         }
+
         public AccessTokenResponseBuilder refreshToken(RefreshToken refreshToken) {
             this.refreshToken = refreshToken;
             return this;
@@ -722,7 +741,7 @@ public class TokenManager {
             }
 
             ClientScopeModel offlineAccessScope = KeycloakModelUtils.getClientScopeByName(realm, OAuth2Constants.OFFLINE_ACCESS);
-            boolean offlineTokenRequested = offlineAccessScope==null ? false : clientSessionCtx.getClientScopeIds().contains(offlineAccessScope.getId());
+            boolean offlineTokenRequested = offlineAccessScope == null ? false : clientSessionCtx.getClientScopeIds().contains(offlineAccessScope.getId());
             if (offlineTokenRequested) {
                 UserSessionManager sessionManager = new UserSessionManager(session);
                 if (!sessionManager.isOfflineTokenAllowed(clientSessionCtx)) {
@@ -882,47 +901,6 @@ public class TokenManager {
 
         public boolean isOfflineToken() {
             return offlineToken;
-        }
-    }
-
-    public static class NotBeforeCheck implements TokenVerifier.Predicate<JsonWebToken> {
-
-        private final int notBefore;
-
-        public NotBeforeCheck(int notBefore) {
-            this.notBefore = notBefore;
-        }
-
-        @Override
-        public boolean test(JsonWebToken t) throws VerificationException {
-            if (t.getIssuedAt() < notBefore) {
-                throw new VerificationException("Stale token");
-            }
-
-            return true;
-        }
-
-        public static NotBeforeCheck forModel(ClientModel clientModel) {
-            if (clientModel != null) {
-
-                int notBeforeClient = clientModel.getNotBefore();
-                int notBeforeRealm = clientModel.getRealm().getNotBefore();
-
-                int notBefore = (notBeforeClient == 0 ? notBeforeRealm : (notBeforeRealm == 0 ? notBeforeClient :
-                        Math.min(notBeforeClient, notBeforeRealm)));
-
-                return new NotBeforeCheck(notBefore);
-            }
-
-            return new NotBeforeCheck(0);
-        }
-
-        public static NotBeforeCheck forModel(RealmModel realmModel) {
-            return new NotBeforeCheck(realmModel == null ? 0 : realmModel.getNotBefore());
-        }
-
-        public static NotBeforeCheck forModel(KeycloakSession session, RealmModel realmModel, UserModel userModel) {
-            return new NotBeforeCheck(session.users().getNotBeforeOfUser(realmModel, userModel));
         }
     }
 }

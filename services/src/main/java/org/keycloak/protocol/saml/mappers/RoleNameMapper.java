@@ -18,12 +18,7 @@
 package org.keycloak.protocol.saml.mappers;
 
 import org.keycloak.Config;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RoleContainerModel;
-import org.keycloak.models.RoleModel;
+import org.keycloak.models.*;
 import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.saml.SamlProtocol;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -41,9 +36,9 @@ import java.util.Map;
  */
 public class RoleNameMapper implements SAMLRoleNameMapper, ProtocolMapper {
 
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
-
     public static final String ROLE_CONFIG = "role";
+    public static final String PROVIDER_ID = "saml-role-name-mapper";
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
     public static String NEW_ROLE_NAME = "new.role.name";
 
     static {
@@ -62,8 +57,21 @@ public class RoleNameMapper implements SAMLRoleNameMapper, ProtocolMapper {
         configProperties.add(property);
     }
 
-    public static final String PROVIDER_ID = "saml-role-name-mapper";
+    public static ProtocolMapperModel create(String name,
+                                             String role,
+                                             String newName) {
+        String mapperId = PROVIDER_ID;
+        ProtocolMapperModel mapper = new ProtocolMapperModel();
+        mapper.setName(name);
+        mapper.setProtocolMapper(mapperId);
+        mapper.setProtocol(SamlProtocol.LOGIN_PROTOCOL);
+        Map<String, String> config = new HashMap<String, String>();
+        config.put(ROLE_CONFIG, role);
+        config.put(NEW_ROLE_NAME, newName);
+        mapper.setConfig(config);
+        return mapper;
 
+    }
 
     public List<ProviderConfigProperty> getConfigProperties() {
         return configProperties;
@@ -98,29 +106,13 @@ public class RoleNameMapper implements SAMLRoleNameMapper, ProtocolMapper {
         int scopeIndex = role.indexOf('.');
         if (scopeIndex > -1 && app != null) {
             final String clientId = app.getClientId();
-            if (! role.startsWith(clientId + ".")) return null;
+            if (!role.startsWith(clientId + ".")) return null;
             role = role.substring(clientId.length() + 1);
         } else {
             if (app != null) return null;
         }
         if (roleModel.getName().equals(role)) return newName;
         return null;
-   }
-
-    public static ProtocolMapperModel create(String name,
-                                             String role,
-                                             String newName) {
-        String mapperId = PROVIDER_ID;
-        ProtocolMapperModel mapper = new ProtocolMapperModel();
-        mapper.setName(name);
-        mapper.setProtocolMapper(mapperId);
-        mapper.setProtocol(SamlProtocol.LOGIN_PROTOCOL);
-        Map<String, String> config = new HashMap<String, String>();
-        config.put(ROLE_CONFIG, role);
-        config.put(NEW_ROLE_NAME, newName);
-        mapper.setConfig(config);
-        return mapper;
-
     }
 
     @Override

@@ -17,12 +17,9 @@
 
 package org.keycloak.models.sessions.infinispan;
 
-import org.keycloak.cluster.ClusterProvider;
-import java.util.Iterator;
-import java.util.Map;
-
 import org.infinispan.Cache;
 import org.jboss.logging.Logger;
+import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.ClientModel;
@@ -40,18 +37,20 @@ import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionProvider;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
 
+import java.util.Iterator;
+import java.util.Map;
+
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class InfinispanAuthenticationSessionProvider implements AuthenticationSessionProvider {
 
     private static final Logger log = Logger.getLogger(InfinispanAuthenticationSessionProvider.class);
-
+    protected final InfinispanKeycloakTransaction tx;
+    protected final SessionEventsSenderTransaction clusterEventsSenderTx;
     private final KeycloakSession session;
     private final Cache<String, RootAuthenticationSessionEntity> cache;
     private final InfinispanKeyGenerator keyGenerator;
-    protected final InfinispanKeycloakTransaction tx;
-    protected final SessionEventsSenderTransaction clusterEventsSenderTx;
 
     public InfinispanAuthenticationSessionProvider(KeycloakSession session, InfinispanKeyGenerator keyGenerator, Cache<String, RootAuthenticationSessionEntity> cache) {
         this.session = session;
@@ -86,7 +85,7 @@ public class InfinispanAuthenticationSessionProvider implements AuthenticationSe
 
 
     private RootAuthenticationSessionAdapter wrap(RealmModel realm, RootAuthenticationSessionEntity entity) {
-        return entity==null ? null : new RootAuthenticationSessionAdapter(session, this, cache, realm, entity);
+        return entity == null ? null : new RootAuthenticationSessionAdapter(session, this, cache, realm, entity);
     }
 
 
@@ -171,10 +170,10 @@ public class InfinispanAuthenticationSessionProvider implements AuthenticationSe
 
         ClusterProvider cluster = session.getProvider(ClusterProvider.class);
         cluster.notify(
-          InfinispanAuthenticationSessionProviderFactory.AUTHENTICATION_SESSION_EVENTS,
-          AuthenticationSessionAuthNoteUpdateEvent.create(compoundId.getRootSessionId(), compoundId.getTabId(), compoundId.getClientUUID(), authNotesFragment),
-          true,
-          ClusterProvider.DCNotify.ALL_BUT_LOCAL_DC
+                InfinispanAuthenticationSessionProviderFactory.AUTHENTICATION_SESSION_EVENTS,
+                AuthenticationSessionAuthNoteUpdateEvent.create(compoundId.getRootSessionId(), compoundId.getTabId(), compoundId.getClientUUID(), authNotesFragment),
+                true,
+                ClusterProvider.DCNotify.ALL_BUT_LOCAL_DC
         );
     }
 

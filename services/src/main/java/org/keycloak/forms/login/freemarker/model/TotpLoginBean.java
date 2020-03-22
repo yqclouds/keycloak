@@ -18,9 +18,6 @@
 
 package org.keycloak.forms.login.freemarker.model;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.keycloak.authentication.authenticators.browser.OTPFormAuthenticator;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.credential.CredentialProvider;
@@ -30,6 +27,9 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.OTPCredentialModel;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Used for TOTP login
@@ -51,11 +51,11 @@ public class TotpLoginBean {
 
         // This means user did not yet manually selected any OTP credential through the UI. So just go with the default one with biggest priority
         if (selectedCredentialId == null || selectedCredentialId.isEmpty()) {
-            OTPCredentialProvider otpCredentialProvider = (OTPCredentialProvider)session.getProvider(CredentialProvider.class, OTPCredentialProviderFactory.PROVIDER_ID);
+            OTPCredentialProvider otpCredentialProvider = (OTPCredentialProvider) session.getProvider(CredentialProvider.class, OTPCredentialProviderFactory.PROVIDER_ID);
             OTPCredentialModel otpCredential = otpCredentialProvider
                     .getDefaultCredential(session, realm, user);
 
-            selectedCredentialId = otpCredential==null ? null : otpCredential.getId();
+            selectedCredentialId = otpCredential == null ? null : otpCredential.getId();
         }
 
         this.selectedCredentialId = selectedCredentialId;

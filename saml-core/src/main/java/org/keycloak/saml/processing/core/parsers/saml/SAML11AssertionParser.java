@@ -16,20 +16,14 @@
  */
 package org.keycloak.saml.processing.core.parsers.saml;
 
-import org.keycloak.dom.saml.v1.assertion.SAML11AssertionType;
-import org.keycloak.dom.saml.v1.assertion.SAML11AttributeStatementType;
-import org.keycloak.dom.saml.v1.assertion.SAML11AuthenticationStatementType;
-import org.keycloak.dom.saml.v1.assertion.SAML11AuthorizationDecisionStatementType;
-import org.keycloak.dom.saml.v1.assertion.SAML11ConditionsType;
-import org.keycloak.dom.saml.v1.assertion.SAML11SubjectStatementType;
-import org.keycloak.dom.saml.v1.assertion.SAML11SubjectType;
+import org.keycloak.dom.saml.v1.assertion.*;
 import org.keycloak.saml.common.PicketLinkLogger;
 import org.keycloak.saml.common.PicketLinkLoggerFactory;
 import org.keycloak.saml.common.constants.JBossSAMLConstants;
-import org.keycloak.saml.common.constants.JBossSAMLURIConstants;
 import org.keycloak.saml.common.exceptions.ConfigurationException;
 import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.exceptions.ProcessingException;
+import org.keycloak.saml.common.parsers.StaxParser;
 import org.keycloak.saml.common.util.DocumentUtil;
 import org.keycloak.saml.common.util.StaxParserUtil;
 import org.keycloak.saml.common.util.StringUtil;
@@ -45,7 +39,6 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
-import org.keycloak.saml.common.parsers.StaxParser;
 
 /**
  * Parse the saml assertion

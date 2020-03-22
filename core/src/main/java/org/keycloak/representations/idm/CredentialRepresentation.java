@@ -29,20 +29,8 @@ public class CredentialRepresentation {
     public static final String TOTP = "totp";
     public static final String HOTP = "hotp";
     public static final String KERBEROS = "kerberos";
-
-    private String id;
-    private String type;
-    private String userLabel;
-    private Long createdDate;
-    private String secretData;
-    private String credentialData;
-    private Integer priority;
-
-    private String value;
-
     // only used when updating a credential.  Might set required action
     protected Boolean temporary;
-
     // All those fields are just for backwards compatibility
     @Deprecated
     protected String device;
@@ -54,6 +42,14 @@ public class CredentialRepresentation {
     protected Integer hashIterations;
     @Deprecated
     protected Integer counter;
+    private String id;
+    private String type;
+    private String userLabel;
+    private Long createdDate;
+    private String secretData;
+    private String credentialData;
+    private Integer priority;
+    private String value;
     @Deprecated
     private String algorithm;
     @Deprecated
@@ -66,6 +62,7 @@ public class CredentialRepresentation {
     public String getId() {
         return id;
     }
+
     public void setId(String id) {
         this.id = id;
     }
@@ -73,6 +70,7 @@ public class CredentialRepresentation {
     public String getType() {
         return type;
     }
+
     public void setType(String type) {
         this.type = type;
     }
@@ -80,6 +78,7 @@ public class CredentialRepresentation {
     public String getUserLabel() {
         return userLabel;
     }
+
     public void setUserLabel(String userLabel) {
         this.userLabel = userLabel;
     }
@@ -87,6 +86,7 @@ public class CredentialRepresentation {
     public String getSecretData() {
         return secretData;
     }
+
     public void setSecretData(String secretData) {
         this.secretData = secretData;
     }
@@ -94,6 +94,7 @@ public class CredentialRepresentation {
     public String getCredentialData() {
         return credentialData;
     }
+
     public void setCredentialData(String credentialData) {
         this.credentialData = credentialData;
     }
@@ -109,6 +110,7 @@ public class CredentialRepresentation {
     public Long getCreatedDate() {
         return createdDate;
     }
+
     public void setCreatedDate(Long createdDate) {
         this.createdDate = createdDate;
     }
@@ -117,6 +119,7 @@ public class CredentialRepresentation {
     public String getValue() {
         return value;
     }
+
     public void setValue(String value) {
         this.value = value;
     }
@@ -124,6 +127,7 @@ public class CredentialRepresentation {
     public Boolean isTemporary() {
         return temporary;
     }
+
     public void setTemporary(Boolean temporary) {
         this.temporary = temporary;
     }

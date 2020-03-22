@@ -36,10 +36,9 @@ import org.keycloak.models.cache.infinispan.events.InvalidationEvent;
  */
 public class InfinispanCacheRealmProviderFactory implements CacheRealmProviderFactory {
 
-    private static final Logger log = Logger.getLogger(InfinispanCacheRealmProviderFactory.class);
     public static final String REALM_CLEAR_CACHE_EVENTS = "REALM_CLEAR_CACHE_EVENTS";
     public static final String REALM_INVALIDATION_EVENTS = "REALM_INVALIDATION_EVENTS";
-
+    private static final Logger log = Logger.getLogger(InfinispanCacheRealmProviderFactory.class);
     protected volatile RealmCacheManager realmCache;
 
     @Override

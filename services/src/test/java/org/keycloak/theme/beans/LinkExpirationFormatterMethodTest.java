@@ -5,16 +5,11 @@
  */
 package org.keycloak.theme.beans;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Properties;
-
+import freemarker.template.TemplateModelException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import freemarker.template.TemplateModelException;
+import java.util.*;
 
 /**
  * @author Vlastimil Elias (velias at redhat dot com)
@@ -23,6 +18,7 @@ public class LinkExpirationFormatterMethodTest {
 
     protected static final Locale locale = Locale.ENGLISH;
     protected static final Properties messages = new Properties();
+
     static {
         messages.put("linkExpirationFormatter.timePeriodUnit.seconds.1", "second");
         messages.put("linkExpirationFormatter.timePeriodUnit.seconds", "seconds");
@@ -38,35 +34,35 @@ public class LinkExpirationFormatterMethodTest {
     protected List<Object> toList(Object... objects) {
         return Arrays.asList(objects);
     }
-    
+
     @Test
-    public void inputtypes_null() throws TemplateModelException{
+    public void inputtypes_null() throws TemplateModelException {
         LinkExpirationFormatterMethod tested = new LinkExpirationFormatterMethod(messages, locale);
         Assert.assertEquals("", tested.exec(Collections.emptyList()));
     }
-    
+
     @Test
-    public void inputtypes_string_empty() throws TemplateModelException{
+    public void inputtypes_string_empty() throws TemplateModelException {
         LinkExpirationFormatterMethod tested = new LinkExpirationFormatterMethod(messages, locale);
         Assert.assertEquals("", tested.exec(toList("")));
         Assert.assertEquals(" ", tested.exec(toList(" ")));
     }
 
     @Test
-    public void inputtypes_string_number() throws TemplateModelException{
+    public void inputtypes_string_number() throws TemplateModelException {
         LinkExpirationFormatterMethod tested = new LinkExpirationFormatterMethod(messages, locale);
         Assert.assertEquals("2 minutes", tested.exec(toList("2")));
         Assert.assertEquals("2 minutes", tested.exec(toList(" 2 ")));
     }
 
     @Test
-    public void inputtypes_string_notanumber() throws TemplateModelException{
+    public void inputtypes_string_notanumber() throws TemplateModelException {
         LinkExpirationFormatterMethod tested = new LinkExpirationFormatterMethod(messages, locale);
         Assert.assertEquals("ahoj", tested.exec(toList("ahoj")));
     }
-    
+
     @Test
-    public void inputtypes_number() throws TemplateModelException{
+    public void inputtypes_number() throws TemplateModelException {
         LinkExpirationFormatterMethod tested = new LinkExpirationFormatterMethod(messages, locale);
         Assert.assertEquals("5 minutes", tested.exec(toList(new Integer(5))));
         Assert.assertEquals("5 minutes", tested.exec(toList(new Long(5))));

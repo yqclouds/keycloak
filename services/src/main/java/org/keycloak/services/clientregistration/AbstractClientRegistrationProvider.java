@@ -84,7 +84,7 @@ public abstract class AbstractClientRegistrationProvider implements ClientRegist
 
             ClientValidationUtil.validate(session, clientModel, true, c -> {
                 session.getTransactionManager().setRollbackOnly();
-                throw  new ErrorResponseException(ErrorCodes.INVALID_CLIENT_METADATA, c.getError(), Response.Status.BAD_REQUEST);
+                throw new ErrorResponseException(ErrorCodes.INVALID_CLIENT_METADATA, c.getError(), Response.Status.BAD_REQUEST);
             });
 
             String registrationAccessToken = ClientRegistrationTokenUtils.updateRegistrationAccessToken(session, clientModel, registrationAuth);
@@ -148,7 +148,7 @@ public abstract class AbstractClientRegistrationProvider implements ClientRegist
 
         ClientValidationUtil.validate(session, client, false, c -> {
             session.getTransactionManager().setRollbackOnly();
-            throw  new ErrorResponseException(ErrorCodes.INVALID_CLIENT_METADATA, c.getError(), Response.Status.BAD_REQUEST);
+            throw new ErrorResponseException(ErrorCodes.INVALID_CLIENT_METADATA, c.getError(), Response.Status.BAD_REQUEST);
         });
 
         rep = ModelToRepresentation.toRepresentation(client, session);
@@ -179,23 +179,23 @@ public abstract class AbstractClientRegistrationProvider implements ClientRegist
     }
 
     @Override
-    public void setAuth(ClientRegistrationAuth auth) {
-        this.auth = auth;
-    }
-
-    @Override
     public ClientRegistrationAuth getAuth() {
         return this.auth;
     }
 
     @Override
-    public void setEvent(EventBuilder event) {
-        this.event = event;
+    public void setAuth(ClientRegistrationAuth auth) {
+        this.auth = auth;
     }
 
     @Override
     public EventBuilder getEvent() {
         return event;
+    }
+
+    @Override
+    public void setEvent(EventBuilder event) {
+        this.event = event;
     }
 
     @Override

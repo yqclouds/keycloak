@@ -43,143 +43,139 @@ import java.io.IOException;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-public class GitLabIdentityProvider extends OIDCIdentityProvider  implements SocialIdentityProvider<OIDCIdentityProviderConfig> {
+public class GitLabIdentityProvider extends OIDCIdentityProvider implements SocialIdentityProvider<OIDCIdentityProviderConfig> {
 
-	public static final String AUTH_URL = "https://gitlab.com/oauth/authorize";
-	public static final String TOKEN_URL = "https://gitlab.com/oauth/token";
-	public static final String USER_INFO = "https://gitlab.com/api/v4/user";
-	public static final String API_SCOPE = "api";
+    public static final String AUTH_URL = "https://gitlab.com/oauth/authorize";
+    public static final String TOKEN_URL = "https://gitlab.com/oauth/token";
+    public static final String USER_INFO = "https://gitlab.com/api/v4/user";
+    public static final String API_SCOPE = "api";
 
-	public GitLabIdentityProvider(KeycloakSession session, OIDCIdentityProviderConfig config) {
-		super(session, config);
-		config.setAuthorizationUrl(AUTH_URL);
-		config.setTokenUrl(TOKEN_URL);
-		config.setUserInfoUrl(USER_INFO);
+    public GitLabIdentityProvider(KeycloakSession session, OIDCIdentityProviderConfig config) {
+        super(session, config);
+        config.setAuthorizationUrl(AUTH_URL);
+        config.setTokenUrl(TOKEN_URL);
+        config.setUserInfoUrl(USER_INFO);
 
-		String defaultScope = config.getDefaultScope();
+        String defaultScope = config.getDefaultScope();
 
-		if (defaultScope.equals(SCOPE_OPENID)) {
-			config.setDefaultScope((API_SCOPE + " " + defaultScope).trim());
-		}
-	}
+        if (defaultScope.equals(SCOPE_OPENID)) {
+            config.setDefaultScope((API_SCOPE + " " + defaultScope).trim());
+        }
+    }
 
-	protected String getUsernameFromUserInfo(JsonNode userInfo) {
-		return getJsonProperty(userInfo, "username");
-	}
+    protected String getUsernameFromUserInfo(JsonNode userInfo) {
+        return getJsonProperty(userInfo, "username");
+    }
 
-	protected String getusernameClaimNameForIdToken() {
-		return IDToken.NICKNAME;
-	}
+    protected String getusernameClaimNameForIdToken() {
+        return IDToken.NICKNAME;
+    }
 
-	@Override
-	protected boolean supportsExternalExchange() {
-		return true;
-	}
+    @Override
+    protected boolean supportsExternalExchange() {
+        return true;
+    }
 
-	@Override
-	protected String getProfileEndpointForValidation(EventBuilder event) {
-		return getUserInfoUrl();
-	}
+    @Override
+    protected String getProfileEndpointForValidation(EventBuilder event) {
+        return getUserInfoUrl();
+    }
 
-	@Override
-	public boolean isIssuer(String issuer, MultivaluedMap<String, String> params) {
-		String requestedIssuer = params.getFirst(OAuth2Constants.SUBJECT_ISSUER);
-		if (requestedIssuer == null) requestedIssuer = issuer;
-		return requestedIssuer.equals(getConfig().getAlias());
-	}
-
-
-	@Override
-	protected BrokeredIdentityContext exchangeExternalImpl(EventBuilder event, MultivaluedMap<String, String> params) {
-		return exchangeExternalUserInfoValidationOnly(event, params);
-	}
-
-	@Override
-	protected BrokeredIdentityContext extractIdentityFromProfile(EventBuilder event, JsonNode profile) {
-		String id = getJsonProperty(profile, "id");
-		if (id == null) {
-			event.detail(Details.REASON, "id claim is null from user info json");
-			event.error(Errors.INVALID_TOKEN);
-			throw new ErrorResponseException(OAuthErrorException.INVALID_TOKEN, "invalid token", Response.Status.BAD_REQUEST);
-		}
-		return gitlabExtractFromProfile(profile);
-	}
-
-	private BrokeredIdentityContext gitlabExtractFromProfile(JsonNode profile) {
-		String id = getJsonProperty(profile, "id");
-		BrokeredIdentityContext identity = new BrokeredIdentityContext(id);
-
-		String name = getJsonProperty(profile, "name");
-		String preferredUsername = getJsonProperty(profile, "username");
-		String email = getJsonProperty(profile, "email");
-		AbstractJsonUserAttributeMapper.storeUserProfileForMapper(identity, profile, getConfig().getAlias());
-
-		identity.setId(id);
-		identity.setName(name);
-		identity.setEmail(email);
-
-		identity.setBrokerUserId(getConfig().getAlias() + "." + id);
-
-		if (preferredUsername == null) {
-			preferredUsername = email;
-		}
-
-		if (preferredUsername == null) {
-			preferredUsername = id;
-		}
-
-		identity.setUsername(preferredUsername);
-		return identity;
-	}
+    @Override
+    public boolean isIssuer(String issuer, MultivaluedMap<String, String> params) {
+        String requestedIssuer = params.getFirst(OAuth2Constants.SUBJECT_ISSUER);
+        if (requestedIssuer == null) requestedIssuer = issuer;
+        return requestedIssuer.equals(getConfig().getAlias());
+    }
 
 
-	protected BrokeredIdentityContext extractIdentity(AccessTokenResponse tokenResponse, String accessToken, JsonWebToken idToken) throws IOException {
+    @Override
+    protected BrokeredIdentityContext exchangeExternalImpl(EventBuilder event, MultivaluedMap<String, String> params) {
+        return exchangeExternalUserInfoValidationOnly(event, params);
+    }
 
-		SimpleHttp.Response response = null;
-		int status = 0;
+    @Override
+    protected BrokeredIdentityContext extractIdentityFromProfile(EventBuilder event, JsonNode profile) {
+        String id = getJsonProperty(profile, "id");
+        if (id == null) {
+            event.detail(Details.REASON, "id claim is null from user info json");
+            event.error(Errors.INVALID_TOKEN);
+            throw new ErrorResponseException(OAuthErrorException.INVALID_TOKEN, "invalid token", Response.Status.BAD_REQUEST);
+        }
+        return gitlabExtractFromProfile(profile);
+    }
 
-		for (int i = 0; i < 10; i++) {
-			try {
-				String userInfoUrl = getUserInfoUrl();
-				response = SimpleHttp.doGet(userInfoUrl, session)
-						.header("Authorization", "Bearer " + accessToken).asResponse();
-				status = response.getStatus();
-			} catch (IOException e) {
-				logger.debug("Failed to invoke user info for external exchange", e);
-			}
-			if (status == 200) break;
-			response.close();
-			try {
-				Thread.sleep(200);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
-		}
-		if (status != 200) {
-			logger.debug("Failed to invoke user info status: " + status);
-			throw new IdentityBrokerException("Gitlab user info call failure");
-		}
-		JsonNode profile = null;
-		try {
-			profile = response.asJson();
-		} catch (IOException e) {
-			throw new IdentityBrokerException("Gitlab user info call failure");
-		}
-		String id = getJsonProperty(profile, "id");
-		if (id == null) {
-			throw new IdentityBrokerException("Gitlab id claim is null from user info json");
-		}
-		BrokeredIdentityContext identity = gitlabExtractFromProfile(profile);
-		identity.getContextData().put(FEDERATED_ACCESS_TOKEN_RESPONSE, tokenResponse);
-		identity.getContextData().put(VALIDATED_ID_TOKEN, idToken);
-		processAccessTokenResponse(identity, tokenResponse);
+    private BrokeredIdentityContext gitlabExtractFromProfile(JsonNode profile) {
+        String id = getJsonProperty(profile, "id");
+        BrokeredIdentityContext identity = new BrokeredIdentityContext(id);
 
-		return identity;
-	}
+        String name = getJsonProperty(profile, "name");
+        String preferredUsername = getJsonProperty(profile, "username");
+        String email = getJsonProperty(profile, "email");
+        AbstractJsonUserAttributeMapper.storeUserProfileForMapper(identity, profile, getConfig().getAlias());
 
+        identity.setId(id);
+        identity.setName(name);
+        identity.setEmail(email);
+
+        identity.setBrokerUserId(getConfig().getAlias() + "." + id);
+
+        if (preferredUsername == null) {
+            preferredUsername = email;
+        }
+
+        if (preferredUsername == null) {
+            preferredUsername = id;
+        }
+
+        identity.setUsername(preferredUsername);
+        return identity;
+    }
 
 
+    protected BrokeredIdentityContext extractIdentity(AccessTokenResponse tokenResponse, String accessToken, JsonWebToken idToken) throws IOException {
 
+        SimpleHttp.Response response = null;
+        int status = 0;
+
+        for (int i = 0; i < 10; i++) {
+            try {
+                String userInfoUrl = getUserInfoUrl();
+                response = SimpleHttp.doGet(userInfoUrl, session)
+                        .header("Authorization", "Bearer " + accessToken).asResponse();
+                status = response.getStatus();
+            } catch (IOException e) {
+                logger.debug("Failed to invoke user info for external exchange", e);
+            }
+            if (status == 200) break;
+            response.close();
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        if (status != 200) {
+            logger.debug("Failed to invoke user info status: " + status);
+            throw new IdentityBrokerException("Gitlab user info call failure");
+        }
+        JsonNode profile = null;
+        try {
+            profile = response.asJson();
+        } catch (IOException e) {
+            throw new IdentityBrokerException("Gitlab user info call failure");
+        }
+        String id = getJsonProperty(profile, "id");
+        if (id == null) {
+            throw new IdentityBrokerException("Gitlab id claim is null from user info json");
+        }
+        BrokeredIdentityContext identity = gitlabExtractFromProfile(profile);
+        identity.getContextData().put(FEDERATED_ACCESS_TOKEN_RESPONSE, tokenResponse);
+        identity.getContextData().put(VALIDATED_ID_TOKEN, idToken);
+        processAccessTokenResponse(identity, tokenResponse);
+
+        return identity;
+    }
 
 
 }

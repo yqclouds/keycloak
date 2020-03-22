@@ -33,6 +33,7 @@ import java.sql.ResultSet;
  */
 public abstract class AbstractUserFedToComponent extends CustomKeycloakTask {
     private final Logger logger = Logger.getLogger(getClass());
+
     protected void convertFedProviderToComponent(String providerId, String newMapperType) throws CustomChangeException {
         try {
             PreparedStatement statement = jdbcConnection.prepareStatement("select ID, REALM_ID, PRIORITY, DISPLAY_NAME, FULL_SYNC_PERIOD, CHANGED_SYNC_PERIOD, LAST_SYNC from " + getTableName("USER_FEDERATION_PROVIDER") + " WHERE PROVIDER_NAME=?");
@@ -142,7 +143,6 @@ public abstract class AbstractUserFedToComponent extends CustomKeycloakTask {
                                 .addColumnValue("PROVIDER_TYPE", newMapperType);
 
                         statements.add(insertComponent);
-
 
 
                         PreparedStatement configStatement = jdbcConnection.prepareStatement("select name, VALUE from " + getTableName("USER_FEDERATION_MAPPER_CONFIG") + " WHERE USER_FEDERATION_MAPPER_ID=?");

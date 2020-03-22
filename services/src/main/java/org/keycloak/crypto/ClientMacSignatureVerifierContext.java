@@ -16,14 +16,13 @@
  */
 package org.keycloak.crypto;
 
-import java.nio.charset.StandardCharsets;
-
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-
 import org.keycloak.common.VerificationException;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
+
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 
 public class ClientMacSignatureVerifierContext extends MacSignatureVerifierContext {
 

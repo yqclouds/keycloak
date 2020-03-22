@@ -20,11 +20,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 
 import static org.freedesktop.dbus.Gettext.getString;
 
@@ -34,102 +30,14 @@ import static org.freedesktop.dbus.Gettext.getString;
  */
 public class Message {
     /**
-     * Defines constants representing the endianness of the message.
-     */
-    public static interface Endian {
-        public static final byte BIG = 'B';
-        public static final byte LITTLE = 'l';
-    }
-
-    /**
-     * Defines constants representing the flags which can be set on a message.
-     */
-    public static interface Flags {
-        public static final byte NO_REPLY_EXPECTED = 0x01;
-        public static final byte NO_AUTO_START = 0x02;
-        public static final byte ASYNC = 0x40;
-    }
-
-    /**
-     * Defines constants for each message type.
-     */
-    public static interface MessageType {
-        public static final byte METHOD_CALL = 1;
-        public static final byte METHOD_RETURN = 2;
-        public static final byte ERROR = 3;
-        public static final byte SIGNAL = 4;
-    }
-
-    /**
      * The current protocol major version.
      */
     public static final byte PROTOCOL = 1;
-
     /**
-     * Defines constants for each valid header field type.
+     * Steps to increment the buffer array.
      */
-    public static interface HeaderField {
-        public static final byte PATH = 1;
-        public static final byte INTERFACE = 2;
-        public static final byte MEMBER = 3;
-        public static final byte ERROR_NAME = 4;
-        public static final byte REPLY_SERIAL = 5;
-        public static final byte DESTINATION = 6;
-        public static final byte SENDER = 7;
-        public static final byte SIGNATURE = 8;
-    }
-
-    /**
-     * Defines constants for each argument type.
-     * There are two constants for each argument type,
-     * as a byte or as a String (the _STRING version)
-     */
-    public static interface ArgumentType {
-        public static final String BYTE_STRING = "y";
-        public static final String BOOLEAN_STRING = "b";
-        public static final String INT16_STRING = "n";
-        public static final String UINT16_STRING = "q";
-        public static final String INT32_STRING = "i";
-        public static final String UINT32_STRING = "u";
-        public static final String INT64_STRING = "x";
-        public static final String UINT64_STRING = "t";
-        public static final String DOUBLE_STRING = "d";
-        public static final String FLOAT_STRING = "f";
-        public static final String STRING_STRING = "s";
-        public static final String OBJECT_PATH_STRING = "o";
-        public static final String SIGNATURE_STRING = "g";
-        public static final String ARRAY_STRING = "a";
-        public static final String VARIANT_STRING = "v";
-        public static final String STRUCT_STRING = "r";
-        public static final String STRUCT1_STRING = "(";
-        public static final String STRUCT2_STRING = ")";
-        public static final String DICT_ENTRY_STRING = "e";
-        public static final String DICT_ENTRY1_STRING = "{";
-        public static final String DICT_ENTRY2_STRING = "}";
-
-        public static final byte BYTE = 'y';
-        public static final byte BOOLEAN = 'b';
-        public static final byte INT16 = 'n';
-        public static final byte UINT16 = 'q';
-        public static final byte INT32 = 'i';
-        public static final byte UINT32 = 'u';
-        public static final byte INT64 = 'x';
-        public static final byte UINT64 = 't';
-        public static final byte DOUBLE = 'd';
-        public static final byte FLOAT = 'f';
-        public static final byte STRING = 's';
-        public static final byte OBJECT_PATH = 'o';
-        public static final byte SIGNATURE = 'g';
-        public static final byte ARRAY = 'a';
-        public static final byte VARIANT = 'v';
-        public static final byte STRUCT = 'r';
-        public static final byte STRUCT1 = '(';
-        public static final byte STRUCT2 = ')';
-        public static final byte DICT_ENTRY = 'e';
-        public static final byte DICT_ENTRY1 = '{';
-        public static final byte DICT_ENTRY2 = '}';
-    }
-
+    private static final int BUFFERINCREMENT = 20;
+    protected static long globalserial = 0;
     /**
      * Keep a static reference to each size of padding array to prevent allocation.
      */
@@ -147,20 +55,14 @@ public class Message {
                 new byte[7]};
     }
 
-    /**
-     * Steps to increment the buffer array.
-     */
-    private static final int BUFFERINCREMENT = 20;
-
-    private boolean big;
     protected byte[][] wiredata;
     protected long bytecounter;
     protected Map<Byte, Object> headers;
-    protected static long globalserial = 0;
     protected long serial;
     protected byte type;
     protected byte flags;
     protected byte protover;
+    private boolean big;
     private Object[] args;
     private byte[] body;
     private long bodylen = 0;
@@ -168,6 +70,35 @@ public class Message {
     private int paofs = 0;
     private byte[] pabuf;
     private int bufferuse = 0;
+    /**
+     * Create a message; only to be called by sub-classes.
+     *
+     * @param endian The endianness to create the message.
+     * @param type   The message type.
+     * @param flags  Any message flags.
+     */
+    protected Message(byte endian, byte type, byte flags) throws DBusException {
+        wiredata = new byte[BUFFERINCREMENT][];
+        headers = new HashMap<Byte, Object>();
+        big = (Endian.BIG == endian);
+        bytecounter = 0;
+        synchronized (Message.class) {
+            serial = ++globalserial;
+        }
+        if (Debug.debug) Debug.print(Debug.DEBUG, "Creating message with serial " + serial);
+        this.type = type;
+        this.flags = flags;
+        preallocate(4);
+        append("yyyy", endian, type, flags, Message.PROTOCOL);
+    }
+    /**
+     * Create a blank message. Only to be used when calling populate.
+     */
+    protected Message() {
+        wiredata = new byte[BUFFERINCREMENT][];
+        headers = new HashMap<Byte, Object>();
+        bytecounter = 0;
+    }
 
     /**
      * Returns the name of the given header field.
@@ -196,34 +127,115 @@ public class Message {
     }
 
     /**
-     * Create a message; only to be called by sub-classes.
+     * Demarshalls an integer of a given width from a buffer.
      *
-     * @param endian The endianness to create the message.
-     * @param type   The message type.
-     * @param flags  Any message flags.
+     * @param buf    The buffer to demarshall from.
+     * @param ofs    The offset to demarshall from.
+     * @param endian The endianness to use in demarshalling.
+     * @param width  The byte-width of the int.
      */
-    protected Message(byte endian, byte type, byte flags) throws DBusException {
-        wiredata = new byte[BUFFERINCREMENT][];
-        headers = new HashMap<Byte, Object>();
-        big = (Endian.BIG == endian);
-        bytecounter = 0;
-        synchronized (Message.class) {
-            serial = ++globalserial;
-        }
-        if (Debug.debug) Debug.print(Debug.DEBUG, "Creating message with serial " + serial);
-        this.type = type;
-        this.flags = flags;
-        preallocate(4);
-        append("yyyy", endian, type, flags, Message.PROTOCOL);
+    public static long demarshallint(byte[] buf, int ofs, byte endian, int width) {
+        return endian == Endian.BIG ? demarshallintBig(buf, ofs, width) : demarshallintLittle(buf, ofs, width);
     }
 
     /**
-     * Create a blank message. Only to be used when calling populate.
+     * Demarshalls an integer of a given width from a buffer using big-endian format.
+     *
+     * @param buf   The buffer to demarshall from.
+     * @param ofs   The offset to demarshall from.
+     * @param width The byte-width of the int.
      */
-    protected Message() {
-        wiredata = new byte[BUFFERINCREMENT][];
-        headers = new HashMap<Byte, Object>();
-        bytecounter = 0;
+    public static long demarshallintBig(byte[] buf, int ofs, int width) {
+        long l = 0;
+        for (int i = 0; i < width; i++) {
+            l <<= 8;
+            l |= (buf[ofs + i] & 0xFF);
+        }
+        return l;
+    }
+
+    /**
+     * Demarshalls an integer of a given width from a buffer using little-endian format.
+     *
+     * @param buf   The buffer to demarshall from.
+     * @param ofs   The offset to demarshall from.
+     * @param width The byte-width of the int.
+     */
+    public static long demarshallintLittle(byte[] buf, int ofs, int width) {
+        long l = 0;
+        for (int i = (width - 1); i >= 0; i--) {
+            l <<= 8;
+            l |= (buf[ofs + i] & 0xFF);
+        }
+        return l;
+    }
+
+    /**
+     * Marshalls an integer of a given width into a buffer using big-endian format.
+     *
+     * @param l     The integer to marshall.
+     * @param buf   The buffer to marshall to.
+     * @param ofs   The offset to marshall to.
+     * @param width The byte-width of the int.
+     */
+    public static void marshallintBig(long l, byte[] buf, int ofs, int width) {
+        for (int i = (width - 1); i >= 0; i--) {
+            buf[i + ofs] = (byte) (l & 0xFF);
+            l >>= 8;
+        }
+    }
+
+    /**
+     * Marshalls an integer of a given width into a buffer using little-endian format.
+     *
+     * @param l     The integer to marshall.
+     * @param buf   The buffer to demarshall to.
+     * @param ofs   The offset to demarshall to.
+     * @param width The byte-width of the int.
+     */
+    public static void marshallintLittle(long l, byte[] buf, int ofs, int width) {
+        for (int i = 0; i < width; i++) {
+            buf[i + ofs] = (byte) (l & 0xFF);
+            l >>= 8;
+        }
+    }
+
+    /**
+     * Return the alignment for a given type.
+     */
+    public static int getAlignment(byte type) {
+        switch (type) {
+            case 2:
+            case ArgumentType.INT16:
+            case ArgumentType.UINT16:
+                return 2;
+            case 4:
+            case ArgumentType.BOOLEAN:
+            case ArgumentType.FLOAT:
+            case ArgumentType.INT32:
+            case ArgumentType.UINT32:
+            case ArgumentType.STRING:
+            case ArgumentType.OBJECT_PATH:
+            case ArgumentType.ARRAY:
+                return 4;
+            case 8:
+            case ArgumentType.INT64:
+            case ArgumentType.UINT64:
+            case ArgumentType.DOUBLE:
+            case ArgumentType.STRUCT:
+            case ArgumentType.DICT_ENTRY:
+            case ArgumentType.STRUCT1:
+            case ArgumentType.DICT_ENTRY1:
+            case ArgumentType.STRUCT2:
+            case ArgumentType.DICT_ENTRY2:
+                return 8;
+            case 1:
+            case ArgumentType.BYTE:
+            case ArgumentType.SIGNATURE:
+            case ArgumentType.VARIANT:
+            default:
+                return 1;
+        }
     }
 
     /**
@@ -338,50 +350,6 @@ public class Message {
     }
 
     /**
-     * Demarshalls an integer of a given width from a buffer.
-     *
-     * @param buf    The buffer to demarshall from.
-     * @param ofs    The offset to demarshall from.
-     * @param endian The endianness to use in demarshalling.
-     * @param width  The byte-width of the int.
-     */
-    public static long demarshallint(byte[] buf, int ofs, byte endian, int width) {
-        return endian == Endian.BIG ? demarshallintBig(buf, ofs, width) : demarshallintLittle(buf, ofs, width);
-    }
-
-    /**
-     * Demarshalls an integer of a given width from a buffer using big-endian format.
-     *
-     * @param buf   The buffer to demarshall from.
-     * @param ofs   The offset to demarshall from.
-     * @param width The byte-width of the int.
-     */
-    public static long demarshallintBig(byte[] buf, int ofs, int width) {
-        long l = 0;
-        for (int i = 0; i < width; i++) {
-            l <<= 8;
-            l |= (buf[ofs + i] & 0xFF);
-        }
-        return l;
-    }
-
-    /**
-     * Demarshalls an integer of a given width from a buffer using little-endian format.
-     *
-     * @param buf   The buffer to demarshall from.
-     * @param ofs   The offset to demarshall from.
-     * @param width The byte-width of the int.
-     */
-    public static long demarshallintLittle(byte[] buf, int ofs, int width) {
-        long l = 0;
-        for (int i = (width - 1); i >= 0; i--) {
-            l <<= 8;
-            l |= (buf[ofs + i] & 0xFF);
-        }
-        return l;
-    }
-
-    /**
      * Marshalls an integer of a given width and appends it to the message.
      * Endianness is determined from the message.
      *
@@ -407,36 +375,6 @@ public class Message {
         if (big) marshallintBig(l, buf, ofs, width);
         else marshallintLittle(l, buf, ofs, width);
         if (Debug.debug) Debug.print(Debug.VERBOSE, "Marshalled int " + l + " to " + Hexdump.toHex(buf, ofs, width));
-    }
-
-    /**
-     * Marshalls an integer of a given width into a buffer using big-endian format.
-     *
-     * @param l     The integer to marshall.
-     * @param buf   The buffer to marshall to.
-     * @param ofs   The offset to marshall to.
-     * @param width The byte-width of the int.
-     */
-    public static void marshallintBig(long l, byte[] buf, int ofs, int width) {
-        for (int i = (width - 1); i >= 0; i--) {
-            buf[i + ofs] = (byte) (l & 0xFF);
-            l >>= 8;
-        }
-    }
-
-    /**
-     * Marshalls an integer of a given width into a buffer using little-endian format.
-     *
-     * @param l     The integer to marshall.
-     * @param buf   The buffer to demarshall to.
-     * @param ofs   The offset to demarshall to.
-     * @param width The byte-width of the int.
-     */
-    public static void marshallintLittle(long l, byte[] buf, int ofs, int width) {
-        for (int i = 0; i < width; i++) {
-            buf[i + ofs] = (byte) (l & 0xFF);
-            l >>= 8;
-        }
     }
 
     public byte[][] getWireData() {
@@ -777,44 +715,6 @@ public class Message {
     }
 
     /**
-     * Return the alignment for a given type.
-     */
-    public static int getAlignment(byte type) {
-        switch (type) {
-            case 2:
-            case ArgumentType.INT16:
-            case ArgumentType.UINT16:
-                return 2;
-            case 4:
-            case ArgumentType.BOOLEAN:
-            case ArgumentType.FLOAT:
-            case ArgumentType.INT32:
-            case ArgumentType.UINT32:
-            case ArgumentType.STRING:
-            case ArgumentType.OBJECT_PATH:
-            case ArgumentType.ARRAY:
-                return 4;
-            case 8:
-            case ArgumentType.INT64:
-            case ArgumentType.UINT64:
-            case ArgumentType.DOUBLE:
-            case ArgumentType.STRUCT:
-            case ArgumentType.DICT_ENTRY:
-            case ArgumentType.STRUCT1:
-            case ArgumentType.DICT_ENTRY1:
-            case ArgumentType.STRUCT2:
-            case ArgumentType.DICT_ENTRY2:
-                return 8;
-            case 1:
-            case ArgumentType.BYTE:
-            case ArgumentType.SIGNATURE:
-            case ArgumentType.VARIANT:
-            default:
-                return 1;
-        }
-    }
-
-    /**
      * Append a series of values to the message.
      *
      * @param sig  The signature(s) of the value(s).
@@ -1106,6 +1006,31 @@ public class Message {
     }
 
     /**
+     * Warning, do not use this method unless you really know what you are doing.
+     */
+    public void setSource(String source) throws DBusException {
+        if (null != body) {
+            wiredata = new byte[BUFFERINCREMENT][];
+            bufferuse = 0;
+            bytecounter = 0;
+            preallocate(12);
+            append("yyyyuu", big ? Endian.BIG : Endian.LITTLE, type, flags, protover, bodylen, serial);
+            headers.put(HeaderField.SENDER, source);
+            Object[][] newhead = new Object[headers.size()][];
+            int i = 0;
+            for (Byte b : headers.keySet()) {
+                newhead[i] = new Object[2];
+                newhead[i][0] = b;
+                newhead[i][1] = headers.get(b);
+                i++;
+            }
+            append("a(yv)", (Object) newhead);
+            pad((byte) 8);
+            appendBytes(body);
+        }
+    }
+
+    /**
      * Returns the destination of the message.
      */
     public String getDestination() {
@@ -1190,27 +1115,94 @@ public class Message {
     }
 
     /**
-     * Warning, do not use this method unless you really know what you are doing.
+     * Defines constants representing the endianness of the message.
      */
-    public void setSource(String source) throws DBusException {
-        if (null != body) {
-            wiredata = new byte[BUFFERINCREMENT][];
-            bufferuse = 0;
-            bytecounter = 0;
-            preallocate(12);
-            append("yyyyuu", big ? Endian.BIG : Endian.LITTLE, type, flags, protover, bodylen, serial);
-            headers.put(HeaderField.SENDER, source);
-            Object[][] newhead = new Object[headers.size()][];
-            int i = 0;
-            for (Byte b : headers.keySet()) {
-                newhead[i] = new Object[2];
-                newhead[i][0] = b;
-                newhead[i][1] = headers.get(b);
-                i++;
-            }
-            append("a(yv)", (Object) newhead);
-            pad((byte) 8);
-            appendBytes(body);
-        }
+    public static interface Endian {
+        public static final byte BIG = 'B';
+        public static final byte LITTLE = 'l';
+    }
+
+    /**
+     * Defines constants representing the flags which can be set on a message.
+     */
+    public static interface Flags {
+        public static final byte NO_REPLY_EXPECTED = 0x01;
+        public static final byte NO_AUTO_START = 0x02;
+        public static final byte ASYNC = 0x40;
+    }
+
+    /**
+     * Defines constants for each message type.
+     */
+    public static interface MessageType {
+        public static final byte METHOD_CALL = 1;
+        public static final byte METHOD_RETURN = 2;
+        public static final byte ERROR = 3;
+        public static final byte SIGNAL = 4;
+    }
+
+    /**
+     * Defines constants for each valid header field type.
+     */
+    public static interface HeaderField {
+        public static final byte PATH = 1;
+        public static final byte INTERFACE = 2;
+        public static final byte MEMBER = 3;
+        public static final byte ERROR_NAME = 4;
+        public static final byte REPLY_SERIAL = 5;
+        public static final byte DESTINATION = 6;
+        public static final byte SENDER = 7;
+        public static final byte SIGNATURE = 8;
+    }
+
+    /**
+     * Defines constants for each argument type.
+     * There are two constants for each argument type,
+     * as a byte or as a String (the _STRING version)
+     */
+    public static interface ArgumentType {
+        public static final String BYTE_STRING = "y";
+        public static final String BOOLEAN_STRING = "b";
+        public static final String INT16_STRING = "n";
+        public static final String UINT16_STRING = "q";
+        public static final String INT32_STRING = "i";
+        public static final String UINT32_STRING = "u";
+        public static final String INT64_STRING = "x";
+        public static final String UINT64_STRING = "t";
+        public static final String DOUBLE_STRING = "d";
+        public static final String FLOAT_STRING = "f";
+        public static final String STRING_STRING = "s";
+        public static final String OBJECT_PATH_STRING = "o";
+        public static final String SIGNATURE_STRING = "g";
+        public static final String ARRAY_STRING = "a";
+        public static final String VARIANT_STRING = "v";
+        public static final String STRUCT_STRING = "r";
+        public static final String STRUCT1_STRING = "(";
+        public static final String STRUCT2_STRING = ")";
+        public static final String DICT_ENTRY_STRING = "e";
+        public static final String DICT_ENTRY1_STRING = "{";
+        public static final String DICT_ENTRY2_STRING = "}";
+
+        public static final byte BYTE = 'y';
+        public static final byte BOOLEAN = 'b';
+        public static final byte INT16 = 'n';
+        public static final byte UINT16 = 'q';
+        public static final byte INT32 = 'i';
+        public static final byte UINT32 = 'u';
+        public static final byte INT64 = 'x';
+        public static final byte UINT64 = 't';
+        public static final byte DOUBLE = 'd';
+        public static final byte FLOAT = 'f';
+        public static final byte STRING = 's';
+        public static final byte OBJECT_PATH = 'o';
+        public static final byte SIGNATURE = 'g';
+        public static final byte ARRAY = 'a';
+        public static final byte VARIANT = 'v';
+        public static final byte STRUCT = 'r';
+        public static final byte STRUCT1 = '(';
+        public static final byte STRUCT2 = ')';
+        public static final byte DICT_ENTRY = 'e';
+        public static final byte DICT_ENTRY1 = '{';
+        public static final byte DICT_ENTRY2 = '}';
     }
 }

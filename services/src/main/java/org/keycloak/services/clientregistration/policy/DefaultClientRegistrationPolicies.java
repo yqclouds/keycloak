@@ -17,26 +17,17 @@
 
 package org.keycloak.services.clientregistration.policy;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.RealmModel;
-import org.keycloak.protocol.oidc.mappers.AddressMapper;
-import org.keycloak.protocol.oidc.mappers.FullNameMapper;
-import org.keycloak.protocol.oidc.mappers.SHA256PairwiseSubMapper;
-import org.keycloak.protocol.oidc.mappers.UserAttributeMapper;
-import org.keycloak.protocol.oidc.mappers.UserPropertyMapper;
+import org.keycloak.protocol.oidc.mappers.*;
 import org.keycloak.protocol.saml.mappers.RoleListMapper;
 import org.keycloak.protocol.saml.mappers.UserAttributeStatementMapper;
 import org.keycloak.protocol.saml.mappers.UserPropertyAttributeStatementMapper;
-import org.keycloak.services.clientregistration.policy.impl.ClientScopesClientRegistrationPolicyFactory;
-import org.keycloak.services.clientregistration.policy.impl.ConsentRequiredClientRegistrationPolicyFactory;
-import org.keycloak.services.clientregistration.policy.impl.MaxClientsClientRegistrationPolicyFactory;
-import org.keycloak.services.clientregistration.policy.impl.ProtocolMappersClientRegistrationPolicyFactory;
-import org.keycloak.services.clientregistration.policy.impl.ScopeClientRegistrationPolicyFactory;
-import org.keycloak.services.clientregistration.policy.impl.TrustedHostClientRegistrationPolicyFactory;
+import org.keycloak.services.clientregistration.policy.impl.*;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -60,7 +51,7 @@ public class DefaultClientRegistrationPolicies {
         List<ComponentModel> policies = realm.getComponents(realm.getId(), ClientRegistrationPolicy.class.getName());
 
         // Probably an issue if admin removes all policies intentionally...
-        if (policies == null ||policies.isEmpty()) {
+        if (policies == null || policies.isEmpty()) {
             addAnonymousPolicies(realm, anonPolicyType);
             addAuthPolicies(realm, authPolicyType);
         }
@@ -113,7 +104,6 @@ public class DefaultClientRegistrationPolicies {
         clientTemplatesModel.put(ClientScopesClientRegistrationPolicyFactory.ALLOW_DEFAULT_SCOPES, true);
         realm.addComponentModel(clientTemplatesModel);
     }
-
 
 
 }

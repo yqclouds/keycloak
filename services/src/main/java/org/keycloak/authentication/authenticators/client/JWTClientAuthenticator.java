@@ -18,19 +18,6 @@
 package org.keycloak.authentication.authenticators.client;
 
 
-import java.security.PublicKey;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-
 import org.jboss.logging.Logger;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.authentication.AuthenticationFlowError;
@@ -49,10 +36,15 @@ import org.keycloak.representations.JsonWebToken;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.Urls;
 
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import java.security.PublicKey;
+import java.util.*;
+
 /**
  * Client authentication based on JWT signed by client private key .
  * See <a href="https://tools.ietf.org/html/rfc7519">specs</a> for more details.
- *
+ * <p>
  * This is server side, which verifies JWT from client_assertion parameter, where the assertion was created on adapter side by
  * org.keycloak.adapters.authentication.JWTClientCredentialsProvider
  *
@@ -60,12 +52,10 @@ import org.keycloak.services.Urls;
  */
 public class JWTClientAuthenticator extends AbstractClientAuthenticator {
 
-    private static final Logger logger = Logger.getLogger(JWTClientAuthenticator.class);
-
     public static final String PROVIDER_ID = "client-jwt";
     public static final String ATTR_PREFIX = "jwt.credential";
     public static final String CERTIFICATE_ATTR = "jwt.credential.certificate";
-
+    private static final Logger logger = Logger.getLogger(JWTClientAuthenticator.class);
 
     @Override
     public void authenticateClient(ClientAuthenticationFlowContext context) {

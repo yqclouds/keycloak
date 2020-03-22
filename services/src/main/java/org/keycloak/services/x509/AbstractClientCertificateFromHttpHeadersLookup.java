@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
  * @author <a href="mailto:brat000012001@gmail.com">Peter Nalyvayko</a>
  * @version $Revision: 1 $
  * @since 3/29/2017
@@ -58,11 +57,6 @@ public abstract class AbstractClientCertificateFromHttpHeadersLookup implements 
         this.certificateChainLength = certificateChainLength;
     }
 
-    @Override
-    public void close() {
-
-    }
-
     static String getHeaderValue(HttpRequest httpRequest, String headerName) {
         return httpRequest.getHttpHeaders().getRequestHeaders().getFirst(headerName);
     }
@@ -78,6 +72,11 @@ public abstract class AbstractClientCertificateFromHttpHeadersLookup implements 
             return quotedString.substring(1, len - 1);
         }
         return quotedString;
+    }
+
+    @Override
+    public void close() {
+
     }
 
     protected abstract X509Certificate decodeCertificateFromPem(String pem) throws PemException;
@@ -105,8 +104,7 @@ public abstract class AbstractClientCertificateFromHttpHeadersLookup implements 
                         httpHeader);
             }
             return cert;
-        }
-        catch(PemException e) {
+        } catch (PemException e) {
             logger.error(e.getMessage(), e);
             throw new GeneralSecurityException(e);
         }
@@ -129,8 +127,7 @@ public abstract class AbstractClientCertificateFromHttpHeadersLookup implements 
                     if (cert != null) {
                         chain.add(cert);
                     }
-                }
-                catch(GeneralSecurityException e) {
+                } catch (GeneralSecurityException e) {
                     logger.warn(e.getMessage(), e);
                 }
             }

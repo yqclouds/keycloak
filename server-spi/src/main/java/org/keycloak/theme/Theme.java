@@ -28,9 +28,9 @@ import java.util.Properties;
  */
 public interface Theme {
 
-    enum Type { LOGIN, ACCOUNT, ADMIN, EMAIL, WELCOME, COMMON };
-
     String getName();
+
+    ;
 
     String getParentName();
 
@@ -56,13 +56,15 @@ public interface Theme {
      * Retrieve localized messages from a message bundle.
      *
      * @param baseBundlename The base name of the bundle, such as "messages" in
-     * messages_en.properties.
-     * @param locale The locale of the desired message bundle.
+     *                       messages_en.properties.
+     * @param locale         The locale of the desired message bundle.
      * @return The localized messages from the bundle.
      * @throws IOException If bundle can not be read.
      */
     Properties getMessages(String baseBundlename, Locale locale) throws IOException;
 
     Properties getProperties() throws IOException;
+
+    enum Type {LOGIN, ACCOUNT, ADMIN, EMAIL, WELCOME, COMMON}
 
 }

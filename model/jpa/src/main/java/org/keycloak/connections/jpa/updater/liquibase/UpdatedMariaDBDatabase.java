@@ -17,9 +17,10 @@
 
 package org.keycloak.connections.jpa.updater.liquibase;
 
+import liquibase.database.core.MariaDBDatabase;
+
 import java.util.HashSet;
 import java.util.Set;
-import liquibase.database.core.MariaDBDatabase;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -27,6 +28,10 @@ import liquibase.database.core.MariaDBDatabase;
 public class UpdatedMariaDBDatabase extends MariaDBDatabase {
 
     private static final Set<String> RESERVED_WORDS = new HashSet<>();
+
+    static {
+        RESERVED_WORDS.add("PERIOD");
+    }
 
     @Override
     public boolean isReservedWord(String string) {
@@ -36,9 +41,5 @@ public class UpdatedMariaDBDatabase extends MariaDBDatabase {
     @Override
     public int getPriority() {
         return super.getPriority() + 1; // Always take precedence over factory MariaDBDatabase
-    }
-
-    static {
-        RESERVED_WORDS.add("PERIOD");
     }
 }

@@ -33,6 +33,27 @@ public class OIDCIdentityProviderFactory extends AbstractIdentityProviderFactory
 
     public static final String PROVIDER_ID = "oidc";
 
+    protected static Map<String, String> parseOIDCConfig(KeycloakSession session, InputStream inputStream) {
+        OIDCConfigurationRepresentation rep;
+        try {
+            rep = JsonSerialization.readValue(inputStream, OIDCConfigurationRepresentation.class);
+        } catch (IOException e) {
+            throw new RuntimeException("failed to load openid connect metadata", e);
+        }
+        OIDCIdentityProviderConfig config = new OIDCIdentityProviderConfig();
+        config.setIssuer(rep.getIssuer());
+        config.setLogoutUrl(rep.getLogoutEndpoint());
+        config.setAuthorizationUrl(rep.getAuthorizationEndpoint());
+        config.setTokenUrl(rep.getTokenEndpoint());
+        config.setUserInfoUrl(rep.getUserinfoEndpoint());
+        if (rep.getJwksUri() != null) {
+            config.setValidateSignature(true);
+            config.setUseJwksUrl(true);
+            config.setJwksUrl(rep.getJwksUri());
+        }
+        return config.getConfig();
+    }
+
     @Override
     public String getName() {
         return "OpenID Connect v1.0";
@@ -56,27 +77,6 @@ public class OIDCIdentityProviderFactory extends AbstractIdentityProviderFactory
     @Override
     public Map<String, String> parseConfig(KeycloakSession session, InputStream inputStream) {
         return parseOIDCConfig(session, inputStream);
-    }
-
-    protected static Map<String, String> parseOIDCConfig(KeycloakSession session, InputStream inputStream) {
-        OIDCConfigurationRepresentation rep;
-        try {
-            rep = JsonSerialization.readValue(inputStream, OIDCConfigurationRepresentation.class);
-        } catch (IOException e) {
-            throw new RuntimeException("failed to load openid connect metadata", e);
-        }
-        OIDCIdentityProviderConfig config = new OIDCIdentityProviderConfig();
-        config.setIssuer(rep.getIssuer());
-        config.setLogoutUrl(rep.getLogoutEndpoint());
-        config.setAuthorizationUrl(rep.getAuthorizationEndpoint());
-        config.setTokenUrl(rep.getTokenEndpoint());
-        config.setUserInfoUrl(rep.getUserinfoEndpoint());
-        if (rep.getJwksUri() != null) {
-            config.setValidateSignature(true);
-            config.setUseJwksUrl(true);
-            config.setJwksUrl(rep.getJwksUri());
-        }
-        return config.getConfig();
     }
 
 }

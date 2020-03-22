@@ -34,6 +34,12 @@ import java.util.List;
 public class HttpBasicAuthenticatorFactory implements AuthenticatorFactory {
 
     public static final String PROVIDER_ID = "http-basic-authenticator";
+    private static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionModel.Requirement.REQUIRED,
+            Requirement.ALTERNATIVE,
+            Requirement.CONDITIONAL,
+            AuthenticationExecutionModel.Requirement.DISABLED
+    };
 
     @Override
     public String getDisplayType() {
@@ -49,13 +55,6 @@ public class HttpBasicAuthenticatorFactory implements AuthenticatorFactory {
     public boolean isConfigurable() {
         return false;
     }
-
-    private static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED,
-            Requirement.ALTERNATIVE,
-            Requirement.CONDITIONAL,
-            AuthenticationExecutionModel.Requirement.DISABLED
-    };
 
     @Override
     public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {

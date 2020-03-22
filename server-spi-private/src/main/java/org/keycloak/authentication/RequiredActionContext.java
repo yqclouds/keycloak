@@ -37,19 +37,6 @@ import java.net.URI;
  * @version $Revision: 1 $
  */
 public interface RequiredActionContext {
-    enum Status {
-        CHALLENGE,
-        SUCCESS,
-        IGNORE,
-        FAILURE
-    }
-
-    enum KcActionStatus {
-        SUCCESS,
-        CANCELLED,
-        ERROR
-    }
-
     /**
      * Get the action URL for the required action.
      *
@@ -69,7 +56,6 @@ public interface RequiredActionContext {
      * Get the action URL for the required action.  This auto-generates the access code.
      *
      * @param authSessionIdParam if true, will embed session id as query param.  Useful for clients that don't support cookies (i.e. console)
-     *
      * @return
      */
     URI getActionUrl(boolean authSessionIdParam);
@@ -81,14 +67,12 @@ public interface RequiredActionContext {
      */
     LoginFormsProvider form();
 
-
     /**
      * If challenge has been sent this returns the JAX-RS Response
      *
      * @return
      */
     Response getChallenge();
-
 
     /**
      * Current event builder being used
@@ -103,11 +87,17 @@ public interface RequiredActionContext {
      * @return
      */
     UserModel getUser();
+
     RealmModel getRealm();
+
     AuthenticationSessionModel getAuthenticationSession();
+
     ClientConnection getConnection();
+
     UriInfo getUriInfo();
+
     KeycloakSession getSession();
+
     HttpRequest getHttpRequest();
 
     /**
@@ -129,20 +119,30 @@ public interface RequiredActionContext {
 
     /**
      * Abort the authentication with an error
-     *
      */
     void failure();
 
     /**
      * Mark this required action as successful.  The required action will be removed from the UserModel
-     *
      */
     void success();
 
     /**
      * Ignore this required action and go onto the next, or complete the flow.
-     *
      */
     void ignore();
+
+    enum Status {
+        CHALLENGE,
+        SUCCESS,
+        IGNORE,
+        FAILURE
+    }
+
+    enum KcActionStatus {
+        SUCCESS,
+        CANCELLED,
+        ERROR
+    }
 
 }

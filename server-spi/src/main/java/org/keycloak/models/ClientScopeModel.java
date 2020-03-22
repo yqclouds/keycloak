@@ -17,45 +17,50 @@
 
 package org.keycloak.models;
 
-import java.util.Map;
-
 import org.keycloak.common.util.ObjectUtil;
+
+import java.util.Map;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public interface ClientScopeModel extends ProtocolMapperContainerModel, ScopeContainerModel, OrderedModel {
+    String DISPLAY_ON_CONSENT_SCREEN = "display.on.consent.screen";
+    String CONSENT_SCREEN_TEXT = "consent.screen.text";
+    String GUI_ORDER = "gui.order";
+    String INCLUDE_IN_TOKEN_SCOPE = "include.in.token.scope";
+
     String getId();
 
     String getName();
 
-    RealmModel getRealm();
     void setName(String name);
+
+    RealmModel getRealm();
 
     String getDescription();
 
     void setDescription(String description);
 
     String getProtocol();
-    void setProtocol(String protocol);
 
-    void setAttribute(String name, String value);
-    void removeAttribute(String name);
-    String getAttribute(String name);
-    Map<String, String> getAttributes();
+    void setProtocol(String protocol);
 
 
     // CONFIGS
 
-    String DISPLAY_ON_CONSENT_SCREEN = "display.on.consent.screen";
-    String CONSENT_SCREEN_TEXT = "consent.screen.text";
-    String GUI_ORDER = "gui.order";
-    String INCLUDE_IN_TOKEN_SCOPE = "include.in.token.scope";
+    void setAttribute(String name, String value);
+
+    void removeAttribute(String name);
+
+    String getAttribute(String name);
+
+    Map<String, String> getAttributes();
 
     default boolean isDisplayOnConsentScreen() {
         String displayVal = getAttribute(DISPLAY_ON_CONSENT_SCREEN);
-        return displayVal==null ? true : Boolean.parseBoolean(displayVal);
+        return displayVal == null ? true : Boolean.parseBoolean(displayVal);
     }
 
     default void setDisplayOnConsentScreen(boolean displayOnConsentScreen) {
@@ -86,7 +91,7 @@ public interface ClientScopeModel extends ProtocolMapperContainerModel, ScopeCon
 
     default boolean isIncludeInTokenScope() {
         String includeInTokenScope = getAttribute(INCLUDE_IN_TOKEN_SCOPE);
-        return includeInTokenScope==null ? true : Boolean.parseBoolean(includeInTokenScope);
+        return includeInTokenScope == null ? true : Boolean.parseBoolean(includeInTokenScope);
     }
 
     default void setIncludeInTokenScope(boolean includeInTokenScope) {

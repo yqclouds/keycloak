@@ -32,8 +32,21 @@ import static org.keycloak.client.admin.cli.util.OsUtil.EOL;
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
  */
 
-@GroupCommandDefinition(name = "config", description = "COMMAND [ARGUMENTS]", groupCommands = {ConfigCredentialsCmd.class} )
+@GroupCommandDefinition(name = "config", description = "COMMAND [ARGUMENTS]", groupCommands = {ConfigCredentialsCmd.class})
 public class ConfigCmd extends AbstractAuthOptionsCmd {
+
+    public static String usage() {
+        StringWriter sb = new StringWriter();
+        PrintWriter out = new PrintWriter(sb);
+        out.println("Usage: " + CMD + " config SUB_COMMAND [ARGUMENTS]");
+        out.println();
+        out.println("Where SUB_COMMAND is one of: 'credentials', 'truststore'");
+        out.println();
+        out.println();
+        out.println("Use '" + CMD + " help config SUB_COMMAND' for more info.");
+        out.println("Use '" + CMD + " help' for general information and a list of commands.");
+        return sb.toString();
+    }
 
     public CommandResult execute(CommandInvocation commandInvocation) throws CommandException, InterruptedException {
         try {
@@ -78,18 +91,5 @@ public class ConfigCmd extends AbstractAuthOptionsCmd {
 
     protected String help() {
         return usage();
-    }
-
-    public static String usage() {
-        StringWriter sb = new StringWriter();
-        PrintWriter out = new PrintWriter(sb);
-        out.println("Usage: " + CMD + " config SUB_COMMAND [ARGUMENTS]");
-        out.println();
-        out.println("Where SUB_COMMAND is one of: 'credentials', 'truststore'");
-        out.println();
-        out.println();
-        out.println("Use '" + CMD + " help config SUB_COMMAND' for more info.");
-        out.println("Use '" + CMD + " help' for general information and a list of commands.");
-        return sb.toString();
     }
 }

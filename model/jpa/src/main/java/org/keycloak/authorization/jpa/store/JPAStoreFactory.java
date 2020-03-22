@@ -18,15 +18,10 @@
 
 package org.keycloak.authorization.jpa.store;
 
-import javax.persistence.EntityManager;
-
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.store.PermissionTicketStore;
-import org.keycloak.authorization.store.PolicyStore;
-import org.keycloak.authorization.store.ResourceServerStore;
-import org.keycloak.authorization.store.ResourceStore;
-import org.keycloak.authorization.store.ScopeStore;
-import org.keycloak.authorization.store.StoreFactory;
+import org.keycloak.authorization.store.*;
+
+import javax.persistence.EntityManager;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -79,12 +74,12 @@ public class JPAStoreFactory implements StoreFactory {
     }
 
     @Override
-    public void setReadOnly(boolean readOnly) {
-        this.readOnly = readOnly;
+    public boolean isReadOnly() {
+        return readOnly;
     }
 
     @Override
-    public boolean isReadOnly() {
-        return readOnly;
+    public void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
     }
 }

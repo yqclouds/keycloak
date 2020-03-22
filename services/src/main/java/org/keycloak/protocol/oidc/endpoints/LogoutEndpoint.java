@@ -50,12 +50,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.*;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -87,7 +82,7 @@ public class LogoutEndpoint {
 
     /**
      * Logout user session.  User must be logged in via a session cookie.
-     *
+     * <p>
      * When the logout is initiated by a remote idp, the parameter "initiating_idp" can be supplied. This param will
      * prevent upstream logout (since the logout procedure has already been started in the remote idp).
      *
@@ -137,8 +132,7 @@ public class LogoutEndpoint {
         if (authResult != null) {
             userSession = userSession != null ? userSession : authResult.getSession();
             return initiateBrowserLogout(userSession, redirect, state, initiatingIdp);
-        }
-        else if (userSession != null) {
+        } else if (userSession != null) {
             // identity cookie is missing but there's valid id_token_hint which matches session cookie => continue with browser logout
             if (idToken != null && idToken.getSessionState().equals(AuthenticationManager.getSessionIdFromSessionCookie(session))) {
                 return initiateBrowserLogout(userSession, redirect, state, initiatingIdp);
@@ -162,12 +156,12 @@ public class LogoutEndpoint {
      * Logout a session via a non-browser invocation.  Similar signature to refresh token except there is no grant_type.
      * You must pass in the refresh token and
      * authenticate the client if it is not public.
-     *
+     * <p>
      * If the client is a confidential client
      * you must include the client-id and secret in an Basic Auth Authorization header.
-     *
+     * <p>
      * If the client is a public client, then you must include a "client_id" form parameter.
-     *
+     * <p>
      * returns 204 if successful, 400 if not with a json error response.
      *
      * @return
@@ -247,12 +241,12 @@ public class LogoutEndpoint {
         }
     }
 
-    private Response initiateBrowserLogout(UserSessionModel userSession, String redirect, String state, String initiatingIdp ) {
+    private Response initiateBrowserLogout(UserSessionModel userSession, String redirect, String state, String initiatingIdp) {
         if (redirect != null) userSession.setNote(OIDCLoginProtocol.LOGOUT_REDIRECT_URI, redirect);
         if (state != null) userSession.setNote(OIDCLoginProtocol.LOGOUT_STATE_PARAM, state);
         userSession.setNote(AuthenticationManager.KEYCLOAK_LOGOUT_PROTOCOL, OIDCLoginProtocol.LOGIN_PROTOCOL);
         logger.debug("Initiating OIDC browser logout");
-        Response response =  AuthenticationManager.browserLogout(session, realm, userSession, session.getContext().getUri(), clientConnection, headers, initiatingIdp);
+        Response response = AuthenticationManager.browserLogout(session, realm, userSession, session.getContext().getUri(), clientConnection, headers, initiatingIdp);
         logger.debug("finishing OIDC browser logout");
         return response;
     }

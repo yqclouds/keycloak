@@ -22,13 +22,7 @@ import org.keycloak.representations.idm.authorization.PolicyEvaluationResponse;
 import org.keycloak.representations.idm.authorization.PolicyProviderRepresentation;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -61,15 +55,15 @@ public interface PoliciesResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     List<PolicyRepresentation> policies(@QueryParam("policyId") String id,
-            @QueryParam("name") String name,
-            @QueryParam("type") String type,
-            @QueryParam("resource") String resource,
-            @QueryParam("scope") String scope,
-            @QueryParam("permission") Boolean permission,
-            @QueryParam("owner") String owner,
-            @QueryParam("fields") String fields,
-            @QueryParam("first") Integer firstResult,
-            @QueryParam("max") Integer maxResult);
+                                        @QueryParam("name") String name,
+                                        @QueryParam("type") String type,
+                                        @QueryParam("resource") String resource,
+                                        @QueryParam("scope") String scope,
+                                        @QueryParam("permission") Boolean permission,
+                                        @QueryParam("owner") String owner,
+                                        @QueryParam("fields") String fields,
+                                        @QueryParam("first") Integer firstResult,
+                                        @QueryParam("max") Integer maxResult);
 
     @Path("providers")
     @GET

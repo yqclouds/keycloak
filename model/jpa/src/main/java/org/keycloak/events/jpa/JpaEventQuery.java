@@ -93,7 +93,7 @@ public class JpaEventQuery implements EventQuery {
         predicates.add(cb.lessThanOrEqualTo(root.<Long>get("time"), toDate.getTime()));
         return this;
     }
-    
+
     @Override
     public EventQuery ipAddress(String ipAddress) {
         predicates.add(cb.equal(root.get("ipAddress"), ipAddress));

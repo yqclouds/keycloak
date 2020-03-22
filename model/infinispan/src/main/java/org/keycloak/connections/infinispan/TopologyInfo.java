@@ -16,10 +16,6 @@
  */
 package org.keycloak.connections.infinispan;
 
-import java.net.InetSocketAddress;
-import java.security.SecureRandom;
-import java.util.Objects;
-
 import org.infinispan.Cache;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -34,6 +30,10 @@ import org.jgroups.JChannel;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.util.NameCache;
 import org.keycloak.Config;
+
+import java.net.InetSocketAddress;
+import java.security.SecureRandom;
+import java.util.Objects;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -102,11 +102,19 @@ public class TopologyInfo {
         this.isGeneratedNodeName = isGeneratedNodeName;
     }
 
+    // See org.wildfly.clustering.server.group.CacheGroup
+    private static org.jgroups.Address toJGroupsAddress(Address address) {
+        if ((address == null) || (address == LocalModeAddress.INSTANCE)) return null;
+        if (address instanceof JGroupsAddress) {
+            JGroupsAddress jgroupsAddress = (JGroupsAddress) address;
+            return jgroupsAddress.getJGroupsAddress();
+        }
+        throw new IllegalArgumentException(address.toString());
+    }
 
     private String generateNodeName() {
         return InfinispanConnectionProvider.NODE_PREFIX + new SecureRandom().nextInt(1000000);
     }
-
 
     public String getMyNodeName() {
         return myNodeName;
@@ -116,12 +124,10 @@ public class TopologyInfo {
         return mySiteName;
     }
 
-
     @Override
     public String toString() {
         return String.format("Node name: %s, Site name: %s", myNodeName, mySiteName);
     }
-
 
     /**
      * True if I am primary owner of the key in case of distributed caches. In case of local caches, always return true
@@ -133,7 +139,6 @@ public class TopologyInfo {
         // NOTE: For scattered caches, this will always return true, which may not be correct. Need to review this if we add support for scattered caches
         return Objects.equals(myAddress, objectOwnerAddress);
     }
-
 
     /**
      * Get route to be used as the identifier for sticky session. Return null if I am not able to find the appropriate route (or in case of local mode)
@@ -175,7 +180,6 @@ public class TopologyInfo {
         return name;
     }
 
-
     private Address getOwnerAddress(Cache cache, Object key) {
         DistributionManager dist = cache.getAdvancedCache().getDistributionManager();
         Address address = (dist != null) && !cache.getCacheConfiguration().clustering().cacheMode().isScattered() ?
@@ -183,17 +187,6 @@ public class TopologyInfo {
                 cache.getCacheManager().getAddress();
 
         return address;
-    }
-
-
-    // See org.wildfly.clustering.server.group.CacheGroup
-    private static org.jgroups.Address toJGroupsAddress(Address address) {
-        if ((address == null) || (address == LocalModeAddress.INSTANCE)) return null;
-        if (address instanceof JGroupsAddress) {
-            JGroupsAddress jgroupsAddress = (JGroupsAddress) address;
-            return jgroupsAddress.getJGroupsAddress();
-        }
-        throw new IllegalArgumentException(address.toString());
     }
 
 

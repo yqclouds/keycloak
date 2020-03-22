@@ -50,7 +50,7 @@ public abstract class AbstractClaimMapper extends AbstractIdentityProviderMapper
             } else {
                 Object val = jsonObject.get(component);
                 if (!(val instanceof Map)) return null;
-                jsonObject = (Map<String, Object>)val;
+                jsonObject = (Map<String, Object>) val;
             }
         }
         return null;
@@ -63,7 +63,7 @@ public abstract class AbstractClaimMapper extends AbstractIdentityProviderMapper
 
     public static Object getClaimValue(BrokeredIdentityContext context, String claim) {
         {  // search access token
-            JsonWebToken token = (JsonWebToken)context.getContextData().get(KeycloakOIDCIdentityProvider.VALIDATED_ACCESS_TOKEN);
+            JsonWebToken token = (JsonWebToken) context.getContextData().get(KeycloakOIDCIdentityProvider.VALIDATED_ACCESS_TOKEN);
             if (token != null) {
                 Object value = getClaimValue(token, claim);
                 if (value != null) return value;
@@ -71,7 +71,7 @@ public abstract class AbstractClaimMapper extends AbstractIdentityProviderMapper
 
         }
         {  // search ID Token
-            JsonWebToken token = (JsonWebToken)context.getContextData().get(KeycloakOIDCIdentityProvider.VALIDATED_ID_TOKEN);
+            JsonWebToken token = (JsonWebToken) context.getContextData().get(KeycloakOIDCIdentityProvider.VALIDATED_ID_TOKEN);
             if (token != null) {
                 Object value = getClaimValue(token, claim);
                 if (value != null) return value;
@@ -116,7 +116,7 @@ public abstract class AbstractClaimMapper extends AbstractIdentityProviderMapper
 
             }
         } else if (value instanceof List) {
-            List list = (List)value;
+            List list = (List) value;
             for (Object val : list) {
                 if (valueEquals(desiredValue, val)) return true;
             }

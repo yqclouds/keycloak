@@ -44,10 +44,6 @@ public enum NymType {
         value = v;
     }
 
-    public String value() {
-        return value;
-    }
-
     public static NymType fromValue(String v) {
         for (NymType c : NymType.values()) {
             if (c.value.equals(v)) {
@@ -55,6 +51,10 @@ public enum NymType {
             }
         }
         throw new IllegalArgumentException(v);
+    }
+
+    public String value() {
+        return value;
     }
 
 }

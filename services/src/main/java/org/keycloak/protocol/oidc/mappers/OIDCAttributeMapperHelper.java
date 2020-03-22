@@ -54,6 +54,10 @@ public class OIDCAttributeMapperHelper {
     public static final String INCLUDE_IN_USERINFO = "userinfo.token.claim";
     public static final String INCLUDE_IN_USERINFO_LABEL = "includeInUserInfo.label";
     public static final String INCLUDE_IN_USERINFO_HELP_TEXT = "includeInUserInfo.tooltip";
+    // A character in a claim component is either a literal character escaped by a backslash (\., \\, \_, \q, etc.)
+    // or any character other than backslash (escaping) and dot (claim component separator)
+    private static final Pattern CLAIM_COMPONENT = Pattern.compile("^((\\\\.|[^\\\\.])+?)\\.");
+    private static final Pattern BACKSLASHED_CHARACTER = Pattern.compile("\\\\(.)");
 
     public static Object mapAttributeValue(ProtocolMapperModel mappingModel, Object attributeValue) {
         if (attributeValue == null) return null;
@@ -135,7 +139,6 @@ public class OIDCAttributeMapperHelper {
         return attributeValue.toString();
     }
 
-
     private static Long getLong(Object attributeValue) {
         if (attributeValue instanceof Long) return (Long) attributeValue;
         if (attributeValue instanceof String) return Long.valueOf((String) attributeValue);
@@ -153,7 +156,7 @@ public class OIDCAttributeMapperHelper {
         if (attributeValue instanceof String) return Boolean.valueOf((String) attributeValue);
         return null;
     }
-    
+
     private static JsonNode getJsonNode(Object attributeValue) {
         if (attributeValue instanceof JsonNode) return (JsonNode) attributeValue;
         if (attributeValue instanceof String) {
@@ -164,12 +167,6 @@ public class OIDCAttributeMapperHelper {
         }
         return null;
     }
-
-    // A character in a claim component is either a literal character escaped by a backslash (\., \\, \_, \q, etc.)
-    // or any character other than backslash (escaping) and dot (claim component separator)
-    private static final Pattern CLAIM_COMPONENT = Pattern.compile("^((\\\\.|[^\\\\.])+?)\\.");
-
-    private static final Pattern BACKSLASHED_CHARACTER = Pattern.compile("\\\\(.)");
 
     public static List<String> splitClaimPath(String claimPath) {
         final LinkedList<String> claimComponents = new LinkedList<>();
@@ -204,7 +201,7 @@ public class OIDCAttributeMapperHelper {
             if (i == length) {
                 jsonObject.put(component, attributeValue);
             } else {
-                Map<String, Object> nested = (Map<String, Object>)jsonObject.get(component);
+                Map<String, Object> nested = (Map<String, Object>) jsonObject.get(component);
 
                 if (nested == null) {
                     nested = new HashMap<String, Object>();
@@ -221,14 +218,14 @@ public class OIDCAttributeMapperHelper {
                                                         String tokenClaimName, String claimType,
                                                         boolean accessToken, boolean idToken,
                                                         String mapperId) {
-        return createClaimMapper(name, userAttribute,tokenClaimName, claimType, accessToken, idToken, true, mapperId);
+        return createClaimMapper(name, userAttribute, tokenClaimName, claimType, accessToken, idToken, true, mapperId);
     }
 
     public static ProtocolMapperModel createClaimMapper(String name,
-                                  String userAttribute,
-                                  String tokenClaimName, String claimType,
-                                  boolean accessToken, boolean idToken, boolean userinfo,
-                                  String mapperId) {
+                                                        String userAttribute,
+                                                        String tokenClaimName, String claimType,
+                                                        boolean accessToken, boolean idToken, boolean userinfo,
+                                                        String mapperId) {
         ProtocolMapperModel mapper = new ProtocolMapperModel();
         mapper.setName(name);
         mapper.setProtocolMapper(mapperId);
@@ -256,7 +253,7 @@ public class OIDCAttributeMapperHelper {
         return "true".equals(mappingModel.getConfig().get(ProtocolMapperUtils.MULTIVALUED));
     }
 
-    public static boolean includeInUserInfo(ProtocolMapperModel mappingModel){
+    public static boolean includeInUserInfo(ProtocolMapperModel mappingModel) {
         String includeInUserInfo = mappingModel.getConfig().get(INCLUDE_IN_USERINFO);
 
         // Backwards compatibility

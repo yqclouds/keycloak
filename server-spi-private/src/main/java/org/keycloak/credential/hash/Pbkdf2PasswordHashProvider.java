@@ -34,16 +34,16 @@ import java.security.spec.KeySpec;
  */
 public class Pbkdf2PasswordHashProvider implements PasswordHashProvider {
 
+    public static final int DEFAULT_DERIVED_KEY_SIZE = 512;
     private final String providerId;
-
     private final String pbkdf2Algorithm;
     private final int defaultIterations;
     private final int derivedKeySize;
-    public static final int DEFAULT_DERIVED_KEY_SIZE = 512;
 
     public Pbkdf2PasswordHashProvider(String providerId, String pbkdf2Algorithm, int defaultIterations) {
         this(providerId, pbkdf2Algorithm, defaultIterations, DEFAULT_DERIVED_KEY_SIZE);
     }
+
     public Pbkdf2PasswordHashProvider(String providerId, String pbkdf2Algorithm, int defaultIterations, int derivedKeySize) {
         this.providerId = providerId;
         this.pbkdf2Algorithm = pbkdf2Algorithm;

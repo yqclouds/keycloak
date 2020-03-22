@@ -36,8 +36,8 @@ public class GeneratedEcdsaKeyProvider extends AbstractEcdsaKeyProvider {
         super(realm, model);
     }
 
-	@Override
-	protected KeyWrapper loadKey(RealmModel realm, ComponentModel model) {
+    @Override
+    protected KeyWrapper loadKey(RealmModel realm, ComponentModel model) {
         String privateEcdsaKeyBase64Encoded = model.getConfig().getFirst(GeneratedEcdsaKeyProviderFactory.ECDSA_PRIVATE_KEY_KEY);
         String publicEcdsaKeyBase64Encoded = model.getConfig().getFirst(GeneratedEcdsaKeyProviderFactory.ECDSA_PUBLIC_KEY_KEY);
         String ecInNistRep = model.getConfig().getFirst(GeneratedEcdsaKeyProviderFactory.ECDSA_ELLIPTIC_CURVE_KEY);

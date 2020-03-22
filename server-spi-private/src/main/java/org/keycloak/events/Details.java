@@ -21,7 +21,7 @@ package org.keycloak.events;
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public interface Details {
-    String CUSTOM_REQUIRED_ACTION="custom_required_action";
+    String CUSTOM_REQUIRED_ACTION = "custom_required_action";
     String EMAIL = "email";
     String PREVIOUS_EMAIL = "previous_email";
     String UPDATED_EMAIL = "updated_email";

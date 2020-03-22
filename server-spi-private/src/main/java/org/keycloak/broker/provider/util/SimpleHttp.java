@@ -20,19 +20,10 @@ package org.keycloak.broker.provider.util;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.Header;
-import org.apache.http.HeaderIterator;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
+import org.apache.http.*;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.*;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -245,12 +236,12 @@ public class SimpleHttp {
         return new StringEntity(JsonSerialization.writeValueAsString(entity));
     }
 
-    private UrlEncodedFormEntity getFormEntityFromParameter() throws IOException{
+    private UrlEncodedFormEntity getFormEntityFromParameter() throws IOException {
         List<NameValuePair> urlParameters = new ArrayList<>();
 
         if (params != null) {
             for (Map.Entry<String, String> p : params.entrySet()) {
-                urlParameters. add(new BasicNameValuePair(p.getKey(), p.getValue()));
+                urlParameters.add(new BasicNameValuePair(p.getKey(), p.getValue()));
             }
         }
 

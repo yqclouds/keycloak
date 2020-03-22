@@ -23,18 +23,172 @@ import org.keycloak.TokenCategory;
 import org.keycloak.representations.idm.authorization.Permission;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public class AccessToken extends IDToken {
+    @JsonProperty("trusted-certs")
+    protected Set<String> trustedCertificates;
+    @JsonProperty("allowed-origins")
+    protected Set<String> allowedOrigins;
+    @JsonProperty("realm_access")
+    protected Access realmAccess;
+    @JsonProperty("resource_access")
+    protected Map<String, Access> resourceAccess;
+    @JsonProperty("authorization")
+    protected Authorization authorization;
+    @JsonProperty("cnf")
+    protected CertConf certConf;
+    @JsonProperty("scope")
+    protected String scope;
+
+    @JsonIgnore
+    public Map<String, Access> getResourceAccess() {
+        return resourceAccess == null ? Collections.<String, Access>emptyMap() : resourceAccess;
+    }
+
+    public void setResourceAccess(Map<String, Access> resourceAccess) {
+        this.resourceAccess = resourceAccess;
+    }
+
+    /**
+     * Does the realm require verifying the caller?
+     *
+     * @return
+     */
+    @JsonIgnore
+    public boolean isVerifyCaller() {
+        if (getRealmAccess() != null && getRealmAccess().getVerifyCaller() != null)
+            return getRealmAccess().getVerifyCaller().booleanValue();
+        return false;
+    }
+
+    /**
+     * Does the resource override the requirement of verifying the caller?
+     *
+     * @param resource
+     * @return
+     */
+    @JsonIgnore
+    public boolean isVerifyCaller(String resource) {
+        Access access = getResourceAccess(resource);
+        if (access != null && access.getVerifyCaller() != null) return access.getVerifyCaller().booleanValue();
+        return false;
+    }
+
+    @JsonIgnore
+    public Access getResourceAccess(String resource) {
+        return resourceAccess == null ? null : resourceAccess.get(resource);
+    }
+
+    public Access addAccess(String service) {
+        if (resourceAccess == null) {
+            resourceAccess = new HashMap<>();
+        }
+
+        Access access = resourceAccess.get(service);
+        if (access != null) return access;
+        access = new Access();
+        resourceAccess.put(service, access);
+        return access;
+    }
+
+    @Override
+    public AccessToken id(String id) {
+        return (AccessToken) super.id(id);
+    }
+
+    @Override
+    public AccessToken expiration(int expiration) {
+        return (AccessToken) super.expiration(expiration);
+    }
+
+    @Override
+    public AccessToken notBefore(int notBefore) {
+        return (AccessToken) super.notBefore(notBefore);
+    }
+
+    @Override
+    public AccessToken issuedAt(int issuedAt) {
+        return (AccessToken) super.issuedAt(issuedAt);
+    }
+
+    @Override
+    public AccessToken issuer(String issuer) {
+        return (AccessToken) super.issuer(issuer);
+    }
+
+    @Override
+    public AccessToken subject(String subject) {
+        return (AccessToken) super.subject(subject);
+    }
+
+    @Override
+    public AccessToken type(String type) {
+        return (AccessToken) super.type(type);
+    }
+
+    public Set<String> getAllowedOrigins() {
+        return allowedOrigins;
+    }
+
+    public void setAllowedOrigins(Set<String> allowedOrigins) {
+        this.allowedOrigins = allowedOrigins;
+    }
+
+    public Access getRealmAccess() {
+        return realmAccess;
+    }
+
+    public void setRealmAccess(Access realmAccess) {
+        this.realmAccess = realmAccess;
+    }
+
+    public Set<String> getTrustedCertificates() {
+        return trustedCertificates;
+    }
+
+    public void setTrustedCertificates(Set<String> trustedCertificates) {
+        this.trustedCertificates = trustedCertificates;
+    }
+
+    @Override
+    public AccessToken issuedFor(String issuedFor) {
+        return (AccessToken) super.issuedFor(issuedFor);
+    }
+
+    public Authorization getAuthorization() {
+        return authorization;
+    }
+
+    public void setAuthorization(Authorization authorization) {
+        this.authorization = authorization;
+    }
+
+    public CertConf getCertConf() {
+        return certConf;
+    }
+
+    public void setCertConf(CertConf certConf) {
+        this.certConf = certConf;
+    }
+
+    public String getScope() {
+        return scope;
+    }
+
+    public void setScope(String scope) {
+        this.scope = scope;
+    }
+
+    @Override
+    public TokenCategory getCategory() {
+        return TokenCategory.ACCESS;
+    }
+
     public static class Access implements Serializable {
         @JsonProperty("roles")
         protected Set<String> roles;
@@ -112,175 +266,6 @@ public class AccessToken extends IDToken {
         public void setCertThumbprint(String certThumbprint) {
             this.certThumbprint = certThumbprint;
         }
-    }
-
-    @JsonProperty("trusted-certs")
-    protected Set<String> trustedCertificates;
-
-    @JsonProperty("allowed-origins")
-    protected Set<String> allowedOrigins;
-
-    @JsonProperty("realm_access")
-    protected Access realmAccess;
-
-    @JsonProperty("resource_access")
-    protected Map<String, Access> resourceAccess;
-
-    @JsonProperty("authorization")
-    protected Authorization authorization;
-
-    @JsonProperty("cnf")
-    protected CertConf certConf;
-
-    @JsonProperty("scope")
-    protected String scope;
-
-    @JsonIgnore
-    public Map<String, Access> getResourceAccess() {
-        return resourceAccess == null ? Collections.<String, Access>emptyMap() : resourceAccess;
-    }
-
-    public void setResourceAccess(Map<String, Access> resourceAccess) {
-        this.resourceAccess = resourceAccess;
-    }
-
-
-
-
-    /**
-     * Does the realm require verifying the caller?
-     *
-     * @return
-     */
-    @JsonIgnore
-    public boolean isVerifyCaller() {
-        if (getRealmAccess() != null && getRealmAccess().getVerifyCaller() != null)
-            return getRealmAccess().getVerifyCaller().booleanValue();
-        return false;
-    }
-
-    /**
-     * Does the resource override the requirement of verifying the caller?
-     *
-     * @param resource
-     * @return
-     */
-    @JsonIgnore
-    public boolean isVerifyCaller(String resource) {
-        Access access = getResourceAccess(resource);
-        if (access != null && access.getVerifyCaller() != null) return access.getVerifyCaller().booleanValue();
-        return false;
-    }
-
-    @JsonIgnore
-    public Access getResourceAccess(String resource) {
-        return resourceAccess == null ? null : resourceAccess.get(resource);
-    }
-
-    public Access addAccess(String service) {
-        if (resourceAccess == null) {
-            resourceAccess = new HashMap<>();
-        }
-
-        Access access = resourceAccess.get(service);
-        if (access != null) return access;
-        access = new Access();
-        resourceAccess.put(service, access);
-        return access;
-    }
-
-    @Override
-    public AccessToken id(String id) {
-        return (AccessToken) super.id(id);
-    }
-
-    @Override
-    public AccessToken expiration(int expiration) {
-        return (AccessToken) super.expiration(expiration);
-    }
-
-    @Override
-    public AccessToken notBefore(int notBefore) {
-        return (AccessToken) super.notBefore(notBefore);
-    }
-
-
-    @Override
-    public AccessToken issuedAt(int issuedAt) {
-        return (AccessToken) super.issuedAt(issuedAt);
-    }
-
-    @Override
-    public AccessToken issuer(String issuer) {
-        return (AccessToken) super.issuer(issuer);
-    }
-
-    @Override
-    public AccessToken subject(String subject) {
-        return (AccessToken) super.subject(subject);
-    }
-
-    @Override
-    public AccessToken type(String type) {
-        return (AccessToken) super.type(type);
-    }
-
-    public Set<String> getAllowedOrigins() {
-        return allowedOrigins;
-    }
-
-    public void setAllowedOrigins(Set<String> allowedOrigins) {
-        this.allowedOrigins = allowedOrigins;
-    }
-
-    public Access getRealmAccess() {
-        return realmAccess;
-    }
-
-    public void setRealmAccess(Access realmAccess) {
-        this.realmAccess = realmAccess;
-    }
-
-    public Set<String> getTrustedCertificates() {
-        return trustedCertificates;
-    }
-
-    public void setTrustedCertificates(Set<String> trustedCertificates) {
-        this.trustedCertificates = trustedCertificates;
-    }
-
-    @Override
-    public AccessToken issuedFor(String issuedFor) {
-        return (AccessToken)super.issuedFor(issuedFor);
-    }
-
-    public Authorization getAuthorization() {
-        return authorization;
-    }
-
-    public void setAuthorization(Authorization authorization) {
-        this.authorization = authorization;
-    }
-    
-    public CertConf getCertConf() {
-        return certConf;
-    }
-
-    public void setCertConf(CertConf certConf) {
-        this.certConf = certConf;
-    }
-
-    public String getScope() {
-        return scope;
-    }
-
-    public void setScope(String scope) {
-        this.scope = scope;
-    }
-
-    @Override
-    public TokenCategory getCategory() {
-        return TokenCategory.ACCESS;
     }
 
 }

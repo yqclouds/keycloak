@@ -17,18 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.MapKeyColumn;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Map;
 
 /**
@@ -36,15 +25,16 @@ import java.util.Map;
  * @version $Revision: 1 $
  */
 @Entity
-@Table(name="IDENTITY_PROVIDER_MAPPER")
+@Table(name = "IDENTITY_PROVIDER_MAPPER")
 public class IdentityProviderMapperEntity {
 
     @Id
-    @Column(name="ID", length = 36)
-    @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
+    @Column(name = "ID", length = 36)
+    @Access(AccessType.PROPERTY)
+    // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
     protected String id;
 
-    @Column(name="NAME")
+    @Column(name = "NAME")
     protected String name;
 
     @Column(name = "IDP_ALIAS")
@@ -53,9 +43,9 @@ public class IdentityProviderMapperEntity {
     protected String identityProviderMapper;
 
     @ElementCollection
-    @MapKeyColumn(name="NAME")
-    @Column(name="VALUE")
-    @CollectionTable(name="IDP_MAPPER_CONFIG", joinColumns={ @JoinColumn(name="IDP_MAPPER_ID") })
+    @MapKeyColumn(name = "NAME")
+    @Column(name = "VALUE")
+    @CollectionTable(name = "IDP_MAPPER_CONFIG", joinColumns = {@JoinColumn(name = "IDP_MAPPER_ID")})
     private Map<String, String> config;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -22,9 +22,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
-* @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
-* @version $Revision: 1 $
-*/
+ * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
+ * @version $Revision: 1 $
+ */
 public class AuthenticatorConfigModel implements Serializable {
 
     private String id;
@@ -47,7 +47,6 @@ public class AuthenticatorConfigModel implements Serializable {
     public void setAlias(String alias) {
         this.alias = alias;
     }
-
 
 
     public Map<String, String> getConfig() {

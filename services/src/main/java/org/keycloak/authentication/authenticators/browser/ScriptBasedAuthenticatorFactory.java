@@ -32,9 +32,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static java.util.Arrays.asList;
-import static org.keycloak.authentication.authenticators.browser.ScriptBasedAuthenticator.SCRIPT_CODE;
-import static org.keycloak.authentication.authenticators.browser.ScriptBasedAuthenticator.SCRIPT_DESCRIPTION;
-import static org.keycloak.authentication.authenticators.browser.ScriptBasedAuthenticator.SCRIPT_NAME;
+import static org.keycloak.authentication.authenticators.browser.ScriptBasedAuthenticator.*;
 import static org.keycloak.provider.ProviderConfigProperty.SCRIPT_TYPE;
 import static org.keycloak.provider.ProviderConfigProperty.STRING_TYPE;
 
@@ -45,16 +43,13 @@ import static org.keycloak.provider.ProviderConfigProperty.STRING_TYPE;
  */
 public class ScriptBasedAuthenticatorFactory implements AuthenticatorFactory, EnvironmentDependentProviderFactory {
 
-    private static final Logger LOGGER = Logger.getLogger(ScriptBasedAuthenticatorFactory.class);
-
     public static final String PROVIDER_ID = "auth-script-based";
-
     static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
             AuthenticationExecutionModel.Requirement.REQUIRED,
             AuthenticationExecutionModel.Requirement.ALTERNATIVE,
             AuthenticationExecutionModel.Requirement.DISABLED};
-
     static final ScriptBasedAuthenticator SINGLETON = new ScriptBasedAuthenticator();
+    private static final Logger LOGGER = Logger.getLogger(ScriptBasedAuthenticatorFactory.class);
 
     @Override
     public Authenticator create(KeycloakSession session) {

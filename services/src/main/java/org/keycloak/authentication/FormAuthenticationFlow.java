@@ -21,13 +21,7 @@ import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.AuthenticationExecutionModel;
-import org.keycloak.models.AuthenticatorConfigModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.Constants;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.FormMessage;
 import org.keycloak.services.resources.LoginActionsService;
 import org.keycloak.sessions.AuthenticationSessionModel;
@@ -36,22 +30,17 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
-* @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
-* @version $Revision: 1 $
-*/
+ * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
+ * @version $Revision: 1 $
+ */
 public class FormAuthenticationFlow implements AuthenticationFlow {
-    AuthenticationProcessor processor;
-    AuthenticationExecutionModel formExecution;
     private final List<AuthenticationExecutionModel> formActionExecutions;
     private final FormAuthenticator formAuthenticator;
+    AuthenticationProcessor processor;
+    AuthenticationExecutionModel formExecution;
 
 
     public FormAuthenticationFlow(AuthenticationProcessor processor, AuthenticationExecutionModel execution) {
@@ -59,113 +48,6 @@ public class FormAuthenticationFlow implements AuthenticationFlow {
         this.formExecution = execution;
         formActionExecutions = processor.getRealm().getAuthenticationExecutions(execution.getFlowId());
         formAuthenticator = processor.getSession().getProvider(FormAuthenticator.class, execution.getAuthenticator());
-    }
-
-    private class FormContextImpl implements FormContext {
-        AuthenticationExecutionModel executionModel;
-        AuthenticatorConfigModel authenticatorConfig;
-
-        private FormContextImpl(AuthenticationExecutionModel executionModel) {
-            this.executionModel = executionModel;
-        }
-
-        @Override
-        public EventBuilder newEvent() {
-            return processor.newEvent();
-        }
-
-       @Override
-        public EventBuilder getEvent() {
-            return processor.getEvent();
-        }
-
-        @Override
-        public AuthenticationExecutionModel getExecution() {
-            return executionModel;
-        }
-
-        @Override
-        public AuthenticatorConfigModel getAuthenticatorConfig() {
-            if (executionModel.getAuthenticatorConfig() == null) return null;
-            if (authenticatorConfig != null) return authenticatorConfig;
-            authenticatorConfig = getRealm().getAuthenticatorConfigById(executionModel.getAuthenticatorConfig());
-            return authenticatorConfig;
-        }
-
-        @Override
-        public UserModel getUser() {
-            return getAuthenticationSession().getAuthenticatedUser();
-        }
-
-        @Override
-        public void setUser(UserModel user) {
-            processor.setAutheticatedUser(user);
-        }
-
-        @Override
-        public RealmModel getRealm() {
-            return processor.getRealm();
-        }
-
-        @Override
-        public AuthenticationSessionModel getAuthenticationSession() {
-            return processor.getAuthenticationSession();
-        }
-
-        @Override
-        public ClientConnection getConnection() {
-            return processor.getConnection();
-        }
-
-        @Override
-        public UriInfo getUriInfo() {
-            return processor.getUriInfo();
-        }
-
-        @Override
-        public KeycloakSession getSession() {
-            return processor.getSession();
-        }
-
-        @Override
-        public HttpRequest getHttpRequest() {
-            return processor.getRequest();
-        }
-
-    }
-
-    private class ValidationContextImpl extends FormContextImpl implements ValidationContext {
-        FormAction action;
-        String error;
-        boolean excludeOthers;
-
-        private ValidationContextImpl(AuthenticationExecutionModel executionModel, FormAction action) {
-            super(executionModel);
-            this.action = action;
-        }
-
-        boolean success;
-        List<FormMessage> errors = null;
-        MultivaluedMap<String, String> formData = null;
-        @Override
-        public void validationError(MultivaluedMap<String, String> formData, List<FormMessage> errors) {
-            this.errors = errors;
-            this.formData = formData;
-        }
-
-        public void error(String error) {
-            this.error = error;
-        }
-
-        @Override
-        public void success() {
-           success = true;
-        }
-
-        @Override
-        public void excludeOtherErrors() {
-            excludeOthers = true;
-        }
     }
 
     @Override
@@ -182,7 +64,7 @@ public class FormAuthenticationFlow implements AuthenticationFlow {
                 executionStatus.put(formActionExecution.getId(), AuthenticationSessionModel.ExecutionStatus.SKIPPED);
                 continue;
             }
-            FormActionFactory factory = (FormActionFactory)processor.getSession().getKeycloakSessionFactory().getProviderFactory(FormAction.class, formActionExecution.getAuthenticator());
+            FormActionFactory factory = (FormActionFactory) processor.getSession().getKeycloakSessionFactory().getProviderFactory(FormAction.class, formActionExecution.getAuthenticator());
             FormAction action = factory.create(processor.getSession());
 
             UserModel authUser = processor.getAuthenticationSession().getAuthenticatedUser();
@@ -272,7 +154,6 @@ public class FormAuthenticationFlow implements AuthenticationFlow {
                 .build(processor.getRealm().getName());
     }
 
-
     @Override
     public Response processFlow() {
         return renderForm(null, null);
@@ -303,5 +184,111 @@ public class FormAuthenticationFlow implements AuthenticationFlow {
     @Override
     public boolean isSuccessful() {
         return false;
+    }
+
+    private class FormContextImpl implements FormContext {
+        AuthenticationExecutionModel executionModel;
+        AuthenticatorConfigModel authenticatorConfig;
+
+        private FormContextImpl(AuthenticationExecutionModel executionModel) {
+            this.executionModel = executionModel;
+        }
+
+        @Override
+        public EventBuilder newEvent() {
+            return processor.newEvent();
+        }
+
+        @Override
+        public EventBuilder getEvent() {
+            return processor.getEvent();
+        }
+
+        @Override
+        public AuthenticationExecutionModel getExecution() {
+            return executionModel;
+        }
+
+        @Override
+        public AuthenticatorConfigModel getAuthenticatorConfig() {
+            if (executionModel.getAuthenticatorConfig() == null) return null;
+            if (authenticatorConfig != null) return authenticatorConfig;
+            authenticatorConfig = getRealm().getAuthenticatorConfigById(executionModel.getAuthenticatorConfig());
+            return authenticatorConfig;
+        }
+
+        @Override
+        public UserModel getUser() {
+            return getAuthenticationSession().getAuthenticatedUser();
+        }
+
+        @Override
+        public void setUser(UserModel user) {
+            processor.setAutheticatedUser(user);
+        }
+
+        @Override
+        public RealmModel getRealm() {
+            return processor.getRealm();
+        }
+
+        @Override
+        public AuthenticationSessionModel getAuthenticationSession() {
+            return processor.getAuthenticationSession();
+        }
+
+        @Override
+        public ClientConnection getConnection() {
+            return processor.getConnection();
+        }
+
+        @Override
+        public UriInfo getUriInfo() {
+            return processor.getUriInfo();
+        }
+
+        @Override
+        public KeycloakSession getSession() {
+            return processor.getSession();
+        }
+
+        @Override
+        public HttpRequest getHttpRequest() {
+            return processor.getRequest();
+        }
+
+    }
+
+    private class ValidationContextImpl extends FormContextImpl implements ValidationContext {
+        FormAction action;
+        String error;
+        boolean excludeOthers;
+        boolean success;
+        List<FormMessage> errors = null;
+        MultivaluedMap<String, String> formData = null;
+        private ValidationContextImpl(AuthenticationExecutionModel executionModel, FormAction action) {
+            super(executionModel);
+            this.action = action;
+        }
+
+        @Override
+        public void validationError(MultivaluedMap<String, String> formData, List<FormMessage> errors) {
+            this.errors = errors;
+            this.formData = formData;
+        }
+
+        public void error(String error) {
+            this.error = error;
+        }
+
+        @Override
+        public void success() {
+            success = true;
+        }
+
+        @Override
+        public void excludeOtherErrors() {
+            excludeOthers = true;
+        }
     }
 }

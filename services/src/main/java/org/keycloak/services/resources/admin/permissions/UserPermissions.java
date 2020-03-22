@@ -29,40 +29,25 @@ import org.keycloak.authorization.permission.ResourcePermission;
 import org.keycloak.authorization.policy.evaluation.EvaluationContext;
 import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.authorization.store.ResourceStore;
-import org.keycloak.models.AdminRoles;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.GroupModel;
-import org.keycloak.models.ImpersonationConstants;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.representations.idm.authorization.Permission;
 import org.keycloak.services.ForbiddenException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 /**
  * Manages default policies for all users.
- *
  *
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 class UserPermissions implements UserPermissionEvaluator, UserPermissionManagement {
 
-    private static final String MAP_ROLES_SCOPE="map-roles";
-    private static final String IMPERSONATE_SCOPE="impersonate";
-    private static final String USER_IMPERSONATED_SCOPE="user-impersonated";
-    private static final String MANAGE_GROUP_MEMBERSHIP_SCOPE="manage-group-membership";
+    private static final String MAP_ROLES_SCOPE = "map-roles";
+    private static final String IMPERSONATE_SCOPE = "impersonate";
+    private static final String USER_IMPERSONATED_SCOPE = "user-impersonated";
+    private static final String MANAGE_GROUP_MEMBERSHIP_SCOPE = "manage-group-membership";
     private static final String MAP_ROLES_PERMISSION_USERS = "map-roles.permission.users";
     private static final String ADMIN_IMPERSONATING_PERMISSION = "admin-impersonating.permission.users";
     private static final String USER_IMPERSONATED_PERMISSION = "user-impersonated.permission.users";
@@ -154,7 +139,7 @@ class UserPermissions implements UserPermissionEvaluator, UserPermissionManageme
         ResourceServer server = root.realmResourceServer();
         if (server == null) return false;
 
-        Resource resource =  resourceStore.findByName(USERS_RESOURCE, server.getId());
+        Resource resource = resourceStore.findByName(USERS_RESOURCE, server.getId());
         if (resource == null) return false;
 
         Policy policy = managePermission();
@@ -180,7 +165,7 @@ class UserPermissions implements UserPermissionEvaluator, UserPermissionManageme
         ResourceServer server = root.realmResourceServer();
         if (server == null) return null;
 
-        return  resourceStore.findByName(USERS_RESOURCE, server.getId());
+        return resourceStore.findByName(USERS_RESOURCE, server.getId());
     }
 
     @Override
@@ -216,13 +201,13 @@ class UserPermissions implements UserPermissionEvaluator, UserPermissionManageme
 
     /**
      * Is admin allowed to manage all users?  In Authz terms, does the admin have the "manage" scope for the Users Authz resource?
-     *
+     * <p>
      * This method will follow the old default behavior (does the admin have the manage-users role) if any of these conditions
      * are met.:
      * - The admin is from the master realm managing a different realm
      * - If the Authz objects are not set up correctly for the Users resource in Authz
      * - The "manage" permission for the Users resource has an empty associatedPolicy list.
-     *
+     * <p>
      * Otherwise, it will use the Authz policy engine to resolve this answer.
      *
      * @return
@@ -280,13 +265,13 @@ class UserPermissions implements UserPermissionEvaluator, UserPermissionManageme
 
     /**
      * Is admin allowed to view all users?  In Authz terms, does the admin have the "view" scope for the Users Authz resource?
-     *
+     * <p>
      * This method will follow the old default behavior (does the admin have the view-users role) if any of these conditions
      * are met.:
      * - The admin is from the master realm managing a different realm
      * - If the Authz objects are not set up correctly for the Users resource in Authz
      * - The "view" permission for the Users resource has an empty associatedPolicy list.
-     *
+     * <p>
      * Otherwise, it will use the Authz policy engine to resolve this answer.
      *
      * @return
@@ -306,11 +291,10 @@ class UserPermissions implements UserPermissionEvaluator, UserPermissionManageme
 
     /**
      * Does current admin have view permissions for this particular user?
-     *
+     * <p>
      * Evaluates in this order. If any true, return true:
      * - canViewUsers
      * - canManageUsers
-     *
      *
      * @param user
      * @return
@@ -367,7 +351,7 @@ class UserPermissions implements UserPermissionEvaluator, UserPermissionManageme
             return true;
         }
 
-        Resource resource =  resourceStore.findByName(USERS_RESOURCE, server.getId());
+        Resource resource = resourceStore.findByName(USERS_RESOURCE, server.getId());
 
         if (resource == null) {
             return true;
@@ -475,7 +459,7 @@ class UserPermissions implements UserPermissionEvaluator, UserPermissionManageme
             return false;
         }
 
-        Resource resource =  resourceStore.findByName(USERS_RESOURCE, server.getId());
+        Resource resource = resourceStore.findByName(USERS_RESOURCE, server.getId());
         List<String> expectedScopes = Arrays.asList(scopes);
 
         if (resource == null) {
@@ -566,6 +550,7 @@ class UserPermissions implements UserPermissionEvaluator, UserPermissionManageme
         return evaluateHierarchy(user, (group) -> root.groups().canManageMembers(group));
 
     }
+
     private boolean canViewByGroup(UserModel user) {
         return evaluateHierarchy(user, (group) -> root.groups().getGroupsWithViewPermission(group));
     }

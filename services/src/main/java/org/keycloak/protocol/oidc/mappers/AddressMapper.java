@@ -31,15 +31,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public class AddressMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
 
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
-
     public static final String STREET = "street";
+    public static final String PROVIDER_ID = "oidc-address-mapper";
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
 
     static {
         OIDCAttributeMapperHelper.addIncludeInTokensConfig(configProperties, AddressMapper.class);
@@ -65,8 +64,6 @@ public class AddressMapper extends AbstractOIDCProtocolMapper implements OIDCAcc
     public static String getModelPropertyName(String claimName) {
         return "user.attribute." + claimName;
     }
-
-    public static final String PROVIDER_ID = "oidc-address-mapper";
 
     public static ProtocolMapperModel createAddressMapper() {
         return createAddressMapper(true, true, true);

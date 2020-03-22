@@ -26,14 +26,7 @@ import org.keycloak.federation.kerberos.CommonKerberosConfig;
 import org.keycloak.federation.kerberos.impl.KerberosServerSubjectAuthenticator;
 import org.keycloak.federation.kerberos.impl.KerberosUsernamePasswordAuthenticator;
 import org.keycloak.federation.kerberos.impl.SPNEGOAuthenticator;
-import org.keycloak.models.AuthenticationExecutionModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.KeycloakSessionTask;
-import org.keycloak.models.LDAPConstants;
-import org.keycloak.models.ModelException;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.cache.UserCache;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -47,13 +40,7 @@ import org.keycloak.storage.ldap.idm.query.Condition;
 import org.keycloak.storage.ldap.idm.query.internal.LDAPQuery;
 import org.keycloak.storage.ldap.idm.query.internal.LDAPQueryConditionsBuilder;
 import org.keycloak.storage.ldap.idm.store.ldap.LDAPIdentityStore;
-import org.keycloak.storage.ldap.mappers.FullNameLDAPStorageMapper;
-import org.keycloak.storage.ldap.mappers.FullNameLDAPStorageMapperFactory;
-import org.keycloak.storage.ldap.mappers.LDAPConfigDecorator;
-import org.keycloak.storage.ldap.mappers.LDAPStorageMapper;
-import org.keycloak.storage.ldap.mappers.LDAPStorageMapperFactory;
-import org.keycloak.storage.ldap.mappers.UserAttributeLDAPStorageMapper;
-import org.keycloak.storage.ldap.mappers.UserAttributeLDAPStorageMapperFactory;
+import org.keycloak.storage.ldap.mappers.*;
 import org.keycloak.storage.ldap.mappers.msad.MSADUserAccountControlStorageMapperFactory;
 import org.keycloak.storage.user.ImportSynchronization;
 import org.keycloak.storage.user.SynchronizationResult;
@@ -72,16 +59,15 @@ import java.util.Map;
 public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LDAPStorageProvider>, ImportSynchronization {
 
 
-    private static final Logger logger = Logger.getLogger(LDAPStorageProviderFactory.class);
     public static final String PROVIDER_NAME = LDAPConstants.LDAP_PROVIDER;
-
-    private LDAPIdentityStoreRegistry ldapStoreRegistry;
-
     protected static final List<ProviderConfigProperty> configProperties;
+    private static final Logger logger = Logger.getLogger(LDAPStorageProviderFactory.class);
 
     static {
         configProperties = getConfigProps(null);
     }
+
+    private LDAPIdentityStoreRegistry ldapStoreRegistry;
 
     private static List<ProviderConfigProperty> getConfigProps(ComponentModel parent) {
         boolean readOnly = false;
@@ -274,7 +260,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
             }
         }
 
-        if(cfg.isStartTls() && cfg.getConnectionPooling() != null) {
+        if (cfg.isStartTls() && cfg.getConnectionPooling() != null) {
             throw new ComponentValidationException("ldapErrorCantEnableStartTlsAndConnectionPooling");
         }
     }
@@ -304,7 +290,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
         String readOnly = String.valueOf(editMode == UserStorageProvider.EditMode.READ_ONLY || editMode == UserStorageProvider.EditMode.UNSYNCED);
         String usernameLdapAttribute = ldapConfig.getUsernameLdapAttribute();
 
-        String alwaysReadValueFromLDAP = String.valueOf(editMode== UserStorageProvider.EditMode.READ_ONLY || editMode== UserStorageProvider.EditMode.WRITABLE);
+        String alwaysReadValueFromLDAP = String.valueOf(editMode == UserStorageProvider.EditMode.READ_ONLY || editMode == UserStorageProvider.EditMode.WRITABLE);
 
         ComponentModel mapperModel;
         mapperModel = KeycloakModelUtils.createComponentModel("username", model.getId(), UserAttributeLDAPStorageMapperFactory.PROVIDER_ID, LDAPStorageMapper.class.getName(),
@@ -321,7 +307,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
             if (usernameLdapAttribute.equalsIgnoreCase(LDAPConstants.CN)) {
 
                 // For AD deployments with "cn" as username, we will map "givenName" to first name
-                mapperModel = KeycloakModelUtils.createComponentModel("first name", model.getId(), UserAttributeLDAPStorageMapperFactory.PROVIDER_ID,LDAPStorageMapper.class.getName(),
+                mapperModel = KeycloakModelUtils.createComponentModel("first name", model.getId(), UserAttributeLDAPStorageMapperFactory.PROVIDER_ID, LDAPStorageMapper.class.getName(),
                         UserAttributeLDAPStorageMapper.USER_MODEL_ATTRIBUTE, UserModel.FIRST_NAME,
                         UserAttributeLDAPStorageMapper.LDAP_ATTRIBUTE, LDAPConstants.GIVENNAME,
                         UserAttributeLDAPStorageMapper.READ_ONLY, readOnly,
@@ -333,7 +319,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
                 if (editMode == UserStorageProvider.EditMode.WRITABLE) {
 
                     // For AD deployments with "sAMAccountName" as username and writable, we need to map "cn" as username as well (this is needed so we can register new users from KC into LDAP) and we will map "givenName" to first name.
-                    mapperModel = KeycloakModelUtils.createComponentModel("first name", model.getId(), UserAttributeLDAPStorageMapperFactory.PROVIDER_ID,LDAPStorageMapper.class.getName(),
+                    mapperModel = KeycloakModelUtils.createComponentModel("first name", model.getId(), UserAttributeLDAPStorageMapperFactory.PROVIDER_ID, LDAPStorageMapper.class.getName(),
                             UserAttributeLDAPStorageMapper.USER_MODEL_ATTRIBUTE, UserModel.FIRST_NAME,
                             UserAttributeLDAPStorageMapper.LDAP_ATTRIBUTE, LDAPConstants.GIVENNAME,
                             UserAttributeLDAPStorageMapper.READ_ONLY, readOnly,
@@ -341,7 +327,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
                             UserAttributeLDAPStorageMapper.IS_MANDATORY_IN_LDAP, "true");
                     realm.addComponentModel(mapperModel);
 
-                    mapperModel = KeycloakModelUtils.createComponentModel("username-cn", model.getId(), UserAttributeLDAPStorageMapperFactory.PROVIDER_ID,LDAPStorageMapper.class.getName(),
+                    mapperModel = KeycloakModelUtils.createComponentModel("username-cn", model.getId(), UserAttributeLDAPStorageMapperFactory.PROVIDER_ID, LDAPStorageMapper.class.getName(),
                             UserAttributeLDAPStorageMapper.USER_MODEL_ATTRIBUTE, UserModel.USERNAME,
                             UserAttributeLDAPStorageMapper.LDAP_ATTRIBUTE, LDAPConstants.CN,
                             UserAttributeLDAPStorageMapper.READ_ONLY, readOnly,
@@ -351,7 +337,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
                 } else {
 
                     // For read-only LDAP, we map "cn" as full name
-                    mapperModel = KeycloakModelUtils.createComponentModel("full name", model.getId(), FullNameLDAPStorageMapperFactory.PROVIDER_ID,LDAPStorageMapper.class.getName(),
+                    mapperModel = KeycloakModelUtils.createComponentModel("full name", model.getId(), FullNameLDAPStorageMapperFactory.PROVIDER_ID, LDAPStorageMapper.class.getName(),
                             FullNameLDAPStorageMapper.LDAP_FULL_NAME_ATTRIBUTE, LDAPConstants.CN,
                             FullNameLDAPStorageMapper.READ_ONLY, readOnly,
                             FullNameLDAPStorageMapper.WRITE_ONLY, "false");
@@ -359,7 +345,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
                 }
             }
         } else {
-            mapperModel = KeycloakModelUtils.createComponentModel("first name", model.getId(), UserAttributeLDAPStorageMapperFactory.PROVIDER_ID,LDAPStorageMapper.class.getName(),
+            mapperModel = KeycloakModelUtils.createComponentModel("first name", model.getId(), UserAttributeLDAPStorageMapperFactory.PROVIDER_ID, LDAPStorageMapper.class.getName(),
                     UserAttributeLDAPStorageMapper.USER_MODEL_ATTRIBUTE, UserModel.FIRST_NAME,
                     UserAttributeLDAPStorageMapper.LDAP_ATTRIBUTE, LDAPConstants.CN,
                     UserAttributeLDAPStorageMapper.READ_ONLY, readOnly,
@@ -368,7 +354,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
             realm.addComponentModel(mapperModel);
         }
 
-        mapperModel = KeycloakModelUtils.createComponentModel("last name", model.getId(), UserAttributeLDAPStorageMapperFactory.PROVIDER_ID,LDAPStorageMapper.class.getName(),
+        mapperModel = KeycloakModelUtils.createComponentModel("last name", model.getId(), UserAttributeLDAPStorageMapperFactory.PROVIDER_ID, LDAPStorageMapper.class.getName(),
                 UserAttributeLDAPStorageMapper.USER_MODEL_ATTRIBUTE, UserModel.LAST_NAME,
                 UserAttributeLDAPStorageMapper.LDAP_ATTRIBUTE, LDAPConstants.SN,
                 UserAttributeLDAPStorageMapper.READ_ONLY, readOnly,
@@ -376,7 +362,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
                 UserAttributeLDAPStorageMapper.IS_MANDATORY_IN_LDAP, "true");
         realm.addComponentModel(mapperModel);
 
-        mapperModel = KeycloakModelUtils.createComponentModel("email", model.getId(), UserAttributeLDAPStorageMapperFactory.PROVIDER_ID,LDAPStorageMapper.class.getName(),
+        mapperModel = KeycloakModelUtils.createComponentModel("email", model.getId(), UserAttributeLDAPStorageMapperFactory.PROVIDER_ID, LDAPStorageMapper.class.getName(),
                 UserAttributeLDAPStorageMapper.USER_MODEL_ATTRIBUTE, UserModel.EMAIL,
                 UserAttributeLDAPStorageMapper.LDAP_ATTRIBUTE, LDAPConstants.EMAIL,
                 UserAttributeLDAPStorageMapper.READ_ONLY, readOnly,
@@ -388,7 +374,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
         String modifyTimestampLdapAttrName = activeDirectory ? "whenChanged" : LDAPConstants.MODIFY_TIMESTAMP;
 
         // map createTimeStamp as read-only
-        mapperModel = KeycloakModelUtils.createComponentModel("creation date", model.getId(), UserAttributeLDAPStorageMapperFactory.PROVIDER_ID,LDAPStorageMapper.class.getName(),
+        mapperModel = KeycloakModelUtils.createComponentModel("creation date", model.getId(), UserAttributeLDAPStorageMapperFactory.PROVIDER_ID, LDAPStorageMapper.class.getName(),
                 UserAttributeLDAPStorageMapper.USER_MODEL_ATTRIBUTE, LDAPConstants.CREATE_TIMESTAMP,
                 UserAttributeLDAPStorageMapper.LDAP_ATTRIBUTE, createTimestampLdapAttrName,
                 UserAttributeLDAPStorageMapper.READ_ONLY, "true",
@@ -397,7 +383,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
         realm.addComponentModel(mapperModel);
 
         // map modifyTimeStamp as read-only
-        mapperModel = KeycloakModelUtils.createComponentModel("modify date", model.getId(), UserAttributeLDAPStorageMapperFactory.PROVIDER_ID,LDAPStorageMapper.class.getName(),
+        mapperModel = KeycloakModelUtils.createComponentModel("modify date", model.getId(), UserAttributeLDAPStorageMapperFactory.PROVIDER_ID, LDAPStorageMapper.class.getName(),
                 UserAttributeLDAPStorageMapper.USER_MODEL_ATTRIBUTE, LDAPConstants.MODIFY_TIMESTAMP,
                 UserAttributeLDAPStorageMapper.LDAP_ATTRIBUTE, modifyTimestampLdapAttrName,
                 UserAttributeLDAPStorageMapper.READ_ONLY, "true",
@@ -407,7 +393,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
 
         // MSAD specific mapper for account state propagation
         if (activeDirectory) {
-            mapperModel = KeycloakModelUtils.createComponentModel("MSAD account controls", model.getId(), MSADUserAccountControlStorageMapperFactory.PROVIDER_ID,LDAPStorageMapper.class.getName());
+            mapperModel = KeycloakModelUtils.createComponentModel("MSAD account controls", model.getId(), MSADUserAccountControlStorageMapperFactory.PROVIDER_ID, LDAPStorageMapper.class.getName());
             realm.addComponentModel(mapperModel);
         }
         String allowKerberosCfg = model.getConfig().getFirst(KerberosConstants.ALLOW_KERBEROS_AUTHENTICATION);
@@ -424,7 +410,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
         if (!allowKerberosCfgOld && allowKerberosCfgNew) {
             CredentialHelper.setOrReplaceAuthenticationRequirement(session, realm, CredentialRepresentation.KERBEROS,
                     AuthenticationExecutionModel.Requirement.ALTERNATIVE, AuthenticationExecutionModel.Requirement.DISABLED);
-        } else if(allowKerberosCfgOld && !allowKerberosCfgNew) {
+        } else if (allowKerberosCfgOld && !allowKerberosCfgNew) {
             CredentialHelper.setOrReplaceAuthenticationRequirement(session, realm, CredentialRepresentation.KERBEROS,
                     AuthenticationExecutionModel.Requirement.DISABLED, AuthenticationExecutionModel.Requirement.ALTERNATIVE);
         } // else: keep current settings
@@ -525,7 +511,8 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
     }
 
     /**
-     *  !! This function must be called from try-with-resources block, otherwise Vault secrets may be leaked !!
+     * !! This function must be called from try-with-resources block, otherwise Vault secrets may be leaked !!
+     *
      * @param sessionFactory
      * @param realmId
      * @param model
@@ -543,7 +530,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
             public void run(KeycloakSession session) {
                 session.getContext().setRealm(session.realms().getRealm(realmId));
 
-                LDAPStorageProvider ldapFedProvider = (LDAPStorageProvider)session.getProvider(UserStorageProvider.class, model);
+                LDAPStorageProvider ldapFedProvider = (LDAPStorageProvider) session.getProvider(UserStorageProvider.class, model);
                 RealmModel realm = session.realms().getRealm(realmId);
                 queryHolder.query = LDAPUtils.createQueryForUserSearch(ldapFedProvider, realm);
             }
@@ -569,7 +556,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
 
                     @Override
                     public void run(KeycloakSession session) {
-                        LDAPStorageProvider ldapFedProvider = (LDAPStorageProvider)session.getProvider(UserStorageProvider.class, fedModel);
+                        LDAPStorageProvider ldapFedProvider = (LDAPStorageProvider) session.getProvider(UserStorageProvider.class, fedModel);
                         RealmModel currentRealm = session.realms().getRealm(realmId);
                         session.getContext().setRealm(currentRealm);
 
@@ -619,7 +606,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
 
                         @Override
                         public void run(KeycloakSession session) {
-                            LDAPStorageProvider ldapFedProvider = (LDAPStorageProvider)session.getProvider(UserStorageProvider.class, fedModel);
+                            LDAPStorageProvider ldapFedProvider = (LDAPStorageProvider) session.getProvider(UserStorageProvider.class, fedModel);
                             RealmModel currentRealm = session.realms().getRealm(realmId);
                             session.getContext().setRealm(currentRealm);
 
@@ -662,4 +649,4 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
         return new KerberosUsernamePasswordAuthenticator(kerberosConfig);
     }
 
- }
+}

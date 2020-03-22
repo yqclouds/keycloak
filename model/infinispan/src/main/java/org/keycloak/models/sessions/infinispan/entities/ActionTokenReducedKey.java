@@ -1,13 +1,13 @@
 /*
  * Copyright 2017 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,14 +16,17 @@
  */
 package org.keycloak.models.sessions.infinispan.entities;
 
-import java.io.*;
-import java.util.Objects;
-import java.util.UUID;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.Serializable;
+import java.util.Objects;
+import java.util.UUID;
+
 /**
- *
  * @author hmlnarik
  */
 @SerializeWith(value = ActionTokenReducedKey.ExternalizerImpl.class)
@@ -77,8 +80,8 @@ public class ActionTokenReducedKey implements Serializable {
         }
         final ActionTokenReducedKey other = (ActionTokenReducedKey) obj;
         return Objects.equals(this.userId, other.getUserId())
-          && Objects.equals(this.actionId, other.getActionId())
-          && Objects.equals(this.actionVerificationNonce, other.getActionVerificationNonce());
+                && Objects.equals(this.actionId, other.getActionId())
+                && Objects.equals(this.actionVerificationNonce, other.getActionVerificationNonce());
     }
 
     @Override
@@ -99,9 +102,9 @@ public class ActionTokenReducedKey implements Serializable {
         @Override
         public ActionTokenReducedKey readObject(ObjectInput input) throws IOException, ClassNotFoundException {
             return new ActionTokenReducedKey(
-              input.readUTF(),
-              input.readUTF(),
-              new UUID(input.readLong(), input.readLong())
+                    input.readUTF(),
+                    input.readUTF(),
+                    new UUID(input.readLong(), input.readLong())
             );
         }
     }

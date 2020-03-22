@@ -17,14 +17,14 @@
 
 package org.keycloak.common.util;
 
+import org.keycloak.common.enums.SslRequired;
+
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.regex.Pattern;
-
-import org.keycloak.common.enums.SslRequired;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -53,31 +53,21 @@ public class UriUtils {
 
         String[] params = queryString.split("&");
 
-        for (String param : params)
-        {
-            if (param.indexOf('=') >= 0)
-            {
+        for (String param : params) {
+            if (param.indexOf('=') >= 0) {
                 String[] nv = param.split("=", 2);
-                try
-                {
+                try {
                     String name = URLDecoder.decode(nv[0], "UTF-8");
                     String val = nv.length > 1 ? nv[1] : "";
                     map.add(name, URLDecoder.decode(val, "UTF-8"));
-                }
-                catch (UnsupportedEncodingException e)
-                {
+                } catch (UnsupportedEncodingException e) {
                     throw new RuntimeException(e);
                 }
-            }
-            else
-            {
-                try
-                {
+            } else {
+                try {
                     String name = URLDecoder.decode(param, "UTF-8");
                     map.add(name, "");
-                }
-                catch (UnsupportedEncodingException e)
-                {
+                } catch (UnsupportedEncodingException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -85,11 +75,11 @@ public class UriUtils {
         return map;
     }
 
-    public static String stripQueryParam(String url, String name){
-        return url.replaceFirst("[\\?&]"+name+"=[^&]*$|"+name+"=[^&]*&", "");
+    public static String stripQueryParam(String url, String name) {
+        return url.replaceFirst("[\\?&]" + name + "=[^&]*$|" + name + "=[^&]*&", "");
     }
 
-    public static void checkUrl(SslRequired sslRequired, String url, String name) throws IllegalArgumentException{
+    public static void checkUrl(SslRequired sslRequired, String url, String name) throws IllegalArgumentException {
         if (url == null) {
             return;
         }

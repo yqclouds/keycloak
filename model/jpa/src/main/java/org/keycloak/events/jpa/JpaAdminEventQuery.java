@@ -24,11 +24,7 @@ import org.keycloak.events.admin.ResourceType;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
@@ -38,7 +34,7 @@ import java.util.List;
  * @author <a href="mailto:giriraj.sharma27@gmail.com">Giriraj Sharma</a>
  */
 public class JpaAdminEventQuery implements AdminEventQuery {
-    
+
     private final EntityManager em;
     private final CriteriaBuilder cb;
     private final CriteriaQuery<AdminEventEntity> cq;
@@ -46,7 +42,7 @@ public class JpaAdminEventQuery implements AdminEventQuery {
     private final ArrayList<Predicate> predicates;
     private Integer firstResult;
     private Integer maxResults;
-    
+
     public JpaAdminEventQuery(EntityManager em) {
         this.em = em;
 
@@ -55,7 +51,7 @@ public class JpaAdminEventQuery implements AdminEventQuery {
         root = cq.from(AdminEventEntity.class);
         predicates = new ArrayList<Predicate>();
     }
-    
+
     @Override
     public AdminEventQuery realm(String realmId) {
         predicates.add(cb.equal(root.get("realmId"), realmId));
@@ -164,5 +160,5 @@ public class JpaAdminEventQuery implements AdminEventQuery {
 
         return events;
     }
-    
+
 }

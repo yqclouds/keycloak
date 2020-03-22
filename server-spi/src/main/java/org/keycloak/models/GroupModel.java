@@ -28,11 +28,6 @@ import java.util.Set;
  * @version $Revision: 1 $
  */
 public interface GroupModel extends RoleMapperModel {
-    interface GroupRemovedEvent extends ProviderEvent {
-        RealmModel getRealm();
-        GroupModel getGroup();
-        KeycloakSession getKeycloakSession();
-    }
     String getId();
 
     String getName();
@@ -66,8 +61,6 @@ public interface GroupModel extends RoleMapperModel {
     Map<String, List<String>> getAttributes();
 
     GroupModel getParent();
-    String getParentId();
-    Set<GroupModel> getSubGroups();
 
     /**
      * You must also call addChild on the parent group, addChild on RealmModel if there is no parent group
@@ -75,6 +68,10 @@ public interface GroupModel extends RoleMapperModel {
      * @param group
      */
     void setParent(GroupModel group);
+
+    String getParentId();
+
+    Set<GroupModel> getSubGroups();
 
     /**
      * Automatically calls setParent() on the subGroup
@@ -89,4 +86,12 @@ public interface GroupModel extends RoleMapperModel {
      * @param subGroup
      */
     void removeChild(GroupModel subGroup);
+
+    interface GroupRemovedEvent extends ProviderEvent {
+        RealmModel getRealm();
+
+        GroupModel getGroup();
+
+        KeycloakSession getKeycloakSession();
+    }
 }

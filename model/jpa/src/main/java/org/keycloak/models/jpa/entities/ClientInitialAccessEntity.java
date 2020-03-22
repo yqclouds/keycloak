@@ -17,51 +17,37 @@
 
 package org.keycloak.models.jpa.entities;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 @Entity
-@Table(name="CLIENT_INITIAL_ACCESS")
+@Table(name = "CLIENT_INITIAL_ACCESS")
 @NamedQueries({
-        @NamedQuery(name="findClientInitialAccessByRealm", query="select ia from ClientInitialAccessEntity ia where ia.realm = :realm order by timestamp"),
-        @NamedQuery(name="removeClientInitialAccessByRealm", query="delete from ClientInitialAccessEntity ia where ia.realm = :realm"),
-        @NamedQuery(name="removeExpiredClientInitialAccess", query="delete from ClientInitialAccessEntity ia where (ia.expiration > 0 and (ia.timestamp + ia.expiration) < :currentTime) or ia.remainingCount = 0"),
-        @NamedQuery(name="decreaseClientInitialAccessRemainingCount", query="update ClientInitialAccessEntity ia set ia.remainingCount = ia.remainingCount - 1 where ia.id = :id")
+        @NamedQuery(name = "findClientInitialAccessByRealm", query = "select ia from ClientInitialAccessEntity ia where ia.realm = :realm order by timestamp"),
+        @NamedQuery(name = "removeClientInitialAccessByRealm", query = "delete from ClientInitialAccessEntity ia where ia.realm = :realm"),
+        @NamedQuery(name = "removeExpiredClientInitialAccess", query = "delete from ClientInitialAccessEntity ia where (ia.expiration > 0 and (ia.timestamp + ia.expiration) < :currentTime) or ia.remainingCount = 0"),
+        @NamedQuery(name = "decreaseClientInitialAccessRemainingCount", query = "update ClientInitialAccessEntity ia set ia.remainingCount = ia.remainingCount - 1 where ia.id = :id")
 })
 public class ClientInitialAccessEntity {
 
     @Id
-    @Column(name="ID", length = 36)
-    @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
+    @Column(name = "ID", length = 36)
+    @Access(AccessType.PROPERTY)
+    // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
     protected String id;
-
-    @Column(name="TIMESTAMP")
-    private int timestamp;
-
-    @Column(name="EXPIRATION")
-    private int expiration;
-
-    @Column(name="COUNT")
-    private int count;
-
-    @Column(name="REMAINING_COUNT")
-    private int remainingCount;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REALM_ID")
     protected RealmEntity realm;
+    @Column(name = "TIMESTAMP")
+    private int timestamp;
+    @Column(name = "EXPIRATION")
+    private int expiration;
+    @Column(name = "COUNT")
+    private int count;
+    @Column(name = "REMAINING_COUNT")
+    private int remainingCount;
 
     public String getId() {
         return id;

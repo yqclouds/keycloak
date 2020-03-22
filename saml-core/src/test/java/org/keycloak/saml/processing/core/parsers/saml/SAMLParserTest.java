@@ -26,42 +26,14 @@ import org.keycloak.common.util.Base64;
 import org.keycloak.common.util.DerUtils;
 import org.keycloak.common.util.StreamUtil;
 import org.keycloak.dom.saml.v2.SAML2Object;
-import org.keycloak.dom.saml.v2.assertion.AssertionType;
-import org.keycloak.dom.saml.v2.assertion.AttributeStatementType;
+import org.keycloak.dom.saml.v2.assertion.*;
 import org.keycloak.dom.saml.v2.assertion.AttributeStatementType.ASTChoiceType;
-import org.keycloak.dom.saml.v2.assertion.AttributeType;
-import org.keycloak.dom.saml.v2.assertion.AudienceRestrictionType;
-import org.keycloak.dom.saml.v2.assertion.AuthnContextType;
-import org.keycloak.dom.saml.v2.assertion.AuthnStatementType;
-import org.keycloak.dom.saml.v2.assertion.EncryptedAssertionType;
-import org.keycloak.dom.saml.v2.assertion.NameIDType;
-import org.keycloak.dom.saml.v2.assertion.StatementAbstractType;
-import org.keycloak.dom.saml.v2.assertion.SubjectConfirmationType;
-import org.keycloak.dom.saml.v2.assertion.SubjectType;
-import org.keycloak.dom.saml.v2.metadata.AttributeAuthorityDescriptorType;
-import org.keycloak.dom.saml.v2.metadata.AttributeConsumingServiceType;
-import org.keycloak.dom.saml.v2.metadata.AuthnAuthorityDescriptorType;
-import org.keycloak.dom.saml.v2.metadata.EndpointType;
-import org.keycloak.dom.saml.v2.metadata.EntitiesDescriptorType;
-import org.keycloak.dom.saml.v2.metadata.EntityDescriptorType;
-import org.keycloak.dom.saml.v2.metadata.IDPSSODescriptorType;
-import org.keycloak.dom.saml.v2.metadata.IndexedEndpointType;
-import org.keycloak.dom.saml.v2.metadata.KeyDescriptorType;
-import org.keycloak.dom.saml.v2.metadata.KeyTypes;
-import org.keycloak.dom.saml.v2.metadata.LocalizedNameType;
-import org.keycloak.dom.saml.v2.metadata.LocalizedURIType;
-import org.keycloak.dom.saml.v2.metadata.PDPDescriptorType;
-import org.keycloak.dom.saml.v2.metadata.RequestedAttributeType;
-import org.keycloak.dom.saml.v2.metadata.SPSSODescriptorType;
+import org.keycloak.dom.saml.v2.metadata.*;
 import org.keycloak.dom.saml.v2.protocol.AuthnRequestType;
 import org.keycloak.dom.saml.v2.protocol.LogoutRequestType;
 import org.keycloak.dom.saml.v2.protocol.ResponseType;
 import org.keycloak.dom.saml.v2.protocol.StatusResponseType;
-import org.keycloak.dom.xmlsec.w3.xmldsig.DSAKeyValueType;
-import org.keycloak.dom.xmlsec.w3.xmldsig.KeyInfoType;
-import org.keycloak.dom.xmlsec.w3.xmldsig.RSAKeyValueType;
-import org.keycloak.dom.xmlsec.w3.xmldsig.X509CertificateType;
-import org.keycloak.dom.xmlsec.w3.xmldsig.X509DataType;
+import org.keycloak.dom.xmlsec.w3.xmldsig.*;
 import org.keycloak.dom.xmlsec.w3.xmlenc.EncryptionMethodType;
 import org.keycloak.saml.common.constants.JBossSAMLURIConstants;
 import org.keycloak.saml.common.exceptions.ConfigurationException;
@@ -85,32 +57,15 @@ import java.security.PrivateKey;
 import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.emptyCollectionOf;
-import static org.hamcrest.Matchers.endsWith;
-import static org.hamcrest.Matchers.everyItem;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 /**
  * Test class for SAML parser.
- *
+ * <p>
  * To create SAML XML for use in the test, use for instance https://www.samltool.com, {@link #PRIVATE_KEY} and
  * {@link #PUBLIC_CERT}.
- *
+ * <p>
  * TODO: Add further tests.
  *
  * @author hmlnarik
@@ -123,11 +78,9 @@ public class SAMLParserTest {
      * The public certificate that corresponds to {@link #PRIVATE_KEY}.
      */
     private static final String PUBLIC_CERT = "MIICXjCCAcegAwIBAgIBADANBgkqhkiG9w0BAQ0FADBLMQswCQYDVQQGEwJubzERMA8GA1UECAwIVmVzdGZvbGQxEzARBgNVBAoMCkV4YW1wbGVPcmcxFDASBgNVBAMMC2V4YW1wbGUub3JnMCAXDTE3MDIyNzEwNTY0MFoYDzIxMTcwMjAzMTA1NjQwWjBLMQswCQYDVQQGEwJubzERMA8GA1UECAwIVmVzdGZvbGQxEzARBgNVBAoMCkV4YW1wbGVPcmcxFDASBgNVBAMMC2V4YW1wbGUub3JnMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDiQ4HolBThEYOjdqlHi45BOxw84OIdpuITBvFg2C4bgJupNqavtUpEQ74rA+u8tgL11xc9OvVcOUzA56W5hqYoBG3a/mE+wLPmKVYcSNZ0sE88xALi9mMLp9RTXzhQHgbeoc0P73ifq3Nw9wUoI3mP8omTXp9+k9wQ/KYtx6IxKwIDAQABo1AwTjAdBgNVHQ4EFgQUzWjvSL0O2V2B2N9G1qARQiVgv3QwHwYDVR0jBBgwFoAUzWjvSL0O2V2B2N9G1qARQiVgv3QwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQ0FAAOBgQBgvKTTcLGlF0KvnIGxkzdaFeYewQtsQZHgnUt+JGKge0CyUU+QPVFhrH19b7fjKeykq/avm/2hku4mKaPyRYpvU9Gm+ARz67rs/vr0ZgJFk00TGI6ssGhdFd7iCptuIh5lEvWk1hD5LzThOI3isq0gK2tTbhafQOkKa45IwbOQ8Q==";
-
-    private SAMLParser parser;
-
     @Rule
     public ExpectedException thrown = ExpectedException.none();
+    private SAMLParser parser;
 
     @Before
     public void initParser() {
@@ -388,7 +341,7 @@ public class SAMLParserTest {
     }
 
     @Test
-    public void testSAML20MetadataEntityDescriptorAttrA() throws Exception{
+    public void testSAML20MetadataEntityDescriptorAttrA() throws Exception {
         EntityDescriptorType entityDescriptor = assertParsed("saml20-entity-descriptor-idp.xml", EntityDescriptorType.class);
 
         List<EntityDescriptorType.EDTChoiceType> descriptors = entityDescriptor.getChoiceType();
@@ -607,7 +560,7 @@ public class SAMLParserTest {
         AuthnAuthorityDescriptorType authnDescriptor = descriptor.getChoiceType().get(0).getDescriptors().get(0).getAuthnDescriptor();
 
         assertThat(authnDescriptor.getAssertionIDRequestService(), hasSize(1));
-        assertThat(authnDescriptor.getAuthnQueryService(),  hasSize(1));
+        assertThat(authnDescriptor.getAuthnQueryService(), hasSize(1));
         assertThat(authnDescriptor.getProtocolSupportEnumeration(), containsInAnyOrder("http://www.example.com/", "http://www.example2.com/"));
     }
 
@@ -744,67 +697,67 @@ public class SAMLParserTest {
     }
 
     @Test
-    public void testMissingRequiredAttributeIDPSSODescriptorType()  throws Exception {
+    public void testMissingRequiredAttributeIDPSSODescriptorType() throws Exception {
         testMissingAttribute("IDPSSODescriptorType", "protocolSupportEnumeration");
     }
 
     @Test
-    public void testMissingRequiredAttributeSPSSODescriptorType()  throws Exception {
+    public void testMissingRequiredAttributeSPSSODescriptorType() throws Exception {
         testMissingAttribute("SPSSODescriptorType", "protocolSupportEnumeration");
     }
 
     @Test
-    public void testMissingRequiredAttributeAttributeAuthorityDescriptorType()  throws Exception {
+    public void testMissingRequiredAttributeAttributeAuthorityDescriptorType() throws Exception {
         testMissingAttribute("AttributeAuthorityDescriptorType", "protocolSupportEnumeration");
     }
 
     @Test
-    public void testMissingRequiredAttributeAuthnAuthorityDescriptorType()  throws Exception {
+    public void testMissingRequiredAttributeAuthnAuthorityDescriptorType() throws Exception {
         testMissingAttribute("AuthnAuthorityDescriptorType", "protocolSupportEnumeration");
     }
 
     @Test
-    public void testMissingRequiredAttributePDPDescriptorType()  throws Exception {
+    public void testMissingRequiredAttributePDPDescriptorType() throws Exception {
         testMissingAttribute("PDPDescriptorType", "protocolSupportEnumeration");
     }
 
     @Test
-    public void testMissingRequiredAttributeAttributeConsumingServiceType()  throws Exception {
+    public void testMissingRequiredAttributeAttributeConsumingServiceType() throws Exception {
         testMissingAttribute("AttributeConsumingServiceType", "index");
     }
 
     @Test
-    public void testMissingRequiredAttributeAttributeType()  throws Exception {
+    public void testMissingRequiredAttributeAttributeType() throws Exception {
         testMissingAttribute("AttributeType", "Name");
     }
 
     @Test
-    public void testMissingRequiredAttributeContactType()  throws Exception {
+    public void testMissingRequiredAttributeContactType() throws Exception {
         testMissingAttribute("ContactType", "contactType");
     }
 
     @Test
-    public void testMissingRequiredAttributeEncryptionMethodType()  throws Exception {
+    public void testMissingRequiredAttributeEncryptionMethodType() throws Exception {
         testMissingAttribute("EncryptionMethodType", "Algorithm");
     }
 
     @Test
-    public void testMissingRequiredAttributeEndpointTypeBinding()  throws Exception {
+    public void testMissingRequiredAttributeEndpointTypeBinding() throws Exception {
         testMissingAttribute("EndpointType", "Binding");
     }
 
     @Test
-    public void testMissingRequiredAttributeEndpointTypeLocation()  throws Exception {
+    public void testMissingRequiredAttributeEndpointTypeLocation() throws Exception {
         testMissingAttribute("EndpointType", "Location");
     }
 
     @Test
-    public void testMissingRequiredAttributeEntityDescriptorType()  throws Exception {
+    public void testMissingRequiredAttributeEntityDescriptorType() throws Exception {
         testMissingAttribute("EntityDescriptorType", "entityID");
     }
 
     @Test
-    public void testMissingRequiredAttributeRequestedAttributeType()  throws Exception {
+    public void testMissingRequiredAttributeRequestedAttributeType() throws Exception {
         testMissingAttribute("RequestedAttributeType", "Name");
     }
 
@@ -947,7 +900,7 @@ public class SAMLParserTest {
         AttributeStatementType attributeStatementType = assertion.getAttributeStatements().iterator().next();
         assertThat(attributeStatementType.getAttributes(), hasSize(5));
 
-        for (AttributeStatementType.ASTChoiceType choiceType: attributeStatementType.getAttributes()) {
+        for (AttributeStatementType.ASTChoiceType choiceType : attributeStatementType.getAttributes()) {
             AttributeType attr = choiceType.getAttribute();
             String attrName = attr.getName();
             Object value = attr.getAttributeValue().get(0);
@@ -986,7 +939,7 @@ public class SAMLParserTest {
         AttributeStatementType attributeStatementType = assertion.getAttributeStatements().iterator().next();
         assertThat(attributeStatementType.getAttributes(), hasSize(9));
 
-        for (AttributeStatementType.ASTChoiceType choiceType: attributeStatementType.getAttributes()) {
+        for (AttributeStatementType.ASTChoiceType choiceType : attributeStatementType.getAttributes()) {
             AttributeType attr = choiceType.getAttribute();
             String attrName = attr.getName();
             Object value = attr.getAttributeValue().get(0);
@@ -1076,28 +1029,28 @@ public class SAMLParserTest {
 
     @Test
     public void testSaml20AssertionsAdviceTag() throws Exception {
-        Matcher<String>[] ATTR_NAME = new Matcher[] {
-            is("portal_id"),
-            is("organization_id"),
-            is("status"),
-            is("has_sub_organization"),
-            is("anytype_test"),
-            is("anytype_no_xml_test"),
-            is("ssostartpage"),
-            is("logouturl"),
-            is("nil_value_attribute"),
+        Matcher<String>[] ATTR_NAME = new Matcher[]{
+                is("portal_id"),
+                is("organization_id"),
+                is("status"),
+                is("has_sub_organization"),
+                is("anytype_test"),
+                is("anytype_no_xml_test"),
+                is("ssostartpage"),
+                is("logouturl"),
+                is("nil_value_attribute"),
         };
 
-        Matcher<List<Object>>[] ATTR_VALUE = new Matcher[] {
-            contains(is("060D00000000SHZ")),
-            contains(is("<n1:elem2 xmlns:n1=\"http://example.net\" xml:lang=\"en\"><n3:stuff xmlns:n3=\"ftp://example.org\">00DD0000000F7L5</n3:stuff></n1:elem2>")),
-            contains(is("<status><code><status>XYZ</status></code></status>")),
-            contains(is("true")),
-            contains(is("<elem1 atttr1=\"en\"><elem2>val2</elem2></elem1>")),
-            contains(is("value_no_xml")),
-            contains(is("http://www.salesforce.com/security/saml/saml20-gen.jsp")),
-            contains(is("http://www.salesforce.com/security/del_auth/SsoLogoutPage.html")),
-            contains(nullValue()),
+        Matcher<List<Object>>[] ATTR_VALUE = new Matcher[]{
+                contains(is("060D00000000SHZ")),
+                contains(is("<n1:elem2 xmlns:n1=\"http://example.net\" xml:lang=\"en\"><n3:stuff xmlns:n3=\"ftp://example.org\">00DD0000000F7L5</n3:stuff></n1:elem2>")),
+                contains(is("<status><code><status>XYZ</status></code></status>")),
+                contains(is("true")),
+                contains(is("<elem1 atttr1=\"en\"><elem2>val2</elem2></elem1>")),
+                contains(is("value_no_xml")),
+                contains(is("http://www.salesforce.com/security/saml/saml20-gen.jsp")),
+                contains(is("http://www.salesforce.com/security/del_auth/SsoLogoutPage.html")),
+                contains(nullValue()),
         };
 
         AssertionType a = assertParsed("saml20-assertion-advice.xml", AssertionType.class);
@@ -1111,7 +1064,7 @@ public class SAMLParserTest {
                 assertThat(ac.getSequence(), notNullValue());
 
                 assertThat(ac.getSequence().getClassRef().getValue(), is(JBossSAMLURIConstants.AC_UNSPECIFIED.getUri()));
-                
+
                 assertThat(ac.getSequence(), notNullValue());
                 assertThat(ac.getSequence().getAuthnContextDecl(), notNullValue());
                 assertThat(ac.getSequence().getAuthnContextDecl().getValue(), instanceOf(Element.class));
@@ -1120,7 +1073,7 @@ public class SAMLParserTest {
             } else {
                 AttributeStatementType as = (AttributeStatementType) statement;
                 assertThat(as.getAttributes(), hasSize(9));
-                for (int i = 0; i < as.getAttributes().size(); i ++) {
+                for (int i = 0; i < as.getAttributes().size(); i++) {
                     AttributeType attr = as.getAttributes().get(i).getAttribute();
                     assertThat(attr.getName(), ATTR_NAME[i]);
                     assertThat(attr.getAttributeValue(), ATTR_VALUE[i]);

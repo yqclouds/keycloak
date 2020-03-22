@@ -38,14 +38,9 @@ import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.idm.IdentityProviderRepresentation;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
+import org.keycloak.utils.ReservedCharValidator;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -55,11 +50,10 @@ import java.util.List;
 import java.util.Map;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import org.keycloak.utils.ReservedCharValidator;
 
 /**
- * @resource Identity Providers
  * @author Pedro Igor
+ * @resource Identity Providers
  */
 public class IdentityProvidersResource {
 
@@ -135,9 +129,9 @@ public class IdentityProvidersResource {
         if (!(data.containsKey("providerId") && data.containsKey("fromUrl"))) {
             throw new BadRequestException();
         }
-        
-        ReservedCharValidator.validate((String)data.get("alias"));
-        
+
+        ReservedCharValidator.validate((String) data.get("alias"));
+
         String providerId = data.get("providerId").toString();
         String from = data.get("fromUrl").toString();
         InputStream inputStream = session.getProvider(HttpClientProvider.class).get(from);
@@ -187,7 +181,7 @@ public class IdentityProvidersResource {
         this.auth.realm().requireManageIdentityProviders();
 
         ReservedCharValidator.validate(representation.getAlias());
-        
+
         try {
             IdentityProviderModel identityProvider = RepresentationToModel.toModel(realm, representation, session);
             this.realm.addIdentityProvider(identityProvider);
@@ -195,7 +189,7 @@ public class IdentityProvidersResource {
             representation.setInternalId(identityProvider.getInternalId());
             adminEvent.operation(OperationType.CREATE).resourcePath(session.getContext().getUri(), identityProvider.getAlias())
                     .representation(StripSecretsUtils.strip(representation)).success();
-            
+
             return Response.created(session.getContext().getUri().getAbsolutePathBuilder().path(representation.getAlias()).build()).build();
         } catch (IllegalArgumentException e) {
             return ErrorResponse.error("Invalid request", BAD_REQUEST);
@@ -218,7 +212,7 @@ public class IdentityProvidersResource {
 
         IdentityProviderResource identityProviderResource = new IdentityProviderResource(this.auth, realm, session, identityProviderModel, adminEvent);
         ResteasyProviderFactory.getInstance().injectProperties(identityProviderResource);
-        
+
         return identityProviderResource;
     }
 

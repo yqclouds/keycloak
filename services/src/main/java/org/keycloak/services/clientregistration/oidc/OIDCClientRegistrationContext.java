@@ -17,18 +17,17 @@
 
 package org.keycloak.services.clientregistration.oidc;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.protocol.oidc.utils.SubjectType;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.oidc.OIDCClientRepresentation;
 import org.keycloak.services.clientregistration.AbstractClientRegistrationContext;
 import org.keycloak.services.clientregistration.ClientRegistrationProvider;
-import org.keycloak.services.clientregistration.DefaultClientRegistrationContext;
 import org.keycloak.services.validation.PairwiseClientValidator;
 import org.keycloak.services.validation.ValidationMessages;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>

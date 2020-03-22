@@ -31,17 +31,11 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Validates client based on "client_id" and "client_secret" sent either in request parameters or in "Authorization: Basic" header .
- *
+ * <p>
  * See org.keycloak.adapters.authentication.ClientIdAndSecretAuthenticator for the adapter
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>

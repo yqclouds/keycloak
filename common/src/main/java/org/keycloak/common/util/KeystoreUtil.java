@@ -36,11 +36,6 @@ public class KeystoreUtil {
         BouncyIntegration.init();
     }
 
-    public enum KeystoreFormat {
-        JKS,
-        PKCS12
-    }
-
     public static KeyStore loadKeyStore(String filename, String password) throws Exception {
         KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
         InputStream trustStream = null;
@@ -84,5 +79,10 @@ public class KeystoreUtil {
         } catch (Exception e) {
             throw new RuntimeException("Failed to load private key: " + e.getMessage(), e);
         }
+    }
+
+    public enum KeystoreFormat {
+        JKS,
+        PKCS12
     }
 }

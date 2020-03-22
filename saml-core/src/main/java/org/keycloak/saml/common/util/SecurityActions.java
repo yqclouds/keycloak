@@ -43,7 +43,6 @@ public class SecurityActions {
      *
      * @param theClass
      * @param fullQualifiedName
-     *
      * @return
      */
     public static Class<?> loadClass(final Class<?> theClass, final String fullQualifiedName) {
@@ -85,7 +84,6 @@ public class SecurityActions {
      *
      * @param classLoader
      * @param fullQualifiedName
-     *
      * @return
      */
     public static Class<?> loadClass(final ClassLoader classLoader, final String fullQualifiedName) {
@@ -121,7 +119,6 @@ public class SecurityActions {
      *
      * @param clazz
      * @param resourceName
-     *
      * @return
      */
     public static URL loadResource(final Class<?> clazz, final String resourceName) {
@@ -162,7 +159,6 @@ public class SecurityActions {
      *
      * @param key
      * @param defaultValue
-     *
      * @return
      */
     public static void setSystemProperty(final String key, final String value) {
@@ -188,7 +184,6 @@ public class SecurityActions {
      *
      * @param key
      * @param defaultValue
-     *
      * @return
      */
     public static String getSystemProperty(final String key, final String defaultValue) {

@@ -98,18 +98,18 @@ class ArrayFrob {
 
     @SuppressWarnings("unchecked")
     public static Object convert(Object o, Class<? extends Object> c) throws IllegalArgumentException {
-      /* Possible Conversions:
-       *
-       ** List<Integer> -> List<Integer>
-       ** List<Integer> -> int[]
-       ** List<Integer> -> Integer[]
-       ** int[] -> int[]
-       ** int[] -> List<Integer>
-       ** int[] -> Integer[]
-       ** Integer[] -> Integer[]
-       ** Integer[] -> int[]
-       ** Integer[] -> List<Integer>
-       */
+        /* Possible Conversions:
+         *
+         ** List<Integer> -> List<Integer>
+         ** List<Integer> -> int[]
+         ** List<Integer> -> Integer[]
+         ** int[] -> int[]
+         ** int[] -> List<Integer>
+         ** int[] -> Integer[]
+         ** Integer[] -> Integer[]
+         ** Integer[] -> int[]
+         ** Integer[] -> List<Integer>
+         */
         try {
             // List<Integer> -> List<Integer>
             if (List.class.equals(c)

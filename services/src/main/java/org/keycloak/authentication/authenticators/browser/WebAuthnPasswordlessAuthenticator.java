@@ -18,9 +18,6 @@
 
 package org.keycloak.authentication.authenticators.browser;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.RequiredActionFactory;
 import org.keycloak.authentication.RequiredActionProvider;
@@ -33,6 +30,9 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.WebAuthnPolicy;
 import org.keycloak.models.credential.WebAuthnCredentialModel;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Authenticator for WebAuthn authentication with passwordless credential. This class is temporary and will be likely
@@ -64,13 +64,13 @@ public class WebAuthnPasswordlessAuthenticator extends WebAuthnAuthenticator {
 
     @Override
     public List<RequiredActionFactory> getRequiredActions(KeycloakSession session) {
-        return Collections.singletonList((WebAuthnPasswordlessRegisterFactory)session.getKeycloakSessionFactory().getProviderFactory(RequiredActionProvider.class, WebAuthnPasswordlessRegisterFactory.PROVIDER_ID));
+        return Collections.singletonList((WebAuthnPasswordlessRegisterFactory) session.getKeycloakSessionFactory().getProviderFactory(RequiredActionProvider.class, WebAuthnPasswordlessRegisterFactory.PROVIDER_ID));
     }
 
 
     @Override
     public WebAuthnPasswordlessCredentialProvider getCredentialProvider(KeycloakSession session) {
-        return (WebAuthnPasswordlessCredentialProvider)session.getProvider(CredentialProvider.class, WebAuthnPasswordlessCredentialProviderFactory.PROVIDER_ID);
+        return (WebAuthnPasswordlessCredentialProvider) session.getProvider(CredentialProvider.class, WebAuthnPasswordlessCredentialProviderFactory.PROVIDER_ID);
     }
 
 }

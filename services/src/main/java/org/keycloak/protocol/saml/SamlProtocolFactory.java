@@ -19,11 +19,7 @@ package org.keycloak.protocol.saml;
 
 import org.keycloak.Config;
 import org.keycloak.events.EventBuilder;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RealmModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.protocol.AbstractLoginProtocolFactory;
 import org.keycloak.protocol.LoginProtocol;
@@ -35,8 +31,8 @@ import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.saml.SignatureAlgorithm;
 import org.keycloak.saml.common.constants.JBossSAMLURIConstants;
 import org.keycloak.saml.processing.core.saml.v2.constants.X500SAMLProfileConstants;
-
 import org.keycloak.saml.validators.DestinationValidator;
+
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,37 +47,6 @@ public class SamlProtocolFactory extends AbstractLoginProtocolFactory {
 
     public static final String SCOPE_ROLE_LIST = "role_list";
     private static final String ROLE_LIST_CONSENT_TEXT = "${samlRoleListScopeConsentText}";
-
-    private DestinationValidator destinationValidator;
-
-    @Override
-    public Object createProtocolEndpoint(RealmModel realm, EventBuilder event) {
-        return new SamlService(realm, event, destinationValidator);
-    }
-
-    @Override
-    public LoginProtocol create(KeycloakSession session) {
-        return new SamlProtocol().setSession(session);
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-        //PicketLinkCoreSTS sts = PicketLinkCoreSTS.instance();
-        //sts.installDefaultConfiguration();
-
-        this.destinationValidator = DestinationValidator.forProtocolMap(config.getArray("knownProtocols"));
-    }
-
-    @Override
-    public String getId() {
-        return SamlProtocol.LOGIN_PROTOCOL;
-    }
-
-    @Override
-    public Map<String, ProtocolMapperModel> getBuiltinMappers() {
-        return builtins;
-    }
-
     static Map<String, ProtocolMapperModel> builtins = new HashMap<>();
     static List<ProtocolMapperModel> defaultBuiltins = new ArrayList<>();
 
@@ -114,6 +79,35 @@ public class SamlProtocolFactory extends AbstractLoginProtocolFactory {
 
     }
 
+    private DestinationValidator destinationValidator;
+
+    @Override
+    public Object createProtocolEndpoint(RealmModel realm, EventBuilder event) {
+        return new SamlService(realm, event, destinationValidator);
+    }
+
+    @Override
+    public LoginProtocol create(KeycloakSession session) {
+        return new SamlProtocol().setSession(session);
+    }
+
+    @Override
+    public void init(Config.Scope config) {
+        //PicketLinkCoreSTS sts = PicketLinkCoreSTS.instance();
+        //sts.installDefaultConfiguration();
+
+        this.destinationValidator = DestinationValidator.forProtocolMap(config.getArray("knownProtocols"));
+    }
+
+    @Override
+    public String getId() {
+        return SamlProtocol.LOGIN_PROTOCOL;
+    }
+
+    @Override
+    public Map<String, ProtocolMapperModel> getBuiltinMappers() {
+        return builtins;
+    }
 
     @Override
     protected void createDefaultClientScopesImpl(RealmModel newRealm) {

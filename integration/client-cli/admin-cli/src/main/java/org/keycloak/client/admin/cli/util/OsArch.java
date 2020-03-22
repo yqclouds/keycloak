@@ -63,7 +63,7 @@ public class OsArch {
         if (isWindows()) {
             path = path.replaceAll("/", "\\\\");
             if (path.startsWith("~")) {
-                path =  "%HOMEPATH%" + path.substring(1);
+                path = "%HOMEPATH%" + path.substring(1);
             }
         }
         return path;

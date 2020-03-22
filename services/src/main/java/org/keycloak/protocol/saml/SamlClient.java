@@ -32,12 +32,25 @@ import org.keycloak.saml.common.util.XmlKeyInfoKeyNameTransformer;
  */
 public class SamlClient extends ClientConfigResolver {
 
-    protected static final Logger logger = Logger.getLogger(SamlClient.class);
-
     public static final XmlKeyInfoKeyNameTransformer DEFAULT_XML_KEY_INFO_KEY_NAME_TRANSFORMER = XmlKeyInfoKeyNameTransformer.KEY_ID;
+    protected static final Logger logger = Logger.getLogger(SamlClient.class);
 
     public SamlClient(ClientModel client) {
         super(client);
+    }
+
+    public static String samlNameIDFormatToClientAttribute(String nameIdFormat) {
+        if (nameIdFormat.equals(JBossSAMLURIConstants.NAMEID_FORMAT_EMAIL.get())) {
+            return "email";
+        } else if (nameIdFormat.equals(JBossSAMLURIConstants.NAMEID_FORMAT_PERSISTENT.get())) {
+            return "persistent";
+        } else if (nameIdFormat.equals(JBossSAMLURIConstants.NAMEID_FORMAT_TRANSIENT.get())) {
+            return "transient";
+        } else if (nameIdFormat.equals(JBossSAMLURIConstants.NAMEID_FORMAT_UNSPECIFIED.get())) {
+            return "username";
+        }
+        return null;
+
     }
 
     public String getCanonicalizationMethod() {
@@ -82,21 +95,6 @@ public class SamlClient extends ClientConfigResolver {
         return nameIdFormat;
 
     }
-
-    public static String samlNameIDFormatToClientAttribute(String nameIdFormat) {
-        if (nameIdFormat.equals(JBossSAMLURIConstants.NAMEID_FORMAT_EMAIL.get())) {
-            return "email";
-        } else if (nameIdFormat.equals(JBossSAMLURIConstants.NAMEID_FORMAT_PERSISTENT.get())) {
-            return "persistent";
-        } else if (nameIdFormat.equals(JBossSAMLURIConstants.NAMEID_FORMAT_TRANSIENT.get())) {
-            return "transient";
-        } else if (nameIdFormat.equals(JBossSAMLURIConstants.NAMEID_FORMAT_UNSPECIFIED.get())) {
-            return "username";
-        }
-        return null;
-
-    }
-
 
     public void setNameIDFormat(String format) {
         client.setAttribute(SamlConfigAttributes.SAML_NAME_ID_FORMAT_ATTRIBUTE, format);
@@ -234,10 +232,6 @@ public class SamlClient extends ClientConfigResolver {
         client.setAttribute(SamlConfigAttributes.SAML_ONETIMEUSE_CONDITION, Boolean.toString(val));
     }
 
-    public void setAssertionLifespan(int assertionLifespan) {
-        client.setAttribute(SamlConfigAttributes.SAML_ASSERTION_LIFESPAN, Integer.toString(assertionLifespan));
-    }
-
     public int getAssertionLifespan() {
         String value = client.getAttribute(SamlConfigAttributes.SAML_ASSERTION_LIFESPAN);
         if (value == null || value.isEmpty()) {
@@ -249,5 +243,9 @@ public class SamlClient extends ClientConfigResolver {
             logger.warnf("Invalid numeric value for saml attribute \"%s\": %s", SamlConfigAttributes.SAML_ASSERTION_LIFESPAN, value);
             return -1;
         }
+    }
+
+    public void setAssertionLifespan(int assertionLifespan) {
+        client.setAttribute(SamlConfigAttributes.SAML_ASSERTION_LIFESPAN, Integer.toString(assertionLifespan));
     }
 }

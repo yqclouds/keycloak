@@ -55,6 +55,7 @@ import java.util.concurrent.TimeUnit;
  * }
  * </pre>
  * </p>
+ *
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class DefaultHttpClientFactory implements HttpClientFactory {
@@ -131,7 +132,7 @@ public class DefaultHttpClientFactory implements HttpClientFactory {
 
     private void lazyInit(KeycloakSession session) {
         if (httpClient == null) {
-            synchronized(this) {
+            synchronized (this) {
                 if (httpClient == null) {
                     long socketTimeout = config.getLong("socket-timeout-millis", -1L);
                     long establishConnectionTimeout = config.getLong("establish-connection-timeout-millis", -1L);
@@ -145,7 +146,7 @@ public class DefaultHttpClientFactory implements HttpClientFactory {
                     String clientPrivateKeyPassword = config.get("client-key-password");
                     String[] proxyMappings = config.getArray("proxy-mappings");
                     boolean disableTrustManager = config.getBoolean("disable-trust-manager", false);
-                    
+
                     HttpClientBuilder builder = new HttpClientBuilder();
 
                     builder.socketTimeout(socketTimeout, TimeUnit.MILLISECONDS)
@@ -159,9 +160,9 @@ public class DefaultHttpClientFactory implements HttpClientFactory {
 
                     TruststoreProvider truststoreProvider = session.getProvider(TruststoreProvider.class);
                     boolean disableTruststoreProvider = truststoreProvider == null || truststoreProvider.getTruststore() == null;
-                    
+
                     if (disableTruststoreProvider) {
-                    	logger.warn("TruststoreProvider is disabled");
+                        logger.warn("TruststoreProvider is disabled");
                     } else {
                         builder.hostnameVerification(HttpClientBuilder.HostnameVerificationPolicy.valueOf(truststoreProvider.getPolicy().name()));
                         try {
@@ -172,10 +173,10 @@ public class DefaultHttpClientFactory implements HttpClientFactory {
                     }
 
                     if (disableTrustManager) {
-                    	logger.warn("TrustManager is disabled");
-                    	builder.disableTrustManager();
+                        logger.warn("TrustManager is disabled");
+                        builder.disableTrustManager();
                     }
-                    
+
                     if (clientKeystore != null) {
                         clientKeystore = EnvUtil.replace(clientKeystore);
                         try {
@@ -195,7 +196,6 @@ public class DefaultHttpClientFactory implements HttpClientFactory {
     public void postInit(KeycloakSessionFactory factory) {
 
     }
-
 
 
 }

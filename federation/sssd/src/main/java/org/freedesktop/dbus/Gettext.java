@@ -1,6 +1,6 @@
-/* 
+/*
  * Pescetti Pseudo-Duplimate Generator
- * 
+ *
  * Copyright (C) 2007 Matthew Johnson
  *
  * This program is free software; you can redistribute it and/or modify it

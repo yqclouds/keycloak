@@ -16,67 +16,36 @@
  */
 package org.keycloak.services.resources.admin;
 
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import javax.ws.rs.NotFoundException;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.broker.provider.IdentityProvider;
 import org.keycloak.broker.provider.IdentityProviderFactory;
 import org.keycloak.broker.provider.IdentityProviderMapper;
 import org.keycloak.broker.social.SocialIdentityProvider;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.FederatedIdentityModel;
-import org.keycloak.models.IdentityProviderMapperModel;
-import org.keycloak.models.IdentityProviderModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.ModelDuplicateException;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.models.utils.StripSecretsUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderFactory;
-import org.keycloak.representations.idm.ComponentRepresentation;
-import org.keycloak.representations.idm.ConfigPropertyRepresentation;
-import org.keycloak.representations.idm.IdentityProviderMapperRepresentation;
-import org.keycloak.representations.idm.IdentityProviderMapperTypeRepresentation;
-import org.keycloak.representations.idm.IdentityProviderRepresentation;
-import org.keycloak.representations.idm.ManagementPermissionReference;
+import org.keycloak.representations.idm.*;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionManagement;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 /**
- * @resource Identity Providers
  * @author Pedro Igor
+ * @resource Identity Providers
  */
 public class IdentityProviderResource {
 
@@ -94,6 +63,53 @@ public class IdentityProviderResource {
         this.identityProviderModel = identityProviderModel;
         this.auth = auth;
         this.adminEvent = adminEvent.resource(ResourceType.IDENTITY_PROVIDER);
+    }
+
+    // return ID of IdentityProvider from realm based on internalId of this provider
+    private static String getProviderIdByInternalId(RealmModel realm, String providerInternalId) {
+        List<IdentityProviderModel> providerModels = realm.getIdentityProviders();
+        for (IdentityProviderModel providerModel : providerModels) {
+            if (providerModel.getInternalId().equals(providerInternalId)) {
+                return providerModel.getAlias();
+            }
+        }
+
+        return null;
+    }
+
+    // sets internalId to IdentityProvider based on alias
+    private static void lookUpProviderIdByAlias(RealmModel realm, IdentityProviderRepresentation providerRep) {
+        List<IdentityProviderModel> providerModels = realm.getIdentityProviders();
+        for (IdentityProviderModel providerModel : providerModels) {
+            if (providerModel.getAlias().equals(providerRep.getAlias())) {
+                providerRep.setInternalId(providerModel.getInternalId());
+                return;
+            }
+        }
+        throw new javax.ws.rs.NotFoundException();
+    }
+
+    private static void updateUsersAfterProviderAliasChange(List<UserModel> users, String oldProviderId, String newProviderId, RealmModel realm, KeycloakSession session) {
+        for (UserModel user : users) {
+            FederatedIdentityModel federatedIdentity = session.users().getFederatedIdentity(user, oldProviderId, realm);
+            if (federatedIdentity != null) {
+                // Remove old link first
+                session.users().removeFederatedIdentity(realm, user, oldProviderId);
+
+                // And create new
+                FederatedIdentityModel newFederatedIdentity = new FederatedIdentityModel(newProviderId, federatedIdentity.getUserId(), federatedIdentity.getUserName(),
+                        federatedIdentity.getToken());
+                session.users().addFederatedIdentity(realm, user, newFederatedIdentity);
+            }
+        }
+    }
+
+    public static ManagementPermissionReference toMgmtRef(IdentityProviderModel model, AdminPermissionManagement permissions) {
+        ManagementPermissionReference ref = new ManagementPermissionReference();
+        ref.setEnabled(true);
+        ref.setResource(permissions.idps().resource(model).getId());
+        ref.setScopePermissions(permissions.idps().getPermissions(model));
+        return ref;
     }
 
     /**
@@ -197,46 +213,6 @@ public class IdentityProviderResource {
         }
     }
 
-    // return ID of IdentityProvider from realm based on internalId of this provider
-    private static String getProviderIdByInternalId(RealmModel realm, String providerInternalId) {
-        List<IdentityProviderModel> providerModels = realm.getIdentityProviders();
-        for (IdentityProviderModel providerModel : providerModels) {
-            if (providerModel.getInternalId().equals(providerInternalId)) {
-                return providerModel.getAlias();
-            }
-        }
-
-        return null;
-    }
-
-    // sets internalId to IdentityProvider based on alias
-    private static void lookUpProviderIdByAlias(RealmModel realm, IdentityProviderRepresentation providerRep) {
-        List<IdentityProviderModel> providerModels = realm.getIdentityProviders();
-        for (IdentityProviderModel providerModel : providerModels) {
-            if (providerModel.getAlias().equals(providerRep.getAlias())) {
-                providerRep.setInternalId(providerModel.getInternalId());
-                return;
-            }
-        }
-        throw new javax.ws.rs.NotFoundException();
-    }
-
-    private static void updateUsersAfterProviderAliasChange(List<UserModel> users, String oldProviderId, String newProviderId, RealmModel realm, KeycloakSession session) {
-        for (UserModel user : users) {
-            FederatedIdentityModel federatedIdentity = session.users().getFederatedIdentity(user, oldProviderId, realm);
-            if (federatedIdentity != null) {
-                // Remove old link first
-                session.users().removeFederatedIdentity(realm, user, oldProviderId);
-
-                // And create new
-                FederatedIdentityModel newFederatedIdentity = new FederatedIdentityModel(newProviderId, federatedIdentity.getUserId(), federatedIdentity.getUserName(),
-                        federatedIdentity.getToken());
-                session.users().addFederatedIdentity(realm, user, newFederatedIdentity);
-            }
-        }
-    }
-
-
     private IdentityProviderFactory getIdentityProviderFactory() {
         List<ProviderFactory> allProviders = new ArrayList<ProviderFactory>();
 
@@ -244,7 +220,8 @@ public class IdentityProviderResource {
         allProviders.addAll(this.session.getKeycloakSessionFactory().getProviderFactories(SocialIdentityProvider.class));
 
         for (ProviderFactory providerFactory : allProviders) {
-            if (providerFactory.getId().equals(identityProviderModel.getProviderId())) return (IdentityProviderFactory)providerFactory;
+            if (providerFactory.getId().equals(identityProviderModel.getProviderId()))
+                return (IdentityProviderFactory) providerFactory;
         }
 
         return null;
@@ -291,7 +268,7 @@ public class IdentityProviderResource {
         Map<String, IdentityProviderMapperTypeRepresentation> types = new HashMap<>();
         List<ProviderFactory> factories = sessionFactory.getProviderFactories(IdentityProviderMapper.class);
         for (ProviderFactory factory : factories) {
-            IdentityProviderMapper mapper = (IdentityProviderMapper)factory;
+            IdentityProviderMapper mapper = (IdentityProviderMapper) factory;
             for (String type : mapper.getCompatibleProviders()) {
                 if (IdentityProviderMapper.ANY_PROVIDER.equals(type) || type.equals(identityProviderModel.getProviderId())) {
                     IdentityProviderMapperTypeRepresentation rep = new IdentityProviderMapperTypeRepresentation();
@@ -357,7 +334,7 @@ public class IdentityProviderResource {
         }
 
         adminEvent.operation(OperationType.CREATE).resource(ResourceType.IDENTITY_PROVIDER_MAPPER).resourcePath(session.getContext().getUri(), model.getId())
-            .representation(mapper).success();
+                .representation(mapper).success();
 
         return Response.created(session.getContext().getUri().getAbsolutePathBuilder().path(model.getId()).build()).build();
 
@@ -388,7 +365,7 @@ public class IdentityProviderResource {
     /**
      * Update a mapper for the identity provider
      *
-     * @param id Mapper id
+     * @param id  Mapper id
      * @param rep
      */
     @PUT
@@ -451,18 +428,8 @@ public class IdentityProviderResource {
         return toMgmtRef(identityProviderModel, permissions);
     }
 
-    public static ManagementPermissionReference toMgmtRef(IdentityProviderModel model, AdminPermissionManagement permissions) {
-        ManagementPermissionReference ref = new ManagementPermissionReference();
-        ref.setEnabled(true);
-        ref.setResource(permissions.idps().resource(model).getId());
-        ref.setScopePermissions(permissions.idps().getPermissions(model));
-        return ref;
-    }
-
-
     /**
      * Return object stating whether client Authorization permissions have been initialized or not and a reference
-     *
      *
      * @return initialized manage permissions reference
      */
@@ -481,9 +448,6 @@ public class IdentityProviderResource {
             return new ManagementPermissionReference();
         }
     }
-
-
-
 
 
 }

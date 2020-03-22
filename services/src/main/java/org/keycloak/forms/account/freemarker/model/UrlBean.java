@@ -92,7 +92,7 @@ public class UrlBean {
 
     public String getResourcesPath() {
         URI uri = Urls.themeRoot(baseURI);
-        return uri.getPath() + "/" + theme.getType().toString().toLowerCase() +"/" + theme.getName();
+        return uri.getPath() + "/" + theme.getType().toString().toLowerCase() + "/" + theme.getName();
     }
 
 }

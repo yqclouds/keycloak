@@ -17,21 +17,12 @@
 
 package org.keycloak.models.cache.infinispan;
 
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleContainerModel;
-import org.keycloak.models.RoleModel;
+import org.keycloak.models.*;
 import org.keycloak.models.cache.CachedObject;
 import org.keycloak.models.cache.infinispan.entities.CachedClient;
 
 import java.security.MessageDigest;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -43,6 +34,7 @@ public class ClientAdapter implements ClientModel, CachedObject {
 
     protected ClientModel updated;
     protected CachedClient cached;
+    protected boolean invalidated;
 
     public ClientAdapter(RealmModel cachedRealm, CachedClient cached, RealmCacheSession cacheSession) {
         this.cachedRealm = cachedRealm;
@@ -57,7 +49,7 @@ public class ClientAdapter implements ClientModel, CachedObject {
             if (updated == null) throw new IllegalStateException("Not found in database");
         }
     }
-    protected boolean invalidated;
+
     public void invalidate() {
         invalidated = true;
     }
@@ -169,7 +161,7 @@ public class ClientAdapter implements ClientModel, CachedObject {
     }
 
     public boolean isAlwaysDisplayInConsole() {
-        if(isUpdated()) return updated.isAlwaysDisplayInConsole();
+        if (isUpdated()) return updated.isAlwaysDisplayInConsole();
         return cached.isAlwaysDisplayInConsole();
     }
 
@@ -203,6 +195,7 @@ public class ClientAdapter implements ClientModel, CachedObject {
         getDelegateForUpdate();
         updated.setSecret(secret);
     }
+
     public String getRegistrationToken() {
         if (isUpdated()) return updated.getRegistrationToken();
         return cached.getRegistrationToken();
@@ -611,12 +604,12 @@ public class ClientAdapter implements ClientModel, CachedObject {
     public Set<RoleModel> getRoles() {
         return cacheSession.getClientRoles(cachedRealm, this);
     }
-    
+
     @Override
     public Set<RoleModel> getRoles(Integer first, Integer max) {
         return cacheSession.getClientRoles(cachedRealm, this, first, max);
     }
-    
+
     @Override
     public Set<RoleModel> searchForRoles(String search, Integer first, Integer max) {
         return cacheSession.searchForClientRoles(cachedRealm, this, search, first, max);

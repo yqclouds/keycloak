@@ -41,12 +41,39 @@ public class JWKBuilder {
     private String kid;
 
     private String algorithm;
-    
+
     private JWKBuilder() {
     }
 
     public static JWKBuilder create() {
         return new JWKBuilder();
+    }
+
+    /**
+     * Copied from org.apache.commons.codec.binary.Base64
+     */
+    private static byte[] toIntegerBytes(final BigInteger bigInt) {
+        int bitlen = bigInt.bitLength();
+        // round bitlen
+        bitlen = ((bitlen + 7) >> 3) << 3;
+        final byte[] bigBytes = bigInt.toByteArray();
+
+        if (((bigInt.bitLength() % 8) != 0) && (((bigInt.bitLength() / 8) + 1) == (bitlen / 8))) {
+            return bigBytes;
+        }
+        // set up params for copying everything but sign bit
+        int startSrc = 0;
+        int len = bigBytes.length;
+
+        // if bigInt is exactly byte-aligned, just skip signbit in copy
+        if ((bigInt.bitLength() % 8) == 0) {
+            startSrc = 1;
+            len--;
+        }
+        final int startDst = bitlen / 8 - len; // to pad w/ nulls as per spec
+        final byte[] resizedBytes = new byte[bitlen / 8];
+        System.arraycopy(bigBytes, startSrc, resizedBytes, startDst, len);
+        return resizedBytes;
     }
 
     public JWKBuilder kid(String kid) {
@@ -65,9 +92,9 @@ public class JWKBuilder {
     }
 
     public JWK rsa(Key key) {
-        return rsa(key, (X509Certificate)null);
+        return rsa(key, (X509Certificate) null);
     }
-    
+
     public JWK rsa(Key key, X509Certificate certificate) {
         RSAPublicKey rsaKey = (RSAPublicKey) key;
 
@@ -80,9 +107,9 @@ public class JWKBuilder {
         k.setPublicKeyUse(DEFAULT_PUBLIC_KEY_USE);
         k.setModulus(Base64Url.encode(toIntegerBytes(rsaKey.getModulus())));
         k.setPublicExponent(Base64Url.encode(toIntegerBytes(rsaKey.getPublicExponent())));
-        
+
         if (certificate != null) {
-            k.setX509CertificateChain(new String [] {PemUtils.encodeCertificate(certificate)});
+            k.setX509CertificateChain(new String[]{PemUtils.encodeCertificate(certificate)});
         }
 
         return k;
@@ -113,35 +140,8 @@ public class JWKBuilder {
         k.setCrv("P-" + fieldSize);
         k.setX(Base64Url.encode(toIntegerBytes(ecKey.getW().getAffineX())));
         k.setY(Base64Url.encode(toIntegerBytes(ecKey.getW().getAffineY())));
-        
+
         return k;
-    }
-
-    /**
-     * Copied from org.apache.commons.codec.binary.Base64
-     */
-    private static byte[] toIntegerBytes(final BigInteger bigInt) {
-        int bitlen = bigInt.bitLength();
-        // round bitlen
-        bitlen = ((bitlen + 7) >> 3) << 3;
-        final byte[] bigBytes = bigInt.toByteArray();
-
-        if (((bigInt.bitLength() % 8) != 0) && (((bigInt.bitLength() / 8) + 1) == (bitlen / 8))) {
-            return bigBytes;
-        }
-        // set up params for copying everything but sign bit
-        int startSrc = 0;
-        int len = bigBytes.length;
-
-        // if bigInt is exactly byte-aligned, just skip signbit in copy
-        if ((bigInt.bitLength() % 8) == 0) {
-            startSrc = 1;
-            len--;
-        }
-        final int startDst = bitlen / 8 - len; // to pad w/ nulls as per spec
-        final byte[] resizedBytes = new byte[bitlen / 8];
-        System.arraycopy(bigBytes, startSrc, resizedBytes, startDst, len);
-        return resizedBytes;
     }
 
 }

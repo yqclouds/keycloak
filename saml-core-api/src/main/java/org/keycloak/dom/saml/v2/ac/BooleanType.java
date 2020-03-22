@@ -58,10 +58,6 @@ public enum BooleanType {
         value = v;
     }
 
-    public String value() {
-        return value;
-    }
-
     public static BooleanType fromValue(String v) {
         for (BooleanType c : BooleanType.values()) {
             if (c.value.equals(v)) {
@@ -69,6 +65,10 @@ public enum BooleanType {
             }
         }
         throw new IllegalArgumentException(v);
+    }
+
+    public String value() {
+        return value;
     }
 
 }

@@ -32,15 +32,23 @@ import java.util.function.Predicate;
 public interface UserSessionProvider extends Provider {
 
     AuthenticatedClientSessionModel createClientSession(RealmModel realm, ClientModel client, UserSessionModel userSession);
+
     AuthenticatedClientSessionModel getClientSession(UserSessionModel userSession, ClientModel client, UUID clientSessionId, boolean offline);
 
     UserSessionModel createUserSession(RealmModel realm, UserModel user, String loginUsername, String ipAddress, String authMethod, boolean rememberMe, String brokerSessionId, String brokerUserId);
+
     UserSessionModel createUserSession(String id, RealmModel realm, UserModel user, String loginUsername, String ipAddress, String authMethod, boolean rememberMe, String brokerSessionId, String brokerUserId);
+
     UserSessionModel getUserSession(RealmModel realm, String id);
+
     List<UserSessionModel> getUserSessions(RealmModel realm, UserModel user);
+
     List<UserSessionModel> getUserSessions(RealmModel realm, ClientModel client);
+
     List<UserSessionModel> getUserSessions(RealmModel realm, ClientModel client, int firstResult, int maxResults);
+
     List<UserSessionModel> getUserSessionByBrokerUserId(RealmModel realm, String brokerUserId);
+
     UserSessionModel getUserSessionByBrokerSessionId(RealmModel realm, String brokerSessionId);
 
     /**
@@ -60,37 +68,58 @@ public interface UserSessionProvider extends Provider {
      */
     Map<String, Long> getActiveClientSessionStats(RealmModel realm, boolean offline);
 
-    /** This will remove attached ClientLoginSessionModels too **/
+    /**
+     * This will remove attached ClientLoginSessionModels too
+     **/
     void removeUserSession(RealmModel realm, UserSessionModel session);
+
     void removeUserSessions(RealmModel realm, UserModel user);
 
-    /** Implementation doesn't need to propagate removal of expired userSessions to userSessionPersister. Cleanup on persister will be called separately **/
+    /**
+     * Implementation doesn't need to propagate removal of expired userSessions to userSessionPersister. Cleanup on persister will be called separately
+     **/
     void removeExpired(RealmModel realm);
+
     void removeUserSessions(RealmModel realm);
 
     UserLoginFailureModel getUserLoginFailure(RealmModel realm, String userId);
+
     UserLoginFailureModel addUserLoginFailure(RealmModel realm, String userId);
+
     void removeUserLoginFailure(RealmModel realm, String userId);
+
     void removeAllUserLoginFailures(RealmModel realm);
 
     void onRealmRemoved(RealmModel realm);
+
     void onClientRemoved(RealmModel realm, ClientModel client);
 
-    /** Newly created userSession won't contain attached AuthenticatedClientSessions **/
+    /**
+     * Newly created userSession won't contain attached AuthenticatedClientSessions
+     **/
     UserSessionModel createOfflineUserSession(UserSessionModel userSession);
+
     UserSessionModel getOfflineUserSession(RealmModel realm, String userSessionId);
 
-    /** Removes the attached clientSessions as well **/
+    /**
+     * Removes the attached clientSessions as well
+     **/
     void removeOfflineUserSession(RealmModel realm, UserSessionModel userSession);
 
-    /** Will automatically attach newly created offline client session to the offlineUserSession **/
+    /**
+     * Will automatically attach newly created offline client session to the offlineUserSession
+     **/
     AuthenticatedClientSessionModel createOfflineClientSession(AuthenticatedClientSessionModel clientSession, UserSessionModel offlineUserSession);
+
     List<UserSessionModel> getOfflineUserSessions(RealmModel realm, UserModel user);
 
     long getOfflineSessionsCount(RealmModel realm, ClientModel client);
+
     List<UserSessionModel> getOfflineUserSessions(RealmModel realm, ClientModel client, int first, int max);
 
-    /** Triggered by persister during pre-load. It imports authenticatedClientSessions too **/
+    /**
+     * Triggered by persister during pre-load. It imports authenticatedClientSessions too
+     **/
     void importUserSessions(Collection<UserSessionModel> persistentUserSessions, boolean offline);
 
     void close();

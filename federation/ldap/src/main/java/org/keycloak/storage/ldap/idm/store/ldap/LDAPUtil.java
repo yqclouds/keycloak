@@ -34,7 +34,6 @@ public class LDAPUtil {
      * <p>Formats the given date.</p>
      *
      * @param date The Date to format.
-     *
      * @return A String representing the formatted date.
      */
     public static final String formatDate(Date date) {
@@ -61,7 +60,6 @@ public class LDAPUtil {
      * </ul>
      *
      * @param date The date string to parse from.
-     *
      * @return the Date.
      */
     public static final Date parseDate(String date) {
@@ -81,7 +79,6 @@ public class LDAPUtil {
     }
 
 
-
     /**
      * <p>Creates a byte-based {@link String} representation of a raw byte array representing the value of the
      * <code>objectGUID</code> attribute retrieved from Active Directory.</p>
@@ -93,8 +90,7 @@ public class LDAPUtil {
      * </p>
      *
      * @param objectGUID A raw byte array representing the value of the <code>objectGUID</code> attribute retrieved from
-     * Active Directory.
-     *
+     *                   Active Directory.
      * @return A byte-based String representation in the form of \[0]\[1]\[2]\[3]\[4]\[5]\[6]\[7]\[8]\[9]\[10]\[11]\[12]\[13]\[14]\[15]
      */
     public static String convertObjectGUIDToByteString(byte[] objectGUID) {
@@ -122,8 +118,7 @@ public class LDAPUtil {
      * </p>
      *
      * @param objectGUID A raw byte array representing the value of the <code>objectGUID</code> attribute retrieved from
-     * Active Directory.
-     *
+     *                   Active Directory.
      * @return A string representing the decoded value in the form of [3][2][1][0]-[5][4]-[7][6]-[8][9]-[10][11][12][13][14][15].
      */
     public static String decodeObjectGUID(byte[] objectGUID) {
@@ -139,15 +134,14 @@ public class LDAPUtil {
      * eDirectory.</p>
      *
      * @param guid A raw byte array representing the value of the <code>guid</code> attribute retrieved from
-     * Novell eDirectory.
-     *
+     *             Novell eDirectory.
      * @return A string representing the decoded value in the form of [0][1][2][3]-[4][5]-[6][7]-[8][9]-[10][11][12][13][14][15].
      */
     public static String decodeGuid(byte[] guid) {
-        byte[] withBigEndian = new byte[] { guid[3], guid[2], guid[1], guid[0],
-            guid[5], guid[4],
-            guid[7], guid[6],
-            guid[8], guid[9], guid[10], guid[11], guid[12], guid[13], guid[14], guid[15]
+        byte[] withBigEndian = new byte[]{guid[3], guid[2], guid[1], guid[0],
+                guid[5], guid[4],
+                guid[7], guid[6],
+                guid[8], guid[9], guid[10], guid[11], guid[12], guid[13], guid[14], guid[15]
         };
         return convertToDashedString(withBigEndian);
     }

@@ -20,7 +20,7 @@ public class PasswordCredentialModel extends CredentialModel {
         this.secretData = secretData;
     }
 
-    public static PasswordCredentialModel createFromValues(String algorithm, byte[] salt, int hashIterations, String encodedPassword){
+    public static PasswordCredentialModel createFromValues(String algorithm, byte[] salt, int hashIterations, String encodedPassword) {
         PasswordCredentialData credentialData = new PasswordCredentialData(hashIterations, algorithm);
         PasswordSecretData secretData = new PasswordSecretData(encodedPassword, salt);
 

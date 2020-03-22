@@ -28,10 +28,16 @@ import java.util.List;
  */
 public interface UserFederatedUserCredentialStore extends Provider {
     void updateCredential(RealmModel realm, String userId, CredentialModel cred);
+
     CredentialModel createCredential(RealmModel realm, String userId, CredentialModel cred);
+
     boolean removeStoredCredential(RealmModel realm, String userId, String id);
+
     CredentialModel getStoredCredentialById(RealmModel realm, String userId, String id);
+
     List<CredentialModel> getStoredCredentials(RealmModel realm, String userId);
+
     List<CredentialModel> getStoredCredentialsByType(RealmModel realm, String userId, String type);
+
     CredentialModel getStoredCredentialByNameAndType(RealmModel realm, String userId, String name, String type);
 }

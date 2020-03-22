@@ -18,20 +18,17 @@
 
 package org.keycloak.authentication;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
-
 import org.jboss.logging.Logger;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.RealmModel;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Resolves set of AuthenticationSelectionOptions
@@ -50,12 +47,12 @@ class AuthenticationSelectionResolver {
      * In both cases, the credentials take precedence, with the order selected by the user (or his administrator).
      * <p>
      * The implementation needs to take various subflows into account.
-     *
+     * <p>
      * For example during configuration of the authentication flow like this:
      * - WebAuthn:                 ALTERNATIVE
      * - Password-and-OTP subflow:  ALTERNATIVE
-     *   - Password REQUIRED
-     *   - OTP      REQUIRED
+     * - Password REQUIRED
+     * - OTP      REQUIRED
      * The user can authenticate with: WebAuthn OR (Password AND OTP). In this case, the user should be able to choose between WebAuthn and Password
      * even if those mechanisms are in different subflows
      *
@@ -107,13 +104,13 @@ class AuthenticationSelectionResolver {
     /**
      * Return the flowId of the "highest" subflow, which we need to take into account when creating list of authentication mechanisms
      * shown to the user.
-     *
+     * <p>
      * For example during configuration of the authentication flow like this:
      * - WebAuthn:                 ALTERNATIVE
      * - Password-and-OTP subflow:  ALTERNATIVE
-     *   - Password REQUIRED
-     *   - OTP      REQUIRED
-     *
+     * - Password REQUIRED
+     * - OTP      REQUIRED
+     * <p>
      * and assuming that "execution" parameter is PasswordForm, we also need to take the higher subflow into account as user
      * should be able to choose among WebAuthn and Password
      *
@@ -129,7 +126,7 @@ class AuthenticationSelectionResolver {
             if (execution.isAlternative()) {
                 //Consider parent flow as we need to get all alternative executions to be able to list their credentials
                 flowId = execution.getParentFlow();
-            } else if (execution.isRequired()  || execution.isConditional()) {
+            } else if (execution.isRequired() || execution.isConditional()) {
                 if (execution.isAuthenticatorFlow()) {
                     flowId = execution.getFlowId();
                 }
@@ -174,7 +171,7 @@ class AuthenticationSelectionResolver {
     /**
      * Fill the typeAuthExecMap and nonCredentialExecutions collections with all available authentication mechanisms for the particular subflow with
      * given flowId
-     *
+     * <p>
      * Return true if at least something was added to any of the list
      */
     private static boolean addAllExecutionsFromSubflow(AuthenticationProcessor processor, String flowId, Map<String, AuthenticationExecutionModel> typeAuthExecMap, List<AuthenticationExecutionModel> nonCredentialExecutions) {

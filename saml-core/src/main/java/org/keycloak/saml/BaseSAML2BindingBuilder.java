@@ -18,7 +18,6 @@
 package org.keycloak.saml;
 
 import org.jboss.logging.Logger;
-
 import org.keycloak.common.util.KeycloakUriBuilder;
 import org.keycloak.saml.common.constants.GeneralConstants;
 import org.keycloak.saml.common.constants.JBossSAMLConstants;
@@ -30,7 +29,6 @@ import org.keycloak.saml.processing.core.saml.v2.util.DocumentUtil;
 import org.keycloak.saml.processing.core.util.XMLEncryptionUtil;
 import org.keycloak.saml.processing.web.util.PostBindingUtil;
 import org.keycloak.saml.processing.web.util.RedirectBindingUtil;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -41,12 +39,7 @@ import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.net.URI;
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.Signature;
-import java.security.SignatureException;
+import java.security.*;
 import java.security.cert.X509Certificate;
 
 import static org.keycloak.common.util.HtmlUtils.escapeAttribute;
@@ -72,142 +65,76 @@ public class BaseSAML2BindingBuilder<T extends BaseSAML2BindingBuilder> {
     protected boolean encrypt;
     protected String canonicalizationMethodType = CanonicalizationMethod.EXCLUSIVE;
 
+    public static String getSAMLResponse(Document responseDoc) throws ProcessingException, ConfigurationException, IOException {
+        byte[] responseBytes = org.keycloak.saml.common.util.DocumentUtil.getDocumentAsString(responseDoc).getBytes(GeneralConstants.SAML_CHARSET);
+        return PostBindingUtil.base64Encode(new String(responseBytes, GeneralConstants.SAML_CHARSET));
+    }
+
     public T canonicalizationMethod(String method) {
         this.canonicalizationMethodType = method;
-        return (T)this;
+        return (T) this;
     }
 
     public T signDocument() {
         this.sign = true;
-        return (T)this;
+        return (T) this;
     }
 
     public T signAssertions() {
         this.signAssertions = true;
-        return (T)this;
+        return (T) this;
     }
 
     public T signWith(String signingKeyName, KeyPair keyPair) {
         this.signingKeyName = signingKeyName;
         this.signingKeyPair = keyPair;
-        return (T)this;
+        return (T) this;
     }
 
     public T signWith(String signingKeyName, PrivateKey privateKey, PublicKey publicKey) {
         this.signingKeyName = signingKeyName;
         this.signingKeyPair = new KeyPair(publicKey, privateKey);
-        return (T)this;
+        return (T) this;
     }
 
     public T signWith(String signingKeyName, KeyPair keyPair, X509Certificate cert) {
         this.signingKeyName = signingKeyName;
         this.signingKeyPair = keyPair;
         this.signingCertificate = cert;
-        return (T)this;
+        return (T) this;
     }
 
     public T signWith(String signingKeyName, PrivateKey privateKey, PublicKey publicKey, X509Certificate cert) {
         this.signingKeyName = signingKeyName;
         this.signingKeyPair = new KeyPair(publicKey, privateKey);
         this.signingCertificate = cert;
-        return (T)this;
+        return (T) this;
     }
 
     public T signatureAlgorithm(SignatureAlgorithm alg) {
         this.signatureAlgorithm = alg;
-        return (T)this;
+        return (T) this;
     }
 
     public T encrypt(PublicKey publicKey) {
         encrypt = true;
         encryptionPublicKey = publicKey;
-        return (T)this;
+        return (T) this;
     }
 
     public T encryptionAlgorithm(String alg) {
         this.encryptionAlgorithm = alg;
-        return (T)this;
+        return (T) this;
     }
 
     public T encryptionKeySize(int size) {
         this.encryptionKeySize = size;
-        return (T)this;
+        return (T) this;
     }
 
     public T relayState(String relayState) {
         this.relayState = relayState;
-        return (T)this;
-    }
-
-    public class BasePostBindingBuilder {
-        protected Document document;
-        protected BaseSAML2BindingBuilder builder;
-
-        public BasePostBindingBuilder(BaseSAML2BindingBuilder builder, Document document) throws ProcessingException {
-            this.builder = builder;
-            this.document = document;
-            if (builder.signAssertions) {
-                builder.signAssertion(document);
-            }
-            if (builder.encrypt) builder.encryptDocument(document);
-            if (builder.sign) {
-                builder.signDocument(document);
-            }
-        }
-
-        public String encoded() throws ProcessingException, ConfigurationException, IOException {
-            byte[] responseBytes = DocumentUtil.getDocumentAsString(document).getBytes(GeneralConstants.SAML_CHARSET);
-            return PostBindingUtil.base64Encode(new String(responseBytes, GeneralConstants.SAML_CHARSET));
-        }
-        public Document getDocument() {
-            return document;
-        }
-        public String getHtmlResponse(String actionUrl) throws ProcessingException, ConfigurationException, IOException {
-            String str = builder.buildHtmlPostResponse(document, actionUrl, false);
-            return str;
-        }
-        public String getHtmlRequest(String actionUrl) throws ProcessingException, ConfigurationException, IOException {
-            String str = builder.buildHtmlPostResponse(document, actionUrl, true);
-            return str;
-        }
-        public String getRelayState() {
-            return relayState;
-        }
-    }
-
-
-    public static class BaseRedirectBindingBuilder {
-        protected Document document;
-        protected BaseSAML2BindingBuilder builder;
-
-        public BaseRedirectBindingBuilder(BaseSAML2BindingBuilder builder, Document document) throws ProcessingException {
-            this.builder = builder;
-            this.document = document;
-            if (builder.encrypt) builder.encryptDocument(document);
-            if (builder.signAssertions) {
-                builder.signAssertion(document);
-            }
-        }
-
-        public Document getDocument() {
-            return document;
-        }
-        public URI generateURI(String redirectUri, boolean asRequest) throws ConfigurationException, ProcessingException, IOException {
-            String samlParameterName = GeneralConstants.SAML_RESPONSE_KEY;
-
-            if (asRequest) {
-                samlParameterName = GeneralConstants.SAML_REQUEST_KEY;
-            }
-
-            return builder.generateRedirectUri(samlParameterName, redirectUri, document);
-        }
-
-        public URI requestURI(String actionUrl)  throws ConfigurationException, ProcessingException, IOException {
-            return builder.generateRedirectUri(GeneralConstants.SAML_REQUEST_KEY, actionUrl, document);
-        }
-        public URI responseURI(String actionUrl)  throws ConfigurationException, ProcessingException, IOException {
-            return builder.generateRedirectUri(GeneralConstants.SAML_RESPONSE_KEY, actionUrl, document);
-        }
+        return (T) this;
     }
 
     public BaseRedirectBindingBuilder redirectBinding(Document document) throws ProcessingException {
@@ -219,8 +146,6 @@ public class BaseSAML2BindingBuilder<T extends BaseSAML2BindingBuilder> {
         return new BasePostBindingBuilder(this, document);
 
     }
-
-
 
     public String getSAMLNSPrefix(Document samlResponseDocument) {
         Node assertionElement = samlResponseDocument.getDocumentElement()
@@ -305,11 +230,6 @@ public class BaseSAML2BindingBuilder<T extends BaseSAML2BindingBuilder> {
         return buildHtml(getSAMLResponse(responseDoc), actionUrl, asRequest);
     }
 
-    public static String getSAMLResponse(Document responseDoc) throws ProcessingException, ConfigurationException, IOException {
-        byte[] responseBytes = org.keycloak.saml.common.util.DocumentUtil.getDocumentAsString(responseDoc).getBytes(GeneralConstants.SAML_CHARSET);
-        return PostBindingUtil.base64Encode(new String(responseBytes, GeneralConstants.SAML_CHARSET));
-    }
-
     public String buildHtml(String samlResponse, String actionUrl, boolean asRequest) {
         StringBuilder builder = new StringBuilder();
 
@@ -320,14 +240,14 @@ public class BaseSAML2BindingBuilder<T extends BaseSAML2BindingBuilder> {
         }
 
         builder.append("<HTML>")
-          .append("<HEAD>")
+                .append("<HEAD>")
 
-          .append("<TITLE>Authentication Redirect</TITLE>")
-          .append("</HEAD>")
-          .append("<BODY Onload=\"document.forms[0].submit()\">")
+                .append("<TITLE>Authentication Redirect</TITLE>")
+                .append("</HEAD>")
+                .append("<BODY Onload=\"document.forms[0].submit()\">")
 
-          .append("<FORM METHOD=\"POST\" ACTION=\"").append(actionUrl).append("\">")
-          .append("<INPUT TYPE=\"HIDDEN\" NAME=\"").append(key).append("\"").append(" VALUE=\"").append(samlResponse).append("\"/>");
+                .append("<FORM METHOD=\"POST\" ACTION=\"").append(actionUrl).append("\">")
+                .append("<INPUT TYPE=\"HIDDEN\" NAME=\"").append(key).append("\"").append(" VALUE=\"").append(samlResponse).append("\"/>");
 
         builder.append("<p>Redirecting, please wait.</p>");
 
@@ -336,16 +256,16 @@ public class BaseSAML2BindingBuilder<T extends BaseSAML2BindingBuilder> {
         }
 
         builder.append("<NOSCRIPT>")
-          .append("<P>JavaScript is disabled. We strongly recommend to enable it. Click the button below to continue.</P>")
-          .append("<INPUT TYPE=\"SUBMIT\" VALUE=\"CONTINUE\" />")
-          .append("</NOSCRIPT>")
+                .append("<P>JavaScript is disabled. We strongly recommend to enable it. Click the button below to continue.</P>")
+                .append("<INPUT TYPE=\"SUBMIT\" VALUE=\"CONTINUE\" />")
+                .append("</NOSCRIPT>")
 
-          .append("</FORM></BODY></HTML>");
+                .append("</FORM></BODY></HTML>");
 
         return builder.toString();
     }
 
-    public String base64Encoded(Document document) throws ConfigurationException, ProcessingException, IOException  {
+    public String base64Encoded(Document document) throws ConfigurationException, ProcessingException, IOException {
         String documentAsString = DocumentUtil.getDocumentAsString(document);
         logger.debugv("saml document: {0}", documentAsString);
         byte[] responseBytes = documentAsString.getBytes(GeneralConstants.SAML_CHARSET);
@@ -353,10 +273,9 @@ public class BaseSAML2BindingBuilder<T extends BaseSAML2BindingBuilder> {
         return RedirectBindingUtil.deflateBase64Encode(responseBytes);
     }
 
-
     public URI generateRedirectUri(String samlParameterName, String redirectUri, Document document) throws ConfigurationException, ProcessingException, IOException {
         KeycloakUriBuilder builder = KeycloakUriBuilder.fromUri(redirectUri);
-        int pos = builder.getQuery() == null? 0 : builder.getQuery().length();
+        int pos = builder.getQuery() == null ? 0 : builder.getQuery().length();
         builder.queryParam(samlParameterName, base64Encoded(document));
         if (relayState != null) {
             builder.queryParam("RelayState", relayState);
@@ -385,4 +304,80 @@ public class BaseSAML2BindingBuilder<T extends BaseSAML2BindingBuilder> {
         return builder.build();
     }
 
- }
+    public static class BaseRedirectBindingBuilder {
+        protected Document document;
+        protected BaseSAML2BindingBuilder builder;
+
+        public BaseRedirectBindingBuilder(BaseSAML2BindingBuilder builder, Document document) throws ProcessingException {
+            this.builder = builder;
+            this.document = document;
+            if (builder.encrypt) builder.encryptDocument(document);
+            if (builder.signAssertions) {
+                builder.signAssertion(document);
+            }
+        }
+
+        public Document getDocument() {
+            return document;
+        }
+
+        public URI generateURI(String redirectUri, boolean asRequest) throws ConfigurationException, ProcessingException, IOException {
+            String samlParameterName = GeneralConstants.SAML_RESPONSE_KEY;
+
+            if (asRequest) {
+                samlParameterName = GeneralConstants.SAML_REQUEST_KEY;
+            }
+
+            return builder.generateRedirectUri(samlParameterName, redirectUri, document);
+        }
+
+        public URI requestURI(String actionUrl) throws ConfigurationException, ProcessingException, IOException {
+            return builder.generateRedirectUri(GeneralConstants.SAML_REQUEST_KEY, actionUrl, document);
+        }
+
+        public URI responseURI(String actionUrl) throws ConfigurationException, ProcessingException, IOException {
+            return builder.generateRedirectUri(GeneralConstants.SAML_RESPONSE_KEY, actionUrl, document);
+        }
+    }
+
+    public class BasePostBindingBuilder {
+        protected Document document;
+        protected BaseSAML2BindingBuilder builder;
+
+        public BasePostBindingBuilder(BaseSAML2BindingBuilder builder, Document document) throws ProcessingException {
+            this.builder = builder;
+            this.document = document;
+            if (builder.signAssertions) {
+                builder.signAssertion(document);
+            }
+            if (builder.encrypt) builder.encryptDocument(document);
+            if (builder.sign) {
+                builder.signDocument(document);
+            }
+        }
+
+        public String encoded() throws ProcessingException, ConfigurationException, IOException {
+            byte[] responseBytes = DocumentUtil.getDocumentAsString(document).getBytes(GeneralConstants.SAML_CHARSET);
+            return PostBindingUtil.base64Encode(new String(responseBytes, GeneralConstants.SAML_CHARSET));
+        }
+
+        public Document getDocument() {
+            return document;
+        }
+
+        public String getHtmlResponse(String actionUrl) throws ProcessingException, ConfigurationException, IOException {
+            String str = builder.buildHtmlPostResponse(document, actionUrl, false);
+            return str;
+        }
+
+        public String getHtmlRequest(String actionUrl) throws ProcessingException, ConfigurationException, IOException {
+            String str = builder.buildHtmlPostResponse(document, actionUrl, true);
+            return str;
+        }
+
+        public String getRelayState() {
+            return relayState;
+        }
+    }
+
+}

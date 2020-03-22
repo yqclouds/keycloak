@@ -18,22 +18,14 @@
 package org.keycloak.partialimport;
 
 import org.jboss.logging.Logger;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.Constants;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.PartialImportRepresentation;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import org.keycloak.models.UserModel;
+import java.util.*;
 
 /**
  * PartialImport handler for Clients.
@@ -46,6 +38,13 @@ public class ClientsPartialImport extends AbstractPartialImport<ClientRepresenta
 
     private static Logger logger = Logger.getLogger(ClientsPartialImport.class);
 
+    public static boolean isInternalClient(String clientId) {
+        if (clientId != null && clientId.endsWith("-realm")) {
+            return true;
+        }
+        return INTERNAL_CLIENTS.contains(clientId);
+    }
+
     @Override
     public List<ClientRepresentation> getRepList(PartialImportRepresentation partialImportRep) {
         List<ClientRepresentation> clients = partialImportRep.getClients();
@@ -56,7 +55,7 @@ public class ClientsPartialImport extends AbstractPartialImport<ClientRepresenta
         // filter out internal clients
         List<ClientRepresentation> ret = new ArrayList();
 
-        for (ClientRepresentation c: clients) {
+        for (ClientRepresentation c : clients) {
             if (!isInternalClient(c.getClientId())) {
                 ret.add(c);
             } else {
@@ -119,12 +118,5 @@ public class ClientsPartialImport extends AbstractPartialImport<ClientRepresenta
 
         ClientModel client = RepresentationToModel.createClient(session, realm, clientRep, true);
         RepresentationToModel.importAuthorizationSettings(clientRep, client, session);
-    }
-
-    public static boolean isInternalClient(String clientId) {
-        if (clientId != null && clientId.endsWith("-realm")) {
-            return true;
-        }
-        return INTERNAL_CLIENTS.contains(clientId);
     }
 }

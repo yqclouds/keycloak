@@ -26,11 +26,12 @@ package org.keycloak.storage.ldap.idm.query;
 public interface Condition {
 
     String getParameterName();
+
     void setParameterName(String parameterName);
 
     /**
      * Will change the parameter name if it is "modelParamName" to "ldapParamName" . Implementation can apply this to subconditions as well.
-     *
+     * <p>
      * It is used to update LDAP queries, which were created with model parameter name ( for example "firstName" ) and rewrite them to use real
      * LDAP mapped attribute (for example "givenName" )
      */
@@ -39,8 +40,8 @@ public interface Condition {
 
     void applyCondition(StringBuilder filter);
 
-    void setBinary(boolean binary);
-
     boolean isBinary();
+
+    void setBinary(boolean binary);
 
 }

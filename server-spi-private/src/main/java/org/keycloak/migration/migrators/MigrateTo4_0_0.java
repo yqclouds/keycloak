@@ -17,20 +17,16 @@
 
 package org.keycloak.migration.migrators;
 
-import java.util.List;
-
 import org.jboss.logging.Logger;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.migration.ModelVersion;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.DefaultClientScopes;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.representations.idm.RealmRepresentation;
+
+import java.util.List;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -125,7 +121,7 @@ public class MigrateTo4_0_0 implements Migration {
             if (client.isConsentRequired() && client.getClientScopes(true, true).isEmpty()) {
                 LOG.debugf("Adding client '%s' of realm '%s' to display itself on consent screen", client.getClientId(), realm.getName());
                 client.setDisplayOnConsentScreen(true);
-                String consentText = client.getName()==null ? client.getClientId() : client.getName();
+                String consentText = client.getName() == null ? client.getClientId() : client.getName();
                 client.setConsentScreenText(consentText);
             }
         }

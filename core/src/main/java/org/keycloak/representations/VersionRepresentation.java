@@ -27,12 +27,12 @@ import org.keycloak.common.Version;
 public class VersionRepresentation {
     public static final VersionRepresentation SINGLETON;
 
+    static {
+        SINGLETON = new VersionRepresentation();
+    }
+
     private final String version = Version.VERSION;
     private final String buildTime = Version.BUILD_TIME;
-
-    static {
-         SINGLETON = new VersionRepresentation();
-    }
 
     @JsonProperty("version")
     public String getVersion() {

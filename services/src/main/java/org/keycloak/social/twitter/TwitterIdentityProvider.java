@@ -19,24 +19,14 @@ package org.keycloak.social.twitter;
 import org.jboss.logging.Logger;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.broker.oidc.OAuth2IdentityProviderConfig;
-import org.keycloak.broker.provider.AbstractIdentityProvider;
-import org.keycloak.broker.provider.AuthenticationRequest;
-import org.keycloak.broker.provider.BrokeredIdentityContext;
-import org.keycloak.broker.provider.ExchangeTokenToIdentityProviderToken;
-import org.keycloak.broker.provider.IdentityBrokerException;
-import org.keycloak.broker.provider.IdentityProvider;
+import org.keycloak.broker.provider.*;
 import org.keycloak.broker.provider.util.IdentityBrokerState;
 import org.keycloak.broker.social.SocialIdentityProvider;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.events.Details;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.FederatedIdentityModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.services.ErrorPage;
 import org.keycloak.services.managers.ClientSessionCode;
@@ -51,12 +41,7 @@ import twitter4j.auth.RequestToken;
 import javax.ws.rs.GET;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.*;
 import java.net.URI;
 
 /**
@@ -65,13 +50,10 @@ import java.net.URI;
 public class TwitterIdentityProvider extends AbstractIdentityProvider<OAuth2IdentityProviderConfig> implements
         SocialIdentityProvider<OAuth2IdentityProviderConfig>, ExchangeTokenToIdentityProviderToken {
 
-    String TWITTER_TOKEN_TYPE="twitter";
-
-
     protected static final Logger logger = Logger.getLogger(TwitterIdentityProvider.class);
-
     private static final String TWITTER_TOKEN = "twitter_token";
     private static final String TWITTER_TOKENSECRET = "twitter_tokenSecret";
+    String TWITTER_TOKEN_TYPE = "twitter";
 
     public TwitterIdentityProvider(KeycloakSession session, OAuth2IdentityProviderConfig config) {
         super(session, config);
@@ -159,6 +141,16 @@ public class TwitterIdentityProvider extends AbstractIdentityProvider<OAuth2Iden
         return Response.ok(tokenResponse).type(MediaType.APPLICATION_JSON_TYPE).build();
     }
 
+    @Override
+    public Response retrieveToken(KeycloakSession session, FederatedIdentityModel identity) {
+        return Response.ok(identity.getToken()).type(MediaType.APPLICATION_JSON).build();
+    }
+
+    @Override
+    public void authenticationFinished(AuthenticationSessionModel authSession, BrokeredIdentityContext context) {
+        authSession.setUserSessionNote(IdentityProvider.FEDERATED_ACCESS_TOKEN, (String) context.getContextData().get(IdentityProvider.FEDERATED_ACCESS_TOKEN));
+
+    }
 
     protected class Endpoint {
         protected RealmModel realm;
@@ -253,17 +245,6 @@ public class TwitterIdentityProvider extends AbstractIdentityProvider<OAuth2Iden
             event.event(EventType.LOGIN);
             event.error("twitter_login_failed");
         }
-
-    }
-
-    @Override
-    public Response retrieveToken(KeycloakSession session, FederatedIdentityModel identity) {
-        return Response.ok(identity.getToken()).type(MediaType.APPLICATION_JSON).build();
-    }
-
-    @Override
-    public void authenticationFinished(AuthenticationSessionModel authSession, BrokeredIdentityContext context) {
-        authSession.setUserSessionNote(IdentityProvider.FEDERATED_ACCESS_TOKEN, (String)context.getContextData().get(IdentityProvider.FEDERATED_ACCESS_TOKEN));
 
     }
 

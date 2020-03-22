@@ -16,53 +16,12 @@
  */
 package org.keycloak.client.admin.cli.util;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author <a href="mailto:marko.strukelj@gmail.com">Marko Strukelj</a>
  */
 public class ReturnFields implements Iterable<String> {
-
-    public static ReturnFields ALL = new ReturnFields() {
-        @Override
-        public ReturnFields child(String field) {
-            return NONE;
-        }
-
-        @Override
-        public boolean included(String... pathSegments) {
-            return true;
-        }
-
-        @Override
-        public boolean excluded(String field) {
-            return false;
-        }
-
-        @Override
-        public Iterator<String> iterator() {
-            return Collections.singletonList("*").iterator();
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return false;
-        }
-
-        public boolean isAll() {
-            return true;
-        }
-
-        @Override
-        public String toString() {
-            return "[ReturnFields ALL]";
-        }
-    };
 
     public static ReturnFields NONE = new ReturnFields() {
         @Override
@@ -101,7 +60,41 @@ public class ReturnFields implements Iterable<String> {
             return "[ReturnFields NONE]";
         }
     };
+    public static ReturnFields ALL = new ReturnFields() {
+        @Override
+        public ReturnFields child(String field) {
+            return NONE;
+        }
 
+        @Override
+        public boolean included(String... pathSegments) {
+            return true;
+        }
+
+        @Override
+        public boolean excluded(String field) {
+            return false;
+        }
+
+        @Override
+        public Iterator<String> iterator() {
+            return Collections.singletonList("*").iterator();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return false;
+        }
+
+        public boolean isAll() {
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return "[ReturnFields ALL]";
+        }
+    };
     public static ReturnFields ALL_RECURSIVELY = new ReturnFields() {
         @Override
         public ReturnFields child(String field) {
@@ -134,27 +127,12 @@ public class ReturnFields implements Iterable<String> {
             return true;
         }
     };
-    
-    private enum TargetState {
-        IdentCommaOpen,
-        Ident,
-        Comma,
-        Anything
-    }
-
-    private enum FieldState {
-        start,
-        name,
-        end
-    }
-
-
     private HashMap<String, ReturnFields> fields = new LinkedHashMap<>();
-    
-    
-    
-    public ReturnFields() {}
-    
+
+    public ReturnFields() {
+    }
+
+
     public ReturnFields(String spec) {
 
         if (spec == null || spec.trim().length() == 0) {
@@ -234,8 +212,6 @@ public class ReturnFields implements Iterable<String> {
         throw new RuntimeException("Invalid fields specification at position " + i + ": " + spec);
     }
 
-    
-    
     /**
      * Get ReturnFields for a child field of JSONObject type.
      *
@@ -291,6 +267,7 @@ public class ReturnFields implements Iterable<String> {
 
     /**
      * Check to see if the field specified is set to be explicitly excluded.
+     *
      * @param field The field name to check
      * @return If the field was explicitly set to be excluded
      */
@@ -329,5 +306,18 @@ public class ReturnFields implements Iterable<String> {
     @Override
     public String toString() {
         return "[ReturnFieldsImpl: fields=" + this.fields + "]";
+    }
+
+    private enum TargetState {
+        IdentCommaOpen,
+        Ident,
+        Comma,
+        Anything
+    }
+
+    private enum FieldState {
+        start,
+        name,
+        end
     }
 }

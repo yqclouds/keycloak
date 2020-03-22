@@ -10,13 +10,7 @@ import org.keycloak.client.registration.cli.common.AttributeOperation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.keycloak.client.registration.cli.common.AttributeOperation.Type.DELETE;
 import static org.keycloak.client.registration.cli.common.AttributeOperation.Type.SET;
@@ -49,7 +43,7 @@ public class ReflectionUtilTest {
         System.out.println("\n-- dataList ----------------------\n");
 
         items = ReflectionUtil.getAttributeListWithJSonTypes(Data.class, new AttributeKey("dataList"));
-        for (Map.Entry<String, String> item: items.entrySet()) {
+        for (Map.Entry<String, String> item : items.entrySet()) {
             System.out.printf("%-40s %s\n", item.getKey(), item.getValue());
         }
 
@@ -63,7 +57,7 @@ public class ReflectionUtilTest {
             t = ((ParameterizedType) t).getActualTypeArguments()[0];
             if (t instanceof Class) {
                 items = ReflectionUtil.getAttributeListWithJSonTypes((Class) t, null);
-                for (Map.Entry<String, String> item: items.entrySet()) {
+                for (Map.Entry<String, String> item : items.entrySet()) {
                     System.out.printf("   %-37s %s\n", item.getKey(), item.getValue());
                 }
             }
@@ -212,7 +206,7 @@ public class ReflectionUtilTest {
         }
     }
 
-    private void assertAttributeKey(AttributeKey key, Object ... args) {
+    private void assertAttributeKey(AttributeKey key, Object... args) {
         Iterator<Component> it = key.getComponents().iterator();
 
         for (int i = 0; i < args.length; i++) {
@@ -336,20 +330,20 @@ public class ReflectionUtilTest {
             this.deepList = deepList;
         }
 
-        public void setConfig(Map<String, String> config) {
-            this.config = config;
-        }
-
         public Map<String, String> getConfig() {
             return config;
         }
 
-        public void setNestedConfig(Map<String, Map<String, Data>> nestedConfig) {
-            this.nestedConfig = nestedConfig;
+        public void setConfig(Map<String, String> config) {
+            this.config = config;
         }
 
         public Map<String, Map<String, Data>> getNestedConfig() {
             return nestedConfig;
+        }
+
+        public void setNestedConfig(Map<String, Map<String, Data>> nestedConfig) {
+            this.nestedConfig = nestedConfig;
         }
     }
 }

@@ -32,45 +32,38 @@ public enum FlowStatus {
     /**
      * Execution offered a challenge.  Optional executions will ignore this challenge.  Alternative executions may
      * ignore the challenge depending on the status of other executions in the flow.
-     *
      */
     CHALLENGE,
 
     /**
      * Irregardless of the execution's requirement, this challenge will be sent to the user.
-     *
      */
     FORCE_CHALLENGE,
 
     /**
      * Flow will be aborted and a Response provided by the execution will be sent.
-     *
      */
     FAILURE_CHALLENGE,
 
     /**
      * Flow will be aborted.
-     *
      */
     FAILED,
 
     /**
      * This is not an error condition.  Execution was attempted, but the authenticator is unable to process the request.  An example of this is if
      * a Kerberos authenticator did not see a negotiate header.  There was no error, but the execution was attempted.
-     *
      */
     ATTEMPTED,
 
     /**
      * This flow is being forked.  The current authentication session is being cloned, reset, and redirected to browser login.
-     *
      */
     FORK,
 
     /**
      * This flow was reset to the beginning.  An example is hitting cancel on the OTP page which will bring you back to the
      * username password page.
-     *
      */
     FLOW_RESET
 

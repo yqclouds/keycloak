@@ -11,31 +11,42 @@ import javax.ws.rs.core.Response;
  * This class encapsulates a proprietary HTTP challenge protocol designed by keycloak team which is used by text-based console
  * clients to dynamically render and prompt for information in a textual manner.  The class is a builder which can
  * build the challenge response (the header and response body).
- *
+ * <p>
  * When doing code to token flow in OAuth, server could respond with
- *
+ * <p>
  * 401
  * WWW-Authenticate: X-Text-Form-Challenge callback="http://localhost/..."
- *                                         param="username" label="Username: " mask=false
- *                                         param="password" label="Password: " mask=true
+ * param="username" label="Username: " mask=false
+ * param="password" label="Password: " mask=true
  * Content-Type: text/plain
- *
+ * <p>
  * Please login with your username and password
- *
- *
+ * <p>
+ * <p>
  * The client receives this challenge.  It first outputs whatever the text body of the message contains.  It will
  * then prompt for username and password using the label values as prompt messages for each parameter.
- *
+ * <p>
  * After the input has been entered by the user, the client does a form POST to the callback url with the values of the
  * input parameters entered.
- *
+ * <p>
  * The server can challenge with 401 as many times as it wants.  The client will look for 302 responses.  It will will
  * follow all redirects unless the Location url has an OAuth "code" parameter.  If there is a code parameter, then the
  * client will stop and finish the OAuth flow to obtain a token.  Any other response code other than 401 or 302 the client
  * should abort with an error message.
- *
  */
 public class ConsoleDisplayMode {
+
+    protected RequiredActionContext requiredActionContext;
+    protected AuthenticationFlowContext flowContext;
+    protected HeaderBuilder header;
+
+    ConsoleDisplayMode(RequiredActionContext requiredActionContext) {
+        this.requiredActionContext = requiredActionContext;
+    }
+
+    ConsoleDisplayMode(AuthenticationFlowContext flowContext) {
+        this.flowContext = flowContext;
+    }
 
     /**
      * Browser is required to login.  This will abort client from doing a console login.
@@ -70,8 +81,6 @@ public class ConsoleDisplayMode {
                 .entity("\n" + browserContinueMsg + "\n").build();
     }
 
-
-
     /**
      * Build challenge response for required actions
      *
@@ -93,6 +102,7 @@ public class ConsoleDisplayMode {
         return new ConsoleDisplayMode(context);
 
     }
+
     /**
      * Build challenge response header only for required actions
      *
@@ -114,18 +124,6 @@ public class ConsoleDisplayMode {
         return new ConsoleDisplayMode(context).header();
 
     }
-    ConsoleDisplayMode(RequiredActionContext requiredActionContext) {
-        this.requiredActionContext = requiredActionContext;
-    }
-
-    ConsoleDisplayMode(AuthenticationFlowContext flowContext) {
-        this.flowContext = flowContext;
-    }
-
-
-    protected RequiredActionContext requiredActionContext;
-    protected AuthenticationFlowContext flowContext;
-    protected HeaderBuilder header;
 
     /**
      * Create a theme form pre-populated with challenge
@@ -144,9 +142,8 @@ public class ConsoleDisplayMode {
      * Create challenge response with a  body generated from localized
      * message.properties of your theme
      *
-     * @param msg message id
+     * @param msg    message id
      * @param params parameters to use to format the message
-     *
      * @return
      */
     public Response message(String msg, String... params) {
@@ -162,7 +159,6 @@ public class ConsoleDisplayMode {
      * Create challenge response with a text message body
      *
      * @param text plain text of http response body
-     *
      * @return
      */
     public Response text(String text) {
@@ -188,7 +184,6 @@ public class ConsoleDisplayMode {
         return response;
 
     }
-
 
 
     protected LoginFormsProvider formInternal() {
@@ -219,12 +214,11 @@ public class ConsoleDisplayMode {
 
     public class HeaderBuilder {
         protected StringBuilder builder = new StringBuilder();
+        protected ParamBuilder param;
 
         protected HeaderBuilder(String callback) {
             builder.append("X-Text-Form-Challenge callback=\"").append(callback).append("\" ");
         }
-
-        protected ParamBuilder param;
 
         protected void checkParam() {
             if (param != null) {

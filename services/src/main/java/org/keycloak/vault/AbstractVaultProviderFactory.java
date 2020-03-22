@@ -17,14 +17,14 @@
 
 package org.keycloak.vault;
 
+import org.jboss.logging.Logger;
+import org.keycloak.Config;
+import org.keycloak.models.KeycloakSession;
+
 import java.io.File;
 import java.lang.invoke.MethodHandles;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.jboss.logging.Logger;
-import org.keycloak.Config;
-import org.keycloak.models.KeycloakSession;
 
 /**
  * Abstract class that is meant to be extended by implementations of {@link VaultProviderFactory} that want to offer support
@@ -64,10 +64,8 @@ import org.keycloak.models.KeycloakSession;
  */
 public abstract class AbstractVaultProviderFactory implements VaultProviderFactory {
 
-    private static final Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass());
-
     protected static final String KEY_RESOLVERS = "keyResolvers";
-
+    private static final Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass());
     protected List<VaultKeyResolver> keyResolvers = new LinkedList<>();
 
     @Override
@@ -122,9 +120,8 @@ public abstract class AbstractVaultProviderFactory implements VaultProviderFacto
         try {
             AvailableResolvers value = AvailableResolvers.valueOf(resolverName.trim().toUpperCase());
             return value == AvailableResolvers.FACTORY_PROVIDED ? this.getFactoryResolver() : value.getVaultKeyResolver();
-        }
-        catch(Exception e) {
-            logger.debugf(e,"Invalid key resolver: %s - skipping", resolverName);
+        } catch (Exception e) {
+            logger.debugf(e, "Invalid key resolver: %s - skipping", resolverName);
             return null;
         }
     }

@@ -39,7 +39,6 @@ public interface CachedUserModel extends UserModel {
 
     /**
      * Invalidate the cache for this model
-     *
      */
     void invalidate();
 

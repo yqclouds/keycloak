@@ -19,43 +19,37 @@ package org.keycloak.models.jpa.session;
 
 import org.keycloak.storage.jpa.KeyUtils;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 @NamedQueries({
-        @NamedQuery(name="deleteUserSessionsByRealm", query="delete from PersistentUserSessionEntity sess where sess.realmId = :realmId"),
-        @NamedQuery(name="deleteUserSessionsByUser", query="delete from PersistentUserSessionEntity sess where sess.userId = :userId"),
-        @NamedQuery(name="deleteExpiredUserSessions", query="delete from PersistentUserSessionEntity sess where sess.realmId = :realmId AND sess.offline = :offline AND sess.lastSessionRefresh < :lastSessionRefresh"),
-        @NamedQuery(name="updateUserSessionLastSessionRefresh", query="update PersistentUserSessionEntity sess set lastSessionRefresh = :lastSessionRefresh where sess.realmId = :realmId" +
+        @NamedQuery(name = "deleteUserSessionsByRealm", query = "delete from PersistentUserSessionEntity sess where sess.realmId = :realmId"),
+        @NamedQuery(name = "deleteUserSessionsByUser", query = "delete from PersistentUserSessionEntity sess where sess.userId = :userId"),
+        @NamedQuery(name = "deleteExpiredUserSessions", query = "delete from PersistentUserSessionEntity sess where sess.realmId = :realmId AND sess.offline = :offline AND sess.lastSessionRefresh < :lastSessionRefresh"),
+        @NamedQuery(name = "updateUserSessionLastSessionRefresh", query = "update PersistentUserSessionEntity sess set lastSessionRefresh = :lastSessionRefresh where sess.realmId = :realmId" +
                 " AND sess.offline = :offline AND sess.userSessionId IN (:userSessionIds)"),
-        @NamedQuery(name="findUserSessionsCount", query="select count(sess) from PersistentUserSessionEntity sess where sess.offline = :offline"),
-        @NamedQuery(name="findUserSessions", query="select sess from PersistentUserSessionEntity sess where sess.offline = :offline" +
+        @NamedQuery(name = "findUserSessionsCount", query = "select count(sess) from PersistentUserSessionEntity sess where sess.offline = :offline"),
+        @NamedQuery(name = "findUserSessions", query = "select sess from PersistentUserSessionEntity sess where sess.offline = :offline" +
                 " AND (sess.createdOn > :lastCreatedOn OR (sess.createdOn = :lastCreatedOn AND sess.userSessionId > :lastSessionId))" +
                 " order by sess.createdOn,sess.userSessionId")
 
 })
-@Table(name="OFFLINE_USER_SESSION")
+@Table(name = "OFFLINE_USER_SESSION")
 @Entity
 @IdClass(PersistentUserSessionEntity.Key.class)
 public class PersistentUserSessionEntity {
 
     @Id
-    @Column(name="USER_SESSION_ID", length = 36)
+    @Column(name = "USER_SESSION_ID", length = 36)
     protected String userSessionId;
 
     @Column(name = "REALM_ID", length = 36)
     protected String realmId;
 
-    @Column(name="USER_ID", length = 255)
+    @Column(name = "USER_ID", length = 255)
     protected String userId;
 
     @Column(name = "CREATED_ON")
@@ -68,7 +62,7 @@ public class PersistentUserSessionEntity {
     @Column(name = "OFFLINE_FLAG")
     protected String offline;
 
-    @Column(name="DATA")
+    @Column(name = "DATA")
     protected String data;
 
     public String getUserSessionId() {
@@ -157,7 +151,8 @@ public class PersistentUserSessionEntity {
 
             Key key = (Key) o;
 
-            if (this.userSessionId != null ? !this.userSessionId.equals(key.userSessionId) : key.userSessionId != null) return false;
+            if (this.userSessionId != null ? !this.userSessionId.equals(key.userSessionId) : key.userSessionId != null)
+                return false;
             if (this.offline != null ? !this.offline.equals(key.offline) : key.offline != null) return false;
 
             return true;

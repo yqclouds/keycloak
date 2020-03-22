@@ -21,24 +21,14 @@ import org.keycloak.dom.saml.v2.assertion.AttributeStatementType;
 import org.keycloak.dom.saml.v2.assertion.AttributeType;
 import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RoleModel;
 import org.keycloak.models.UserSessionModel;
-import org.keycloak.models.utils.RoleUtils;
 import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.protocol.saml.SamlProtocol;
 import org.keycloak.provider.ProviderConfigProperty;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -85,6 +75,24 @@ public class RoleListMapper extends AbstractSAMLProtocolMapper implements SAMLRo
 
     }
 
+    public static ProtocolMapperModel create(String name, String samlAttributeName, String nameFormat, String friendlyName, boolean singleAttribute) {
+        ProtocolMapperModel mapper = new ProtocolMapperModel();
+        mapper.setName(name);
+        mapper.setProtocolMapper(PROVIDER_ID);
+        mapper.setProtocol(SamlProtocol.LOGIN_PROTOCOL);
+        Map<String, String> config = new HashMap<>();
+        config.put(AttributeStatementHelper.SAML_ATTRIBUTE_NAME, samlAttributeName);
+        if (friendlyName != null) {
+            config.put(AttributeStatementHelper.FRIENDLY_NAME, friendlyName);
+        }
+        if (nameFormat != null) {
+            config.put(AttributeStatementHelper.SAML_ATTRIBUTE_NAMEFORMAT, nameFormat);
+        }
+        config.put(SINGLE_ROLE_ATTRIBUTE, Boolean.toString(singleAttribute));
+        mapper.setConfig(config);
+
+        return mapper;
+    }
 
     @Override
     public String getDisplayCategory() {
@@ -124,7 +132,7 @@ public class RoleListMapper extends AbstractSAMLProtocolMapper implements SAMLRo
             ProtocolMapper mapper = entry.getValue();
 
             if (mapper instanceof SAMLRoleNameMapper) {
-                roleNameMappers.add(new SamlProtocol.ProtocolMapperProcessor<>((SAMLRoleNameMapper) mapper,mapping));
+                roleNameMappers.add(new SamlProtocol.ProtocolMapperProcessor<>((SAMLRoleNameMapper) mapper, mapping));
             }
 
             if (mapper instanceof HardcodedRole) {
@@ -145,13 +153,13 @@ public class RoleListMapper extends AbstractSAMLProtocolMapper implements SAMLRo
         }
 
         List<String> allRoleNames = clientSessionCtx.getRoles().stream()
-          // todo need a role mapping
-          .map(roleModel -> roleNameMappers.stream()
-            .map(entry -> entry.mapper.mapName(entry.model, roleModel))
-            .filter(Objects::nonNull)
-            .findFirst()
-            .orElse(roleModel.getName())
-          ).collect(Collectors.toList());
+                // todo need a role mapping
+                .map(roleModel -> roleNameMappers.stream()
+                        .map(entry -> entry.mapper.mapName(entry.model, roleModel))
+                        .filter(Objects::nonNull)
+                        .findFirst()
+                        .orElse(roleModel.getName())
+                ).collect(Collectors.toList());
 
         for (String roleName : allRoleNames) {
             AttributeType attributeType;
@@ -169,25 +177,6 @@ public class RoleListMapper extends AbstractSAMLProtocolMapper implements SAMLRo
             attributeType.addAttributeValue(roleName);
         }
 
-    }
-
-    public static ProtocolMapperModel create(String name, String samlAttributeName, String nameFormat, String friendlyName, boolean singleAttribute) {
-        ProtocolMapperModel mapper = new ProtocolMapperModel();
-        mapper.setName(name);
-        mapper.setProtocolMapper(PROVIDER_ID);
-        mapper.setProtocol(SamlProtocol.LOGIN_PROTOCOL);
-        Map<String, String> config = new HashMap<>();
-        config.put(AttributeStatementHelper.SAML_ATTRIBUTE_NAME, samlAttributeName);
-        if (friendlyName != null) {
-            config.put(AttributeStatementHelper.FRIENDLY_NAME, friendlyName);
-        }
-        if (nameFormat != null) {
-            config.put(AttributeStatementHelper.SAML_ATTRIBUTE_NAMEFORMAT, nameFormat);
-        }
-        config.put(SINGLE_ROLE_ATTRIBUTE, Boolean.toString(singleAttribute));
-        mapper.setConfig(config);
-
-        return mapper;
     }
 
 }

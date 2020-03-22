@@ -17,11 +17,11 @@
 
 package org.keycloak.models.sessions.infinispan.changes;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.sessions.infinispan.entities.SessionEntity;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * tracks all changes to the underlying session in this transaction

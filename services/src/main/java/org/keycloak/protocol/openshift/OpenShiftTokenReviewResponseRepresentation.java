@@ -64,11 +64,10 @@ public class OpenShiftTokenReviewResponseRepresentation implements Serializable 
 
     public static class Status implements Serializable {
 
-        @JsonProperty("authenticated")
-        private boolean authenticated;
-
         @JsonProperty("user")
         protected User user;
+        @JsonProperty("authenticated")
+        private boolean authenticated;
 
         public boolean isAuthenticated() {
             return authenticated;

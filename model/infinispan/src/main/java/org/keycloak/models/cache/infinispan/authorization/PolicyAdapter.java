@@ -16,11 +16,7 @@
  */
 package org.keycloak.models.cache.infinispan.authorization;
 
-import org.keycloak.authorization.model.CachedModel;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.model.*;
 import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.authorization.store.ScopeStore;
@@ -28,11 +24,7 @@ import org.keycloak.models.cache.infinispan.authorization.entities.CachedPolicy;
 import org.keycloak.representations.idm.authorization.DecisionStrategy;
 import org.keycloak.representations.idm.authorization.Logic;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -42,10 +34,14 @@ import java.util.stream.Collectors;
  */
 public class PolicyAdapter implements Policy, CachedModel<Policy> {
 
-    private final Supplier<Policy> modelSupplier;
     protected final CachedPolicy cached;
     protected final StoreFactoryCacheSession cacheSession;
+    private final Supplier<Policy> modelSupplier;
     protected Policy updated;
+    protected boolean invalidated;
+    protected Set<Policy> associatedPolicies;
+    protected Set<Resource> resources;
+    protected Set<Scope> scopes;
 
     public PolicyAdapter(CachedPolicy cached, StoreFactoryCacheSession cacheSession) {
         this.cached = cached;
@@ -63,8 +59,6 @@ public class PolicyAdapter implements Policy, CachedModel<Policy> {
         }
         return updated;
     }
-
-    protected boolean invalidated;
 
     protected void invalidateFlag() {
         invalidated = true;
@@ -89,7 +83,6 @@ public class PolicyAdapter implements Policy, CachedModel<Policy> {
         if (updated == null) throw new IllegalStateException("Not found in database");
         return true;
     }
-
 
     @Override
     public String getId() {
@@ -196,8 +189,6 @@ public class PolicyAdapter implements Policy, CachedModel<Policy> {
         updated.setDescription(description);
     }
 
-    protected Set<Policy> associatedPolicies;
-
     @Override
     public Set<Policy> getAssociatedPolicies() {
         if (isUpdated()) {
@@ -214,8 +205,6 @@ public class PolicyAdapter implements Policy, CachedModel<Policy> {
         }
         return associatedPolicies = Collections.unmodifiableSet(associatedPolicies);
     }
-
-    protected Set<Resource> resources;
 
     @Override
     public Set<Resource> getResources() {
@@ -284,8 +273,6 @@ public class PolicyAdapter implements Policy, CachedModel<Policy> {
     public boolean isFetched(String association) {
         return modelSupplier.get().isFetched(association);
     }
-
-    protected Set<Scope> scopes;
 
     @Override
     public Set<Scope> getScopes() {

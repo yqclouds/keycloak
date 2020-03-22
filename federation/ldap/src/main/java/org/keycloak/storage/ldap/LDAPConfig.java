@@ -22,16 +22,13 @@ import org.keycloak.models.LDAPConstants;
 import org.keycloak.storage.UserStorageProvider;
 
 import javax.naming.directory.SearchControls;
-
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
- *
  */
 public class LDAPConfig {
 
@@ -83,7 +80,7 @@ public class LDAPConfig {
 
         // Trim them
         Set<String> userObjClasses = new HashSet<>();
-        for (int i=0 ; i<objectClasses.length ; i++) {
+        for (int i = 0; i < objectClasses.length; i++) {
             userObjClasses.add(objectClasses[i].trim());
         }
         return userObjClasses;
@@ -111,13 +108,13 @@ public class LDAPConfig {
         return Boolean.parseBoolean(validatePPolicy);
     }
 
-    public boolean isTrustEmail(){
+    public boolean isTrustEmail() {
         String trustEmail = config.getFirst(LDAPConstants.TRUST_EMAIL);
         return Boolean.parseBoolean(trustEmail);
     }
 
     public String getConnectionPooling() {
-        if(isStartTls()) {
+        if (isStartTls()) {
             return null;
         } else {
             return config.getFirst(LDAPConstants.CONNECTION_POOLING);
@@ -196,7 +193,7 @@ public class LDAPConfig {
 
     public int getBatchSizeForSync() {
         String pageSizeConfig = config.getFirst(LDAPConstants.BATCH_SIZE_FOR_SYNC);
-        return pageSizeConfig!=null ? Integer.parseInt(pageSizeConfig) : LDAPConstants.DEFAULT_BATCH_SIZE_FOR_SYNC;
+        return pageSizeConfig != null ? Integer.parseInt(pageSizeConfig) : LDAPConstants.DEFAULT_BATCH_SIZE_FOR_SYNC;
     }
 
     public String getUsernameLdapAttribute() {

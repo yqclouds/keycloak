@@ -18,29 +18,19 @@
 
 package org.keycloak.authorization.policy.evaluation;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.Decision;
 import org.keycloak.authorization.Decision.Effect;
 import org.keycloak.authorization.model.Policy;
 import org.keycloak.authorization.permission.ResourcePermission;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.GroupModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RoleUtils;
 import org.keycloak.representations.idm.authorization.Logic;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -49,11 +39,11 @@ public class DefaultEvaluation implements Evaluation {
     private final ResourcePermission permission;
     private final EvaluationContext executionContext;
     private final Decision decision;
-    private Policy policy;
     private final Policy parentPolicy;
     private final AuthorizationProvider authorizationProvider;
-    private Map<Policy, Map<Object, Effect>> decisionCache;
     private final Realm realm;
+    private Policy policy;
+    private Map<Policy, Map<Object, Effect>> decisionCache;
     private Effect effect;
 
     public DefaultEvaluation(ResourcePermission permission, EvaluationContext executionContext, Policy parentPolicy, Decision decision, AuthorizationProvider authorizationProvider, Map<Policy, Map<Object, Decision.Effect>> decisionCache) {
@@ -111,6 +101,11 @@ public class DefaultEvaluation implements Evaluation {
         return this.policy;
     }
 
+    public void setPolicy(Policy policy) {
+        this.policy = policy;
+        this.effect = null;
+    }
+
     @Override
     public Realm getRealm() {
         return realm;
@@ -127,6 +122,11 @@ public class DefaultEvaluation implements Evaluation {
 
     public Effect getEffect() {
         return effect;
+    }
+
+    public void setEffect(Effect effect) {
+        this.effect = effect;
+        this.decision.onDecision(this);
     }
 
     public Map<Policy, Map<Object, Effect>> getDecisionCache() {
@@ -263,15 +263,5 @@ public class DefaultEvaluation implements Evaluation {
                 return Collections.unmodifiableMap(getUser(id, authorizationProvider.getKeycloakSession()).getAttributes());
             }
         };
-    }
-
-    public void setPolicy(Policy policy) {
-        this.policy = policy;
-        this.effect = null;
-    }
-
-    public void setEffect(Effect effect) {
-        this.effect = effect;
-        this.decision.onDecision(this);
     }
 }

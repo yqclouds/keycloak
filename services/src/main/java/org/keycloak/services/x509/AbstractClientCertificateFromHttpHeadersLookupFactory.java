@@ -30,12 +30,10 @@ import org.keycloak.models.KeycloakSessionFactory;
 
 public abstract class AbstractClientCertificateFromHttpHeadersLookupFactory implements X509ClientCertificateLookupFactory {
 
-    private final static Logger logger = Logger.getLogger(AbstractClientCertificateFromHttpHeadersLookupFactory.class);
-
     protected final static String CERTIFICATE_CHAIN_LENGTH = "certificateChainLength";
     protected final static String HTTP_HEADER_CLIENT_CERT = "sslClientCert";
     protected final static String HTTP_HEADER_CERT_CHAIN_PREFIX = "sslCertChainPrefix";
-
+    private final static Logger logger = Logger.getLogger(AbstractClientCertificateFromHttpHeadersLookupFactory.class);
     protected String sslClientCertHttpHeader;
     protected String sslChainHttpHeaderPrefix;
     protected int certificateChainLength = 1;
@@ -55,8 +53,7 @@ public abstract class AbstractClientCertificateFromHttpHeadersLookupFactory impl
             } else {
                 logger.tracev("{0} was not configured", HTTP_HEADER_CERT_CHAIN_PREFIX);
             }
-        }
-        else {
+        } else {
             logger.tracev("No configuration for ''{0}'' reverse proxy was found", this.getId());
             sslClientCertHttpHeader = "";
             sslChainHttpHeaderPrefix = "";

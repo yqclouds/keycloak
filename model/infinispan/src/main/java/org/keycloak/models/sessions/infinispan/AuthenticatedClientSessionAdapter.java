@@ -17,24 +17,15 @@
 
 package org.keycloak.models.sessions.infinispan;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserSessionModel;
-import org.keycloak.models.sessions.infinispan.changes.InfinispanChangelogBasedTransaction;
-import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
-import org.keycloak.models.sessions.infinispan.changes.ClientSessionUpdateTask;
-import org.keycloak.models.sessions.infinispan.changes.SessionUpdateTask;
-import org.keycloak.models.sessions.infinispan.changes.Tasks;
-import org.keycloak.models.sessions.infinispan.changes.UserSessionUpdateTask;
+import org.keycloak.models.*;
+import org.keycloak.models.sessions.infinispan.changes.*;
 import org.keycloak.models.sessions.infinispan.changes.sessions.CrossDCLastSessionRefreshChecker;
 import org.keycloak.models.sessions.infinispan.entities.AuthenticatedClientSessionEntity;
 import org.keycloak.models.sessions.infinispan.entities.UserSessionEntity;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -44,10 +35,10 @@ public class AuthenticatedClientSessionAdapter implements AuthenticatedClientSes
 
     private final KeycloakSession kcSession;
     private final InfinispanUserSessionProvider provider;
-    private AuthenticatedClientSessionEntity entity;
     private final ClientModel client;
     private final InfinispanChangelogBasedTransaction<String, UserSessionEntity> userSessionUpdateTx;
     private final InfinispanChangelogBasedTransaction<UUID, AuthenticatedClientSessionEntity> clientSessionUpdateTx;
+    private AuthenticatedClientSessionEntity entity;
     private UserSessionModel userSession;
     private boolean offline;
 

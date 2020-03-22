@@ -18,25 +18,15 @@
 package org.keycloak.services.resources.admin;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
-import javax.ws.rs.NotFoundException;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.ScopeContainerModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -44,9 +34,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * @resource Scope Mappings
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
+ * @resource Scope Mappings
  */
 public class ScopeMappedClientResource {
     protected RealmModel realm;
@@ -57,7 +47,7 @@ public class ScopeMappedClientResource {
     protected KeycloakSession session;
     protected ClientModel scopedClient;
     protected AdminEventBuilder adminEvent;
-    
+
     public ScopeMappedClientResource(RealmModel realm, AdminPermissionEvaluator auth, ScopeContainerModel scopeContainer, KeycloakSession session, ClientModel scopedClient, AdminEventBuilder adminEvent,
                                      AdminPermissionEvaluator.RequirePermissionCheck managePermission,
                                      AdminPermissionEvaluator.RequirePermissionCheck viewPermission) {
@@ -73,7 +63,7 @@ public class ScopeMappedClientResource {
 
     /**
      * Get the roles associated with a client's scope
-     *
+     * <p>
      * Returns roles for the client.
      *
      * @return
@@ -94,7 +84,7 @@ public class ScopeMappedClientResource {
 
     /**
      * The available client-level roles
-     *
+     * <p>
      * Returns the roles for the client that can be associated with the client's scope
      *
      * @return
@@ -112,7 +102,7 @@ public class ScopeMappedClientResource {
 
     /**
      * Get effective client roles
-     *
+     * <p>
      * Returns the roles for the client that are associated with the client's scope.
      *
      * @return

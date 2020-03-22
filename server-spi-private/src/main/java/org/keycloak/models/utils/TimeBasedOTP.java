@@ -39,10 +39,10 @@ public class TimeBasedOTP extends HmacOTP {
     }
 
     /**
-     * @param algorithm the encryption algorithm
-     * @param numberDigits the number of digits for tokens
+     * @param algorithm             the encryption algorithm
+     * @param numberDigits          the number of digits for tokens
      * @param timeIntervalInSeconds the number of seconds a token is valid
-     * @param lookAheadWindow the number of previous intervals that should be used to validate tokens.
+     * @param lookAheadWindow       the number of previous intervals that should be used to validate tokens.
      */
     public TimeBasedOTP(String algorithm, int numberDigits, int timeIntervalInSeconds, int lookAheadWindow) {
         super(numberDigits, algorithm, lookAheadWindow);

@@ -93,7 +93,6 @@ public class RSAKeyValueType implements KeyValueType {
      * Convert to the JDK representation of a RSA Public Key
      *
      * @return
-     *
      * @throws org.keycloak.saml.common.exceptions.ProcessingException
      */
     public RSAPublicKey convertToPublicKey() throws ProcessingException {
@@ -113,7 +112,6 @@ public class RSAKeyValueType implements KeyValueType {
      * Convert to the JDK representation of a RSA Private Key
      *
      * @return
-     *
      * @throws ProcessingException
      */
     public RSAPrivateKey convertToPrivateKey() throws ProcessingException {

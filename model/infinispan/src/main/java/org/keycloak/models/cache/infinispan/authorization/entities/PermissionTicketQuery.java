@@ -16,9 +16,9 @@
  */
 package org.keycloak.models.cache.infinispan.authorization.entities;
 
-import java.util.Set;
-
 import org.keycloak.models.cache.infinispan.entities.Revisioned;
+
+import java.util.Set;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -26,5 +26,6 @@ import org.keycloak.models.cache.infinispan.entities.Revisioned;
 public interface PermissionTicketQuery extends InResourceServer, Revisioned {
 
     Set<String> getPermissions();
+
     boolean isInvalid(Set<String> invalidations);
 }

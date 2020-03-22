@@ -68,6 +68,7 @@ public interface PermissionTicket {
     Long getCreatedTimestamp();
 
     Long getGrantedTimestamp();
+
     void setGrantedTimestamp(Long millis);
 
     /**

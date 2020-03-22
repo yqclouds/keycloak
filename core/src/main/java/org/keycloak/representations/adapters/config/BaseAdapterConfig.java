@@ -61,7 +61,7 @@ public class BaseAdapterConfig extends BaseRealmConfig {
     protected boolean publicClient;
     @JsonProperty("credentials")
     protected Map<String, Object> credentials = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-     @JsonProperty("redirect-rewrite-rules")
+    @JsonProperty("redirect-rewrite-rules")
     protected Map<String, String> redirectRewriteRules;
 
     public boolean isUseResourceRoleMappings() {
@@ -81,36 +81,36 @@ public class BaseAdapterConfig extends BaseRealmConfig {
     }
 
     public boolean isCors() {
-         return cors;
-     }
+        return cors;
+    }
 
     public void setCors(boolean cors) {
-         this.cors = cors;
-     }
+        this.cors = cors;
+    }
 
     public int getCorsMaxAge() {
-         return corsMaxAge;
-     }
+        return corsMaxAge;
+    }
 
     public void setCorsMaxAge(int corsMaxAge) {
-         this.corsMaxAge = corsMaxAge;
-     }
+        this.corsMaxAge = corsMaxAge;
+    }
 
     public String getCorsAllowedHeaders() {
-         return corsAllowedHeaders;
-     }
+        return corsAllowedHeaders;
+    }
 
     public void setCorsAllowedHeaders(String corsAllowedHeaders) {
-         this.corsAllowedHeaders = corsAllowedHeaders;
-     }
+        this.corsAllowedHeaders = corsAllowedHeaders;
+    }
 
     public String getCorsAllowedMethods() {
-         return corsAllowedMethods;
-     }
+        return corsAllowedMethods;
+    }
 
     public void setCorsAllowedMethods(String corsAllowedMethods) {
-         this.corsAllowedMethods = corsAllowedMethods;
-     }
+        this.corsAllowedMethods = corsAllowedMethods;
+    }
 
     public String getCorsExposedHeaders() {
         return corsExposedHeaders;
@@ -121,12 +121,12 @@ public class BaseAdapterConfig extends BaseRealmConfig {
     }
 
     public boolean isExposeToken() {
-         return exposeToken;
-     }
+        return exposeToken;
+    }
 
     public void setExposeToken(boolean exposeToken) {
-         this.exposeToken = exposeToken;
-     }
+        this.exposeToken = exposeToken;
+    }
 
     public boolean isBearerOnly() {
         return bearerOnly;
@@ -175,6 +175,6 @@ public class BaseAdapterConfig extends BaseRealmConfig {
     public void setRedirectRewriteRules(Map<String, String> redirectRewriteRules) {
         this.redirectRewriteRules = redirectRewriteRules;
     }
-    
-    
+
+
 }

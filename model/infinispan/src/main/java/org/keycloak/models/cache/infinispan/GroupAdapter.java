@@ -17,12 +17,7 @@
 
 package org.keycloak.models.cache.infinispan;
 
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.GroupModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleContainerModel;
-import org.keycloak.models.RoleModel;
+import org.keycloak.models.*;
 import org.keycloak.models.cache.infinispan.entities.CachedGroup;
 
 import java.util.HashSet;
@@ -43,6 +38,7 @@ public class GroupAdapter implements GroupModel {
     protected final RealmModel realm;
     private final Supplier<GroupModel> modelSupplier;
     protected volatile GroupModel updated;
+    protected volatile boolean invalidated;
 
     public GroupAdapter(CachedGroup cached, RealmCacheSession cacheSession, KeycloakSession keycloakSession, RealmModel realm) {
         this.cached = cached;
@@ -60,7 +56,6 @@ public class GroupAdapter implements GroupModel {
         }
     }
 
-    protected volatile boolean invalidated;
     public void invalidate() {
         invalidated = true;
     }
@@ -185,7 +180,7 @@ public class GroupAdapter implements GroupModel {
         if (cached.getRoleMappings(modelSupplier).contains(role.getId())) return true;
 
         Set<RoleModel> mappings = getRoleMappings();
-        for (RoleModel mapping: mappings) {
+        for (RoleModel mapping : mappings) {
             if (mapping.hasRole(role)) return true;
         }
         return false;
@@ -228,6 +223,13 @@ public class GroupAdapter implements GroupModel {
     }
 
     @Override
+    public void setParent(GroupModel group) {
+        getDelegateForUpdate();
+        updated.setParent(group);
+
+    }
+
+    @Override
     public String getParentId() {
         if (isUpdated()) return updated.getParentId();
         return cached.getParentId();
@@ -248,15 +250,6 @@ public class GroupAdapter implements GroupModel {
             subGroups.add(subGroup);
         }
         return subGroups;
-    }
-
-
-
-    @Override
-    public void setParent(GroupModel group) {
-        getDelegateForUpdate();
-        updated.setParent(group);
-
     }
 
     @Override

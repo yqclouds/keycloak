@@ -36,11 +36,7 @@ import org.keycloak.representations.AccessToken;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.Urls;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -139,7 +135,7 @@ public class OpenShiftTokenReviewEndpoint implements OIDCExtProvider, Environmen
 
     private void checkRealm() {
         if (!session.getContext().getRealm().isEnabled()) {
-            error(401, Errors.REALM_DISABLED,null);
+            error(401, Errors.REALM_DISABLED, null);
         }
     }
 

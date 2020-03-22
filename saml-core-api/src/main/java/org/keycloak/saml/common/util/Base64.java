@@ -71,37 +71,45 @@ import java.util.logging.Logger;
  */
 public class Base64 {
 
-    private static Logger logger = Logger.getLogger(Base64.class.getCanonicalName());
-
-    /* ******** P U B L I C F I E L D S ******** */
-
-    /** No options specified. Value is zero. */
+    /**
+     * No options specified. Value is zero.
+     */
     public static final int NO_OPTIONS = 0;
 
-    /** Specify encoding. */
+    /* ******** P U B L I C F I E L D S ******** */
+    /**
+     * Specify encoding.
+     */
     public static final int ENCODE = 1;
-
-    /** Specify decoding. */
+    /**
+     * Specify decoding.
+     */
     public static final int DECODE = 0;
-
-    /** Specify that data should be gzip-compressed. */
+    /**
+     * Specify that data should be gzip-compressed.
+     */
     public static final int GZIP = 2;
-
-    /** Don't break lines when encoding (violates strict Base64 specification) */
+    /**
+     * Don't break lines when encoding (violates strict Base64 specification)
+     */
     public static final int DONT_BREAK_LINES = 8;
-
-    /* ******** P R I V A T E F I E L D S ******** */
-
-    /** Maximum line length (76) of Base64 output. */
+    /**
+     * Maximum line length (76) of Base64 output.
+     */
     private static final int MAX_LINE_LENGTH = 76;
 
-    /** The equals sign (=) as a byte. */
+    /* ******** P R I V A T E F I E L D S ******** */
+    /**
+     * The equals sign (=) as a byte.
+     */
     private static final byte EQUALS_SIGN = (byte) '=';
-
-    /** The new line character (\n) as a byte. */
+    /**
+     * The new line character (\n) as a byte.
+     */
     private static final byte NEW_LINE = (byte) '\n';
-
-    /** The 64 valid Base64 values. */
+    /**
+     * The 64 valid Base64 values.
+     */
     private static final byte[] ALPHABET;
     private static final byte[] _NATIVE_ALPHABET = /* May be something funny like EBCDIC */
             {(byte) 'A', (byte) 'B', (byte) 'C', (byte) 'D', (byte) 'E', (byte) 'F', (byte) 'G', (byte) 'H', (byte) 'I', (byte) 'J',
@@ -111,19 +119,6 @@ public class Base64 {
                     (byte) 'l', (byte) 'm', (byte) 'n', (byte) 'o', (byte) 'p', (byte) 'q', (byte) 'r', (byte) 's', (byte) 't',
                     (byte) 'u', (byte) 'v', (byte) 'w', (byte) 'x', (byte) 'y', (byte) 'z', (byte) '0', (byte) '1', (byte) '2',
                     (byte) '3', (byte) '4', (byte) '5', (byte) '6', (byte) '7', (byte) '8', (byte) '9', (byte) '+', (byte) '/'};
-
-    /** Determine which ALPHABET to use. */
-    static {
-        byte[] __bytes;
-        try {
-            __bytes = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".getBytes(StandardCharsets.UTF_8.name());
-        } // end try
-        catch (java.io.UnsupportedEncodingException use) {
-            __bytes = _NATIVE_ALPHABET; // Fall back to native encoding
-        } // end catch
-        ALPHABET = __bytes;
-    } // end static
-
     /**
      * Translates a Base64 value to either its 6-bit reconstruction value or a negative number indicating some other meaning.
      **/
@@ -148,21 +143,35 @@ public class Base64 {
             26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, // Letters 'a' through 'm'
             39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, // Letters 'n' through 'z'
             -9, -9, -9, -9 // Decimal 123 - 126
-    /*
-     * ,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9, // Decimal 127 - 139 -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9, // Decimal 140 -
-     * 152 -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9, // Decimal 153 - 165 -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9, // Decimal 166 -
-     * 178 -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9, // Decimal 179 - 191 -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9, // Decimal 192 -
-     * 204 -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9, // Decimal 205 - 217 -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9, // Decimal 218 -
-     * 230 -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9, // Decimal 231 - 243 -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9 // Decimal 244 - 255
-     */
+            /*
+             * ,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9, // Decimal 127 - 139 -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9, // Decimal 140 -
+             * 152 -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9, // Decimal 153 - 165 -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9, // Decimal 166 -
+             * 178 -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9, // Decimal 179 - 191 -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9, // Decimal 192 -
+             * 204 -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9, // Decimal 205 - 217 -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9, // Decimal 218 -
+             * 230 -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9, // Decimal 231 - 243 -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9 // Decimal 244 - 255
+             */
     };
-
     // I think I end up not using the BAD_ENCODING indicator.
     // private static final byte BAD_ENCODING = -9; // Indicates error in encoding
     private static final byte WHITE_SPACE_ENC = -5; // Indicates white space in encoding
     private static final byte EQUALS_SIGN_ENC = -1; // Indicates equals sign in encoding
+    private static Logger logger = Logger.getLogger(Base64.class.getCanonicalName());
 
-    /** Defeats instantiation. */
+    /** Determine which ALPHABET to use. */
+    static {
+        byte[] __bytes;
+        try {
+            __bytes = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".getBytes(StandardCharsets.UTF_8.name());
+        } // end try
+        catch (java.io.UnsupportedEncodingException use) {
+            __bytes = _NATIVE_ALPHABET; // Fall back to native encoding
+        } // end catch
+        ALPHABET = __bytes;
+    } // end static
+
+    /**
+     * Defeats instantiation.
+     */
     private Base64() {
     }
 
@@ -174,8 +183,8 @@ public class Base64 {
      * needs only be as big as <var>numSigBytes</var>. Code can reuse a byte array by passing a four-byte array as
      * <var>b4</var>.
      *
-     * @param b4 A reusable byte array to reduce array instantiation
-     * @param threeBytes the array to convert
+     * @param b4          A reusable byte array to reduce array instantiation
+     * @param threeBytes  the array to convert
      * @param numSigBytes the number of significant bytes in your array
      * @return four byte array in Base64 notation.
      * @since 1.5.1
@@ -192,11 +201,11 @@ public class Base64 {
      * accomodate <var>srcOffset</var> + 3 for the <var>source</var> array or <var>destOffset</var> + 4 for the
      * <var>destination</var> array. The actual number of significant bytes in your array is given by <var>numSigBytes</var>.
      *
-     * @param source the array to convert
-     * @param srcOffset the index where conversion begins
+     * @param source      the array to convert
+     * @param srcOffset   the index where conversion begins
      * @param numSigBytes the number of significant bytes in your array
      * @param destination the array to hold the conversion
-     * @param destOffset the index where output will be put
+     * @param destOffset  the index where output will be put
      * @return the <var>destination</var> array
      * @since 1.3
      */
@@ -272,7 +281,7 @@ public class Base64 {
      * Example: <code>encodeObject( myObj, Base64.GZIP | Base64.DONT_BREAK_LINES )</code>
      *
      * @param serializableObject The object to encode
-     * @param options Specified options
+     * @param options            Specified options
      * @return The Base64-encoded object
      * @see Base64#GZIP
      * @see Base64#DONT_BREAK_LINES
@@ -358,8 +367,7 @@ public class Base64 {
      * <p>
      * Example: <code>encodeBytes( myData, Base64.GZIP | Base64.DONT_BREAK_LINES )</code>
      *
-     *
-     * @param source The data to convert
+     * @param source  The data to convert
      * @param options Specified options
      * @return the encoded bytes
      * @see Base64#GZIP
@@ -374,8 +382,8 @@ public class Base64 {
      * Encodes a byte array into Base64 notation. Does not GZip-compress data.
      *
      * @param source The data to convert
-     * @param off Offset in array where conversion should begin
-     * @param len Length of data to convert
+     * @param off    Offset in array where conversion should begin
+     * @param len    Length of data to convert
      * @return the text node
      * @since 1.4
      */
@@ -398,14 +406,13 @@ public class Base64 {
      * <p>
      * Example: <code>encodeBytes( myData, Base64.GZIP | Base64.DONT_BREAK_LINES )</code>
      *
-     *
-     * @param source The data to convert
-     * @param off Offset in array where conversion should begin
-     * @param len Length of data to convert
+     * @param source  The data to convert
+     * @param off     Offset in array where conversion should begin
+     * @param len     Length of data to convert
      * @param options Specified options
+     * @return the text node
      * @see Base64#GZIP
      * @see Base64#DONT_BREAK_LINES
-     * @return the text node
      * @since 2.0
      */
     public static String encodeBytes(byte[] source, int off, int len, int options) {
@@ -497,11 +504,10 @@ public class Base64 {
      * <var>destination</var> array. This method returns the actual number of bytes that were converted from the Base64
      * encoding.
      *
-     *
-     * @param source the array to convert
-     * @param srcOffset the index where conversion begins
+     * @param source      the array to convert
+     * @param srcOffset   the index where conversion begins
      * @param destination the array to hold the conversion
-     * @param destOffset the index where output will be put
+     * @param destOffset  the index where output will be put
      * @return the number of decoded bytes converted
      * @since 1.3
      */
@@ -562,8 +568,8 @@ public class Base64 {
      * or any other "fancy" features.
      *
      * @param source The Base64 encoded data
-     * @param off The offset of where to begin decoding
-     * @param len The length of characters to decode
+     * @param off    The offset of where to begin decoding
+     * @param len    The length of characters to decode
      * @return decoded data
      * @since 1.3
      */
@@ -713,8 +719,7 @@ public class Base64 {
          * <p>
          * Example: <code>new Base64.InputStream( in, Base64.DECODE )</code>
          *
-         *
-         * @param in the <tt>java.io.InputStream</tt> from which to read data.
+         * @param in      the <tt>java.io.InputStream</tt> from which to read data.
          * @param options Specified options
          * @see Base64#ENCODE
          * @see Base64#DECODE
@@ -841,8 +846,8 @@ public class Base64 {
          * of bytes read into array or -1 if end of stream is encountered.
          *
          * @param dest array to hold values
-         * @param off offset for array
-         * @param len max number of bytes to read into array
+         * @param off  offset for array
+         * @param len  max number of bytes to read into array
          * @return bytes read into array or -1 if end of stream is encountered.
          * @since 1.3
          */
@@ -911,7 +916,7 @@ public class Base64 {
          * <p>
          * Example: <code>new Base64.OutputStream( out, Base64.ENCODE )</code>
          *
-         * @param out the <tt>java.io.OutputStream</tt> to which data will be written.
+         * @param out     the <tt>java.io.OutputStream</tt> to which data will be written.
          * @param options Specified options.
          * @see Base64#ENCODE
          * @see Base64#DECODE
@@ -983,8 +988,8 @@ public class Base64 {
          * Calls {@link #write(int)} repeatedly until <var>len</var> bytes are written.
          *
          * @param theBytes array from which to read bytes
-         * @param off offset for array
-         * @param len max number of bytes to read into array
+         * @param off      offset for array
+         * @param len      max number of bytes to read into array
          * @since 1.3
          */
         public void write(byte[] theBytes, int off, int len) throws java.io.IOException {
@@ -1038,8 +1043,8 @@ public class Base64 {
         /**
          * Suspends encoding of the stream. May be helpful if you need to embed a piece of base640-encoded data in a stream.
          *
-         * @since 1.5.1
          * @throws IOException
+         * @since 1.5.1
          */
         public void suspendEncoding() throws java.io.IOException {
             flushBase64();

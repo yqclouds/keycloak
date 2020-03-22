@@ -25,12 +25,7 @@ import org.keycloak.models.cache.infinispan.entities.CachedRealmRole;
 import org.keycloak.models.cache.infinispan.entities.CachedRole;
 import org.keycloak.models.utils.KeycloakModelUtils;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 
 /**
@@ -39,12 +34,13 @@ import java.util.function.Supplier;
  */
 public class RoleAdapter implements RoleModel {
 
+    private final Supplier<RoleModel> modelSupplier;
     protected RoleModel updated;
     protected CachedRole cached;
     protected RealmCacheSession cacheSession;
     protected RealmModel realm;
     protected Set<RoleModel> composites;
-    private final Supplier<RoleModel> modelSupplier;
+    protected boolean invalidated;
 
     public RoleAdapter(CachedRole cached, RealmCacheSession session, RealmModel realm) {
         this.cached = cached;
@@ -60,8 +56,6 @@ public class RoleAdapter implements RoleModel {
             if (updated == null) throw new IllegalStateException("Not found in database");
         }
     }
-
-    protected boolean invalidated;
 
     public void invalidate() {
         invalidated = true;
@@ -83,6 +77,12 @@ public class RoleAdapter implements RoleModel {
     }
 
     @Override
+    public void setName(String name) {
+        getDelegateForUpdate();
+        updated.setName(name);
+    }
+
+    @Override
     public String getDescription() {
         if (isUpdated()) return updated.getDescription();
         return cached.getDescription();
@@ -98,12 +98,6 @@ public class RoleAdapter implements RoleModel {
     public String getId() {
         if (isUpdated()) return updated.getId();
         return cached.getId();
-    }
-
-    @Override
-    public void setName(String name) {
-        getDelegateForUpdate();
-        updated.setName(name);
     }
 
     @Override

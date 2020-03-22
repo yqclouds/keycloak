@@ -18,8 +18,6 @@ package org.keycloak.services.resources.admin;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotFoundException;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.authentication.actiontoken.execactions.ExecuteActionsActionToken;
@@ -34,33 +32,13 @@ import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.Constants;
-import org.keycloak.models.FederatedIdentityModel;
-import org.keycloak.models.GroupModel;
-import org.keycloak.models.IdentityProviderModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ModelDuplicateException;
-import org.keycloak.models.ModelException;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserConsentModel;
-import org.keycloak.models.UserCredentialModel;
-import org.keycloak.models.UserLoginFailureModel;
-import org.keycloak.models.UserManager;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.utils.RedirectUtils;
 import org.keycloak.provider.ProviderFactory;
-import org.keycloak.representations.idm.CredentialRepresentation;
-import org.keycloak.representations.idm.FederatedIdentityRepresentation;
-import org.keycloak.representations.idm.GroupRepresentation;
-import org.keycloak.representations.idm.UserConsentRepresentation;
-import org.keycloak.representations.idm.UserRepresentation;
-import org.keycloak.representations.idm.UserSessionRepresentation;
+import org.keycloak.representations.idm.*;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.ForbiddenException;
@@ -75,36 +53,12 @@ import org.keycloak.services.validation.Validation;
 import org.keycloak.storage.ReadOnlyException;
 import org.keycloak.utils.ProfileHelper;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotSupportedException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -114,34 +68,86 @@ import static org.keycloak.models.ImpersonationSessionNote.IMPERSONATOR_USERNAME
 /**
  * Base resource for managing users
  *
- * @resource Users
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
+ * @resource Users
  */
 public class UserResource {
     private static final Logger logger = Logger.getLogger(UserResource.class);
 
     protected RealmModel realm;
-
-    private AdminPermissionEvaluator auth;
-
-    private AdminEventBuilder adminEvent;
-    private UserModel user;
-
     @Context
     protected ClientConnection clientConnection;
-
     @Context
     protected KeycloakSession session;
-
     @Context
     protected HttpHeaders headers;
+    private AdminPermissionEvaluator auth;
+    private AdminEventBuilder adminEvent;
+    private UserModel user;
 
     public UserResource(RealmModel realm, UserModel user, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.auth = auth;
         this.realm = realm;
         this.user = user;
         this.adminEvent = adminEvent.resource(ResourceType.USER);
+    }
+
+    public static void updateUserFromRep(UserModel user, UserRepresentation rep, Set<String> attrsToRemove, RealmModel realm, KeycloakSession session, boolean removeMissingRequiredActions) {
+        if (rep.getUsername() != null && realm.isEditUsernameAllowed() && !realm.isRegistrationEmailAsUsername()) {
+            user.setUsername(rep.getUsername());
+        }
+        if (rep.getEmail() != null) {
+            String email = rep.getEmail();
+            user.setEmail(email);
+            if (realm.isRegistrationEmailAsUsername()) {
+                user.setUsername(email);
+            }
+        }
+        if (rep.getEmail() == "") user.setEmail(null);
+        if (rep.getFirstName() != null) user.setFirstName(rep.getFirstName());
+        if (rep.getLastName() != null) user.setLastName(rep.getLastName());
+
+        if (rep.isEnabled() != null) user.setEnabled(rep.isEnabled());
+        if (rep.isEmailVerified() != null) user.setEmailVerified(rep.isEmailVerified());
+
+        if (rep.getFederationLink() != null) user.setFederationLink(rep.getFederationLink());
+
+        List<String> reqActions = rep.getRequiredActions();
+
+        if (reqActions != null) {
+            Set<String> allActions = new HashSet<>();
+            for (ProviderFactory factory : session.getKeycloakSessionFactory().getProviderFactories(RequiredActionProvider.class)) {
+                allActions.add(factory.getId());
+            }
+            for (String action : allActions) {
+                if (reqActions.contains(action)) {
+                    user.addRequiredAction(action);
+                } else if (removeMissingRequiredActions) {
+                    user.removeRequiredAction(action);
+                }
+            }
+        }
+
+        List<CredentialRepresentation> credentials = rep.getCredentials();
+        if (credentials != null) {
+            for (CredentialRepresentation credential : credentials) {
+                if (CredentialRepresentation.PASSWORD.equals(credential.getType()) && credential.isTemporary() != null
+                        && credential.isTemporary()) {
+                    user.addRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD);
+                }
+            }
+        }
+
+        if (rep.getAttributes() != null) {
+            for (Map.Entry<String, List<String>> attr : rep.getAttributes().entrySet()) {
+                user.setAttribute(attr.getKey(), attr.getValue());
+            }
+
+            for (String attr : attrsToRemove) {
+                user.removeAttribute(attr);
+            }
+        }
     }
 
     /**
@@ -191,63 +197,6 @@ public class UserResource {
         } catch (Exception me) { // JPA
             logger.warn("Could not update user!", me);// may be committed by JTA which can't
             return ErrorResponse.exists("Could not update user!");
-        }
-    }
-
-    public static void updateUserFromRep(UserModel user, UserRepresentation rep, Set<String> attrsToRemove, RealmModel realm, KeycloakSession session, boolean removeMissingRequiredActions) {
-        if (rep.getUsername() != null && realm.isEditUsernameAllowed() && !realm.isRegistrationEmailAsUsername()) {
-            user.setUsername(rep.getUsername());
-        }
-        if (rep.getEmail() != null) {
-            String email = rep.getEmail();
-            user.setEmail(email);
-            if(realm.isRegistrationEmailAsUsername()) {
-                user.setUsername(email);
-            }
-        }
-        if (rep.getEmail() == "") user.setEmail(null);
-        if (rep.getFirstName() != null) user.setFirstName(rep.getFirstName());
-        if (rep.getLastName() != null) user.setLastName(rep.getLastName());
-
-        if (rep.isEnabled() != null) user.setEnabled(rep.isEnabled());
-        if (rep.isEmailVerified() != null) user.setEmailVerified(rep.isEmailVerified());
-
-        if (rep.getFederationLink() != null) user.setFederationLink(rep.getFederationLink());
-
-        List<String> reqActions = rep.getRequiredActions();
-
-        if (reqActions != null) {
-            Set<String> allActions = new HashSet<>();
-            for (ProviderFactory factory : session.getKeycloakSessionFactory().getProviderFactories(RequiredActionProvider.class)) {
-                allActions.add(factory.getId());
-            }
-            for (String action : allActions) {
-                if (reqActions.contains(action)) {
-                    user.addRequiredAction(action);
-                } else if (removeMissingRequiredActions) {
-                    user.removeRequiredAction(action);
-                }
-            }
-        }
-
-        List<CredentialRepresentation> credentials = rep.getCredentials();
-        if (credentials != null) {
-            for (CredentialRepresentation credential : credentials) {
-                if (CredentialRepresentation.PASSWORD.equals(credential.getType()) && credential.isTemporary() != null
-                        && credential.isTemporary()) {
-                    user.addRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD);
-                }
-            }
-        }
-
-        if (rep.getAttributes() != null) {
-            for (Map.Entry<String, List<String>> attr : rep.getAttributes().entrySet()) {
-                user.setAttribute(attr.getKey(), attr.getValue());
-            }
-
-            for (String attr : attrsToRemove) {
-                user.removeAttribute(attr);
-            }
         }
     }
 
@@ -316,10 +265,10 @@ public class UserResource {
         result.put("sameRealm", sameRealm);
         result.put("redirect", redirect.toString());
         event.event(EventType.IMPERSONATE)
-             .session(userSession)
-             .user(user)
-             .detail(Details.IMPERSONATOR_REALM, authenticatedRealm.getName())
-             .detail(Details.IMPERSONATOR, impersonator).success();
+                .session(userSession)
+                .user(user)
+                .detail(Details.IMPERSONATOR_REALM, authenticatedRealm.getName())
+                .detail(Details.IMPERSONATOR, impersonator).success();
 
         return result;
     }
@@ -475,9 +424,9 @@ public class UserResource {
 
             Map<String, Object> currentRep = new HashMap<>();
             currentRep.put("clientId", client.getClientId());
-            currentRep.put("grantedClientScopes", (rep==null ? Collections.emptyList() : rep.getGrantedClientScopes()));
-            currentRep.put("createdDate", (rep==null ? null : rep.getCreatedDate()));
-            currentRep.put("lastUpdatedDate", (rep==null ? null : rep.getLastUpdatedDate()));
+            currentRep.put("grantedClientScopes", (rep == null ? Collections.emptyList() : rep.getGrantedClientScopes()));
+            currentRep.put("createdDate", (rep == null ? null : rep.getCreatedDate()));
+            currentRep.put("lastUpdatedDate", (rep == null ? null : rep.getLastUpdatedDate()));
 
             List<Map<String, String>> additionalGrants = new LinkedList<>();
             if (hasOfflineToken) {
@@ -527,9 +476,8 @@ public class UserResource {
 
     /**
      * Remove all user sessions associated with the user
-     *
+     * <p>
      * Also send notification to all clients that have an admin URL to invalidate the sessions for the particular user.
-     *
      */
     @Path("logout")
     @POST
@@ -566,7 +514,7 @@ public class UserResource {
     public RoleMapperResource getRoleMappings() {
         AdminPermissionEvaluator.RequirePermissionCheck manageCheck = () -> auth.users().requireMapRoles(user);
         AdminPermissionEvaluator.RequirePermissionCheck viewCheck = () -> auth.users().requireView(user);
-        RoleMapperResource resource =  new RoleMapperResource(realm, auth, user, adminEvent, manageCheck, viewCheck);
+        RoleMapperResource resource = new RoleMapperResource(realm, auth, user, adminEvent, manageCheck, viewCheck);
         ResteasyProviderFactory.getInstance().injectProperties(resource);
         return resource;
 
@@ -617,7 +565,8 @@ public class UserResource {
             throw new ErrorResponseException(e.getMessage(), MessageFormat.format(messages.getProperty(e.getMessage(), e.getMessage()), e.getParameters()),
                     Status.BAD_REQUEST);
         }
-        if (cred.isTemporary() != null && cred.isTemporary()) user.addRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD);
+        if (cred.isTemporary() != null && cred.isTemporary())
+            user.addRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD);
 
         adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).success();
     }
@@ -627,7 +576,7 @@ public class UserResource {
     @Path("credentials")
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
-    public List<CredentialRepresentation> credentials(){
+    public List<CredentialRepresentation> credentials() {
         auth.users().requireManage(user);
         List<CredentialModel> models = session.userCredentialManager().getStoredCredentials(realm, user);
         models.forEach(c -> c.setSecretData(null));
@@ -655,7 +604,6 @@ public class UserResource {
 
     /**
      * Remove a credential for a user
-     *
      */
     @Path("credentials/{credentialId}")
     @DELETE
@@ -685,22 +633,24 @@ public class UserResource {
 
     /**
      * Move a credential to a first position in the credentials list of the user
+     *
      * @param credentialId The credential to move
      */
     @Path("credentials/{credentialId}/moveToFirst")
     @POST
-    public void moveCredentialToFirst(final @PathParam("credentialId") String credentialId){
+    public void moveCredentialToFirst(final @PathParam("credentialId") String credentialId) {
         moveCredentialAfter(credentialId, null);
     }
 
     /**
      * Move a credential to a position behind another credential
-     * @param credentialId The credential to move
+     *
+     * @param credentialId            The credential to move
      * @param newPreviousCredentialId The credential that will be the previous element in the list. If set to null, the moved credential will be the first element in the list.
      */
     @Path("credentials/{credentialId}/moveAfter/{newPreviousCredentialId}")
     @POST
-    public void moveCredentialAfter(final @PathParam("credentialId") String credentialId, final @PathParam("newPreviousCredentialId") String newPreviousCredentialId){
+    public void moveCredentialAfter(final @PathParam("credentialId") String credentialId, final @PathParam("newPreviousCredentialId") String newPreviousCredentialId) {
         auth.users().requireManage(user);
         CredentialModel credential = session.userCredentialManager().getStoredCredentialById(realm, user, credentialId);
         if (credential == null) {
@@ -715,12 +665,12 @@ public class UserResource {
      * Send an email to the user with a link they can click to reset their password.
      * The redirectUri and clientId parameters are optional. The default for the
      * redirect is the account client.
-     *
+     * <p>
      * This endpoint has been deprecated.  Please use the execute-actions-email passing a list with
      * UPDATE_PASSWORD within it.
      *
      * @param redirectUri redirect uri
-     * @param clientId client id
+     * @param clientId    client id
      * @return
      */
     @Deprecated
@@ -737,16 +687,16 @@ public class UserResource {
 
     /**
      * Send a update account email to the user
-     *
+     * <p>
      * An email contains a link the user can click to perform a set of required actions.
      * The redirectUri and clientId parameters are optional. If no redirect is given, then there will
      * be no link back to click after actions have completed.  Redirect uri must be a valid uri for the
      * particular clientId.
      *
      * @param redirectUri Redirect uri
-     * @param clientId Client id
-     * @param lifespan Number of seconds after which the generated token expires
-     * @param actions required actions the user needs to complete
+     * @param clientId    Client id
+     * @param lifespan    Number of seconds after which the generated token expires
+     * @param actions     required actions the user needs to complete
      * @return
      */
     @Path("execute-actions-email")
@@ -764,12 +714,12 @@ public class UserResource {
 
         if (!user.isEnabled()) {
             throw new WebApplicationException(
-                ErrorResponse.error("User is disabled", Status.BAD_REQUEST));
+                    ErrorResponse.error("User is disabled", Status.BAD_REQUEST));
         }
 
         if (redirectUri != null && clientId == null) {
             throw new WebApplicationException(
-                ErrorResponse.error("Client id missing", Status.BAD_REQUEST));
+                    ErrorResponse.error("Client id missing", Status.BAD_REQUEST));
         }
 
         if (clientId == null) {
@@ -780,7 +730,7 @@ public class UserResource {
         if (client == null) {
             logger.debugf("Client %s doesn't exist", clientId);
             throw new WebApplicationException(
-                ErrorResponse.error("Client doesn't exist", Status.BAD_REQUEST));
+                    ErrorResponse.error("Client doesn't exist", Status.BAD_REQUEST));
         }
         if (!client.isEnabled()) {
             logger.debugf("Client %s is not enabled", clientId);
@@ -793,7 +743,7 @@ public class UserResource {
             redirect = RedirectUtils.verifyRedirectUri(session, redirectUri, client);
             if (redirect == null) {
                 throw new WebApplicationException(
-                    ErrorResponse.error("Invalid redirect uri.", Status.BAD_REQUEST));
+                        ErrorResponse.error("Invalid redirect uri.", Status.BAD_REQUEST));
             }
         }
 
@@ -810,10 +760,10 @@ public class UserResource {
             String link = builder.build(realm.getName()).toString();
 
             this.session.getProvider(EmailTemplateProvider.class)
-              .setAttribute(Constants.TEMPLATE_ATTR_REQUIRED_ACTIONS, token.getRequiredActions())
-              .setRealm(realm)
-              .setUser(user)
-              .sendExecuteActions(link, TimeUnit.SECONDS.toMinutes(lifespan));
+                    .setAttribute(Constants.TEMPLATE_ATTR_REQUIRED_ACTIONS, token.getRequiredActions())
+                    .setRealm(realm)
+                    .setUser(user)
+                    .sendExecuteActions(link, TimeUnit.SECONDS.toMinutes(lifespan));
 
             //audit.user(user).detail(Details.EMAIL, user.getEmail()).detail(Details.CODE_ID, accessCode.getCodeId()).success();
 
@@ -828,13 +778,13 @@ public class UserResource {
 
     /**
      * Send an email-verification email to the user
-     *
+     * <p>
      * An email contains a link the user can click to verify their email address.
      * The redirectUri and clientId parameters are optional. The default for the
      * redirect is the account client.
      *
      * @param redirectUri Redirect uri
-     * @param clientId Client id
+     * @param clientId    Client id
      * @return
      */
     @Path("send-verify-email")
@@ -859,7 +809,7 @@ public class UserResource {
 
         if (Objects.nonNull(search) && Objects.nonNull(firstResult) && Objects.nonNull(maxResults)) {
             results = ModelToRepresentation.searchForGroupByName(user, !briefRepresentation, search.trim(), firstResult, maxResults);
-        } else if(Objects.nonNull(firstResult) && Objects.nonNull(maxResults)) {
+        } else if (Objects.nonNull(firstResult) && Objects.nonNull(maxResults)) {
             results = ModelToRepresentation.toGroupHierarchy(user, !briefRepresentation, firstResult, maxResults);
         } else {
             results = ModelToRepresentation.toGroupHierarchy(user, !briefRepresentation);
@@ -899,7 +849,7 @@ public class UserResource {
         auth.groups().requireManageMembership(group);
 
         try {
-            if (user.isMemberOf(group)){
+            if (user.isMemberOf(group)) {
                 user.leaveGroup(group);
                 adminEvent.operation(OperationType.DELETE).resource(ResourceType.GROUP_MEMBERSHIP).representation(ModelToRepresentation.toRepresentation(group, true)).resourcePath(session.getContext().getUri()).success();
             }
@@ -920,7 +870,7 @@ public class UserResource {
             throw new NotFoundException("Group not found");
         }
         auth.groups().requireManageMembership(group);
-        if (!user.isMemberOf(group)){
+        if (!user.isMemberOf(group)) {
             user.joinGroup(group);
             adminEvent.operation(OperationType.CREATE).resource(ResourceType.GROUP_MEMBERSHIP).representation(ModelToRepresentation.toRepresentation(group, true)).resourcePath(session.getContext().getUri()).success();
         }

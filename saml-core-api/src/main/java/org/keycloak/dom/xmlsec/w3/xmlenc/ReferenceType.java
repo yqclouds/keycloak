@@ -40,9 +40,8 @@ import java.net.URI;
  */
 public class ReferenceType {
 
-    protected URI uri;
-
     public Object reference;
+    protected URI uri;
 
     public ReferenceType(URI uri) {
         this.uri = uri;

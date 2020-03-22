@@ -90,16 +90,16 @@ public abstract class AbstractGlobalOptionsCmd implements Command {
     protected String extractTypeNameFromUri(String resourceUrl) {
         String type = extractLastComponentOfUri(resourceUrl);
         if (type.endsWith("s")) {
-            type = type.substring(0, type.length()-1);
+            type = type.substring(0, type.length() - 1);
         }
         return type;
     }
 
     protected String extractLastComponentOfUri(String resourceUrl) {
-        int endPos = resourceUrl.endsWith("/") ? resourceUrl.length()-2 : resourceUrl.length()-1;
+        int endPos = resourceUrl.endsWith("/") ? resourceUrl.length() - 2 : resourceUrl.length() - 1;
         int pos = resourceUrl.lastIndexOf("/", endPos);
         pos = pos == -1 ? 0 : pos;
-        return resourceUrl.substring(pos+1, endPos+1);
+        return resourceUrl.substring(pos + 1, endPos + 1);
     }
 
     protected JsonNode applyFieldFilter(ObjectMapper mapper, JsonNode rootNode, ReturnFields returnFields) {

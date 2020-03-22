@@ -16,12 +16,18 @@
  */
 package org.keycloak.services.resources.account;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import org.jboss.resteasy.annotations.cache.NoCache;
+import org.jboss.resteasy.spi.HttpRequest;
+import org.keycloak.device.DeviceActivityManager;
+import org.keycloak.models.*;
+import org.keycloak.representations.account.ClientRepresentation;
+import org.keycloak.representations.account.DeviceRepresentation;
+import org.keycloak.representations.account.SessionRepresentation;
+import org.keycloak.services.managers.Auth;
+import org.keycloak.services.managers.AuthenticationManager;
+import org.keycloak.services.resources.Cors;
+
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
@@ -29,22 +35,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import org.jboss.resteasy.annotations.cache.NoCache;
-import org.jboss.resteasy.spi.HttpRequest;
-import org.keycloak.device.DeviceActivityManager;
-import org.keycloak.models.AccountRoles;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
-import org.keycloak.representations.account.ClientRepresentation;
-import org.keycloak.representations.account.DeviceRepresentation;
-import org.keycloak.representations.account.SessionRepresentation;
-import org.keycloak.services.managers.Auth;
-import org.keycloak.services.managers.AuthenticationManager;
-import org.keycloak.services.resources.Cors;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>

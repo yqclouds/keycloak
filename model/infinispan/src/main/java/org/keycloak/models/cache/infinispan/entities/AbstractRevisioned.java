@@ -10,9 +10,9 @@ import java.io.Serializable;
  * @version $Revision: 1 $
  */
 public class AbstractRevisioned implements Revisioned, Serializable, CachedObject {
+    private final long cacheTimestamp = Time.currentTimeMillis();
     private String id;
     private Long revision;
-    private final long cacheTimestamp = Time.currentTimeMillis();
 
     public AbstractRevisioned(Long revision, String id) {
         this.revision = revision;

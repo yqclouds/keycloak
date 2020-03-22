@@ -19,13 +19,7 @@ package org.keycloak.storage.jpa.entity;
 
 import org.keycloak.storage.jpa.KeyUtils;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 
 /**
@@ -33,40 +27,35 @@ import java.io.Serializable;
  * @version $Revision: 1 $
  */
 @NamedQueries({
-        @NamedQuery(name= "findBrokerLinkByUser", query="select link from BrokerLinkEntity link where link.userId = :userId"),
-        @NamedQuery(name= "findBrokerLinkByUserAndProvider", query="select link from BrokerLinkEntity link where link.userId = :userId and link.identityProvider = :identityProvider and link.realmId = :realmId"),
-        @NamedQuery(name= "findUserByBrokerLinkAndRealm", query="select link.userId from BrokerLinkEntity link where link.realmId = :realmId and link.identityProvider = :identityProvider and link.brokerUserId = :brokerUserId"),
-        @NamedQuery(name= "deleteBrokerLinkByStorageProvider", query="delete from BrokerLinkEntity social where social.storageProviderId = :storageProviderId"),
-        @NamedQuery(name= "deleteBrokerLinkByRealm", query="delete from BrokerLinkEntity social where social.realmId = :realmId"),
-        @NamedQuery(name= "deleteBrokerLinkByRealmAndLink", query="delete from BrokerLinkEntity social where social.userId IN (select u.id from UserEntity u where realmId=:realmId and u.federationLink=:link)"),
-        @NamedQuery(name= "deleteBrokerLinkByUser", query="delete from BrokerLinkEntity social where social.userId = :userId and social.realmId = :realmId")
+        @NamedQuery(name = "findBrokerLinkByUser", query = "select link from BrokerLinkEntity link where link.userId = :userId"),
+        @NamedQuery(name = "findBrokerLinkByUserAndProvider", query = "select link from BrokerLinkEntity link where link.userId = :userId and link.identityProvider = :identityProvider and link.realmId = :realmId"),
+        @NamedQuery(name = "findUserByBrokerLinkAndRealm", query = "select link.userId from BrokerLinkEntity link where link.realmId = :realmId and link.identityProvider = :identityProvider and link.brokerUserId = :brokerUserId"),
+        @NamedQuery(name = "deleteBrokerLinkByStorageProvider", query = "delete from BrokerLinkEntity social where social.storageProviderId = :storageProviderId"),
+        @NamedQuery(name = "deleteBrokerLinkByRealm", query = "delete from BrokerLinkEntity social where social.realmId = :realmId"),
+        @NamedQuery(name = "deleteBrokerLinkByRealmAndLink", query = "delete from BrokerLinkEntity social where social.userId IN (select u.id from UserEntity u where realmId=:realmId and u.federationLink=:link)"),
+        @NamedQuery(name = "deleteBrokerLinkByUser", query = "delete from BrokerLinkEntity social where social.userId = :userId and social.realmId = :realmId")
 })
-@Table(name="BROKER_LINK")
+@Table(name = "BROKER_LINK")
 @Entity
 @IdClass(BrokerLinkEntity.Key.class)
 public class BrokerLinkEntity {
 
     @Id
-    @Column(name = "USER_ID")
-    private String userId;
-
-    @Id
     @Column(name = "IDENTITY_PROVIDER")
     protected String identityProvider;
-
     @Column(name = "REALM_ID")
     protected String realmId;
-
     @Column(name = "STORAGE_PROVIDER_ID")
     protected String storageProviderId;
-
     @Column(name = "BROKER_USER_ID")
     protected String brokerUserId;
     @Column(name = "BROKER_USERNAME")
     protected String brokerUserName;
-
     @Column(name = "TOKEN")
     protected String token;
+    @Id
+    @Column(name = "USER_ID")
+    private String userId;
 
     public String getUserId() {
         return userId;
@@ -117,12 +106,34 @@ public class BrokerLinkEntity {
         this.realmId = realmId;
     }
 
+    public String getToken() {
+        return token;
+    }
+
     public void setToken(String token) {
         this.token = token;
     }
 
-    public String getToken() {
-        return token;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        if (!(o instanceof BrokerLinkEntity)) return false;
+
+        BrokerLinkEntity key = (BrokerLinkEntity) o;
+
+        if (identityProvider != null ? !identityProvider.equals(key.identityProvider) : key.identityProvider != null)
+            return false;
+        if (userId != null ? !userId.equals(key.userId != null ? key.userId : null) : key.userId != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = userId != null ? userId.hashCode() : 0;
+        result = 31 * result + (identityProvider != null ? identityProvider.hashCode() : 0);
+        return result;
     }
 
     public static class Key implements Serializable {
@@ -156,7 +167,8 @@ public class BrokerLinkEntity {
 
             if (identityProvider != null ? !identityProvider.equals(key.identityProvider) : key.identityProvider != null)
                 return false;
-            if (userId != null ? !userId.equals(key.userId != null ? key.userId : null) : key.userId != null) return false;
+            if (userId != null ? !userId.equals(key.userId != null ? key.userId : null) : key.userId != null)
+                return false;
 
             return true;
         }
@@ -167,28 +179,6 @@ public class BrokerLinkEntity {
             result = 31 * result + (identityProvider != null ? identityProvider.hashCode() : 0);
             return result;
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null) return false;
-        if (!(o instanceof BrokerLinkEntity)) return false;
-
-        BrokerLinkEntity key = (BrokerLinkEntity) o;
-
-        if (identityProvider != null ? !identityProvider.equals(key.identityProvider) : key.identityProvider != null)
-            return false;
-        if (userId != null ? !userId.equals(key.userId != null ? key.userId : null) : key.userId != null) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = userId != null ? userId.hashCode() : 0;
-        result = 31 * result + (identityProvider != null ? identityProvider.hashCode() : 0);
-        return result;
     }
 
 

@@ -54,8 +54,7 @@ public class JWKSUtils {
                 keyWrapper.setKid(jwk.getKeyId());
                 if (jwk.getAlgorithm() != null) {
                     keyWrapper.setAlgorithm(jwk.getAlgorithm());
-                }
-                else if (jwk.getKeyType().equalsIgnoreCase("RSA")){
+                } else if (jwk.getKeyType().equalsIgnoreCase("RSA")) {
                     //backwards compatibility: RSA keys without "alg" field set are considered RS256
                     keyWrapper.setAlgorithm("RS256");
                 }
@@ -70,11 +69,11 @@ public class JWKSUtils {
 
     private static KeyUse getKeyUse(String keyUse) {
         switch (keyUse) {
-            case "sig" : 
+            case "sig":
                 return KeyUse.SIG;
-            case "enc" : 
+            case "enc":
                 return KeyUse.ENC;
-            default :
+            default:
                 return null;
         }
     }

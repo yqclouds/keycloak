@@ -1,14 +1,14 @@
 package org.keycloak.authentication.authenticators.x509;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+import org.keycloak.common.util.PemUtils;
+import org.keycloak.common.util.StreamUtil;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.security.cert.X509Certificate;
 
-import org.junit.Test;
-import org.keycloak.common.util.PemUtils;
-import org.keycloak.common.util.StreamUtil;
+import static org.junit.Assert.assertEquals;
 
 public class CertificatePemIdentityExtractorTest {
 

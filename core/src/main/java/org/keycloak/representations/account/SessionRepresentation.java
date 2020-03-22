@@ -64,12 +64,12 @@ public class SessionRepresentation {
         this.clients = clients;
     }
 
-    public void setBrowser(String browser) {
-        this.browser = browser;
-    }
-
     public String getBrowser() {
         return browser;
+    }
+
+    public void setBrowser(String browser) {
+        this.browser = browser;
     }
 
     public Boolean getCurrent() {

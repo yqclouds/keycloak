@@ -17,8 +17,6 @@
 
 package org.keycloak.models.sessions.infinispan.changes.sessions;
 
-import java.util.Map;
-
 import org.infinispan.Cache;
 import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterEvent;
@@ -32,6 +30,8 @@ import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.entities.UserSessionEntity;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
 import org.keycloak.models.utils.KeycloakModelUtils;
+
+import java.util.Map;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>

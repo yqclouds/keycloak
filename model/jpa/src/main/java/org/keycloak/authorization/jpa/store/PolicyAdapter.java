@@ -19,22 +19,14 @@ package org.keycloak.authorization.jpa.store;
 import org.keycloak.authorization.jpa.entities.PolicyEntity;
 import org.keycloak.authorization.jpa.entities.ResourceEntity;
 import org.keycloak.authorization.jpa.entities.ScopeEntity;
-import org.keycloak.authorization.model.AbstractAuthorizationModel;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.model.*;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.jpa.JpaModel;
 import org.keycloak.representations.idm.authorization.DecisionStrategy;
 import org.keycloak.representations.idm.authorization.Logic;
 
 import javax.persistence.EntityManager;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -50,6 +42,14 @@ public class PolicyAdapter extends AbstractAuthorizationModel implements Policy,
         this.entity = entity;
         this.em = em;
         this.storeFactory = storeFactory;
+    }
+
+    public static PolicyEntity toEntity(EntityManager em, Policy policy) {
+        if (policy instanceof PolicyAdapter) {
+            return ((PolicyAdapter) policy).getEntity();
+        } else {
+            return em.getReference(PolicyEntity.class, policy.getId());
+        }
     }
 
     @Override
@@ -222,14 +222,14 @@ public class PolicyAdapter extends AbstractAuthorizationModel implements Policy,
     }
 
     @Override
-    public void setOwner(String owner) {
-        throwExceptionIfReadonly();
-        entity.setOwner(owner);
+    public String getOwner() {
+        return entity.getOwner();
     }
 
     @Override
-    public String getOwner() {
-        return entity.getOwner();
+    public void setOwner(String owner) {
+        throwExceptionIfReadonly();
+        entity.setOwner(owner);
     }
 
     @Override
@@ -244,14 +244,6 @@ public class PolicyAdapter extends AbstractAuthorizationModel implements Policy,
     @Override
     public int hashCode() {
         return getId().hashCode();
-    }
-
-    public static PolicyEntity toEntity(EntityManager em, Policy policy) {
-        if (policy instanceof PolicyAdapter) {
-            return ((PolicyAdapter)policy).getEntity();
-        } else {
-            return em.getReference(PolicyEntity.class, policy.getId());
-        }
     }
 
     @Override

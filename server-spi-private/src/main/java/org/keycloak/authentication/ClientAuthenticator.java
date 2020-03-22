@@ -22,14 +22,13 @@ import org.keycloak.provider.Provider;
 /**
  * This interface is for users that want to add custom client authenticators to an authentication flow.
  * You must implement this interface as well as a ClientAuthenticatorFactory.
- *
+ * <p>
  * This interface is for verifying client credentials from request. On the adapter side, you must also implement org.keycloak.adapters.authentication.ClientCredentialsProvider , which is supposed
  * to add the client credentials to the request, which will ClientAuthenticator verify on server side
  *
+ * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  * @see org.keycloak.authentication.authenticators.client.ClientIdAndSecretAuthenticator
  * @see org.keycloak.authentication.authenticators.client.JWTClientAuthenticator
- *
- * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public interface ClientAuthenticator extends Provider {
 

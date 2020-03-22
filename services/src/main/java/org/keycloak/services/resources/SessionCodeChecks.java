@@ -17,16 +17,6 @@
 
 package org.keycloak.services.resources;
 
-import java.net.URI;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
-
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authentication.AuthenticationProcessor;
@@ -36,11 +26,7 @@ import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.Constants;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.protocol.AuthorizationEndpointBase;
 import org.keycloak.protocol.RestartLoginCookie;
 import org.keycloak.services.ErrorPage;
@@ -48,34 +34,36 @@ import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.managers.AuthenticationSessionManager;
 import org.keycloak.services.managers.ClientSessionCode;
 import org.keycloak.services.messages.Messages;
-import org.keycloak.services.util.BrowserHistoryHelper;
 import org.keycloak.services.util.AuthenticationFlowURLHelper;
+import org.keycloak.services.util.BrowserHistoryHelper;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
+
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
+import java.net.URI;
 
 
 public class SessionCodeChecks {
 
     private static final Logger logger = Logger.getLogger(SessionCodeChecks.class);
-
-    private AuthenticationSessionModel authSession;
-    private ClientSessionCode<AuthenticationSessionModel> clientCode;
-    private Response response;
-    private boolean actionRequest;
-
     private final RealmModel realm;
     private final UriInfo uriInfo;
     private final HttpRequest request;
     private final ClientConnection clientConnection;
     private final KeycloakSession session;
     private final EventBuilder event;
-
     private final String code;
     private final String execution;
     private final String clientId;
     private final String tabId;
     private final String flowPath;
     private final String authSessionId;
+    private AuthenticationSessionModel authSession;
+    private ClientSessionCode<AuthenticationSessionModel> clientCode;
+    private Response response;
+    private boolean actionRequest;
 
     public SessionCodeChecks(RealmModel realm, UriInfo uriInfo, HttpRequest request, ClientConnection clientConnection, KeycloakSession session, EventBuilder event,
                              String authSessionId, String code, String execution, String clientId, String tabId, String flowPath) {
@@ -155,7 +143,8 @@ public class SessionCodeChecks {
         // object retrieve
         AuthenticationSessionManager authSessionManager = new AuthenticationSessionManager(session);
         AuthenticationSessionModel authSession = null;
-        if (authSessionId != null) authSession = authSessionManager.getAuthenticationSessionByIdAndClient(realm, authSessionId, client, tabId);
+        if (authSessionId != null)
+            authSession = authSessionManager.getAuthenticationSessionByIdAndClient(realm, authSessionId, client, tabId);
         AuthenticationSessionModel authSessionCookie = authSessionManager.getCurrentAuthenticationSession(realm, client, tabId);
 
         if (authSession != null && authSessionCookie != null && !authSession.getParentSession().getId().equals(authSessionCookie.getParentSession().getId())) {
@@ -227,7 +216,7 @@ public class SessionCodeChecks {
 
         if (!client.isEnabled()) {
             event.error(Errors.CLIENT_DISABLED);
-            response = ErrorPage.error(session,authSession, Response.Status.BAD_REQUEST, Messages.LOGIN_REQUESTER_NOT_ENABLED);
+            response = ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.LOGIN_REQUESTER_NOT_ENABLED);
             clientCode.removeExpiredClientSession();
             return false;
         }
@@ -239,7 +228,7 @@ public class SessionCodeChecks {
             String lastFlow = authSession.getAuthNote(AuthenticationProcessor.CURRENT_FLOW_PATH);
 
             // Check if we transitted between flows (eg. clicking "register" on login screen)
-            if (execution==null && !flowPath.equals(lastFlow)) {
+            if (execution == null && !flowPath.equals(lastFlow)) {
                 logger.debugf("Transition between flows! Current flow: %s, Previous flow: %s", flowPath, lastFlow);
 
                 // Don't allow moving to different flow if I am on requiredActions already

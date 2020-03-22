@@ -33,6 +33,7 @@ public class RealmKeyGenerator {
     static {
         if (Security.getProvider("BC") == null) Security.addProvider(new BouncyCastleProvider());
     }
+
     public static void main(String[] args) throws Exception {
         KeyPair keyPair = null;
         try {

@@ -38,9 +38,7 @@ public class RedirectBindingUtil {
      * URL encode the string
      *
      * @param str
-     *
      * @return
-     *
      * @throws IOException
      */
     public static String urlEncode(String str) throws IOException {
@@ -51,9 +49,7 @@ public class RedirectBindingUtil {
      * URL decode the string
      *
      * @param str
-     *
      * @return
-     *
      * @throws IOException
      */
     public static String urlDecode(String str) throws IOException {
@@ -64,9 +60,7 @@ public class RedirectBindingUtil {
      * On the byte array, apply base64 encoding
      *
      * @param stringToEncode
-     *
      * @return
-     *
      * @throws IOException
      */
     public static String base64Encode(byte[] stringToEncode) throws IOException {
@@ -77,9 +71,7 @@ public class RedirectBindingUtil {
      * On the byte array, apply base64 encoding following by URL encoding
      *
      * @param stringToEncode
-     *
      * @return
-     *
      * @throws IOException
      */
     public static String base64URLEncode(byte[] stringToEncode) throws IOException {
@@ -91,9 +83,7 @@ public class RedirectBindingUtil {
      * On the byte array, apply URL decoding followed by base64 decoding
      *
      * @param encodedString
-     *
      * @return
-     *
      * @throws IOException
      */
     public static byte[] urlBase64Decode(String encodedString) throws IOException {
@@ -105,9 +95,7 @@ public class RedirectBindingUtil {
      * Apply deflate compression followed by base64 encoding and URL encoding
      *
      * @param stringToEncode
-     *
      * @return
-     *
      * @throws IOException
      */
     public static String deflateBase64URLEncode(String stringToEncode) throws IOException {
@@ -118,9 +106,7 @@ public class RedirectBindingUtil {
      * Apply deflate compression followed by base64 encoding and URL encoding
      *
      * @param stringToEncode
-     *
      * @return
-     *
      * @throws IOException
      */
     public static String deflateBase64URLEncode(byte[] stringToEncode) throws IOException {
@@ -132,9 +118,7 @@ public class RedirectBindingUtil {
      * Apply deflate compression followed by base64 encoding
      *
      * @param stringToEncode
-     *
      * @return
-     *
      * @throws IOException
      */
     public static String deflateBase64Encode(byte[] stringToEncode) throws IOException {
@@ -146,9 +130,7 @@ public class RedirectBindingUtil {
      * Apply URL decoding, followed by base64 decoding followed by deflate decompression
      *
      * @param encodedString
-     *
      * @return
-     *
      * @throws IOException
      */
     public static InputStream urlBase64DeflateDecode(String encodedString) throws IOException {
@@ -160,7 +142,6 @@ public class RedirectBindingUtil {
      * Base64 decode followed by Deflate decoding
      *
      * @param encodedString
-     *
      * @return
      */
     public static InputStream base64DeflateDecode(String encodedString) {
@@ -173,8 +154,7 @@ public class RedirectBindingUtil {
      *
      * @param urlEncodedRequest
      * @param urlEncodedRelayState
-     * @param sendRequest either going to be saml request or response
-     *
+     * @param sendRequest          either going to be saml request or response
      * @return
      */
     public static String getDestinationQueryString(String urlEncodedRequest, String urlEncodedRelayState, boolean sendRequest) {
@@ -192,9 +172,7 @@ public class RedirectBindingUtil {
      * Get the destination url
      *
      * @param holder
-     *
      * @return
-     *
      * @throws IOException
      */
     public static String getDestinationURL(RedirectBindingUtilDestHolder holder) throws IOException {

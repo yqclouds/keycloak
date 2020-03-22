@@ -18,12 +18,15 @@
 package org.keycloak.authentication.requiredactions;
 
 import org.jboss.logging.Logger;
-import org.keycloak.authentication.*;
+import org.keycloak.authentication.ConsoleDisplayMode;
+import org.keycloak.authentication.RequiredActionContext;
+import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
-import org.keycloak.models.*;
+import org.keycloak.models.ModelException;
+import org.keycloak.models.UserCredentialModel;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.validation.Validation;
 
@@ -35,12 +38,11 @@ import javax.ws.rs.core.MultivaluedMap;
  */
 public class ConsoleUpdatePassword extends UpdatePassword implements RequiredActionProvider {
     public static final ConsoleUpdatePassword SINGLETON = new ConsoleUpdatePassword();
-
-    private static final Logger logger = Logger.getLogger(ConsoleUpdatePassword.class);
     public static final String PASSWORD_NEW = "password-new";
     public static final String PASSWORD_CONFIRM = "password-confirm";
+    private static final Logger logger = Logger.getLogger(ConsoleUpdatePassword.class);
 
-     protected ConsoleDisplayMode challenge(RequiredActionContext context) {
+    protected ConsoleDisplayMode challenge(RequiredActionContext context) {
         return ConsoleDisplayMode.challenge(context)
                 .header()
                 .param(PASSWORD_NEW)
@@ -51,7 +53,6 @@ public class ConsoleUpdatePassword extends UpdatePassword implements RequiredAct
                 .mask(true)
                 .challenge();
     }
-
 
 
     @Override

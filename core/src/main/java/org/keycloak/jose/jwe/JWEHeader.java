@@ -17,13 +17,13 @@
 
 package org.keycloak.jose.jwe;
 
-import java.io.IOException;
-import java.io.Serializable;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -31,22 +31,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JWEHeader implements Serializable {
 
+    private static final ObjectMapper mapper = new ObjectMapper();
+
+    static {
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+    }
+
     @JsonProperty("alg")
     private String algorithm;
-
     @JsonProperty("enc")
     private String encryptionAlgorithm;
-
     @JsonProperty("zip")
     private String compressionAlgorithm;
-
-
     @JsonProperty("typ")
     private String type;
-
     @JsonProperty("cty")
     private String contentType;
-
     @JsonProperty("kid")
     private String keyId;
 
@@ -88,13 +89,6 @@ public class JWEHeader implements Serializable {
 
     public String getKeyId() {
         return keyId;
-    }
-
-    private static final ObjectMapper mapper = new ObjectMapper();
-
-    static {
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-
     }
 
     public String toString() {

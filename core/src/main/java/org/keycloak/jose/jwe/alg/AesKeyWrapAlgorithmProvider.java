@@ -17,13 +17,13 @@
 
 package org.keycloak.jose.jwe.alg;
 
-import java.security.Key;
-
 import org.bouncycastle.crypto.Wrapper;
 import org.bouncycastle.crypto.engines.AESWrapEngine;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.keycloak.jose.jwe.JWEKeyStorage;
 import org.keycloak.jose.jwe.enc.JWEEncryptionProvider;
+
+import java.security.Key;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>

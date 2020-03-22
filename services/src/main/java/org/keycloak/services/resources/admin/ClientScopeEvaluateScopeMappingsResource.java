@@ -17,27 +17,21 @@
 
 package org.keycloak.services.resources.admin;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import org.jboss.resteasy.annotations.cache.NoCache;
+import org.keycloak.models.*;
+import org.keycloak.models.utils.ModelToRepresentation;
+import org.keycloak.protocol.oidc.TokenManager;
+import org.keycloak.representations.idm.RoleRepresentation;
+import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-
-import org.jboss.resteasy.annotations.cache.NoCache;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RoleContainerModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.ScopeContainerModel;
-import org.keycloak.models.utils.ModelToRepresentation;
-import org.keycloak.protocol.oidc.TokenManager;
-import org.keycloak.representations.idm.RoleRepresentation;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -63,7 +57,7 @@ public class ClientScopeEvaluateScopeMappingsResource {
 
     /**
      * Get effective scope mapping of all roles of particular role container, which this client is defacto allowed to have in the accessToken issued for him.
-     *
+     * <p>
      * This contains scope mappings, which this client has directly, as well as scope mappings, which are granted to all client scopes,
      * which are linked with this client.
      *
@@ -105,8 +99,6 @@ public class ClientScopeEvaluateScopeMappingsResource {
 
         }).collect(Collectors.toList());
     }
-
-
 
 
     private List<RoleModel> getGrantedRoles() {

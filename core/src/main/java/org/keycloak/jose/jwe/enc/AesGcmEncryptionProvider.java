@@ -17,19 +17,18 @@
 
 package org.keycloak.jose.jwe.enc;
 
+import org.keycloak.jose.jwe.JWE;
+import org.keycloak.jose.jwe.JWEKeyStorage;
+import org.keycloak.jose.jwe.JWEUtils;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
-
-import javax.crypto.Cipher;
-import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-
-import org.keycloak.jose.jwe.JWE;
-import org.keycloak.jose.jwe.JWEKeyStorage;
-import org.keycloak.jose.jwe.JWEUtils;
 
 public abstract class AesGcmEncryptionProvider implements JWEEncryptionProvider {
 
@@ -54,7 +53,7 @@ public abstract class AesGcmEncryptionProvider implements JWEEncryptionProvider 
 
         int expectedAesKeyLength = getExpectedAesKeyLength();
         if (expectedAesKeyLength != aesKey.getEncoded().length) {
-            throw new IllegalStateException("Length of aes key should be " + expectedAesKeyLength +", but was " + aesKey.getEncoded().length);
+            throw new IllegalStateException("Length of aes key should be " + expectedAesKeyLength + ", but was " + aesKey.getEncoded().length);
         }
 
         // https://tools.ietf.org/html/rfc7516#appendix-A.1.5
@@ -76,7 +75,7 @@ public abstract class AesGcmEncryptionProvider implements JWEEncryptionProvider 
 
         int expectedAesKeyLength = getExpectedAesKeyLength();
         if (expectedAesKeyLength != aesKey.getEncoded().length) {
-            throw new IllegalStateException("Length of aes key should be " + expectedAesKeyLength +", but was " + aesKey.getEncoded().length);
+            throw new IllegalStateException("Length of aes key should be " + expectedAesKeyLength + ", but was " + aesKey.getEncoded().length);
         }
 
         // https://tools.ietf.org/html/rfc7516#appendix-A.1.5

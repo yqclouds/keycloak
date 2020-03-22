@@ -17,21 +17,9 @@
 
 package org.keycloak.admin.client.resource;
 
-import org.keycloak.representations.idm.GroupRepresentation;
-import org.keycloak.representations.idm.ManagementPermissionReference;
-import org.keycloak.representations.idm.ManagementPermissionRepresentation;
-import org.keycloak.representations.idm.RoleRepresentation;
-import org.keycloak.representations.idm.UserRepresentation;
+import org.keycloak.representations.idm.*;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Set;
@@ -127,7 +115,7 @@ public interface RoleResource {
     @Produces(MediaType.APPLICATION_JSON)
     Set<UserRepresentation> getRoleUserMembers(@QueryParam("first") Integer firstResult,
                                                @QueryParam("max") Integer maxResults);
-    
+
     /**
      * Get role groups
      * <p/>
@@ -153,5 +141,5 @@ public interface RoleResource {
     @Path("groups")
     @Produces(MediaType.APPLICATION_JSON)
     Set<GroupRepresentation> getRoleGroupMembers(@QueryParam("first") Integer firstResult,
-                                               @QueryParam("max") Integer maxResults);
+                                                 @QueryParam("max") Integer maxResults);
 }

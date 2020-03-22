@@ -119,6 +119,10 @@ public class UserInfo {
         return audience;
     }
 
+    public void setAudience(String... audience) {
+        this.audience = audience;
+    }
+
     public boolean hasAudience(String audience) {
         for (String a : this.audience) {
             if (a.equals(audience)) {
@@ -126,10 +130,6 @@ public class UserInfo {
             }
         }
         return false;
-    }
-
-    public void setAudience(String... audience) {
-        this.audience = audience;
     }
 
     public String getSubject() {

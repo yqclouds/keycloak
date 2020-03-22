@@ -17,9 +17,6 @@
 
 package org.keycloak.models.sessions.infinispan.initializer;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.ProtocolVersion;
 import org.infinispan.client.hotrod.RemoteCache;
@@ -39,6 +36,9 @@ import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.entities.AuthenticatedClientSessionEntity;
 import org.keycloak.models.sessions.infinispan.entities.UserSessionEntity;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -125,66 +125,14 @@ public class DistributedCacheConcurrentWritesTest {
         printStats(cache1);
     }
 
-
-    private static class Worker extends Thread {
-
-        private final BasicCache<String, SessionEntityWrapper<UserSessionEntity>> cache;
-        private final int startIndex;
-
-        public Worker(int threadId, BasicCache<String, SessionEntityWrapper<UserSessionEntity>> cache) {
-            this.cache = cache;
-            this.startIndex = (threadId - 1) * (ITEMS_IN_BATCH * BATCHES_PER_WORKER);
-            setName("th-" + threadId);
-        }
-
-        @Override
-        public void run() {
-
-            for (int page = 0; page < BATCHES_PER_WORKER ; page++) {
-                int startPageIndex = startIndex + page * ITEMS_IN_BATCH;
-
-                putItemsClassic(startPageIndex);
-                //putItemsAll(startPageIndex);
-
-                System.out.println("Thread " + getName() + ": Saved items from " + startPageIndex + " to " + (startPageIndex + ITEMS_IN_BATCH - 1));
-            }
-        }
-
-
-        // put items 1 by 1
-        private void putItemsClassic(int startPageIndex) {
-            for (int i = startPageIndex ; i < (startPageIndex + ITEMS_IN_BATCH) ; i++) {
-                String key = "key-" + startIndex + i;
-                SessionEntityWrapper<UserSessionEntity> session = createEntityInstance(key);
-                cache.put(key, session);
-            }
-        }
-
-
-        // put all items together
-        private void putItemsAll(int startPageIndex) {
-            Map<String, SessionEntityWrapper<UserSessionEntity>> mapp = new HashMap<>();
-
-            for (int i = startPageIndex ; i < (startPageIndex + ITEMS_IN_BATCH) ; i++) {
-                String key = "key-" + startIndex + i;
-                SessionEntityWrapper<UserSessionEntity> session = createEntityInstance(key);
-                mapp.put(key, session);
-            }
-
-            cache.putAll(mapp);
-        }
-    }
-
-
-    // Cache creation utils
-
-
     public static BasicCache<String, SessionEntityWrapper<UserSessionEntity>> createCache(String nodeName) {
         EmbeddedCacheManager mgr = createManager(nodeName);
         Cache<String, SessionEntityWrapper<UserSessionEntity>> cache = mgr.getCache(InfinispanConnectionProvider.USER_SESSION_CACHE_NAME);
         return cache;
     }
 
+
+    // Cache creation utils
 
     public static EmbeddedCacheManager createManager(String nodeName) {
         System.setProperty("java.net.preferIPv4Stack", "true");
@@ -220,7 +168,6 @@ public class DistributedCacheConcurrentWritesTest {
 
     }
 
-
     public static BasicCache<String, SessionEntityWrapper<UserSessionEntity>> createRemoteCache(String nodeName) {
         int port = ("node1".equals(nodeName)) ? 12232 : 13232;
 
@@ -233,8 +180,6 @@ public class DistributedCacheConcurrentWritesTest {
         return mgr.getCache(InfinispanConnectionProvider.USER_SESSION_CACHE_NAME);
     }
 
-    // CLEANUP METHODS
-
     private static void stopMgr(BasicCache cache) {
         if (cache instanceof Cache) {
             ((Cache) cache).getCacheManager().stop();
@@ -243,18 +188,68 @@ public class DistributedCacheConcurrentWritesTest {
         }
     }
 
+    // CLEANUP METHODS
 
     private static void printStats(BasicCache cache) {
         if (cache instanceof Cache) {
             Cache cache1 = (Cache) cache;
 
-            JChannel channel = ((JGroupsTransport)cache1.getAdvancedCache().getRpcManager().getTransport()).getChannel();
+            JChannel channel = ((JGroupsTransport) cache1.getAdvancedCache().getRpcManager().getTransport()).getChannel();
 
             System.out.println("Sent MB: " + channel.getSentBytes() / 1000000 + ", sent messages: " + channel.getSentMessages() + ", received MB: " + channel.getReceivedBytes() / 1000000 +
                     ", received messages: " + channel.getReceivedMessages());
         } else {
             Map<String, String> stats = ((RemoteCache) cache).stats().getStatsMap();
             System.out.println("Stats: " + stats);
+        }
+    }
+
+    private static class Worker extends Thread {
+
+        private final BasicCache<String, SessionEntityWrapper<UserSessionEntity>> cache;
+        private final int startIndex;
+
+        public Worker(int threadId, BasicCache<String, SessionEntityWrapper<UserSessionEntity>> cache) {
+            this.cache = cache;
+            this.startIndex = (threadId - 1) * (ITEMS_IN_BATCH * BATCHES_PER_WORKER);
+            setName("th-" + threadId);
+        }
+
+        @Override
+        public void run() {
+
+            for (int page = 0; page < BATCHES_PER_WORKER; page++) {
+                int startPageIndex = startIndex + page * ITEMS_IN_BATCH;
+
+                putItemsClassic(startPageIndex);
+                //putItemsAll(startPageIndex);
+
+                System.out.println("Thread " + getName() + ": Saved items from " + startPageIndex + " to " + (startPageIndex + ITEMS_IN_BATCH - 1));
+            }
+        }
+
+
+        // put items 1 by 1
+        private void putItemsClassic(int startPageIndex) {
+            for (int i = startPageIndex; i < (startPageIndex + ITEMS_IN_BATCH); i++) {
+                String key = "key-" + startIndex + i;
+                SessionEntityWrapper<UserSessionEntity> session = createEntityInstance(key);
+                cache.put(key, session);
+            }
+        }
+
+
+        // put all items together
+        private void putItemsAll(int startPageIndex) {
+            Map<String, SessionEntityWrapper<UserSessionEntity>> mapp = new HashMap<>();
+
+            for (int i = startPageIndex; i < (startPageIndex + ITEMS_IN_BATCH); i++) {
+                String key = "key-" + startIndex + i;
+                SessionEntityWrapper<UserSessionEntity> session = createEntityInstance(key);
+                mapp.put(key, session);
+            }
+
+            cache.putAll(mapp);
         }
     }
 }

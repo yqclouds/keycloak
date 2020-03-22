@@ -29,7 +29,7 @@ public class PayPalIdentityProviderConfig extends OAuth2IdentityProviderConfig {
     }
 
     public PayPalIdentityProviderConfig() {
-        
+
     }
 
     public boolean targetSandbox() {

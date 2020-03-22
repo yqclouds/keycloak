@@ -44,7 +44,7 @@ public class WSTrustException extends GeneralSecurityException {
      * </p>
      *
      * @param message the error message.
-     * @param cause a {@code Throwable} representing the cause of the error.
+     * @param cause   a {@code Throwable} representing the cause of the error.
      */
     public WSTrustException(String message, Throwable cause) {
         super(message, cause);

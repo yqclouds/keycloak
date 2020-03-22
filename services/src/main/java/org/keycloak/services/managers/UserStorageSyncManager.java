@@ -75,10 +75,6 @@ public class UserStorageSyncManager {
         });
     }
 
-    private class Holder {
-        ExecutionResult<SynchronizationResult> result;
-    }
-
     public SynchronizationResult syncAllUsers(final KeycloakSessionFactory sessionFactory, final String realmId, final UserStorageProviderModel provider) {
         UserStorageProviderFactory factory = (UserStorageProviderFactory) sessionFactory.getProviderFactory(UserStorageProvider.class, provider.getProviderId());
         if (!(factory instanceof ImportSynchronization) || !provider.isImportEnabled() || !provider.isEnabled()) {
@@ -104,7 +100,7 @@ public class UserStorageSyncManager {
                     @Override
                     public SynchronizationResult call() throws Exception {
                         updateLastSyncInterval(sessionFactory, provider, realmId);
-                        return ((ImportSynchronization)factory).sync(sessionFactory, realmId, provider);
+                        return ((ImportSynchronization) factory).sync(sessionFactory, realmId, provider);
                     }
 
                 });
@@ -146,7 +142,7 @@ public class UserStorageSyncManager {
                         // See when we did last sync.
                         int oldLastSync = provider.getLastSync();
                         updateLastSyncInterval(sessionFactory, provider, realmId);
-                        return ((ImportSynchronization)factory).syncSince(Time.toDate(oldLastSync), sessionFactory, realmId, provider);
+                        return ((ImportSynchronization) factory).syncSince(Time.toDate(oldLastSync), sessionFactory, realmId, provider);
                     }
 
                 });
@@ -162,7 +158,6 @@ public class UserStorageSyncManager {
         }
     }
 
-
     // Ensure all cluster nodes are notified
     public void notifyToRefreshPeriodicSync(KeycloakSession session, RealmModel realm, UserStorageProviderModel provider, boolean removed) {
         UserStorageProviderFactory factory = (UserStorageProviderFactory) session.getKeycloakSessionFactory().getProviderFactory(UserStorageProvider.class, provider.getProviderId());
@@ -173,7 +168,6 @@ public class UserStorageSyncManager {
         UserStorageProviderClusterEvent event = UserStorageProviderClusterEvent.createEvent(removed, realm.getId(), provider);
         session.getProvider(ClusterProvider.class).notify(USER_STORAGE_TASK_KEY, event, false, ClusterProvider.DCNotify.ALL_DCS);
     }
-
 
     // Executed once it receives notification that some UserFederationProvider was created or updated
     protected void refreshPeriodicSyncForProvider(final KeycloakSessionFactory sessionFactory, TimerProvider timer, final UserStorageProviderModel provider, final String realmId) {
@@ -271,6 +265,49 @@ public class UserStorageSyncManager {
         });
     }
 
+    // Send to cluster during each update or remove of federationProvider, so all nodes can update sync periods
+    public static class UserStorageProviderClusterEvent implements ClusterEvent {
+
+        private boolean removed;
+        private String realmId;
+        private UserStorageProviderModel storageProvider;
+
+        public static UserStorageProviderClusterEvent createEvent(boolean removed, String realmId, UserStorageProviderModel provider) {
+            UserStorageProviderClusterEvent notification = new UserStorageProviderClusterEvent();
+            notification.setRemoved(removed);
+            notification.setRealmId(realmId);
+            notification.setStorageProvider(provider);
+            return notification;
+        }
+
+        public boolean isRemoved() {
+            return removed;
+        }
+
+        public void setRemoved(boolean removed) {
+            this.removed = removed;
+        }
+
+        public String getRealmId() {
+            return realmId;
+        }
+
+        public void setRealmId(String realmId) {
+            this.realmId = realmId;
+        }
+
+        public UserStorageProviderModel getStorageProvider() {
+            return storageProvider;
+        }
+
+        public void setStorageProvider(UserStorageProviderModel federationProvider) {
+            this.storageProvider = federationProvider;
+        }
+    }
+
+    private class Holder {
+        ExecutionResult<SynchronizationResult> result;
+    }
 
     private class UserStorageClusterListener implements ClusterListener {
 
@@ -296,47 +333,6 @@ public class UserStorageSyncManager {
                 }
 
             });
-        }
-    }
-
-
-    // Send to cluster during each update or remove of federationProvider, so all nodes can update sync periods
-    public static class UserStorageProviderClusterEvent implements ClusterEvent {
-
-        private boolean removed;
-        private String realmId;
-        private UserStorageProviderModel storageProvider;
-
-        public boolean isRemoved() {
-            return removed;
-        }
-
-        public void setRemoved(boolean removed) {
-            this.removed = removed;
-        }
-
-        public String getRealmId() {
-            return realmId;
-        }
-
-        public void setRealmId(String realmId) {
-            this.realmId = realmId;
-        }
-
-        public UserStorageProviderModel getStorageProvider() {
-            return storageProvider;
-        }
-
-        public void setStorageProvider(UserStorageProviderModel federationProvider) {
-            this.storageProvider = federationProvider;
-        }
-
-        public static UserStorageProviderClusterEvent createEvent(boolean removed, String realmId, UserStorageProviderModel provider) {
-            UserStorageProviderClusterEvent notification = new UserStorageProviderClusterEvent();
-            notification.setRemoved(removed);
-            notification.setRealmId(realmId);
-            notification.setStorageProvider(provider);
-            return notification;
         }
     }
 

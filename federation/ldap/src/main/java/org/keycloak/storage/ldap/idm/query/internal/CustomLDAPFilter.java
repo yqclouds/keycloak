@@ -50,11 +50,11 @@ class CustomLDAPFilter implements Condition {
     }
 
     @Override
-    public void setBinary(boolean binary) {
+    public boolean isBinary() {
+        return false;
     }
 
     @Override
-    public boolean isBinary() {
-        return false;
+    public void setBinary(boolean binary) {
     }
 }

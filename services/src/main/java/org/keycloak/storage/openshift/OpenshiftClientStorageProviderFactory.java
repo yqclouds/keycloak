@@ -16,11 +16,6 @@
  */
 package org.keycloak.storage.openshift;
 
-import static org.keycloak.storage.CacheableStorageProviderModel.CACHE_POLICY;
-
-import java.util.List;
-import java.util.regex.Pattern;
-
 import com.openshift.restclient.ClientBuilder;
 import com.openshift.restclient.IClient;
 import org.keycloak.common.Profile;
@@ -35,19 +30,23 @@ import org.keycloak.storage.CacheableStorageProviderModel;
 import org.keycloak.storage.client.ClientStorageProviderFactory;
 import org.keycloak.storage.client.ClientStorageProviderModel;
 
+import java.util.List;
+import java.util.regex.Pattern;
+
+import static org.keycloak.storage.CacheableStorageProviderModel.CACHE_POLICY;
+
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
 public class OpenshiftClientStorageProviderFactory implements ClientStorageProviderFactory<OpenshiftClientStorageProvider>, EnvironmentDependentProviderFactory {
 
     public static final String PROVIDER_ID = "openshift-oauth-client";
-    static final Pattern SERVICE_ACCOUNT_PATTERN = Pattern.compile("system:serviceaccount:([^:]+):([^:]+)");
     public static final String CONFIG_PROPERTY_ACCESS_TOKEN = "openshift.access_token";
     public static final String CONFIG_PROPERTY_OPENSHIFT_URI = "openshift.uri";
     public static final String CONFIG_PROPERTY_DEFAULT_NAMESPACE = "openshift.namespace.default";
     public static final String CONFIG_PROPERTY_REQUIRE_USER_CONSENT = "user.consent.require";
-    public static final String CONFIG_PROPERTY_DISPLAY_SCOPE_CONSENT_TEXT= "user.consent.scope.consent.text";
-
+    public static final String CONFIG_PROPERTY_DISPLAY_SCOPE_CONSENT_TEXT = "user.consent.scope.consent.text";
+    static final Pattern SERVICE_ACCOUNT_PATTERN = Pattern.compile("system:serviceaccount:([^:]+):([^:]+)");
     private final List<ProviderConfigProperty> CONFIG_PROPERTIES;
     private IClient client;
 

@@ -24,14 +24,8 @@ import org.keycloak.saml.common.PicketLinkLogger;
 import org.keycloak.saml.common.PicketLinkLoggerFactory;
 import org.keycloak.saml.common.constants.GeneralConstants;
 import org.keycloak.saml.common.constants.JBossSAMLConstants;
-import org.keycloak.saml.common.constants.WSTrustConstants;
-import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.util.Base64;
 import org.keycloak.saml.processing.core.constants.PicketLinkFederationConstants;
-
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.bind.JAXBException;
@@ -59,7 +53,6 @@ public class SignatureUtil {
      *
      * @param signature
      * @param os
-     *
      * @throws SAXException
      * @throws JAXBException
      */
@@ -75,7 +68,6 @@ public class SignatureUtil {
      * Get the XML Signature URI for the algo (RSA, DSA)
      *
      * @param algo
-     *
      * @return
      */
     public static String getXMLSignatureAlgorithmURI(String algo) {
@@ -94,9 +86,7 @@ public class SignatureUtil {
      *
      * @param stringToBeSigned
      * @param signingKey
-     *
      * @return
-     *
      * @throws GeneralSecurityException
      */
     public static byte[] sign(String stringToBeSigned, PrivateKey signingKey) throws GeneralSecurityException {
@@ -118,9 +108,7 @@ public class SignatureUtil {
      * @param signedContent
      * @param signatureValue
      * @param validatingKey
-     *
      * @return
-     *
      * @throws GeneralSecurityException
      */
     public static boolean validate(byte[] signedContent, byte[] signatureValue, PublicKey validatingKey)
@@ -149,9 +137,7 @@ public class SignatureUtil {
      * @param signatureValue
      * @param signatureAlgorithm
      * @param validatingCert
-     *
      * @return
-     *
      * @throws GeneralSecurityException
      */
     public static boolean validate(byte[] signedContent, byte[] signatureValue, String signatureAlgorithm,
@@ -178,9 +164,8 @@ public class SignatureUtil {
      * </p>
      *
      * @param key the {@code PublicKey} that will be represented as a {@code KeyValueType}.
-     *
      * @return the constructed {@code KeyValueType} or {@code null} if the specified key is neither a DSA nor a RSA
-     *         key.
+     * key.
      */
     public static KeyValueType createKeyValue(PublicKey key) {
         if (key instanceof RSAPublicKey) {

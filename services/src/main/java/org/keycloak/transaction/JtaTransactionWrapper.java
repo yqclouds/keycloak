@@ -61,22 +61,21 @@ public class JtaTransactionWrapper implements KeycloakTransaction {
         }
 
         for (ProviderFactory factory : this.factory.getProviderFactories(ExceptionConverter.class)) {
-            ExceptionConverter converter = (ExceptionConverter)factory;
+            ExceptionConverter converter = (ExceptionConverter) factory;
             Throwable throwable = converter.convert(e);
             if (throwable == null) continue;
             if (throwable instanceof RuntimeException) {
-                throw (RuntimeException)throwable;
+                throw (RuntimeException) throwable;
             } else {
                 throw new RuntimeException(throwable);
             }
         }
 
         if (e instanceof RuntimeException) {
-            throw (RuntimeException)e;
+            throw (RuntimeException) e;
         } else {
             throw new RuntimeException(e);
         }
-
 
 
     }

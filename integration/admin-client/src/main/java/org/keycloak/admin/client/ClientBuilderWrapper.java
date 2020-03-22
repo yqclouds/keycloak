@@ -6,6 +6,7 @@ import javax.ws.rs.client.ClientBuilder;
 public class ClientBuilderWrapper {
 
     static Class clazz;
+
     static {
         try {
             clazz = Class.forName("org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl");

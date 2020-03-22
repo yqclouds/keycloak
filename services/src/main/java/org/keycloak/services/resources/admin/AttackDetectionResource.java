@@ -29,11 +29,7 @@ import org.keycloak.models.UserModel;
 import org.keycloak.services.managers.BruteForceProtector;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -43,24 +39,21 @@ import java.util.Map;
 /**
  * Base resource class for the admin REST api of one realm
  *
- * @resource Attack Detection
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
+ * @resource Attack Detection
  */
 public class AttackDetectionResource {
     protected static final Logger logger = Logger.getLogger(AttackDetectionResource.class);
     protected AdminPermissionEvaluator auth;
     protected RealmModel realm;
-    private AdminEventBuilder adminEvent;
-
     @Context
     protected KeycloakSession session;
-
     @Context
     protected ClientConnection connection;
-
     @Context
     protected HttpHeaders headers;
+    private AdminEventBuilder adminEvent;
 
     public AttackDetectionResource(AdminPermissionEvaluator auth, RealmModel realm, AdminEventBuilder adminEvent) {
         this.auth = auth;
@@ -115,7 +108,7 @@ public class AttackDetectionResource {
 
     /**
      * Clear any user login failures for the user
-     *
+     * <p>
      * This can release temporary disabled user
      *
      * @param userId
@@ -138,9 +131,8 @@ public class AttackDetectionResource {
 
     /**
      * Clear any user login failures for all users
-     *
+     * <p>
      * This can release temporary disabled users
-     *
      */
     @Path("brute-force/users")
     @DELETE

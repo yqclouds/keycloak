@@ -19,22 +19,31 @@ package org.keycloak.saml.common.util;
 import java.security.cert.X509Certificate;
 
 /**
- *
  * @author hmlnarik
  */
 public enum XmlKeyInfoKeyNameTransformer {
-    NONE            { @Override public String getKeyName(String keyId, X509Certificate certificate) { return null; } },
-    KEY_ID          { @Override public String getKeyName(String keyId, X509Certificate certificate) { return keyId; } },
-    CERT_SUBJECT    { @Override public String getKeyName(String keyId, X509Certificate certificate) {
-                        return certificate == null
-                               ? null
-                               : (certificate.getSubjectDN() == null
-                                  ? null
-                                  : certificate.getSubjectDN().getName());
-                    } }
-    ;
-
-    public abstract String getKeyName(String keyId, X509Certificate certificate);
+    NONE {
+        @Override
+        public String getKeyName(String keyId, X509Certificate certificate) {
+            return null;
+        }
+    },
+    KEY_ID {
+        @Override
+        public String getKeyName(String keyId, X509Certificate certificate) {
+            return keyId;
+        }
+    },
+    CERT_SUBJECT {
+        @Override
+        public String getKeyName(String keyId, X509Certificate certificate) {
+            return certificate == null
+                    ? null
+                    : (certificate.getSubjectDN() == null
+                    ? null
+                    : certificate.getSubjectDN().getName());
+        }
+    };
 
     public static XmlKeyInfoKeyNameTransformer from(String name, XmlKeyInfoKeyNameTransformer defaultValue) {
         if (name == null) {
@@ -46,5 +55,7 @@ public enum XmlKeyInfoKeyNameTransformer {
             return defaultValue;
         }
     }
+
+    public abstract String getKeyName(String keyId, X509Certificate certificate);
 }
 

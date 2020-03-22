@@ -21,9 +21,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.keycloak.broker.oidc.AbstractOAuth2IdentityProvider;
 import org.keycloak.broker.oidc.OAuth2IdentityProviderConfig;
 import org.keycloak.broker.oidc.mappers.AbstractJsonUserAttributeMapper;
-import org.keycloak.broker.provider.util.SimpleHttp;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.IdentityBrokerException;
+import org.keycloak.broker.provider.util.SimpleHttp;
 import org.keycloak.broker.social.SocialIdentityProvider;
 import org.keycloak.models.KeycloakSession;
 
@@ -32,50 +32,50 @@ import org.keycloak.models.KeycloakSession;
  */
 public class InstagramIdentityProvider extends AbstractOAuth2IdentityProvider implements SocialIdentityProvider {
 
-	public static final String AUTH_URL = "https://api.instagram.com/oauth/authorize";
-	public static final String TOKEN_URL = "https://api.instagram.com/oauth/access_token";
-	public static final String PROFILE_URL = "https://api.instagram.com/v1/users/self";
-	public static final String DEFAULT_SCOPE = "basic";
+    public static final String AUTH_URL = "https://api.instagram.com/oauth/authorize";
+    public static final String TOKEN_URL = "https://api.instagram.com/oauth/access_token";
+    public static final String PROFILE_URL = "https://api.instagram.com/v1/users/self";
+    public static final String DEFAULT_SCOPE = "basic";
 
-	public InstagramIdentityProvider(KeycloakSession session, OAuth2IdentityProviderConfig config) {
-		super(session, config);
-		config.setAuthorizationUrl(AUTH_URL);
-		config.setTokenUrl(TOKEN_URL);
-		config.setUserInfoUrl(PROFILE_URL);
-	}
+    public InstagramIdentityProvider(KeycloakSession session, OAuth2IdentityProviderConfig config) {
+        super(session, config);
+        config.setAuthorizationUrl(AUTH_URL);
+        config.setTokenUrl(TOKEN_URL);
+        config.setUserInfoUrl(PROFILE_URL);
+    }
 
-	protected BrokeredIdentityContext doGetFederatedIdentity(String accessToken) {
-		try {
-			JsonNode raw = SimpleHttp.doGet(PROFILE_URL,session).param("access_token", accessToken).asJson();
-			
-			JsonNode profile = raw.get("data");
-			
-			logger.debug(profile.toString());
+    protected BrokeredIdentityContext doGetFederatedIdentity(String accessToken) {
+        try {
+            JsonNode raw = SimpleHttp.doGet(PROFILE_URL, session).param("access_token", accessToken).asJson();
 
-			String id = getJsonProperty(profile, "id");
+            JsonNode profile = raw.get("data");
 
-			BrokeredIdentityContext user = new BrokeredIdentityContext(id);
+            logger.debug(profile.toString());
 
-			String username = getJsonProperty(profile, "username");
+            String id = getJsonProperty(profile, "id");
 
-			user.setUsername(username);
+            BrokeredIdentityContext user = new BrokeredIdentityContext(id);
 
-			String full_name = getJsonProperty(profile, "full_name");
-			
-			user.setName(full_name);
-			user.setIdpConfig(getConfig());
-			user.setIdp(this);
+            String username = getJsonProperty(profile, "username");
 
-			AbstractJsonUserAttributeMapper.storeUserProfileForMapper(user, profile, getConfig().getAlias());
+            user.setUsername(username);
 
-			return user;
-		} catch (Exception e) {
-			throw new IdentityBrokerException("Could not obtain user profile from instagram.", e);
-		}
-	}
+            String full_name = getJsonProperty(profile, "full_name");
 
-	@Override
-	protected String getDefaultScopes() {
-		return DEFAULT_SCOPE;
-	}
+            user.setName(full_name);
+            user.setIdpConfig(getConfig());
+            user.setIdp(this);
+
+            AbstractJsonUserAttributeMapper.storeUserProfileForMapper(user, profile, getConfig().getAlias());
+
+            return user;
+        } catch (Exception e) {
+            throw new IdentityBrokerException("Could not obtain user profile from instagram.", e);
+        }
+    }
+
+    @Override
+    protected String getDefaultScopes() {
+        return DEFAULT_SCOPE;
+    }
 }

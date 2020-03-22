@@ -60,7 +60,7 @@ public interface Attributes {
     /**
      * Checks if there is an attribute with the given <code>name</code> and <code>value</code>.
      *
-     * @param name the attribute name
+     * @param name  the attribute name
      * @param value the attribute value
      * @return true if any attribute with <code>name</code> and <code>value</code> exist. Otherwise, returns false.
      */

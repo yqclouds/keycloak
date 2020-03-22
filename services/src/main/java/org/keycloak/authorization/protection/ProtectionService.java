@@ -24,6 +24,8 @@ import org.keycloak.authorization.admin.ResourceSetService;
 import org.keycloak.authorization.common.KeycloakIdentity;
 import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.authorization.protection.permission.PermissionService;
+import org.keycloak.authorization.protection.permission.PermissionTicketService;
+import org.keycloak.authorization.protection.policy.UserManagedPermissionService;
 import org.keycloak.authorization.protection.resource.ResourceService;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.models.ClientModel;
@@ -37,20 +39,17 @@ import org.keycloak.services.resources.admin.AdminEventBuilder;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response.Status;
-import org.keycloak.authorization.protection.permission.PermissionTicketService;
-import org.keycloak.authorization.protection.policy.UserManagedPermissionService;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
 public class ProtectionService {
 
-    @Context
-    private KeycloakSession session;
     private final AuthorizationProvider authorization;
-
     @Context
     protected ClientConnection clientConnection;
+    @Context
+    private KeycloakSession session;
 
     public ProtectionService(AuthorizationProvider authorization) {
         this.authorization = authorization;
@@ -90,7 +89,7 @@ public class ProtectionService {
 
         return resource;
     }
-    
+
     @Path("/permission/ticket")
     public Object ticket() {
         KeycloakIdentity identity = createIdentity(false);
@@ -101,7 +100,7 @@ public class ProtectionService {
 
         return resource;
     }
-    
+
     @Path("/uma-policy")
     public Object policy() {
         KeycloakIdentity identity = createIdentity(false);

@@ -19,35 +19,14 @@ package org.keycloak.models.cache.infinispan;
 
 import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterProvider;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.cache.infinispan.events.InvalidationEvent;
 import org.keycloak.common.constants.ServiceAccountConstants;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.FederatedIdentityModel;
-import org.keycloak.models.GroupModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakTransaction;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserConsentModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserProvider;
+import org.keycloak.models.*;
 import org.keycloak.models.cache.CachedUserModel;
 import org.keycloak.models.cache.OnUserCache;
 import org.keycloak.models.cache.UserCache;
-import org.keycloak.models.cache.infinispan.entities.CachedFederatedIdentityLinks;
-import org.keycloak.models.cache.infinispan.entities.CachedUser;
-import org.keycloak.models.cache.infinispan.entities.CachedUserConsent;
-import org.keycloak.models.cache.infinispan.entities.CachedUserConsents;
-import org.keycloak.models.cache.infinispan.entities.UserListQuery;
-import org.keycloak.models.cache.infinispan.events.UserCacheRealmInvalidationEvent;
-import org.keycloak.models.cache.infinispan.events.UserConsentsUpdatedEvent;
-import org.keycloak.models.cache.infinispan.events.UserFederationLinkRemovedEvent;
-import org.keycloak.models.cache.infinispan.events.UserFederationLinkUpdatedEvent;
-import org.keycloak.models.cache.infinispan.events.UserFullInvalidationEvent;
-import org.keycloak.models.cache.infinispan.events.UserUpdatedEvent;
+import org.keycloak.models.cache.infinispan.entities.*;
+import org.keycloak.models.cache.infinispan.events.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.ReadOnlyUserModelDelegate;
 import org.keycloak.storage.CacheableStorageProviderModel;
@@ -56,12 +35,7 @@ import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.UserStorageProviderModel;
 import org.keycloak.storage.client.ClientStorageProvider;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -69,14 +43,12 @@ import java.util.Set;
  */
 public class UserCacheSession implements UserCache {
     protected static final Logger logger = Logger.getLogger(UserCacheSession.class);
+    protected final long startupRevision;
     protected UserCacheManager cache;
     protected KeycloakSession session;
     protected UserProvider delegate;
     protected boolean transactionActive;
     protected boolean setRollbackOnly;
-    protected final long startupRevision;
-
-
     protected Set<String> invalidations = new HashSet<>();
     protected Set<String> realmInvalidations = new HashSet<>();
     protected Set<InvalidationEvent> invalidationEvents = new HashSet<>(); // Events to be sent across cluster
@@ -87,6 +59,30 @@ public class UserCacheSession implements UserCache {
         this.session = session;
         this.startupRevision = cache.getCurrentCounter();
         session.getTransactionManager().enlistAfterCompletion(getTransaction());
+    }
+
+    static String getUserByUsernameCacheKey(String realmId, String username) {
+        return realmId + ".username." + username;
+    }
+
+    static String getUserByEmailCacheKey(String realmId, String email) {
+        return realmId + ".email." + email;
+    }
+
+    private static String getUserByFederatedIdentityCacheKey(String realmId, FederatedIdentityModel socialLink) {
+        return getUserByFederatedIdentityCacheKey(realmId, socialLink.getIdentityProvider(), socialLink.getUserId());
+    }
+
+    static String getUserByFederatedIdentityCacheKey(String realmId, String identityProvider, String socialUserId) {
+        return realmId + ".idp." + identityProvider + "." + socialUserId;
+    }
+
+    static String getFederatedIdentityLinksCacheKey(String userId) {
+        return userId + ".idplinks";
+    }
+
+    static String getConsentCacheKey(String userId) {
+        return userId + ".consents";
     }
 
     @Override
@@ -104,7 +100,7 @@ public class UserCacheSession implements UserCache {
         return delegate;
     }
 
-    public void registerUserInvalidation(RealmModel realm,CachedUser user) {
+    public void registerUserInvalidation(RealmModel realm, CachedUser user) {
         cache.userUpdatedInvalidations(user.getId(), user.getUsername(), user.getEmail(), user.getRealm(), invalidations);
         invalidationEvents.add(UserUpdatedEvent.create(user.getId(), user.getUsername(), user.getEmail(), user.getRealm()));
     }
@@ -114,7 +110,7 @@ public class UserCacheSession implements UserCache {
         if (!transactionActive) throw new IllegalStateException("Cannot call evict() without a transaction");
         getDelegate(); // invalidations need delegate set
         if (user instanceof CachedUserModel) {
-            ((CachedUserModel)user).invalidate();
+            ((CachedUserModel) user).invalidate();
         } else {
             cache.userUpdatedInvalidations(user.getId(), user.getUsername(), user.getEmail(), realm.getId(), invalidations);
             invalidationEvents.add(UserUpdatedEvent.create(user.getId(), user.getUsername(), user.getEmail(), realm.getId()));
@@ -195,7 +191,7 @@ public class UserCacheSession implements UserCache {
         if (cached != null && !cached.getRealm().equals(realm.getId())) {
             cached = null;
         }
-        
+
         UserModel adapter = null;
         if (cached == null) {
             logger.trace("not cached");
@@ -211,26 +207,6 @@ public class UserCacheSession implements UserCache {
         }
         managedUsers.put(id, adapter);
         return adapter;
-    }
-
-    static String getUserByUsernameCacheKey(String realmId, String username) {
-        return realmId + ".username." + username;
-    }
-
-    static String getUserByEmailCacheKey(String realmId, String email) {
-        return realmId + ".email." + email;
-    }
-
-    private static String getUserByFederatedIdentityCacheKey(String realmId, FederatedIdentityModel socialLink) {
-        return getUserByFederatedIdentityCacheKey(realmId, socialLink.getIdentityProvider(), socialLink.getUserId());
-    }
-
-    static String getUserByFederatedIdentityCacheKey(String realmId, String identityProvider, String socialUserId) {
-        return realmId + ".idp." + identityProvider + "." + socialUserId;
-    }
-
-    static String getFederatedIdentityLinksCacheKey(String userId) {
-        return userId + ".idplinks";
     }
 
     @Override
@@ -359,8 +335,8 @@ public class UserCacheSession implements UserCache {
     }
 
     private void onCache(RealmModel realm, UserAdapter adapter, UserModel delegate) {
-        ((OnUserCache)getDelegate()).onCache(realm, adapter, delegate);
-        ((OnUserCache)session.userCredentialManager()).onCache(realm, adapter, delegate);
+        ((OnUserCache) getDelegate()).onCache(realm, adapter, delegate);
+        ((OnUserCache) session.userCredentialManager()).onCache(realm, adapter, delegate);
     }
 
     @Override
@@ -467,8 +443,7 @@ public class UserCacheSession implements UserCache {
     @Override
     public List<UserModel> getRoleMembers(RealmModel realm, RoleModel role) {
         return getDelegate().getRoleMembers(realm, role);
-    }    
-    
+    }
 
     @Override
     public UserModel getServiceAccount(ClientModel client) {
@@ -532,9 +507,6 @@ public class UserCacheSession implements UserCache {
         }
     }
 
-
-
-
     @Override
     public List<UserModel> getUsers(RealmModel realm, boolean includeServiceAccounts) {
         return getDelegate().getUsers(realm, includeServiceAccounts);
@@ -587,7 +559,7 @@ public class UserCacheSession implements UserCache {
 
     @Override
     public List<UserModel> getUsers(RealmModel realm, int firstResult, int maxResults) {
-         return getUsers(realm, firstResult, maxResults, false);
+        return getUsers(realm, firstResult, maxResults, false);
     }
 
     @Override
@@ -666,11 +638,6 @@ public class UserCacheSession implements UserCache {
         invalidateConsent(userId);
         return getDelegate().revokeConsentForClient(realm, userId, clientInternalId);
     }
-
-    static String getConsentCacheKey(String userId) {
-        return userId + ".consents";
-    }
-
 
     @Override
     public void addConsent(RealmModel realm, String userId, UserConsentModel consent) {
@@ -811,7 +778,7 @@ public class UserCacheSession implements UserCache {
 
     @Override
     public boolean removeUser(RealmModel realm, UserModel user) {
-         fullyInvalidateUser(realm, user);
+        fullyInvalidateUser(realm, user);
         return getDelegate().removeUser(realm, user);
     }
 
@@ -861,6 +828,7 @@ public class UserCacheSession implements UserCache {
         addRealmInvalidation(realm.getId()); // easier to just invalidate whole realm
         getDelegate().preRemove(realm, role);
     }
+
     @Override
     public void preRemove(RealmModel realm, GroupModel group) {
         addRealmInvalidation(realm.getId()); // easier to just invalidate whole realm
@@ -887,7 +855,8 @@ public class UserCacheSession implements UserCache {
 
     @Override
     public void preRemove(RealmModel realm, ComponentModel component) {
-        if (!component.getProviderType().equals(UserStorageProvider.class.getName()) && !component.getProviderType().equals(ClientStorageProvider.class.getName())) return;
+        if (!component.getProviderType().equals(UserStorageProvider.class.getName()) && !component.getProviderType().equals(ClientStorageProvider.class.getName()))
+            return;
         addRealmInvalidation(realm.getId()); // easier to just invalidate whole realm
         getDelegate().preRemove(realm, component);
 

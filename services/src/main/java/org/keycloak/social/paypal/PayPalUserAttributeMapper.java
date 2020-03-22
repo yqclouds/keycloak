@@ -21,21 +21,21 @@ import org.keycloak.broker.oidc.mappers.AbstractJsonUserAttributeMapper;
 
 /**
  * User attribute mapper.
- * 
+ *
  * @author Petter Lysne (petterlysne at hotmail dot com)
  */
 public class PayPalUserAttributeMapper extends AbstractJsonUserAttributeMapper {
 
-	private static final String[] cp = new String[] { PayPalIdentityProviderFactory.PROVIDER_ID };
+    private static final String[] cp = new String[]{PayPalIdentityProviderFactory.PROVIDER_ID};
 
-	@Override
-	public String[] getCompatibleProviders() {
-		return cp;
-	}
+    @Override
+    public String[] getCompatibleProviders() {
+        return cp;
+    }
 
-	@Override
-	public String getId() {
-		return "paypal-user-attribute-mapper";
-	}
+    @Override
+    public String getId() {
+        return "paypal-user-attribute-mapper";
+    }
 
 }

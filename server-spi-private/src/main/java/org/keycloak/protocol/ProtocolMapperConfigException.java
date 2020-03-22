@@ -43,12 +43,12 @@ public class ProtocolMapperConfigException extends Exception {
         this.messageKey = messageKey;
     }
 
-    public ProtocolMapperConfigException(String message, Object ... parameters) {
+    public ProtocolMapperConfigException(String message, Object... parameters) {
         super(message);
         this.parameters = parameters;
     }
 
-    public ProtocolMapperConfigException(String messageKey, String message, Object ... parameters) {
+    public ProtocolMapperConfigException(String messageKey, String message, Object... parameters) {
         super(message);
         this.messageKey = messageKey;
         this.parameters = parameters;

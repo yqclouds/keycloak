@@ -17,17 +17,16 @@
 
 package org.keycloak.jose.jwe;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.keycloak.jose.jwe.alg.AesKeyWrapAlgorithmProvider;
 import org.keycloak.jose.jwe.alg.DirectAlgorithmProvider;
 import org.keycloak.jose.jwe.alg.JWEAlgorithmProvider;
 import org.keycloak.jose.jwe.enc.AesCbcHmacShaEncryptionProvider;
 import org.keycloak.jose.jwe.enc.JWEEncryptionProvider;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 class JWERegistry {

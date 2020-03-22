@@ -64,6 +64,16 @@ public class KeycloakBuilder {
     private ResteasyClient resteasyClient;
     private String authorization;
 
+    private KeycloakBuilder() {
+    }
+
+    /**
+     * Returns a new Keycloak builder.
+     */
+    public static KeycloakBuilder builder() {
+        return new KeycloakBuilder();
+    }
+
     public KeycloakBuilder serverUrl(String serverUrl) {
         this.serverUrl = serverUrl;
         return this;
@@ -145,15 +155,5 @@ public class KeycloakBuilder {
         }
 
         return new Keycloak(serverUrl, realm, username, password, clientId, clientSecret, grantType, resteasyClient, authorization);
-    }
-
-    private KeycloakBuilder() {
-    }
-
-    /**
-     * Returns a new Keycloak builder.
-     */
-    public static KeycloakBuilder builder() {
-        return new KeycloakBuilder();
     }
 }

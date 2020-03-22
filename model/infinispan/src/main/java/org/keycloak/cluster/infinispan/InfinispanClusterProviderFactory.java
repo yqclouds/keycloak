@@ -75,6 +75,34 @@ public class InfinispanClusterProviderFactory implements ClusterProviderFactory 
 
     private ExecutorService localExecutor = Executors.newCachedThreadPool();
 
+    // Will retry few times for the case when backup site not available in cross-dc environment.
+    // The site might be taken offline automatically if "take-offline" properly configured
+    static <V extends Serializable> V putIfAbsentWithRetries(CrossDCAwareCacheFactory crossDCAwareCacheFactory, String key, V value, int taskTimeoutInSeconds) {
+        AtomicReference<V> resultRef = new AtomicReference<>();
+
+        Retry.executeWithBackoff((int iteration) -> {
+
+            try {
+                V result;
+                if (taskTimeoutInSeconds > 0) {
+                    result = (V) crossDCAwareCacheFactory.getCache().putIfAbsent(key, value);
+                } else {
+                    result = (V) crossDCAwareCacheFactory.getCache().putIfAbsent(key, value, taskTimeoutInSeconds, TimeUnit.SECONDS);
+                }
+                resultRef.set(result);
+
+            } catch (HotRodClientException re) {
+                logger.warnf(re, "Failed to write key '%s' and value '%s' in iteration '%d' . Retrying", key, value, iteration);
+
+                // Rethrow the exception. Retry will take care of handle the exception and eventually retry the operation.
+                throw re;
+            }
+
+        }, 10, 10);
+
+        return resultRef.get();
+    }
+
     @Override
     public ClusterProvider create(KeycloakSession session) {
         lazyInit(session);
@@ -107,7 +135,6 @@ public class InfinispanClusterProviderFactory implements ClusterProviderFactory 
         }
     }
 
-
     protected int initClusterStartupTime(KeycloakSession session) {
         Integer existingClusterStartTime = (Integer) crossDCAwareCacheFactory.getCache().get(InfinispanClusterProvider.CLUSTER_STARTUP_TIME_KEY);
         if (existingClusterStartTime != null) {
@@ -127,37 +154,6 @@ public class InfinispanClusterProviderFactory implements ClusterProviderFactory 
             }
         }
     }
-
-
-    // Will retry few times for the case when backup site not available in cross-dc environment.
-    // The site might be taken offline automatically if "take-offline" properly configured
-    static <V extends Serializable> V putIfAbsentWithRetries(CrossDCAwareCacheFactory crossDCAwareCacheFactory, String key, V value, int taskTimeoutInSeconds) {
-        AtomicReference<V> resultRef = new AtomicReference<>();
-
-        Retry.executeWithBackoff((int iteration) -> {
-
-            try {
-                V result;
-                if (taskTimeoutInSeconds > 0) {
-                    result = (V) crossDCAwareCacheFactory.getCache().putIfAbsent(key, value);
-                } else {
-                    result = (V) crossDCAwareCacheFactory.getCache().putIfAbsent(key, value, taskTimeoutInSeconds, TimeUnit.SECONDS);
-                }
-                resultRef.set(result);
-
-            } catch (HotRodClientException re) {
-                logger.warnf(re, "Failed to write key '%s' and value '%s' in iteration '%d' . Retrying", key, value, iteration);
-
-                // Rethrow the exception. Retry will take care of handle the exception and eventually retry the operation.
-                throw re;
-            }
-
-        }, 10, 10);
-
-        return resultRef.get();
-    }
-
-
 
     @Override
     public void init(Config.Scope config) {

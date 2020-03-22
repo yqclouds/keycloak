@@ -25,12 +25,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.AccessToken;
 
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 /**

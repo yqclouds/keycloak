@@ -54,7 +54,7 @@ public class UrlBean {
         return Urls.realmLoginRestartPage(baseURI, realm).toString();
     }
 
-    public boolean hasAction()  {
+    public boolean hasAction() {
         return actionuri != null;
     }
 
@@ -94,7 +94,7 @@ public class UrlBean {
     }
 
     public String getResourcesUrl() {
-        return Urls.themeRoot(baseURI).toString() + "/" + theme.getType().toString().toLowerCase() +"/" + theme.getName();
+        return Urls.themeRoot(baseURI).toString() + "/" + theme.getType().toString().toLowerCase() + "/" + theme.getName();
     }
 
     public String getOauthAction() {
@@ -107,6 +107,6 @@ public class UrlBean {
 
     public String getResourcesPath() {
         URI uri = Urls.themeRoot(baseURI);
-        return uri.getPath() + "/" + theme.getType().toString().toLowerCase() +"/" + theme.getName();
+        return uri.getPath() + "/" + theme.getType().toString().toLowerCase() + "/" + theme.getName();
     }
 }

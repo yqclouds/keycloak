@@ -17,22 +17,21 @@
 
 package org.keycloak.models.sessions.infinispan.entities;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.jboss.logging.Logger;
 import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.util.KeycloakMarshallUtil;
+
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 @SerializeWith(AuthenticatedClientSessionEntity.ExternalizerImpl.class)
@@ -42,18 +41,14 @@ public class AuthenticatedClientSessionEntity extends SessionEntity {
 
     // Metadata attribute, which contains the last timestamp available on remoteCache. Used in decide whether we need to write to remoteCache (DC) or not
     public static final String LAST_TIMESTAMP_REMOTE = "lstr";
-
+    private final UUID id;
     private String authMethod;
     private String redirectUri;
     private volatile int timestamp;
     private String action;
-
     private Map<String, String> notes = new ConcurrentHashMap<>();
-
     private String currentRefreshToken;
     private int currentRefreshTokenUseCount;
-
-    private final UUID id;
 
     public AuthenticatedClientSessionEntity(UUID id) {
         this.id = id;

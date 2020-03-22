@@ -27,6 +27,16 @@ import java.util.regex.Pattern;
 public class AuthenticationSessionCompoundId {
 
     private static final Pattern DOT = Pattern.compile("\\.");
+    private final String rootSessionId;
+    private final String tabId;
+    private final String clientUUID;
+    private final String encodedId;
+    public AuthenticationSessionCompoundId(String rootSessionId, String tabId, String clientUUID, String encodedId) {
+        this.rootSessionId = rootSessionId;
+        this.tabId = tabId;
+        this.clientUUID = clientUUID;
+        this.encodedId = encodedId;
+    }
 
     public static AuthenticationSessionCompoundId fromAuthSession(AuthenticationSessionModel authSession) {
         return decoded(authSession.getParentSession().getId(), authSession.getTabId(), authSession.getClient().getId());
@@ -40,25 +50,11 @@ public class AuthenticationSessionCompoundId {
     public static AuthenticationSessionCompoundId encoded(String encodedId) {
         String[] decoded = DOT.split(encodedId, 3);
 
-        String rootAuthSessionId =(decoded.length > 0) ? decoded[0] : null;
+        String rootAuthSessionId = (decoded.length > 0) ? decoded[0] : null;
         String tabId = (decoded.length > 1) ? decoded[1] : null;
         String clientUUID = (decoded.length > 2) ? decoded[2] : null;
 
         return new AuthenticationSessionCompoundId(rootAuthSessionId, tabId, clientUUID, encodedId);
-    }
-
-
-
-    private final String rootSessionId;
-    private final String tabId;
-    private final String clientUUID;
-    private final String encodedId;
-
-    public AuthenticationSessionCompoundId(String rootSessionId, String tabId, String clientUUID, String encodedId) {
-        this.rootSessionId = rootSessionId;
-        this.tabId = tabId;
-        this.clientUUID = clientUUID;
-        this.encodedId = encodedId;
     }
 
     public String getRootSessionId() {

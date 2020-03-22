@@ -5,7 +5,7 @@ import org.keycloak.models.KeycloakSession;
 /**
  * The factory and the corresponding providers extract a client certificate
  * from a NGINX reverse proxy (TLS termination).
- *  
+ *
  * @author <a href="mailto:arnault.michel@toad-consulting.com">Arnault MICHEL</a>
  * @version $Revision: 1 $
  * @since 10/09/2018

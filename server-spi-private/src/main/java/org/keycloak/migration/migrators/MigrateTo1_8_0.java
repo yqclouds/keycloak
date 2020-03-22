@@ -35,10 +35,19 @@ public class MigrateTo1_8_0 implements Migration {
 
     public static final ModelVersion VERSION = new ModelVersion("1.8.0");
 
+    public static ComponentModel getMapperByName(RealmModel realm, ComponentModel providerModel, String name) {
+        List<ComponentModel> components = realm.getComponents(providerModel.getId(), "org.keycloak.storage.ldap.mappers.LDAPStorageMapper");
+        for (ComponentModel component : components) {
+            if (component.getName().equals(name)) {
+                return component;
+            }
+        }
+        return null;
+    }
+
     public ModelVersion getVersion() {
         return VERSION;
     }
-
 
     public void migrate(KeycloakSession session) {
         List<RealmModel> realms = session.realms().getRealms();
@@ -70,17 +79,6 @@ public class MigrateTo1_8_0 implements Migration {
             }
         }
     }
-
-    public static ComponentModel getMapperByName(RealmModel realm, ComponentModel providerModel, String name) {
-        List<ComponentModel> components = realm.getComponents(providerModel.getId(), "org.keycloak.storage.ldap.mappers.LDAPStorageMapper");
-        for (ComponentModel component : components) {
-            if (component.getName().equals(name)) {
-                return component;
-            }
-        }
-        return null;
-    }
-
 
     private boolean isActiveDirectory(UserStorageProviderModel provider) {
         String vendor = provider.getConfig().getFirst(LDAPConstants.VENDOR);

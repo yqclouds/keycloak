@@ -18,18 +18,14 @@ import java.util.HashMap;
 import static org.freedesktop.dbus.Gettext.getString;
 
 public class DBusMatchRule {
+    private static HashMap<String, Class<? extends DBusSignal>> signalTypeMap =
+            new HashMap<String, Class<? extends DBusSignal>>();
     /* signal, error, method_call, method_reply */
     private String type;
     private String iface;
     private String member;
     private String object;
     private String source;
-    private static HashMap<String, Class<? extends DBusSignal>> signalTypeMap =
-            new HashMap<String, Class<? extends DBusSignal>>();
-
-    static Class<? extends DBusSignal> getCachedSignalType(String type) {
-        return signalTypeMap.get(type);
-    }
 
     public DBusMatchRule(String type, String iface, String member) {
         this.type = type;
@@ -116,6 +112,10 @@ public class DBusMatchRule {
             type = "error";
         } else
             throw new DBusException(getString("invalidTypeMatchRule") + c);
+    }
+
+    static Class<? extends DBusSignal> getCachedSignalType(String type) {
+        return signalTypeMap.get(type);
     }
 
     public String toString() {

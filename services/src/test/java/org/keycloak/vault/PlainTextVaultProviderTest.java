@@ -8,10 +8,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 import static org.keycloak.vault.SecretContains.secretContains;
 
 /**
@@ -69,7 +66,7 @@ public class PlainTextVaultProviderTest {
     public void shouldOperateOnNonExistingVaultDirectory() throws Exception {
         //given
         FilesPlainTextVaultProvider provider = new FilesPlainTextVaultProvider(Scenario.NON_EXISTING.getPath(), "test",
-            Arrays.asList(AbstractVaultProviderFactory.AvailableResolvers.REALM_UNDERSCORE_KEY.getVaultKeyResolver()));
+                Arrays.asList(AbstractVaultProviderFactory.AvailableResolvers.REALM_UNDERSCORE_KEY.getVaultKeyResolver()));
 
         //when
         VaultRawSecret secret = provider.obtainSecret("non-existing-key");

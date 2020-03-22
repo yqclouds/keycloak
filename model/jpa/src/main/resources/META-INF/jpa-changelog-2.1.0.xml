@@ -16,33 +16,36 @@
   ~ limitations under the License.
   -->
 
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
     <changeSet author="bburke@redhat.com" id="2.1.0-KEYCLOAK-5461">
         <preConditions onSqlOutput="TEST" onFail="MARK_RAN">
             <not>
-                <changeSetExecuted id="2.1.0" author="bburke@redhat.com" changeLogFile="META-INF/jpa-changelog-2.1.0.xml"/>
+                <changeSetExecuted id="2.1.0" author="bburke@redhat.com"
+                                   changeLogFile="META-INF/jpa-changelog-2.1.0.xml"/>
             </not>
         </preConditions>
 
         <createTable tableName="BROKER_LINK">
             <column name="IDENTITY_PROVIDER" type="VARCHAR(255)">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
             <column name="STORAGE_PROVIDER_ID" type="VARCHAR(255)">
             </column>
             <column name="REALM_ID" type="VARCHAR(36)">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
-            <column name="BROKER_USER_ID" type="VARCHAR(255)" />
-            <column name="BROKER_USERNAME" type="VARCHAR(255)" />
-            <column name="TOKEN" type="TEXT" />
+            <column name="BROKER_USER_ID" type="VARCHAR(255)"/>
+            <column name="BROKER_USERNAME" type="VARCHAR(255)"/>
+            <column name="TOKEN" type="TEXT"/>
             <column name="USER_ID" type="VARCHAR(255)">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </createTable>
         <createTable tableName="FED_USER_ATTRIBUTE">
             <column name="ID" type="VARCHAR(36)">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
             <column name="NAME" type="VARCHAR(255)">
                 <constraints nullable="false"/>
@@ -178,26 +181,34 @@
         </createTable>
 
 
-
-
-        <addPrimaryKey columnNames="IDENTITY_PROVIDER, USER_ID" constraintName="CONSTR_BROKER_LINK_PK" tableName="BROKER_LINK" />
+        <addPrimaryKey columnNames="IDENTITY_PROVIDER, USER_ID" constraintName="CONSTR_BROKER_LINK_PK"
+                       tableName="BROKER_LINK"/>
         <addPrimaryKey columnNames="ID" constraintName="CONSTR_FED_USER_ATTR_PK" tableName="FED_USER_ATTRIBUTE"/>
         <addPrimaryKey columnNames="ID" constraintName="CONSTR_FED_USER_CONSENT_PK" tableName="FED_USER_CONSENT"/>
-        <addPrimaryKey columnNames="USER_CONSENT_ID, ROLE_ID" constraintName="CONSTR_USER_CONSENT_ROLE_PK" tableName="FED_USER_CONSENT_ROLE"/>
-        <addPrimaryKey columnNames="USER_CONSENT_ID, PROTOCOL_MAPPER_ID" constraintName="CONSTR_USER_CONSENT_PROTM_PK" tableName="FED_USER_CONSENT_PROT_MAPPER"/>
+        <addPrimaryKey columnNames="USER_CONSENT_ID, ROLE_ID" constraintName="CONSTR_USER_CONSENT_ROLE_PK"
+                       tableName="FED_USER_CONSENT_ROLE"/>
+        <addPrimaryKey columnNames="USER_CONSENT_ID, PROTOCOL_MAPPER_ID" constraintName="CONSTR_USER_CONSENT_PROTM_PK"
+                       tableName="FED_USER_CONSENT_PROT_MAPPER"/>
         <!--
         <addForeignKeyConstraint baseColumnNames="USER_CONSENT_ID" baseTableName="FED_USER_CONSENT_ROLE" constraintName="FK_FED_GRNTCSNT_ROLE_GR" referencedColumnNames="ID" referencedTableName="FED_USER_CONSENT"/>
         <addForeignKeyConstraint baseColumnNames="USER_CONSENT_ID" baseTableName="FED_USER_CONSENT_PROT_MAPPER" constraintName="FK_FED_GRNTCSNT_PRM_GR" referencedColumnNames="ID" referencedTableName="FED_USER_CONSENT"/>
  -->
         <addPrimaryKey columnNames="ID" constraintName="CONSTR_FED_USER_CRED_PK" tableName="FED_USER_CREDENTIAL"/>
-        <addPrimaryKey columnNames="GROUP_ID, USER_ID" constraintName="CONSTR_FED_USER_GROUP" tableName="FED_USER_GROUP_MEMBERSHIP"/>
-        <addPrimaryKey columnNames="ROLE_ID, USER_ID" constraintName="CONSTR_FED_USER_ROLE" tableName="FED_USER_ROLE_MAPPING"/>
-        <addPrimaryKey columnNames="REQUIRED_ACTION, USER_ID" constraintName="CONSTR_FED_REQUIRED_ACTION" tableName="FED_USER_REQUIRED_ACTION"/>
+        <addPrimaryKey columnNames="GROUP_ID, USER_ID" constraintName="CONSTR_FED_USER_GROUP"
+                       tableName="FED_USER_GROUP_MEMBERSHIP"/>
+        <addPrimaryKey columnNames="ROLE_ID, USER_ID" constraintName="CONSTR_FED_USER_ROLE"
+                       tableName="FED_USER_ROLE_MAPPING"/>
+        <addPrimaryKey columnNames="REQUIRED_ACTION, USER_ID" constraintName="CONSTR_FED_REQUIRED_ACTION"
+                       tableName="FED_USER_REQUIRED_ACTION"/>
 
         <addPrimaryKey columnNames="ID" constraintName="CONSTR_COMPONENT_PK" tableName="COMPONENT"/>
         <addPrimaryKey columnNames="ID" constraintName="CONSTR_COMPONENT_CONFIG_PK" tableName="COMPONENT_CONFIG"/>
-        <addForeignKeyConstraint baseColumnNames="REALM_ID" baseTableName="COMPONENT" constraintName="FK_COMPONENT_REALM" referencedColumnNames="ID" referencedTableName="REALM"/>
-        <addForeignKeyConstraint baseColumnNames="COMPONENT_ID" baseTableName="COMPONENT_CONFIG" constraintName="FK_COMPONENT_CONFIG" referencedColumnNames="ID" referencedTableName="COMPONENT"/>
+        <addForeignKeyConstraint baseColumnNames="REALM_ID" baseTableName="COMPONENT"
+                                 constraintName="FK_COMPONENT_REALM" referencedColumnNames="ID"
+                                 referencedTableName="REALM"/>
+        <addForeignKeyConstraint baseColumnNames="COMPONENT_ID" baseTableName="COMPONENT_CONFIG"
+                                 constraintName="FK_COMPONENT_CONFIG" referencedColumnNames="ID"
+                                 referencedTableName="COMPONENT"/>
 
     </changeSet>
 

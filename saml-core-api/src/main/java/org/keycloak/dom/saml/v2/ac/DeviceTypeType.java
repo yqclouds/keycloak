@@ -58,10 +58,6 @@ public enum DeviceTypeType {
         value = v;
     }
 
-    public String value() {
-        return value;
-    }
-
     public static DeviceTypeType fromValue(String v) {
         for (DeviceTypeType c : DeviceTypeType.values()) {
             if (c.value.equals(v)) {
@@ -69,6 +65,10 @@ public enum DeviceTypeType {
             }
         }
         throw new IllegalArgumentException(v);
+    }
+
+    public String value() {
+        return value;
     }
 
 }

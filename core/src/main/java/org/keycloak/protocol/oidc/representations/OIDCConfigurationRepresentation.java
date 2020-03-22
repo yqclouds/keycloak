@@ -31,98 +31,70 @@ import java.util.Map;
 
 public class OIDCConfigurationRepresentation {
 
+    protected Map<String, Object> otherClaims = new HashMap<String, Object>();
     @JsonProperty("issuer")
     private String issuer;
-
     @JsonProperty("authorization_endpoint")
     private String authorizationEndpoint;
-
     @JsonProperty("token_endpoint")
     private String tokenEndpoint;
-
     /**
      * The name 'token_introspection_endpoint' is deprecated and will be replaced by 'introspection_endpoint' as defined by RFC-8414.
      * Until there, we just add {@code getIntrospectionEndpoint} claim to avoid breaking backward compatibility.
      */
     @JsonProperty("token_introspection_endpoint")
     private String tokenIntrospectionEndpoint;
-
     @JsonProperty("userinfo_endpoint")
     private String userinfoEndpoint;
-
     @JsonProperty("end_session_endpoint")
     private String logoutEndpoint;
-
     @JsonProperty("jwks_uri")
     private String jwksUri;
-
     @JsonProperty("check_session_iframe")
     private String checkSessionIframe;
-
     @JsonProperty("grant_types_supported")
     private List<String> grantTypesSupported;
-
     @JsonProperty("response_types_supported")
     private List<String> responseTypesSupported;
-
     @JsonProperty("subject_types_supported")
     private List<String> subjectTypesSupported;
-
     @JsonProperty("id_token_signing_alg_values_supported")
     private List<String> idTokenSigningAlgValuesSupported;
-
     @JsonProperty("id_token_encryption_alg_values_supported")
     private List<String> idTokenEncryptionAlgValuesSupported;
-
     @JsonProperty("id_token_encryption_enc_values_supported")
     private List<String> idTokenEncryptionEncValuesSupported;
-
     @JsonProperty("userinfo_signing_alg_values_supported")
     private List<String> userInfoSigningAlgValuesSupported;
-
     @JsonProperty("request_object_signing_alg_values_supported")
     private List<String> requestObjectSigningAlgValuesSupported;
-
     @JsonProperty("response_modes_supported")
     private List<String> responseModesSupported;
-
     @JsonProperty("registration_endpoint")
     private String registrationEndpoint;
-
     @JsonProperty("token_endpoint_auth_methods_supported")
     private List<String> tokenEndpointAuthMethodsSupported;
-
     @JsonProperty("token_endpoint_auth_signing_alg_values_supported")
     private List<String> tokenEndpointAuthSigningAlgValuesSupported;
-
     @JsonProperty("claims_supported")
     private List<String> claimsSupported;
-
     @JsonProperty("claim_types_supported")
     private List<String> claimTypesSupported;
-
     @JsonProperty("claims_parameter_supported")
     private Boolean claimsParameterSupported;
-
     @JsonProperty("scopes_supported")
     private List<String> scopesSupported;
-
     @JsonProperty("request_parameter_supported")
     private Boolean requestParameterSupported;
-
     @JsonProperty("request_uri_parameter_supported")
     private Boolean requestUriParameterSupported;
-
     // KEYCLOAK-7451 OAuth Authorization Server Metadata for Proof Key for Code Exchange
     @JsonProperty("code_challenge_methods_supported")
     private List<String> codeChallengeMethodsSupported;
-
     // KEYCLOAK-6771 Certificate Bound Token
     // https://tools.ietf.org/html/draft-ietf-oauth-mtls-08#section-6.2
     @JsonProperty("tls_client_certificate_bound_access_tokens")
     private Boolean tlsClientCertificateBoundAccessTokens;
-
-    protected Map<String, Object> otherClaims = new HashMap<String, Object>();
 
     public String getIssuer() {
         return issuer;
@@ -152,18 +124,19 @@ public class OIDCConfigurationRepresentation {
         return this.tokenIntrospectionEndpoint;
     }
 
+    public void setTokenIntrospectionEndpoint(String tokenIntrospectionEndpoint) {
+        this.tokenIntrospectionEndpoint = tokenIntrospectionEndpoint;
+    }
+
     /**
      * See KEYCLOAK-8308. This method should be removed once the standard name is used to advertise the introspection endpoint.
+     *
      * @return
      */
     @Deprecated
     @JsonProperty("introspection_endpoint")
     private String getIntrospectionEndpoint() {
         return getTokenIntrospectionEndpoint();
-    }
-
-    public void setTokenIntrospectionEndpoint(String tokenIntrospectionEndpoint) {
-        this.tokenIntrospectionEndpoint = tokenIntrospectionEndpoint;
     }
 
     public String getUserinfoEndpoint() {

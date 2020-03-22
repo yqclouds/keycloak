@@ -17,12 +17,12 @@
 
 package org.keycloak.storage.ldap;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.keycloak.models.UserModel;
 import org.keycloak.storage.ldap.idm.model.LDAPObject;
 import org.keycloak.storage.ldap.mappers.LDAPTransaction;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Track which LDAP users were already enlisted during this transaction
@@ -40,12 +40,12 @@ public class LDAPStorageUserManager {
 
     public UserModel getManagedProxiedUser(String userId) {
         ManagedUserEntry entry = managedUsers.get(userId);
-        return entry==null ? null : entry.getManagedProxiedUser();
+        return entry == null ? null : entry.getManagedProxiedUser();
     }
 
     public LDAPObject getManagedLDAPUser(String userId) {
         ManagedUserEntry entry = managedUsers.get(userId);
-        return entry==null ? null : entry.getLdapUser();
+        return entry == null ? null : entry.getLdapUser();
     }
 
     public LDAPTransaction getTransaction(String userId) {
@@ -73,7 +73,6 @@ public class LDAPStorageUserManager {
     public void removeManagedUserEntry(String userId) {
         managedUsers.remove(userId);
     }
-
 
 
     private static class ManagedUserEntry {

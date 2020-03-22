@@ -13,13 +13,15 @@ import java.util.List;
 public class ConditionalRoleAuthenticatorFactory implements ConditionalAuthenticatorFactory {
     public static final String PROVIDER_ID = "conditional-user-role";
     protected static final String CONDITIONAL_USER_ROLE = "condUserRole";
-
+    private static final Requirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionModel.Requirement.REQUIRED, AuthenticationExecutionModel.Requirement.DISABLED
+    };
     private static List<ProviderConfigProperty> commonConfig;
 
     static {
         commonConfig = Collections.unmodifiableList(ProviderConfigurationBuilder.create()
-            .property().name(CONDITIONAL_USER_ROLE).label("User role").helpText("Role the user should have to execute this flow").type(ProviderConfigProperty.STRING_TYPE).add()
-            .build()
+                .property().name(CONDITIONAL_USER_ROLE).label("User role").helpText("Role the user should have to execute this flow").type(ProviderConfigProperty.STRING_TYPE).add()
+                .build()
         );
     }
 
@@ -57,10 +59,6 @@ public class ConditionalRoleAuthenticatorFactory implements ConditionalAuthentic
     public boolean isConfigurable() {
         return true;
     }
-
-    private static final Requirement[] REQUIREMENT_CHOICES = {
-        AuthenticationExecutionModel.Requirement.REQUIRED, AuthenticationExecutionModel.Requirement.DISABLED
-    };
 
     @Override
     public Requirement[] getRequirementChoices() {

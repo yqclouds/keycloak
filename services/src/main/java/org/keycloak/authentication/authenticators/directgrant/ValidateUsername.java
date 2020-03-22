@@ -22,11 +22,7 @@ import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAuthenticator;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
-import org.keycloak.models.AuthenticationExecutionModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ModelDuplicateException;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.services.ServicesLogger;
@@ -44,6 +40,9 @@ import java.util.List;
 public class ValidateUsername extends AbstractDirectGrantAuthenticator {
 
     public static final String PROVIDER_ID = "direct-grant-validate-username";
+    public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionModel.Requirement.REQUIRED
+    };
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
@@ -114,7 +113,6 @@ public class ValidateUsername extends AbstractDirectGrantAuthenticator {
         return false;
     }
 
-
     @Override
     public String getDisplayType() {
         return "Username Validation";
@@ -129,10 +127,6 @@ public class ValidateUsername extends AbstractDirectGrantAuthenticator {
     public boolean isConfigurable() {
         return false;
     }
-
-    public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED
-    };
 
     @Override
     public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {
@@ -153,7 +147,7 @@ public class ValidateUsername extends AbstractDirectGrantAuthenticator {
     public String getId() {
         return PROVIDER_ID;
     }
- 
+
     protected String retrieveUsername(AuthenticationFlowContext context) {
         MultivaluedMap<String, String> inputData = context.getHttpRequest().getDecodedFormParameters();
         return inputData.getFirst(AuthenticationManager.FORM_USERNAME);

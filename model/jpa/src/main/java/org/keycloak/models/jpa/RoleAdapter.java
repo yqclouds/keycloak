@@ -27,14 +27,7 @@ import org.keycloak.models.utils.KeycloakModelUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -53,6 +46,13 @@ public class RoleAdapter implements RoleModel, JpaModel<RoleEntity> {
         this.session = session;
     }
 
+    public static RoleEntity toRoleEntity(RoleModel model, EntityManager em) {
+        if (model instanceof RoleAdapter) {
+            return ((RoleAdapter) model).getEntity();
+        }
+        return em.getReference(RoleEntity.class, model.getId());
+    }
+
     public RoleEntity getEntity() {
         return role;
     }
@@ -64,6 +64,11 @@ public class RoleAdapter implements RoleModel, JpaModel<RoleEntity> {
     @Override
     public String getName() {
         return role.getName();
+    }
+
+    @Override
+    public void setName(String name) {
+        role.setName(name);
     }
 
     @Override
@@ -79,11 +84,6 @@ public class RoleAdapter implements RoleModel, JpaModel<RoleEntity> {
     @Override
     public String getId() {
         return role.getId();
-    }
-
-    @Override
-    public void setName(String name) {
-        role.setName(name);
     }
 
     @Override
@@ -206,7 +206,6 @@ public class RoleAdapter implements RoleModel, JpaModel<RoleEntity> {
         else return realm.getId();
     }
 
-
     @Override
     public RoleContainerModel getContainer() {
         if (role.isClientRole()) {
@@ -229,12 +228,5 @@ public class RoleAdapter implements RoleModel, JpaModel<RoleEntity> {
     @Override
     public int hashCode() {
         return getId().hashCode();
-    }
-
-    public static RoleEntity toRoleEntity(RoleModel model, EntityManager em) {
-        if (model instanceof RoleAdapter) {
-            return ((RoleAdapter) model).getEntity();
-        }
-        return em.getReference(RoleEntity.class, model.getId());
     }
 }

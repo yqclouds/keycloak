@@ -18,15 +18,6 @@
 
 package org.keycloak.authorization.util;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
-
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.identity.Identity;
 import org.keycloak.authorization.model.PermissionTicket;
@@ -39,18 +30,22 @@ import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.representations.idm.authorization.AuthorizationRequest;
 import org.keycloak.representations.idm.authorization.AuthorizationRequest.Metadata;
 
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
 public final class Permissions {
     public static ResourcePermission permission(ResourceServer server, Resource resource, Scope scope) {
-       return new ResourcePermission(resource, new ArrayList<>(Arrays.asList(scope)), server);
+        return new ResourcePermission(resource, new ArrayList<>(Arrays.asList(scope)), server);
     }
 
     /**
      * Returns a list of permissions for all resources and scopes that belong to the given <code>resourceServer</code> and
      * <code>identity</code>.
-     *
+     * <p>
      * TODO: review once we support caches
      *
      * @param resourceServer

@@ -67,7 +67,6 @@ public class HmacOTP {
     }
 
     /**
-     *
      * @param token
      * @param key
      * @param counter
@@ -90,12 +89,11 @@ public class HmacOTP {
      * This method generates an OTP value for the given set of parameters.
      *
      * @param key          the shared secret, HEX encoded
-     * @param counter         a value that reflects a time
+     * @param counter      a value that reflects a time
      * @param returnDigits number of digits to return
      * @param crypto       the crypto function to use
      * @return A numeric String in base 10 that includes return digits
      * @throws java.security.GeneralSecurityException
-     *
      */
     public String generateOTP(String key, String counter, int returnDigits, String crypto) {
         String result = null;
@@ -140,9 +138,7 @@ public class HmacOTP {
      * @param keyBytes the bytes to use for the HMAC key
      * @param text     the message or text to be authenticated.
      * @throws java.security.NoSuchAlgorithmException
-     *
      * @throws java.security.InvalidKeyException
-     *
      */
     private byte[] hmac_sha1(String crypto, byte[] keyBytes, byte[] text) {
         byte[] value;

@@ -29,6 +29,7 @@ import org.keycloak.models.KeycloakSession;
 public class HaProxySslClientCertificateLookupFactory extends AbstractClientCertificateFromHttpHeadersLookupFactory {
 
     private final static String PROVIDER = "haproxy";
+
     @Override
     public X509ClientCertificateLookup create(KeycloakSession session) {
         return new HaProxySslClientCertificateLookup(sslClientCertHttpHeader,

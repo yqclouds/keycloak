@@ -36,35 +36,33 @@ public final class StreamUtil {
 
     /**
      * Reads string from byte input stream.
+     *
      * @param in InputStream to build the String from
      * @return String representation of the input stream contents decoded using default charset
      * @throws IOException
      * @deprecated Use {@link #readString(java.io.InputStream, java.nio.charset.Charset)} variant.
      */
     @Deprecated
-    public static String readString(InputStream in) throws IOException
-    {
+    public static String readString(InputStream in) throws IOException {
         return readString(in, Charset.defaultCharset());
     }
 
     /**
      * Reads string from byte input stream.
-     * @param in InputStream to build the String from
+     *
+     * @param in      InputStream to build the String from
      * @param charset Charset used to decode the input stream
      * @return String representation of the input stream contents decoded using given charset
      * @throws IOException
      */
-    public static String readString(InputStream in, Charset charset) throws IOException
-    {
+    public static String readString(InputStream in, Charset charset) throws IOException {
         char[] buffer = new char[BUFFER_LENGTH];
         StringBuilder builder = new StringBuilder();
         BufferedReader reader = new BufferedReader(new InputStreamReader(in, charset));
         int wasRead;
-        do
-        {
+        do {
             wasRead = reader.read(buffer, 0, BUFFER_LENGTH);
-            if (wasRead > 0)
-            {
+            if (wasRead > 0) {
                 builder.append(buffer, 0, wasRead);
             }
         }

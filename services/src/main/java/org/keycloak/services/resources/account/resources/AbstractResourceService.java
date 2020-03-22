@@ -16,16 +16,6 @@
  */
 package org.keycloak.services.resources.account.resources;
 
-import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.model.PermissionTicket;
@@ -42,6 +32,10 @@ import org.keycloak.representations.idm.authorization.ResourceRepresentation;
 import org.keycloak.representations.idm.authorization.ScopeRepresentation;
 import org.keycloak.services.managers.Auth;
 import org.keycloak.services.resources.Cors;
+
+import javax.ws.rs.core.Response;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -163,7 +157,7 @@ public abstract class AbstractResourceService {
         }
 
         Permission(PermissionTicket ticket, AuthorizationProvider provider) {
-            this(ticket.getRequester(), provider);   
+            this(ticket.getRequester(), provider);
         }
 
         public Permission(String userName, String... scopes) {

@@ -19,15 +19,10 @@ package org.keycloak.credential;
 import org.jboss.logging.Logger;
 import org.keycloak.common.util.ObjectUtil;
 import org.keycloak.common.util.Time;
-import org.keycloak.models.RequiredActionProviderModel;
+import org.keycloak.models.*;
 import org.keycloak.models.credential.OTPCredentialModel;
 import org.keycloak.models.credential.dto.OTPCredentialData;
 import org.keycloak.models.credential.dto.OTPSecretData;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.OTPPolicy;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserCredentialModel;
-import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.HmacOTP;
 import org.keycloak.models.utils.TimeBasedOTP;
 
@@ -51,8 +46,8 @@ public class OTPCredentialProvider implements CredentialProvider<OTPCredentialMo
         return rtn;
     }*/
 
-    private UserCredentialStore getCredentialStore() {
-        return session.userCredentialManager();
+    public OTPCredentialProvider(KeycloakSession session) {
+        this.session = session;
     }
 
     /*@Override
@@ -62,8 +57,8 @@ public class OTPCredentialProvider implements CredentialProvider<OTPCredentialMo
 
     }*/
 
-    public OTPCredentialProvider(KeycloakSession session) {
-        this.session = session;
+    private UserCredentialStore getCredentialStore() {
+        return session.userCredentialManager();
     }
 
     @Override
@@ -95,7 +90,7 @@ public class OTPCredentialProvider implements CredentialProvider<OTPCredentialMo
         return !getCredentialStore().getStoredCredentialsByType(realm, user, credentialType).isEmpty();
     }
 
-    public boolean isConfiguredFor(RealmModel realm, UserModel user){
+    public boolean isConfiguredFor(RealmModel realm, UserModel user) {
         return isConfiguredFor(realm, user, getType());
     }
 

@@ -39,6 +39,7 @@ import java.util.List;
  */
 public class UserAttributeMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
 
+    public static final String PROVIDER_ID = "oidc-usermodel-attribute-mapper";
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
 
     static {
@@ -66,8 +67,33 @@ public class UserAttributeMapper extends AbstractOIDCProtocolMapper implements O
         configProperties.add(property);
     }
 
-    public static final String PROVIDER_ID = "oidc-usermodel-attribute-mapper";
+    public static ProtocolMapperModel createClaimMapper(String name,
+                                                        String userAttribute,
+                                                        String tokenClaimName, String claimType,
+                                                        boolean accessToken, boolean idToken, boolean multivalued) {
+        return createClaimMapper(name, userAttribute, tokenClaimName, claimType,
+                accessToken, idToken, multivalued, false);
+    }
 
+    public static ProtocolMapperModel createClaimMapper(String name,
+                                                        String userAttribute,
+                                                        String tokenClaimName, String claimType,
+                                                        boolean accessToken, boolean idToken,
+                                                        boolean multivalued, boolean aggregateAttrs) {
+        ProtocolMapperModel mapper = OIDCAttributeMapperHelper.createClaimMapper(name, userAttribute,
+                tokenClaimName, claimType,
+                accessToken, idToken,
+                PROVIDER_ID);
+
+        if (multivalued) {
+            mapper.getConfig().put(ProtocolMapperUtils.MULTIVALUED, "true");
+        }
+        if (aggregateAttrs) {
+            mapper.getConfig().put(ProtocolMapperUtils.AGGREGATE_ATTRS, "true");
+        }
+
+        return mapper;
+    }
 
     public List<ProviderConfigProperty> getConfigProperties() {
         return configProperties;
@@ -101,34 +127,6 @@ public class UserAttributeMapper extends AbstractOIDCProtocolMapper implements O
         Collection<String> attributeValue = KeycloakModelUtils.resolveAttribute(user, attributeName, aggregateAttrs);
         if (attributeValue == null) return;
         OIDCAttributeMapperHelper.mapClaim(token, mappingModel, attributeValue);
-    }
-
-    public static ProtocolMapperModel createClaimMapper(String name,
-                                                        String userAttribute,
-                                                        String tokenClaimName, String claimType,
-                                                        boolean accessToken, boolean idToken, boolean multivalued) {
-        return createClaimMapper(name, userAttribute, tokenClaimName, claimType,
-                accessToken, idToken, multivalued, false);
-    }
-
-    public static ProtocolMapperModel createClaimMapper(String name,
-                                                        String userAttribute,
-                                                        String tokenClaimName, String claimType,
-                                                        boolean accessToken, boolean idToken,
-                                                        boolean multivalued, boolean aggregateAttrs) {
-        ProtocolMapperModel mapper = OIDCAttributeMapperHelper.createClaimMapper(name, userAttribute,
-                tokenClaimName, claimType,
-                accessToken, idToken,
-                PROVIDER_ID);
-
-        if (multivalued) {
-            mapper.getConfig().put(ProtocolMapperUtils.MULTIVALUED, "true");
-        }
-        if (aggregateAttrs) {
-            mapper.getConfig().put(ProtocolMapperUtils.AGGREGATE_ATTRS, "true");
-        }
-
-        return mapper;
     }
 
 

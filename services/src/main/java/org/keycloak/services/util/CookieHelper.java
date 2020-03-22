@@ -24,11 +24,7 @@ import org.keycloak.common.util.ServerCookie;
 
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.keycloak.common.util.ServerCookie.SameSiteAttributeValue;
@@ -46,6 +42,7 @@ public class CookieHelper {
 
     /**
      * Set a response cookie.  This solely exists because JAX-RS 1.1 does not support setting HttpOnly cookies
+     *
      * @param name
      * @param value
      * @param path
@@ -80,6 +77,7 @@ public class CookieHelper {
 
     /**
      * Set a response cookie avoiding SameSite parameter
+     *
      * @param name
      * @param value
      * @param path
@@ -131,8 +129,7 @@ public class CookieHelper {
         Cookie cookie = cookies.get(name);
         if (cookie != null) {
             return cookie;
-        }
-        else {
+        } else {
             String legacy = name + LEGACY_COOKIE;
             logger.debugv("Couldn't find cookie {0}, trying {0}", name, legacy);
             return cookies.get(legacy);

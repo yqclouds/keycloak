@@ -40,16 +40,16 @@ public interface Authenticator extends Provider {
      * satifies the Authenticator's requirements.  If it doesn't, it should send back a challenge response by calling
      * the AuthenticationFlowContext.challenge(Response).  If this challenge is a authentication, the action URL
      * of the form must point to
-     *
+     * <p>
      * /realms/{realm}/login-actions/authenticate?code={session-code}&execution={executionId}
-     *
+     * <p>
      * or
-     *
+     * <p>
      * /realms/{realm}/login-actions/registration?code={session-code}&execution={executionId}
-     *
+     * <p>
      * {session-code} pertains to the code generated from AuthenticationFlowContext.generateAccessCode().  The {executionId}
      * pertains to the AuthenticationExecutionModel.getId() value obtained from AuthenticationFlowContext.getExecution().
-     *
+     * <p>
      * The action URL will invoke the action() method described below.
      *
      * @param context
@@ -83,12 +83,12 @@ public interface Authenticator extends Provider {
 
     /**
      * Set actions to configure authenticator
-     *
      */
     void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user);
 
     /**
      * Overwrite this if the authenticator is associated with
+     *
      * @return
      */
     default List<RequiredActionFactory> getRequiredActions(KeycloakSession session) {
@@ -97,6 +97,7 @@ public interface Authenticator extends Provider {
 
     /**
      * Checks if all required actions are configured in the realm and are enabled
+     *
      * @return
      */
     default boolean areRequiredActionsEnabled(KeycloakSession session, RealmModel realm) {

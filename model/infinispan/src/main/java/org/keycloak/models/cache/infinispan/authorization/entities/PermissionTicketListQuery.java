@@ -1,9 +1,9 @@
 package org.keycloak.models.cache.infinispan.authorization.entities;
 
+import org.keycloak.models.cache.infinispan.entities.AbstractRevisioned;
+
 import java.util.HashSet;
 import java.util.Set;
-
-import org.keycloak.models.cache.infinispan.entities.AbstractRevisioned;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -20,6 +20,7 @@ public class PermissionTicketListQuery extends AbstractRevisioned implements Per
         permissions = new HashSet<>();
         permissions.add(permissionId);
     }
+
     public PermissionTicketListQuery(Long revision, String id, Set<String> permissions, String serverId) {
         super(revision, id);
         this.serverId = serverId;

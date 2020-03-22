@@ -17,12 +17,13 @@
 
 package org.keycloak.models.sessions.infinispan.entities;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.commons.marshall.SerializeWith;
+
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -149,12 +150,12 @@ public class LoginFailureEntity extends SessionEntity {
 
         public LoginFailureEntity readObjectVersion1(ObjectInput input) throws IOException {
             return new LoginFailureEntity(
-              MarshallUtil.unmarshallString(input),
-              MarshallUtil.unmarshallString(input),
-              input.readInt(),
-              input.readInt(),
-              input.readLong(),
-              MarshallUtil.unmarshallString(input)
+                    MarshallUtil.unmarshallString(input),
+                    MarshallUtil.unmarshallString(input),
+                    input.readInt(),
+                    input.readInt(),
+                    input.readLong(),
+                    MarshallUtil.unmarshallString(input)
             );
         }
     }

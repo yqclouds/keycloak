@@ -46,10 +46,6 @@ public enum MediumType {
         value = v;
     }
 
-    public String value() {
-        return value;
-    }
-
     public static MediumType fromValue(String v) {
         for (MediumType c : MediumType.values()) {
             if (c.value.equals(v)) {
@@ -57,6 +53,10 @@ public enum MediumType {
             }
         }
         throw new IllegalArgumentException(v);
+    }
+
+    public String value() {
+        return value;
     }
 
 }

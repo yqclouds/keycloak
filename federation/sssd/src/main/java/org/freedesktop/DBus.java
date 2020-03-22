@@ -10,15 +10,7 @@
 */
 package org.freedesktop;
 
-import org.freedesktop.dbus.DBusInterface;
-import org.freedesktop.dbus.DBusSignal;
-import org.freedesktop.dbus.Position;
-import org.freedesktop.dbus.Struct;
-import org.freedesktop.dbus.Tuple;
-import org.freedesktop.dbus.UInt16;
-import org.freedesktop.dbus.UInt32;
-import org.freedesktop.dbus.UInt64;
-import org.freedesktop.dbus.Variant;
+import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 
@@ -46,66 +38,6 @@ public interface DBus extends DBusInterface {
     int DBUS_RELEASE_NAME_REPLY_NOT_OWNER = 3;
     int DBUS_START_REPLY_SUCCESS = 1;
     int DBUS_START_REPLY_ALREADY_RUNNING = 2;
-
-    /**
-     * All DBus Applications should respond to the Ping method on this interface
-     */
-    public interface Peer extends DBusInterface {
-        public void Ping();
-    }
-
-    /**
-     * Objects can provide introspection data via this interface and method.
-     * See the <a href="http://dbus.freedesktop.org/doc/dbus-specification.html#introspection-format">Introspection Format</a>.
-     */
-    public interface Introspectable extends DBusInterface {
-        /**
-         * @return The XML introspection data for this object
-         */
-        public String Introspect();
-    }
-
-    /**
-     * A standard properties interface.
-     */
-    public interface Properties extends DBusInterface {
-        /**
-         * Get the value for the given property.
-         *
-         * @param interface_name The interface this property is associated with.
-         * @param property_name  The name of the property.
-         * @return The value of the property (may be any valid DBus type).
-         */
-        public <A> A Get(String interface_name, String property_name);
-
-        /**
-         * Set the value for the given property.
-         *
-         * @param interface_name The interface this property is associated with.
-         * @param property_name  The name of the property.
-         * @param value          The new value of the property (may be any valid DBus type).
-         */
-        public <A> void Set(String interface_name, String property_name, A value);
-
-        /**
-         * Get all properties and values.
-         *
-         * @param interface_name The interface the properties is associated with.
-         * @return The properties mapped to their values.
-         */
-        public Map<String, Variant> GetAll(String interface_name);
-    }
-
-    /**
-     * Messages generated locally in the application.
-     */
-    public interface Local extends DBusInterface {
-        public class Disconnected extends DBusSignal {
-            public Disconnected(String path) throws DBusException {
-                super(path);
-            }
-        }
-    }
 
     /**
      * Initial message to register ourselves on the Bus.
@@ -218,42 +150,62 @@ public interface DBus extends DBusInterface {
     public void ReloadConfig();
 
     /**
-     * Signal sent when the owner of a name changes
+     * All DBus Applications should respond to the Ping method on this interface
      */
-    public class NameOwnerChanged extends DBusSignal {
-        public final String name;
-        public final String old_owner;
-        public final String new_owner;
-
-        public NameOwnerChanged(String path, String name, String old_owner, String new_owner) throws DBusException {
-            super(path, new Object[]{name, old_owner, new_owner});
-            this.name = name;
-            this.old_owner = old_owner;
-            this.new_owner = new_owner;
-        }
+    public interface Peer extends DBusInterface {
+        public void Ping();
     }
 
     /**
-     * Signal sent to a connection when it loses a name
+     * Objects can provide introspection data via this interface and method.
+     * See the <a href="http://dbus.freedesktop.org/doc/dbus-specification.html#introspection-format">Introspection Format</a>.
      */
-    public class NameLost extends DBusSignal {
-        public final String name;
-
-        public NameLost(String path, String name) throws DBusException {
-            super(path, name);
-            this.name = name;
-        }
+    public interface Introspectable extends DBusInterface {
+        /**
+         * @return The XML introspection data for this object
+         */
+        public String Introspect();
     }
 
     /**
-     * Signal sent to a connection when it aquires a name
+     * A standard properties interface.
      */
-    public class NameAcquired extends DBusSignal {
-        public final String name;
+    public interface Properties extends DBusInterface {
+        /**
+         * Get the value for the given property.
+         *
+         * @param interface_name The interface this property is associated with.
+         * @param property_name  The name of the property.
+         * @return The value of the property (may be any valid DBus type).
+         */
+        public <A> A Get(String interface_name, String property_name);
 
-        public NameAcquired(String path, String name) throws DBusException {
-            super(path, name);
-            this.name = name;
+        /**
+         * Set the value for the given property.
+         *
+         * @param interface_name The interface this property is associated with.
+         * @param property_name  The name of the property.
+         * @param value          The new value of the property (may be any valid DBus type).
+         */
+        public <A> void Set(String interface_name, String property_name, A value);
+
+        /**
+         * Get all properties and values.
+         *
+         * @param interface_name The interface the properties is associated with.
+         * @return The properties mapped to their values.
+         */
+        public Map<String, Variant> GetAll(String interface_name);
+    }
+
+    /**
+     * Messages generated locally in the application.
+     */
+    public interface Local extends DBusInterface {
+        public class Disconnected extends DBusSignal {
+            public Disconnected(String path) throws DBusException {
+                super(path);
+            }
         }
     }
 
@@ -529,6 +481,46 @@ public interface DBus extends DBusInterface {
                 this.b = b;
                 this.c = c;
             }
+        }
+    }
+
+    /**
+     * Signal sent when the owner of a name changes
+     */
+    public class NameOwnerChanged extends DBusSignal {
+        public final String name;
+        public final String old_owner;
+        public final String new_owner;
+
+        public NameOwnerChanged(String path, String name, String old_owner, String new_owner) throws DBusException {
+            super(path, new Object[]{name, old_owner, new_owner});
+            this.name = name;
+            this.old_owner = old_owner;
+            this.new_owner = new_owner;
+        }
+    }
+
+    /**
+     * Signal sent to a connection when it loses a name
+     */
+    public class NameLost extends DBusSignal {
+        public final String name;
+
+        public NameLost(String path, String name) throws DBusException {
+            super(path, name);
+            this.name = name;
+        }
+    }
+
+    /**
+     * Signal sent to a connection when it aquires a name
+     */
+    public class NameAcquired extends DBusSignal {
+        public final String name;
+
+        public NameAcquired(String path, String name) throws DBusException {
+            super(path, name);
+            this.name = name;
         }
     }
 }

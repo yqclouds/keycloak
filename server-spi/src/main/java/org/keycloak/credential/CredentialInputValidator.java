@@ -23,18 +23,19 @@ import org.keycloak.models.UserModel;
  * Implentations of this interface can validate CredentialInput, i.e. verify a password.
  * UserStorageProviders and CredentialProviders can implement this interface.
  *
- *
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public interface CredentialInputValidator {
     boolean supportsCredentialType(String credentialType);
+
     boolean isConfiguredFor(RealmModel realm, UserModel user, String credentialType);
 
     /**
      * Tests whether a credential is valid
-     * @param realm The realm in which to which the credential belongs to
-     * @param user The user for which to test the credential
+     *
+     * @param realm           The realm in which to which the credential belongs to
+     * @param user            The user for which to test the credential
      * @param credentialInput the credential details to verify
      * @return true if the passed secret is correct
      */

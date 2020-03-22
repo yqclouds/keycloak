@@ -25,7 +25,7 @@ import org.keycloak.models.KeycloakSessionFactory;
 /**
  * The factory and the corresponding providers extract a client certificate
  * and the certificate chain (if any) from the incoming TLS connection.
- *
+ * <p>
  * This factory is used by default
  *
  * @author <a href="mailto:brat000012001@gmail.com">Peter Nalyvayko</a>

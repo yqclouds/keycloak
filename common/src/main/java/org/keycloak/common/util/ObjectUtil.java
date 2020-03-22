@@ -22,10 +22,10 @@ package org.keycloak.common.util;
  */
 public class ObjectUtil {
 
-    private ObjectUtil() {}
+    private ObjectUtil() {
+    }
 
     /**
-     *
      * @param str1
      * @param str2
      * @return true if both strings are null or equal

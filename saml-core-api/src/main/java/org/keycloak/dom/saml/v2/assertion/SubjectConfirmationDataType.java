@@ -49,18 +49,12 @@ import java.util.Map;
  */
 public class SubjectConfirmationDataType implements Serializable {
 
-    protected XMLGregorianCalendar notBefore;
-
-    protected XMLGregorianCalendar notOnOrAfter;
-
-    protected String recipient;
-
-    protected String inResponseTo;
-
-    protected String address;
-
     private final Map<QName, String> otherAttributes = new HashMap<>();
-
+    protected XMLGregorianCalendar notBefore;
+    protected XMLGregorianCalendar notOnOrAfter;
+    protected String recipient;
+    protected String inResponseTo;
+    protected String address;
     private Object anyType;
 
     public Object getAnyType() {

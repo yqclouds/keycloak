@@ -15,7 +15,9 @@
   ~ * See the License for the specific language governing permissions and
   ~ * limitations under the License.
   -->
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
     <changeSet author="keycloak" id="9.0.0-always-display-client">
         <addColumn tableName="CLIENT">
@@ -53,15 +55,21 @@
             <dbms type="mssql"/>
         </preConditions>
 
-        <addNotNullConstraint columnDataType="VARCHAR(255)" tableName="OFFLINE_CLIENT_SESSION" columnName="CLIENT_ID" />
-        <addNotNullConstraint columnDataType="VARCHAR(255)" tableName="RESOURCE_SERVER_PERM_TICKET" columnName="OWNER" />
-        <addNotNullConstraint columnDataType="VARCHAR(255)" tableName="RESOURCE_SERVER_PERM_TICKET" columnName="REQUESTER" />
-        <addNotNullConstraint columnDataType="VARCHAR(255)" tableName="RESOURCE_SERVER_RESOURCE" columnName="OWNER" />
+        <addNotNullConstraint columnDataType="VARCHAR(255)" tableName="OFFLINE_CLIENT_SESSION" columnName="CLIENT_ID"/>
+        <addNotNullConstraint columnDataType="VARCHAR(255)" tableName="RESOURCE_SERVER_PERM_TICKET" columnName="OWNER"/>
+        <addNotNullConstraint columnDataType="VARCHAR(255)" tableName="RESOURCE_SERVER_PERM_TICKET"
+                              columnName="REQUESTER"/>
+        <addNotNullConstraint columnDataType="VARCHAR(255)" tableName="RESOURCE_SERVER_RESOURCE" columnName="OWNER"/>
 
-        <addUniqueConstraint tableName="RESOURCE_SERVER_PERM_TICKET" columnNames="OWNER, REQUESTER, RESOURCE_SERVER_ID, RESOURCE_ID, SCOPE_ID" constraintName="UK_FRSR6T700S9V50BU18WS5PMT"/>
-        <addUniqueConstraint tableName="RESOURCE_SERVER_RESOURCE" columnNames="NAME, OWNER, RESOURCE_SERVER_ID" constraintName="UK_FRSR6T700S9V50BU18WS5HA6"/>
+        <addUniqueConstraint tableName="RESOURCE_SERVER_PERM_TICKET"
+                             columnNames="OWNER, REQUESTER, RESOURCE_SERVER_ID, RESOURCE_ID, SCOPE_ID"
+                             constraintName="UK_FRSR6T700S9V50BU18WS5PMT"/>
+        <addUniqueConstraint tableName="RESOURCE_SERVER_RESOURCE" columnNames="NAME, OWNER, RESOURCE_SERVER_ID"
+                             constraintName="UK_FRSR6T700S9V50BU18WS5HA6"/>
 
-        <addPrimaryKey columnNames="USER_SESSION_ID, CLIENT_ID, CLIENT_STORAGE_PROVIDER, EXTERNAL_CLIENT_ID, OFFLINE_FLAG" constraintName="CONSTRAINT_OFFL_CL_SES_PK3" tableName="OFFLINE_CLIENT_SESSION"/>
+        <addPrimaryKey
+                columnNames="USER_SESSION_ID, CLIENT_ID, CLIENT_STORAGE_PROVIDER, EXTERNAL_CLIENT_ID, OFFLINE_FLAG"
+                constraintName="CONSTRAINT_OFFL_CL_SES_PK3" tableName="OFFLINE_CLIENT_SESSION"/>
     </changeSet>
 
 </databaseChangeLog>

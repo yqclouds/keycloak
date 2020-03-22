@@ -132,8 +132,32 @@ public enum JBossSAMLURIConstants {
     XSI_NSURI("http://www.w3.org/2001/XMLSchema-instance"),
     ;
 
+    private static final ReverseLookup REVERSE_LOOKUP = new ReverseLookup();
     private final String uriStr;
     private final URI uri;
+
+    private JBossSAMLURIConstants(String uristr) {
+        this.uriStr = uristr;
+        this.uri = URI.create(uristr);
+    }
+
+    /**
+     * Returns an enum constant based if known for the given {@code key}, or {@code null} otherwise.
+     *
+     * @param key
+     * @return
+     */
+    public static JBossSAMLURIConstants from(String key) {
+        return REVERSE_LOOKUP.from(key);
+    }
+
+    public String get() {
+        return this.uriStr;
+    }
+
+    public URI getUri() {
+        return this.uri;
+    }
 
     private static class ReverseLookup {
         // Private class to make sure JBossSAMLURIConstants is fully initialized
@@ -153,28 +177,5 @@ public enum JBossSAMLURIConstants {
         public JBossSAMLURIConstants from(String key) {
             return CONSTANTS.get(key);
         }
-    }
-    private static final ReverseLookup REVERSE_LOOKUP = new ReverseLookup();
-
-    private JBossSAMLURIConstants(String uristr) {
-        this.uriStr = uristr;
-        this.uri = URI.create(uristr);
-    }
-
-    public String get() {
-        return this.uriStr;
-    }
-
-    public URI getUri() {
-        return this.uri;
-    }
-
-    /**
-     * Returns an enum constant based if known for the given {@code key}, or {@code null} otherwise.
-     * @param key
-     * @return
-     */
-    public static JBossSAMLURIConstants from(String key) {
-        return REVERSE_LOOKUP.from(key);
     }
 }

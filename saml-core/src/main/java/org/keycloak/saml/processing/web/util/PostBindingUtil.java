@@ -39,7 +39,6 @@ public class PostBindingUtil {
      * Apply base64 encoding on the message
      *
      * @param stringToEncode
-     *
      * @return
      */
     public static String base64Encode(String stringToEncode) throws IOException {
@@ -50,7 +49,6 @@ public class PostBindingUtil {
      * Apply base64 decoding on the message and return the byte array
      *
      * @param encodedString
-     *
      * @return
      */
     public static byte[] base64Decode(String encodedString) {
@@ -64,7 +62,6 @@ public class PostBindingUtil {
      * Apply base64 decoding on the message and return the stream
      *
      * @param encodedString
-     *
      * @return
      */
     public static InputStream base64DecodeAsStream(String encodedString) {

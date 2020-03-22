@@ -21,11 +21,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.exportimport.ExportImportConfig;
 import org.keycloak.exportimport.ExportProvider;
 import org.keycloak.exportimport.UsersExportStrategy;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.KeycloakSessionTask;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.representations.idm.RealmRepresentation;
 
@@ -111,7 +107,7 @@ public abstract class MultipleStepsExportProvider implements ExportProvider {
 
                         writeUsers(realmName + "-users-" + (usersHolder.currentPageStart / countPerPage) + ".json", session, realm, usersHolder.users);
 
-                        logger.info("Users " + usersHolder.currentPageStart + "-" + (usersHolder.currentPageEnd -1) + " exported");
+                        logger.info("Users " + usersHolder.currentPageStart + "-" + (usersHolder.currentPageEnd - 1) + " exported");
                     }
 
                 });
@@ -142,7 +138,7 @@ public abstract class MultipleStepsExportProvider implements ExportProvider {
 
                         writeFederatedUsers(realmName + "-federated-users-" + (federatedUsersHolder.currentPageStart / countPerPage) + ".json", session, realm, federatedUsersHolder.users);
 
-                        logger.info("Users " + federatedUsersHolder.currentPageStart + "-" + (federatedUsersHolder.currentPageEnd -1) + " exported");
+                        logger.info("Users " + federatedUsersHolder.currentPageStart + "-" + (federatedUsersHolder.currentPageEnd - 1) + " exported");
                     }
 
                 });
@@ -155,6 +151,7 @@ public abstract class MultipleStepsExportProvider implements ExportProvider {
     protected abstract void writeRealm(String fileName, RealmRepresentation rep) throws IOException;
 
     protected abstract void writeUsers(String fileName, KeycloakSession session, RealmModel realm, List<UserModel> users) throws IOException;
+
     protected abstract void writeFederatedUsers(String fileName, KeycloakSession session, RealmModel realm, List<String> users) throws IOException;
 
     public static class RealmsHolder {
@@ -168,6 +165,7 @@ public abstract class MultipleStepsExportProvider implements ExportProvider {
         int currentPageStart;
         int currentPageEnd;
     }
+
     public static class FederatedUsersHolder {
         List<String> users;
         int totalCount;

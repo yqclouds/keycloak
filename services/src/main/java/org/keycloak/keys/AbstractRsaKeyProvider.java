@@ -19,11 +19,7 @@ package org.keycloak.keys;
 
 import org.keycloak.common.util.KeyUtils;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.crypto.Algorithm;
-import org.keycloak.crypto.KeyStatus;
-import org.keycloak.crypto.KeyType;
-import org.keycloak.crypto.KeyUse;
-import org.keycloak.crypto.KeyWrapper;
+import org.keycloak.crypto.*;
 import org.keycloak.models.RealmModel;
 
 import java.security.KeyPair;

@@ -41,8 +41,6 @@ public interface KeycloakSession {
      * find the factory and allocate by calling ProviderFactory.create(KeycloakSession).  The provider to use is determined
      * by the "provider" config entry in keycloak-server boot configuration. (keycloak-server.json)
      *
-     *
-     *
      * @param clazz
      * @param <T>
      * @return
@@ -53,7 +51,7 @@ public interface KeycloakSession {
      * Get dedicated provider instance for a specific provider factory of id of provider type clazz that was created for this session.
      * If one hasn't been created yet,
      * find the factory and allocate by calling ProviderFactory.create(KeycloakSession).
-
+     *
      * @param clazz
      * @param id
      * @param <T>
@@ -77,7 +75,9 @@ public interface KeycloakSession {
     Class<? extends Provider> getProviderClass(String providerClassName);
 
     Object getAttribute(String attribute);
+
     <T> T getAttribute(String attribute, Class<T> clazz);
+
     default <T> T getAttributeOrDefault(String attribute, T defaultValue) {
         T value = (T) getAttribute(attribute);
 
@@ -89,6 +89,7 @@ public interface KeycloakSession {
     }
 
     Object removeAttribute(String attribute);
+
     void setAttribute(String name, Object value);
 
 
@@ -116,7 +117,6 @@ public interface KeycloakSession {
 
 
     AuthenticationSessionProvider authenticationSessions();
-
 
 
     void close();
@@ -179,7 +179,7 @@ public interface KeycloakSession {
     /**
      * Key manager
      *
-      * @return
+     * @return
      */
     KeyManager keys();
 

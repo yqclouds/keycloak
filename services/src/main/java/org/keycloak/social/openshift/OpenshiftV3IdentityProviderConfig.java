@@ -11,7 +11,7 @@ public class OpenshiftV3IdentityProviderConfig extends OAuth2IdentityProviderCon
     }
 
     public OpenshiftV3IdentityProviderConfig() {
-        
+
     }
 
     public String getBaseUrl() {

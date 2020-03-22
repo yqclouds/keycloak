@@ -17,11 +17,6 @@
 
 package org.keycloak.services.clientregistration.policy.impl;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.KeycloakSession;
@@ -30,19 +25,21 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.services.clientregistration.policy.AbstractClientRegistrationPolicyFactory;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy;
 
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class ClientScopesClientRegistrationPolicyFactory extends AbstractClientRegistrationPolicyFactory {
 
-    private List<ProviderConfigProperty> configProperties;
-
     // Keeping the name for backwards compatibility
     public static final String PROVIDER_ID = "allowed-client-templates";
-
     public static final String ALLOWED_CLIENT_SCOPES = "allowed-client-scopes";
-
     public static final String ALLOW_DEFAULT_SCOPES = "allow-default-scopes";
+    private List<ProviderConfigProperty> configProperties;
 
     @Override
     public ClientRegistrationPolicy create(KeycloakSession session, ComponentModel model) {

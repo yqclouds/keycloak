@@ -26,11 +26,11 @@ import java.util.List;
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2016 Red Hat Inc.
  */
-@JsonIgnoreProperties(ignoreUnknown=true)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PartialImportRepresentation {
-    public enum Policy { SKIP, OVERWRITE, FAIL };
-
     protected Policy policy = Policy.FAIL;
+
+    ;
     protected String ifResourceExists;
     protected List<UserRepresentation> users;
     protected List<GroupRepresentation> groups;
@@ -87,16 +87,16 @@ public class PartialImportRepresentation {
         return clients;
     }
 
+    public void setClients(List<ClientRepresentation> clients) {
+        this.clients = clients;
+    }
+
     public List<GroupRepresentation> getGroups() {
         return groups;
     }
 
     public void setGroups(List<GroupRepresentation> groups) {
         this.groups = groups;
-    }
-
-    public void setClients(List<ClientRepresentation> clients) {
-        this.clients = clients;
     }
 
     public List<IdentityProviderRepresentation> getIdentityProviders() {
@@ -114,4 +114,6 @@ public class PartialImportRepresentation {
     public void setRoles(RolesRepresentation roles) {
         this.roles = roles;
     }
+
+    public enum Policy {SKIP, OVERWRITE, FAIL}
 }

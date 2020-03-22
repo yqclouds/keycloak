@@ -22,26 +22,8 @@ import org.keycloak.common.util.Time;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.credential.UserCredentialStore;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.FederatedIdentityModel;
-import org.keycloak.models.GroupModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ModelDuplicateException;
-import org.keycloak.models.ModelException;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RequiredActionProviderModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserConsentModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserProvider;
-import org.keycloak.models.jpa.entities.CredentialEntity;
-import org.keycloak.models.jpa.entities.FederatedIdentityEntity;
-import org.keycloak.models.jpa.entities.UserConsentClientScopeEntity;
-import org.keycloak.models.jpa.entities.UserConsentEntity;
-import org.keycloak.models.jpa.entities.UserEntity;
-import org.keycloak.models.jpa.entities.UserGroupMembershipEntity;
+import org.keycloak.models.*;
+import org.keycloak.models.jpa.entities.*;
 import org.keycloak.models.utils.DefaultRoles;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.storage.StorageId;
@@ -49,23 +31,11 @@ import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.client.ClientStorageProvider;
 
 import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import javax.persistence.criteria.Subquery;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 import javax.persistence.LockModeType;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.*;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -80,8 +50,8 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
     private static final String LAST_NAME = "lastName";
 
     private final KeycloakSession session;
-    protected EntityManager em;
     private final JpaUserCredentialStore credentialStore;
+    protected EntityManager em;
 
     public JpaUserProvider(KeycloakSession session, EntityManager em) {
         this.session = session;
@@ -112,7 +82,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
             }
         }
 
-        if (addDefaultRequiredActions){
+        if (addDefaultRequiredActions) {
             for (RequiredActionProviderModel r : realm.getRequiredActionProviders()) {
                 if (r.isEnabled() && r.isDefaultAction()) {
                     userModel.addRequiredAction(r.getAlias());
@@ -265,7 +235,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
 
     private UserConsentEntity getGrantedConsentEntity(String userId, String clientId, LockModeType lockMode) {
         StorageId clientStorageId = new StorageId(clientId);
-        String queryName = clientStorageId.isLocal() ?  "userConsentByUserAndClient" : "userConsentByUserAndExternalClient";
+        String queryName = clientStorageId.isLocal() ? "userConsentByUserAndClient" : "userConsentByUserAndExternalClient";
         TypedQuery<UserConsentEntity> query = em.createNamedQuery(queryName, UserConsentEntity.class);
         query.setParameter("userId", userId);
         if (clientStorageId.isLocal()) {
@@ -292,7 +262,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
         }
 
         StorageId clientStorageId = null;
-        if ( entity.getClientId() == null) {
+        if (entity.getClientId() == null) {
             clientStorageId = new StorageId(entity.getClientStorageProvider(), entity.getExternalClientId());
         } else {
             clientStorageId = new StorageId(entity.getClientId());
@@ -544,7 +514,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
         return new UserAdapter(session, realm, em, results.get(0));
     }
 
-     @Override
+    @Override
     public void close() {
     }
 
@@ -599,7 +569,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
         Object count = em.createNamedQuery(namedQuery)
                 .setParameter("realmId", realm.getId())
                 .getSingleResult();
-        return ((Number)count).intValue();
+        return ((Number) count).intValue();
     }
 
     @Override
@@ -745,7 +715,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
 
     @Override
     public List<UserModel> getUsers(RealmModel realm, int firstResult, int maxResults, boolean includeServiceAccounts) {
-        String queryName = includeServiceAccounts ? "getAllUsersByRealm" : "getAllUsersByRealmExcludeServiceAccount" ;
+        String queryName = includeServiceAccounts ? "getAllUsersByRealm" : "getAllUsersByRealmExcludeServiceAccount";
 
         TypedQuery<UserEntity> query = em.createNamedQuery(queryName, UserEntity.class);
         query.setParameter("realmId", realm.getId());
@@ -1047,7 +1017,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
             }
             return rtn;
         } else {
-           return credentialStore.getStoredCredentialsByType(realm, user, type);
+            return credentialStore.getStoredCredentialsByType(realm, user, type);
         }
     }
 

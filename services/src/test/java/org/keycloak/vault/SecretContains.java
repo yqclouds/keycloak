@@ -17,6 +17,10 @@ public class SecretContains extends TypeSafeMatcher<VaultRawSecret> {
         this.thisVaultAsString = thisVaultAsString;
     }
 
+    public static Matcher<VaultRawSecret> secretContains(String thisVaultAsString) {
+        return new SecretContains(thisVaultAsString);
+    }
+
     @Override
     protected boolean matchesSafely(VaultRawSecret secret) {
         String convertedSecret = StandardCharsets.UTF_8.decode(secret.get().get()).toString();
@@ -26,9 +30,5 @@ public class SecretContains extends TypeSafeMatcher<VaultRawSecret> {
     @Override
     public void describeTo(Description description) {
         description.appendText("is equal to " + thisVaultAsString);
-    }
-
-    public static Matcher<VaultRawSecret> secretContains(String thisVaultAsString) {
-        return new SecretContains(thisVaultAsString);
     }
 }

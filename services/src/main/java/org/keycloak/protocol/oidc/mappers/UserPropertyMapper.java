@@ -36,6 +36,7 @@ import java.util.List;
  * @version $Revision: 1 $
  */
 public class UserPropertyMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
+    public static final String PROVIDER_ID = "oidc-usermodel-property-mapper";
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
 
     static {
@@ -49,8 +50,15 @@ public class UserPropertyMapper extends AbstractOIDCProtocolMapper implements OI
         OIDCAttributeMapperHelper.addAttributeConfig(configProperties, UserPropertyMapper.class);
     }
 
-    public static final String PROVIDER_ID = "oidc-usermodel-property-mapper";
-
+    public static ProtocolMapperModel createClaimMapper(String name,
+                                                        String userAttribute,
+                                                        String tokenClaimName, String claimType,
+                                                        boolean accessToken, boolean idToken) {
+        return OIDCAttributeMapperHelper.createClaimMapper(name, userAttribute,
+                tokenClaimName, claimType,
+                accessToken, idToken,
+                PROVIDER_ID);
+    }
 
     public List<ProviderConfigProperty> getConfigProperties() {
         return configProperties;
@@ -84,15 +92,5 @@ public class UserPropertyMapper extends AbstractOIDCProtocolMapper implements OI
 
         String propertyValue = ProtocolMapperUtils.getUserModelValue(user, propertyName);
         OIDCAttributeMapperHelper.mapClaim(token, mappingModel, propertyValue);
-    }
-
-    public static ProtocolMapperModel createClaimMapper(String name,
-                                                        String userAttribute,
-                                                        String tokenClaimName, String claimType,
-                                                        boolean accessToken, boolean idToken) {
-        return OIDCAttributeMapperHelper.createClaimMapper(name, userAttribute,
-                tokenClaimName, claimType,
-                accessToken, idToken,
-                PROVIDER_ID);
     }
 }

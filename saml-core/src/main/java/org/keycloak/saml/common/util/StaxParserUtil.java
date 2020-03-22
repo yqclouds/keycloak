@@ -25,7 +25,6 @@ import org.keycloak.saml.common.constants.JBossSAMLURIConstants;
 import org.keycloak.saml.common.exceptions.ConfigurationException;
 import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.exceptions.ProcessingException;
-
 import org.keycloak.saml.processing.core.parsers.util.HasQName;
 import org.keycloak.saml.processing.core.saml.v2.util.XMLTimeUtil;
 import org.w3c.dom.Document;
@@ -33,16 +32,13 @@ import org.w3c.dom.Element;
 
 import javax.xml.XMLConstants;
 import javax.xml.datatype.Duration;
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.Characters;
-import javax.xml.stream.events.EndElement;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
+import javax.xml.stream.events.*;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.dom.DOMResult;
@@ -58,7 +54,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
  * Utility for the stax based parser
@@ -69,6 +64,15 @@ import javax.xml.datatype.XMLGregorianCalendar;
 public class StaxParserUtil {
 
     private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final String JDK_TRANSFORMER_PROPERTY = "picketlink.jdk.transformer";
+    private static final QName XSI_TYPE = new QName(JBossSAMLURIConstants.XSI_NSURI.get(), "type", JBossSAMLURIConstants.XSI_PREFIX.get());
+    private static final ThreadLocal<XMLInputFactory> XML_INPUT_FACTORY = new ThreadLocal<XMLInputFactory>() {
+        @Override
+        protected XMLInputFactory initialValue() {
+            return getXMLInputFactory();
+        }
+    };
+    private static AtomicBoolean XML_EVENT_READER_ON_SOURCE_SUPPORTED = new AtomicBoolean(true);
 
     public static void validate(InputStream doc, InputStream sch) throws ParsingException {
         try {
@@ -90,14 +94,13 @@ public class StaxParserUtil {
      * the start element of the block it should bypass.
      *
      * @param xmlEventReader
-     * @param tag Tag of the XML element that we need to bypass
-     *
+     * @param tag            Tag of the XML element that we need to bypass
      * @throws org.keycloak.saml.common.exceptions.ParsingException
      */
     public static void bypassElementBlock(XMLEventReader xmlEventReader, String tag) throws ParsingException {
         XMLEvent xmlEvent = bypassElementBlock(xmlEventReader);
 
-        if (! (xmlEvent instanceof EndElement) || ! Objects.equals(((EndElement) xmlEvent).getName().getLocalPart(), tag)) {
+        if (!(xmlEvent instanceof EndElement) || !Objects.equals(((EndElement) xmlEvent).getName().getLocalPart(), tag)) {
             throw logger.parserExpectedEndTag(tag);
         }
     }
@@ -108,14 +111,13 @@ public class StaxParserUtil {
      * the start element of the block it should bypass.
      *
      * @param xmlEventReader
-     * @param tag Tag of the XML element that we need to bypass
-     *
+     * @param tag            Tag of the XML element that we need to bypass
      * @throws org.keycloak.saml.common.exceptions.ParsingException
      */
     public static void bypassElementBlock(XMLEventReader xmlEventReader, QName tag) throws ParsingException {
         XMLEvent xmlEvent = bypassElementBlock(xmlEventReader);
 
-        if (! (xmlEvent instanceof EndElement) || ! Objects.equals(((EndElement) xmlEvent).getName(), tag)) {
+        if (!(xmlEvent instanceof EndElement) || !Objects.equals(((EndElement) xmlEvent).getName(), tag)) {
             throw logger.parserExpectedEndTag(tag.getLocalPart());
         }
     }
@@ -126,14 +128,13 @@ public class StaxParserUtil {
      * the start element of the block it should bypass.
      *
      * @param xmlEventReader
-     * @returns Last XML event which is {@link EndElement} corresponding to the first startElement when no error occurs ({@code null} if not available)
-     *
      * @throws org.keycloak.saml.common.exceptions.ParsingException
+     * @returns Last XML event which is {@link EndElement} corresponding to the first startElement when no error occurs ({@code null} if not available)
      */
     public static XMLEvent bypassElementBlock(XMLEventReader xmlEventReader) throws ParsingException {
         XMLEvent xmlEvent;
         int levelOfNesting = 0;
-        if (! xmlEventReader.hasNext()) {
+        if (!xmlEventReader.hasNext()) {
             return null;
         }
 
@@ -152,8 +153,6 @@ public class StaxParserUtil {
 
         return xmlEvent;
     }
-
-
 
     /**
      * Advances reader if character whitespace encountered
@@ -182,7 +181,6 @@ public class StaxParserUtil {
      * Given an {@code Attribute}, get its trimmed value
      *
      * @param attribute
-     *
      * @return
      */
     public static String getAttributeValue(Attribute attribute) {
@@ -199,7 +197,6 @@ public class StaxParserUtil {
      * Given an {@code Attribute}, get its trimmed value, replacing every occurrence of ${..} by corresponding system property value
      *
      * @param attribute
-     *
      * @return
      */
     public static String getAttributeValueRP(Attribute attribute) {
@@ -216,8 +213,7 @@ public class StaxParserUtil {
      * Get the Attribute value
      *
      * @param startElement
-     * @param tag localpart of the qname of the attribute
-     *
+     * @param tag          localpart of the qname of the attribute
      * @return
      */
     @Deprecated
@@ -229,8 +225,7 @@ public class StaxParserUtil {
      * Get the Attribute value
      *
      * @param startElement
-     * @param tag localpart of the qname of the attribute
-     *
+     * @param tag          localpart of the qname of the attribute
      * @return
      */
     public static String getAttributeValue(StartElement startElement, HasQName attrName) {
@@ -241,11 +236,9 @@ public class StaxParserUtil {
      * Get the Attribute value, replacing every occurrence of ${..} by corresponding system property value
      *
      * @param startElement
-     * @param tag localpart of the qname of the attribute
-     *
-     * @see StringPropertyReplacer#replaceProperties(java.lang.String)
-     *
+     * @param tag          localpart of the qname of the attribute
      * @return
+     * @see StringPropertyReplacer#replaceProperties(java.lang.String)
      */
     public static String getAttributeValueRP(StartElement startElement, HasQName attrName) {
         final String value = getAttributeValue(startElement, attrName.getQName());
@@ -256,8 +249,7 @@ public class StaxParserUtil {
      * Get the Attribute value
      *
      * @param startElement
-     * @param tag localpart of the qname of the attribute
-     *
+     * @param tag          localpart of the qname of the attribute
      * @return
      */
     public static String getAttributeValue(StartElement startElement, QName attrQName) {
@@ -269,8 +261,7 @@ public class StaxParserUtil {
      * Get the Attribute value
      *
      * @param startElement
-     * @param tag localpart of the qname of the attribute
-     *
+     * @param tag          localpart of the qname of the attribute
      * @return
      */
     public static URI getUriAttributeValue(StartElement startElement, HasQName attrName) {
@@ -283,8 +274,7 @@ public class StaxParserUtil {
      * Get the Attribute value
      *
      * @param startElement
-     * @param tag localpart of the qname of the attribute
-     *
+     * @param tag          localpart of the qname of the attribute
      * @return
      */
     public static XMLGregorianCalendar getXmlTimeAttributeValue(StartElement startElement, HasQName attrName) throws ParsingException {
@@ -297,8 +287,7 @@ public class StaxParserUtil {
      * Get the Attribute value
      *
      * @param startElement
-     * @param tag localpart of the qname of the attribute
-     *
+     * @param tag          localpart of the qname of the attribute
      * @return
      */
     public static Duration getXmlDurationAttributeValue(StartElement startElement, HasQName attrName) throws ParsingException {
@@ -311,8 +300,7 @@ public class StaxParserUtil {
      * Get the Attribute value
      *
      * @param startElement
-     * @param tag localpart of the qname of the attribute
-     *
+     * @param tag          localpart of the qname of the attribute
      * @return
      */
     public static Integer getIntegerAttributeValue(StartElement startElement, HasQName attrName) {
@@ -325,8 +313,7 @@ public class StaxParserUtil {
      * Get the Attribute value, replacing every occurrence of ${..} by corresponding system property value
      *
      * @param startElement
-     * @param tag localpart of the qname of the attribute
-     *
+     * @param tag          localpart of the qname of the attribute
      * @return
      */
     public static Integer getIntegerAttributeValueRP(StartElement startElement, HasQName attrName) {
@@ -339,8 +326,7 @@ public class StaxParserUtil {
      * Get the Attribute value
      *
      * @param startElement
-     * @param tag localpart of the qname of the attribute
-     *
+     * @param tag          localpart of the qname of the attribute
      * @return
      */
     public static Boolean getBooleanAttributeValue(StartElement startElement, HasQName attrName) {
@@ -353,8 +339,7 @@ public class StaxParserUtil {
      * Get the Attribute value, replacing every occurrence of ${..} by corresponding system property value
      *
      * @param startElement
-     * @param tag localpart of the qname of the attribute
-     *
+     * @param tag          localpart of the qname of the attribute
      * @return
      */
     public static Boolean getBooleanAttributeValueRP(StartElement startElement, HasQName attrName) {
@@ -367,8 +352,7 @@ public class StaxParserUtil {
      * Get the Attribute value
      *
      * @param startElement
-     * @param tag localpart of the qname of the attribute
-     *
+     * @param tag          localpart of the qname of the attribute
      * @return false if attribute not set
      */
     @Deprecated
@@ -380,8 +364,7 @@ public class StaxParserUtil {
      * Get the Attribute value
      *
      * @param startElement
-     * @param tag localpart of the qname of the attribute
-     *
+     * @param tag          localpart of the qname of the attribute
      * @return false if attribute not set
      */
     @Deprecated
@@ -415,10 +398,9 @@ public class StaxParserUtil {
      *
      * @param startElement
      * @param attrName
-     *
      * @return
      */
-    public static List<String> getRequiredStringListAttributeValue(StartElement startElement, HasQName attrName) throws ParsingException{
+    public static List<String> getRequiredStringListAttributeValue(StartElement startElement, HasQName attrName) throws ParsingException {
         List<String> protocolEnum = new ArrayList<>();
 
         String val = StaxParserUtil.getRequiredAttributeValue(startElement, attrName);
@@ -433,16 +415,12 @@ public class StaxParserUtil {
         return protocolEnum;
     }
 
-    private static final String JDK_TRANSFORMER_PROPERTY = "picketlink.jdk.transformer";
-
     /**
      * Given that the {@code XMLEventReader} is in {@code XMLStreamConstants.START_ELEMENT} mode, we parse into a DOM
      * Element
      *
      * @param xmlEventReader
-     *
      * @return
-     *
      * @throws ParsingException
      */
     public static Element getDOMElement(XMLEventReader xmlEventReader) throws ParsingException {
@@ -479,9 +457,7 @@ public class StaxParserUtil {
      * Postcondition: The current event is the corresponding END_ELEMENT.
      *
      * @param xmlEventReader
-     *
      * @return A <b>trimmed</b> string value
-     *
      * @throws ParsingException
      */
     public static String getElementText(XMLEventReader xmlEventReader) throws ParsingException {
@@ -498,10 +474,8 @@ public class StaxParserUtil {
      * Get the element text, replacing every occurrence of ${..} by corresponding system property value
      *
      * @param xmlEventReader
-     *
-     * @return A <b>trimmed</b> string value with all property references replaced if any. 
+     * @return A <b>trimmed</b> string value with all property references replaced if any.
      * If there are no valid references the input string will be returned
-     *
      * @throws ParsingException
      */
     public static String getElementTextRP(XMLEventReader xmlEventReader) throws ParsingException {
@@ -516,7 +490,6 @@ public class StaxParserUtil {
      * Get the XML event reader
      *
      * @param is
-     *
      * @return
      */
     public static XMLEventReader getXMLEventReader(InputStream is) {
@@ -531,13 +504,10 @@ public class StaxParserUtil {
         return xmlEventReader;
     }
 
-    private static AtomicBoolean XML_EVENT_READER_ON_SOURCE_SUPPORTED = new AtomicBoolean(true);
-
     /**
      * Get the XML event reader
      *
      * @param source
-     *
      * @return
      */
     public static XMLEventReader getXMLEventReader(Source source) {
@@ -563,7 +533,6 @@ public class StaxParserUtil {
      * Given a {@code Location}, return a formatted string [lineNum,colNum]
      *
      * @param location
-     *
      * @return
      */
     public static String getLineColumnNumber(Location location) {
@@ -576,9 +545,7 @@ public class StaxParserUtil {
      * Get the next xml event
      *
      * @param xmlEventReader
-     *
      * @return
-     *
      * @throws ParsingException
      */
     public static XMLEvent getNextEvent(XMLEventReader xmlEventReader) throws ParsingException {
@@ -593,9 +560,7 @@ public class StaxParserUtil {
      * Get the next {@code StartElement }
      *
      * @param xmlEventReader
-     *
      * @return
-     *
      * @throws ParsingException
      */
     public static StartElement getNextStartElement(XMLEventReader xmlEventReader) throws ParsingException {
@@ -616,9 +581,7 @@ public class StaxParserUtil {
      * Get the next {@code EndElement}
      *
      * @param xmlEventReader
-     *
      * @return
-     *
      * @throws ParsingException
      */
     public static EndElement getNextEndElement(XMLEventReader xmlEventReader) throws ParsingException {
@@ -639,7 +602,6 @@ public class StaxParserUtil {
      * Return the name of the start element
      *
      * @param startElement
-     *
      * @return
      */
     public static String getElementName(StartElement startElement) {
@@ -650,22 +612,17 @@ public class StaxParserUtil {
      * Return the name of the end element
      *
      * @param endElement
-     *
      * @return
      */
     public static String getElementName(EndElement endElement) {
         return trim(endElement.getName().getLocalPart());
     }
 
-    private static final QName XSI_TYPE = new QName(JBossSAMLURIConstants.XSI_NSURI.get(), "type", JBossSAMLURIConstants.XSI_PREFIX.get());
-
     /**
      * Given a start element, obtain the xsi:type defined
      *
      * @param startElement
-     *
      * @return
-     *
      * @throws RuntimeException if xsi:type is missing
      */
     public static String getXSITypeValue(StartElement startElement) {
@@ -679,9 +636,7 @@ public class StaxParserUtil {
      * Return whether the next event is going to be text
      *
      * @param xmlEventReader
-     *
      * @return
-     *
      * @throws ParsingException
      */
     public static boolean hasTextAhead(XMLEventReader xmlEventReader) throws ParsingException {
@@ -694,7 +649,6 @@ public class StaxParserUtil {
      *
      * @param startElement
      * @param tag
-     *
      * @return boolean if the tags match
      */
     public static boolean matches(StartElement startElement, String tag) {
@@ -707,7 +661,6 @@ public class StaxParserUtil {
      *
      * @param endElement
      * @param tag
-     *
      * @return boolean if the tags match
      */
     public static boolean matches(EndElement endElement, String tag) {
@@ -719,9 +672,7 @@ public class StaxParserUtil {
      * Peek at the next event
      *
      * @param xmlEventReader
-     *
      * @return
-     *
      * @throws ParsingException
      */
     public static XMLEvent peek(XMLEventReader xmlEventReader) throws ParsingException {
@@ -736,9 +687,7 @@ public class StaxParserUtil {
      * Consume the next event
      *
      * @param xmlEventReader
-     *
      * @return
-     *
      * @throws ParsingException
      */
     public static XMLEvent advance(XMLEventReader xmlEventReader) throws ParsingException {
@@ -753,15 +702,13 @@ public class StaxParserUtil {
      * Peek the next {@code StartElement }
      *
      * @param xmlEventReader
-     *
      * @return
-     *
      * @throws ParsingException
      */
     public static StartElement peekNextStartElement(XMLEventReader xmlEventReader) throws ParsingException {
         try {
             XMLEvent xmlEvent = xmlEventReader.peek();
-            while (xmlEvent != null && ! xmlEvent.isStartElement()) {
+            while (xmlEvent != null && !xmlEvent.isStartElement()) {
                 xmlEventReader.nextEvent();
                 xmlEvent = xmlEventReader.peek();
             }
@@ -781,7 +728,7 @@ public class StaxParserUtil {
     public static XMLEvent peekNextTag(XMLEventReader xmlEventReader) throws ParsingException {
         try {
             XMLEvent xmlEvent = xmlEventReader.peek();
-            while (xmlEvent != null && ! xmlEvent.isStartElement() && ! xmlEvent.isEndElement()) {
+            while (xmlEvent != null && !xmlEvent.isStartElement() && !xmlEvent.isEndElement()) {
                 xmlEventReader.nextEvent();
                 xmlEvent = xmlEventReader.peek();
             }
@@ -795,9 +742,7 @@ public class StaxParserUtil {
      * Peek the next {@code EndElement}
      *
      * @param xmlEventReader
-     *
      * @return
-     *
      * @throws ParsingException
      */
     public static EndElement peekNextEndElement(XMLEventReader xmlEventReader) throws ParsingException {
@@ -819,9 +764,7 @@ public class StaxParserUtil {
      * Given a string, trim it
      *
      * @param str
-     *
      * @return
-     *
      * @throws {@code IllegalArgumentException} if the passed str is null
      */
     public static final String trim(String str) {
@@ -835,7 +778,6 @@ public class StaxParserUtil {
      *
      * @param startElement
      * @param tag
-     *
      * @throws RuntimeException mismatch
      */
     @Deprecated
@@ -850,11 +792,10 @@ public class StaxParserUtil {
      *
      * @param startElement
      * @param tag
-     *
      * @throws RuntimeException mismatch
      */
     public static void validate(StartElement startElement, QName tag) {
-        if (! Objects.equals(startElement.getName(), tag)) {
+        if (!Objects.equals(startElement.getName(), tag)) {
             String foundElementTag = StaxParserUtil.getElementName(startElement);
             throw logger.parserExpectedTag(tag.getLocalPart(), foundElementTag);
         }
@@ -865,7 +806,6 @@ public class StaxParserUtil {
      *
      * @param endElement
      * @param tag
-     *
      * @throws RuntimeException mismatch
      */
     public static void validate(EndElement endElement, String tag) {
@@ -873,13 +813,6 @@ public class StaxParserUtil {
         if (!tag.equals(elementTag))
             throw new RuntimeException(logger.parserExpectedEndTag("</" + tag + ">.  Found </" + elementTag + ">"));
     }
-
-    private static final ThreadLocal<XMLInputFactory> XML_INPUT_FACTORY = new ThreadLocal<XMLInputFactory>() {
-        @Override
-        protected XMLInputFactory initialValue() {
-            return getXMLInputFactory();
-        }
-    };
 
     private static XMLInputFactory getXMLInputFactory() {
         boolean tccl_jaxp = SystemPropertiesUtil.getSystemProperty(GeneralConstants.TCCL_JAXP, "false")

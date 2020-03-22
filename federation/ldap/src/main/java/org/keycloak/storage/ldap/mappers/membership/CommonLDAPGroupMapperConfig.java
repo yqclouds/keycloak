@@ -58,22 +58,22 @@ public abstract class CommonLDAPGroupMapperConfig {
 
     public String getMembershipLdapAttribute() {
         String membershipAttrName = mapperModel.getConfig().getFirst(MEMBERSHIP_LDAP_ATTRIBUTE);
-        return membershipAttrName!=null ? membershipAttrName : LDAPConstants.MEMBER;
+        return membershipAttrName != null ? membershipAttrName : LDAPConstants.MEMBER;
     }
 
     public MembershipType getMembershipTypeLdapAttribute() {
         String membershipType = mapperModel.getConfig().getFirst(MEMBERSHIP_ATTRIBUTE_TYPE);
-        return (membershipType!=null && !membershipType.isEmpty()) ? Enum.valueOf(MembershipType.class, membershipType) : MembershipType.DN;
+        return (membershipType != null && !membershipType.isEmpty()) ? Enum.valueOf(MembershipType.class, membershipType) : MembershipType.DN;
     }
 
     public String getMembershipUserLdapAttribute(LDAPConfig ldapConfig) {
         String membershipUserAttrName = mapperModel.getConfig().getFirst(MEMBERSHIP_USER_LDAP_ATTRIBUTE);
-        return membershipUserAttrName!=null ? membershipUserAttrName : ldapConfig.getUsernameLdapAttribute();
+        return membershipUserAttrName != null ? membershipUserAttrName : ldapConfig.getUsernameLdapAttribute();
     }
 
     public String getMemberOfLdapAttribute() {
         String memberOfLdapAttrName = mapperModel.getConfig().getFirst(MEMBEROF_LDAP_ATTRIBUTE);
-        return memberOfLdapAttrName!=null ? memberOfLdapAttrName : LDAPConstants.MEMBER_OF;
+        return memberOfLdapAttrName != null ? memberOfLdapAttrName : LDAPConstants.MEMBER_OF;
     }
 
     public LDAPGroupMapperMode getMode() {

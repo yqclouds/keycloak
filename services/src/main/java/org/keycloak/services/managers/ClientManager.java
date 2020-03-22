@@ -23,13 +23,7 @@ import org.keycloak.authentication.ClientAuthenticator;
 import org.keycloak.authentication.ClientAuthenticatorFactory;
 import org.keycloak.common.constants.ServiceAccountConstants;
 import org.keycloak.common.util.Time;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserManager;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionProvider;
+import org.keycloak.models.*;
 import org.keycloak.models.session.UserSessionPersisterProvider;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.protocol.LoginProtocol;
@@ -42,12 +36,7 @@ import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.sessions.AuthenticationSessionProvider;
 
 import java.net.URI;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -207,6 +196,83 @@ public class ClientManager {
         }
     }
 
+    public InstallationAdapterConfig toInstallationRepresentation(RealmModel realmModel, ClientModel clientModel, URI baseUri) {
+        InstallationAdapterConfig rep = new InstallationAdapterConfig();
+        rep.setAuthServerUrl(baseUri.toString());
+        rep.setRealm(realmModel.getName());
+        rep.setSslRequired(realmModel.getSslRequired().name().toLowerCase());
+
+        if (clientModel.isPublicClient() && !clientModel.isBearerOnly()) rep.setPublicClient(true);
+        if (clientModel.isBearerOnly()) rep.setBearerOnly(true);
+        if (clientModel.getRoles().size() > 0) rep.setUseResourceRoleMappings(true);
+
+        rep.setResource(clientModel.getClientId());
+
+        if (showClientCredentialsAdapterConfig(clientModel)) {
+            Map<String, Object> adapterConfig = getClientCredentialsAdapterConfig(clientModel);
+            rep.setCredentials(adapterConfig);
+        }
+
+        return rep;
+    }
+
+    public String toJBossSubsystemConfig(RealmModel realmModel, ClientModel clientModel, URI baseUri) {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("<secure-deployment name=\"WAR MODULE NAME.war\">\n");
+        buffer.append("    <realm>").append(realmModel.getName()).append("</realm>\n");
+        buffer.append("    <auth-server-url>").append(baseUri.toString()).append("</auth-server-url>\n");
+        if (clientModel.isBearerOnly()) {
+            buffer.append("    <bearer-only>true</bearer-only>\n");
+
+        } else if (clientModel.isPublicClient()) {
+            buffer.append("    <public-client>true</public-client>\n");
+        }
+        buffer.append("    <ssl-required>").append(realmModel.getSslRequired().name()).append("</ssl-required>\n");
+        buffer.append("    <resource>").append(clientModel.getClientId()).append("</resource>\n");
+        String cred = clientModel.getSecret();
+        if (showClientCredentialsAdapterConfig(clientModel)) {
+            Map<String, Object> adapterConfig = getClientCredentialsAdapterConfig(clientModel);
+            for (Map.Entry<String, Object> entry : adapterConfig.entrySet()) {
+                buffer.append("    <credential name=\"" + entry.getKey() + "\">");
+
+                Object value = entry.getValue();
+                if (value instanceof Map) {
+                    buffer.append("\n");
+                    Map<String, Object> asMap = (Map<String, Object>) value;
+                    for (Map.Entry<String, Object> credEntry : asMap.entrySet()) {
+                        buffer.append("        <" + credEntry.getKey() + ">" + credEntry.getValue().toString() + "</" + credEntry.getKey() + ">\n");
+                    }
+                    buffer.append("    </credential>\n");
+                } else {
+                    buffer.append(value.toString()).append("</credential>\n");
+                }
+            }
+        }
+        if (clientModel.getRoles().size() > 0) {
+            buffer.append("    <use-resource-role-mappings>true</use-resource-role-mappings>\n");
+        }
+        buffer.append("</secure-deployment>\n");
+        return buffer.toString();
+    }
+
+    private boolean showClientCredentialsAdapterConfig(ClientModel client) {
+        if (client.isPublicClient()) {
+            return false;
+        }
+
+        if (client.isBearerOnly() && client.getNodeReRegistrationTimeout() <= 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private Map<String, Object> getClientCredentialsAdapterConfig(ClientModel client) {
+        String clientAuthenticator = client.getClientAuthenticatorType();
+        ClientAuthenticatorFactory authenticator = (ClientAuthenticatorFactory) realmManager.getSession().getKeycloakSessionFactory().getProviderFactory(ClientAuthenticator.class, clientAuthenticator);
+        return authenticator.getAdapterConfiguration(client);
+    }
+
     @JsonPropertyOrder({"realm", "realm-public-key", "bearer-only", "auth-server-url", "ssl-required",
             "resource", "public-client", "verify-token-audience", "credentials",
             "use-resource-role-mappings"})
@@ -281,84 +347,6 @@ public class ClientManager {
         public void setEnforcerConfig(PolicyEnforcerConfig enforcerConfig) {
             this.enforcerConfig = enforcerConfig;
         }
-    }
-
-
-    public InstallationAdapterConfig toInstallationRepresentation(RealmModel realmModel, ClientModel clientModel, URI baseUri) {
-        InstallationAdapterConfig rep = new InstallationAdapterConfig();
-        rep.setAuthServerUrl(baseUri.toString());
-        rep.setRealm(realmModel.getName());
-        rep.setSslRequired(realmModel.getSslRequired().name().toLowerCase());
-
-        if (clientModel.isPublicClient() && !clientModel.isBearerOnly()) rep.setPublicClient(true);
-        if (clientModel.isBearerOnly()) rep.setBearerOnly(true);
-        if (clientModel.getRoles().size() > 0) rep.setUseResourceRoleMappings(true);
-
-        rep.setResource(clientModel.getClientId());
-
-        if (showClientCredentialsAdapterConfig(clientModel)) {
-            Map<String, Object> adapterConfig = getClientCredentialsAdapterConfig(clientModel);
-            rep.setCredentials(adapterConfig);
-        }
-
-        return rep;
-    }
-
-    public String toJBossSubsystemConfig(RealmModel realmModel, ClientModel clientModel, URI baseUri) {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<secure-deployment name=\"WAR MODULE NAME.war\">\n");
-        buffer.append("    <realm>").append(realmModel.getName()).append("</realm>\n");
-        buffer.append("    <auth-server-url>").append(baseUri.toString()).append("</auth-server-url>\n");
-        if (clientModel.isBearerOnly()){
-            buffer.append("    <bearer-only>true</bearer-only>\n");
-
-        } else if (clientModel.isPublicClient()) {
-            buffer.append("    <public-client>true</public-client>\n");
-        }
-        buffer.append("    <ssl-required>").append(realmModel.getSslRequired().name()).append("</ssl-required>\n");
-        buffer.append("    <resource>").append(clientModel.getClientId()).append("</resource>\n");
-        String cred = clientModel.getSecret();
-        if (showClientCredentialsAdapterConfig(clientModel)) {
-            Map<String, Object> adapterConfig = getClientCredentialsAdapterConfig(clientModel);
-            for (Map.Entry<String, Object> entry : adapterConfig.entrySet()) {
-                buffer.append("    <credential name=\"" + entry.getKey() + "\">");
-
-                Object value = entry.getValue();
-                if (value instanceof Map) {
-                    buffer.append("\n");
-                    Map<String, Object> asMap = (Map<String, Object>) value;
-                    for (Map.Entry<String, Object> credEntry : asMap.entrySet()) {
-                        buffer.append("        <" + credEntry.getKey() + ">" + credEntry.getValue().toString() + "</" + credEntry.getKey() + ">\n");
-                    }
-                    buffer.append("    </credential>\n");
-                } else {
-                    buffer.append(value.toString()).append("</credential>\n");
-                }
-            }
-        }
-        if (clientModel.getRoles().size() > 0) {
-            buffer.append("    <use-resource-role-mappings>true</use-resource-role-mappings>\n");
-        }
-        buffer.append("</secure-deployment>\n");
-        return buffer.toString();
-    }
-
-    private boolean showClientCredentialsAdapterConfig(ClientModel client) {
-        if (client.isPublicClient()) {
-            return false;
-        }
-
-        if (client.isBearerOnly() && client.getNodeReRegistrationTimeout() <= 0) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private Map<String, Object> getClientCredentialsAdapterConfig(ClientModel client) {
-        String clientAuthenticator = client.getClientAuthenticatorType();
-        ClientAuthenticatorFactory authenticator = (ClientAuthenticatorFactory) realmManager.getSession().getKeycloakSessionFactory().getProviderFactory(ClientAuthenticator.class, clientAuthenticator);
-        return authenticator.getAdapterConfiguration(client);
     }
 
 }

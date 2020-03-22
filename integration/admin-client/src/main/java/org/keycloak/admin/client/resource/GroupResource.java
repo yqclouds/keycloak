@@ -23,14 +23,7 @@ import org.keycloak.representations.idm.ManagementPermissionReference;
 import org.keycloak.representations.idm.ManagementPermissionRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -110,7 +103,7 @@ public interface GroupResource {
      * <p/>
      * Returns a list of all users in group.
      *
-     * @return  Returns a max size of 100 users
+     * @return Returns a max size of 100 users
      */
     @GET
     @NoCache
@@ -139,11 +132,11 @@ public interface GroupResource {
      * <p/>
      * Returns a list of users, filtered according to query parameters
      *
-     * @param firstResult Pagination offset
-     * @param maxResults  Pagination size
+     * @param firstResult         Pagination offset
+     * @param maxResults          Pagination size
      * @param briefRepresentation Only return basic information (only guaranteed to return id, username, created, first and last name,
-     *      email, enabled state, email verification state, federation link, and access.
-     *      Note that it means that namely user attributes, required actions, and not before are not returned.)
+     *                            email, enabled state, email verification state, federation link, and access.
+     *                            Note that it means that namely user attributes, required actions, and not before are not returned.)
      * @return
      */
     @GET

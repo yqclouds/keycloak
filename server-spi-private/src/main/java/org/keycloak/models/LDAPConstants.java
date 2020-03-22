@@ -33,7 +33,7 @@ public class LDAPConstants {
     public static final String VENDOR_ACTIVE_DIRECTORY = "ad";
     public static final String VENDOR_OTHER = "other";
     public static final String VENDOR_TIVOLI = "tivoli";
-    public static final String VENDOR_NOVELL_EDIRECTORY="edirectory" ;
+    public static final String VENDOR_NOVELL_EDIRECTORY = "edirectory";
 
     public static final String USERNAME_LDAP_ATTRIBUTE = "usernameLDAPAttribute";
     public static final String RDN_LDAP_ATTRIBUTE = "rdnLDAPAttribute";
@@ -146,7 +146,6 @@ public class LDAPConstants {
 
         return ENTRY_UUID;
     }
-
 
 
     public static void setTruststoreSpiIfNeeded(String useTruststoreSpi, String url, Map<String, Object> env) {

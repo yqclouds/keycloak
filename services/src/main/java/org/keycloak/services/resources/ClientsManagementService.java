@@ -19,7 +19,6 @@ package org.keycloak.services.resources;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.BadRequestException;
 import org.jboss.resteasy.spi.HttpRequest;
-import javax.ws.rs.NotAuthorizedException;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.util.Time;
@@ -35,16 +34,8 @@ import org.keycloak.protocol.oidc.utils.AuthorizeClientUtil;
 import org.keycloak.representations.idm.OAuth2ErrorRepresentation;
 import org.keycloak.services.ForbiddenException;
 
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
 import javax.ws.rs.ext.Providers;
 
 /**
@@ -53,25 +44,18 @@ import javax.ws.rs.ext.Providers;
 public class ClientsManagementService {
 
     private static final Logger logger = Logger.getLogger(ClientsManagementService.class);
-
-    private RealmModel realm;
-
-    private EventBuilder event;
-
-    @Context
-    private HttpRequest request;
-
     @Context
     protected HttpHeaders headers;
-
-    @Context
-    private ClientConnection clientConnection;
-
     @Context
     protected Providers providers;
-
     @Context
     protected KeycloakSession session;
+    private RealmModel realm;
+    private EventBuilder event;
+    @Context
+    private HttpRequest request;
+    @Context
+    private ClientConnection clientConnection;
 
     public ClientsManagementService(RealmModel realm, EventBuilder event) {
         this.realm = realm;
@@ -183,14 +167,13 @@ public class ClientsManagementService {
     protected String getClientClusterHost(MultivaluedMap<String, String> formData) {
         String clientClusterHost = formData.getFirst(AdapterConstants.CLIENT_CLUSTER_HOST);
         if (clientClusterHost == null || clientClusterHost.length() == 0) {
-            OAuth2ErrorRepresentation errorRep = new OAuth2ErrorRepresentation( OAuthErrorException.INVALID_REQUEST, "Client cluster host not specified");
+            OAuth2ErrorRepresentation errorRep = new OAuth2ErrorRepresentation(OAuthErrorException.INVALID_REQUEST, "Client cluster host not specified");
             event.error(Errors.INVALID_CODE);
             throw new BadRequestException("Cluster host not specified", javax.ws.rs.core.Response.status(javax.ws.rs.core.Response.Status.BAD_REQUEST).entity(errorRep).type(MediaType.APPLICATION_JSON_TYPE).build());
         }
 
         return clientClusterHost;
     }
-
 
 
     private boolean checkSsl() {

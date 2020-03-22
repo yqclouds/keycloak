@@ -16,16 +16,11 @@
  */
 package org.keycloak.saml.processing.core.saml.v2.writers;
 
-import org.keycloak.dom.saml.v2.assertion.AttributeType;
-import org.keycloak.dom.saml.v2.assertion.BaseIDAbstractType;
-import org.keycloak.dom.saml.v2.assertion.EncryptedElementType;
-import org.keycloak.dom.saml.v2.assertion.KeyInfoConfirmationDataType;
-import org.keycloak.dom.saml.v2.assertion.NameIDType;
-import org.keycloak.dom.saml.v2.assertion.SubjectConfirmationDataType;
-import org.keycloak.dom.saml.v2.assertion.SubjectConfirmationType;
-import org.keycloak.dom.saml.v2.assertion.SubjectType;
+import org.keycloak.dom.saml.v2.assertion.*;
 import org.keycloak.dom.saml.v2.metadata.LocalizedNameType;
+import org.keycloak.dom.saml.v2.protocol.ExtensionsType;
 import org.keycloak.dom.xmlsec.w3.xmldsig.KeyInfoType;
+import org.keycloak.saml.SamlProtocolExtensionsAwareBuilder;
 import org.keycloak.saml.common.PicketLinkLogger;
 import org.keycloak.saml.common.PicketLinkLoggerFactory;
 import org.keycloak.saml.common.constants.JBossSAMLConstants;
@@ -34,6 +29,7 @@ import org.keycloak.saml.common.exceptions.ProcessingException;
 import org.keycloak.saml.common.util.StaxUtil;
 import org.keycloak.saml.common.util.StringUtil;
 import org.keycloak.saml.processing.core.saml.v2.util.StaxWriterUtil;
+import org.w3c.dom.Node;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
@@ -43,12 +39,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.keycloak.dom.saml.v2.protocol.ExtensionsType;
-import org.keycloak.saml.SamlProtocolExtensionsAwareBuilder;
 
 import static org.keycloak.saml.common.constants.JBossSAMLURIConstants.ASSERTION_NSURI;
 import static org.keycloak.saml.common.constants.JBossSAMLURIConstants.PROTOCOL_NSURI;
-import org.w3c.dom.Node;
 
 /**
  * Base Class for the Stax writers for SAML
@@ -76,7 +69,6 @@ public class BaseWriter {
      * @param nameIDType
      * @param tag
      * @param out
-     *
      * @throws org.keycloak.saml.common.exceptions.ProcessingException
      */
     public void write(NameIDType nameIDType, QName tag) throws ProcessingException {
@@ -118,7 +110,6 @@ public class BaseWriter {
      *
      * @param attributeType
      * @param out
-     *
      * @throws ProcessingException
      */
     public void write(AttributeType attributeType) throws ProcessingException {
@@ -171,7 +162,7 @@ public class BaseWriter {
                     if (attributeValue instanceof String) {
                         writeStringAttributeValue((String) attributeValue);
                     } else if (attributeValue instanceof NameIDType) {
-                    	writeNameIDTypeAttributeValue((NameIDType) attributeValue);
+                        writeNameIDTypeAttributeValue((NameIDType) attributeValue);
                     } else
                         throw logger.writerUnsupportedAttributeValueError(attributeValue.getClass().getName());
                 } else {
@@ -183,7 +174,7 @@ public class BaseWriter {
 
     public void writeNameIDTypeAttributeValue(NameIDType attributeValue) throws ProcessingException {
         StaxUtil.writeStartElement(writer, ASSERTION_PREFIX, JBossSAMLConstants.ATTRIBUTE_VALUE.get(), ASSERTION_NSURI.get());
-    	write((NameIDType)attributeValue, new QName(ASSERTION_NSURI.get(), JBossSAMLConstants.NAMEID.get(), ASSERTION_PREFIX));
+        write((NameIDType) attributeValue, new QName(ASSERTION_NSURI.get(), JBossSAMLConstants.NAMEID.get(), ASSERTION_PREFIX));
         StaxUtil.writeEndElement(writer);
     }
 
@@ -216,7 +207,6 @@ public class BaseWriter {
      *
      * @param subject
      * @param out
-     *
      * @throws ProcessingException
      */
     public void write(SubjectType subject) throws ProcessingException {

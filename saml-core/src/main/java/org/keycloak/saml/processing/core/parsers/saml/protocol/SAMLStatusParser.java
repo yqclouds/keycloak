@@ -29,7 +29,6 @@ import java.util.List;
 
 /**
  * Base Class for all Response Type parsing for SAML2
- *
  */
 public class SAMLStatusParser extends AbstractStaxSamlProtocolParser<StatusType> {
 
@@ -63,7 +62,7 @@ public class SAMLStatusParser extends AbstractStaxSamlProtocolParser<StatusType>
 
             case STATUS_DETAIL:
                 List<Element> elements = STATUS_DETAIL_PARSER.parse(xmlEventReader);
-                
+
                 StatusDetailType statusDetailType = new StatusDetailType();
                 for (Element e : elements) {
                     statusDetailType.addStatusDetail(e);

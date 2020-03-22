@@ -18,7 +18,6 @@
 package org.keycloak.representations.idm;
 
 /**
- *
  * @author Stan Silvert ssilvert@redhat.com (C) 2016 Red Hat Inc.
  */
 public class AuthDetailsRepresentation {

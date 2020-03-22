@@ -64,18 +64,12 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class BlacklistPasswordPolicyProviderFactory implements PasswordPolicyProviderFactory {
 
-    private static final Logger LOG = Logger.getLogger(BlacklistPasswordPolicyProviderFactory.class);
-
     public static final String ID = "passwordBlacklist";
-
     public static final String SYSTEM_PROPERTY = "keycloak.password.blacklists.path";
-
     public static final String BLACKLISTS_PATH_PROPERTY = "blacklistsPath";
-
     public static final String JBOSS_SERVER_DATA_DIR = "jboss.server.data.dir";
-
     public static final String PASSWORD_BLACKLISTS_FOLDER = "password-blacklists/";
-
+    private static final Logger LOG = Logger.getLogger(BlacklistPasswordPolicyProviderFactory.class);
     private ConcurrentMap<String, FileBasedPasswordBlacklist> blacklistRegistry = new ConcurrentHashMap<>();
 
     private volatile Path blacklistsBasePath;
@@ -222,6 +216,58 @@ public class BlacklistPasswordPolicyProviderFactory implements PasswordPolicyPro
             }
         }
 
+        private static BufferedReader newReader(Path path) throws IOException {
+            return new BufferedReader(Files.newBufferedReader(path), BUFFER_SIZE_IN_BYTES);
+        }
+
+        /**
+         * Discovers password blacklists location.
+         * <p>
+         * <ol>
+         * <li>
+         * system property {@code keycloak.password.blacklists.path} if present
+         * </li>
+         * <li>SPI config property {@code blacklistsPath}</li>
+         * </ol>
+         * and fallback to the {@code /data/password-blacklists} folder of the currently
+         * running wildfly instance.
+         *
+         * @param config
+         * @return the detected blacklist path
+         * @throws IllegalStateException if no blacklist folder could be detected
+         */
+        private static Path detectBlacklistsBasePath(Config.Scope config) {
+
+            String pathFromSysProperty = System.getProperty(SYSTEM_PROPERTY);
+            if (pathFromSysProperty != null) {
+                return ensureExists(Paths.get(pathFromSysProperty));
+            }
+
+            String pathFromSpiConfig = config.get(BLACKLISTS_PATH_PROPERTY);
+            if (pathFromSpiConfig != null) {
+                return ensureExists(Paths.get(pathFromSpiConfig));
+            }
+
+            String pathFromJbossDataPath = System.getProperty(JBOSS_SERVER_DATA_DIR) + "/" + PASSWORD_BLACKLISTS_FOLDER;
+            if (!Files.exists(Paths.get(pathFromJbossDataPath))) {
+                if (!Paths.get(pathFromJbossDataPath).toFile().mkdirs()) {
+                    LOG.errorf("Could not create folder for password blacklists: %s", pathFromJbossDataPath);
+                }
+            }
+            return ensureExists(Paths.get(pathFromJbossDataPath));
+        }
+
+        private static Path ensureExists(Path path) {
+
+            Objects.requireNonNull(path, "path");
+
+            if (Files.exists(path)) {
+                return path;
+            }
+
+            throw new IllegalStateException("Password blacklists location does not exist: " + path);
+        }
+
         public String getName() {
             return name;
         }
@@ -276,65 +322,13 @@ public class BlacklistPasswordPolicyProviderFactory implements PasswordPolicyPro
          */
         private long getPasswordCount() throws IOException {
 
-      /*
-       * TODO find a more efficient way to determine the password count,
-       * e.g. require a header-line in the password-blacklist file
-       */
+            /*
+             * TODO find a more efficient way to determine the password count,
+             * e.g. require a header-line in the password-blacklist file
+             */
             try (BufferedReader br = newReader(path)) {
                 return br.lines().count();
             }
-        }
-
-        private static BufferedReader newReader(Path path) throws IOException {
-            return new BufferedReader(Files.newBufferedReader(path), BUFFER_SIZE_IN_BYTES);
-        }
-
-        /**
-         * Discovers password blacklists location.
-         * <p>
-         * <ol>
-         * <li>
-         * system property {@code keycloak.password.blacklists.path} if present
-         * </li>
-         * <li>SPI config property {@code blacklistsPath}</li>
-         * </ol>
-         * and fallback to the {@code /data/password-blacklists} folder of the currently
-         * running wildfly instance.
-         *
-         * @param config
-         * @return the detected blacklist path
-         * @throws IllegalStateException if no blacklist folder could be detected
-         */
-        private static Path detectBlacklistsBasePath(Config.Scope config) {
-
-            String pathFromSysProperty = System.getProperty(SYSTEM_PROPERTY);
-            if (pathFromSysProperty != null) {
-                return ensureExists(Paths.get(pathFromSysProperty));
-            }
-
-            String pathFromSpiConfig = config.get(BLACKLISTS_PATH_PROPERTY);
-            if (pathFromSpiConfig != null) {
-                return ensureExists(Paths.get(pathFromSpiConfig));
-            }
-
-            String pathFromJbossDataPath = System.getProperty(JBOSS_SERVER_DATA_DIR) + "/" + PASSWORD_BLACKLISTS_FOLDER;
-            if (!Files.exists(Paths.get(pathFromJbossDataPath))) {
-                if (!Paths.get(pathFromJbossDataPath).toFile().mkdirs()) {
-                    LOG.errorf("Could not create folder for password blacklists: %s", pathFromJbossDataPath);
-                }
-            }
-            return ensureExists(Paths.get(pathFromJbossDataPath));
-        }
-
-        private static Path ensureExists(Path path) {
-
-            Objects.requireNonNull(path, "path");
-
-            if (Files.exists(path)) {
-                return path;
-            }
-
-            throw new IllegalStateException("Password blacklists location does not exist: " + path);
         }
     }
 }

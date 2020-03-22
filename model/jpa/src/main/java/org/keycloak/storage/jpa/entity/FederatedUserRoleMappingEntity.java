@@ -19,13 +19,7 @@ package org.keycloak.storage.jpa.entity;
 
 import org.keycloak.storage.jpa.KeyUtils;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 
 /**
@@ -33,16 +27,16 @@ import java.io.Serializable;
  * @version $Revision: 1 $
  */
 @NamedQueries({
-        @NamedQuery(name="feduserHasRole", query="select m from FederatedUserRoleMappingEntity m where m.userId = :userId and m.roleId = :roleId"),
-        @NamedQuery(name="feduserRoleMappings", query="select m from FederatedUserRoleMappingEntity m where m.userId = :userId"),
-        @NamedQuery(name="deleteFederatedUserRoleMappingsByRealm", query="delete from  FederatedUserRoleMappingEntity mapping where mapping.realmId=:realmId"),
-        @NamedQuery(name="deleteFederatedUserRoleMappingsByStorageProvider", query="delete from FederatedUserRoleMappingEntity e where e.storageProviderId=:storageProviderId"),
-        @NamedQuery(name="deleteFederatedUserRoleMappingsByRealmAndLink", query="delete from  FederatedUserRoleMappingEntity mapping where mapping.userId IN (select u.id from UserEntity u where u.realmId=:realmId and u.federationLink=:link)"),
-        @NamedQuery(name="deleteFederatedUserRoleMappingsByRole", query="delete from FederatedUserRoleMappingEntity m where m.roleId = :roleId"),
-        @NamedQuery(name="deleteFederatedUserRoleMappingsByUser", query="delete from FederatedUserRoleMappingEntity m where m.userId = :userId and m.realmId = :realmId"),
+        @NamedQuery(name = "feduserHasRole", query = "select m from FederatedUserRoleMappingEntity m where m.userId = :userId and m.roleId = :roleId"),
+        @NamedQuery(name = "feduserRoleMappings", query = "select m from FederatedUserRoleMappingEntity m where m.userId = :userId"),
+        @NamedQuery(name = "deleteFederatedUserRoleMappingsByRealm", query = "delete from  FederatedUserRoleMappingEntity mapping where mapping.realmId=:realmId"),
+        @NamedQuery(name = "deleteFederatedUserRoleMappingsByStorageProvider", query = "delete from FederatedUserRoleMappingEntity e where e.storageProviderId=:storageProviderId"),
+        @NamedQuery(name = "deleteFederatedUserRoleMappingsByRealmAndLink", query = "delete from  FederatedUserRoleMappingEntity mapping where mapping.userId IN (select u.id from UserEntity u where u.realmId=:realmId and u.federationLink=:link)"),
+        @NamedQuery(name = "deleteFederatedUserRoleMappingsByRole", query = "delete from FederatedUserRoleMappingEntity m where m.roleId = :roleId"),
+        @NamedQuery(name = "deleteFederatedUserRoleMappingsByUser", query = "delete from FederatedUserRoleMappingEntity m where m.userId = :userId and m.realmId = :realmId"),
 
 })
-@Table(name="FED_USER_ROLE_MAPPING")
+@Table(name = "FED_USER_ROLE_MAPPING")
 @Entity
 @IdClass(FederatedUserRoleMappingEntity.Key.class)
 public class FederatedUserRoleMappingEntity {
@@ -94,6 +88,26 @@ public class FederatedUserRoleMappingEntity {
         this.roleId = roleId;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        if (!(o instanceof FederatedUserRoleMappingEntity)) return false;
+
+        FederatedUserRoleMappingEntity key = (FederatedUserRoleMappingEntity) o;
+
+        if (!roleId.equals(key.roleId)) return false;
+        if (!userId.equals(key.userId)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = userId.hashCode();
+        result = 31 * result + roleId.hashCode();
+        return result;
+    }
 
     public static class Key implements Serializable {
 
@@ -136,27 +150,6 @@ public class FederatedUserRoleMappingEntity {
             result = 31 * result + roleId.hashCode();
             return result;
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null) return false;
-        if (!(o instanceof FederatedUserRoleMappingEntity)) return false;
-
-        FederatedUserRoleMappingEntity key = (FederatedUserRoleMappingEntity) o;
-
-        if (!roleId.equals(key.roleId)) return false;
-        if (!userId.equals(key.userId)) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = userId.hashCode();
-        result = 31 * result + roleId.hashCode();
-        return result;
     }
 
 }

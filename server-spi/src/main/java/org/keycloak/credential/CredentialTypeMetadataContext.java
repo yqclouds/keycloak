@@ -31,15 +31,15 @@ public class CredentialTypeMetadataContext {
     private CredentialTypeMetadataContext() {
     }
 
+    public static CredentialTypeMetadataContext.CredentialTypeMetadataContextBuilder builder() {
+        return new CredentialTypeMetadataContext.CredentialTypeMetadataContextBuilder();
+    }
+
     /**
      * @return user, for which we create metadata. Could be null
      */
     public UserModel getUser() {
         return user;
-    }
-
-    public static CredentialTypeMetadataContext.CredentialTypeMetadataContextBuilder builder() {
-        return new CredentialTypeMetadataContext.CredentialTypeMetadataContextBuilder();
     }
 
     // BUILDER

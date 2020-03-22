@@ -21,20 +21,11 @@ import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.authenticators.broker.AbstractIdpAuthenticator;
 import org.keycloak.authentication.authenticators.broker.util.SerializedBrokeredIdentityContext;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.FederatedIdentityModel;
-import org.keycloak.models.IdentityProviderModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
 import javax.ws.rs.core.MultivaluedMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -46,7 +37,7 @@ public class LoginFormsUtil {
 
     // Display just those identityProviders on login screen, which are already linked to "known" established user
     public static List<IdentityProviderModel> filterIdentityProvidersByUser(List<IdentityProviderModel> providers, KeycloakSession session, RealmModel realm,
-                                                                      Map<String, Object> attributes, MultivaluedMap<String, String> formData) {
+                                                                            Map<String, Object> attributes, MultivaluedMap<String, String> formData) {
 
         Boolean usernameEditDisabled = (Boolean) attributes.get(LoginFormsProvider.USERNAME_EDIT_DISABLED);
         if (usernameEditDisabled != null && usernameEditDisabled) {

@@ -77,7 +77,7 @@ public class ResponseType extends StatusResponseType {
     /**
      * Replace the first assertion with the passed assertion
      *
-     * @param id id of the old assertion
+     * @param id           id of the old assertion
      * @param newAssertion
      */
     public void replaceAssertion(String id, RTChoiceType newAssertion) {

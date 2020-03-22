@@ -32,9 +32,9 @@ public class HttpPostRedirect {
     /**
      * Generate an HTML page that does a browser redirect via a POST.  The HTML document uses Javascript to automatically
      * submit a FORM post when loaded.
-     *
+     * <p>
      * This is similar to what the SAML Post Binding does.
-     *
+     * <p>
      * Here's an example
      *
      * <pre>
@@ -55,11 +55,10 @@ public class HttpPostRedirect {
      * </HTML>
      * }
      * </pre>
-
      *
-     * @param title may be null.  Just the title of the HTML document
+     * @param title     may be null.  Just the title of the HTML document
      * @param actionUrl URL to redirect to
-     * @param params must be encoded so that they can be placed in an HTML form hidden INPUT field value
+     * @param params    must be encoded so that they can be placed in an HTML form hidden INPUT field value
      * @return
      */
     public String buildHtml(String title, String actionUrl, Map<String, String> params) {

@@ -68,6 +68,7 @@ public class AuthenticatorUtil {
         }
         return execution.isEnabled();
     }
+
     public static boolean isRequired(RealmModel realm, String flowId, String authProviderId) {
         AuthenticationExecutionModel execution = findExecutionByAuthenticator(realm, flowId, authProviderId);
         if (execution == null) {

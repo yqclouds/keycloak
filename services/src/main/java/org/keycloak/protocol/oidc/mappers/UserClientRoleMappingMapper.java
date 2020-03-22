@@ -78,6 +78,29 @@ public class UserClientRoleMappingMapper extends AbstractUserRoleMappingMapper {
         }
     }
 
+    public static ProtocolMapperModel create(String clientId, String clientRolePrefix,
+                                             String name,
+                                             String tokenClaimName,
+                                             boolean accessToken, boolean idToken) {
+        return create(clientId, clientRolePrefix, name, tokenClaimName, accessToken, idToken, false);
+
+    }
+
+    public static ProtocolMapperModel create(String clientId, String clientRolePrefix,
+                                             String name,
+                                             String tokenClaimName,
+                                             boolean accessToken, boolean idToken, boolean multiValued) {
+        ProtocolMapperModel mapper = OIDCAttributeMapperHelper.createClaimMapper(name, "foo",
+                tokenClaimName, "String",
+                accessToken, idToken, false,
+                PROVIDER_ID);
+
+        mapper.getConfig().put(ProtocolMapperUtils.MULTIVALUED, String.valueOf(multiValued));
+        mapper.getConfig().put(ProtocolMapperUtils.USER_MODEL_CLIENT_ROLE_MAPPING_CLIENT_ID, clientId);
+        mapper.getConfig().put(ProtocolMapperUtils.USER_MODEL_CLIENT_ROLE_MAPPING_ROLE_PREFIX, clientRolePrefix);
+        return mapper;
+    }
+
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {
         return CONFIG_PROPERTIES;
@@ -129,30 +152,6 @@ public class UserClientRoleMappingMapper extends AbstractUserRoleMappingMapper {
                 AbstractUserRoleMappingMapper.setClaim(token, mappingModel, access.getRoles(), currClientId, rolePrefix);
             }
         }
-    }
-
-
-    public static ProtocolMapperModel create(String clientId, String clientRolePrefix,
-                                             String name,
-                                             String tokenClaimName,
-                                             boolean accessToken, boolean idToken) {
-        return create(clientId, clientRolePrefix, name, tokenClaimName, accessToken, idToken, false);
-
-    }
-
-    public static ProtocolMapperModel create(String clientId, String clientRolePrefix,
-                                             String name,
-                                             String tokenClaimName,
-                                             boolean accessToken, boolean idToken, boolean multiValued) {
-        ProtocolMapperModel mapper = OIDCAttributeMapperHelper.createClaimMapper(name, "foo",
-                tokenClaimName, "String",
-                accessToken, idToken, false,
-                PROVIDER_ID);
-
-        mapper.getConfig().put(ProtocolMapperUtils.MULTIVALUED, String.valueOf(multiValued));
-        mapper.getConfig().put(ProtocolMapperUtils.USER_MODEL_CLIENT_ROLE_MAPPING_CLIENT_ID, clientId);
-        mapper.getConfig().put(ProtocolMapperUtils.USER_MODEL_CLIENT_ROLE_MAPPING_ROLE_PREFIX, clientRolePrefix);
-        return mapper;
     }
 
 }

@@ -30,14 +30,15 @@ public interface VaultStringSecret extends AutoCloseable {
 
     /**
      * Returns the secret represented as a {@link String}.
+     *
      * @return If the secret was successfully resolved by vault, returns an {@link Optional} containing the value returned
-     *         by the vault as a {@link String} (a valid value can be {@code null}), or an empty {@link Optional}
+     * by the vault as a {@link String} (a valid value can be {@code null}), or an empty {@link Optional}
      */
     Optional<String> get();
 
     /**
-     *  Destroys the secret in memory by e.g. overwriting it with random garbage or release references in case of immutable
-     *  secrets.
+     * Destroys the secret in memory by e.g. overwriting it with random garbage or release references in case of immutable
+     * secrets.
      */
     @Override
     void close();

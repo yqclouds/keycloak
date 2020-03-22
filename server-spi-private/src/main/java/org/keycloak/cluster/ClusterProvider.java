@@ -76,18 +76,24 @@ public interface ClusterProvider extends Provider {
      * @param taskKey
      * @param event
      * @param ignoreSender if true, then sender node itself won't receive the notification
-     * @param dcNotify Specify which DCs to notify. See {@link DCNotify} enum values for more info
+     * @param dcNotify     Specify which DCs to notify. See {@link DCNotify} enum values for more info
      */
     void notify(String taskKey, ClusterEvent event, boolean ignoreSender, DCNotify dcNotify);
 
     enum DCNotify {
-        /** Send message to all cluster nodes in all DCs **/
+        /**
+         * Send message to all cluster nodes in all DCs
+         **/
         ALL_DCS,
 
-        /** Send message to all cluster nodes on THIS datacenter only **/
+        /**
+         * Send message to all cluster nodes on THIS datacenter only
+         **/
         LOCAL_DC_ONLY,
 
-        /** Send message to all cluster nodes in all datacenters, but NOT to this datacenter. Option "ignoreSender" of method {@link #notify} will be ignored as sender is ignored anyway due it is in this datacenter **/
+        /**
+         * Send message to all cluster nodes in all datacenters, but NOT to this datacenter. Option "ignoreSender" of method {@link #notify} will be ignored as sender is ignored anyway due it is in this datacenter
+         **/
         ALL_BUT_LOCAL_DC
     }
 

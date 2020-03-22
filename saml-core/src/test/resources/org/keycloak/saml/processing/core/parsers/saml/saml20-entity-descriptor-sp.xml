@@ -1,6 +1,6 @@
-<EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
-                  xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
+<EntityDescriptor xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
                   xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+                  xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
                   entityID="https://ServiceProvider.com/SAML">
     <ds:Signature>...</ds:Signature>
     <SPSSODescriptor AuthnRequestsSigned="true"
@@ -17,12 +17,12 @@
             <EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#rsa-1_5"/>
         </KeyDescriptor>
         <SingleLogoutService
-            Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP"
-            Location="https://ServiceProvider.com/SAML/SLO/SOAP"/>
+                Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP"
+                Location="https://ServiceProvider.com/SAML/SLO/SOAP"/>
         <SingleLogoutService
-            Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
-            Location="https://ServiceProvider.com/SAML/SLO/Browser"
-            ResponseLocation="https://ServiceProvider.com/SAML/SLO/Response"/>
+                Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+                Location="https://ServiceProvider.com/SAML/SLO/Browser"
+                ResponseLocation="https://ServiceProvider.com/SAML/SLO/Response"/>
         <NameIDFormat>
             urn:oasis:names:tc:SAML:2.0:nameid-format:transient
         </NameIDFormat>
@@ -35,9 +35,9 @@
         <AttributeConsumingService index="0">
             <ServiceName xml:lang="en">Academic Journals R US</ServiceName>
             <RequestedAttribute
-                NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"
-                Name="urn:oid:1.3.6.1.4.1.5923.1.1.1.7"
-                FriendlyName="eduPersonEntitlement">
+                    NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"
+                    Name="urn:oid:1.3.6.1.4.1.5923.1.1.1.7"
+                    FriendlyName="eduPersonEntitlement">
                 <saml:AttributeValue>
                     https://ServiceProvider.com/entitlements/123456789
                 </saml:AttributeValue>
@@ -46,11 +46,13 @@
     </SPSSODescriptor>
     <Organization>
         <OrganizationName xml:lang="en">Academic Journals R
-            US</OrganizationName>
+            US
+        </OrganizationName>
         <OrganizationDisplayName xml:lang="en">
             Academic Journals R US, a Division of Dirk Corp.
         </OrganizationDisplayName>
         <OrganizationURL
-            xml:lang="en">https://ServiceProvider.com</OrganizationURL>
+                xml:lang="en">https://ServiceProvider.com
+        </OrganizationURL>
     </Organization>
 </EntityDescriptor>

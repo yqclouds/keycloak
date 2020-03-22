@@ -42,7 +42,6 @@ import org.keycloak.wellknown.WellKnownProvider;
 
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
-
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -63,9 +62,9 @@ public class OIDCWellKnownProvider implements WellKnownProvider {
     public static final List<String> DEFAULT_CLIENT_AUTH_SIGNING_ALG_VALUES_SUPPORTED = list(Algorithm.RS256.toString());
 
     // The exact list depends on protocolMappers
-    public static final List<String> DEFAULT_CLAIMS_SUPPORTED= list("aud", "sub", "iss", IDToken.AUTH_TIME, IDToken.NAME, IDToken.GIVEN_NAME, IDToken.FAMILY_NAME, IDToken.PREFERRED_USERNAME, IDToken.EMAIL, IDToken.ACR);
+    public static final List<String> DEFAULT_CLAIMS_SUPPORTED = list("aud", "sub", "iss", IDToken.AUTH_TIME, IDToken.NAME, IDToken.GIVEN_NAME, IDToken.FAMILY_NAME, IDToken.PREFERRED_USERNAME, IDToken.EMAIL, IDToken.ACR);
 
-    public static final List<String> DEFAULT_CLAIM_TYPES_SUPPORTED= list("normal");
+    public static final List<String> DEFAULT_CLAIM_TYPES_SUPPORTED = list("normal");
 
     // KEYCLOAK-7451 OAuth Authorization Server Metadata for Proof Key for Code Exchange
     public static final List<String> DEFAULT_CODE_CHALLENGE_METHODS_SUPPORTED = list(OAuth2Constants.PKCE_METHOD_PLAIN, OAuth2Constants.PKCE_METHOD_S256);
@@ -74,6 +73,10 @@ public class OIDCWellKnownProvider implements WellKnownProvider {
 
     public OIDCWellKnownProvider(KeycloakSession session) {
         this.session = session;
+    }
+
+    private static List<String> list(String... values) {
+        return Arrays.asList(values);
     }
 
     @Override
@@ -139,10 +142,6 @@ public class OIDCWellKnownProvider implements WellKnownProvider {
 
     @Override
     public void close() {
-    }
-
-    private static List<String> list(String... values) {
-        return Arrays.asList(values);
     }
 
     private List<String> getClientAuthMethodsSupported() {

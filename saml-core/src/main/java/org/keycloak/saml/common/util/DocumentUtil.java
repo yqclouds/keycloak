@@ -22,11 +22,7 @@ import org.keycloak.saml.common.constants.GeneralConstants;
 import org.keycloak.saml.common.exceptions.ConfigurationException;
 import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.exceptions.ProcessingException;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -34,21 +30,10 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.io.*;
 import java.util.Objects;
 
 /**
@@ -59,19 +44,28 @@ import java.util.Objects;
  */
 public class DocumentUtil {
 
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
-
-    private static DocumentBuilderFactory documentBuilderFactory;
-
     public static final String feature_external_general_entities = "http://xml.org/sax/features/external-general-entities";
     public static final String feature_external_parameter_entities = "http://xml.org/sax/features/external-parameter-entities";
     public static final String feature_disallow_doctype_decl = "http://apache.org/xml/features/disallow-doctype-decl";
+    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static DocumentBuilderFactory documentBuilderFactory;
+    private static final ThreadLocal<DocumentBuilder> XML_DOCUMENT_BUILDER = new ThreadLocal<DocumentBuilder>() {
+        @Override
+        protected DocumentBuilder initialValue() {
+            DocumentBuilderFactory factory = getDocumentBuilderFactory();
+            try {
+                return factory.newDocumentBuilder();
+            } catch (ParserConfigurationException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+    };
 
     /**
      * Create a new document
      *
      * @return
-     *
      * @throws ParserConfigurationException
      */
     public static Document createDocument() throws ConfigurationException {
@@ -88,9 +82,7 @@ public class DocumentUtil {
      * Create a document with the root element of the form &lt;someElement xmlns="customNamespace"
      *
      * @param baseNamespace
-     *
      * @return
-     *
      * @throws org.keycloak.saml.common.exceptions.ProcessingException
      */
     public static Document createDocumentWithBaseNamespace(String baseNamespace, String localPart) throws ProcessingException {
@@ -108,9 +100,7 @@ public class DocumentUtil {
      * Parse a document from the string
      *
      * @param docString
-     *
      * @return
-     *
      * @throws IOException
      * @throws SAXException
      * @throws ParserConfigurationException
@@ -123,9 +113,7 @@ public class DocumentUtil {
      * Parse a document from a reader
      *
      * @param reader
-     *
      * @return
-     *
      * @throws ParsingException
      * @throws ParserConfigurationException
      * @throws IOException
@@ -148,9 +136,7 @@ public class DocumentUtil {
      * Get Document from a file
      *
      * @param file
-     *
      * @return
-     *
      * @throws ParserConfigurationException
      * @throws IOException
      * @throws SAXException
@@ -172,9 +158,7 @@ public class DocumentUtil {
      * Get Document from an inputstream
      *
      * @param is
-     *
      * @return
-     *
      * @throws ParserConfigurationException
      * @throws IOException
      * @throws SAXException
@@ -196,9 +180,7 @@ public class DocumentUtil {
      * Marshall a document into a String
      *
      * @param signedDoc
-     *
      * @return
-     *
      * @throws TransformerFactoryConfigurationError
      * @throws TransformerException
      */
@@ -224,7 +206,6 @@ public class DocumentUtil {
      *
      * @param doc
      * @param elementQName
-     *
      * @return
      */
     public static Element getElement(Document doc, QName elementQName) {
@@ -246,7 +227,6 @@ public class DocumentUtil {
      *
      * @param doc
      * @param elementQName
-     *
      * @return
      */
     public static Element getChildElement(Element doc, QName elementQName) {
@@ -265,9 +245,7 @@ public class DocumentUtil {
      * Stream a DOM Node as an input stream
      *
      * @param node
-     *
      * @return
-     *
      * @throws TransformerFactoryConfigurationError
      * @throws TransformerException
      */
@@ -279,9 +257,7 @@ public class DocumentUtil {
      * Get the {@link Source} as an {@link InputStream}
      *
      * @param source
-     *
      * @return
-     *
      * @throws ConfigurationException
      * @throws ProcessingException
      */
@@ -303,7 +279,6 @@ public class DocumentUtil {
      * Get a {@link Source} given a {@link Document}
      *
      * @param doc
-     *
      * @return
      */
     public static Source getXMLSource(Document doc) {
@@ -314,7 +289,6 @@ public class DocumentUtil {
      * Get the document as a string while ignoring any exceptions
      *
      * @param doc
-     *
      * @return
      */
     public static String asString(Document doc) {
@@ -340,19 +314,6 @@ public class DocumentUtil {
             visit(childNode, level + 1);
         }
     }
-
-    private static final ThreadLocal<DocumentBuilder> XML_DOCUMENT_BUILDER = new ThreadLocal<DocumentBuilder>() {
-        @Override
-        protected DocumentBuilder initialValue() {
-            DocumentBuilderFactory factory = getDocumentBuilderFactory();
-            try {
-                return factory.newDocumentBuilder();
-            } catch (ParserConfigurationException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-
-    };
 
     public static DocumentBuilder getDocumentBuilder() throws ParserConfigurationException {
         DocumentBuilder res = XML_DOCUMENT_BUILDER.get();
@@ -400,26 +361,25 @@ public class DocumentUtil {
     }
 
     /**
-     * Get a (direct) child {@linkplain Element} from the parent {@linkplain Element}. 
+     * Get a (direct) child {@linkplain Element} from the parent {@linkplain Element}.
      *
-     * @param parent parent element
+     * @param parent          parent element
      * @param targetNamespace namespace URI
      * @param targetLocalName local name
-     * @return a child element matching the target namespace and localname, where {@linkplain Element#getParentNode()} is the parent input parameter
      * @return
      */
-    
+
     public static Element getDirectChildElement(Element parent, String targetNamespace, String targetLocalName) {
         Node child = parent.getFirstChild();
-        
-        while(child != null) {
-            if(child instanceof Element) {
-                Element childElement = (Element)child;
-                
+
+        while (child != null) {
+            if (child instanceof Element) {
+                Element childElement = (Element) child;
+
                 String ns = childElement.getNamespaceURI();
                 String localName = childElement.getLocalName();
-                
-                if(Objects.equals(targetNamespace, ns) && Objects.equals(targetLocalName, localName)) {
+
+                if (Objects.equals(targetNamespace, ns) && Objects.equals(targetLocalName, localName)) {
                     return childElement;
                 }
             }

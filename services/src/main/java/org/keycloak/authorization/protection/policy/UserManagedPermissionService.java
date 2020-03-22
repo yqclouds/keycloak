@@ -17,22 +17,6 @@
  */
 package org.keycloak.authorization.protection.policy;
 
-import java.io.IOException;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.OAuthErrorException;
@@ -50,6 +34,13 @@ import org.keycloak.representations.idm.authorization.UmaPermissionRepresentatio
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.util.JsonSerialization;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.io.IOException;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:federico@martel-innovate.com">Federico M. Facca</a>
@@ -128,7 +119,7 @@ public class UserManagedPermissionService {
                          @QueryParam("scope") String scope,
                          @QueryParam("first") Integer firstResult,
                          @QueryParam("max") Integer maxResult) {
-        return  delegate.findAll(null, name, "uma", resource, scope, true, identity.getId(), null, firstResult, maxResult);
+        return delegate.findAll(null, name, "uma", resource, scope, true, identity.getId(), null, firstResult, maxResult);
     }
 
     private Policy getPolicy(@PathParam("policyId") String policyId) {

@@ -34,11 +34,11 @@ public class ErrorRepresentation {
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
     }
-    
+
     public Object[] getParams() {
         return this.params;
     }
-    
+
     public void setParams(Object[] params) {
         this.params = params;
     }

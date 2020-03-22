@@ -29,6 +29,16 @@ public class SynchronizationResult {
     private int removed;
     private int failed;
 
+    public static SynchronizationResult empty() {
+        return new SynchronizationResult();
+    }
+
+    public static SynchronizationResult ignored() {
+        SynchronizationResult result = new SynchronizationResult();
+        result.setIgnored(true);
+        return result;
+    }
+
     public boolean isIgnored() {
         return ignored;
     }
@@ -110,15 +120,5 @@ public class SynchronizationResult {
     @Override
     public String toString() {
         return String.format("UserFederationSyncResult [ %s ]", getStatus());
-    }
-
-    public static SynchronizationResult empty() {
-        return new SynchronizationResult();
-    }
-
-    public static SynchronizationResult ignored() {
-        SynchronizationResult result = new SynchronizationResult();
-        result.setIgnored(true);
-        return result;
     }
 }

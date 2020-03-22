@@ -37,7 +37,6 @@ public abstract class AbstractLastSessionRefreshStoreFactory {
     public static final int DEFAULT_MAX_COUNT = 100;
 
 
-
     protected void setupPeriodicTimer(KeycloakSession kcSession, AbstractLastSessionRefreshStore store, long timerIntervalMs, String eventKey) {
         TimerProvider timer = kcSession.getProvider(TimerProvider.class);
         timer.scheduleTask((KeycloakSession keycloakSession) -> {

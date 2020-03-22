@@ -31,7 +31,7 @@ public enum LDAPGroupMapperMode {
      * Read-only LDAP mode. Role mappings are retrieved from LDAP for particular user just at the time when he is imported and then
      * they are saved to local keycloak DB. Then all role mappings are always retrieved from keycloak DB, never from LDAP.
      * Creating or deleting of role mapping is propagated only to DB.
-     *
+     * <p>
      * This is read-only mode LDAP mode and it's good for performance, but when user is put to some role directly in LDAP, it
      * won't be seen by Keycloak
      */

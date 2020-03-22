@@ -39,8 +39,13 @@ public class NetworkUtils {
         can_bind_to_mcast_addr = checkForLinux() || checkForSolaris() || checkForHp();
     }
 
+    // No instantiation
+    private NetworkUtils() {
+
+    }
+
     public static String formatPossibleIpv6Address(String address) {
-        if(address == null) {
+        if (address == null) {
             return null;
         }
         String ipv6Address;
@@ -105,7 +110,7 @@ public class NetworkUtils {
         }
 
         StringBuilder result = new StringBuilder();
-        char [][] groups = new char[IPV6_LEN][MAX_GROUP_LENGTH];
+        char[][] groups = new char[IPV6_LEN][MAX_GROUP_LENGTH];
         int groupCounter = 0;
         int charInGroupCounter = 0;
 
@@ -270,6 +275,7 @@ public class NetworkUtils {
         }
         return result;
     }
+
     /**
      * Check if it is an IPv4 in IPv6 format.
      * e.g. 0:0:0:0:0:FFFF:127.0.0.1
@@ -288,18 +294,18 @@ public class NetworkUtils {
      * @param inet
      * @return
      */
-    public static String formatAddress(InetAddress inet){
-        if(inet == null){
+    public static String formatAddress(InetAddress inet) {
+        if (inet == null) {
             throw new NullPointerException();
         }
-        if(inet instanceof Inet4Address){
+        if (inet instanceof Inet4Address) {
             return inet.getHostAddress();
-        } else if (inet instanceof Inet6Address){
+        } else if (inet instanceof Inet6Address) {
             byte[] byteRepresentation = inet.getAddress();
             int[] hexRepresentation = new int[IPV6_LEN];
 
-            for(int i=0;i < hexRepresentation.length;i++){
-                hexRepresentation[i] = ( byteRepresentation[2*i] & 0xFF) << 8 | ( byteRepresentation[2*i+1] & 0xFF );
+            for (int i = 0; i < hexRepresentation.length; i++) {
+                hexRepresentation[i] = (byteRepresentation[2 * i] & 0xFF) << 8 | (byteRepresentation[2 * i + 1] & 0xFF);
             }
             compactLongestZeroSequence(hexRepresentation);
             return formatAddress6(hexRepresentation);
@@ -316,17 +322,18 @@ public class NetworkUtils {
      *      <li>[0fe:1::20]:8080</li>
      *      <li>[::1]:8080</li>
      * </ul>
+     *
      * @param inet
      * @return
      */
-    public static String formatAddress(InetSocketAddress inet){
-        if(inet == null){
+    public static String formatAddress(InetSocketAddress inet) {
+        if (inet == null) {
             throw new NullPointerException();
         }
         StringBuilder result = new StringBuilder();
-        if(inet.isUnresolved()){
+        if (inet.isUnresolved()) {
             result.append(inet.getHostName());
-        }else{
+        } else {
             result.append(formatPossibleIpv6Address(formatAddress(inet.getAddress())));
         }
         result.append(":").append(inet.getPort());
@@ -335,23 +342,24 @@ public class NetworkUtils {
 
     /**
      * Converts IPV6 int[] representation into valid IPV6 string literal. Sequence of '-1' values are converted into '::'.
+     *
      * @param hexRepresentation
      * @return
      */
-    private static String formatAddress6(int[] hexRepresentation){
-        if(hexRepresentation == null){
+    private static String formatAddress6(int[] hexRepresentation) {
+        if (hexRepresentation == null) {
             throw new NullPointerException();
         }
-        if(hexRepresentation.length != IPV6_LEN){
+        if (hexRepresentation.length != IPV6_LEN) {
             throw new IllegalArgumentException();
         }
         StringBuilder stringBuilder = new StringBuilder();
         boolean inCompressedSection = false;
-        for(int i = 0;i<hexRepresentation.length;i++){
-            if(hexRepresentation[i] == -1){
-                if(!inCompressedSection){
+        for (int i = 0; i < hexRepresentation.length; i++) {
+            if (hexRepresentation[i] == -1) {
+                if (!inCompressedSection) {
                     inCompressedSection = true;
-                    if(i == 0){
+                    if (i == 0) {
                         stringBuilder.append("::");
                     } else {
                         stringBuilder.append(':');
@@ -360,7 +368,7 @@ public class NetworkUtils {
             } else {
                 inCompressedSection = false;
                 stringBuilder.append(Integer.toHexString(hexRepresentation[i]));
-                if(i+1<hexRepresentation.length){
+                if (i + 1 < hexRepresentation.length) {
                     stringBuilder.append(":");
                 }
             }
@@ -372,27 +380,27 @@ public class NetworkUtils {
         return can_bind_to_mcast_addr;
     }
 
-    private static void compactLongestZeroSequence(int[] hexRepresentatoin){
+    private static void compactLongestZeroSequence(int[] hexRepresentatoin) {
         int bestRunStart = -1;
         int bestRunLen = -1;
         boolean inRun = false;
         int runStart = -1;
-        for(int i=0;i<hexRepresentatoin.length;i++){
+        for (int i = 0; i < hexRepresentatoin.length; i++) {
 
-            if(hexRepresentatoin[i] == 0){
-                if(!inRun){
+            if (hexRepresentatoin[i] == 0) {
+                if (!inRun) {
                     runStart = i;
                     inRun = true;
                 }
             } else {
-                if(inRun){
+                if (inRun) {
                     inRun = false;
                     int runLen = i - runStart;
-                    if(bestRunLen < 0){
+                    if (bestRunLen < 0) {
                         bestRunStart = runStart;
                         bestRunLen = runLen;
                     } else {
-                        if(runLen > bestRunLen){
+                        if (runLen > bestRunLen) {
                             bestRunStart = runStart;
                             bestRunLen = runLen;
                         }
@@ -400,7 +408,7 @@ public class NetworkUtils {
                 }
             }
         }
-        if(bestRunStart >=0){
+        if (bestRunStart >= 0) {
             Arrays.fill(hexRepresentatoin, bestRunStart, bestRunStart + bestRunLen, -1);
         }
     }
@@ -432,10 +440,5 @@ public class NetworkUtils {
         } catch (Throwable t) {
             return false;
         }
-    }
-
-    // No instantiation
-    private NetworkUtils() {
-
     }
 }

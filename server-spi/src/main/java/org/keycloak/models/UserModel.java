@@ -39,23 +39,17 @@ public interface UserModel extends RoleMapperModel {
     String GROUPS = "keycloak.session.realm.users.query.groups";
     String SEARCH = "keycloak.session.realm.users.query.search";
 
-    interface UserRemovedEvent extends ProviderEvent {
-        RealmModel getRealm();
-        UserModel getUser();
-        KeycloakSession getKeycloakSession();
-    }
-
     String getId();
 
     String getUsername();
 
     void setUsername(String username);
-    
+
     /**
      * Get timestamp of user creation. May be null for old users created before this feature introduction.
      */
     Long getCreatedTimestamp();
-    
+
     void setCreatedTimestamp(Long timestamp);
 
     boolean isEnabled();
@@ -131,7 +125,7 @@ public interface UserModel extends RoleMapperModel {
     default long getGroupsCount() {
         return getGroupsCountByNameContaining(null);
     }
-    
+
     default long getGroupsCountByNameContaining(String search) {
         if (search == null) {
             return getGroups().size();
@@ -142,16 +136,28 @@ public interface UserModel extends RoleMapperModel {
     }
 
     void joinGroup(GroupModel group);
+
     void leaveGroup(GroupModel group);
+
     boolean isMemberOf(GroupModel group);
 
     String getFederationLink();
+
     void setFederationLink(String link);
 
     String getServiceAccountClientLink();
+
     void setServiceAccountClientLink(String clientInternalId);
 
     enum RequiredAction {
         VERIFY_EMAIL, UPDATE_PROFILE, CONFIGURE_TOTP, UPDATE_PASSWORD, TERMS_AND_CONDITIONS
+    }
+
+    interface UserRemovedEvent extends ProviderEvent {
+        RealmModel getRealm();
+
+        UserModel getUser();
+
+        KeycloakSession getKeycloakSession();
     }
 }

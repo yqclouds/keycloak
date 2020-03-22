@@ -33,7 +33,7 @@ public interface Realm {
      * For instance, if user is member of <code>/Group A/Group B</code> and this method is checking if user is a member of <code>/Group A</code>
      * the result will be <code>true</code> given that the user is a member of a child group of <code>/Group A</code>.
      *
-     * @param id the user id. It can be the id, username or email
+     * @param id    the user id. It can be the id, username or email
      * @param group the group path. For instance, /Group A/Group B.
      * @return true if user is a member of the given group. Otherwise returns false.
      */
@@ -44,8 +44,8 @@ public interface Realm {
     /**
      * Checks whether or not a user with the given <code>id</code> is a member of the given <code>group</code>.
      *
-     * @param id the user id. It can be the id, username or email
-     * @param group the group path. For instance, /Group A/Group B.
+     * @param id          the user id. It can be the id, username or email
+     * @param group       the group path. For instance, /Group A/Group B.
      * @param checkParent if true, this method returns true even though the user is not directly associated with the given group but a member of any child of the group.
      * @return true if user is a member of the given group. Otherwise returns false.
      */
@@ -54,7 +54,7 @@ public interface Realm {
     /**
      * Checks whether or not a user with the given <code>id</code> is granted with the given realm <code>role</code>.
      *
-     * @param id the user id. It can be the id, username or email
+     * @param id   the user id. It can be the id, username or email
      * @param role the role name
      * @return true if the user is granted with the role. Otherwise, false.
      */
@@ -63,9 +63,9 @@ public interface Realm {
     /**
      * Checks whether or not a user with the given <code>id</code> is granted with the given client <code>role</code>.
      *
-     * @param id the user id. It can be the id, username or email
+     * @param id       the user id. It can be the id, username or email
      * @param clientId the client id
-     * @param role the role name
+     * @param role     the role name
      * @return true if the user is granted with the role. Otherwise, false.
      */
     boolean isUserInClientRole(String id, String clientId, String role);
@@ -74,7 +74,7 @@ public interface Realm {
      * Checks whether or not a <code>group</code> is granted with the given realm <code>role</code>.
      *
      * @param group the group path. For instance, /Group A/Group B.
-     * @param role the role name
+     * @param role  the role name
      * @return true if the group is granted with the role. Otherwise, false.
      */
     boolean isGroupInRole(String group, String role);
@@ -90,7 +90,7 @@ public interface Realm {
     /**
      * Returns all client roles granted for a user with the given <code>id</code>.
      *
-     * @param id the user id. It can be the id, username or email
+     * @param id       the user id. It can be the id, username or email
      * @param clientId the client id
      * @return the roles granted to the user
      */

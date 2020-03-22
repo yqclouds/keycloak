@@ -27,33 +27,13 @@ import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.common.util.Time;
 import org.keycloak.common.util.UriUtils;
-import org.keycloak.credential.CredentialModel;
-import org.keycloak.credential.CredentialProvider;
-import org.keycloak.credential.OTPCredentialProvider;
-import org.keycloak.events.Details;
-import org.keycloak.events.Errors;
-import org.keycloak.events.Event;
-import org.keycloak.events.EventBuilder;
-import org.keycloak.events.EventStoreProvider;
-import org.keycloak.events.EventType;
+import org.keycloak.events.*;
 import org.keycloak.forms.account.AccountPages;
 import org.keycloak.forms.account.AccountProvider;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.locale.LocaleSelectorProvider;
 import org.keycloak.locale.LocaleUpdaterProvider;
-import org.keycloak.models.AccountRoles;
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.FederatedIdentityModel;
-import org.keycloak.models.IdentityProviderModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ModelDuplicateException;
-import org.keycloak.models.ModelException;
-import org.keycloak.models.OTPPolicy;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserCredentialModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.models.credential.OTPCredentialModel;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.models.utils.CredentialValidation;
@@ -63,11 +43,7 @@ import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.ForbiddenException;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.Urls;
-import org.keycloak.services.managers.AppAuthManager;
-import org.keycloak.services.managers.Auth;
-import org.keycloak.services.managers.AuthenticationManager;
-import org.keycloak.services.managers.AuthenticationSessionManager;
-import org.keycloak.services.managers.UserSessionManager;
+import org.keycloak.services.managers.*;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.AbstractSecuredLocalService;
 import org.keycloak.services.resources.AttributeFormDataProcessor;
@@ -79,43 +55,24 @@ import org.keycloak.storage.ReadOnlyException;
 import org.keycloak.util.JsonSerialization;
 import org.keycloak.utils.CredentialHelper;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class AccountFormService extends AbstractSecuredLocalService {
 
+    // Used when some other context (ie. IdentityBrokerService) wants to forward error to account management and display it here
+    public static final String ACCOUNT_MGMT_FORWARDED_ERROR_NOTE = "ACCOUNT_MGMT_FORWARDED_ERROR";
     private static final Logger logger = Logger.getLogger(AccountFormService.class);
-
     private static Set<String> VALID_PATHS = new HashSet<>();
 
     static {
@@ -127,9 +84,6 @@ public class AccountFormService extends AbstractSecuredLocalService {
         }
     }
 
-    // Used when some other context (ie. IdentityBrokerService) wants to forward error to account management and display it here
-    public static final String ACCOUNT_MGMT_FORWARDED_ERROR_NOTE = "ACCOUNT_MGMT_FORWARDED_ERROR";
-
     private final AppAuthManager authManager;
     private EventBuilder event;
     private AccountProvider account;
@@ -139,6 +93,31 @@ public class AccountFormService extends AbstractSecuredLocalService {
         super(realm, client);
         this.event = event;
         this.authManager = new AppAuthManager();
+    }
+
+    public static UriBuilder accountServiceBaseUrl(UriInfo uriInfo) {
+        UriBuilder base = uriInfo.getBaseUriBuilder().path(RealmsResource.class).path(RealmsResource.class, "getAccountService");
+        return base;
+    }
+
+    public static UriBuilder accountServiceApplicationPage(UriInfo uriInfo) {
+        return accountServiceBaseUrl(uriInfo).path(AccountFormService.class, "applicationsPage");
+    }
+
+    public static UriBuilder totpUrl(UriBuilder base) {
+        return RealmsResource.accountUrl(base).path(AccountFormService.class, "totpPage");
+    }
+
+    public static UriBuilder passwordUrl(UriBuilder base) {
+        return RealmsResource.accountUrl(base).path(AccountFormService.class, "passwordPage");
+    }
+
+    public static UriBuilder loginRedirectUrl(UriBuilder base) {
+        return RealmsResource.accountUrl(base).path(AccountFormService.class, "loginRedirect");
+    }
+
+    public static boolean isPasswordSet(KeycloakSession session, RealmModel realm, UserModel user) {
+        return session.userCredentialManager().isConfiguredFor(realm, user, PasswordCredentialModel.TYPE);
     }
 
     public void init() {
@@ -181,15 +160,6 @@ public class AccountFormService extends AbstractSecuredLocalService {
         }
 
         account.setFeatures(realm.isIdentityFederationEnabled(), eventStore != null && realm.isEventsEnabled(), true, true);
-    }
-
-    public static UriBuilder accountServiceBaseUrl(UriInfo uriInfo) {
-        UriBuilder base = uriInfo.getBaseUriBuilder().path(RealmsResource.class).path(RealmsResource.class, "getAccountService");
-        return base;
-    }
-
-    public static UriBuilder accountServiceApplicationPage(UriInfo uriInfo) {
-        return accountServiceBaseUrl(uriInfo).path(AccountFormService.class, "applicationsPage");
     }
 
     protected Set<String> getValidPaths() {
@@ -256,19 +226,11 @@ public class AccountFormService extends AbstractSecuredLocalService {
         return forwardToPage(null, AccountPages.ACCOUNT);
     }
 
-    public static UriBuilder totpUrl(UriBuilder base) {
-        return RealmsResource.accountUrl(base).path(AccountFormService.class, "totpPage");
-    }
-
     @Path("totp")
     @GET
     public Response totpPage() {
         account.setAttribute("mode", session.getContext().getUri().getQueryParameters().getFirst("mode"));
         return forwardToPage("totp", AccountPages.TOTP);
-    }
-
-    public static UriBuilder passwordUrl(UriBuilder base) {
-        return RealmsResource.accountUrl(base).path(AccountFormService.class, "passwordPage");
     }
 
     @Path("password")
@@ -748,7 +710,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
         }
 
         auth.require(AccountRoles.MANAGE_ACCOUNT);
-        
+
         csrfCheck(formData);
 
         AuthorizationProvider authorization = session.getProvider(AuthorizationProvider.class);
@@ -870,7 +832,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
         }
 
         auth.require(AccountRoles.MANAGE_ACCOUNT);
-        
+
         csrfCheck(formData);
 
         AuthorizationProvider authorization = session.getProvider(AuthorizationProvider.class);
@@ -991,17 +953,9 @@ public class AccountFormService extends AbstractSecuredLocalService {
         return forwardToPage("authorization", AccountPages.RESOURCES);
     }
 
-    public static UriBuilder loginRedirectUrl(UriBuilder base) {
-        return RealmsResource.accountUrl(base).path(AccountFormService.class, "loginRedirect");
-    }
-
     @Override
     protected URI getBaseRedirectUri() {
         return Urls.accountBase(session.getContext().getUri().getBaseUri()).path("/").build(realm.getName());
-    }
-
-    public static boolean isPasswordSet(KeycloakSession session, RealmModel realm, UserModel user) {
-        return session.userCredentialManager().isConfiguredFor(realm, user, PasswordCredentialModel.TYPE);
     }
 
     private String[] getReferrer() {
@@ -1039,22 +993,6 @@ public class AccountFormService extends AbstractSecuredLocalService {
 
         return null;
     }
-
-    private enum AccountSocialAction {
-        ADD,
-        REMOVE;
-
-        public static AccountSocialAction getAction(String action) {
-            if ("add".equalsIgnoreCase(action)) {
-                return ADD;
-            } else if ("remove".equalsIgnoreCase(action)) {
-                return REMOVE;
-            } else {
-                return null;
-            }
-        }
-    }
-
 
     private void updateUsername(String username, UserModel user, KeycloakSession session) {
         RealmModel realm = session.getContext().getRealm();
@@ -1106,6 +1044,21 @@ public class AccountFormService extends AbstractSecuredLocalService {
         String formStateChecker = formData.getFirst("stateChecker");
         if (formStateChecker == null || !formStateChecker.equals(this.stateChecker)) {
             throw new ForbiddenException();
+        }
+    }
+
+    private enum AccountSocialAction {
+        ADD,
+        REMOVE;
+
+        public static AccountSocialAction getAction(String action) {
+            if ("add".equalsIgnoreCase(action)) {
+                return ADD;
+            } else if ("remove".equalsIgnoreCase(action)) {
+                return REMOVE;
+            } else {
+                return null;
+            }
         }
     }
 

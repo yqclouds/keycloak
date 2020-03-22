@@ -15,10 +15,7 @@
  * limitations under the License.
  */
 
- package org.keycloak.storage.ldap.mappers;
-
-import java.util.ArrayList;
-import java.util.List;
+package org.keycloak.storage.ldap.mappers;
 
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
@@ -28,12 +25,15 @@ import org.keycloak.provider.ConfigurationValidationHelper;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.storage.ldap.LDAPStorageProvider;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class HardcodedAttributeMapperFactory extends AbstractLDAPStorageMapperFactory {
 
-   public static final String PROVIDER_ID = "hardcoded-attribute-mapper";
+    public static final String PROVIDER_ID = "hardcoded-attribute-mapper";
 
 
- protected static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    protected static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
 
     static {
         ProviderConfigProperty attrName = createConfigProperty(HardcodedAttributeMapper.USER_MODEL_ATTRIBUTE, "User Model Attribute Name",
@@ -68,7 +68,7 @@ public class HardcodedAttributeMapperFactory extends AbstractLDAPStorageMapperFa
         ConfigurationValidationHelper.check(config)
                 .checkRequired(HardcodedAttributeMapper.USER_MODEL_ATTRIBUTE, "Attribute Name")
                 .checkRequired(HardcodedAttributeMapper.ATTRIBUTE_VALUE, "Attribute Value");
-        if(config.get(HardcodedAttributeMapper.USER_MODEL_ATTRIBUTE).equalsIgnoreCase("username") || config.get(HardcodedAttributeMapper.USER_MODEL_ATTRIBUTE).equalsIgnoreCase("email")){
+        if (config.get(HardcodedAttributeMapper.USER_MODEL_ATTRIBUTE).equalsIgnoreCase("username") || config.get(HardcodedAttributeMapper.USER_MODEL_ATTRIBUTE).equalsIgnoreCase("email")) {
             throw new ComponentValidationException("Attribute Name cannot be set to username or email");
         }
     }
@@ -79,5 +79,4 @@ public class HardcodedAttributeMapperFactory extends AbstractLDAPStorageMapperFa
     }
 
 
-   
 }

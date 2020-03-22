@@ -68,10 +68,10 @@ public class UsernameTemplateMapper extends AbstractClaimMapper {
             StackoverflowIdentityProviderFactory.PROVIDER_ID,
             TwitterIdentityProviderFactory.PROVIDER_ID
     };
-
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
-
     public static final String TEMPLATE = "template";
+    public static final String PROVIDER_ID = "oidc-username-idp-mapper";
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    static Pattern substitution = Pattern.compile("\\$\\{([^}]+)\\}");
 
     static {
         ProviderConfigProperty property;
@@ -83,8 +83,6 @@ public class UsernameTemplateMapper extends AbstractClaimMapper {
         property.setDefaultValue("${ALIAS}.${CLAIM.preferred_username}");
         configProperties.add(property);
     }
-
-    public static final String PROVIDER_ID = "oidc-username-idp-mapper";
 
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {
@@ -114,8 +112,6 @@ public class UsernameTemplateMapper extends AbstractClaimMapper {
     @Override
     public void updateBrokeredUser(KeycloakSession session, RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
     }
-
-    static Pattern substitution = Pattern.compile("\\$\\{([^}]+)\\}");
 
     @Override
     public void preprocessFederatedIdentity(KeycloakSession session, RealmModel realm, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {

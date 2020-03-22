@@ -16,14 +16,14 @@
  */
 package org.keycloak.connections.jpa.updater.liquibase.custom;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import liquibase.exception.CustomChangeException;
 import liquibase.statement.core.InsertStatement;
 import liquibase.structure.core.Table;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
 /**
- *
  * @author hmlnarik
  */
 public class JpaUpdate4_0_0_DefaultClientScopes extends CustomKeycloakTask {
@@ -34,7 +34,7 @@ public class JpaUpdate4_0_0_DefaultClientScopes extends CustomKeycloakTask {
         String clientScopeClientTableName = database.correctObjectName("CLIENT_SCOPE_CLIENT", Table.class);
 
         try (PreparedStatement statement = jdbcConnection.prepareStatement("SELECT ID, CLIENT_TEMPLATE_ID FROM " + clientTableName);
-          ResultSet rs = statement.executeQuery()) {
+             ResultSet rs = statement.executeQuery()) {
             while (rs.next()) {
                 String clientId = rs.getString(1);
                 String clientTemplateId = rs.getString(2);
@@ -47,10 +47,10 @@ public class JpaUpdate4_0_0_DefaultClientScopes extends CustomKeycloakTask {
                 }
 
                 statements.add(
-                  new InsertStatement(null, null, clientScopeClientTableName)
-                    .addColumnValue("CLIENT_ID", clientId.trim())
-                    .addColumnValue("SCOPE_ID", clientTemplateId.trim())
-                    .addColumnValue("DEFAULT_SCOPE", Boolean.TRUE)
+                        new InsertStatement(null, null, clientScopeClientTableName)
+                                .addColumnValue("CLIENT_ID", clientId.trim())
+                                .addColumnValue("SCOPE_ID", clientTemplateId.trim())
+                                .addColumnValue("DEFAULT_SCOPE", Boolean.TRUE)
                 );
             }
 

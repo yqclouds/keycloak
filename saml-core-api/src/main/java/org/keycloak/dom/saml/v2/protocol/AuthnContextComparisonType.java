@@ -44,10 +44,6 @@ public enum AuthnContextComparisonType {
         value = v;
     }
 
-    public String value() {
-        return value;
-    }
-
     public static AuthnContextComparisonType fromValue(String v) {
         for (AuthnContextComparisonType c : AuthnContextComparisonType.values()) {
             if (c.value.equals(v)) {
@@ -55,5 +51,9 @@ public enum AuthnContextComparisonType {
             }
         }
         throw new IllegalArgumentException(v);
+    }
+
+    public String value() {
+        return value;
     }
 }

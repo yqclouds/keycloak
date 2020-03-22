@@ -16,29 +16,10 @@
  */
 package org.keycloak.storage.openshift;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.openshift.restclient.IClient;
 import com.openshift.restclient.model.IResource;
 import com.openshift.restclient.model.route.IRoute;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
@@ -52,6 +33,15 @@ import org.keycloak.storage.client.AbstractReadOnlyClientStorageAdapter;
 import org.keycloak.storage.client.ClientStorageProviderModel;
 import org.keycloak.util.JsonSerialization;
 
+import java.io.IOException;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
@@ -62,6 +52,16 @@ public final class OpenshiftSAClientAdapter extends AbstractReadOnlyClientStorag
     private static final Pattern ROLE_SCOPE_PATTERN = Pattern.compile("role:([^:]+):([^:!]+)(:[!])?");
     private static final Set<String> OPTIONAL_SCOPES = Stream.of("user:info", "user:check-access").collect(Collectors.toSet());
     private static final Set<ProtocolMapperModel> DEFAULT_PROTOCOL_MAPPERS = createDefaultProtocolMappers();
+    private final IResource resource;
+    private final String clientId;
+    private final IClient client;
+    private final ClientRepresentation defaultConfig = new ClientRepresentation();
+    public OpenshiftSAClientAdapter(String clientId, IResource resource, IClient client, KeycloakSession session, RealmModel realm, ClientStorageProviderModel component) {
+        super(session, realm, component);
+        this.resource = resource;
+        this.clientId = clientId;
+        this.client = client;
+    }
 
     private static Set<ProtocolMapperModel> createDefaultProtocolMappers() {
         Set<ProtocolMapperModel> mappers = new HashSet<>();
@@ -73,18 +73,6 @@ public final class OpenshiftSAClientAdapter extends AbstractReadOnlyClientStorag
         mappers.add(mapper);
 
         return mappers;
-    }
-
-    private final IResource resource;
-    private final String clientId;
-    private final IClient client;
-    private final ClientRepresentation defaultConfig = new ClientRepresentation();
-
-    public OpenshiftSAClientAdapter(String clientId, IResource resource, IClient client, KeycloakSession session, RealmModel realm, ClientStorageProviderModel component) {
-        super(session, realm, component);
-        this.resource = resource;
-        this.clientId = clientId;
-        this.client = client;
     }
 
     @Override

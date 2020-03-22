@@ -64,7 +64,7 @@ public class MigrateTo4_6_0 implements Migration {
 
         // Assign "roles" and "web-origins" clientScopes to all the OIDC clients
         for (ClientModel client : realm.getClients()) {
-            if ((client.getProtocol()==null || "openid-connect".equals(client.getProtocol())) && (!client.isBearerOnly())) {
+            if ((client.getProtocol() == null || "openid-connect".equals(client.getProtocol())) && (!client.isBearerOnly())) {
                 client.addClientScope(rolesScope, true);
                 client.addClientScope(webOriginsScope, true);
             }

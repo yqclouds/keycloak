@@ -46,20 +46,16 @@ public class TokenIntrospectionEndpoint {
 
     private static final String PARAM_TOKEN_TYPE_HINT = "token_type_hint";
     private static final String PARAM_TOKEN = "token";
-
+    private final RealmModel realm;
+    private final EventBuilder event;
     @Context
     private KeycloakSession session;
     @Context
     private HttpRequest request;
-
     @Context
     private HttpHeaders headers;
-
     @Context
     private ClientConnection clientConnection;
-
-    private final RealmModel realm;
-    private final EventBuilder event;
 
     public TokenIntrospectionEndpoint(RealmModel realm, EventBuilder event) {
         this.realm = realm;

@@ -25,15 +25,9 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.Extensions;
-import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
-import org.bouncycastle.asn1.x509.AccessDescription;
-import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
@@ -69,34 +63,22 @@ import java.util.logging.Logger;
 public final class OCSPUtils {
 
 
+    private final static Logger logger = Logger.getLogger("" + OCSPUtils.class);
+    private static final int TIME_SKEW = 900000;
+    private static int OCSP_CONNECT_TIMEOUT = 10000; // 10 sec
+
     static {
         BouncyIntegration.init();
     }
 
-    private final static Logger logger = Logger.getLogger(""+OCSPUtils.class);
-
-    private static int OCSP_CONNECT_TIMEOUT = 10000; // 10 sec
-    private static final int TIME_SKEW = 900000;
-
-    public enum RevocationStatus {
-        GOOD,
-        REVOKED,
-        UNKNOWN
-    }
-
-    public interface OCSPRevocationStatus {
-        RevocationStatus getRevocationStatus();
-        Date getRevocationTime();
-        CRLReason getRevocationReason();
-    }
-
     /**
      * Requests certificate revocation status using OCSP.
-     * @param cert the certificate to be checked
+     *
+     * @param cert              the certificate to be checked
      * @param issuerCertificate The issuer certificate
-     * @param responderURI an address of OCSP responder. Overrides any OCSP responder URIs stored in certificate's AIA extension
+     * @param responderURI      an address of OCSP responder. Overrides any OCSP responder URIs stored in certificate's AIA extension
      * @param date
-     * @param responderCert a certificate that OCSP responder uses to sign OCSP responses
+     * @param responderCert     a certificate that OCSP responder uses to sign OCSP responses
      * @return revocation status
      */
     public static OCSPRevocationStatus check(X509Certificate cert, X509Certificate issuerCertificate, URI responderURI, X509Certificate responderCert, Date date) throws CertPathValidatorException {
@@ -109,10 +91,12 @@ public final class OCSPUtils {
 
         return check(cert, issuerCertificate, Collections.singletonList(responderURI), responderCert, date);
     }
+
     /**
      * Requests certificate revocation status using OCSP. The OCSP responder URI
      * is obtained from the certificate's AIA extension.
-     * @param cert the certificate to be checked
+     *
+     * @param cert              the certificate to be checked
      * @param issuerCertificate The issuer certificate
      * @param date
      * @return revocation status
@@ -141,10 +125,12 @@ public final class OCSPUtils {
         }
         return check(cert, issuerCertificate, Collections.unmodifiableList(uris), responderCert, date);
     }
+
     /**
      * Requests certificate revocation status using OCSP. The OCSP responder URI
      * is obtained from the certificate's AIA extension.
-     * @param cert the certificate to be checked
+     *
+     * @param cert              the certificate to be checked
      * @param issuerCertificate The issuer certificate
      * @return revocation status
      */
@@ -205,11 +191,12 @@ public final class OCSPUtils {
 
     /**
      * Requests certificate revocation status using OCSP.
-     * @param cert the certificate to be checked
+     *
+     * @param cert              the certificate to be checked
      * @param issuerCertificate the issuer certificate
-     * @param responderURIs the OCSP responder URIs
-     * @param responderCert the OCSP responder certificate
-     * @param date if null, the current time is used.
+     * @param responderURIs     the OCSP responder URIs
+     * @param responderCert     the OCSP responder certificate
+     * @param date              if null, the current time is used.
      * @return a revocation status
      * @throws CertPathValidatorException
      */
@@ -241,7 +228,7 @@ public final class OCSPUtils {
                 switch (resp.getStatus()) {
                     case OCSPResp.SUCCESSFUL:
                         if (resp.getResponseObject() instanceof BasicOCSPResp) {
-                            return processBasicOCSPResponse(issuerCertificate, responderCert, date, certificateID, nounce, (BasicOCSPResp)resp.getResponseObject());
+                            return processBasicOCSPResponse(issuerCertificate, responderCert, date, certificateID, nounce, (BasicOCSPResp) resp.getResponseObject());
                         } else {
                             throw new CertPathValidatorException("OCSP responder returned an invalid or unknown OCSP response.");
                         }
@@ -260,14 +247,12 @@ public final class OCSPUtils {
                     default:
                         throw new CertPathValidatorException("OCSP request is malformed. OCSP response error: " + resp.getStatus(), (Throwable) null, (CertPath) null, -1, CertPathValidatorException.BasicReason.UNSPECIFIED);
                 }
-            }
-            catch(IOException e) {
+            } catch (IOException e) {
                 logger.log(Level.FINE, "OCSP Responder \"{0}\" failed to return a valid OCSP response\n{1}",
-                        new Object[] {responderURI, e.getMessage()});
+                        new Object[]{responderURI, e.getMessage()});
                 throw new CertPathValidatorException("OCSP check failed", e);
             }
-        }
-        catch(CertificateNotYetValidException | CertificateExpiredException | OperatorCreationException | OCSPException | CertificateEncodingException | NoSuchAlgorithmException | NoSuchProviderException e) {
+        } catch (CertificateNotYetValidException | CertificateExpiredException | OperatorCreationException | OCSPException | CertificateEncodingException | NoSuchAlgorithmException | NoSuchProviderException e) {
             logger.log(Level.FINE, e.getMessage());
             throw new CertPathValidatorException(e.getMessage(), e);
         }
@@ -330,7 +315,7 @@ public final class OCSPUtils {
                         if (responderName.equals(respName)) {
                             signingCert = tempCert;
                             logger.log(Level.INFO, "Found a certificate whose principal \"{0}\" matches the responder name \"{1}\"",
-                                    new Object[] {tempCert.getSubjectDN().getName(), responderName.toString()});
+                                    new Object[]{tempCert.getSubjectDN().getName(), responderName.toString()});
                             break;
                         }
                     } catch (CertificateException e) {
@@ -352,7 +337,7 @@ public final class OCSPUtils {
 
                         if (subjectKeyIdentifier != null) {
                             logger.log(Level.INFO, "Certificate: {0}\nSubject Key Id: {1}",
-                                    new Object[] {tempCert.getSubjectDN().getName(), Arrays.toString(subjectKeyIdentifier.getKeyIdentifier())});
+                                    new Object[]{tempCert.getSubjectDN().getName(), Arrays.toString(subjectKeyIdentifier.getKeyIdentifier())});
                         }
 
                         if (subjectKeyIdentifier != null && responderSubjectKey.equals(subjectKeyIdentifier)) {
@@ -391,7 +376,7 @@ public final class OCSPUtils {
                 // question."
                 if (!signingCert.getIssuerX500Principal().equals(issuerCertificate.getSubjectX500Principal())) {
                     logger.log(Level.INFO, "Signer certificate''s Issuer: {0}\nIssuer certificate''s Subject: {1}",
-                            new Object[] {signingCert.getIssuerX500Principal().getName(), issuerCertificate.getSubjectX500Principal().getName()});
+                            new Object[]{signingCert.getIssuerX500Principal().getName(), issuerCertificate.getSubjectX500Principal().getName()});
                     throw new CertPathValidatorException("Responder\'s certificate is not authorized to sign OCSP responses");
                 }
                 try {
@@ -501,7 +486,7 @@ public final class OCSPUtils {
         if (certStatus == CertificateStatus.GOOD) {
             status = RevocationStatus.GOOD;
         } else if (certStatus instanceof RevokedStatus) {
-            RevokedStatus revoked = (RevokedStatus)certStatus;
+            RevokedStatus revoked = (RevokedStatus) certStatus;
             revocationTime = revoked.getRevocationTime();
             status = RevocationStatus.REVOKED;
             if (revoked.hasRevocationReason()) {
@@ -534,10 +519,10 @@ public final class OCSPUtils {
         };
     }
 
-
     /**
      * Extracts OCSP responder URI from X509 AIA v3 extension, if available. There can be
      * multiple responder URIs encoded in the certificate.
+     *
      * @param cert
      * @return a list of available responder URIs.
      * @throws CertificateEncodingException
@@ -550,7 +535,7 @@ public final class OCSPUtils {
         if (aia != null) {
             try {
                 ASN1InputStream in = new ASN1InputStream(aia.getExtnValue().getOctetStream());
-                ASN1Sequence seq = (ASN1Sequence)in.readObject();
+                ASN1Sequence seq = (ASN1Sequence) in.readObject();
                 AuthorityInformationAccess authorityInfoAccess = AuthorityInformationAccess.getInstance(seq);
                 for (AccessDescription ad : authorityInfoAccess.getAccessDescriptions()) {
                     if (ad.getAccessMethod().equals(AccessDescription.id_ad_ocsp)) {
@@ -566,5 +551,20 @@ public final class OCSPUtils {
             }
         }
         return responderURIs;
+    }
+
+    public enum RevocationStatus {
+        GOOD,
+        REVOKED,
+        UNKNOWN
+    }
+
+
+    public interface OCSPRevocationStatus {
+        RevocationStatus getRevocationStatus();
+
+        Date getRevocationTime();
+
+        CRLReason getRevocationReason();
     }
 }

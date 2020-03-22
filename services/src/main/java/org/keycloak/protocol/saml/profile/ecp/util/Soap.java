@@ -24,14 +24,7 @@ import org.w3c.dom.Node;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.xml.soap.MessageFactory;
-import javax.xml.soap.Name;
-import javax.xml.soap.SOAPBody;
-import javax.xml.soap.SOAPEnvelope;
-import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPFault;
-import javax.xml.soap.SOAPHeaderElement;
-import javax.xml.soap.SOAPMessage;
+import javax.xml.soap.*;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
@@ -55,7 +48,6 @@ public final class Soap {
      * <p>The resulting string is based on the Body of the SOAP message, which should map to a valid SAML message.
      *
      * @param inputStream the input stream containing a valid SOAP message with a Body that contains a SAML message
-     *
      * @return a string encoded accordingly with the SAML HTTP POST Binding specification
      */
     public static String toSamlHttpPostMessage(InputStream inputStream) {

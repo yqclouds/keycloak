@@ -18,6 +18,13 @@ public class ProfileTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    public static void assertEquals(Set<Profile.Feature> actual, Profile.Feature... expected) {
+        Profile.Feature[] a = actual.toArray(new Profile.Feature[actual.size()]);
+        Arrays.sort(a, new FeatureComparator());
+        Arrays.sort(expected, new FeatureComparator());
+        Assert.assertArrayEquals(a, expected);
+    }
+
     @Test
     public void checkDefaultsKeycloak() {
         Assert.assertEquals("community", Profile.getName());
@@ -112,13 +119,6 @@ public class ProfileTest {
         System.getProperties().remove("jboss.server.config.dir");
 
         Profile.init();
-    }
-
-    public static void assertEquals(Set<Profile.Feature> actual, Profile.Feature... expected) {
-        Profile.Feature[] a = actual.toArray(new Profile.Feature[actual.size()]);
-        Arrays.sort(a, new FeatureComparator());
-        Arrays.sort(expected, new FeatureComparator());
-        Assert.assertArrayEquals(a, expected);
     }
 
     private static class FeatureComparator implements Comparator<Profile.Feature> {

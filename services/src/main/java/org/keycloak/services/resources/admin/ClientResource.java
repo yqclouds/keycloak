@@ -22,33 +22,17 @@ import org.jboss.resteasy.spi.BadRequestException;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authorization.admin.AuthorizationService;
 import org.keycloak.common.ClientConnection;
-import org.keycloak.common.Profile;
 import org.keycloak.common.util.Time;
 import org.keycloak.events.Errors;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.Constants;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ModelDuplicateException;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserCredentialModel;
-import org.keycloak.models.UserManager;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.protocol.ClientInstallationProvider;
 import org.keycloak.representations.adapters.action.GlobalRequestResult;
-import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.ClientScopeRepresentation;
-import org.keycloak.representations.idm.CredentialRepresentation;
-import org.keycloak.representations.idm.ManagementPermissionReference;
-import org.keycloak.representations.idm.UserRepresentation;
-import org.keycloak.representations.idm.UserSessionRepresentation;
+import org.keycloak.representations.idm.*;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.clientregistration.ClientRegistrationTokenUtils;
@@ -63,57 +47,36 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import org.keycloak.services.validation.ClientValidator;
 import org.keycloak.services.validation.PairwiseClientValidator;
 import org.keycloak.services.validation.ValidationMessages;
-import org.keycloak.utils.ProfileHelper;
+import org.keycloak.utils.ReservedCharValidator;
 import org.keycloak.validation.ClientValidationUtil;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import static java.lang.Boolean.TRUE;
-import org.keycloak.utils.ReservedCharValidator;
 
 
 /**
  * Base resource class for managing one particular client of a realm.
  *
- * @resource Clients
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
+ * @resource Clients
  */
 public class ClientResource {
     protected static final Logger logger = Logger.getLogger(ClientResource.class);
     protected RealmModel realm;
-    private AdminPermissionEvaluator auth;
-    private AdminEventBuilder adminEvent;
     protected ClientModel client;
     protected KeycloakSession session;
-
     @Context
     protected KeycloakApplication keycloak;
-
     @Context
     protected ClientConnection clientConnection;
-
-    protected KeycloakApplication getKeycloakApplication() {
-        return keycloak;
-    }
+    private AdminPermissionEvaluator auth;
+    private AdminEventBuilder adminEvent;
 
     public ClientResource(RealmModel realm, AdminPermissionEvaluator auth, ClientModel clientModel, KeycloakSession session, AdminEventBuilder adminEvent) {
         this.realm = realm;
@@ -121,6 +84,18 @@ public class ClientResource {
         this.client = clientModel;
         this.session = session;
         this.adminEvent = adminEvent.resource(ResourceType.CLIENT);
+    }
+
+    public static ManagementPermissionReference toMgmtRef(ClientModel client, AdminPermissionManagement permissions) {
+        ManagementPermissionReference ref = new ManagementPermissionReference();
+        ref.setEnabled(true);
+        ref.setResource(permissions.clients().resource(client).getId());
+        ref.setScopePermissions(permissions.clients().getPermissions(client));
+        return ref;
+    }
+
+    protected KeycloakApplication getKeycloakApplication() {
+        return keycloak;
     }
 
     @Path("protocol-mappers")
@@ -134,6 +109,7 @@ public class ClientResource {
 
     /**
      * Update the client
+     *
      * @param rep
      * @return
      */
@@ -157,7 +133,7 @@ public class ClientResource {
 
             ClientValidationUtil.validate(session, client, false, c -> {
                 session.getTransactionManager().setRollbackOnly();
-                throw new ErrorResponseException(Errors.INVALID_INPUT ,c.getError(), Response.Status.BAD_REQUEST);
+                throw new ErrorResponseException(Errors.INVALID_INPUT, c.getError(), Response.Status.BAD_REQUEST);
             });
 
             adminEvent.operation(OperationType.UPDATE).resourcePath(session.getContext().getUri()).representation(rep).success();
@@ -209,7 +185,6 @@ public class ClientResource {
 
     /**
      * Delete the client
-     *
      */
     @DELETE
     @NoCache
@@ -223,7 +198,6 @@ public class ClientResource {
         new ClientManager(new RealmManager(session)).removeClient(realm, client);
         adminEvent.operation(OperationType.DELETE).resourcePath(session.getContext().getUri()).success();
     }
-
 
     /**
      * Generate a new secret for the client
@@ -300,7 +274,6 @@ public class ClientResource {
         return new RoleContainerResource(session, session.getContext().getUri(), realm, auth, client, adminEvent);
     }
 
-
     /**
      * Get default client scopes.  Only name and ids are returned.
      *
@@ -327,12 +300,11 @@ public class ClientResource {
         return defaults;
     }
 
-
     @PUT
     @NoCache
     @Path("default-client-scopes/{clientScopeId}")
     public void addDefaultClientScope(@PathParam("clientScopeId") String clientScopeId) {
-        addDefaultClientScope(clientScopeId,true);
+        addDefaultClientScope(clientScopeId, true);
     }
 
     private void addDefaultClientScope(String clientScopeId, boolean defaultScope) {
@@ -346,7 +318,6 @@ public class ClientResource {
 
         adminEvent.operation(OperationType.CREATE).resource(ResourceType.CLIENT).resourcePath(session.getContext().getUri()).success();
     }
-
 
     @DELETE
     @NoCache
@@ -362,7 +333,6 @@ public class ClientResource {
 
         adminEvent.operation(OperationType.DELETE).resource(ResourceType.CLIENT).resourcePath(session.getContext().getUri()).success();
     }
-
 
     /**
      * Get optional client scopes.  Only name and ids are returned.
@@ -423,7 +393,7 @@ public class ClientResource {
 
     /**
      * Push the client's revocation policy to its admin URL
-     *
+     * <p>
      * If the client has an admin URL, push revocation policy to it.
      */
     @Path("push-revocation")
@@ -439,11 +409,11 @@ public class ClientResource {
 
     /**
      * Get application session count
-     *
+     * <p>
      * Returns a number of user sessions associated with this client
-     *
+     * <p>
      * {
-     *     "count": number
+     * "count": number
      * }
      *
      * @return
@@ -462,11 +432,11 @@ public class ClientResource {
 
     /**
      * Get user sessions for client
-     *
+     * <p>
      * Returns a list of user sessions associated with this client
      *
      * @param firstResult Paging offset
-     * @param maxResults Maximum results size (defaults to 100)
+     * @param maxResults  Maximum results size (defaults to 100)
      * @return
      */
     @Path("user-sessions")
@@ -488,11 +458,11 @@ public class ClientResource {
 
     /**
      * Get application offline session count
-     *
+     * <p>
      * Returns a number of offline user sessions associated with this client
-     *
+     * <p>
      * {
-     *     "count": number
+     * "count": number
      * }
      *
      * @return
@@ -511,11 +481,11 @@ public class ClientResource {
 
     /**
      * Get offline sessions for client
-     *
+     * <p>
      * Returns a list of offline user sessions associated with this client
      *
      * @param firstResult Paging offset
-     * @param maxResults Maximum results size (defaults to 100)
+     * @param maxResults  Maximum results size (defaults to 100)
      * @return
      */
     @Path("offline-sessions")
@@ -550,7 +520,7 @@ public class ClientResource {
 
     /**
      * Register a cluster node with the client
-     *
+     * <p>
      * Manually register cluster node to this client - usually it's not needed to call this directly as adapter should handle
      * by sending registration request to Keycloak
      *
@@ -566,9 +536,9 @@ public class ClientResource {
         if (node == null) {
             throw new BadRequestException("Node not found in params");
         }
-        
+
         ReservedCharValidator.validate(node);
-        
+
         if (logger.isDebugEnabled()) logger.debug("Register node: " + node);
         client.registerNode(node, Time.currentTime());
         adminEvent.operation(OperationType.CREATE).resource(ResourceType.CLUSTER_NODE).resourcePath(session.getContext().getUri(), node).success();
@@ -597,7 +567,7 @@ public class ClientResource {
 
     /**
      * Test if registered cluster nodes are available
-     *
+     * <p>
      * Tests availability by sending 'ping' request to all cluster nodes.
      *
      * @return
@@ -643,18 +613,8 @@ public class ClientResource {
         return toMgmtRef(client, permissions);
     }
 
-    public static ManagementPermissionReference toMgmtRef(ClientModel client, AdminPermissionManagement permissions) {
-        ManagementPermissionReference ref = new ManagementPermissionReference();
-        ref.setEnabled(true);
-        ref.setResource(permissions.clients().resource(client).getId());
-        ref.setScopePermissions(permissions.clients().getPermissions(client));
-        return ref;
-    }
-
-
     /**
      * Return object stating whether client Authorization permissions have been initialized or not and a reference
-     *
      *
      * @return initialized manage permissions reference
      */
@@ -681,8 +641,7 @@ public class ClientResource {
             if (serviceAccount == null) {
                 new ClientManager(new RealmManager(session)).enableServiceAccount(client);
             }
-        }
-        else {
+        } else {
             if (serviceAccount != null) {
                 new UserManager(session).removeUser(realm, serviceAccount);
             }

@@ -17,12 +17,12 @@
 
 package org.keycloak.storage.ldap.mappers;
 
-import java.util.Collection;
-import java.util.List;
-
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.ModelException;
 import org.keycloak.storage.ldap.LDAPStorageProvider;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * TODO: LDAPStorageMapper should be divided into more interfaces and let the LDAPStorageMapperManager to check which operation (feature) is supported by which mapper implementation

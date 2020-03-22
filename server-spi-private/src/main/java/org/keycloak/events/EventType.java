@@ -142,6 +142,7 @@ public enum EventType {
 
     /**
      * Determines whether this event is stored when the admin has not set a specific set of event types to save.
+     *
      * @return
      */
     public boolean isSaveByDefault() {

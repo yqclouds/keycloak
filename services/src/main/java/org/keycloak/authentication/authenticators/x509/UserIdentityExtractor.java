@@ -19,12 +19,7 @@
 package org.keycloak.authentication.authenticators.x509;
 
 import freemarker.template.utility.NullArgumentException;
-import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
@@ -52,12 +47,51 @@ public abstract class UserIdentityExtractor {
 
     private static final ServicesLogger logger = ServicesLogger.LOGGER;
 
+    public static UserIdentityExtractor getPatternIdentityExtractor(String pattern,
+                                                                    Function<X509Certificate[], String> func) {
+        return new PatternMatcher(pattern, func);
+    }
+
+    public static UserIdentityExtractor getX500NameExtractor(ASN1ObjectIdentifier identifier, Function<X509Certificate[], X500Name> x500Name) {
+        return new X500NameRDNExtractor(identifier, x500Name);
+    }
+
+    /**
+     * Obtains the subjectAltName given a <code>generalName</code>.
+     *
+     * @param generalName an integer representing the general name. See {@link X509Certificate#getSubjectAlternativeNames()}
+     * @return the value from the subjectAltName extension
+     */
+    public static SubjectAltNameExtractor getSubjectAltNameExtractor(int generalName) {
+        return new SubjectAltNameExtractor(generalName);
+    }
+
+    public static OrBuilder either(UserIdentityExtractor extractor) {
+        return new OrBuilder(extractor);
+    }
+
+    public static UserIdentityExtractor getCertificatePemIdentityExtractor(X509AuthenticatorConfigModel config) {
+        return new UserIdentityExtractor() {
+            @Override
+            public Object extractUserIdentity(X509Certificate[] certs) {
+                if (certs == null || certs.length == 0) {
+                    throw new IllegalArgumentException();
+                }
+
+                String pem = PemUtils.encodeCertificate(certs[0]);
+                logger.debugf("Using PEM certificate \"%s\" as user identity.", pem);
+                return pem;
+            }
+        };
+    }
+
     public abstract Object extractUserIdentity(X509Certificate[] certs);
 
     static class OrExtractor extends UserIdentityExtractor {
 
         UserIdentityExtractor extractor;
         UserIdentityExtractor other;
+
         OrExtractor(UserIdentityExtractor extractor, UserIdentityExtractor other) {
             this.extractor = extractor;
             this.other = other;
@@ -79,9 +113,10 @@ public abstract class UserIdentityExtractor {
 
     static class X500NameRDNExtractor extends UserIdentityExtractor {
 
+        Function<X509Certificate[], X500Name> x500Name;
         private ASN1ObjectIdentifier x500NameStyle;
-        Function<X509Certificate[],X500Name> x500Name;
-        X500NameRDNExtractor(ASN1ObjectIdentifier x500NameStyle, Function<X509Certificate[],X500Name> x500Name) {
+
+        X500NameRDNExtractor(ASN1ObjectIdentifier x500NameStyle, Function<X509Certificate[], X500Name> x500Name) {
             this.x500NameStyle = x500NameStyle;
             this.x500Name = x500Name;
         }
@@ -148,7 +183,7 @@ public abstract class UserIdentityExtractor {
                     if (Integer.class.cast(next.get(0)) == generalName) {
 
                         // We will try to find UPN_OID among the subjectAltNames of type 'otherName' . Just if not found, we will fallback to the other type
-                        for (int i = 1 ; i<next.size() ; i++) {
+                        for (int i = 1; i < next.size(); i++) {
                             Object obj = next.get(i);
 
                             // We have Subject Alternative Name of other type than 'otherName' . Just return it directly
@@ -215,8 +250,9 @@ public abstract class UserIdentityExtractor {
 
     static class PatternMatcher extends UserIdentityExtractor {
         private final String _pattern;
-        private final Function<X509Certificate[],String> _f;
-        PatternMatcher(String pattern, Function<X509Certificate[],String> valueToMatch) {
+        private final Function<X509Certificate[], String> _f;
+
+        PatternMatcher(String pattern, Function<X509Certificate[], String> valueToMatch) {
             _pattern = pattern;
             _f = valueToMatch;
         }
@@ -246,6 +282,7 @@ public abstract class UserIdentityExtractor {
     static class OrBuilder {
         UserIdentityExtractor extractor;
         UserIdentityExtractor other;
+
         OrBuilder(UserIdentityExtractor extractor) {
             this.extractor = extractor;
         }
@@ -253,43 +290,5 @@ public abstract class UserIdentityExtractor {
         public UserIdentityExtractor or(UserIdentityExtractor other) {
             return new OrExtractor(extractor, other);
         }
-    }
-
-    public static UserIdentityExtractor getPatternIdentityExtractor(String pattern,
-                                                                 Function<X509Certificate[],String> func) {
-        return new PatternMatcher(pattern, func);
-    }
-
-    public static UserIdentityExtractor getX500NameExtractor(ASN1ObjectIdentifier identifier, Function<X509Certificate[],X500Name> x500Name) {
-        return new X500NameRDNExtractor(identifier, x500Name);
-    }
-
-    /**
-     * Obtains the subjectAltName given a <code>generalName</code>.
-     *
-     * @param generalName an integer representing the general name. See {@link X509Certificate#getSubjectAlternativeNames()}
-     * @return the value from the subjectAltName extension
-     */
-    public static SubjectAltNameExtractor getSubjectAltNameExtractor(int generalName) {
-        return new SubjectAltNameExtractor(generalName);
-    }
-
-    public static OrBuilder either(UserIdentityExtractor extractor) {
-        return new OrBuilder(extractor);
-    }
-
-    public static UserIdentityExtractor getCertificatePemIdentityExtractor(X509AuthenticatorConfigModel config) {
-        return new UserIdentityExtractor() {
-              @Override
-              public Object extractUserIdentity(X509Certificate[] certs) {
-                if (certs == null || certs.length == 0) {
-                  throw new IllegalArgumentException();
-                }
-
-                String pem = PemUtils.encodeCertificate(certs[0]);
-                logger.debugf("Using PEM certificate \"%s\" as user identity.", pem);
-                return pem;
-              }
-        };
     }
 }

@@ -23,9 +23,14 @@ package org.keycloak.models;
  */
 public interface KeycloakTransaction {
     void begin();
+
     void commit();
+
     void rollback();
+
     void setRollbackOnly();
+
     boolean getRollbackOnly();
+
     boolean isActive();
 }

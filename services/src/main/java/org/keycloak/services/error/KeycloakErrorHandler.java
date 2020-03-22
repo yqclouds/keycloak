@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.Failure;
 import org.jboss.resteasy.spi.HttpResponse;
-import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.Config;
 import org.keycloak.common.util.Resteasy;
 import org.keycloak.forms.login.freemarker.model.UrlBean;
@@ -40,12 +39,9 @@ import java.util.regex.Pattern;
 @Provider
 public class KeycloakErrorHandler implements ExceptionMapper<Throwable> {
 
-    private static final Logger logger = Logger.getLogger(KeycloakErrorHandler.class);
-
-    private static final Pattern realmNamePattern = Pattern.compile(".*/realms/([^/]+).*");
-
     public static final String UNCAUGHT_SERVER_ERROR_TEXT = "Uncaught server error";
-
+    private static final Logger logger = Logger.getLogger(KeycloakErrorHandler.class);
+    private static final Pattern realmNamePattern = Pattern.compile(".*/realms/([^/]+).*");
     @Context
     private KeycloakSession session;
 
@@ -70,7 +66,7 @@ public class KeycloakErrorHandler implements ExceptionMapper<Throwable> {
             OAuth2ErrorRepresentation error = new OAuth2ErrorRepresentation();
 
             error.setError(getErrorCode(throwable));
-            
+
             return Response.status(statusCode)
                     .header(HttpHeaders.CONTENT_TYPE, javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE.toString())
                     .entity(error)
@@ -125,7 +121,7 @@ public class KeycloakErrorHandler implements ExceptionMapper<Throwable> {
         String path = session.getContext().getUri().getPath();
         Matcher m = realmNamePattern.matcher(path);
         String realmName;
-        if(m.matches()) {
+        if (m.matches()) {
             realmName = m.group(1);
         } else {
             realmName = Config.getAdminRealm();

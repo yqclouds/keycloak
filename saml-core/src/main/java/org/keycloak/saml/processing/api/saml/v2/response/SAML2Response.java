@@ -17,23 +17,7 @@
 package org.keycloak.saml.processing.api.saml.v2.response;
 
 import org.keycloak.dom.saml.v2.SAML2Object;
-import org.keycloak.dom.saml.v2.assertion.ActionType;
-import org.keycloak.dom.saml.v2.assertion.AssertionType;
-import org.keycloak.dom.saml.v2.assertion.AudienceRestrictionType;
-import org.keycloak.dom.saml.v2.assertion.AuthnContextClassRefType;
-import org.keycloak.dom.saml.v2.assertion.AuthnContextType;
-import org.keycloak.dom.saml.v2.assertion.AuthnStatementType;
-import org.keycloak.dom.saml.v2.assertion.AuthzDecisionStatementType;
-import org.keycloak.dom.saml.v2.assertion.ConditionsType;
-import org.keycloak.dom.saml.v2.assertion.DecisionType;
-import org.keycloak.dom.saml.v2.assertion.EncryptedAssertionType;
-import org.keycloak.dom.saml.v2.assertion.EncryptedElementType;
-import org.keycloak.dom.saml.v2.assertion.EvidenceType;
-import org.keycloak.dom.saml.v2.assertion.NameIDType;
-import org.keycloak.dom.saml.v2.assertion.StatementAbstractType;
-import org.keycloak.dom.saml.v2.assertion.SubjectConfirmationDataType;
-import org.keycloak.dom.saml.v2.assertion.SubjectConfirmationType;
-import org.keycloak.dom.saml.v2.assertion.SubjectType;
+import org.keycloak.dom.saml.v2.assertion.*;
 import org.keycloak.dom.saml.v2.protocol.ResponseType;
 import org.keycloak.dom.saml.v2.protocol.StatusResponseType;
 import org.keycloak.saml.common.PicketLinkLogger;
@@ -64,11 +48,7 @@ import org.w3c.dom.Node;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Writer;
+import java.io.*;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -96,7 +76,6 @@ public class SAML2Response {
      *
      * @param id
      * @param issuer
-     *
      * @return
      */
     public AssertionType createAssertion(String id, NameIDType issuer) {
@@ -108,7 +87,6 @@ public class SAML2Response {
      *
      * @param authnContextDeclRef such as JBossSAMLURIConstants.AC_PASSWORD_PROTECTED_TRANSPORT
      * @param issueInstant
-     *
      * @return
      */
     public AuthnStatementType createAuthnStatement(String authnContextDeclRef, XMLGregorianCalendar issueInstant) {
@@ -132,7 +110,6 @@ public class SAML2Response {
      * @param decision
      * @param evidence
      * @param actions
-     *
      * @return
      */
     public AuthzDecisionStatementType createAuthzDecisionStatementType(String resource, DecisionType decision,
@@ -154,17 +131,15 @@ public class SAML2Response {
      * Create a ResponseType
      *
      * <b>NOTE:</b>: The PicketLink STS is used to issue/update the assertion
-     *
+     * <p>
      * If you want to control over the assertion being issued, then use
      * {@link #createResponseType(String, SPInfoHolder, IDPInfoHolder, IssuerInfoHolder, AssertionType)}
      *
-     * @param ID id of the response
-     * @param sp holder with the information about the Service Provider
-     * @param idp holder with the information on the Identity Provider
+     * @param ID         id of the response
+     * @param sp         holder with the information about the Service Provider
+     * @param idp        holder with the information on the Identity Provider
      * @param issuerInfo holder with information on the issuer
-     *
      * @return
-     *
      * @throws ConfigurationException
      * @throws ProcessingException
      */
@@ -243,12 +218,10 @@ public class SAML2Response {
      * @param ID
      * @param issuerInfo
      * @param assertion
-     *
      * @return
-     *
      * @throws ConfigurationException
      */
-    public ResponseType createResponseType(String ID, IssuerInfoHolder issuerInfo, AssertionType assertion){
+    public ResponseType createResponseType(String ID, IssuerInfoHolder issuerInfo, AssertionType assertion) {
         return JBossSAMLAuthnResponseFactory.createResponseType(ID, issuerInfo, assertion);
     }
 
@@ -258,9 +231,7 @@ public class SAML2Response {
      * @param ID
      * @param issuerInfo
      * @param encryptedAssertion a DOM {@link Element} that represents an encrypted assertion
-     *
      * @return
-     *
      * @throws ConfigurationException
      */
     public ResponseType createResponseType(String ID, IssuerInfoHolder issuerInfo, Element encryptedAssertion)
@@ -273,7 +244,6 @@ public class SAML2Response {
      *
      * @param assertion
      * @param durationInMilis
-     *
      * @throws ConfigurationException
      * @throws IssueInstantMissingException
      */
@@ -286,9 +256,7 @@ public class SAML2Response {
      * Get an encrypted assertion from the stream
      *
      * @param is
-     *
      * @return
-     *
      * @throws org.keycloak.saml.common.exceptions.ParsingException
      * @throws ProcessingException
      * @throws ConfigurationException
@@ -310,9 +278,7 @@ public class SAML2Response {
      * Read an assertion from an input stream
      *
      * @param is
-     *
      * @return
-     *
      * @throws ParsingException
      * @throws ProcessingException
      * @throws ConfigurationException
@@ -340,9 +306,7 @@ public class SAML2Response {
      * Read a ResponseType from an input stream
      *
      * @param is
-     *
      * @return
-     *
      * @throws ParsingException
      * @throws ConfigurationException
      */
@@ -365,9 +329,7 @@ public class SAML2Response {
      * Read a {@code SAML2Object} from an input stream
      *
      * @param is
-     *
      * @return
-     *
      * @throws ParsingException
      * @throws ConfigurationException
      * @throws ProcessingException
@@ -397,9 +359,7 @@ public class SAML2Response {
      * Convert an EncryptedElement into a Document
      *
      * @param encryptedElementType
-     *
      * @return
-     *
      * @throws ConfigurationException
      */
     public Document convert(EncryptedElementType encryptedElementType) throws ConfigurationException {
@@ -416,9 +376,7 @@ public class SAML2Response {
      * Convert a SAML2 Response into a Document
      *
      * @param responseType
-     *
      * @return
-     *
      * @throws ParsingException
      * @throws ConfigurationException
      * @throws ProcessingException
@@ -444,7 +402,6 @@ public class SAML2Response {
      *
      * @param responseType
      * @param os
-     *
      * @throws ProcessingException
      */
     public void marshall(ResponseType responseType, OutputStream os) throws ProcessingException {
@@ -457,7 +414,6 @@ public class SAML2Response {
      *
      * @param responseType
      * @param writer
-     *
      * @throws ProcessingException
      */
     public void marshall(ResponseType responseType, Writer writer) throws ProcessingException {

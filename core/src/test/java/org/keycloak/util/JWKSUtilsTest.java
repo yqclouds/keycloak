@@ -18,19 +18,12 @@
 package org.keycloak.util;
 
 import org.junit.Test;
-import org.keycloak.common.util.Base64Url;
-import org.keycloak.common.util.CertificateUtils;
-import org.keycloak.common.util.KeyUtils;
-import org.keycloak.common.util.PemUtils;
-import org.keycloak.crypto.JavaAlgorithm;
 import org.keycloak.crypto.KeyUse;
 import org.keycloak.crypto.KeyWrapper;
-import org.keycloak.jose.jwk.*;
+import org.keycloak.jose.jwk.JSONWebKeySet;
+import org.keycloak.jose.jwk.JWK;
 
-import java.nio.charset.StandardCharsets;
-import java.security.*;
-import java.security.cert.X509Certificate;
-import java.security.spec.ECGenParameterSpec;
+import java.security.Security;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -92,7 +85,7 @@ public class JWKSUtilsTest {
         assertEquals(kidRsa1, key.getKid());
         assertEquals("RSA", key.getType());
 
-         key = keyWrappersForUse.get(kidRsa2);
+        key = keyWrappersForUse.get(kidRsa2);
         assertNotNull(key);
         assertEquals("RS256", key.getAlgorithm());
         assertEquals(KeyUse.SIG, key.getUse());

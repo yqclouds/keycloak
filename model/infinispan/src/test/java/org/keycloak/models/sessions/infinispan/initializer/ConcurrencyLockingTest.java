@@ -60,7 +60,6 @@ public class ConcurrencyLockingTest {
         Thread.sleep(1000000);
 
 
-
     }
 
     protected DefaultCacheManager getVersionedCacheManager() {

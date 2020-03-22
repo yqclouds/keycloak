@@ -16,12 +16,12 @@
 
 package org.keycloak.credential;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.webauthn4j.data.attestation.statement.AttestationStatement;
+
+import java.util.Objects;
 
 public class AttestationStatementSerializationContainer {
 

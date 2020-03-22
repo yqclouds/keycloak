@@ -17,17 +17,13 @@
 
 package org.keycloak.authentication.requiredactions;
 
+import org.keycloak.authentication.ConsoleDisplayMode;
 import org.keycloak.authentication.RequiredActionContext;
 import org.keycloak.authentication.RequiredActionProvider;
-import org.keycloak.authentication.ConsoleDisplayMode;
-import org.keycloak.credential.CredentialModel;
-import org.keycloak.credential.CredentialProvider;
-import org.keycloak.credential.OTPCredentialProvider;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.forms.login.freemarker.model.TotpBean;
 import org.keycloak.models.OTPPolicy;
-import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.credential.OTPCredentialModel;
 import org.keycloak.models.utils.CredentialValidation;
 import org.keycloak.services.messages.Messages;

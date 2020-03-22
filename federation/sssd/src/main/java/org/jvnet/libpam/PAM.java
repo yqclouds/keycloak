@@ -27,21 +27,14 @@ import com.sun.jna.Pointer;
 import com.sun.jna.ptr.PointerByReference;
 import org.jboss.logging.Logger;
 import org.jvnet.libpam.impl.CLibrary.passwd;
-import org.jvnet.libpam.impl.PAMLibrary.pam_conv;
+import org.jvnet.libpam.impl.PAMLibrary.*;
 import org.jvnet.libpam.impl.PAMLibrary.pam_conv.PamCallback;
-import org.jvnet.libpam.impl.PAMLibrary.pam_handle_t;
-import org.jvnet.libpam.impl.PAMLibrary.pam_message;
-import org.jvnet.libpam.impl.PAMLibrary.pam_response;
 
 import java.util.Set;
 
 import static com.sun.jna.Native.POINTER_SIZE;
 import static org.jvnet.libpam.impl.CLibrary.libc;
-import static org.jvnet.libpam.impl.PAMLibrary.PAM_CONV_ERR;
-import static org.jvnet.libpam.impl.PAMLibrary.PAM_PROMPT_ECHO_OFF;
-import static org.jvnet.libpam.impl.PAMLibrary.PAM_SUCCESS;
-import static org.jvnet.libpam.impl.PAMLibrary.PAM_USER;
-import static org.jvnet.libpam.impl.PAMLibrary.libpam;
+import static org.jvnet.libpam.impl.PAMLibrary.*;
 
 /**
  * PAM authenticator.
@@ -61,9 +54,9 @@ import static org.jvnet.libpam.impl.PAMLibrary.libpam;
  * @author Kohsuke Kawaguchi
  */
 public class PAM {
+    private static final Logger LOGGER = Logger.getLogger(PAM.class.getName());
     private pam_handle_t pht;
     private int ret;
-
     /**
      * Temporarily stored to pass a value from {@link #authenticate(String, String...)}
      * to {@link pam_conv}.
@@ -129,7 +122,7 @@ public class PAM {
             check(libpam.pam_authenticate(pht, 0), "pam_authenticate failed");
             check(libpam.pam_setcred(pht, 0), "pam_setcred failed");
             // several different error code seem to be used to represent authentication failures
-            check(libpam.pam_acct_mgmt(pht,0),"pam_acct_mgmt failed");
+            check(libpam.pam_acct_mgmt(pht, 0), "pam_acct_mgmt failed");
 
             PointerByReference r = new PointerByReference();
             check(libpam.pam_get_item(pht, PAM_USER, r), "pam_get_item failed");
@@ -144,6 +137,12 @@ public class PAM {
     }
 
     /**
+     * After a successful authentication, call this method to obtain the effective user name.
+     * This can be different from the user name that you passed to the {@link #authenticate(String, String)}
+     * method.
+     */
+
+    /**
      * Returns the groups a user belongs to
      *
      * @param username
@@ -154,12 +153,6 @@ public class PAM {
     public Set<String> getGroupsOfUser(String username) throws PAMException {
         return new UnixUser(username).getGroups();
     }
-
-    /**
-     * After a successful authentication, call this method to obtain the effective user name.
-     * This can be different from the user name that you passed to the {@link #authenticate(String, String)}
-     * method.
-     */
 
     /**
      * Performs an early disposal of the object, instead of letting this GC-ed.
@@ -177,12 +170,9 @@ public class PAM {
         }
     }
 
-
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
         dispose();
     }
-
-    private static final Logger LOGGER = Logger.getLogger(PAM.class.getName());
 }

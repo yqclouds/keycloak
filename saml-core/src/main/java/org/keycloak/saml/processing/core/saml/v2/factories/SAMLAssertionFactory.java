@@ -16,15 +16,7 @@
  */
 package org.keycloak.saml.processing.core.saml.v2.factories;
 
-import org.keycloak.dom.saml.v2.assertion.AssertionType;
-import org.keycloak.dom.saml.v2.assertion.AudienceRestrictionType;
-import org.keycloak.dom.saml.v2.assertion.ConditionAbstractType;
-import org.keycloak.dom.saml.v2.assertion.ConditionsType;
-import org.keycloak.dom.saml.v2.assertion.KeyInfoConfirmationDataType;
-import org.keycloak.dom.saml.v2.assertion.NameIDType;
-import org.keycloak.dom.saml.v2.assertion.StatementAbstractType;
-import org.keycloak.dom.saml.v2.assertion.SubjectConfirmationType;
-import org.keycloak.dom.saml.v2.assertion.SubjectType;
+import org.keycloak.dom.saml.v2.assertion.*;
 import org.keycloak.dom.xmlsec.w3.xmldsig.KeyInfoType;
 
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -45,7 +37,6 @@ public class SAMLAssertionFactory {
      * </p>
      *
      * @param values a {@code String[]} containing the restriction values.
-     *
      * @return the constructed {@code AudienceRestrictionType} instance.
      */
     public static AudienceRestrictionType createAudienceRestriction(String... values) {
@@ -63,10 +54,9 @@ public class SAMLAssertionFactory {
      * Creates a {@code NameIDType} instance with the specified values.
      * </p>
      *
-     * @param format a {@code String} representing the name format.
+     * @param format    a {@code String} representing the name format.
      * @param qualifier a {@code String} representing the name qualifier.
-     * @param value a {@code String} representing the name value.
-     *
+     * @param value     a {@code String} representing the name value.
      * @return the constructed {@code NameIDType} instance.
      */
     public static NameIDType createNameID(String format, String qualifier, String value) {
@@ -83,10 +73,9 @@ public class SAMLAssertionFactory {
      * Creates a {@code Conditions} instance with the specified values.
      * </p>
      *
-     * @param notBefore a {@code XMLGregorianCalendar} representing the start of the token lifetime period.
+     * @param notBefore    a {@code XMLGregorianCalendar} representing the start of the token lifetime period.
      * @param notOnOrAfter a {@code XMLGregorianCalendar} representing the end of the token lifetime period.
      * @param restrictions an array containing the applicable restrictions.
-     *
      * @return the constructed {@code Conditions} instance.
      */
     public static ConditionsType createConditions(XMLGregorianCalendar notBefore, XMLGregorianCalendar notOnOrAfter,
@@ -109,7 +98,6 @@ public class SAMLAssertionFactory {
      * </p>
      *
      * @param keyInfo the {@code KeyInfoType} object that wraps the proof-of-possession token.
-     *
      * @return the constructed {@code KeyInfoConfirmationDataType} instance.
      */
     public static KeyInfoConfirmationDataType createKeyInfoConfirmation(KeyInfoType keyInfo) {
@@ -123,10 +111,9 @@ public class SAMLAssertionFactory {
      * Creates a {@code SubjectConfirmationType} object with the specified values.
      * </p>
      *
-     * @param nameID the identifier of the confirmation.
+     * @param nameID             the identifier of the confirmation.
      * @param confirmationMethod a {@code String} representing the confirmation method.
-     * @param keyInfoData the {@code KeyInfoConfirmationDataType} instance that contains the proof of possession key.
-     *
+     * @param keyInfoData        the {@code KeyInfoConfirmationDataType} instance that contains the proof of possession key.
      * @return the constructed {@code SubjectConfirmationType} instance.
      */
     public static SubjectConfirmationType createSubjectConfirmation(NameIDType nameID, String confirmationMethod,
@@ -143,11 +130,10 @@ public class SAMLAssertionFactory {
      * Creates a {@code SubjectType} object with the specified values.
      * </p>
      *
-     * @param nameID the identifier of the subject.
+     * @param nameID       the identifier of the subject.
      * @param confirmation the {@code SubjectConfirmationType} that is used to establish the correspondence between the
-     * subject
-     * and claims of SAML statements.
-     *
+     *                     subject
+     *                     and claims of SAML statements.
      * @return the constructed {@code SubjectType} instance.
      */
     public static SubjectType createSubject(NameIDType nameID, SubjectConfirmationType confirmation) {
@@ -166,15 +152,14 @@ public class SAMLAssertionFactory {
      * Creates a SAMLV2 {@code AssertionType} with the specified values.
      * </p>
      *
-     * @param id a {@code String} representing the assertion ID.
-     * @param issuerID a {@code NameIDType} that identifies the assertion issuer.
+     * @param id           a {@code String} representing the assertion ID.
+     * @param issuerID     a {@code NameIDType} that identifies the assertion issuer.
      * @param issueInstant the assertion time of creation.
-     * @param conditions the {@code ConditionsType} that specify the conditions under which the assertion is to be
-     * considered
-     * valid
-     * @param subject the {@code SubjectType} that identifies the authenticated principal.
-     * @param statements a list of statements associated with the authenticated principal.
-     *
+     * @param conditions   the {@code ConditionsType} that specify the conditions under which the assertion is to be
+     *                     considered
+     *                     valid
+     * @param subject      the {@code SubjectType} that identifies the authenticated principal.
+     * @param statements   a list of statements associated with the authenticated principal.
      * @return
      */
     public static AssertionType createAssertion(String id, NameIDType issuerID, XMLGregorianCalendar issueInstant,

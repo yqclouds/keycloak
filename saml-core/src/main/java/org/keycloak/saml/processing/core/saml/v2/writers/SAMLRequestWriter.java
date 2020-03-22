@@ -19,13 +19,7 @@ package org.keycloak.saml.processing.core.saml.v2.writers;
 import org.keycloak.dom.saml.v2.assertion.AttributeType;
 import org.keycloak.dom.saml.v2.assertion.NameIDType;
 import org.keycloak.dom.saml.v2.assertion.SubjectType;
-import org.keycloak.dom.saml.v2.protocol.ArtifactResolveType;
-import org.keycloak.dom.saml.v2.protocol.AttributeQueryType;
-import org.keycloak.dom.saml.v2.protocol.AuthnContextComparisonType;
-import org.keycloak.dom.saml.v2.protocol.AuthnRequestType;
-import org.keycloak.dom.saml.v2.protocol.LogoutRequestType;
-import org.keycloak.dom.saml.v2.protocol.NameIDPolicyType;
-import org.keycloak.dom.saml.v2.protocol.RequestedAuthnContextType;
+import org.keycloak.dom.saml.v2.protocol.*;
 import org.keycloak.saml.common.constants.JBossSAMLConstants;
 import org.keycloak.saml.common.exceptions.ProcessingException;
 import org.keycloak.saml.common.util.StaxUtil;
@@ -36,7 +30,6 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamWriter;
 import java.net.URI;
 import java.util.List;
-import org.keycloak.dom.saml.v2.protocol.ExtensionsType;
 
 import static org.keycloak.saml.common.constants.JBossSAMLURIConstants.ASSERTION_NSURI;
 import static org.keycloak.saml.common.constants.JBossSAMLURIConstants.PROTOCOL_NSURI;
@@ -57,7 +50,6 @@ public class SAMLRequestWriter extends BaseWriter {
      * Write a {@code AuthnRequestType } to stream
      *
      * @param request
-     *
      * @throws org.keycloak.saml.common.exceptions.ProcessingException
      */
     public void write(AuthnRequestType request) throws ProcessingException {
@@ -124,7 +116,7 @@ public class SAMLRequestWriter extends BaseWriter {
         }
 
         ExtensionsType extensions = request.getExtensions();
-        if (extensions != null && ! extensions.getAny().isEmpty()) {
+        if (extensions != null && !extensions.getAny().isEmpty()) {
             write(extensions);
         }
 
@@ -146,7 +138,6 @@ public class SAMLRequestWriter extends BaseWriter {
      * Write a {@code LogoutRequestType} to stream
      *
      * @param logOutRequest
-     *
      * @throws ProcessingException
      */
     public void write(LogoutRequestType logOutRequest) throws ProcessingException {
@@ -178,7 +169,7 @@ public class SAMLRequestWriter extends BaseWriter {
         }
 
         ExtensionsType extensions = logOutRequest.getExtensions();
-        if (extensions != null && ! extensions.getAny().isEmpty()) {
+        if (extensions != null && !extensions.getAny().isEmpty()) {
             write(extensions);
         }
 
@@ -206,7 +197,6 @@ public class SAMLRequestWriter extends BaseWriter {
      * Write a {@code NameIDPolicyType} to stream
      *
      * @param nameIDPolicy
-     *
      * @throws ProcessingException
      */
     public void write(NameIDPolicyType nameIDPolicy) throws ProcessingException {
@@ -235,7 +225,6 @@ public class SAMLRequestWriter extends BaseWriter {
      * Write a {@code RequestedAuthnContextType} to stream
      *
      * @param requestedAuthnContextType
-     *
      * @throws ProcessingException
      */
     public void write(RequestedAuthnContextType requestedAuthnContextType) throws ProcessingException {
@@ -290,7 +279,7 @@ public class SAMLRequestWriter extends BaseWriter {
             StaxUtil.writeDOMElement(writer, sig);
         }
         ExtensionsType extensions = request.getExtensions();
-        if (extensions != null && ! extensions.getAny().isEmpty()) {
+        if (extensions != null && !extensions.getAny().isEmpty()) {
             write(extensions);
         }
 
@@ -332,7 +321,7 @@ public class SAMLRequestWriter extends BaseWriter {
             StaxUtil.writeDOMElement(writer, sig);
         }
         ExtensionsType extensions = request.getExtensions();
-        if (extensions != null && ! extensions.getAny().isEmpty()) {
+        if (extensions != null && !extensions.getAny().isEmpty()) {
             write(extensions);
         }
         SubjectType subject = request.getSubject();

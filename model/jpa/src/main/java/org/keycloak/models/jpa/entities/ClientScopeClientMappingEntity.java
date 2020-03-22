@@ -17,18 +17,8 @@
 
 package org.keycloak.models.jpa.entities;
 
+import javax.persistence.*;
 import java.io.Serializable;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
 
 /**
  * Binding between client and clientScope
@@ -36,26 +26,26 @@ import javax.persistence.Table;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 @NamedQueries({
-        @NamedQuery(name="clientScopeClientMappingIdsByClient", query="select m.clientScope.id from ClientScopeClientMappingEntity m where m.client = :client and m.defaultScope = :defaultScope"),
-        @NamedQuery(name="deleteClientScopeClientMapping", query="delete from ClientScopeClientMappingEntity where client = :client and clientScope = :clientScope"),
-        @NamedQuery(name="deleteClientScopeClientMappingByClient", query="delete from ClientScopeClientMappingEntity where client = :client")
+        @NamedQuery(name = "clientScopeClientMappingIdsByClient", query = "select m.clientScope.id from ClientScopeClientMappingEntity m where m.client = :client and m.defaultScope = :defaultScope"),
+        @NamedQuery(name = "deleteClientScopeClientMapping", query = "delete from ClientScopeClientMappingEntity where client = :client and clientScope = :clientScope"),
+        @NamedQuery(name = "deleteClientScopeClientMappingByClient", query = "delete from ClientScopeClientMappingEntity where client = :client")
 })
 @Entity
-@Table(name="CLIENT_SCOPE_CLIENT")
+@Table(name = "CLIENT_SCOPE_CLIENT")
 @IdClass(ClientScopeClientMappingEntity.Key.class)
 public class ClientScopeClientMappingEntity {
 
     @Id
-    @ManyToOne(fetch= FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "SCOPE_ID")
     protected ClientScopeEntity clientScope;
 
     @Id
-    @ManyToOne(fetch= FetchType.LAZY)
-    @JoinColumn(name="CLIENT_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "CLIENT_ID")
     protected ClientEntity client;
 
-    @Column(name="DEFAULT_SCOPE")
+    @Column(name = "DEFAULT_SCOPE")
     protected boolean defaultScope;
 
     public ClientScopeEntity getClientScope() {
@@ -80,6 +70,29 @@ public class ClientScopeClientMappingEntity {
 
     public void setDefaultScope(boolean defaultScope) {
         this.defaultScope = defaultScope;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof ClientScopeClientMappingEntity)) return false;
+
+        ClientScopeClientMappingEntity key = (ClientScopeClientMappingEntity) o;
+
+        if (clientScope != null ? !clientScope.getId().equals(key.clientScope != null ? key.clientScope.getId() : null) : key.clientScope != null)
+            return false;
+        if (client != null ? !client.getId().equals(key.client != null ? key.client.getId() : null) : key.client != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = clientScope != null ? clientScope.getId().hashCode() : 0;
+        result = 31 * result + (client != null ? client.getId().hashCode() : 0);
+        return result;
     }
 
     public static class Key implements Serializable {
@@ -111,8 +124,10 @@ public class ClientScopeClientMappingEntity {
 
             ClientScopeClientMappingEntity.Key key = (ClientScopeClientMappingEntity.Key) o;
 
-            if (clientScope != null ? !clientScope.getId().equals(key.clientScope != null ? key.clientScope.getId() : null) : key.clientScope != null) return false;
-            if (client != null ? !client.getId().equals(key.client != null ? key.client.getId() : null) : key.client != null) return false;
+            if (clientScope != null ? !clientScope.getId().equals(key.clientScope != null ? key.clientScope.getId() : null) : key.clientScope != null)
+                return false;
+            if (client != null ? !client.getId().equals(key.client != null ? key.client.getId() : null) : key.client != null)
+                return false;
 
             return true;
         }
@@ -123,26 +138,5 @@ public class ClientScopeClientMappingEntity {
             result = 31 * result + (client != null ? client.getId().hashCode() : 0);
             return result;
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!(o instanceof ClientScopeClientMappingEntity)) return false;
-
-        ClientScopeClientMappingEntity key = (ClientScopeClientMappingEntity) o;
-
-        if (clientScope != null ? !clientScope.getId().equals(key.clientScope != null ? key.clientScope.getId() : null) : key.clientScope != null) return false;
-        if (client != null ? !client.getId().equals(key.client != null ? key.client.getId() : null) : key.client != null) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = clientScope != null ? clientScope.getId().hashCode() : 0;
-        result = 31 * result + (client != null ? client.getId().hashCode() : 0);
-        return result;
     }
 }

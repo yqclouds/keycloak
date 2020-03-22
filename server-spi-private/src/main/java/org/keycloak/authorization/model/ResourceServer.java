@@ -38,7 +38,7 @@ public interface ResourceServer {
 
     /**
      * Indicates if the resource server is allowed to manage its own resources remotely using the Protection API.
-     *
+     * <p>
      * {@code true} if the resource server is allowed to managed them remotely
      */
     boolean isAllowRemoteResourceManagement();
@@ -65,17 +65,17 @@ public interface ResourceServer {
     void setPolicyEnforcementMode(PolicyEnforcementMode enforcementMode);
 
     /**
-     * Defines a {@link DecisionStrategy} for this instance, indicating how permissions should be granted depending on the given
-     * {@code decisionStrategy}.
-     * 
-     * @param decisionStrategy the decision strategy
-     */
-    void setDecisionStrategy(DecisionStrategy decisionStrategy);
-
-    /**
      * Returns the {@link DecisionStrategy} configured for this instance.
-     * 
+     *
      * @return the decision strategy
      */
     DecisionStrategy getDecisionStrategy();
+
+    /**
+     * Defines a {@link DecisionStrategy} for this instance, indicating how permissions should be granted depending on the given
+     * {@code decisionStrategy}.
+     *
+     * @param decisionStrategy the decision strategy
+     */
+    void setDecisionStrategy(DecisionStrategy decisionStrategy);
 }

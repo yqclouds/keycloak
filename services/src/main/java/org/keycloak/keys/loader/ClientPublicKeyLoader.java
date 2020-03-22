@@ -66,29 +66,6 @@ public class ClientPublicKeyLoader implements PublicKeyLoader {
         this.keyUse = keyUse;
     }
 
-    @Override
-    public Map<String, KeyWrapper> loadKeys() throws Exception {
-        OIDCAdvancedConfigWrapper config = OIDCAdvancedConfigWrapper.fromClientModel(client);
-        if (config.isUseJwksUrl()) {
-            String jwksUrl = config.getJwksUrl();
-            jwksUrl = ResolveRelative.resolveRelativeUri(session, client.getRootUrl(), jwksUrl);
-            JSONWebKeySet jwks = JWKSHttpUtils.sendJwksRequest(session, jwksUrl);
-            return JWKSUtils.getKeyWrappersForUse(jwks, keyUse);
-        } else if (keyUse == JWK.Use.SIG) {
-            try {
-                CertificateRepresentation certInfo = CertificateInfoHelper.getCertificateFromClient(client, JWTClientAuthenticator.ATTR_PREFIX);
-                KeyWrapper publicKey = getSignatureValidationKey(certInfo);
-                return Collections.singletonMap(publicKey.getKid(), publicKey);
-            } catch (ModelException me) {
-                logger.warnf(me, "Unable to retrieve publicKey for verify signature of client '%s' . Error details: %s", client.getClientId(), me.getMessage());
-                return Collections.emptyMap();
-            }
-        } else {
-            logger.warnf("Unable to retrieve publicKey of client '%s' for the specified purpose other than verifying signature", client.getClientId());
-            return Collections.emptyMap();
-        }
-    }
-
     private static KeyWrapper getSignatureValidationKey(CertificateRepresentation certInfo) throws ModelException {
         KeyWrapper keyWrapper = new KeyWrapper();
         String encodedCertificate = certInfo.getCertificate();
@@ -121,6 +98,29 @@ public class ClientPublicKeyLoader implements PublicKeyLoader {
             keyWrapper.setPublicKey(publicKey);
         }
         return keyWrapper;
+    }
+
+    @Override
+    public Map<String, KeyWrapper> loadKeys() throws Exception {
+        OIDCAdvancedConfigWrapper config = OIDCAdvancedConfigWrapper.fromClientModel(client);
+        if (config.isUseJwksUrl()) {
+            String jwksUrl = config.getJwksUrl();
+            jwksUrl = ResolveRelative.resolveRelativeUri(session, client.getRootUrl(), jwksUrl);
+            JSONWebKeySet jwks = JWKSHttpUtils.sendJwksRequest(session, jwksUrl);
+            return JWKSUtils.getKeyWrappersForUse(jwks, keyUse);
+        } else if (keyUse == JWK.Use.SIG) {
+            try {
+                CertificateRepresentation certInfo = CertificateInfoHelper.getCertificateFromClient(client, JWTClientAuthenticator.ATTR_PREFIX);
+                KeyWrapper publicKey = getSignatureValidationKey(certInfo);
+                return Collections.singletonMap(publicKey.getKid(), publicKey);
+            } catch (ModelException me) {
+                logger.warnf(me, "Unable to retrieve publicKey for verify signature of client '%s' . Error details: %s", client.getClientId(), me.getMessage());
+                return Collections.emptyMap();
+            }
+        } else {
+            logger.warnf("Unable to retrieve publicKey of client '%s' for the specified purpose other than verifying signature", client.getClientId());
+            return Collections.emptyMap();
+        }
     }
 
 

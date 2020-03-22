@@ -28,12 +28,7 @@ import org.keycloak.representations.idm.authorization.AuthorizationRequest;
 import org.keycloak.representations.idm.authorization.DecisionStrategy;
 import org.keycloak.representations.idm.authorization.Permission;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -50,6 +45,14 @@ public class DecisionPermissionCollector extends AbstractDecisionCollector {
         this.authorizationProvider = authorizationProvider;
         this.resourceServer = resourceServer;
         this.request = request;
+    }
+
+    private static boolean isResourcePermission(Policy policy) {
+        return "resource".equals(policy.getType());
+    }
+
+    private static boolean isScopePermission(Policy policy) {
+        return "scope".equals(policy.getType());
     }
 
     @Override
@@ -101,7 +104,7 @@ public class DecisionPermissionCollector extends AbstractDecisionCollector {
                             deniedScopes.addAll(requestedScopes);
                         }
                     } else {
-                        // deny all scopes associated with the scope-based permission if the permission is associated with the 
+                        // deny all scopes associated with the scope-based permission if the permission is associated with the
                         // resource or if the permission applies to any resource associated with the scopes
                         if (containsResource || policyResources.isEmpty()) {
                             deniedScopes.addAll(policyScopes);
@@ -151,21 +154,21 @@ public class DecisionPermissionCollector extends AbstractDecisionCollector {
     }
 
     /**
-     * Checks if the given {@code policy} is eligible to grant access to a resource. Resources are only granted if policy is 
-     * not a scope-permission or, if so, the resource is a user-owned resource so that permissions can be overridden when 
+     * Checks if the given {@code policy} is eligible to grant access to a resource. Resources are only granted if policy is
+     * not a scope-permission or, if so, the resource is a user-owned resource so that permissions can be overridden when
      * inheriting policies from a typed/parent resource.
-     * 
+     *
      * @param resource the resource
-     * @param policy the policy that grants access to the resources
-     * @return {@code true} if the resource should be granted 
+     * @param policy   the policy that grants access to the resources
+     * @return {@code true} if the resource should be granted
      */
     private boolean isGrantingAccessToResource(Resource resource, Policy policy) {
         boolean scopePermission = isScopePermission(policy);
-        
+
         if (!scopePermission) {
             return true;
         }
-        
+
         return resource != null && !resource.getOwner().equals(resourceServer.getId());
     }
 
@@ -218,13 +221,5 @@ public class DecisionPermissionCollector extends AbstractDecisionCollector {
 
     protected void onGrant(Permission permission) {
 
-    }
-
-    private static boolean isResourcePermission(Policy policy) {
-        return "resource".equals(policy.getType());
-    }
-
-    private static boolean isScopePermission(Policy policy) {
-        return "scope".equals(policy.getType());
     }
 }

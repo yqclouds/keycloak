@@ -31,11 +31,10 @@ import javax.ws.rs.core.UriInfo;
  */
 public interface ExchangeTokenToIdentityProviderToken {
     /**
-     *
      * @param authorizedClient client requesting exchange
      * @param tokenUserSession UserSessionModel of token exchanging from
-     * @param tokenSubject UserModel of token exchanging from
-     * @param params form parameters received for requested exchange
+     * @param tokenSubject     UserModel of token exchanging from
+     * @param params           form parameters received for requested exchange
      * @return
      */
     Response exchangeFromToken(UriInfo uriInfo, EventBuilder event, ClientModel authorizedClient, UserSessionModel tokenUserSession, UserModel tokenSubject, MultivaluedMap<String, String> params);

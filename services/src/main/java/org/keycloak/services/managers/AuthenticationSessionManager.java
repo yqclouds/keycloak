@@ -30,7 +30,6 @@ import org.keycloak.sessions.RootAuthenticationSessionModel;
 import org.keycloak.sessions.StickySessionEncoderProvider;
 
 import javax.ws.rs.core.UriInfo;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -57,6 +56,7 @@ public class AuthenticationSessionManager {
     /**
      * Creates a fresh authentication session for the given realm . Optionally sets the browser
      * authentication session cookie {@link #AUTH_SESSION_ID} with the ID of the new session.
+     *
      * @param realm
      * @param browserCookie Set the cookie in the browser for the
      * @return
@@ -112,6 +112,7 @@ public class AuthenticationSessionManager {
 
     /**
      * Returns current authentication session if it exists, otherwise returns {@code null}.
+     *
      * @param realm
      * @return
      */
@@ -154,7 +155,6 @@ public class AuthenticationSessionManager {
 
 
     /**
-     *
      * @param encodedAuthSessionId encoded ID with attached route in cluster environment (EG. "5e161e00-d426-4ea6-98e9-52eb9844e2d7.node1" )
      * @return object with decoded and actually encoded authSessionId
      */
@@ -222,6 +222,6 @@ public class AuthenticationSessionManager {
     // Don't look at cookie. Just lookup authentication session based on the ID and client. Return null if not found
     public AuthenticationSessionModel getAuthenticationSessionByIdAndClient(RealmModel realm, String authSessionId, ClientModel client, String tabId) {
         RootAuthenticationSessionModel rootAuthSession = session.authenticationSessions().getRootAuthenticationSession(realm, authSessionId);
-        return rootAuthSession==null ? null : rootAuthSession.getAuthenticationSession(client, tabId);
+        return rootAuthSession == null ? null : rootAuthSession.getAuthenticationSession(client, tabId);
     }
 }

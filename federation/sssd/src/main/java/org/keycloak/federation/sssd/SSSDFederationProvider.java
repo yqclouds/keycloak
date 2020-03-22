@@ -21,7 +21,6 @@ import org.jboss.logging.Logger;
 import org.keycloak.credential.CredentialInput;
 import org.keycloak.credential.CredentialInputUpdater;
 import org.keycloak.credential.CredentialInputValidator;
-import org.keycloak.credential.CredentialModel;
 import org.keycloak.federation.sssd.api.Sssd;
 import org.keycloak.federation.sssd.api.Sssd.User;
 import org.keycloak.federation.sssd.impl.PAMAuthenticator;
@@ -32,7 +31,6 @@ import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.UserStorageProviderModel;
 import org.keycloak.storage.user.ImportedUserValidation;
 import org.keycloak.storage.user.UserLookupProvider;
-import sun.security.util.Password;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -51,9 +49,13 @@ public class SSSDFederationProvider implements UserStorageProvider,
         CredentialInputValidator,
         ImportedUserValidation {
 
+    protected static final Set<String> supportedCredentialTypes = new HashSet<>();
     private static final Logger logger = Logger.getLogger(SSSDFederationProvider.class);
 
-    protected static final Set<String> supportedCredentialTypes = new HashSet<>();
+    static {
+        supportedCredentialTypes.add(PasswordCredentialModel.TYPE);
+    }
+
     private final SSSDFederationProviderFactory factory;
     protected KeycloakSession session;
     protected UserStorageProviderModel model;
@@ -63,11 +65,6 @@ public class SSSDFederationProvider implements UserStorageProvider,
         this.model = model;
         this.factory = sssdFederationProviderFactory;
     }
-
-    static {
-        supportedCredentialTypes.add(PasswordCredentialModel.TYPE);
-    }
-
 
     @Override
     public UserModel getUserByUsername(String username, RealmModel realm) {
@@ -79,13 +76,13 @@ public class SSSDFederationProvider implements UserStorageProvider,
         return validateAndProxy(realm, user);
     }
 
-        /**
-         * Called after successful authentication
-         *
-         * @param realm    realm
-         * @param username username without realm prefix
-         * @return user if found or successfully created. Null if user with same username already exists, but is not linked to this provider
-         */
+    /**
+     * Called after successful authentication
+     *
+     * @param realm    realm
+     * @param username username without realm prefix
+     * @return user if found or successfully created. Null if user with same username already exists, but is not linked to this provider
+     */
     protected UserModel findOrCreateAuthenticatedUser(RealmModel realm, String username) {
         UserModel user = session.userLocalStorage().getUserByUsername(username, realm);
         if (user != null) {
@@ -177,7 +174,7 @@ public class SSSDFederationProvider implements UserStorageProvider,
     public boolean isValid(RealmModel realm, UserModel user, CredentialInput input) {
         if (!supportsCredentialType(input.getType()) || !(input instanceof UserCredentialModel)) return false;
 
-        UserCredentialModel cred = (UserCredentialModel)input;
+        UserCredentialModel cred = (UserCredentialModel) input;
         PAMAuthenticator pam = factory.createPAMAuthenticator(user.getUsername(), cred.getChallengeResponse());
         return (pam.authenticate() != null);
     }

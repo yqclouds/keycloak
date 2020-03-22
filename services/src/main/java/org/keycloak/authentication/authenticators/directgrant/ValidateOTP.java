@@ -23,11 +23,7 @@ import org.keycloak.authentication.CredentialValidator;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.credential.OTPCredentialProvider;
 import org.keycloak.events.Errors;
-import org.keycloak.models.AuthenticationExecutionModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserCredentialModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.credential.OTPCredentialModel;
 import org.keycloak.provider.ProviderConfigProperty;
 
@@ -65,7 +61,7 @@ public class ValidateOTP extends AbstractDirectGrantAuthenticator implements Cre
 
         // Always use default OTP credential in case of direct grant authentication
         String credentialId = getCredentialProvider(context.getSession())
-                    .getDefaultCredential(context.getSession(), context.getRealm(), context.getUser()).getId();
+                .getDefaultCredential(context.getSession(), context.getRealm(), context.getUser()).getId();
 
         if (otp == null) {
             if (context.getUser() != null) {
@@ -145,7 +141,7 @@ public class ValidateOTP extends AbstractDirectGrantAuthenticator implements Cre
     }
 
     public OTPCredentialProvider getCredentialProvider(KeycloakSession session) {
-        return (OTPCredentialProvider)session.getProvider(CredentialProvider.class, "keycloak-otp");
+        return (OTPCredentialProvider) session.getProvider(CredentialProvider.class, "keycloak-otp");
     }
 
 }

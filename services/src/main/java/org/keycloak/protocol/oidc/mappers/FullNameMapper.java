@@ -24,12 +24,7 @@ import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.IDToken;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Set the 'name' claim to be first + last name.
@@ -39,6 +34,7 @@ import java.util.Optional;
  */
 public class FullNameMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
 
+    public static final String PROVIDER_ID = "oidc-full-name-mapper";
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     static {
@@ -46,8 +42,18 @@ public class FullNameMapper extends AbstractOIDCProtocolMapper implements OIDCAc
 
     }
 
-    public static final String PROVIDER_ID = "oidc-full-name-mapper";
-
+    public static ProtocolMapperModel create(String name, boolean accessToken, boolean idToken, boolean userInfo) {
+        ProtocolMapperModel mapper = new ProtocolMapperModel();
+        mapper.setName(name);
+        mapper.setProtocolMapper(PROVIDER_ID);
+        mapper.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
+        Map<String, String> config = new HashMap<>();
+        if (accessToken) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ACCESS_TOKEN, "true");
+        if (idToken) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ID_TOKEN, "true");
+        if (userInfo) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_USERINFO, "true");
+        mapper.setConfig(config);
+        return mapper;
+    }
 
     public List<ProviderConfigProperty> getConfigProperties() {
         return configProperties;
@@ -81,19 +87,6 @@ public class FullNameMapper extends AbstractOIDCProtocolMapper implements OIDCAc
         if (!parts.isEmpty()) {
             token.getOtherClaims().put("name", String.join(" ", parts));
         }
-    }
-
-    public static ProtocolMapperModel create(String name, boolean accessToken, boolean idToken, boolean userInfo) {
-        ProtocolMapperModel mapper = new ProtocolMapperModel();
-        mapper.setName(name);
-        mapper.setProtocolMapper(PROVIDER_ID);
-        mapper.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
-        Map<String, String> config = new HashMap<>();
-        if (accessToken) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ACCESS_TOKEN, "true");
-        if (idToken) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ID_TOKEN, "true");
-        if (userInfo) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_USERINFO, "true");
-        mapper.setConfig(config);
-        return mapper;
     }
 
 }

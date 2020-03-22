@@ -30,5 +30,5 @@ import org.keycloak.models.UserSessionModel;
 public interface SAMLAttributeStatementMapper {
 
     void transformAttributeStatement(AttributeStatementType attributeStatement, ProtocolMapperModel mappingModel, KeycloakSession session,
-                                        UserSessionModel userSession, AuthenticatedClientSessionModel clientSession);
+                                     UserSessionModel userSession, AuthenticatedClientSessionModel clientSession);
 }

@@ -17,9 +17,9 @@
 
 package org.keycloak.models.cache.infinispan.events;
 
-import java.util.Set;
-
 import org.keycloak.models.cache.infinispan.RealmCacheManager;
+
+import java.util.Set;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>

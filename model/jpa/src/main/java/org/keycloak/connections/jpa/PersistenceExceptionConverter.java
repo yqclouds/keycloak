@@ -35,12 +35,23 @@ public class PersistenceExceptionConverter implements InvocationHandler {
 
     private EntityManager em;
 
+    private PersistenceExceptionConverter(EntityManager em) {
+        this.em = em;
+    }
+
     public static EntityManager create(EntityManager em) {
         return (EntityManager) Proxy.newProxyInstance(EntityManager.class.getClassLoader(), new Class[]{EntityManager.class}, new PersistenceExceptionConverter(em));
     }
 
-    private PersistenceExceptionConverter(EntityManager em) {
-        this.em = em;
+    public static ModelException convert(Throwable t) {
+        if (t.getCause() != null && t.getCause() instanceof ConstraintViolationException) {
+            throw new ModelDuplicateException(t);
+        }
+        if (t instanceof EntityExistsException || t instanceof ConstraintViolationException) {
+            throw new ModelDuplicateException(t);
+        } else {
+            throw new ModelException(t);
+        }
     }
 
     @Override
@@ -49,16 +60,6 @@ public class PersistenceExceptionConverter implements InvocationHandler {
             return method.invoke(em, args);
         } catch (InvocationTargetException e) {
             throw convert(e.getCause());
-        }
-    }
-
-    public static ModelException convert(Throwable t) {
-        if (t.getCause() != null && t.getCause() instanceof ConstraintViolationException) {
-            throw new ModelDuplicateException(t);
-        } if (t instanceof EntityExistsException || t instanceof ConstraintViolationException) {
-            throw new ModelDuplicateException(t);
-        } else {
-            throw new ModelException(t);
         }
     }
 

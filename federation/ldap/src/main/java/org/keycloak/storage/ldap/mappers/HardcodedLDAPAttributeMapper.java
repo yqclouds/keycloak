@@ -17,11 +17,6 @@
 
 package org.keycloak.storage.ldap.mappers;
 
-import java.security.SecureRandom;
-import java.util.Collections;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.RealmModel;
@@ -30,23 +25,26 @@ import org.keycloak.storage.ldap.LDAPStorageProvider;
 import org.keycloak.storage.ldap.idm.model.LDAPObject;
 import org.keycloak.storage.ldap.idm.query.internal.LDAPQuery;
 
+import java.security.SecureRandom;
+import java.util.Collections;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class HardcodedLDAPAttributeMapper extends AbstractLDAPStorageMapper {
 
-    private static final Logger logger = Logger.getLogger(HardcodedLDAPAttributeMapper.class);
-
     public static final String LDAP_ATTRIBUTE_NAME = "ldap.attribute.name";
-
     public static final String LDAP_ATTRIBUTE_VALUE = "ldap.attribute.value";
-
+    private static final Logger logger = Logger.getLogger(HardcodedLDAPAttributeMapper.class);
+    private static final String CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW1234567890";
     public static Pattern substitution = Pattern.compile("\\$\\{([^}]+)\\}");
+
 
     public HardcodedLDAPAttributeMapper(ComponentModel mapperModel, LDAPStorageProvider ldapProvider) {
         super(mapperModel, ldapProvider);
     }
-
 
     @Override
     public void onRegisterUserToLDAP(LDAPObject ldapUser, UserModel localUser, RealmModel realm) {
@@ -57,7 +55,6 @@ public class HardcodedLDAPAttributeMapper extends AbstractLDAPStorageMapper {
 
         ldapUser.setAttribute(ldapAttrName, Collections.singleton(computedValue));
     }
-
 
     protected String computeAttributeValue(String ldapAttrName, String ldapAttrValue, LDAPObject ldapUser, UserModel localUser, RealmModel realm) {
         Matcher m = substitution.matcher(ldapAttrValue);
@@ -77,9 +74,6 @@ public class HardcodedLDAPAttributeMapper extends AbstractLDAPStorageMapper {
 
         return sb.toString();
     }
-
-
-    private static final String CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW1234567890";
 
     // Generate random character of length 30. Allowed chars are from range 33-126
     protected String getRandomValue() {

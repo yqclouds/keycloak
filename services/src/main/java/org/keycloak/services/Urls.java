@@ -21,11 +21,11 @@ import org.keycloak.models.Constants;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.OIDCLoginProtocolService;
 import org.keycloak.protocol.saml.SamlProtocol;
-import org.keycloak.services.resources.account.AccountFormService;
 import org.keycloak.services.resources.IdentityBrokerService;
 import org.keycloak.services.resources.LoginActionsService;
 import org.keycloak.services.resources.RealmsResource;
 import org.keycloak.services.resources.ThemeResource;
+import org.keycloak.services.resources.account.AccountFormService;
 import org.keycloak.services.resources.admin.AdminRoot;
 
 import javax.ws.rs.core.UriBuilder;
@@ -250,7 +250,7 @@ public class Urls {
                 .build(realmName);
     }
 
-    public static String localeCookiePath(URI baseUri, String realmName){
+    public static String localeCookiePath(URI baseUri, String realmName) {
         return realmBase(baseUri).path(realmName).build().getRawPath();
     }
 

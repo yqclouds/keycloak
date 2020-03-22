@@ -17,8 +17,6 @@
 
 package org.keycloak.models.sessions.infinispan.initializer;
 
-import java.io.Serializable;
-
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ClusteringConfigurationBuilder;
@@ -30,6 +28,8 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.logging.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.io.Serializable;
 
 /**
  * Reproducer for RHSSO-377 / ISPN-6806
@@ -110,7 +110,7 @@ public class L1SerializationIssueTest {
 
     private void writeItems(Cache<String, Object> cache) {
         long start = System.currentTimeMillis();
-        for (int i=0 ; i < ITEMS_COUNT ; i++) {
+        for (int i = 0; i < ITEMS_COUNT; i++) {
             String key = "key-" + i;
             cache.put(key, new MySerializable());
         }
@@ -120,13 +120,12 @@ public class L1SerializationIssueTest {
 
     private void readItems(Cache<String, Object> cache) {
         long start = System.currentTimeMillis();
-        for (int i=0 ; i < ITEMS_COUNT ; i++) {
+        for (int i = 0; i < ITEMS_COUNT; i++) {
             String key = "key-" + i;
             cache.get(key);
         }
         logger.infof("Read %d items in %d ms", ITEMS_COUNT, System.currentTimeMillis() - start);
     }
-
 
 
     private EmbeddedCacheManager createManager() {

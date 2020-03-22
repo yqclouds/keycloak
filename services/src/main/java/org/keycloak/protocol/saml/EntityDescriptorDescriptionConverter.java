@@ -18,14 +18,8 @@
 package org.keycloak.protocol.saml;
 
 import org.keycloak.Config;
-import org.keycloak.dom.saml.v2.metadata.EndpointType;
-import org.keycloak.dom.saml.v2.metadata.EntitiesDescriptorType;
-import org.keycloak.dom.saml.v2.metadata.EntityDescriptorType;
+import org.keycloak.dom.saml.v2.metadata.*;
 import org.keycloak.dom.saml.v2.metadata.EntityDescriptorType.EDTDescriptorChoiceType;
-import org.keycloak.dom.saml.v2.metadata.IndexedEndpointType;
-import org.keycloak.dom.saml.v2.metadata.KeyDescriptorType;
-import org.keycloak.dom.saml.v2.metadata.KeyTypes;
-import org.keycloak.dom.saml.v2.metadata.SPSSODescriptorType;
 import org.keycloak.exportimport.ClientDescriptionConverter;
 import org.keycloak.exportimport.ClientDescriptionConverterFactory;
 import org.keycloak.models.KeycloakSession;
@@ -43,11 +37,7 @@ import org.keycloak.saml.processing.core.saml.v2.util.SAMLMetadataUtil;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.security.cert.X509Certificate;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -57,31 +47,19 @@ public class EntityDescriptorDescriptionConverter implements ClientDescriptionCo
 
     public static final String ID = "saml2-entity-descriptor";
 
-    @Override
-    public boolean isSupported(String description) {
-        description = description.trim();
-        return (description.startsWith("<") && description.endsWith(">") && description.contains("EntityDescriptor"));
-    }
-
-    @Override
-    public ClientRepresentation convertToInternal(String description) {
-        return loadEntityDescriptors(new ByteArrayInputStream(description.getBytes()));
-    }
-
     /**
      * Get the SP Descriptor from an entity descriptor
      *
      * @param entityDescriptor
-     *
      * @return
      */
     public static SPSSODescriptorType getSPDescriptor(EntityDescriptorType entityDescriptor) {
         return entityDescriptor.getChoiceType().stream()
-          .flatMap(d -> d.getDescriptors().stream())
-          .map(EDTDescriptorChoiceType::getSpDescriptor)
-          .filter(Objects::nonNull)
-          .findFirst()
-          .orElse(null);
+                .flatMap(d -> d.getDescriptors().stream())
+                .map(EDTDescriptorChoiceType::getSpDescriptor)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
     }
 
     /**
@@ -89,7 +67,6 @@ public class EntityDescriptorDescriptionConverter implements ClientDescriptionCo
      *
      * @param sp
      * @param bindingURI
-     *
      * @return
      */
     public static String getServiceURL(SPSSODescriptorType sp, String bindingURI) {
@@ -148,7 +125,8 @@ public class EntityDescriptorDescriptionConverter implements ClientDescriptionCo
         String logoutPost = getLogoutLocation(spDescriptorType, JBossSAMLURIConstants.SAML_HTTP_POST_BINDING.get());
         if (logoutPost != null) attributes.put(SamlProtocol.SAML_SINGLE_LOGOUT_SERVICE_URL_POST_ATTRIBUTE, logoutPost);
         String logoutRedirect = getLogoutLocation(spDescriptorType, JBossSAMLURIConstants.SAML_HTTP_REDIRECT_BINDING.get());
-        if (logoutRedirect != null) attributes.put(SamlProtocol.SAML_SINGLE_LOGOUT_SERVICE_URL_REDIRECT_ATTRIBUTE, logoutRedirect);
+        if (logoutRedirect != null)
+            attributes.put(SamlProtocol.SAML_SINGLE_LOGOUT_SERVICE_URL_REDIRECT_ATTRIBUTE, logoutRedirect);
 
         String assertionConsumerServicePostBinding = getServiceURL(spDescriptorType, JBossSAMLURIConstants.SAML_HTTP_POST_BINDING.get());
         if (assertionConsumerServicePostBinding != null) {
@@ -217,6 +195,17 @@ public class EntityDescriptorDescriptionConverter implements ClientDescriptionCo
 
         }
         return logoutResponseLocation;
+    }
+
+    @Override
+    public boolean isSupported(String description) {
+        description = description.trim();
+        return (description.startsWith("<") && description.endsWith(">") && description.contains("EntityDescriptor"));
+    }
+
+    @Override
+    public ClientRepresentation convertToInternal(String description) {
+        return loadEntityDescriptors(new ByteArrayInputStream(description.getBytes()));
     }
 
     @Override

@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- *
  * @author hmlnarik
  */
 public class HardcodedPublicKeyLoader implements PublicKeyLoader {
@@ -47,7 +46,7 @@ public class HardcodedPublicKeyLoader implements PublicKeyLoader {
 
     protected KeyWrapper getSavedPublicKey() {
         KeyWrapper keyWrapper = null;
-        if (pem != null && ! pem.trim().equals("")) {
+        if (pem != null && !pem.trim().equals("")) {
             keyWrapper = new KeyWrapper();
             keyWrapper.setKid(kid);
             keyWrapper.setType(KeyType.RSA);

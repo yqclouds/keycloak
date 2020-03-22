@@ -28,10 +28,8 @@ import org.keycloak.models.RequiredActionProviderModel;
  */
 public class CredentialTypeMetadata implements Comparable<CredentialTypeMetadata> {
 
-    private static final Logger logger = Logger.getLogger(CredentialTypeMetadata.class);
-
     public static final String DEFAULT_ICON_CSS_CLASS = "kcAuthenticatorDefaultClass";
-
+    private static final Logger logger = Logger.getLogger(CredentialTypeMetadata.class);
     private String type;
 
     private String displayName;
@@ -49,32 +47,11 @@ public class CredentialTypeMetadata implements Comparable<CredentialTypeMetadata
     private Category category;
 
 
-    public enum Category {
-        BASIC_AUTHENTICATION("basic-authentication", 1),
-        TWO_FACTOR("two-factor", 2),
-        PASSWORDLESS("passwordless", 3);
-
-        private String categoryName;
-        private int order;
-
-        Category(String categoryName, int order) {
-            this.categoryName = categoryName;
-            this.order = order;
-        }
-
-        @Override
-        public String toString() {
-            return categoryName;
-        }
-
-        public int compareWith(Category that) {
-            return order - that.order;
-        }
-
+    private CredentialTypeMetadata() {
     }
 
-
-    private CredentialTypeMetadata() {
+    public static CredentialTypeMetadataBuilder builder() {
+        return new CredentialTypeMetadataBuilder();
     }
 
 
@@ -87,11 +64,11 @@ public class CredentialTypeMetadata implements Comparable<CredentialTypeMetadata
         return type;
     }
 
-   /**
+    /**
      * @return the label, which will be shown to the end user on various screens, like login screen with available authentication mechanisms.
      * This label will reference this particular authenticator type.
      * It should be clear to end users. For example, implementations can return "Authenticator Application" for OTP or "Security Key" for WebAuthn.
-     *
+     * <p>
      * Alternatively, this method can return a message key, so that it is possible to localize it for various languages.
      */
     public String getDisplayName() {
@@ -102,7 +79,7 @@ public class CredentialTypeMetadata implements Comparable<CredentialTypeMetadata
      * @return the text, which will be shown to the user on various screens, like login screen with available authentication mechanisms.
      * This text will reference this particular authenticator type.
      * For example for OTP, the returned text could be "Enter a verification code from authenticator application" .
-     *
+     * <p>
      * Alternatively, this method can return a message key, so that it is possible to localize it for various languages.
      */
     public String getHelpText() {
@@ -111,17 +88,17 @@ public class CredentialTypeMetadata implements Comparable<CredentialTypeMetadata
 
     /**
      * Return the icon CSS, which can be used to display icon, which represents this particular authenticator.
-     *
+     * <p>
      * The icon will be displayed on various places. For example the "Select authenticator" screen during login, where user can select from
      * various authentication mechanisms for two-factor or passwordless authentication.
-     *
+     * <p>
      * The returned value can be either:
      * - Key of the property, which will reference the actual CSS in the themes.properties file. For example if you return "kcAuthenticatorWebAuthnClass"
-     *   from this method, then your themes.properties should have the property like for example "kcAuthenticatorWebAuthnClass=fa fa-key list-view-pf-icon-lg" .
-     *   This would mean that "fa fa-key list-view-pf-icon-lg" will be the actual CSS used.
+     * from this method, then your themes.properties should have the property like for example "kcAuthenticatorWebAuthnClass=fa fa-key list-view-pf-icon-lg" .
+     * This would mean that "fa fa-key list-view-pf-icon-lg" will be the actual CSS used.
      * - the icon CSS class directly. For example you can return "fa fa-key list-view-pf-icon-lg" directly for the above example with WebAuthn.
-     *   This alternative is fine just if your authenticator can use same CSS class for all the themes.
-     *
+     * This alternative is fine just if your authenticator can use same CSS class for all the themes.
+     * <p>
      * If you don't expect your authenticator to need icon (for example it will never be shown in the "select authenticator" screen), then
      * it is fine to keep the default value.
      */
@@ -161,10 +138,6 @@ public class CredentialTypeMetadata implements Comparable<CredentialTypeMetadata
         return category;
     }
 
-    public static CredentialTypeMetadataBuilder builder() {
-        return new CredentialTypeMetadataBuilder();
-    }
-
     @Override
     public int compareTo(CredentialTypeMetadata other) {
         int categoryCompare = category == null ? (other.category == null ? 0 : 1) : (other.category == null ? -1 : category.compareWith(other.category));
@@ -172,6 +145,30 @@ public class CredentialTypeMetadata implements Comparable<CredentialTypeMetadata
 
         int typeCompare = type == null ? (other.type == null ? 0 : 1) : (other.type == null ? -1 : type.compareTo(other.type));
         return typeCompare;
+
+    }
+
+    public enum Category {
+        BASIC_AUTHENTICATION("basic-authentication", 1),
+        TWO_FACTOR("two-factor", 2),
+        PASSWORDLESS("passwordless", 3);
+
+        private String categoryName;
+        private int order;
+
+        Category(String categoryName, int order) {
+            this.categoryName = categoryName;
+            this.order = order;
+        }
+
+        @Override
+        public String toString() {
+            return categoryName;
+        }
+
+        public int compareWith(Category that) {
+            return order - that.order;
+        }
 
     }
 
@@ -276,7 +273,6 @@ public class CredentialTypeMetadata implements Comparable<CredentialTypeMetadata
         }
 
     }
-
 
 
 }

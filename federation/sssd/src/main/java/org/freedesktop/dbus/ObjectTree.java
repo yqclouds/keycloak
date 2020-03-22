@@ -18,31 +18,12 @@ import java.util.regex.Pattern;
  * Keeps track of the exported objects for introspection data
  */
 class ObjectTree {
-    class TreeNode {
-        String name;
-        ExportedObject object;
-        String data;
-        TreeNode right;
-        TreeNode down;
-
-        public TreeNode(String name) {
-            this.name = name;
-        }
-
-        public TreeNode(String name, ExportedObject object, String data) {
-            this.name = name;
-            this.object = object;
-            this.data = data;
-        }
-    }
-
+    public static final Pattern slashpattern = Pattern.compile("/");
     private TreeNode root;
 
     public ObjectTree() {
         root = new TreeNode("");
     }
-
-    public static final Pattern slashpattern = Pattern.compile("/");
 
     private TreeNode recursiveFind(TreeNode current, String path) {
         if ("/".equals(path)) return current;
@@ -154,5 +135,23 @@ class ObjectTree {
 
     public String toString() {
         return recursivePrint(root);
+    }
+
+    class TreeNode {
+        String name;
+        ExportedObject object;
+        String data;
+        TreeNode right;
+        TreeNode down;
+
+        public TreeNode(String name) {
+            this.name = name;
+        }
+
+        public TreeNode(String name, ExportedObject object, String data) {
+            this.name = name;
+            this.object = object;
+            this.data = data;
+        }
     }
 }

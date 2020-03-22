@@ -42,14 +42,13 @@ public class ConsoleOTPFormAuthenticator extends OTPFormAuthenticator implements
                 .header()
                 .param(OTPCredentialModel.TYPE)
                 .label("console-otp")
-                 .challenge();
+                .challenge();
     }
 
     @Override
     public void action(AuthenticationFlowContext context) {
         validateOTP(context);
     }
-
 
 
     @Override

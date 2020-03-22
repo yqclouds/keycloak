@@ -1,5 +1,9 @@
 package org.keycloak.theme;
 
+import org.keycloak.Config;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakSessionFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -8,10 +12,6 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Locale;
 import java.util.Properties;
-
-import org.keycloak.Config;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 
 public class ClasspathThemeResourceProviderFactory implements ThemeResourceProviderFactory, ThemeResourceProvider {
 
@@ -46,11 +46,11 @@ public class ClasspathThemeResourceProviderFactory implements ThemeResourceProvi
     public Properties getMessages(String baseBundlename, Locale locale) throws IOException {
         Properties m = new Properties();
         InputStream in = classLoader.getResourceAsStream(THEME_RESOURCES_MESSAGES + baseBundlename + "_" + locale.toString() + ".properties");
-        if(in != null){
+        if (in != null) {
             Charset encoding = PropertiesUtil.detectEncoding(in);
             // detectEncoding closes the stream
             try (Reader reader = new InputStreamReader(
-                        classLoader.getResourceAsStream(THEME_RESOURCES_MESSAGES + baseBundlename + "_" + locale.toString() + ".properties"), encoding)) {
+                    classLoader.getResourceAsStream(THEME_RESOURCES_MESSAGES + baseBundlename + "_" + locale.toString() + ".properties"), encoding)) {
                 m.load(reader);
             }
         }

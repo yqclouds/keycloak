@@ -1,13 +1,13 @@
 /*
  * Copyright 2018 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,92 +16,33 @@
  */
 package org.keycloak.saml.validators;
 
+import org.jboss.logging.Logger;
 import org.keycloak.dom.saml.common.CommonConditionsType;
-import org.keycloak.dom.saml.v2.assertion.AudienceRestrictionType;
-import org.keycloak.dom.saml.v2.assertion.ConditionAbstractType;
-import org.keycloak.dom.saml.v2.assertion.ConditionsType;
-import org.keycloak.dom.saml.v2.assertion.OneTimeUseType;
-import org.keycloak.dom.saml.v2.assertion.ProxyRestrictionType;
+import org.keycloak.dom.saml.v2.assertion.*;
 import org.keycloak.saml.processing.core.saml.v2.util.XMLTimeUtil;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
-import org.jboss.logging.Logger;
+import java.net.URI;
+import java.util.*;
 
 /**
  * Conditions validation as per Section 2.5 of https://docs.oasis-open.org/security/saml/v2.0/saml-core-2.0-os.pdf
+ *
  * @author hmlnarik
  */
 public class ConditionsValidator {
 
     private static final Logger LOG = Logger.getLogger(ConditionsValidator.class);
-
-    public enum Result {
-        VALID           { @Override public Result joinResult(Result otherResult) { return otherResult; } },
-        INDETERMINATE   { @Override public Result joinResult(Result otherResult) { return otherResult == INVALID ? INVALID : INDETERMINATE; } },
-        INVALID         { @Override public Result joinResult(Result otherResult) { return INVALID; } };
-
-        /**
-         * Returns result as per Section 2.5.1.1
-         * @param otherResult
-         * @return
-         */
-        protected abstract Result joinResult(Result otherResult);
-    };
-
-    public static class Builder {
-
-        private final String assertionId;
-
-        private final CommonConditionsType conditions;
-
-        private final DestinationValidator destinationValidator;
-
-        private int clockSkewInMillis = 0;
-
-        private final Set<URI> allowedAudiences = new HashSet<>();
-
-        public Builder(String assertionId, CommonConditionsType conditions, DestinationValidator destinationValidator) {
-            this.assertionId = assertionId;
-            this.conditions = conditions;
-            this.destinationValidator = destinationValidator;
-        }
-
-        public Builder clockSkewInMillis(int clockSkewInMillis) {
-            this.clockSkewInMillis = clockSkewInMillis;
-            return this;
-        }
-
-        public Builder addAllowedAudience(URI... allowedAudiences) {
-            this.allowedAudiences.addAll(Arrays.asList(allowedAudiences));
-            return this;
-        }
-
-        public ConditionsValidator build() {
-            return new ConditionsValidator(assertionId, conditions, clockSkewInMillis, allowedAudiences, destinationValidator);
-        }
-
-    }
-
     private final CommonConditionsType conditions;
 
+    ;
     private final int clockSkewInMillis;
-
     private final String assertionId;
-
     private final XMLGregorianCalendar now = XMLTimeUtil.getIssueInstant();
-
     private final Set<URI> allowedAudiences;
-
     private final DestinationValidator destinationValidator;
-
     private int oneTimeConditionsCount = 0;
-
     private int proxyRestrictionsCount = 0;
 
     private ConditionsValidator(String assertionId, CommonConditionsType conditions, int clockSkewInMillis, Set<URI> allowedAudiences, DestinationValidator destinationValidator) {
@@ -132,8 +73,8 @@ public class ConditionsValidator {
 
     private Result validateConditions(ConditionsType ct, Result res) {
         Iterator<ConditionAbstractType> it = ct.getConditions() == null
-          ? Collections.<ConditionAbstractType>emptySet().iterator()
-          : ct.getConditions().iterator();
+                ? Collections.<ConditionAbstractType>emptySet().iterator()
+                : ct.getConditions().iterator();
 
         while (it.hasNext() && res == Result.VALID) {
             ConditionAbstractType cond = it.next();
@@ -157,6 +98,7 @@ public class ConditionsValidator {
 
     /**
      * Validate as per Section 2.5.1.2
+     *
      * @return
      */
     private Result validateExpiration() {
@@ -174,10 +116,10 @@ public class ConditionsValidator {
         XMLGregorianCalendar updatedNotBefore = XMLTimeUtil.subtract(notBefore, clockSkewInMillis);
         XMLGregorianCalendar updatedOnOrAfter = XMLTimeUtil.add(notOnOrAfter, clockSkewInMillis);
 
-        LOG.debugf("Evaluating Conditions of Assertion %s. notBefore=%s, notOnOrAfter=%s, updatedNotBefore: %s, updatedOnOrAfter=%s, now: %s", 
+        LOG.debugf("Evaluating Conditions of Assertion %s. notBefore=%s, notOnOrAfter=%s, updatedNotBefore: %s, updatedOnOrAfter=%s, now: %s",
                 assertionId, notBefore, notOnOrAfter, updatedNotBefore, updatedOnOrAfter, now);
         boolean valid = XMLTimeUtil.isValid(now, updatedNotBefore, updatedOnOrAfter);
-        if (! valid) {
+        if (!valid) {
             LOG.infof("Assertion %s expired.", assertionId);
         }
 
@@ -186,7 +128,8 @@ public class ConditionsValidator {
 
     /**
      * Section 2.5.1.4
-     * @return 
+     *
+     * @return
      */
     private Result validateAudienceRestriction(AudienceRestrictionType cond) {
         for (URI aud : cond.getAudience()) {
@@ -205,6 +148,7 @@ public class ConditionsValidator {
 
     /**
      * Section 2.5.1.5
+     *
      * @return
      */
     private Result validateOneTimeUse(OneTimeUseType cond) {
@@ -220,6 +164,7 @@ public class ConditionsValidator {
 
     /**
      * Section 2.5.1.6
+     *
      * @return
      */
     private Result validateProxyRestriction(ProxyRestrictionType cond) {
@@ -231,5 +176,66 @@ public class ConditionsValidator {
         }
 
         return Result.VALID;        // See line 994 of spec
+    }
+
+    public enum Result {
+        VALID {
+            @Override
+            public Result joinResult(Result otherResult) {
+                return otherResult;
+            }
+        },
+        INDETERMINATE {
+            @Override
+            public Result joinResult(Result otherResult) {
+                return otherResult == INVALID ? INVALID : INDETERMINATE;
+            }
+        },
+        INVALID {
+            @Override
+            public Result joinResult(Result otherResult) {
+                return INVALID;
+            }
+        };
+
+        /**
+         * Returns result as per Section 2.5.1.1
+         *
+         * @param otherResult
+         * @return
+         */
+        protected abstract Result joinResult(Result otherResult);
+    }
+
+    public static class Builder {
+
+        private final String assertionId;
+
+        private final CommonConditionsType conditions;
+
+        private final DestinationValidator destinationValidator;
+        private final Set<URI> allowedAudiences = new HashSet<>();
+        private int clockSkewInMillis = 0;
+
+        public Builder(String assertionId, CommonConditionsType conditions, DestinationValidator destinationValidator) {
+            this.assertionId = assertionId;
+            this.conditions = conditions;
+            this.destinationValidator = destinationValidator;
+        }
+
+        public Builder clockSkewInMillis(int clockSkewInMillis) {
+            this.clockSkewInMillis = clockSkewInMillis;
+            return this;
+        }
+
+        public Builder addAllowedAudience(URI... allowedAudiences) {
+            this.allowedAudiences.addAll(Arrays.asList(allowedAudiences));
+            return this;
+        }
+
+        public ConditionsValidator build() {
+            return new ConditionsValidator(assertionId, conditions, clockSkewInMillis, allowedAudiences, destinationValidator);
+        }
+
     }
 }

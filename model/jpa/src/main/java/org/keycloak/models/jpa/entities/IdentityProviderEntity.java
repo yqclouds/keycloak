@@ -17,78 +17,57 @@
 
 package org.keycloak.models.jpa.entities;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.MapKeyColumn;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Map;
 
 /**
  * @author Pedro Igor
  */
 @Entity
-@Table(name="IDENTITY_PROVIDER")
+@Table(name = "IDENTITY_PROVIDER")
 @NamedQueries({
-        @NamedQuery(name="findIdentityProviderByAlias", query="select identityProvider from IdentityProviderEntity identityProvider where identityProvider.alias = :alias")
+        @NamedQuery(name = "findIdentityProviderByAlias", query = "select identityProvider from IdentityProviderEntity identityProvider where identityProvider.alias = :alias")
 })
 public class IdentityProviderEntity {
 
     @Id
-    @Column(name="INTERNAL_ID", length = 36)
-    @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
+    @Column(name = "INTERNAL_ID", length = 36)
+    @Access(AccessType.PROPERTY)
+    // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
     protected String internalId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REALM_ID")
     protected RealmEntity realm;
-
-    @Column(name="PROVIDER_ID")
+    @Column(name = "ADD_TOKEN_ROLE")
+    protected boolean addReadTokenRoleOnCreate;
+    @Column(name = "PROVIDER_ID")
     private String providerId;
-
-    @Column(name="PROVIDER_ALIAS")
+    @Column(name = "PROVIDER_ALIAS")
     private String alias;
-
-    @Column(name="PROVIDER_DISPLAY_NAME")
+    @Column(name = "PROVIDER_DISPLAY_NAME")
     private String displayName;
-
-    @Column(name="ENABLED")
+    @Column(name = "ENABLED")
     private boolean enabled;
-
     @Column(name = "TRUST_EMAIL")
     private boolean trustEmail;
-
-    @Column(name="STORE_TOKEN")
+    @Column(name = "STORE_TOKEN")
     private boolean storeToken;
-
-    @Column(name="LINK_ONLY")
+    @Column(name = "LINK_ONLY")
     private boolean linkOnly;
-
-    @Column(name="ADD_TOKEN_ROLE")
-    protected boolean addReadTokenRoleOnCreate;
-
-    @Column(name="AUTHENTICATE_BY_DEFAULT")
+    @Column(name = "AUTHENTICATE_BY_DEFAULT")
     private boolean authenticateByDefault;
 
-    @Column(name="FIRST_BROKER_LOGIN_FLOW_ID")
+    @Column(name = "FIRST_BROKER_LOGIN_FLOW_ID")
     private String firstBrokerLoginFlowId;
 
-    @Column(name="POST_BROKER_LOGIN_FLOW_ID")
+    @Column(name = "POST_BROKER_LOGIN_FLOW_ID")
     private String postBrokerLoginFlowId;
 
     @ElementCollection
-    @MapKeyColumn(name="NAME")
-    @Column(name="VALUE", columnDefinition = "TEXT")
-    @CollectionTable(name="IDENTITY_PROVIDER_CONFIG", joinColumns={ @JoinColumn(name="IDENTITY_PROVIDER_ID") })
+    @MapKeyColumn(name = "NAME")
+    @Column(name = "VALUE", columnDefinition = "TEXT")
+    @CollectionTable(name = "IDENTITY_PROVIDER_CONFIG", joinColumns = {@JoinColumn(name = "IDENTITY_PROVIDER_ID")})
     private Map<String, String> config;
 
     public String getInternalId() {

@@ -30,9 +30,8 @@ import java.util.Map;
 public class ProfileBean {
 
     private static final Logger logger = Logger.getLogger(ProfileBean.class);
-
-    private UserModel user;
     private final Map<String, String> attributes = new HashMap<>();
+    private UserModel user;
 
     public ProfileBean(UserModel user) {
         this.user = user;
@@ -51,7 +50,9 @@ public class ProfileBean {
         }
     }
 
-    public String getUsername() { return user.getUsername(); }
+    public String getUsername() {
+        return user.getUsername();
+    }
 
     public String getFirstName() {
         return user.getFirstName();

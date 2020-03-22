@@ -43,6 +43,13 @@ public class Event {
 
     private Map<String, String> details;
 
+    static String maxLength(String string, int length) {
+        if (string != null && string.length() > length) {
+            return string.substring(0, length - 1);
+        }
+        return string;
+    }
+
     public long getTime() {
         return time;
     }
@@ -127,13 +134,6 @@ public class Event {
         clone.error = error;
         clone.details = details != null ? new HashMap<>(details) : null;
         return clone;
-    }
-
-    static String maxLength(String string, int length){
-        if (string != null && string.length() > length) {
-            return string.substring(0, length - 1);
-        }
-        return string;
     }
 
 }

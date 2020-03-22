@@ -42,10 +42,6 @@ public enum DecisionType {
         value = v;
     }
 
-    public String value() {
-        return value;
-    }
-
     public static DecisionType fromValue(String v) {
         for (DecisionType c : DecisionType.values()) {
             if (c.value.equals(v)) {
@@ -53,5 +49,9 @@ public enum DecisionType {
             }
         }
         throw new IllegalArgumentException(v);
+    }
+
+    public String value() {
+        return value;
     }
 }

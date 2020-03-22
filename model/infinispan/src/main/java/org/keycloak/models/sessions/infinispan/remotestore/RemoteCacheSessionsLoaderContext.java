@@ -20,7 +20,6 @@ package org.keycloak.models.sessions.infinispan.remotestore;
 import org.keycloak.models.sessions.infinispan.initializer.SessionLoader;
 
 /**
- *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class RemoteCacheSessionsLoaderContext extends SessionLoader.LoaderContext {
@@ -56,7 +55,7 @@ public class RemoteCacheSessionsLoaderContext extends SessionLoader.LoaderContex
         }
 
         int seg2 = 1;
-        while (seg2<seg && seg2<ispnSegments) {
+        while (seg2 < seg && seg2 < ispnSegments) {
             seg2 = seg2 << 1;
         }
 

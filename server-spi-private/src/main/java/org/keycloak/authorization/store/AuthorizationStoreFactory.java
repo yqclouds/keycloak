@@ -18,14 +18,7 @@
 
 package org.keycloak.authorization.store;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.keycloak.authorization.store.syncronization.ClientApplicationSynchronizer;
-import org.keycloak.authorization.store.syncronization.GroupSynchronizer;
-import org.keycloak.authorization.store.syncronization.RealmSynchronizer;
-import org.keycloak.authorization.store.syncronization.Synchronizer;
-import org.keycloak.authorization.store.syncronization.UserSynchronizer;
+import org.keycloak.authorization.store.syncronization.*;
 import org.keycloak.models.GroupModel;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel.ClientRemovedEvent;
@@ -33,6 +26,9 @@ import org.keycloak.models.RealmModel.RealmRemovedEvent;
 import org.keycloak.models.UserModel.UserRemovedEvent;
 import org.keycloak.provider.ProviderEvent;
 import org.keycloak.provider.ProviderFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>

@@ -17,13 +17,6 @@
 
 package org.keycloak.jose;
 
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
-import java.security.KeyPair;
-
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -37,6 +30,12 @@ import org.keycloak.jose.jwe.enc.AesCbcHmacShaJWEEncryptionProvider;
 import org.keycloak.jose.jwe.enc.AesGcmJWEEncryptionProvider;
 import org.keycloak.jose.jwe.enc.JWEEncryptionProvider;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
+import java.security.KeyPair;
+
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
@@ -44,11 +43,11 @@ public class JWETest {
 
     private static final String PAYLOAD = "Hello world! How are you man? I hope you are fine. This is some quite a long text, which is much longer than just simple 'Hello World'";
 
-    private static final byte[] HMAC_SHA256_KEY = new byte[] { 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 13, 14, 15, 16 };
-    private static final byte[] AES_128_KEY =  new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+    private static final byte[] HMAC_SHA256_KEY = new byte[]{10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 13, 14, 15, 16};
+    private static final byte[] AES_128_KEY = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
 
-    private static final byte[] HMAC_SHA512_KEY = new byte[] { 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 13, 14, 15, 16, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
-    private static final byte[] AES_256_KEY =  new byte[] { 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 13, 14, 15, 16, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+    private static final byte[] HMAC_SHA512_KEY = new byte[]{10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 13, 14, 15, 16, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+    private static final byte[] AES_256_KEY = new byte[]{10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 13, 14, 15, 16, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
 
     @Test
     public void testDirect_Aes128CbcHmacSha256() throws Exception {
@@ -105,7 +104,7 @@ public class JWETest {
         int iterations = 50000;
 
         long start = System.currentTimeMillis();
-        for (int i=0 ; i<iterations ; i++) {
+        for (int i = 0; i < iterations; i++) {
             // took around 2950 ms with 50000 iterations
             SecretKey aesKey = new SecretKeySpec(AES_128_KEY, "AES");
             SecretKey hmacKey = new SecretKeySpec(HMAC_SHA256_KEY, "HMACSHA2");
@@ -132,7 +131,6 @@ public class JWETest {
         String decodedContent = JWE.decryptUTF8("geheim", encodedSalt, jwe);
         Assert.assertEquals(PAYLOAD, decodedContent);
     }
-
 
 
     @Test
@@ -172,7 +170,7 @@ public class JWETest {
         byte[] random = JWEUtils.generateSecret(8);
         System.out.print("new byte[] = {");
         for (byte b : random) {
-            System.out.print(""+Byte.toString(b)+",");
+            System.out.print("" + Byte.toString(b) + ",");
         }
     }
 
@@ -260,7 +258,7 @@ public class JWETest {
     public void testRSAOAEP_A128CBCHS256() throws Exception {
         testKeyEncryption_ContentEncryptionAesHmacSha(JWEConstants.RSA_OAEP, JWEConstants.A128CBC_HS256);
     }
- 
+
     private void testKeyEncryption_ContentEncryptionAesGcm(String jweAlgorithmName, String jweEncryptionName) throws Exception {
         // generate key pair for KEK
         KeyPair keyPair = KeyUtils.generateRsaKeyPair(2048);
@@ -318,10 +316,10 @@ public class JWETest {
 
         jwe = new JWE();
         jwe.getKeyStorage()
-            .setDecryptionKey(keyPair.getPrivate());
+                .setDecryptionKey(keyPair.getPrivate());
         jwe.getKeyStorage()
-            .setCEKKey(aesKey, JWEKeyStorage.KeyUse.ENCRYPTION)
-            .setCEKKey(hmacKey, JWEKeyStorage.KeyUse.SIGNATURE);
+                .setCEKKey(aesKey, JWEKeyStorage.KeyUse.ENCRYPTION)
+                .setCEKKey(hmacKey, JWEKeyStorage.KeyUse.SIGNATURE);
         jwe.verifyAndDecodeJwe(encodedContent, jweAlgorithmProvider, jweEncryptionProvider);
         String decodedContent = new String(jwe.getContent(), StandardCharsets.UTF_8);
         System.out.println("Decoded content: " + decodedContent);

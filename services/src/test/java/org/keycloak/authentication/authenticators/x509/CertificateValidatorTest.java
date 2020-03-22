@@ -27,7 +27,6 @@ import java.util.Date;
  * author Pascal Knueppel <br>
  * created at: 07.11.2019 - 16:24 <br>
  * <br>
- *
  */
 public class CertificateValidatorTest {
 
@@ -42,12 +41,12 @@ public class CertificateValidatorTest {
         kpg.initialize(512);
         KeyPair keyPair = kpg.generateKeyPair();
         X509Certificate certificate =
-            createCertificate("CN=keycloak-test", new Date(),
-                new Date(System.currentTimeMillis() + 1000L * 60), keyPair);
+                createCertificate("CN=keycloak-test", new Date(),
+                        new Date(System.currentTimeMillis() + 1000L * 60), keyPair);
 
         CertificateValidator.CertificateValidatorBuilder builder =
-            new CertificateValidator.CertificateValidatorBuilder();
-        CertificateValidator validator = builder.build(new X509Certificate[] { certificate });
+                new CertificateValidator.CertificateValidatorBuilder();
+        CertificateValidator validator = builder.build(new X509Certificate[]{certificate});
         try {
             validator.validateTimestamps(true);
         } catch (Exception ex) {
@@ -65,12 +64,12 @@ public class CertificateValidatorTest {
         kpg.initialize(512);
         KeyPair keyPair = kpg.generateKeyPair();
         X509Certificate certificate =
-            createCertificate("CN=keycloak-test", new Date(System.currentTimeMillis() + 1000L * 60),
-                new Date(System.currentTimeMillis() + 1000L * 60), keyPair);
+                createCertificate("CN=keycloak-test", new Date(System.currentTimeMillis() + 1000L * 60),
+                        new Date(System.currentTimeMillis() + 1000L * 60), keyPair);
 
         CertificateValidator.CertificateValidatorBuilder builder =
-            new CertificateValidator.CertificateValidatorBuilder();
-        CertificateValidator validator = builder.build(new X509Certificate[] { certificate });
+                new CertificateValidator.CertificateValidatorBuilder();
+        CertificateValidator validator = builder.build(new X509Certificate[]{certificate});
         try {
             validator.validateTimestamps(true);
             Assert.fail("certificate validation must fail for certificate is not valid yet");
@@ -89,12 +88,12 @@ public class CertificateValidatorTest {
         kpg.initialize(512);
         KeyPair keyPair = kpg.generateKeyPair();
         X509Certificate certificate =
-            createCertificate("CN=keycloak-test", new Date(System.currentTimeMillis() - 1000L * 60 * 2),
-                new Date(System.currentTimeMillis() - 1000L * 60), keyPair);
+                createCertificate("CN=keycloak-test", new Date(System.currentTimeMillis() - 1000L * 60 * 2),
+                        new Date(System.currentTimeMillis() - 1000L * 60), keyPair);
 
         CertificateValidator.CertificateValidatorBuilder builder =
-            new CertificateValidator.CertificateValidatorBuilder();
-        CertificateValidator validator = builder.build(new X509Certificate[] { certificate });
+                new CertificateValidator.CertificateValidatorBuilder();
+        CertificateValidator validator = builder.build(new X509Certificate[]{certificate});
         try {
             validator.validateTimestamps(true);
             Assert.fail("certificate validation must fail for certificate has expired");
@@ -108,10 +107,10 @@ public class CertificateValidatorTest {
     /**
      * will create a self-signed certificate
      *
-     * @param dn the DN of the subject and issuer
-     * @param startDate startdate of the validity of the created certificate
+     * @param dn         the DN of the subject and issuer
+     * @param startDate  startdate of the validity of the created certificate
      * @param expiryDate expiration date of the created certificate
-     * @param keyPair the keypair that is used to create the certificate
+     * @param keyPair    the keypair that is used to create the certificate
      * @return a X509-Certificate in version 3
      */
     public X509Certificate createCertificate(String dn,
@@ -121,23 +120,23 @@ public class CertificateValidatorTest {
         X500Name subjectDN = new X500Name(dn);
         X500Name issuerDN = new X500Name(dn);
         // @formatter:off
-    SubjectPublicKeyInfo subjPubKeyInfo = SubjectPublicKeyInfo.getInstance(
-                                                        ASN1Sequence.getInstance(keyPair.getPublic().getEncoded()));
-    // @formatter:on
+        SubjectPublicKeyInfo subjPubKeyInfo = SubjectPublicKeyInfo.getInstance(
+                ASN1Sequence.getInstance(keyPair.getPublic().getEncoded()));
+        // @formatter:on
         BigInteger serialNumber = new BigInteger(130, new SecureRandom());
 
         X509v3CertificateBuilder certGen = new X509v3CertificateBuilder(issuerDN, serialNumber, startDate, expiryDate,
-            subjectDN, subjPubKeyInfo);
+                subjectDN, subjPubKeyInfo);
         ContentSigner contentSigner = null;
         try {
             // @formatter:off
-      contentSigner = new JcaContentSignerBuilder("SHA256withRSA")
-                                                              .setProvider(BOUNCY_CASTLE_PROVIDER)
-                                                              .build(keyPair.getPrivate());
-      X509Certificate x509Certificate = new JcaX509CertificateConverter()
-                                                              .setProvider(BOUNCY_CASTLE_PROVIDER)
-                                                              .getCertificate(certGen.build(contentSigner));
-      // @formatter:on
+            contentSigner = new JcaContentSignerBuilder("SHA256withRSA")
+                    .setProvider(BOUNCY_CASTLE_PROVIDER)
+                    .build(keyPair.getPrivate());
+            X509Certificate x509Certificate = new JcaX509CertificateConverter()
+                    .setProvider(BOUNCY_CASTLE_PROVIDER)
+                    .getCertificate(certGen.build(contentSigner));
+            // @formatter:on
             return x509Certificate;
         } catch (CertificateException | OperatorCreationException e) {
             throw new IllegalStateException(e);

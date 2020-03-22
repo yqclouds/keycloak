@@ -30,7 +30,7 @@ public class GroupRepresentation {
     protected String id;
     protected String name;
     protected String path;
-    protected Map<String, List<String>>  attributes;
+    protected Map<String, List<String>> attributes;
     protected List<String> realmRoles;
     protected Map<String, List<String>> clientRoles;
     protected List<GroupRepresentation> subGroups;
@@ -81,7 +81,7 @@ public class GroupRepresentation {
         return attributes;
     }
 
-    public void setAttributes(Map<String, List<String>>  attributes) {
+    public void setAttributes(Map<String, List<String>> attributes) {
         this.attributes = attributes;
     }
 

@@ -38,26 +38,27 @@ public abstract class OIDCRedirectUriBuilder {
         this.uriBuilder = uriBuilder;
     }
 
-    public abstract OIDCRedirectUriBuilder addParam(String paramName, String paramValue);
-
-    public abstract Response build();
-
-
     public static OIDCRedirectUriBuilder fromUri(String baseUri, OIDCResponseMode responseMode) {
         KeycloakUriBuilder uriBuilder = KeycloakUriBuilder.fromUri(baseUri);
 
         switch (responseMode) {
-            case QUERY: return new QueryRedirectUriBuilder(uriBuilder);
-            case FRAGMENT: return new FragmentRedirectUriBuilder(uriBuilder);
-            case FORM_POST: return new FormPostRedirectUriBuilder(uriBuilder);
+            case QUERY:
+                return new QueryRedirectUriBuilder(uriBuilder);
+            case FRAGMENT:
+                return new FragmentRedirectUriBuilder(uriBuilder);
+            case FORM_POST:
+                return new FormPostRedirectUriBuilder(uriBuilder);
         }
 
         throw new IllegalStateException("Not possible to end here");
     }
 
+    public abstract OIDCRedirectUriBuilder addParam(String paramName, String paramValue);
+
+    public abstract Response build();
+
 
     // Impl subclasses
-
 
     // http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#ResponseModes
     private static class QueryRedirectUriBuilder extends OIDCRedirectUriBuilder {

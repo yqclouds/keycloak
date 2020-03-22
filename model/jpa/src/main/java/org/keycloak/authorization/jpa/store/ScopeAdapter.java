@@ -41,6 +41,14 @@ public class ScopeAdapter extends AbstractAuthorizationModel implements Scope, J
         this.storeFactory = storeFactory;
     }
 
+    public static ScopeEntity toEntity(EntityManager em, Scope scope) {
+        if (scope instanceof ScopeAdapter) {
+            return ((ScopeAdapter) scope).getEntity();
+        } else {
+            return em.getReference(ScopeEntity.class, scope.getId());
+        }
+    }
+
     @Override
     public ScopeEntity getEntity() {
         return entity;
@@ -89,14 +97,6 @@ public class ScopeAdapter extends AbstractAuthorizationModel implements Scope, J
     @Override
     public ResourceServer getResourceServer() {
         return storeFactory.getResourceServerStore().findById(entity.getResourceServer().getId());
-    }
-
-    public static ScopeEntity toEntity(EntityManager em, Scope scope) {
-        if (scope instanceof ScopeAdapter) {
-            return ((ScopeAdapter)scope).getEntity();
-        } else {
-            return em.getReference(ScopeEntity.class, scope.getId());
-        }
     }
 
     @Override

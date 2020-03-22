@@ -15,11 +15,7 @@ import javax.naming.ldap.StartTlsRequest;
 import javax.naming.ldap.StartTlsResponse;
 import java.io.IOException;
 import java.nio.CharBuffer;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 
 import static javax.naming.Context.SECURITY_CREDENTIALS;
 
@@ -34,7 +30,7 @@ public final class LDAPContextManager implements AutoCloseable {
     private final LDAPConfig ldapConfig;
     private StartTlsResponse tlsResponse;
 
-    private  VaultCharSecret vaultCharSecret = new VaultCharSecret() {
+    private VaultCharSecret vaultCharSecret = new VaultCharSecret() {
         @Override
         public Optional<CharBuffer> get() {
             return Optional.empty();
@@ -62,43 +58,6 @@ public final class LDAPContextManager implements AutoCloseable {
         return new LDAPContextManager(session, connectionProperties);
     }
 
-    private void createLdapContext() throws NamingException {
-        Hashtable<Object, Object> connProp = getConnectionProperties(ldapConfig);
-
-        if (!LDAPConstants.AUTH_TYPE_NONE.equals(ldapConfig.getAuthType())) {
-            vaultCharSecret = getVaultSecret();
-
-            if (vaultCharSecret != null && !ldapConfig.isStartTls()) {
-                connProp.put(SECURITY_CREDENTIALS, vaultCharSecret.getAsArray()
-                        .orElse(ldapConfig.getBindCredential().toCharArray()));
-            }
-        }
-
-        ldapContext = new InitialLdapContext(connProp, null);
-        if (ldapConfig.isStartTls()) {
-            tlsResponse = startTLS(ldapContext, ldapConfig.getAuthType(), ldapConfig.getBindDN(),
-                    vaultCharSecret.getAsArray().orElse(ldapConfig.getBindCredential().toCharArray()));
-
-            // Exception should be already thrown by LDAPContextManager.startTLS if "startTLS" could not be established, but rather do some additional check
-            if (tlsResponse == null) {
-                throw new NamingException("Wasn't able to establish LDAP connection through StartTLS");
-            }
-        }
-
-    }
-
-    public LdapContext getLdapContext() throws NamingException {
-        if (ldapContext == null) createLdapContext();
-
-        return ldapContext;
-    }
-
-    private VaultCharSecret getVaultSecret() {
-        return LDAPConstants.AUTH_TYPE_NONE.equals(ldapConfig.getAuthType())
-                ? null
-                : session.vault().getCharSecret(ldapConfig.getBindCredential());
-    }
-
     public static StartTlsResponse startTLS(LdapContext ldapContext, String authType, String bindDN, char[] bindCredential) throws NamingException {
         StartTlsResponse tls = null;
 
@@ -122,41 +81,6 @@ public final class LDAPContextManager implements AutoCloseable {
 
         return tls;
     }
-
-    // Get connection properties of admin connection
-    private Hashtable<Object, Object> getConnectionProperties(LDAPConfig ldapConfig) {
-        Hashtable<Object, Object> env = getNonAuthConnectionProperties(ldapConfig);
-
-        if(!ldapConfig.isStartTls()) {
-            String authType = ldapConfig.getAuthType();
-
-            env.put(Context.SECURITY_AUTHENTICATION, authType);
-
-            String bindDN = ldapConfig.getBindDN();
-
-            char[] bindCredential = null;
-
-            if (ldapConfig.getBindCredential() != null) {
-                bindCredential = ldapConfig.getBindCredential().toCharArray();
-            }
-
-            if (!LDAPConstants.AUTH_TYPE_NONE.equals(authType)) {
-                env.put(Context.SECURITY_PRINCIPAL, bindDN);
-                env.put(Context.SECURITY_CREDENTIALS, bindCredential);
-            }
-        }
-
-        if (logger.isDebugEnabled()) {
-            Map<Object, Object> copyEnv = new Hashtable<>(env);
-            if (copyEnv.containsKey(Context.SECURITY_CREDENTIALS)) {
-                copyEnv.put(Context.SECURITY_CREDENTIALS, "**************************************");
-            }
-            logger.debugf("Creating LdapContext using properties: [%s]", copyEnv);
-        }
-
-        return env;
-    }
-
 
     /**
      * This method is used for admin connection and user authentication. Hence it returns just connection properties NOT related to
@@ -222,6 +146,77 @@ public final class LDAPContextManager implements AutoCloseable {
         }
 
         return new Hashtable<>(env);
+    }
+
+    private void createLdapContext() throws NamingException {
+        Hashtable<Object, Object> connProp = getConnectionProperties(ldapConfig);
+
+        if (!LDAPConstants.AUTH_TYPE_NONE.equals(ldapConfig.getAuthType())) {
+            vaultCharSecret = getVaultSecret();
+
+            if (vaultCharSecret != null && !ldapConfig.isStartTls()) {
+                connProp.put(SECURITY_CREDENTIALS, vaultCharSecret.getAsArray()
+                        .orElse(ldapConfig.getBindCredential().toCharArray()));
+            }
+        }
+
+        ldapContext = new InitialLdapContext(connProp, null);
+        if (ldapConfig.isStartTls()) {
+            tlsResponse = startTLS(ldapContext, ldapConfig.getAuthType(), ldapConfig.getBindDN(),
+                    vaultCharSecret.getAsArray().orElse(ldapConfig.getBindCredential().toCharArray()));
+
+            // Exception should be already thrown by LDAPContextManager.startTLS if "startTLS" could not be established, but rather do some additional check
+            if (tlsResponse == null) {
+                throw new NamingException("Wasn't able to establish LDAP connection through StartTLS");
+            }
+        }
+
+    }
+
+    public LdapContext getLdapContext() throws NamingException {
+        if (ldapContext == null) createLdapContext();
+
+        return ldapContext;
+    }
+
+    private VaultCharSecret getVaultSecret() {
+        return LDAPConstants.AUTH_TYPE_NONE.equals(ldapConfig.getAuthType())
+                ? null
+                : session.vault().getCharSecret(ldapConfig.getBindCredential());
+    }
+
+    // Get connection properties of admin connection
+    private Hashtable<Object, Object> getConnectionProperties(LDAPConfig ldapConfig) {
+        Hashtable<Object, Object> env = getNonAuthConnectionProperties(ldapConfig);
+
+        if (!ldapConfig.isStartTls()) {
+            String authType = ldapConfig.getAuthType();
+
+            env.put(Context.SECURITY_AUTHENTICATION, authType);
+
+            String bindDN = ldapConfig.getBindDN();
+
+            char[] bindCredential = null;
+
+            if (ldapConfig.getBindCredential() != null) {
+                bindCredential = ldapConfig.getBindCredential().toCharArray();
+            }
+
+            if (!LDAPConstants.AUTH_TYPE_NONE.equals(authType)) {
+                env.put(Context.SECURITY_PRINCIPAL, bindDN);
+                env.put(Context.SECURITY_CREDENTIALS, bindCredential);
+            }
+        }
+
+        if (logger.isDebugEnabled()) {
+            Map<Object, Object> copyEnv = new Hashtable<>(env);
+            if (copyEnv.containsKey(Context.SECURITY_CREDENTIALS)) {
+                copyEnv.put(Context.SECURITY_CREDENTIALS, "**************************************");
+            }
+            logger.debugf("Creating LdapContext using properties: [%s]", copyEnv);
+        }
+
+        return env;
     }
 
     @Override

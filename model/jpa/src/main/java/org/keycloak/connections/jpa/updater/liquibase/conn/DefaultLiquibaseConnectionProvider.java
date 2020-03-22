@@ -33,11 +33,7 @@ import liquibase.servicelocator.ServiceLocator;
 import liquibase.sqlgenerator.SqlGeneratorFactory;
 import org.jboss.logging.Logger;
 import org.keycloak.Config;
-import org.keycloak.connections.jpa.updater.liquibase.LiquibaseJpaUpdaterProvider;
-import org.keycloak.connections.jpa.updater.liquibase.PostgresPlusDatabase;
-import org.keycloak.connections.jpa.updater.liquibase.MySQL8VarcharType;
-import org.keycloak.connections.jpa.updater.liquibase.UpdatedMariaDBDatabase;
-import org.keycloak.connections.jpa.updater.liquibase.UpdatedMySqlDatabase;
+import org.keycloak.connections.jpa.updater.liquibase.*;
 import org.keycloak.connections.jpa.updater.liquibase.lock.CustomInsertLockRecordGenerator;
 import org.keycloak.connections.jpa.updater.liquibase.lock.CustomLockDatabaseChangeLogGenerator;
 import org.keycloak.connections.jpa.updater.liquibase.lock.DummyLockService;
@@ -54,7 +50,7 @@ public class DefaultLiquibaseConnectionProvider implements LiquibaseConnectionPr
     private static final Logger logger = Logger.getLogger(DefaultLiquibaseConnectionProvider.class);
 
     private volatile boolean initialized = false;
-    
+
     @Override
     public LiquibaseConnectionProvider create(KeycloakSession session) {
         if (!initialized) {
@@ -142,7 +138,7 @@ public class DefaultLiquibaseConnectionProvider implements LiquibaseConnectionPr
         ResourceAccessor resourceAccessor = new ClassLoaderResourceAccessor(getClass().getClassLoader());
 
         logger.debugf("Using changelog file %s and changelogTableName %s", changelog, database.getDatabaseChangeLogTableName());
-        
+
         return new Liquibase(changelog, resourceAccessor, database);
     }
 
@@ -166,14 +162,6 @@ public class DefaultLiquibaseConnectionProvider implements LiquibaseConnectionPr
         private static final liquibase.logging.Logger logger = new liquibase.logging.Logger() {
             @Override
             public void setName(String name) {
-            }
-
-            @Override
-            public void setLogLevel(String level) {
-            }
-
-            @Override
-            public void setLogLevel(LogLevel level) {
             }
 
             @Override
@@ -234,6 +222,14 @@ public class DefaultLiquibaseConnectionProvider implements LiquibaseConnectionPr
             }
 
             @Override
+            public void setLogLevel(String level) {
+            }
+
+            @Override
+            public void setLogLevel(LogLevel level) {
+            }
+
+            @Override
             public void debug(String message, Throwable e) {
                 DefaultLiquibaseConnectionProvider.logger.trace(message, e);
             }
@@ -252,7 +248,8 @@ public class DefaultLiquibaseConnectionProvider implements LiquibaseConnectionPr
             }
 
             @Override
-            public void closeLogFile() {}
+            public void closeLogFile() {
+            }
         };
 
         @Override

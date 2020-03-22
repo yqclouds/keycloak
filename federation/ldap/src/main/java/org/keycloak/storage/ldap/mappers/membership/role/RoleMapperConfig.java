@@ -73,7 +73,7 @@ public class RoleMapperConfig extends CommonLDAPGroupMapperConfig {
 
     public String getRoleNameLdapAttribute() {
         String rolesRdnAttr = mapperModel.getConfig().getFirst(ROLE_NAME_LDAP_ATTRIBUTE);
-        return rolesRdnAttr!=null ? rolesRdnAttr : LDAPConstants.CN;
+        return rolesRdnAttr != null ? rolesRdnAttr : LDAPConstants.CN;
     }
 
     @Override
@@ -97,7 +97,7 @@ public class RoleMapperConfig extends CommonLDAPGroupMapperConfig {
 
     public boolean isRealmRolesMapping() {
         String realmRolesMapping = mapperModel.getConfig().getFirst(USE_REALM_ROLES_MAPPING);
-        return realmRolesMapping==null || Boolean.parseBoolean(realmRolesMapping);
+        return realmRolesMapping == null || Boolean.parseBoolean(realmRolesMapping);
     }
 
     public String getClientId() {
@@ -107,7 +107,7 @@ public class RoleMapperConfig extends CommonLDAPGroupMapperConfig {
 
     public String getUserRolesRetrieveStrategy() {
         String strategyString = mapperModel.getConfig().getFirst(USER_ROLES_RETRIEVE_STRATEGY);
-        return strategyString!=null ? strategyString : LOAD_ROLES_BY_MEMBER_ATTRIBUTE;
+        return strategyString != null ? strategyString : LOAD_ROLES_BY_MEMBER_ATTRIBUTE;
     }
 
 }

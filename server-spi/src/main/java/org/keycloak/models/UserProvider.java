@@ -39,23 +39,35 @@ public interface UserProvider extends Provider,
     // Note: The reason there are so many query methods here is for layering a cache on top of an persistent KeycloakSession
 
     void addFederatedIdentity(RealmModel realm, UserModel user, FederatedIdentityModel socialLink);
+
     boolean removeFederatedIdentity(RealmModel realm, UserModel user, String socialProvider);
+
     void updateFederatedIdentity(RealmModel realm, UserModel federatedUser, FederatedIdentityModel federatedIdentityModel);
+
     Set<FederatedIdentityModel> getFederatedIdentities(UserModel user, RealmModel realm);
+
     FederatedIdentityModel getFederatedIdentity(UserModel user, String socialProvider, RealmModel realm);
+
     UserModel getUserByFederatedIdentity(FederatedIdentityModel socialLink, RealmModel realm);
 
     void addConsent(RealmModel realm, String userId, UserConsentModel consent);
+
     UserConsentModel getConsentByClient(RealmModel realm, String userId, String clientInternalId);
+
     List<UserConsentModel> getConsents(RealmModel realm, String userId);
+
     void updateConsent(RealmModel realm, String userId, UserConsentModel consent);
+
     boolean revokeConsentForClient(RealmModel realm, String userId, String clientInternalId);
 
     void setNotBeforeForUser(RealmModel realm, UserModel user, int notBefore);
+
     int getNotBeforeOfUser(RealmModel realm, UserModel user);
 
     UserModel getServiceAccount(ClientModel client);
+
     List<UserModel> getUsers(RealmModel realm, boolean includeServiceAccounts);
+
     List<UserModel> getUsers(RealmModel realm, int firstResult, int maxResults, boolean includeServiceAccounts);
 
     /**
@@ -69,6 +81,7 @@ public interface UserProvider extends Provider,
      * @return
      */
     UserModel addUser(RealmModel realm, String id, String username, boolean addDefaultRoles, boolean addDefaultRequiredActions);
+
     void preRemove(RealmModel realm);
 
     /**
@@ -88,10 +101,13 @@ public interface UserProvider extends Provider,
     void unlinkUsers(RealmModel realm, String storageProviderId);
 
     void preRemove(RealmModel realm, RoleModel role);
+
     void preRemove(RealmModel realm, GroupModel group);
 
     void preRemove(RealmModel realm, ClientModel client);
+
     void preRemove(ProtocolMapperModel protocolMapper);
+
     void preRemove(ClientScopeModel clientScope);
 
     void close();

@@ -17,13 +17,13 @@
 package org.keycloak.credential;
 
 /**
- *
- *
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public interface CredentialInput {
     String getCredentialId();
+
     String getType();
+
     String getChallengeResponse();
 }

@@ -17,18 +17,19 @@
 
 package org.keycloak.services.util;
 
-import org.keycloak.config.ConfigProviderFactory;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.jboss.logging.Logger;
+import org.keycloak.Config;
+import org.keycloak.common.util.SystemEnvProperties;
+import org.keycloak.config.ConfigProviderFactory;
+import org.keycloak.services.ServicesLogger;
+import org.keycloak.util.JsonSerialization;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Optional;
 import java.util.Properties;
-import org.jboss.logging.Logger;
-import org.keycloak.Config;
-import org.keycloak.common.util.SystemEnvProperties;
-import org.keycloak.services.ServicesLogger;
-import org.keycloak.util.JsonSerialization;
 
 public abstract class JsonConfigProviderFactory implements ConfigProviderFactory {
 

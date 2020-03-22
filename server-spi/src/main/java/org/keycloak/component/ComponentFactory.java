@@ -47,9 +47,7 @@ public interface ComponentFactory<CreatedType, ProviderType extends Provider> ex
      * @param model
      * @throws ComponentValidationException
      */
-    default
-    void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel model) throws ComponentValidationException
-    {
+    default void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel model) throws ComponentValidationException {
 
     }
 
@@ -60,8 +58,7 @@ public interface ComponentFactory<CreatedType, ProviderType extends Provider> ex
      * @param realm
      * @param model
      */
-    default
-    void onCreate(KeycloakSession session, RealmModel realm, ComponentModel model) {
+    default void onCreate(KeycloakSession session, RealmModel realm, ComponentModel model) {
 
     }
 
@@ -74,8 +71,7 @@ public interface ComponentFactory<CreatedType, ProviderType extends Provider> ex
      * @param oldModel old saved model
      * @param newModel new configuration
      */
-    default
-    void onUpdate(KeycloakSession session, RealmModel realm, ComponentModel oldModel, ComponentModel newModel) {
+    default void onUpdate(KeycloakSession session, RealmModel realm, ComponentModel oldModel, ComponentModel newModel) {
 
     }
 
@@ -84,10 +80,9 @@ public interface ComponentFactory<CreatedType, ProviderType extends Provider> ex
      *
      * @param session
      * @param realm
-     * @param model model of the component, which is going to be removed
+     * @param model   model of the component, which is going to be removed
      */
-    default
-    void preRemove(KeycloakSession session, RealmModel realm, ComponentModel model) {
+    default void preRemove(KeycloakSession session, RealmModel realm, ComponentModel model) {
 
     }
 
@@ -96,8 +91,7 @@ public interface ComponentFactory<CreatedType, ProviderType extends Provider> ex
      *
      * @return
      */
-    default
-    List<ProviderConfigProperty> getCommonProviderConfigProperties() {
+    default List<ProviderConfigProperty> getCommonProviderConfigProperties() {
         return Collections.emptyList();
     }
 
@@ -107,8 +101,7 @@ public interface ComponentFactory<CreatedType, ProviderType extends Provider> ex
      *
      * @return
      */
-    default
-    Map<String, Object> getTypeMetadata() {
+    default Map<String, Object> getTypeMetadata() {
         return Collections.emptyMap();
 
     }

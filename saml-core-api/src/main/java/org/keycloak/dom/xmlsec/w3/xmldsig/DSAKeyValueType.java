@@ -197,7 +197,6 @@ public class DSAKeyValueType implements KeyValueType {
      * Convert to the JDK representation of a DSA Public Key
      *
      * @return
-     *
      * @throws org.keycloak.saml.common.exceptions.ProcessingException
      */
     public DSAPublicKey convertToPublicKey() throws ProcessingException {
@@ -221,7 +220,6 @@ public class DSAKeyValueType implements KeyValueType {
      * Convert to the JDK representation of a DSA Private Key
      *
      * @return
-     *
      * @throws ProcessingException
      */
     public DSAPrivateKey convertToPrivateKey() throws ProcessingException {

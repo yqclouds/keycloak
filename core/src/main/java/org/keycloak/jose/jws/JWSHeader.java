@@ -31,15 +31,19 @@ import java.io.Serializable;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JWSHeader implements Serializable {
+    private static final ObjectMapper mapper = new ObjectMapper();
+
+    static {
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+    }
+
     @JsonProperty("alg")
     private Algorithm algorithm;
-
     @JsonProperty("typ")
     private String type;
-
     @JsonProperty("cty")
     private String contentType;
-
     @JsonProperty("kid")
     private String keyId;
 
@@ -66,13 +70,6 @@ public class JWSHeader implements Serializable {
 
     public String getKeyId() {
         return keyId;
-    }
-
-    private static final ObjectMapper mapper = new ObjectMapper();
-
-    static {
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-
     }
 
     public String toString() {

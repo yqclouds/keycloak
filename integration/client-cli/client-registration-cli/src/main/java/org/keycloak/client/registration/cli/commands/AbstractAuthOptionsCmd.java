@@ -2,11 +2,7 @@ package org.keycloak.client.registration.cli.commands;
 
 import org.jboss.aesh.cl.Option;
 import org.jboss.aesh.console.command.invocation.CommandInvocation;
-import org.keycloak.client.registration.cli.config.ConfigData;
-import org.keycloak.client.registration.cli.config.ConfigHandler;
-import org.keycloak.client.registration.cli.config.FileConfigHandler;
-import org.keycloak.client.registration.cli.config.InMemoryConfigHandler;
-import org.keycloak.client.registration.cli.config.RealmConfigData;
+import org.keycloak.client.registration.cli.config.*;
 import org.keycloak.client.registration.cli.util.ConfigUtil;
 import org.keycloak.client.registration.cli.util.HttpUtil;
 import org.keycloak.client.registration.cli.util.IoUtil;
@@ -14,9 +10,7 @@ import org.keycloak.client.registration.cli.util.IoUtil;
 import java.io.File;
 
 import static org.keycloak.client.registration.cli.config.FileConfigHandler.setConfigFile;
-import static org.keycloak.client.registration.cli.util.ConfigUtil.checkAuthInfo;
-import static org.keycloak.client.registration.cli.util.ConfigUtil.checkServerInfo;
-import static org.keycloak.client.registration.cli.util.ConfigUtil.loadConfig;
+import static org.keycloak.client.registration.cli.util.ConfigUtil.*;
 
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
@@ -72,6 +66,10 @@ public abstract class AbstractAuthOptionsCmd extends AbstractGlobalOptionsCmd {
 
     @Option(shortName = 't', name = "token", description = "Initial / Registration access token to use)", hasValue = true)
     protected String token;
+
+    protected static String booleanOptionForCheck(boolean value) {
+        return value ? "true" : null;
+    }
 
     protected void initFromParent(AbstractAuthOptionsCmd parent) {
 
@@ -129,7 +127,7 @@ public abstract class AbstractAuthOptionsCmd extends AbstractGlobalOptionsCmd {
         }
     }
 
-    protected void setupTruststore(ConfigData configData, CommandInvocation invocation ) {
+    protected void setupTruststore(ConfigData configData, CommandInvocation invocation) {
 
         if (!configData.getServerUrl().startsWith("https:")) {
             return;
@@ -234,7 +232,7 @@ public abstract class AbstractAuthOptionsCmd extends AbstractGlobalOptionsCmd {
             rdata.setSecret(secret);
     }
 
-    protected void checkUnsupportedOptions(String ... options) {
+    protected void checkUnsupportedOptions(String... options) {
         if (options.length % 2 != 0) {
             throw new IllegalArgumentException("Even number of argument required");
         }
@@ -247,9 +245,5 @@ public abstract class AbstractAuthOptionsCmd extends AbstractGlobalOptionsCmd {
                 throw new IllegalArgumentException("Unsupported option: " + name);
             }
         }
-    }
-
-    protected static String booleanOptionForCheck(boolean value) {
-        return value ? "true" : null;
     }
 }

@@ -23,7 +23,7 @@ import org.keycloak.provider.Provider;
 
 /**
  * Base interface for components that want to provide an alternative storage mechanism for clients
- *
+ * <p>
  * This is currently a private incomplete SPI.  Please discuss on dev list if you want us to complete it or want to do the work yourself.
  * This work is described in KEYCLOAK-6408 JIRA issue.
  *
@@ -39,8 +39,7 @@ public interface ClientStorageProvider extends Provider, ClientLookupProvider {
      *
      * @param realm
      */
-    default
-    void preRemove(RealmModel realm) {
+    default void preRemove(RealmModel realm) {
 
     }
 
@@ -51,20 +50,18 @@ public interface ClientStorageProvider extends Provider, ClientLookupProvider {
      * @param realm
      * @param group
      */
-    default
-    void preRemove(RealmModel realm, GroupModel group) {
+    default void preRemove(RealmModel realm, GroupModel group) {
 
     }
 
     /**
      * Callback when a role is removed.  Allows you to do things like remove a user
      * role mapping in your external store if appropriate
-
+     *
      * @param realm
      * @param role
      */
-    default
-    void preRemove(RealmModel realm, RoleModel role) {
+    default void preRemove(RealmModel realm, RoleModel role) {
 
     }
 }

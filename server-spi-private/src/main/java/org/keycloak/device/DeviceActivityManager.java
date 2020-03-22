@@ -17,9 +17,6 @@
 
 package org.keycloak.device;
 
-import javax.ws.rs.core.HttpHeaders;
-import java.io.IOException;
-
 import org.jboss.logging.Logger;
 import org.keycloak.common.util.Base64;
 import org.keycloak.models.KeycloakContext;
@@ -29,6 +26,9 @@ import org.keycloak.representations.account.DeviceRepresentation;
 import org.keycloak.util.JsonSerialization;
 import ua_parser.Client;
 import ua_parser.Parser;
+
+import javax.ws.rs.core.HttpHeaders;
+import java.io.IOException;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -48,9 +48,9 @@ public class DeviceActivityManager {
         }
     }
 
-    /** Returns the device information associated with the given {@code userSession}.
-     * 
-     * 
+    /**
+     * Returns the device information associated with the given {@code userSession}.
+     *
      * @param userSession the userSession
      * @return the device information or null if no device is attached to the user session
      */
@@ -71,9 +71,9 @@ public class DeviceActivityManager {
     /**
      * Attaches a device to the given {@code userSession} where the device information is obtained from the {@link HttpHeaders#USER_AGENT} in the current
      * request, if available.
-     * 
+     *
      * @param userSession the user session
-     * @param session the keycloak session
+     * @param session     the keycloak session
      */
     public static void attachDevice(UserSessionModel userSession, KeycloakSession session) {
         DeviceRepresentation current = getDeviceFromUserAgent(session);
@@ -121,7 +121,7 @@ public class DeviceActivityManager {
             if (browserVersion == null) {
                 browserVersion = DeviceRepresentation.UNKNOWN;
             }
-            
+
             current.setBrowser(client.userAgent.family, browserVersion);
             current.setOs(client.os.family);
 

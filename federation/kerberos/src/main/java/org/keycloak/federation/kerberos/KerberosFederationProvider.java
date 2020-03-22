@@ -23,17 +23,9 @@ import org.keycloak.credential.CredentialAuthentication;
 import org.keycloak.credential.CredentialInput;
 import org.keycloak.credential.CredentialInputUpdater;
 import org.keycloak.credential.CredentialInputValidator;
-import org.keycloak.credential.CredentialModel;
 import org.keycloak.federation.kerberos.impl.KerberosUsernamePasswordAuthenticator;
 import org.keycloak.federation.kerberos.impl.SPNEGOAuthenticator;
-import org.keycloak.models.CredentialValidationOutput;
-import org.keycloak.models.GroupModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserCredentialModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserManager;
+import org.keycloak.models.*;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.storage.ReadOnlyException;
 import org.keycloak.storage.UserStorageProvider;
@@ -56,9 +48,8 @@ public class KerberosFederationProvider implements UserStorageProvider,
         CredentialAuthentication,
         ImportedUserValidation {
 
-    private static final Logger logger = Logger.getLogger(KerberosFederationProvider.class);
     public static final String KERBEROS_PRINCIPAL = "KERBEROS_PRINCIPAL";
-
+    private static final Logger logger = Logger.getLogger(KerberosFederationProvider.class);
     protected KeycloakSession session;
     protected UserStorageProviderModel model;
     protected KerberosConfig kerberosConfig;
@@ -133,7 +124,8 @@ public class KerberosFederationProvider implements UserStorageProvider,
 
     @Override
     public boolean updateCredential(RealmModel realm, UserModel user, CredentialInput input) {
-        if (!(input instanceof UserCredentialModel) || !PasswordCredentialModel.TYPE.equals(input.getType())) return false;
+        if (!(input instanceof UserCredentialModel) || !PasswordCredentialModel.TYPE.equals(input.getType()))
+            return false;
         if (kerberosConfig.getEditMode() == EditMode.READ_ONLY) {
             throw new ReadOnlyException("Can't change password in Keycloak database. Change password with your Kerberos server");
         }
@@ -187,7 +179,7 @@ public class KerberosFederationProvider implements UserStorageProvider,
     @Override
     public CredentialValidationOutput authenticate(RealmModel realm, CredentialInput input) {
         if (!(input instanceof UserCredentialModel)) return null;
-        UserCredentialModel credential = (UserCredentialModel)input;
+        UserCredentialModel credential = (UserCredentialModel) input;
         if (credential.getType().equals(UserCredentialModel.KERBEROS)) {
             String spnegoToken = credential.getChallengeResponse();
             SPNEGOAuthenticator spnegoAuthenticator = factory.createSPNEGOAuthenticator(spnegoToken, kerberosConfig);
@@ -208,7 +200,7 @@ public class KerberosFederationProvider implements UserStorageProvider,
 
                     return new CredentialValidationOutput(user, CredentialValidationOutput.Status.AUTHENTICATED, state);
                 }
-            }  else if (spnegoAuthenticator.getResponseToken() != null) {
+            } else if (spnegoAuthenticator.getResponseToken() != null) {
                 // Case when SPNEGO handshake requires multiple steps
                 logger.tracef("SPNEGO Handshake will continue");
                 state.put(KerberosConstants.RESPONSE_TOKEN, spnegoAuthenticator.getResponseToken());
@@ -231,7 +223,7 @@ public class KerberosFederationProvider implements UserStorageProvider,
     /**
      * Called after successful authentication
      *
-     * @param realm realm
+     * @param realm    realm
      * @param username username without realm prefix
      * @return user if found or successfully created. Null if user with same username already exists, but is not linked to this provider
      */

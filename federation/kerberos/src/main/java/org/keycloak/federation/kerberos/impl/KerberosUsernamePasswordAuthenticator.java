@@ -23,11 +23,7 @@ import org.keycloak.federation.kerberos.CommonKerberosConfig;
 import org.keycloak.models.ModelException;
 
 import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.callback.*;
 import javax.security.auth.login.Configuration;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
@@ -83,7 +79,7 @@ public class KerberosUsernamePasswordAuthenticator {
      *
      * @param username username without Kerberos realm attached or with correct realm attached
      * @param password kerberos password
-     * @return  true if user was successfully authenticated
+     * @return true if user was successfully authenticated
      */
     public boolean validUser(String username, String password) {
         try {
@@ -101,10 +97,10 @@ public class KerberosUsernamePasswordAuthenticator {
     protected void checkKerberosServerAvailable(LoginException le) {
         String message = le.getMessage().toUpperCase();
         if (message.contains("PORT UNREACHABLE") ||
-            message.contains("CANNOT LOCATE") ||
-            message.contains("CANNOT CONTACT") ||
-            message.contains("CANNOT FIND") ||
-            message.contains("UNKNOWN ERROR")) {
+                message.contains("CANNOT LOCATE") ||
+                message.contains("CANNOT CONTACT") ||
+                message.contains("CANNOT FIND") ||
+                message.contains("UNKNOWN ERROR")) {
             throw new ModelException("Kerberos unreachable", le);
         }
     }
@@ -115,7 +111,7 @@ public class KerberosUsernamePasswordAuthenticator {
      *
      * @param username username without Kerberos realm attached
      * @param password kerberos password
-     * @return  true if user was successfully authenticated
+     * @return true if user was successfully authenticated
      */
     public Subject authenticateSubject(String username, String password) throws LoginException {
         String principal = getKerberosPrincipal(username);

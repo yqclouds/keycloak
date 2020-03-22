@@ -17,12 +17,12 @@
 
 package org.keycloak.models.sessions.infinispan.events;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.models.AbstractKeycloakTransaction;
 import org.keycloak.models.KeycloakSession;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Postpone sending notifications of session events to the commit of Keycloak transaction

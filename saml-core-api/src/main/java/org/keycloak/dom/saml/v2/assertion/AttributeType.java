@@ -18,11 +18,7 @@ package org.keycloak.dom.saml.v2.assertion;
 
 import javax.xml.namespace.QName;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <p>
@@ -154,7 +150,7 @@ public class AttributeType implements Serializable {
      *
      * <p>
      * the map is keyed by the name of the attribute and the value is the string value of the attribute.
-     *
+     * <p>
      * the map returned by this method is live, and you can add new attribute by updating the map directly. Because of
      * this
      * design, there's no setter.

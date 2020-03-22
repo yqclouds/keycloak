@@ -1,11 +1,11 @@
 package org.keycloak.models.credential.dto;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jboss.logging.Logger;
 import org.keycloak.common.util.Base64;
+
+import java.io.IOException;
 
 public class PasswordSecretData {
 
@@ -19,8 +19,7 @@ public class PasswordSecretData {
         if (salt == null || "__SALT__".equals(salt)) {
             this.value = value;
             this.salt = null;
-        }
-        else {
+        } else {
             this.value = value;
             this.salt = Base64.decode(salt);
         }

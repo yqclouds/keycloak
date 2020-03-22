@@ -35,8 +35,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class FreeMarkerUtil {
 
-    private ConcurrentHashMap<String, Template> cache;
     private final KeycloakSanitizerMethod kcSanitizeMethod = new KeycloakSanitizerMethod();
+    private ConcurrentHashMap<String, Template> cache;
 
     public FreeMarkerUtil() {
         if (Config.scope("theme").getBoolean("cacheTemplates", true)) {
@@ -46,9 +46,9 @@ public class FreeMarkerUtil {
 
     public String processTemplate(Object data, String templateName, Theme theme) throws FreeMarkerException {
         if (data instanceof Map) {
-            ((Map)data).put("kcSanitize", kcSanitizeMethod);
+            ((Map) data).put("kcSanitize", kcSanitizeMethod);
         }
-        
+
         try {
             Template template;
             if (cache != null) {
@@ -74,13 +74,13 @@ public class FreeMarkerUtil {
 
     private Template getTemplate(String templateName, Theme theme) throws IOException {
         Configuration cfg = new Configuration();
-        
+
         // Assume *.ftl files are html.  This lets freemarker know how to
         // sanitize and prevent XSS attacks.
         if (templateName.toLowerCase().endsWith(".ftl")) {
             cfg.setOutputFormat(HTMLOutputFormat.INSTANCE);
         }
-        
+
         cfg.setTemplateLoader(new ThemeTemplateLoader(theme));
         return cfg.getTemplate(templateName, "UTF-8");
     }

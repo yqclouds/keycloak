@@ -19,12 +19,7 @@ package org.keycloak.storage.ldap.mappers.membership.role;
 
 import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ModelException;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleContainerModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.RoleUtils;
 import org.keycloak.models.utils.UserModelDelegate;
 import org.keycloak.storage.ldap.LDAPConfig;
@@ -41,11 +36,7 @@ import org.keycloak.storage.ldap.mappers.membership.LDAPGroupMapperMode;
 import org.keycloak.storage.ldap.mappers.membership.UserRolesRetrieveStrategy;
 import org.keycloak.storage.user.SynchronizationResult;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Map realm roles or roles of particular client to LDAP groups
@@ -369,7 +360,7 @@ public class RoleLDAPStorageMapper extends AbstractLDAPStorageMapper implements 
         public boolean hasRole(RoleModel role) {
             Set<RoleModel> roles = getRoleMappings();
             return RoleUtils.hasRole(roles, role)
-              || RoleUtils.hasRoleFromGroup(getGroups(), role, true);
+                    || RoleUtils.hasRoleFromGroup(getGroups(), role, true);
         }
 
         @Override

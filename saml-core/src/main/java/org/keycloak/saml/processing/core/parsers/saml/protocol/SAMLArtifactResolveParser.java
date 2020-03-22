@@ -19,13 +19,12 @@ package org.keycloak.saml.processing.core.parsers.saml.protocol;
 import org.keycloak.dom.saml.v2.protocol.ArtifactResolveType;
 import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.util.StaxParserUtil;
-
 import org.keycloak.saml.processing.core.parsers.util.SAMLParserUtil;
 import org.keycloak.saml.processing.core.saml.v2.util.XMLTimeUtil;
+
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.StartElement;
-import static org.keycloak.saml.processing.core.parsers.saml.protocol.SAMLRequestAbstractParser.VERSION_2_0;
 
 /**
  * Parse the {@link ArtifactResolveType}
@@ -48,9 +47,7 @@ public class SAMLArtifactResolveParser extends SAMLRequestAbstractParser<Artifac
      * Parse the attributes at the authnrequesttype element
      *
      * @param startElement
-     *
      * @return
-     *
      * @throws ParsingException
      */
     @Override
@@ -67,7 +64,7 @@ public class SAMLArtifactResolveParser extends SAMLRequestAbstractParser<Artifac
 
     @Override
     protected void processSubElement(XMLEventReader xmlEventReader, ArtifactResolveType target,
-      SAMLProtocolQNames element, StartElement elementDetail) throws ParsingException {
+                                     SAMLProtocolQNames element, StartElement elementDetail) throws ParsingException {
         switch (element) {
             case ISSUER:
             case SIGNATURE:

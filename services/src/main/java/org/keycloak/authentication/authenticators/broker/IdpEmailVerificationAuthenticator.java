@@ -41,21 +41,21 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
-import java.net.URI;
-import java.util.Objects;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriBuilderException;
+import javax.ws.rs.core.UriInfo;
+import java.net.URI;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import javax.ws.rs.core.*;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class IdpEmailVerificationAuthenticator extends AbstractIdpAuthenticator {
 
-    private static Logger logger = Logger.getLogger(IdpEmailVerificationAuthenticator.class);
-
     public static final String VERIFY_ACCOUNT_IDP_USERNAME = "VERIFY_ACCOUNT_IDP_USERNAME";
+    private static Logger logger = Logger.getLogger(IdpEmailVerificationAuthenticator.class);
 
     @Override
     protected void authenticateImpl(AuthenticationFlowContext context, SerializedBrokeredIdentityContext serializedCtx, BrokeredIdentityContext brokerContext) {
@@ -83,7 +83,7 @@ public class IdpEmailVerificationAuthenticator extends AbstractIdpAuthenticator 
         UserModel existingUser = getExistingUser(session, realm, authSession);
 
         // Do not allow resending e-mail by simple page refresh
-        if (! Objects.equals(authSession.getAuthNote(Constants.VERIFY_EMAIL_KEY), existingUser.getEmail())) {
+        if (!Objects.equals(authSession.getAuthNote(Constants.VERIFY_EMAIL_KEY), existingUser.getEmail())) {
             authSession.setAuthNote(Constants.VERIFY_EMAIL_KEY, existingUser.getEmail());
             sendVerifyEmail(session, context, existingUser, brokerContext);
         } else {
@@ -129,8 +129,8 @@ public class IdpEmailVerificationAuthenticator extends AbstractIdpAuthenticator 
 
         String authSessionEncodedId = AuthenticationSessionCompoundId.fromAuthSession(authSession).getEncodedId();
         IdpVerifyAccountLinkActionToken token = new IdpVerifyAccountLinkActionToken(
-          existingUser.getId(), absoluteExpirationInSecs, authSessionEncodedId,
-          brokerContext.getUsername(), brokerContext.getIdpConfig().getAlias(), authSession.getClient().getClientId()
+                existingUser.getId(), absoluteExpirationInSecs, authSessionEncodedId,
+                brokerContext.getUsername(), brokerContext.getIdpConfig().getAlias(), authSession.getClient().getClientId()
         );
         UriBuilder builder = Urls.actionTokenBuilder(uriInfo.getBaseUri(), token.serialize(session, realm, uriInfo),
                 authSession.getClient().getClientId(), authSession.getTabId());

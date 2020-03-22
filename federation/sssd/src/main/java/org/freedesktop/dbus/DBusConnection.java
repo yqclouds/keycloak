@@ -23,14 +23,7 @@ import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.text.MessageFormat;
 import java.text.ParseException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.Vector;
+import java.util.*;
 
 import static org.freedesktop.dbus.Gettext.getString;
 
@@ -46,139 +39,6 @@ import static org.freedesktop.dbus.Gettext.getString;
  */
 public class DBusConnection extends AbstractConnection {
     /**
-     * Add addresses of peers to a set which will watch for them to
-     * disappear and automatically remove them from the set.
-     */
-    public class PeerSet implements Set<String>, DBusSigHandler<DBus.NameOwnerChanged> {
-        private Set<String> addresses;
-
-        public PeerSet() {
-            addresses = new TreeSet<String>();
-            try {
-                addSigHandler(new DBusMatchRule(DBus.NameOwnerChanged.class, null, null), this);
-            } catch (DBusException DBe) {
-                if (EXCEPTION_DEBUG && Debug.debug) Debug.print(Debug.ERR, DBe);
-            }
-        }
-
-        public void handle(DBus.NameOwnerChanged noc) {
-            if (Debug.debug)
-                Debug.print(Debug.DEBUG, "Received NameOwnerChanged(" + noc.name + "," + noc.old_owner + "," + noc.new_owner + ")");
-            if ("".equals(noc.new_owner) && addresses.contains(noc.name))
-                remove(noc.name);
-        }
-
-        public boolean add(String address) {
-            if (Debug.debug)
-                Debug.print(Debug.DEBUG, "Adding " + address);
-            synchronized (addresses) {
-                return addresses.add(address);
-            }
-        }
-
-        public boolean addAll(Collection<? extends String> addresses) {
-            synchronized (this.addresses) {
-                return this.addresses.addAll(addresses);
-            }
-        }
-
-        public void clear() {
-            synchronized (addresses) {
-                addresses.clear();
-            }
-        }
-
-        public boolean contains(Object o) {
-            return addresses.contains(o);
-        }
-
-        public boolean containsAll(Collection<?> os) {
-            return addresses.containsAll(os);
-        }
-
-        public boolean equals(Object o) {
-            if (o instanceof PeerSet)
-                return ((PeerSet) o).addresses.equals(addresses);
-            else return false;
-        }
-
-        public int hashCode() {
-            return addresses.hashCode();
-        }
-
-        public boolean isEmpty() {
-            return addresses.isEmpty();
-        }
-
-        public Iterator<String> iterator() {
-            return addresses.iterator();
-        }
-
-        public boolean remove(Object o) {
-            if (Debug.debug)
-                Debug.print(Debug.DEBUG, "Removing " + o);
-            synchronized (addresses) {
-                return addresses.remove(o);
-            }
-        }
-
-        public boolean removeAll(Collection<?> os) {
-            synchronized (addresses) {
-                return addresses.removeAll(os);
-            }
-        }
-
-        public boolean retainAll(Collection<?> os) {
-            synchronized (addresses) {
-                return addresses.retainAll(os);
-            }
-        }
-
-        public int size() {
-            return addresses.size();
-        }
-
-        public Object[] toArray() {
-            synchronized (addresses) {
-                return addresses.toArray();
-            }
-        }
-
-        public <T> T[] toArray(T[] a) {
-            synchronized (addresses) {
-                return addresses.toArray(a);
-            }
-        }
-    }
-
-    private class _sighandler implements DBusSigHandler<DBusSignal> {
-        public void handle(DBusSignal s) {
-            if (s instanceof org.freedesktop.DBus.Local.Disconnected) {
-                if (Debug.debug) Debug.print(Debug.WARN, "Handling disconnected signal from bus");
-                try {
-                    Error err = new Error(
-                            "org.freedesktop.DBus.Local", "org.freedesktop.DBus.Local.disconnected", 0, "s", new Object[]{getString("disconnected")});
-                    if (null != pendingCalls) synchronized (pendingCalls) {
-                        long[] set = pendingCalls.getKeys();
-                        for (long l : set)
-                            if (-1 != l) {
-                                MethodCall m = pendingCalls.remove(l);
-                                if (null != m)
-                                    m.setReply(err);
-                            }
-                    }
-                    synchronized (pendingErrors) {
-                        pendingErrors.add(err);
-                    }
-                } catch (DBusException DBe) {
-                }
-            } else if (s instanceof org.freedesktop.DBus.NameAcquired) {
-                busnames.add(((org.freedesktop.DBus.NameAcquired) s).name);
-            }
-        }
-    }
-
-    /**
      * System Bus
      */
     public static final int SYSTEM = 0;
@@ -186,15 +46,51 @@ public class DBusConnection extends AbstractConnection {
      * Session Bus
      */
     public static final int SESSION = 1;
-
     public static final String DEFAULT_SYSTEM_BUS_ADDRESS = "unix:path=/var/run/dbus/system_bus_socket";
-
-    private List<String> busnames;
-
     private static final Map<Object, DBusConnection> conn = new HashMap<Object, DBusConnection>();
+    private List<String> busnames;
     private int _refcount = 0;
     private Object _reflock = new Object();
     private DBus _dbus;
+    @SuppressWarnings("unchecked")
+    private DBusConnection(String address) throws DBusException {
+        super(address);
+        busnames = new Vector<String>();
+
+        synchronized (_reflock) {
+            _refcount = 1;
+        }
+
+        try {
+            transport = new Transport(addr, AbstractConnection.TIMEOUT);
+            connected = true;
+        } catch (IOException IOe) {
+            if (EXCEPTION_DEBUG && Debug.debug) Debug.print(Debug.ERR, IOe);
+            disconnect();
+            throw new DBusException(getString("connectionFailure") + IOe.getMessage());
+        } catch (ParseException Pe) {
+            if (EXCEPTION_DEBUG && Debug.debug) Debug.print(Debug.ERR, Pe);
+            disconnect();
+            throw new DBusException(getString("connectionFailure") + Pe.getMessage());
+        }
+
+        // start listening for calls
+        listen();
+
+        // register disconnect handlers
+        DBusSigHandler h = new _sighandler();
+        addSigHandlerWithoutMatch(org.freedesktop.DBus.Local.Disconnected.class, h);
+        addSigHandlerWithoutMatch(org.freedesktop.DBus.NameAcquired.class, h);
+
+        // register ourselves
+        _dbus = getRemoteObject("org.freedesktop.DBus", "/org/freedesktop/DBus", DBus.class);
+        try {
+            busnames.add(_dbus.Hello());
+        } catch (DBusExecutionException DBEe) {
+            if (EXCEPTION_DEBUG && Debug.debug) Debug.print(Debug.ERR, DBEe);
+            throw new DBusException(DBEe.getMessage());
+        }
+    }
 
     /**
      * Connect to the BUS. If a connection already exists to the specified Bus, a reference to it is returned.
@@ -285,46 +181,6 @@ public class DBusConnection extends AbstractConnection {
                 conn.put(s, c);
                 return c;
             }
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private DBusConnection(String address) throws DBusException {
-        super(address);
-        busnames = new Vector<String>();
-
-        synchronized (_reflock) {
-            _refcount = 1;
-        }
-
-        try {
-            transport = new Transport(addr, AbstractConnection.TIMEOUT);
-            connected = true;
-        } catch (IOException IOe) {
-            if (EXCEPTION_DEBUG && Debug.debug) Debug.print(Debug.ERR, IOe);
-            disconnect();
-            throw new DBusException(getString("connectionFailure") + IOe.getMessage());
-        } catch (ParseException Pe) {
-            if (EXCEPTION_DEBUG && Debug.debug) Debug.print(Debug.ERR, Pe);
-            disconnect();
-            throw new DBusException(getString("connectionFailure") + Pe.getMessage());
-        }
-
-        // start listening for calls
-        listen();
-
-        // register disconnect handlers
-        DBusSigHandler h = new _sighandler();
-        addSigHandlerWithoutMatch(org.freedesktop.DBus.Local.Disconnected.class, h);
-        addSigHandlerWithoutMatch(org.freedesktop.DBus.NameAcquired.class, h);
-
-        // register ourselves
-        _dbus = getRemoteObject("org.freedesktop.DBus", "/org/freedesktop/DBus", DBus.class);
-        try {
-            busnames.add(_dbus.Hello());
-        } catch (DBusExecutionException DBEe) {
-            if (EXCEPTION_DEBUG && Debug.debug) Debug.print(Debug.ERR, DBEe);
-            throw new DBusException(DBEe.getMessage());
         }
     }
 
@@ -788,6 +644,139 @@ public class DBusConnection extends AbstractConnection {
                     conn.remove(addr);
                     super.disconnect();
                 }
+            }
+        }
+    }
+
+    /**
+     * Add addresses of peers to a set which will watch for them to
+     * disappear and automatically remove them from the set.
+     */
+    public class PeerSet implements Set<String>, DBusSigHandler<DBus.NameOwnerChanged> {
+        private Set<String> addresses;
+
+        public PeerSet() {
+            addresses = new TreeSet<String>();
+            try {
+                addSigHandler(new DBusMatchRule(DBus.NameOwnerChanged.class, null, null), this);
+            } catch (DBusException DBe) {
+                if (EXCEPTION_DEBUG && Debug.debug) Debug.print(Debug.ERR, DBe);
+            }
+        }
+
+        public void handle(DBus.NameOwnerChanged noc) {
+            if (Debug.debug)
+                Debug.print(Debug.DEBUG, "Received NameOwnerChanged(" + noc.name + "," + noc.old_owner + "," + noc.new_owner + ")");
+            if ("".equals(noc.new_owner) && addresses.contains(noc.name))
+                remove(noc.name);
+        }
+
+        public boolean add(String address) {
+            if (Debug.debug)
+                Debug.print(Debug.DEBUG, "Adding " + address);
+            synchronized (addresses) {
+                return addresses.add(address);
+            }
+        }
+
+        public boolean addAll(Collection<? extends String> addresses) {
+            synchronized (this.addresses) {
+                return this.addresses.addAll(addresses);
+            }
+        }
+
+        public void clear() {
+            synchronized (addresses) {
+                addresses.clear();
+            }
+        }
+
+        public boolean contains(Object o) {
+            return addresses.contains(o);
+        }
+
+        public boolean containsAll(Collection<?> os) {
+            return addresses.containsAll(os);
+        }
+
+        public boolean equals(Object o) {
+            if (o instanceof PeerSet)
+                return ((PeerSet) o).addresses.equals(addresses);
+            else return false;
+        }
+
+        public int hashCode() {
+            return addresses.hashCode();
+        }
+
+        public boolean isEmpty() {
+            return addresses.isEmpty();
+        }
+
+        public Iterator<String> iterator() {
+            return addresses.iterator();
+        }
+
+        public boolean remove(Object o) {
+            if (Debug.debug)
+                Debug.print(Debug.DEBUG, "Removing " + o);
+            synchronized (addresses) {
+                return addresses.remove(o);
+            }
+        }
+
+        public boolean removeAll(Collection<?> os) {
+            synchronized (addresses) {
+                return addresses.removeAll(os);
+            }
+        }
+
+        public boolean retainAll(Collection<?> os) {
+            synchronized (addresses) {
+                return addresses.retainAll(os);
+            }
+        }
+
+        public int size() {
+            return addresses.size();
+        }
+
+        public Object[] toArray() {
+            synchronized (addresses) {
+                return addresses.toArray();
+            }
+        }
+
+        public <T> T[] toArray(T[] a) {
+            synchronized (addresses) {
+                return addresses.toArray(a);
+            }
+        }
+    }
+
+    private class _sighandler implements DBusSigHandler<DBusSignal> {
+        public void handle(DBusSignal s) {
+            if (s instanceof org.freedesktop.DBus.Local.Disconnected) {
+                if (Debug.debug) Debug.print(Debug.WARN, "Handling disconnected signal from bus");
+                try {
+                    Error err = new Error(
+                            "org.freedesktop.DBus.Local", "org.freedesktop.DBus.Local.disconnected", 0, "s", new Object[]{getString("disconnected")});
+                    if (null != pendingCalls) synchronized (pendingCalls) {
+                        long[] set = pendingCalls.getKeys();
+                        for (long l : set)
+                            if (-1 != l) {
+                                MethodCall m = pendingCalls.remove(l);
+                                if (null != m)
+                                    m.setReply(err);
+                            }
+                    }
+                    synchronized (pendingErrors) {
+                        pendingErrors.add(err);
+                    }
+                } catch (DBusException DBe) {
+                }
+            } else if (s instanceof org.freedesktop.DBus.NameAcquired) {
+                busnames.add(((org.freedesktop.DBus.NameAcquired) s).name);
             }
         }
     }

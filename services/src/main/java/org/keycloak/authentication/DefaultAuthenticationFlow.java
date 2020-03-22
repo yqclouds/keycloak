@@ -23,7 +23,6 @@ import org.keycloak.authentication.authenticators.conditional.ConditionalAuthent
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.Constants;
-import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.sessions.AuthenticationSessionModel;
@@ -54,10 +53,6 @@ public class DefaultAuthenticationFlow implements AuthenticationFlow {
         this.executions = processor.getRealm().getAuthenticationExecutions(flow.getId());
     }
 
-    protected boolean isProcessed(AuthenticationExecutionModel model) {
-        return isProcessed(processor, model);
-    }
-
     protected static boolean isProcessed(AuthenticationProcessor processor, AuthenticationExecutionModel model) {
         if (model.isDisabled()) return true;
         AuthenticationSessionModel.ExecutionStatus status = processor.getAuthenticationSession().getExecutionStatus().get(model.getId());
@@ -65,6 +60,10 @@ public class DefaultAuthenticationFlow implements AuthenticationFlow {
         return status == AuthenticationSessionModel.ExecutionStatus.SUCCESS || status == AuthenticationSessionModel.ExecutionStatus.SKIPPED
                 || status == AuthenticationSessionModel.ExecutionStatus.ATTEMPTED
                 || status == AuthenticationSessionModel.ExecutionStatus.SETUP_REQUIRED;
+    }
+
+    protected boolean isProcessed(AuthenticationExecutionModel model) {
+        return isProcessed(processor, model);
     }
 
     protected Authenticator createAuthenticator(AuthenticatorFactory factory) {
@@ -121,7 +120,7 @@ public class DefaultAuthenticationFlow implements AuthenticationFlow {
                     .filter(authSelectionOption -> authExecId.equals(authSelectionOption.getAuthExecId()))
                     .findFirst()
                     .orElseThrow(() -> new AuthenticationFlowException("Requested authentication execution is not allowed", AuthenticationFlowError.INTERNAL_ERROR)
-            );
+                    );
 
             model = processor.getRealm().getAuthenticationExecutionById(authExecId);
 
@@ -315,19 +314,21 @@ public class DefaultAuthenticationFlow implements AuthenticationFlow {
 
     /**
      * Checks if the conditional subflow passed in parameter is disabled.
+     *
      * @param model
      * @return
      */
     boolean isConditionalSubflowDisabled(AuthenticationExecutionModel model) {
         if (model == null || !model.isAuthenticatorFlow() || !model.isConditional()) {
             return false;
-        };
+        }
+        ;
         List<AuthenticationExecutionModel> modelList = processor.getRealm().getAuthenticationExecutions(model.getFlowId());
         List<AuthenticationExecutionModel> conditionalAuthenticatorList = modelList.stream()
                 .filter(this::isConditionalAuthenticator)
                 .filter(s -> s.isEnabled())
                 .collect(Collectors.toList());
-        return conditionalAuthenticatorList.isEmpty() || conditionalAuthenticatorList.stream().anyMatch(m-> conditionalNotMatched(m, modelList));
+        return conditionalAuthenticatorList.isEmpty() || conditionalAuthenticatorList.stream().anyMatch(m -> conditionalNotMatched(m, modelList));
     }
 
     private boolean isConditionalAuthenticator(AuthenticationExecutionModel model) {
@@ -347,7 +348,7 @@ public class DefaultAuthenticationFlow implements AuthenticationFlow {
         ConditionalAuthenticator authenticator = (ConditionalAuthenticator) createAuthenticator(factory);
         AuthenticationProcessor.Result context = processor.createAuthenticatorContext(model, authenticator, executionList);
 
-       boolean matchCondition;
+        boolean matchCondition;
 
         // Retrieve previous evaluation result if any, else evaluate and store result for future re-evaluation
         if (processor.isEvaluatedTrue(model)) {
@@ -525,7 +526,7 @@ public class DefaultAuthenticationFlow implements AuthenticationFlow {
     }
 
     @Override
-    public List<AuthenticationFlowException> getFlowExceptions(){
+    public List<AuthenticationFlowException> getFlowExceptions() {
         return afeList;
     }
 }

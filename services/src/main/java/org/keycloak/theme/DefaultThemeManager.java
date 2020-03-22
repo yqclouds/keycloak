@@ -28,14 +28,7 @@ import org.keycloak.models.ThemeManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Locale;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -54,6 +47,22 @@ public class DefaultThemeManager implements ThemeManager {
         this.factory = factory;
         this.session = session;
         this.defaultTheme = Config.scope("theme").get("default", Version.NAME.toLowerCase());
+    }
+
+    private static Locale getParent(Locale locale) {
+        if (Locale.ENGLISH.equals(locale)) {
+            return null;
+        }
+
+        if (locale.getVariant() != null && !locale.getVariant().isEmpty()) {
+            return new Locale(locale.getLanguage(), locale.getCountry());
+        }
+
+        if (locale.getCountry() != null && !locale.getCountry().isEmpty()) {
+            return new Locale(locale.getLanguage());
+        }
+
+        return Locale.ENGLISH;
     }
 
     @Override
@@ -134,6 +143,15 @@ public class DefaultThemeManager implements ThemeManager {
             }
         }
         return null;
+    }
+
+    private List<ThemeProvider> getProviders() {
+        if (providers == null) {
+            providers = new LinkedList(session.getAllProviders(ThemeProvider.class));
+            Collections.sort(providers, (o1, o2) -> o2.getProviderPriority() - o1.getProviderPriority());
+        }
+
+        return providers;
     }
 
     private static class ExtendingTheme implements Theme {
@@ -224,7 +242,7 @@ public class DefaultThemeManager implements ThemeManager {
                     messages.putAll(getMessages(baseBundlename, parent));
                 }
 
-                for (ThemeResourceProvider t : themeResourceProviders ){
+                for (ThemeResourceProvider t : themeResourceProviders) {
                     messages.putAll(t.getMessages(baseBundlename, locale));
                 }
 
@@ -235,7 +253,7 @@ public class DefaultThemeManager implements ThemeManager {
                         messages.putAll(m);
                     }
                 }
-                
+
                 this.messages.putIfAbsent(baseBundlename, new ConcurrentHashMap<Locale, Properties>());
                 this.messages.get(baseBundlename).putIfAbsent(locale, messages);
 
@@ -273,31 +291,6 @@ public class DefaultThemeManager implements ThemeManager {
                 properties.setProperty(propertyName, StringPropertyReplacer.replaceProperties(properties.getProperty(propertyName), new SystemEnvProperties()));
             }
         }
-    }
-
-    private static Locale getParent(Locale locale) {
-        if (Locale.ENGLISH.equals(locale)) {
-            return null;
-        }
-
-        if (locale.getVariant() != null && !locale.getVariant().isEmpty()) {
-            return new Locale(locale.getLanguage(), locale.getCountry());
-        }
-
-        if (locale.getCountry() != null && !locale.getCountry().isEmpty()) {
-            return new Locale(locale.getLanguage());
-        }
-
-        return Locale.ENGLISH;
-    }
-
-    private List<ThemeProvider> getProviders() {
-        if (providers == null) {
-            providers = new LinkedList(session.getAllProviders(ThemeProvider.class));
-            Collections.sort(providers, (o1, o2) -> o2.getProviderPriority() - o1.getProviderPriority());
-        }
-
-        return providers;
     }
 
 }

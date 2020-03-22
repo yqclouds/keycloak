@@ -48,7 +48,6 @@ public class JBossSAMLAuthnResponseFactory {
      * Create a StatusType given the status code uri
      *
      * @param statusCodeURI
-     *
      * @return
      */
     public static StatusType createStatusType(String statusCodeURI) {
@@ -65,7 +64,6 @@ public class JBossSAMLAuthnResponseFactory {
      * and a second-level code reflecting the given <code>statusCodeURI</code>.</p>
      *
      * @param statusCodeURI The second-level code.
-     *
      * @return
      */
     public static StatusType createStatusTypeForResponder(String statusCodeURI) {
@@ -92,9 +90,7 @@ public class JBossSAMLAuthnResponseFactory {
      * @param ID
      * @param issuerInfo
      * @param assertionType
-     *
      * @return
-     *
      * @throws ConfigurationException
      */
     public static ResponseType createResponseType(String ID, IssuerInfoHolder issuerInfo, AssertionType assertionType) {
@@ -122,9 +118,7 @@ public class JBossSAMLAuthnResponseFactory {
      * @param ID
      * @param issuerInfo
      * @param encryptedAssertion a DOM {@link Element} that represents an encrypted assertion
-     *
      * @return
-     *
      * @throws ConfigurationException
      */
     public static ResponseType createResponseType(String ID, IssuerInfoHolder issuerInfo, Element encryptedAssertion) {

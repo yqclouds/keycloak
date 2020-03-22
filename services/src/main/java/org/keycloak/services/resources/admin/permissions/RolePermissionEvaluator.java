@@ -29,6 +29,7 @@ public interface RolePermissionEvaluator {
     void requireList(RoleContainerModel container);
 
     boolean canMapRole(RoleModel role);
+
     void requireMapRole(RoleModel role);
 
     boolean canManage(RoleModel role);
@@ -40,9 +41,11 @@ public interface RolePermissionEvaluator {
     void requireView(RoleModel role);
 
     boolean canMapClientScope(RoleModel role);
+
     void requireMapClientScope(RoleModel role);
 
     boolean canMapComposite(RoleModel role);
+
     void requireMapComposite(RoleModel role);
 
     boolean canManage(RoleContainerModel container);

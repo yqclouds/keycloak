@@ -17,20 +17,20 @@
 
 package org.keycloak.models.sessions.infinispan.changes;
 
+import org.infinispan.commons.marshall.Externalizer;
+import org.infinispan.commons.marshall.MarshallUtil;
+import org.infinispan.commons.marshall.SerializeWith;
+import org.jboss.logging.Logger;
+import org.keycloak.models.sessions.infinispan.entities.SessionEntity;
+
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.MarshallUtil;
-import org.infinispan.commons.marshall.SerializeWith;
-import org.keycloak.models.sessions.infinispan.entities.SessionEntity;
-import java.util.HashMap;
-import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -39,10 +39,9 @@ import org.jboss.logging.Logger;
 public class SessionEntityWrapper<S extends SessionEntity> {
 
     private static final Logger log = Logger.getLogger(SessionEntityWrapper.class);
-
-    private UUID version;
     private final S entity;
     private final Map<String, String> localMetadata;
+    private UUID version;
 
     protected SessionEntityWrapper(UUID version, Map<String, String> localMetadata, S entity) {
         if (version == null) {
@@ -63,7 +62,7 @@ public class SessionEntityWrapper<S extends SessionEntity> {
     }
 
     private SessionEntityWrapper(S entity, boolean forTransport) {
-        if (! forTransport) {
+        if (!forTransport) {
             throw new IllegalArgumentException("This constructor is only for transport entities");
         }
 
@@ -112,7 +111,7 @@ public class SessionEntityWrapper<S extends SessionEntity> {
 
     public Integer getLocalMetadataNoteInt(String key) {
         String note = getLocalMetadataNote(key);
-        return note==null ? null : Integer.parseInt(note);
+        return note == null ? null : Integer.parseInt(note);
     }
 
     public void putLocalMetadataNoteInt(String key, int value) {
@@ -163,7 +162,7 @@ public class SessionEntityWrapper<S extends SessionEntity> {
             final boolean forTransport = obj.isForTransport();
             output.writeBoolean(forTransport);
 
-            if (! forTransport) {
+            if (!forTransport) {
                 output.writeLong(obj.getVersion().getMostSignificantBits());
                 output.writeLong(obj.getVersion().getLeastSignificantBits());
                 MarshallUtil.marshallMap(obj.localMetadata, output);

@@ -23,18 +23,10 @@ package org.keycloak.models;
  */
 public class ClaimTypeModel {
 
-    public enum ValueType {
-        BOOLEAN,
-        INT,
-        STRING,
-        JSON
-    }
-
     private String id;
     private String name;
     private boolean builtIn;
     private ValueType type;
-
     public ClaimTypeModel(ClaimTypeModel copy) {
         this(copy.getId(), copy.getName(), copy.isBuiltIn(), copy.getType());
     }
@@ -53,28 +45,28 @@ public class ClaimTypeModel {
         return id;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public boolean isBuiltIn() {
-        return builtIn;
-    }
-
-    public ValueType getType() {
-        return type;
-    }
-
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public void setName(String name) {
         this.name = name;
     }
 
+    public boolean isBuiltIn() {
+        return builtIn;
+    }
+
     public void setBuiltIn(boolean builtIn) {
         this.builtIn = builtIn;
+    }
+
+    public ValueType getType() {
+        return type;
     }
 
     public void setType(ValueType type) {
@@ -96,5 +88,12 @@ public class ClaimTypeModel {
     @Override
     public int hashCode() {
         return id.hashCode();
+    }
+
+    public enum ValueType {
+        BOOLEAN,
+        INT,
+        STRING,
+        JSON
     }
 }

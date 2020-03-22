@@ -17,15 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 
 /**
@@ -33,24 +25,24 @@ import java.io.Serializable;
  * @version $Revision: 1 $
  */
 @NamedQueries({
-        @NamedQuery(name="clientScopeHasRole", query="select m from ClientScopeRoleMappingEntity m where m.clientScope = :clientScope and m.role = :role"),
-        @NamedQuery(name="clientScopeRoleMappingIds", query="select m.role.id from ClientScopeRoleMappingEntity m where m.clientScope = :clientScope"),
-        @NamedQuery(name="deleteClientScopeRoleMappingByRole", query="delete from ClientScopeRoleMappingEntity where role = :role"),
-        @NamedQuery(name="deleteClientScopeRoleMappingByClientScope", query="delete from ClientScopeRoleMappingEntity where clientScope = :clientScope")
+        @NamedQuery(name = "clientScopeHasRole", query = "select m from ClientScopeRoleMappingEntity m where m.clientScope = :clientScope and m.role = :role"),
+        @NamedQuery(name = "clientScopeRoleMappingIds", query = "select m.role.id from ClientScopeRoleMappingEntity m where m.clientScope = :clientScope"),
+        @NamedQuery(name = "deleteClientScopeRoleMappingByRole", query = "delete from ClientScopeRoleMappingEntity where role = :role"),
+        @NamedQuery(name = "deleteClientScopeRoleMappingByClientScope", query = "delete from ClientScopeRoleMappingEntity where clientScope = :clientScope")
 })
-@Table(name="CLIENT_SCOPE_ROLE_MAPPING")
+@Table(name = "CLIENT_SCOPE_ROLE_MAPPING")
 @Entity
 @IdClass(ClientScopeRoleMappingEntity.Key.class)
 public class ClientScopeRoleMappingEntity {
 
     @Id
-    @ManyToOne(fetch= FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "SCOPE_ID")
     protected ClientScopeEntity clientScope;
 
     @Id
-    @ManyToOne(fetch= FetchType.LAZY)
-    @JoinColumn(name="ROLE_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ROLE_ID")
     protected RoleEntity role;
 
     public ClientScopeEntity getClientScope() {
@@ -67,6 +59,29 @@ public class ClientScopeRoleMappingEntity {
 
     public void setRole(RoleEntity role) {
         this.role = role;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof ClientScopeRoleMappingEntity)) return false;
+
+        ClientScopeRoleMappingEntity key = (ClientScopeRoleMappingEntity) o;
+
+        if (clientScope != null ? !clientScope.getId().equals(key.clientScope != null ? key.clientScope.getId() : null) : key.clientScope != null)
+            return false;
+        if (role != null ? !role.getId().equals(key.role != null ? key.role.getId() : null) : key.role != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = clientScope != null ? clientScope.getId().hashCode() : 0;
+        result = 31 * result + (role != null ? role.getId().hashCode() : 0);
+        return result;
     }
 
     public static class Key implements Serializable {
@@ -98,8 +113,10 @@ public class ClientScopeRoleMappingEntity {
 
             Key key = (Key) o;
 
-            if (clientScope != null ? !clientScope.getId().equals(key.clientScope != null ? key.clientScope.getId() : null) : key.clientScope != null) return false;
-            if (role != null ? !role.getId().equals(key.role != null ? key.role.getId() : null) : key.role != null) return false;
+            if (clientScope != null ? !clientScope.getId().equals(key.clientScope != null ? key.clientScope.getId() : null) : key.clientScope != null)
+                return false;
+            if (role != null ? !role.getId().equals(key.role != null ? key.role.getId() : null) : key.role != null)
+                return false;
 
             return true;
         }
@@ -110,27 +127,6 @@ public class ClientScopeRoleMappingEntity {
             result = 31 * result + (role != null ? role.getId().hashCode() : 0);
             return result;
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!(o instanceof ClientScopeRoleMappingEntity)) return false;
-
-        ClientScopeRoleMappingEntity key = (ClientScopeRoleMappingEntity) o;
-
-        if (clientScope != null ? !clientScope.getId().equals(key.clientScope != null ? key.clientScope.getId() : null) : key.clientScope != null) return false;
-        if (role != null ? !role.getId().equals(key.role != null ? key.role.getId() : null) : key.role != null) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = clientScope != null ? clientScope.getId().hashCode() : 0;
-        result = 31 * result + (role != null ? role.getId().hashCode() : 0);
-        return result;
     }
 
 

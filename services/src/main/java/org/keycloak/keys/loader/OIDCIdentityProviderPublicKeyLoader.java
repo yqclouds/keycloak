@@ -59,7 +59,7 @@ public class OIDCIdentityProviderPublicKeyLoader implements PublicKeyLoader {
             return JWKSUtils.getKeyWrappersForUse(jwks, JWK.Use.SIG);
         } else {
             try {
-            	KeyWrapper publicKey = getSavedPublicKey();
+                KeyWrapper publicKey = getSavedPublicKey();
                 if (publicKey == null) {
                     return Collections.emptyMap();
                 }
@@ -78,8 +78,8 @@ public class OIDCIdentityProviderPublicKeyLoader implements PublicKeyLoader {
             keyWrapper = new KeyWrapper();
             String presetKeyId = config.getPublicKeySignatureVerifierKeyId();
             String kid = (presetKeyId == null || presetKeyId.trim().isEmpty())
-              ? KeyUtils.createKeyId(publicKey)
-              : presetKeyId;
+                    ? KeyUtils.createKeyId(publicKey)
+                    : presetKeyId;
             keyWrapper.setKid(kid);
             keyWrapper.setType(KeyType.RSA);
             keyWrapper.setAlgorithm(Algorithm.RS256);

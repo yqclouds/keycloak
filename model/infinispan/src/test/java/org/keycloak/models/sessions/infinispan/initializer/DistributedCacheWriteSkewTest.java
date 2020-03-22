@@ -17,9 +17,6 @@
 
 package org.keycloak.models.sessions.infinispan.initializer;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
@@ -37,7 +34,10 @@ import org.keycloak.common.util.Time;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.sessions.infinispan.entities.AuthenticatedClientSessionEntity;
 import org.keycloak.models.sessions.infinispan.entities.UserSessionEntity;
+
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Test concurrent writes to distributed cache with usage of write skew
@@ -99,7 +99,7 @@ public class DistributedCacheWriteSkewTest {
         System.out.println("Took: " + took + " ms. Notes count: " + session.getNotes().size() + ", failedReplaceCounter: " + failedReplaceCounter.get());
 
         // JGroups statistics
-        JChannel channel = (JChannel)((JGroupsTransport)cache1.getAdvancedCache().getRpcManager().getTransport()).getChannel();
+        JChannel channel = (JChannel) ((JGroupsTransport) cache1.getAdvancedCache().getRpcManager().getTransport()).getChannel();
         System.out.println("Sent MB: " + channel.getSentBytes() / 1000000 + ", sent messages: " + channel.getSentMessages() + ", received MB: " + channel.getReceivedBytes() / 1000000 +
                 ", received messages: " + channel.getReceivedMessages());
 
@@ -111,53 +111,6 @@ public class DistributedCacheWriteSkewTest {
 
         System.out.println("Managers killed");
     }
-
-
-    private static class Worker extends Thread {
-
-        private final Cache<String, UserSessionEntity> cache;
-        private final int threadId;
-
-        public Worker(int threadId, Cache<String, UserSessionEntity> cache) {
-            this.threadId = threadId;
-            this.cache = cache;
-        }
-
-        @Override
-        public void run() {
-
-            for (int i=0 ; i<ITERATION_PER_WORKER ; i++) {
-
-                String noteKey = "n-" + threadId + "-" + i;
-
-                boolean replaced = false;
-                while (!replaced) {
-                    try {
-                        //cache.startBatch();
-
-                        UserSessionEntity oldSession = cache.get("123");
-
-                        //UserSessionEntity clone = DistributedCacheConcurrentWritesTest.cloneSession(oldSession);
-                        UserSessionEntity clone = oldSession;
-
-                        clone.getNotes().put(noteKey, "someVal");
-
-                        cache.replace("123", clone);
-                        //cache.getAdvancedCache().withFlags(Flag.FAIL_SILENTLY).endBatch(true);
-                        replaced = true;
-                    } catch (Exception e) {
-                        System.out.println(e);
-                        e.printStackTrace();
-                        failedReplaceCounter.incrementAndGet();
-                    }
-
-                }
-            }
-
-        }
-
-    }
-
 
     public static EmbeddedCacheManager createManager(String nodeName) {
         System.setProperty("java.net.preferIPv4Stack", "true");
@@ -200,7 +153,7 @@ public class DistributedCacheWriteSkewTest {
             distConfigBuilder.versioning().scheme(VersioningScheme.SIMPLE);
 
 
-           // distConfigBuilder.invocationBatching().enable();
+            // distConfigBuilder.invocationBatching().enable();
             //distConfigBuilder.transaction().transactionMode(TransactionMode.TRANSACTIONAL);
             distConfigBuilder.transaction().transactionManagerLookup(new EmbeddedTransactionManagerLookup());
             distConfigBuilder.transaction().lockingMode(LockingMode.OPTIMISTIC);
@@ -209,6 +162,51 @@ public class DistributedCacheWriteSkewTest {
 
         cacheManager.defineConfiguration(InfinispanConnectionProvider.USER_SESSION_CACHE_NAME, distConfig);
         return cacheManager;
+
+    }
+
+    private static class Worker extends Thread {
+
+        private final Cache<String, UserSessionEntity> cache;
+        private final int threadId;
+
+        public Worker(int threadId, Cache<String, UserSessionEntity> cache) {
+            this.threadId = threadId;
+            this.cache = cache;
+        }
+
+        @Override
+        public void run() {
+
+            for (int i = 0; i < ITERATION_PER_WORKER; i++) {
+
+                String noteKey = "n-" + threadId + "-" + i;
+
+                boolean replaced = false;
+                while (!replaced) {
+                    try {
+                        //cache.startBatch();
+
+                        UserSessionEntity oldSession = cache.get("123");
+
+                        //UserSessionEntity clone = DistributedCacheConcurrentWritesTest.cloneSession(oldSession);
+                        UserSessionEntity clone = oldSession;
+
+                        clone.getNotes().put(noteKey, "someVal");
+
+                        cache.replace("123", clone);
+                        //cache.getAdvancedCache().withFlags(Flag.FAIL_SILENTLY).endBatch(true);
+                        replaced = true;
+                    } catch (Exception e) {
+                        System.out.println(e);
+                        e.printStackTrace();
+                        failedReplaceCounter.incrementAndGet();
+                    }
+
+                }
+            }
+
+        }
 
     }
 }

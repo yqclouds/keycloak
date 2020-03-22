@@ -16,20 +16,8 @@
  */
 package org.keycloak.test;
 
-import static org.keycloak.test.builders.ClientBuilder.AccessType.PUBLIC;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -40,24 +28,28 @@ import org.keycloak.admin.client.resource.RoleResource;
 import org.keycloak.client.registration.Auth;
 import org.keycloak.client.registration.ClientRegistration;
 import org.keycloak.client.registration.ClientRegistrationException;
-import org.keycloak.representations.idm.ClientInitialAccessCreatePresentation;
-import org.keycloak.representations.idm.ClientInitialAccessPresentation;
-import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.CredentialRepresentation;
-import org.keycloak.representations.idm.RealmRepresentation;
-import org.keycloak.representations.idm.RoleRepresentation;
-import org.keycloak.representations.idm.UserRepresentation;
+import org.keycloak.representations.idm.*;
 import org.keycloak.test.builders.ClientBuilder;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.keycloak.test.builders.ClientBuilder.AccessType.PUBLIC;
 
 /**
  * A helper class that makes creating tests a bit easier.
  *
  * <p>
- *    Usage example:
- *    <pre>{@code
+ * Usage example:
+ * <pre>{@code
  *    new TestsHelper()
  *        .init()
  *        .createDirectGrantClient("direct-grant-client")
@@ -71,24 +63,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class FluentTestsHelper {
 
-    protected static class ClientData {
-        private final ClientRepresentation clientRepresentation;
-        private final String registrationCode;
-
-        public ClientData(ClientRepresentation clientRepresentation, String registrationCode) {
-            this.clientRepresentation = clientRepresentation;
-            this.registrationCode = registrationCode;
-        }
-
-        public ClientRepresentation getClientRepresentation() {
-            return clientRepresentation;
-        }
-
-        public String getRegistrationCode() {
-            return registrationCode;
-        }
-    }
-
     public static final String DEFAULT_KEYCLOAK_URL = "http://localhost:8080/auth";
     public static final String DEFAULT_ADMIN_USERNAME = "admin";
     public static final String DEFAULT_ADMIN_PASSWORD = "admin";
@@ -96,19 +70,16 @@ public class FluentTestsHelper {
     public static final String DEFAULT_ADMIN_CLIENT = "admin-cli";
     public static final String DEFAULT_TEST_REALM = DEFAULT_ADMIN_REALM;
     public static final String DEFAULT_USER_ROLE = "user";
-
     protected final String keycloakBaseUrl;
     protected final String adminUserName;
     protected final String adminPassword;
     protected final String adminClient;
     protected final String adminRealm;
-
     protected String testRealm;
     protected Keycloak keycloak;
     protected String accessToken;
     protected volatile boolean isInitialized;
     protected Map<String, ClientData> createdClients = new HashMap<>();
-
     /**
      * Creates a new helper instance.
      */
@@ -130,11 +101,11 @@ public class FluentTestsHelper {
      * Creates a new helper instance.
      *
      * @param keycloakBaseUrl Full keycloak URL.
-     * @param adminUserName Admin username.
-     * @param adminPassword Admin password.
-     * @param adminRealm Master realm name.
-     * @param adminClient Admin Client name.
-     * @param testRealm new instance.
+     * @param adminUserName   Admin username.
+     * @param adminPassword   Admin password.
+     * @param adminRealm      Master realm name.
+     * @param adminClient     Admin Client name.
+     * @param testRealm       new instance.
      */
     public FluentTestsHelper(String keycloakBaseUrl, String adminUserName, String adminPassword, String adminRealm, String adminClient, String testRealm) {
         this.keycloakBaseUrl = keycloakBaseUrl;
@@ -307,7 +278,7 @@ public class FluentTestsHelper {
             keycloak.realms().realm(testRealm).roles().create(representation);
         }
         UserRepresentation userRepresentation = keycloak.realms().realm(testRealm).users().search(userName).get(0);
-        RoleRepresentation realmRole =  keycloak.realms().realm(testRealm).roles().get(roleName).toRepresentation();
+        RoleRepresentation realmRole = keycloak.realms().realm(testRealm).roles().get(roleName).toRepresentation();
         keycloak.realms().realm(testRealm).users().get(userRepresentation.getId()).roles().realmLevel().add(Arrays.asList(realmRole));
         return this;
     }
@@ -358,7 +329,7 @@ public class FluentTestsHelper {
      * Checks if given endpoint returns successfully with supplied token.
      *
      * @param endpoint Endpoint to be evaluated,
-     * @param token Token that will be passed into the <code>Authorization</code> header.
+     * @param token    Token that will be passed into the <code>Authorization</code> header.
      * @return <code>true</code> if the endpoint returns forbidden.
      * @throws IOException Thrown by the underlying HTTP Client implementation
      */
@@ -415,6 +386,24 @@ public class FluentTestsHelper {
     public String getToken() {
         assert isInitialized;
         return keycloak.tokenManager().getAccessTokenString();
+    }
+
+    protected static class ClientData {
+        private final ClientRepresentation clientRepresentation;
+        private final String registrationCode;
+
+        public ClientData(ClientRepresentation clientRepresentation, String registrationCode) {
+            this.clientRepresentation = clientRepresentation;
+            this.registrationCode = registrationCode;
+        }
+
+        public ClientRepresentation getClientRepresentation() {
+            return clientRepresentation;
+        }
+
+        public String getRegistrationCode() {
+            return registrationCode;
+        }
     }
 
 }

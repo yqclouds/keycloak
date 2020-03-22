@@ -17,18 +17,13 @@
  */
 package org.keycloak.representations.adapters.config;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
 import org.keycloak.representations.idm.authorization.ScopeRepresentation;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -68,8 +63,16 @@ public class PolicyEnforcerConfig {
         return this.paths;
     }
 
+    public void setPaths(List<PathConfig> paths) {
+        this.paths = paths;
+    }
+
     public PathCacheConfig getPathCacheConfig() {
         return pathCacheConfig;
+    }
+
+    public void setPathCacheConfig(PathCacheConfig pathCacheConfig) {
+        this.pathCacheConfig = pathCacheConfig;
     }
 
     public Boolean getLazyLoadPaths() {
@@ -92,20 +95,12 @@ public class PolicyEnforcerConfig {
         return this.userManagedAccess;
     }
 
-    public void setPaths(List<PathConfig> paths) {
-        this.paths = paths;
-    }
-
-    public void setPathCacheConfig(PathCacheConfig pathCacheConfig) {
-        this.pathCacheConfig = pathCacheConfig;
+    public void setUserManagedAccess(UserManagedAccessConfig userManagedAccess) {
+        this.userManagedAccess = userManagedAccess;
     }
 
     public String getOnDenyRedirectTo() {
         return onDenyRedirectTo;
-    }
-
-    public void setUserManagedAccess(UserManagedAccessConfig userManagedAccess) {
-        this.userManagedAccess = userManagedAccess;
     }
 
     public void setOnDenyRedirectTo(String onDenyRedirectTo) {
@@ -128,7 +123,32 @@ public class PolicyEnforcerConfig {
         this.httpMethodAsScope = httpMethodAsScope;
     }
 
+    public enum EnforcementMode {
+        PERMISSIVE,
+        ENFORCING,
+        DISABLED
+    }
+
+    public enum ScopeEnforcementMode {
+        ALL,
+        ANY,
+        DISABLED
+    }
+
     public static class PathConfig {
+
+        private String name;
+        private String type;
+        private String path;
+        private List<MethodConfig> methods = new ArrayList<>();
+        private List<String> scopes = new ArrayList<>();
+        private String id;
+        @JsonProperty("enforcement-mode")
+        private EnforcementMode enforcementMode = EnforcementMode.ENFORCING;
+        @JsonProperty("claim-information-point")
+        private Map<String, Map<String, Object>> claimInformationPointConfig;
+        @JsonIgnore
+        private PathConfig parentConfig;
 
         public static Set<PathConfig> createPathConfigs(ResourceRepresentation resourceDescription) {
             Set<PathConfig> pathConfigs = new HashSet<>();
@@ -160,22 +180,6 @@ public class PolicyEnforcerConfig {
 
             return pathConfigs;
         }
-
-        private String name;
-        private String type;
-        private String path;
-        private List<MethodConfig> methods = new ArrayList<>();
-        private List<String> scopes = new ArrayList<>();
-        private String id;
-
-        @JsonProperty("enforcement-mode")
-        private EnforcementMode enforcementMode = EnforcementMode.ENFORCING;
-
-        @JsonProperty("claim-information-point")
-        private Map<String, Map<String, Object>> claimInformationPointConfig;
-
-        @JsonIgnore
-        private PathConfig parentConfig;
 
         public String getPath() {
             return this.path;
@@ -217,12 +221,12 @@ public class PolicyEnforcerConfig {
             this.type = type;
         }
 
-        public void setId(String id) {
-            this.id = id;
-        }
-
         public String getId() {
             return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
         }
 
         public EnforcementMode getEnforcementMode() {
@@ -263,12 +267,12 @@ public class PolicyEnforcerConfig {
             return this.parentConfig != null;
         }
 
-        public void setParentConfig(PathConfig parentConfig) {
-            this.parentConfig = parentConfig;
-        }
-
         public PathConfig getParentConfig() {
             return parentConfig;
+        }
+
+        public void setParentConfig(PathConfig parentConfig) {
+            this.parentConfig = parentConfig;
         }
     }
 
@@ -296,12 +300,12 @@ public class PolicyEnforcerConfig {
             this.scopes = scopes;
         }
 
-        public void setScopesEnforcementMode(ScopeEnforcementMode scopesEnforcementMode) {
-            this.scopesEnforcementMode = scopesEnforcementMode;
-        }
-
         public ScopeEnforcementMode getScopesEnforcementMode() {
             return scopesEnforcementMode;
+        }
+
+        public void setScopesEnforcementMode(ScopeEnforcementMode scopesEnforcementMode) {
+            this.scopesEnforcementMode = scopesEnforcementMode;
         }
     }
 
@@ -326,18 +330,6 @@ public class PolicyEnforcerConfig {
         public void setLifespan(long lifespan) {
             this.lifespan = lifespan;
         }
-    }
-
-    public enum EnforcementMode {
-        PERMISSIVE,
-        ENFORCING,
-        DISABLED
-    }
-
-    public enum ScopeEnforcementMode {
-        ALL,
-        ANY,
-        DISABLED
     }
 
     public static class UserManagedAccessConfig {

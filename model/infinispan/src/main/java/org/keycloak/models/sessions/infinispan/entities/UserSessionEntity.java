@@ -67,6 +67,8 @@ public class UserSessionEntity extends SessionEntity {
     private int lastSessionRefresh;
 
     private UserSessionModel.State state;
+    private Map<String, String> notes = new ConcurrentHashMap<>();
+    private AuthenticatedClientSessionStore authenticatedClientSessions = new AuthenticatedClientSessionStore();
 
     public String getId() {
         return id;
@@ -75,10 +77,6 @@ public class UserSessionEntity extends SessionEntity {
     public void setId(String id) {
         this.id = id;
     }
-
-    private Map<String, String> notes = new ConcurrentHashMap<>();
-
-    private AuthenticatedClientSessionStore authenticatedClientSessions = new AuthenticatedClientSessionStore();
 
     public String getUser() {
         return user;
@@ -196,7 +194,7 @@ public class UserSessionEntity extends SessionEntity {
     @Override
     public String toString() {
         return String.format("UserSessionEntity [id=%s, realm=%s, lastSessionRefresh=%d, clients=%s]", getId(), getRealmId(), getLastSessionRefresh(),
-          new TreeSet(this.authenticatedClientSessions.keySet()));
+                new TreeSet(this.authenticatedClientSessions.keySet()));
     }
 
     @Override
@@ -231,6 +229,7 @@ public class UserSessionEntity extends SessionEntity {
 
         private static final EnumMap<UserSessionModel.State, Integer> STATE_TO_ID = new EnumMap<>(UserSessionModel.State.class);
         private static final Map<Integer, UserSessionModel.State> ID_TO_STATE = new HashMap<>();
+
         static {
             STATE_TO_ID.put(State.LOGGED_IN, 1);
             STATE_TO_ID.put(State.LOGGED_OUT, 2);

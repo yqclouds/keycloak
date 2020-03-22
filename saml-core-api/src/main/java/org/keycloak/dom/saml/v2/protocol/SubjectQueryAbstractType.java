@@ -47,10 +47,6 @@ public abstract class SubjectQueryAbstractType extends RequestAbstractType {
         super(id, instant);
     }
 
-    public void setSubject(SubjectType subject) {
-        this.subject = subject;
-    }
-
     /**
      * Gets the value of the subject property.
      *
@@ -58,5 +54,9 @@ public abstract class SubjectQueryAbstractType extends RequestAbstractType {
      */
     public SubjectType getSubject() {
         return subject;
+    }
+
+    public void setSubject(SubjectType subject) {
+        this.subject = subject;
     }
 }

@@ -17,12 +17,7 @@
 package org.keycloak.broker.provider;
 
 import org.keycloak.events.EventBuilder;
-import org.keycloak.models.FederatedIdentityModel;
-import org.keycloak.models.IdentityProviderModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.provider.Provider;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
@@ -37,25 +32,12 @@ public interface IdentityProvider<C extends IdentityProviderModel> extends Provi
     String EXTERNAL_IDENTITY_PROVIDER = "EXTERNAL_IDENTITY_PROVIDER";
     String FEDERATED_ACCESS_TOKEN = "FEDERATED_ACCESS_TOKEN";
 
-    interface AuthenticationCallback {
-        /**
-         * This method should be called by provider after the JAXRS callback endpoint has finished authentication
-         * with the remote IDP
-         *
-         * @param context
-         * @return
-         */
-        Response authenticated(BrokeredIdentityContext context);
-
-        Response cancelled(String code);
-
-        Response error(String code, String message);
-    }
-
-
     void preprocessFederatedIdentity(KeycloakSession session, RealmModel realm, BrokeredIdentityContext context);
+
     void authenticationFinished(AuthenticationSessionModel authSession, BrokeredIdentityContext context);
+
     void importNewUser(KeycloakSession session, RealmModel realm, UserModel user, BrokeredIdentityContext context);
+
     void updateBrokeredUser(KeycloakSession session, RealmModel realm, UserModel user, BrokeredIdentityContext context);
 
     /**
@@ -70,7 +52,7 @@ public interface IdentityProvider<C extends IdentityProviderModel> extends Provi
      * only once during the authentication.</p>
      *
      * @param request The initial authentication request. Contains all the contextual information in order to build an authentication request to the
- *                    identity provider.
+     *                identity provider.
      * @return
      */
     Response performLogin(AuthenticationRequest request);
@@ -106,8 +88,24 @@ public interface IdentityProvider<C extends IdentityProviderModel> extends Provi
 
     /**
      * Implementation of marshaller to serialize/deserialize attached data to Strings, which can be saved in clientSession
+     *
      * @return
      */
     IdentityProviderDataMarshaller getMarshaller();
+
+    interface AuthenticationCallback {
+        /**
+         * This method should be called by provider after the JAXRS callback endpoint has finished authentication
+         * with the remote IDP
+         *
+         * @param context
+         * @return
+         */
+        Response authenticated(BrokeredIdentityContext context);
+
+        Response cancelled(String code);
+
+        Response error(String code, String message);
+    }
 
 }

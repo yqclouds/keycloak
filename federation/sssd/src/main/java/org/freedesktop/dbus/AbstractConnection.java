@@ -12,11 +12,7 @@ package org.freedesktop.dbus;
 
 import cx.ath.matthew.debug.Debug;
 import org.freedesktop.DBus;
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.exceptions.FatalDBusException;
-import org.freedesktop.dbus.exceptions.FatalException;
-import org.freedesktop.dbus.exceptions.NotConnected;
+import org.freedesktop.dbus.exceptions.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,12 +21,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.text.ParseException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Vector;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static org.freedesktop.dbus.Gettext.getString;
@@ -40,227 +31,24 @@ import static org.freedesktop.dbus.Gettext.getString;
  * Handles a connection to DBus.
  */
 public abstract class AbstractConnection {
-    protected class FallbackContainer {
-        private Map<String[], ExportedObject> fallbacks = new HashMap<String[], ExportedObject>();
-
-        public synchronized void add(String path, ExportedObject eo) {
-            if (Debug.debug) Debug.print(Debug.DEBUG, "Adding fallback on " + path + " of " + eo);
-            fallbacks.put(path.split("/"), eo);
-        }
-
-        public synchronized void remove(String path) {
-            if (Debug.debug) Debug.print(Debug.DEBUG, "Removing fallback on " + path);
-            fallbacks.remove(path.split("/"));
-        }
-
-        public synchronized ExportedObject get(String path) {
-            int best = 0;
-            int i = 0;
-            ExportedObject bestobject = null;
-            String[] pathel = path.split("/");
-            for (String[] fbpath : fallbacks.keySet()) {
-                if (Debug.debug)
-                    Debug.print(Debug.VERBOSE, "Trying fallback path " + Arrays.deepToString(fbpath) + " to match " + Arrays.deepToString(pathel));
-                for (i = 0; i < pathel.length && i < fbpath.length; i++)
-                    if (!pathel[i].equals(fbpath[i])) break;
-                if (i > 0 && i == fbpath.length && i > best)
-                    bestobject = fallbacks.get(fbpath);
-                if (Debug.debug) Debug.print(Debug.VERBOSE, "Matches " + i + " bestobject now " + bestobject);
-            }
-            if (Debug.debug) Debug.print(Debug.DEBUG, "Found fallback for " + path + " of " + bestobject);
-            return bestobject;
-        }
-    }
-
-    protected class _thread extends Thread {
-        public _thread() {
-            setName("DBusConnection");
-        }
-
-        public void run() {
-            try {
-                Message m = null;
-                while (_run) {
-                    m = null;
-
-                    // read from the wire
-                    try {
-                        // this blocks on outgoing being non-empty or a message being available.
-                        m = readIncoming();
-                        if (m != null) {
-                            if (Debug.debug) Debug.print(Debug.VERBOSE, "Got Incoming Message: " + m);
-                            synchronized (this) {
-                                notifyAll();
-                            }
-
-                            if (m instanceof DBusSignal)
-                                handleMessage((DBusSignal) m);
-                            else if (m instanceof MethodCall)
-                                handleMessage((MethodCall) m);
-                            else if (m instanceof MethodReturn)
-                                handleMessage((MethodReturn) m);
-                            else if (m instanceof Error)
-                                handleMessage((Error) m);
-
-                            m = null;
-                        }
-                    } catch (Exception e) {
-                        if (EXCEPTION_DEBUG && Debug.debug) Debug.print(Debug.ERR, e);
-                        if (e instanceof FatalException) {
-                            disconnect();
-                        }
-                    }
-
-                }
-                synchronized (this) {
-                    notifyAll();
-                }
-            } catch (Exception e) {
-                if (Debug.debug && EXCEPTION_DEBUG) Debug.print(Debug.ERR, e);
-            }
-        }
-    }
-
-    private class _globalhandler implements org.freedesktop.DBus.Peer, org.freedesktop.DBus.Introspectable {
-        private String objectpath;
-
-        public _globalhandler() {
-            this.objectpath = null;
-        }
-
-        public _globalhandler(String objectpath) {
-            this.objectpath = objectpath;
-        }
-
-        public boolean isRemote() {
-            return false;
-        }
-
-        public void Ping() {
-            return;
-        }
-
-        public String Introspect() {
-            String intro = objectTree.Introspect(objectpath);
-            if (null == intro) {
-                ExportedObject eo = fallbackcontainer.get(objectpath);
-                if (null != eo) intro = eo.introspectiondata;
-            }
-            if (null == intro)
-                throw new DBus.Error.UnknownObject("Introspecting on non-existant object");
-            else return
-                    "<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\" " +
-                            "\"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\n" + intro;
-        }
-    }
-
-    protected class _workerthread extends Thread {
-        private boolean _run = true;
-
-        public void halt() {
-            _run = false;
-        }
-
-        public void run() {
-            while (_run) {
-                Runnable r = null;
-                synchronized (runnables) {
-                    while (runnables.size() == 0 && _run)
-                        try {
-                            runnables.wait();
-                        } catch (InterruptedException Ie) {
-                        }
-                    if (runnables.size() > 0)
-                        r = runnables.removeFirst();
-                }
-                if (null != r) r.run();
-            }
-        }
-    }
-
-    private class _sender extends Thread {
-        public _sender() {
-            setName("Sender");
-        }
-
-        public void run() {
-            Message m = null;
-
-            if (Debug.debug) Debug.print(Debug.INFO, "Monitoring outbound queue");
-            // block on the outbound queue and send from it
-            while (_run) {
-                if (null != outgoing) synchronized (outgoing) {
-                    if (Debug.debug) Debug.print(Debug.VERBOSE, "Blocking");
-                    while (outgoing.size() == 0 && _run)
-                        try {
-                            outgoing.wait();
-                        } catch (InterruptedException Ie) {
-                        }
-                    if (Debug.debug) Debug.print(Debug.VERBOSE, "Notified");
-                    if (outgoing.size() > 0)
-                        m = outgoing.remove();
-                    if (Debug.debug) Debug.print(Debug.DEBUG, "Got message: " + m);
-                }
-                if (null != m)
-                    sendMessage(m);
-                m = null;
-            }
-
-            if (Debug.debug) Debug.print(Debug.INFO, "Flushing outbound queue and quitting");
-            // flush the outbound queue before disconnect.
-            if (null != outgoing) do {
-                EfficientQueue ogq = outgoing;
-                synchronized (ogq) {
-                    outgoing = null;
-                }
-                if (!ogq.isEmpty())
-                    m = ogq.remove();
-                else m = null;
-                sendMessage(m);
-            } while (null != m);
-
-            // close the underlying streams
-        }
-    }
-
+    public static final boolean EXCEPTION_DEBUG;
     /**
      * Timeout in us on checking the BUS for incoming messages and sending outgoing messages
      */
     protected static final int TIMEOUT = 100000;
-    /**
-     * Initial size of the pending calls map
-     */
-    private static final int PENDING_MAP_INITIAL_SIZE = 10;
     static final String BUSNAME_REGEX = "^[-_a-zA-Z][-_a-zA-Z0-9]*(\\.[-_a-zA-Z][-_a-zA-Z0-9]*)*$";
     static final String CONNID_REGEX = "^:[0-9]*\\.[0-9]*$";
     static final String OBJECT_REGEX = "^/([-_a-zA-Z0-9]+(/[-_a-zA-Z0-9]+)*)?$";
     static final byte THREADCOUNT = 4;
     static final int MAX_ARRAY_LENGTH = 67108864;
     static final int MAX_NAME_LENGTH = 255;
-    protected Map<String, ExportedObject> exportedObjects;
-    private ObjectTree objectTree;
-    private _globalhandler _globalhandlerreference;
-    protected Map<DBusInterface, RemoteObject> importedObjects;
-    protected Map<SignalTuple, Vector<DBusSigHandler<? extends DBusSignal>>> handledSignals;
-    protected EfficientMap pendingCalls;
-    protected Map<MethodCall, CallbackHandler<? extends Object>> pendingCallbacks;
-    protected Map<MethodCall, DBusAsyncReply<? extends Object>> pendingCallbackReplys;
-    protected LinkedList<Runnable> runnables;
-    protected LinkedList<_workerthread> workers;
-    protected FallbackContainer fallbackcontainer;
-    protected boolean _run;
-    EfficientQueue outgoing;
-    LinkedList<Error> pendingErrors;
-    private static final Map<Thread, DBusCallInfo> infomap = new HashMap<Thread, DBusCallInfo>();
-    protected _thread thread;
-    protected _sender sender;
-    protected Transport transport;
-    protected String addr;
-    protected boolean weakreferences = false;
     static final Pattern dollar_pattern = Pattern.compile("[$]");
-    public static final boolean EXCEPTION_DEBUG;
     static final boolean FLOAT_SUPPORT;
-    protected boolean connected = false;
+    /**
+     * Initial size of the pending calls map
+     */
+    private static final int PENDING_MAP_INITIAL_SIZE = 10;
+    private static final Map<Thread, DBusCallInfo> infomap = new HashMap<Thread, DBusCallInfo>();
 
     static {
         FLOAT_SUPPORT = (null != System.getenv("DBUS_JAVA_FLOATS"));
@@ -286,6 +74,26 @@ public abstract class AbstractConnection {
         }
     }
 
+    protected Map<String, ExportedObject> exportedObjects;
+    protected Map<DBusInterface, RemoteObject> importedObjects;
+    protected Map<SignalTuple, Vector<DBusSigHandler<? extends DBusSignal>>> handledSignals;
+    protected EfficientMap pendingCalls;
+    protected Map<MethodCall, CallbackHandler<? extends Object>> pendingCallbacks;
+    protected Map<MethodCall, DBusAsyncReply<? extends Object>> pendingCallbackReplys;
+    protected LinkedList<Runnable> runnables;
+    protected LinkedList<_workerthread> workers;
+    protected FallbackContainer fallbackcontainer;
+    protected boolean _run;
+    protected _thread thread;
+    protected _sender sender;
+    protected Transport transport;
+    protected String addr;
+    protected boolean weakreferences = false;
+    protected boolean connected = false;
+    EfficientQueue outgoing;
+    LinkedList<Error> pendingErrors;
+    private ObjectTree objectTree;
+    private _globalhandler _globalhandlerreference;
     protected AbstractConnection(String address) throws DBusException {
         exportedObjects = new HashMap<String, ExportedObject>();
         importedObjects = new HashMap<DBusInterface, RemoteObject>();
@@ -312,6 +120,19 @@ public abstract class AbstractConnection {
         }
         _run = true;
         addr = address;
+    }
+
+    /**
+     * Returns a structure with information on the current method call.
+     *
+     * @return the DBusCallInfo for this method call, or null if we are not in a method call.
+     */
+    public static DBusCallInfo getCallInfo() {
+        DBusCallInfo info;
+        synchronized (infomap) {
+            info = infomap.get(Thread.currentThread());
+        }
+        return info;
     }
 
     protected void listen() {
@@ -368,19 +189,6 @@ public abstract class AbstractConnection {
     }
 
     abstract DBusInterface getExportedObject(String source, String path) throws DBusException;
-
-    /**
-     * Returns a structure with information on the current method call.
-     *
-     * @return the DBusCallInfo for this method call, or null if we are not in a method call.
-     */
-    public static DBusCallInfo getCallInfo() {
-        DBusCallInfo info;
-        synchronized (infomap) {
-            info = infomap.get(Thread.currentThread());
-        }
-        return info;
-    }
 
     /**
      * If set to true the bus will not hold a strong reference to exported objects.
@@ -455,20 +263,7 @@ public abstract class AbstractConnection {
             objectTree.remove(objectpath);
         }
     }
-    /**
-     * Return a reference to a remote object.
-     * This method will resolve the well known name (if given) to a unique bus name when you call it.
-     * This means that if a well known name is released by one process and acquired by another calls to
-     * objects gained from this method will continue to operate on the original process.
-     * @param busname The bus name to connect to. Usually a well known bus name in dot-notation (such as "org.freedesktop.local")
-     * or may be a DBus address such as ":1-16".
-     * @param objectpath The path on which the process is exporting the object.$
-     * @param type The interface they are exporting it on. This type must have the same full class name and exposed method signatures
-     * as the interface the remote object is exporting.
-     * @return A reference to a remote object.
-     * @throws ClassCastException If type is not a sub-type of DBusInterface
-     * @throws DBusException If busname or objectpath are incorrectly formatted or type is not in a package.
-     */
+
     /**
      * Send a signal.
      *
@@ -518,6 +313,20 @@ public abstract class AbstractConnection {
     }
 
     protected abstract <T extends DBusSignal> void removeSigHandler(DBusMatchRule rule, DBusSigHandler<T> handler) throws DBusException;
+    /**
+     * Return a reference to a remote object.
+     * This method will resolve the well known name (if given) to a unique bus name when you call it.
+     * This means that if a well known name is released by one process and acquired by another calls to
+     * objects gained from this method will continue to operate on the original process.
+     * @param busname The bus name to connect to. Usually a well known bus name in dot-notation (such as "org.freedesktop.local")
+     * or may be a DBus address such as ":1-16".
+     * @param objectpath The path on which the process is exporting the object.$
+     * @param type The interface they are exporting it on. This type must have the same full class name and exposed method signatures
+     * as the interface the remote object is exporting.
+     * @return A reference to a remote object.
+     * @throws ClassCastException If type is not a sub-type of DBusInterface
+     * @throws DBusException If busname or objectpath are incorrectly formatted or type is not in a package.
+     */
 
     /**
      * Add a Signal Handler.
@@ -1055,5 +864,188 @@ public abstract class AbstractConnection {
      */
     public BusAddress getAddress() throws ParseException {
         return new BusAddress(addr);
+    }
+
+    protected class FallbackContainer {
+        private Map<String[], ExportedObject> fallbacks = new HashMap<String[], ExportedObject>();
+
+        public synchronized void add(String path, ExportedObject eo) {
+            if (Debug.debug) Debug.print(Debug.DEBUG, "Adding fallback on " + path + " of " + eo);
+            fallbacks.put(path.split("/"), eo);
+        }
+
+        public synchronized void remove(String path) {
+            if (Debug.debug) Debug.print(Debug.DEBUG, "Removing fallback on " + path);
+            fallbacks.remove(path.split("/"));
+        }
+
+        public synchronized ExportedObject get(String path) {
+            int best = 0;
+            int i = 0;
+            ExportedObject bestobject = null;
+            String[] pathel = path.split("/");
+            for (String[] fbpath : fallbacks.keySet()) {
+                if (Debug.debug)
+                    Debug.print(Debug.VERBOSE, "Trying fallback path " + Arrays.deepToString(fbpath) + " to match " + Arrays.deepToString(pathel));
+                for (i = 0; i < pathel.length && i < fbpath.length; i++)
+                    if (!pathel[i].equals(fbpath[i])) break;
+                if (i > 0 && i == fbpath.length && i > best)
+                    bestobject = fallbacks.get(fbpath);
+                if (Debug.debug) Debug.print(Debug.VERBOSE, "Matches " + i + " bestobject now " + bestobject);
+            }
+            if (Debug.debug) Debug.print(Debug.DEBUG, "Found fallback for " + path + " of " + bestobject);
+            return bestobject;
+        }
+    }
+
+    protected class _thread extends Thread {
+        public _thread() {
+            setName("DBusConnection");
+        }
+
+        public void run() {
+            try {
+                Message m = null;
+                while (_run) {
+                    m = null;
+
+                    // read from the wire
+                    try {
+                        // this blocks on outgoing being non-empty or a message being available.
+                        m = readIncoming();
+                        if (m != null) {
+                            if (Debug.debug) Debug.print(Debug.VERBOSE, "Got Incoming Message: " + m);
+                            synchronized (this) {
+                                notifyAll();
+                            }
+
+                            if (m instanceof DBusSignal)
+                                handleMessage((DBusSignal) m);
+                            else if (m instanceof MethodCall)
+                                handleMessage((MethodCall) m);
+                            else if (m instanceof MethodReturn)
+                                handleMessage((MethodReturn) m);
+                            else if (m instanceof Error)
+                                handleMessage((Error) m);
+
+                            m = null;
+                        }
+                    } catch (Exception e) {
+                        if (EXCEPTION_DEBUG && Debug.debug) Debug.print(Debug.ERR, e);
+                        if (e instanceof FatalException) {
+                            disconnect();
+                        }
+                    }
+
+                }
+                synchronized (this) {
+                    notifyAll();
+                }
+            } catch (Exception e) {
+                if (Debug.debug && EXCEPTION_DEBUG) Debug.print(Debug.ERR, e);
+            }
+        }
+    }
+
+    private class _globalhandler implements org.freedesktop.DBus.Peer, org.freedesktop.DBus.Introspectable {
+        private String objectpath;
+
+        public _globalhandler() {
+            this.objectpath = null;
+        }
+
+        public _globalhandler(String objectpath) {
+            this.objectpath = objectpath;
+        }
+
+        public boolean isRemote() {
+            return false;
+        }
+
+        public void Ping() {
+            return;
+        }
+
+        public String Introspect() {
+            String intro = objectTree.Introspect(objectpath);
+            if (null == intro) {
+                ExportedObject eo = fallbackcontainer.get(objectpath);
+                if (null != eo) intro = eo.introspectiondata;
+            }
+            if (null == intro)
+                throw new DBus.Error.UnknownObject("Introspecting on non-existant object");
+            else return
+                    "<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\" " +
+                            "\"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\n" + intro;
+        }
+    }
+
+    protected class _workerthread extends Thread {
+        private boolean _run = true;
+
+        public void halt() {
+            _run = false;
+        }
+
+        public void run() {
+            while (_run) {
+                Runnable r = null;
+                synchronized (runnables) {
+                    while (runnables.size() == 0 && _run)
+                        try {
+                            runnables.wait();
+                        } catch (InterruptedException Ie) {
+                        }
+                    if (runnables.size() > 0)
+                        r = runnables.removeFirst();
+                }
+                if (null != r) r.run();
+            }
+        }
+    }
+
+    private class _sender extends Thread {
+        public _sender() {
+            setName("Sender");
+        }
+
+        public void run() {
+            Message m = null;
+
+            if (Debug.debug) Debug.print(Debug.INFO, "Monitoring outbound queue");
+            // block on the outbound queue and send from it
+            while (_run) {
+                if (null != outgoing) synchronized (outgoing) {
+                    if (Debug.debug) Debug.print(Debug.VERBOSE, "Blocking");
+                    while (outgoing.size() == 0 && _run)
+                        try {
+                            outgoing.wait();
+                        } catch (InterruptedException Ie) {
+                        }
+                    if (Debug.debug) Debug.print(Debug.VERBOSE, "Notified");
+                    if (outgoing.size() > 0)
+                        m = outgoing.remove();
+                    if (Debug.debug) Debug.print(Debug.DEBUG, "Got message: " + m);
+                }
+                if (null != m)
+                    sendMessage(m);
+                m = null;
+            }
+
+            if (Debug.debug) Debug.print(Debug.INFO, "Flushing outbound queue and quitting");
+            // flush the outbound queue before disconnect.
+            if (null != outgoing) do {
+                EfficientQueue ogq = outgoing;
+                synchronized (ogq) {
+                    outgoing = null;
+                }
+                if (!ogq.isEmpty())
+                    m = ogq.remove();
+                else m = null;
+                sendMessage(m);
+            } while (null != m);
+
+            // close the underlying streams
+        }
     }
 }

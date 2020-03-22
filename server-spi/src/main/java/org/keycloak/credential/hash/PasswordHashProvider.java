@@ -30,8 +30,7 @@ public interface PasswordHashProvider extends Provider {
 
     PasswordCredentialModel encodedCredential(String rawPassword, int iterations);
 
-    default
-    String encode(String rawPassword, int iterations) {
+    default String encode(String rawPassword, int iterations) {
         return rawPassword;
     }
 

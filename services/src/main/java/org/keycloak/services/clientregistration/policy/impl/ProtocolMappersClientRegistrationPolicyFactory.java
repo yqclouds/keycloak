@@ -17,10 +17,6 @@
 
 package org.keycloak.services.clientregistration.policy.impl;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
@@ -30,16 +26,18 @@ import org.keycloak.provider.ProviderFactory;
 import org.keycloak.services.clientregistration.policy.AbstractClientRegistrationPolicyFactory;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class ProtocolMappersClientRegistrationPolicyFactory extends AbstractClientRegistrationPolicyFactory {
 
-    private List<ProviderConfigProperty> configProperties = new LinkedList<>();
-
     public static final String PROVIDER_ID = "allowed-protocol-mappers";
-
     public static final String ALLOWED_PROTOCOL_MAPPER_TYPES = "allowed-protocol-mapper-types";
+    private List<ProviderConfigProperty> configProperties = new LinkedList<>();
 
     @Override
     public ClientRegistrationPolicy create(KeycloakSession session, ComponentModel model) {

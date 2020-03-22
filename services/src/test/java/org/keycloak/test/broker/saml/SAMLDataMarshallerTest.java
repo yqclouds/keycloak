@@ -18,6 +18,7 @@
 package org.keycloak.test.broker.saml;
 
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.keycloak.broker.saml.SAMLDataMarshaller;
@@ -26,8 +27,9 @@ import org.keycloak.dom.saml.v2.assertion.AuthnStatementType;
 import org.keycloak.dom.saml.v2.assertion.NameIDType;
 import org.keycloak.dom.saml.v2.protocol.ResponseType;
 import org.keycloak.saml.processing.core.parsers.saml.SAMLParser;
+
 import java.io.InputStream;
-import org.hamcrest.CoreMatchers;
+
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
@@ -41,7 +43,7 @@ public class SAMLDataMarshallerTest {
     private static final String TEST_ASSERTION = "<saml:Assertion xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\" xmlns=\"urn:oasis:names:tc:SAML:2.0:assertion\" ID=\"ID_29b196c2-d641-45c8-a423-8ed8e54d4cf9\" Version=\"2.0\" IssueInstant=\"2015-11-06T11:00:33.911Z\"><saml:Issuer xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\">http://localhost:8082/auth/realms/realm-with-saml-idp-basic</saml:Issuer><saml:Subject><saml:NameID xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\" Format=\"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified\">test-user</saml:NameID><saml:SubjectConfirmation Method=\"urn:oasis:names:tc:SAML:2.0:cm:bearer\"><saml:SubjectConfirmationData InResponseTo=\"ID_c6b90123-f0bb-4c5c-bf9d-388d5bbe467a\" NotOnOrAfter=\"2015-11-06T11:05:31.911Z\" Recipient=\"http://localhost:8081/auth/realms/realm-with-broker/broker/kc-saml-idp-basic/endpoint\"/></saml:SubjectConfirmation></saml:Subject><saml:Conditions NotBefore=\"2015-11-06T11:00:31.911Z\" NotOnOrAfter=\"2015-11-06T11:01:31.911Z\"><saml:AudienceRestriction><saml:Audience>http://localhost:8081/auth/realms/realm-with-broker</saml:Audience></saml:AudienceRestriction></saml:Conditions><saml:AuthnStatement AuthnInstant=\"2015-11-06T11:00:33.923Z\" SessionIndex=\"fa0f4fd3-8a11-44f4-9acb-ee30c5bb8fe5\"><saml:AuthnContext><saml:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified</saml:AuthnContextClassRef></saml:AuthnContext></saml:AuthnStatement><saml:AttributeStatement><saml:Attribute Name=\"mobile\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\"><saml:AttributeValue xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xsi:type=\"xs:string\">617-666-7777</saml:AttributeValue></saml:Attribute><saml:Attribute Name=\"urn:oid:1.2.840.113549.1.9.1\" FriendlyName=\"email\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\"><saml:AttributeValue xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xsi:type=\"xs:string\">test-user@localhost</saml:AttributeValue></saml:Attribute></saml:AttributeStatement><saml:AttributeStatement><saml:Attribute Name=\"Role\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\"><saml:AttributeValue xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xsi:type=\"xs:string\">manager</saml:AttributeValue></saml:Attribute></saml:AttributeStatement></saml:Assertion>";
 
     private static final String TEST_ASSERTION_WITH_NAME_ID = "<saml:Assertion xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\" xmlns=\"urn:oasis:names:tc:SAML:2.0:assertion\" ID=\"ID_29b196c2-d641-45c8-a423-8ed8e54d4cf9\" Version=\"2.0\" IssueInstant=\"2015-11-06T11:00:33.911Z\"><saml:Issuer xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\">http://localhost:8082/auth/realms/realm-with-saml-idp-basic</saml:Issuer><saml:Subject><saml:NameID xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\" Format=\"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified\">test-user</saml:NameID><saml:SubjectConfirmation Method=\"urn:oasis:names:tc:SAML:2.0:cm:bearer\"><saml:SubjectConfirmationData InResponseTo=\"ID_c6b90123-f0bb-4c5c-bf9d-388d5bbe467a\" NotOnOrAfter=\"2015-11-06T11:05:31.911Z\" Recipient=\"http://localhost:8081/auth/realms/realm-with-broker/broker/kc-saml-idp-basic/endpoint\"/></saml:SubjectConfirmation></saml:Subject><saml:Conditions NotBefore=\"2015-11-06T11:00:31.911Z\" NotOnOrAfter=\"2015-11-06T11:01:31.911Z\"><saml:AudienceRestriction><saml:Audience>http://localhost:8081/auth/realms/realm-with-broker</saml:Audience></saml:AudienceRestriction></saml:Conditions><saml:AuthnStatement AuthnInstant=\"2015-11-06T11:00:33.923Z\" SessionIndex=\"fa0f4fd3-8a11-44f4-9acb-ee30c5bb8fe5\"><saml:AuthnContext><saml:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified</saml:AuthnContextClassRef></saml:AuthnContext></saml:AuthnStatement><saml:AttributeStatement><saml:Attribute Name=\"mobile\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\"><saml:AttributeValue xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xsi:type=\"xs:string\">617-666-7777</saml:AttributeValue></saml:Attribute><saml:Attribute Name=\"urn:oid:1.2.840.113549.1.9.1\" FriendlyName=\"email\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\"><saml:AttributeValue xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xsi:type=\"xs:string\">test-user@localhost</saml:AttributeValue></saml:Attribute></saml:AttributeStatement><saml:AttributeStatement><saml:Attribute Name=\"Role\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\"><saml:AttributeValue><saml:NameID xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\" Format=\"urn:oasis:names:tc:SAML:2.0:nameid-format:persistent\">b2c6275838784dba219c92f53ea5493c8ef4da09</saml:NameID></saml:AttributeValue></saml:Attribute></saml:AttributeStatement></saml:Assertion>";
-    
+
     private static final String TEST_AUTHN_TYPE = "<saml:AuthnStatement xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\" xmlns=\"urn:oasis:names:tc:SAML:2.0:assertion\" AuthnInstant=\"2015-11-06T11:00:33.923Z\" SessionIndex=\"fa0f4fd3-8a11-44f4-9acb-ee30c5bb8fe5\"><saml:AuthnContext><saml:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified</saml:AuthnContextClassRef></saml:AuthnContext></saml:AuthnStatement>";
 
     @Test
@@ -87,11 +89,11 @@ public class SAMLDataMarshallerTest {
         String serialized = serializer.serialize(assertion);
         Assert.assertEquals(TEST_ASSERTION_WITH_NAME_ID, serialized);
     }
-    
+
     @Test
     public void testParseAuthnType() {
         SAMLDataMarshaller serializer = new SAMLDataMarshaller();
-        AuthnStatementType authnStatement =  serializer.deserialize(TEST_AUTHN_TYPE, AuthnStatementType.class);
+        AuthnStatementType authnStatement = serializer.deserialize(TEST_AUTHN_TYPE, AuthnStatementType.class);
 
         // test authnStatement
         Assert.assertEquals("fa0f4fd3-8a11-44f4-9acb-ee30c5bb8fe5", authnStatement.getSessionIndex());

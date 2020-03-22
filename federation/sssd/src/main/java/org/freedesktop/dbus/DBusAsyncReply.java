@@ -26,6 +26,17 @@ import static org.freedesktop.dbus.Gettext.getString;
  * A handle to an asynchronous method call.
  */
 public class DBusAsyncReply<ReturnType> {
+    private ReturnType rval = null;
+    private DBusExecutionException error = null;
+    private MethodCall mc;
+    private Method me;
+    private AbstractConnection conn;
+    DBusAsyncReply(MethodCall mc, Method me, AbstractConnection conn) {
+        this.mc = mc;
+        this.me = me;
+        this.conn = conn;
+    }
+
     /**
      * Check if any of a set of asynchronous calls have had a reply.
      *
@@ -38,18 +49,6 @@ public class DBusAsyncReply<ReturnType> {
         while (i.hasNext())
             if (!i.next().hasReply()) i.remove();
         return c;
-    }
-
-    private ReturnType rval = null;
-    private DBusExecutionException error = null;
-    private MethodCall mc;
-    private Method me;
-    private AbstractConnection conn;
-
-    DBusAsyncReply(MethodCall mc, Method me, AbstractConnection conn) {
-        this.mc = mc;
-        this.me = me;
-        this.conn = conn;
     }
 
     @SuppressWarnings("unchecked")

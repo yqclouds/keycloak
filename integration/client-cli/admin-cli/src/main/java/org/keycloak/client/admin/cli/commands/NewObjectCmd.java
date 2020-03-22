@@ -26,11 +26,7 @@ import org.keycloak.client.admin.cli.common.AttributeOperation;
 import org.keycloak.client.admin.cli.common.CmdStdinContext;
 import org.keycloak.client.admin.cli.util.AccessibleBufferOutputStream;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -39,14 +35,9 @@ import java.util.List;
 import static org.keycloak.client.admin.cli.common.AttributeOperation.Type.SET;
 import static org.keycloak.client.admin.cli.util.IoUtil.copyStream;
 import static org.keycloak.client.admin.cli.util.IoUtil.printErr;
-import static org.keycloak.client.admin.cli.util.OsUtil.CMD;
-import static org.keycloak.client.admin.cli.util.OsUtil.EOL;
-import static org.keycloak.client.admin.cli.util.OsUtil.OS_ARCH;
-import static org.keycloak.client.admin.cli.util.OsUtil.PROMPT;
+import static org.keycloak.client.admin.cli.util.OsUtil.*;
 import static org.keycloak.client.admin.cli.util.OutputUtil.MAPPER;
-import static org.keycloak.client.admin.cli.util.ParseUtil.mergeAttributes;
-import static org.keycloak.client.admin.cli.util.ParseUtil.parseFileOrStdin;
-import static org.keycloak.client.admin.cli.util.ParseUtil.parseKeyVal;
+import static org.keycloak.client.admin.cli.util.ParseUtil.*;
 
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
@@ -63,6 +54,46 @@ public class NewObjectCmd extends AbstractGlobalOptionsCmd {
     //@OptionGroup(shortName = 's', name = "set", description = "Set attribute to the specified value")
     //Map<String, String> attributes = new LinkedHashMap<>();
 
+    public static String usage() {
+        StringWriter sb = new StringWriter();
+        PrintWriter out = new PrintWriter(sb);
+        out.println("Usage: " + CMD + " new-object [ARGUMENTS]");
+        out.println();
+        out.println("Command to compose JSON objects from attributes, and merge changes into existing JSON documents.");
+        out.println();
+        out.println("This is a local command that does not perform any server requests. Its functionality is fully ");
+        out.println("integrated into 'create', 'update' and 'delete' commands. It's supposed to be a helper tool only.");
+        out.println();
+        out.println("Arguments:");
+        out.println();
+        out.println("  Global options:");
+        out.println("    -x                    Print full stack trace when exiting with error");
+        out.println();
+        out.println("  Command specific options:");
+        out.println("    -s, --set NAME=VALUE  Set a specific attribute NAME to a specified value VALUE");
+        out.println("    -f, --file FILENAME   Read object from file or standard input if FILENAME is set to '-'");
+        out.println("    -c, --compressed      Don't pretty print the output");
+        out.println();
+        out.println("Examples:");
+        out.println();
+        out.println("Create a new JSON document with two top level attributes:");
+        out.println("  " + PROMPT + " " + CMD + " new-object -s realm=demorealm -s enabled=true");
+        out.println();
+        out.println("Read a JSON document and apply changes on top of it:");
+        if (OS_ARCH.isWindows()) {
+            out.println("  " + PROMPT + " echo { \"clientId\": \"my_client\" } | " + CMD + " new-object -s enabled=true -f -");
+        } else {
+            out.println("  " + PROMPT + " " + CMD + " new-object -s enabled=true -f - << EOF");
+            out.println("  {");
+            out.println("    \"clientId\": \"my_client\"");
+            out.println("  }");
+            out.println("  EOF");
+        }
+        out.println();
+        out.println();
+        out.println("Use '" + CMD + " help' for general information and a list of commands");
+        return sb.toString();
+    }
 
     @Override
     public CommandResult execute(CommandInvocation commandInvocation) throws CommandException, InterruptedException {
@@ -146,7 +177,6 @@ public class NewObjectCmd extends AbstractGlobalOptionsCmd {
         return CommandResult.SUCCESS;
     }
 
-
     @Override
     protected boolean nothingToDo() {
         return file == null && (args == null || args.size() == 0);
@@ -158,47 +188,6 @@ public class NewObjectCmd extends AbstractGlobalOptionsCmd {
 
     protected String help() {
         return usage();
-    }
-
-    public static String usage() {
-        StringWriter sb = new StringWriter();
-        PrintWriter out = new PrintWriter(sb);
-        out.println("Usage: " + CMD + " new-object [ARGUMENTS]");
-        out.println();
-        out.println("Command to compose JSON objects from attributes, and merge changes into existing JSON documents.");
-        out.println();
-        out.println("This is a local command that does not perform any server requests. Its functionality is fully ");
-        out.println("integrated into 'create', 'update' and 'delete' commands. It's supposed to be a helper tool only.");
-        out.println();
-        out.println("Arguments:");
-        out.println();
-        out.println("  Global options:");
-        out.println("    -x                    Print full stack trace when exiting with error");
-        out.println();
-        out.println("  Command specific options:");
-        out.println("    -s, --set NAME=VALUE  Set a specific attribute NAME to a specified value VALUE");
-        out.println("    -f, --file FILENAME   Read object from file or standard input if FILENAME is set to '-'");
-        out.println("    -c, --compressed      Don't pretty print the output");
-        out.println();
-        out.println("Examples:");
-        out.println();
-        out.println("Create a new JSON document with two top level attributes:");
-        out.println("  " + PROMPT + " " + CMD + " new-object -s realm=demorealm -s enabled=true");
-        out.println();
-        out.println("Read a JSON document and apply changes on top of it:");
-        if (OS_ARCH.isWindows()) {
-            out.println("  " + PROMPT + " echo { \"clientId\": \"my_client\" } | " + CMD + " new-object -s enabled=true -f -");
-        } else {
-            out.println("  " + PROMPT + " " + CMD + " new-object -s enabled=true -f - << EOF");
-            out.println("  {");
-            out.println("    \"clientId\": \"my_client\"");
-            out.println("  }");
-            out.println("  EOF");
-        }
-        out.println();
-        out.println();
-        out.println("Use '" + CMD + " help' for general information and a list of commands");
-        return sb.toString();
     }
 
 }

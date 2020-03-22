@@ -19,14 +19,7 @@ package org.keycloak.admin.client.resource;
 
 import org.keycloak.representations.idm.UserRepresentation;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -64,9 +57,9 @@ public interface UsersResource {
      *     <li><i>id:</i> - Find users by identifier. For instance, <i>id:aa497859-bbf5-44ac-bf1a-74dbffcaf197</i></li>
      * </ul>
      *
-     * @param search the value to search. It can be the username, email or any of the supported options to query based on user attributes
+     * @param search      the value to search. It can be the username, email or any of the supported options to query based on user attributes
      * @param firstResult the position of the first result to retrieve
-     * @param maxResults the maximum number of results to retreive
+     * @param maxResults  the maximum number of results to retreive
      * @return a list of {@link UserRepresentation}
      */
     @GET
@@ -83,12 +76,12 @@ public interface UsersResource {
      *     <li><i>id:</i> - Find users by identifier. For instance, <i>id:aa497859-bbf5-44ac-bf1a-74dbffcaf197</i></li>
      * </ul>
      *
-     * @param search the value to search. It can be the username, email or any of the supported options to query based on user attributes
-     * @param firstResult the position of the first result to retrieve
-     * @param maxResults the maximum number of results to retreive
+     * @param search              the value to search. It can be the username, email or any of the supported options to query based on user attributes
+     * @param firstResult         the position of the first result to retrieve
+     * @param maxResults          the maximum number of results to retreive
      * @param briefRepresentation Only return basic information (only guaranteed to return id, username, created, first and last name,
-     *      email, enabled state, email verification state, federation link, and access.
-     *      Note that it means that namely user attributes, required actions, and not before are not returned.)
+     *                            email, enabled state, email verification state, federation link, and access.
+     *                            Note that it means that namely user attributes, required actions, and not before are not returned.)
      * @return a list of {@link UserRepresentation}
      */
     @GET

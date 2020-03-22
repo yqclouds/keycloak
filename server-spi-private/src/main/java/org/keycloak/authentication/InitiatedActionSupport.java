@@ -17,7 +17,6 @@
 package org.keycloak.authentication;
 
 /**
- *
  * @author Stan Silvert
  */
 public enum InitiatedActionSupport {

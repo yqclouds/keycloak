@@ -17,9 +17,6 @@
 
 package org.keycloak.cluster.infinispan;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -35,6 +32,9 @@ import org.keycloak.models.sessions.infinispan.initializer.SessionLoader;
 import org.keycloak.models.sessions.infinispan.remotestore.RemoteCacheSessionsLoader;
 import org.keycloak.models.sessions.infinispan.remotestore.RemoteCacheSessionsLoaderContext;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -56,7 +56,7 @@ public class RemoteCacheSessionsLoaderTest {
 
         try {
 
-            for (int i=0 ; i<COUNT ; i++) {
+            for (int i = 0; i < COUNT; i++) {
                 // Create initial item
                 UserSessionEntity session = new UserSessionEntity();
                 session.setId("loader-key-" + i);
@@ -109,7 +109,7 @@ public class RemoteCacheSessionsLoaderTest {
             logger.infof("segmentsCount: %d", ctx.getSegmentsCount());
 
             Set<String> visitedKeys = new HashSet<>();
-            for (int currentSegment=0 ; currentSegment<ctx.getSegmentsCount() ; currentSegment++) {
+            for (int currentSegment = 0; currentSegment < ctx.getSegmentsCount(); currentSegment++) {
                 logger.infof("Loading segment %d", currentSegment);
                 loader.loadSessions(null, ctx, new SessionLoader.WorkerContext(currentSegment, currentSegment));
 

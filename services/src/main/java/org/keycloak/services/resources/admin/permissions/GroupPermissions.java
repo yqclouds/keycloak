@@ -30,15 +30,7 @@ import org.keycloak.models.GroupModel;
 import org.keycloak.representations.idm.authorization.Permission;
 import org.keycloak.services.ForbiddenException;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -161,11 +153,11 @@ class GroupPermissions implements GroupPermissionEvaluator, GroupPermissionManag
 
     @Override
     public void setPermissionsEnabled(GroupModel group, boolean enable) {
-       if (enable) {
-           initialize(group);
-       } else {
-           deletePermissions(group);
-       }
+        if (enable) {
+            initialize(group);
+        } else {
+            deletePermissions(group);
+        }
     }
 
     @Override
@@ -207,7 +199,7 @@ class GroupPermissions implements GroupPermissionEvaluator, GroupPermissionManag
     public Resource resource(GroupModel group) {
         ResourceServer server = root.realmResourceServer();
         if (server == null) return null;
-        Resource resource =  resourceStore.findByName(getGroupResourceName(group), server.getId());
+        Resource resource = resourceStore.findByName(getGroupResourceName(group), server.getId());
         if (resource == null) return null;
         return resource;
     }
@@ -275,6 +267,7 @@ class GroupPermissions implements GroupPermissionEvaluator, GroupPermissionManag
             throw new ForbiddenException();
         }
     }
+
     @Override
     public boolean canView() {
         return root.users().canViewDefault();
@@ -387,7 +380,7 @@ class GroupPermissions implements GroupPermissionEvaluator, GroupPermissionManag
             return false;
         }
 
-        Resource resource =  resourceStore.findByName(getGroupResourceName(group), server.getId());
+        Resource resource = resourceStore.findByName(getGroupResourceName(group), server.getId());
 
         if (resource == null) {
             return false;

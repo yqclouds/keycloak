@@ -27,37 +27,11 @@ import org.keycloak.storage.ldap.idm.model.LDAPDn;
 import org.keycloak.storage.ldap.idm.query.internal.LDAPQuery;
 import org.keycloak.storage.ldap.mappers.LDAPOperationDecorator;
 
-import javax.naming.AuthenticationException;
-import javax.naming.Binding;
-import javax.naming.Context;
-import javax.naming.NameAlreadyBoundException;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.ModificationItem;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
-import javax.naming.ldap.Control;
-import javax.naming.ldap.InitialLdapContext;
-import javax.naming.ldap.LdapContext;
-import javax.naming.ldap.LdapName;
-import javax.naming.ldap.PagedResultsControl;
-import javax.naming.ldap.PagedResultsResponseControl;
-import javax.naming.ldap.StartTlsRequest;
-import javax.naming.ldap.StartTlsResponse;
+import javax.naming.*;
+import javax.naming.directory.*;
+import javax.naming.ldap.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 /**
  * <p>This class provides a set of operations to manage LDAP trees.</p>
@@ -102,7 +76,7 @@ public class LDAPOperationManager {
      * @param dn
      * @param attributes
      */
-    public void modifyAttributes(String dn,  NamingEnumeration<Attribute> attributes) {
+    public void modifyAttributes(String dn, NamingEnumeration<Attribute> attributes) {
         try {
             List<ModificationItem> modItems = new ArrayList<ModificationItem>();
             while (attributes.hasMore()) {
@@ -110,7 +84,7 @@ public class LDAPOperationManager {
                 modItems.add(modItem);
             }
 
-            modifyAttributes(dn, modItems.toArray(new ModificationItem[] {}), null);
+            modifyAttributes(dn, modItems.toArray(new ModificationItem[]{}), null);
         } catch (NamingException ne) {
             throw new ModelException("Could not modify attributes on entry from DN [" + dn + "]", ne);
         }
@@ -196,7 +170,7 @@ public class LDAPOperationManager {
 
                     // Max 5 attempts for now
                     int max = 5;
-                    for (int i=0 ; i<max ; i++) {
+                    for (int i = 0; i < max; i++) {
                         try {
                             context.rename(new LdapName(oldDn), new LdapName(dn));
                             return dn;
@@ -205,7 +179,7 @@ public class LDAPOperationManager {
                                 throw ex;
                             } else {
                                 String failedDn = dn;
-                                if (i<max) {
+                                if (i < max) {
                                     dn = findNextDNForFallback(newDn, i);
                                     logger.warnf("Failed to rename DN [%s] to [%s]. Will try to fallback to DN [%s]", oldDn, failedDn, dn);
                                 } else {
@@ -301,7 +275,7 @@ public class LDAPOperationManager {
                     try {
                         byte[] cookie = identityQuery.getPaginationContext().getCookie();
                         PagedResultsControl pagedControls = new PagedResultsControl(identityQuery.getLimit(), cookie, Control.CRITICAL);
-                        context.setRequestControls(new Control[] { pagedControls });
+                        context.setRequestControls(new Control[]{pagedControls});
 
                         NamingEnumeration<SearchResult> search = context.search(new LdapName(baseDN), filter, cons);
 
@@ -315,7 +289,7 @@ public class LDAPOperationManager {
                         if (responseControls != null) {
                             for (Control respControl : responseControls) {
                                 if (respControl instanceof PagedResultsResponseControl) {
-                                    PagedResultsResponseControl prrc = (PagedResultsResponseControl)respControl;
+                                    PagedResultsResponseControl prrc = (PagedResultsResponseControl) respControl;
                                     cookie = prrc.getCookie();
                                     identityQuery.getPaginationContext().setCookie(cookie);
                                 }
@@ -488,7 +462,6 @@ public class LDAPOperationManager {
      * @param dn
      * @param password
      * @throws AuthenticationException if authentication is not successful
-     *
      */
     public void authenticate(String dn, String password) throws AuthenticationException {
 
@@ -506,7 +479,7 @@ public class LDAPOperationManager {
             // Never use connection pool to prevent password caching
             env.put("com.sun.jndi.ldap.connect.pool", "false");
 
-            if(!this.config.isStartTls()) {
+            if (!this.config.isStartTls()) {
                 env.put(Context.SECURITY_AUTHENTICATION, "simple");
                 env.put(Context.SECURITY_PRINCIPAL, dn);
                 env.put(Context.SECURITY_CREDENTIALS, password);
@@ -713,10 +686,6 @@ public class LDAPOperationManager {
         }
     }
 
-    public interface LdapOperation<R> {
-        R execute(LdapContext context) throws NamingException;
-    }
-
     private Set<String> getReturningAttributes(final Collection<String> returningAttributes) {
         Set<String> result = new HashSet<String>();
 
@@ -725,5 +694,9 @@ public class LDAPOperationManager {
         result.add(LDAPConstants.OBJECT_CLASS);
 
         return result;
+    }
+
+    public interface LdapOperation<R> {
+        R execute(LdapContext context) throws NamingException;
     }
 }

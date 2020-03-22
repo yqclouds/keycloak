@@ -24,28 +24,28 @@ public class ExportOptions {
         return usersIncluded;
     }
 
-    public boolean isClientsIncluded() {
-        return clientsIncluded;
-    }
-
-    public boolean isGroupsAndRolesIncluded() {
-        return groupsAndRolesIncluded;
-    }
-
-    public boolean isOnlyServiceAccountsIncluded() {
-        return onlyServiceAccountsIncluded;
-    }
-
     public void setUsersIncluded(boolean value) {
         usersIncluded = value;
+    }
+
+    public boolean isClientsIncluded() {
+        return clientsIncluded;
     }
 
     public void setClientsIncluded(boolean value) {
         clientsIncluded = value;
     }
 
+    public boolean isGroupsAndRolesIncluded() {
+        return groupsAndRolesIncluded;
+    }
+
     public void setGroupsAndRolesIncluded(boolean value) {
         groupsAndRolesIncluded = value;
+    }
+
+    public boolean isOnlyServiceAccountsIncluded() {
+        return onlyServiceAccountsIncluded;
     }
 
     public void setOnlyServiceAccountsIncluded(boolean value) {

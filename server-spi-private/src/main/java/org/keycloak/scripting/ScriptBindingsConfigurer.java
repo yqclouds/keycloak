@@ -21,6 +21,7 @@ import javax.script.Bindings;
 /**
  * Callback interface for customization of {@link Bindings} for a {@link javax.script.ScriptEngine}.
  * <p>Used by {@link ScriptingProvider}</p>
+ *
  * @author <a href="mailto:thomas.darimont@gmail.com">Thomas Darimont</a>
  */
 @FunctionalInterface

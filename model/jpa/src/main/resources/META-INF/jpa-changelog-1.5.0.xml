@@ -16,7 +16,9 @@
   ~ limitations under the License.
   -->
 
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
     <changeSet author="bburke@redhat.com" id="1.5.0">
         <delete tableName="CLIENT_SESSION_AUTH_STATUS"/>
         <delete tableName="CLIENT_SESSION_ROLE"/>
@@ -26,7 +28,7 @@
         <delete tableName="USER_SESSION_NOTE"/>
         <delete tableName="USER_SESSION"/>
 
-        <dropDefaultValue tableName="AUTHENTICATION_EXECUTION" columnName="USER_SETUP_ALLOWED" />
+        <dropDefaultValue tableName="AUTHENTICATION_EXECUTION" columnName="USER_SETUP_ALLOWED"/>
         <dropColumn tableName="AUTHENTICATION_EXECUTION" columnName="USER_SETUP_ALLOWED"/>
         <addColumn tableName="CREDENTIAL">
             <column name="COUNTER" type="INT" defaultValueNumeric="0">
@@ -86,7 +88,7 @@
 
         <!-- Sybase specific hacks -->
         <modifySql dbms="sybase">
-            <regExpReplace replace=".*(SET DEFAULT NULL)" with="SELECT 1" />
+            <regExpReplace replace=".*(SET DEFAULT NULL)" with="SELECT 1"/>
         </modifySql>
 
     </changeSet>

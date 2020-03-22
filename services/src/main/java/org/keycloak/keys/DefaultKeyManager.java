@@ -31,11 +31,7 @@ import javax.crypto.SecretKey;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -81,7 +77,7 @@ public class DefaultKeyManager implements KeyManager {
 
     private KeyWrapper getActiveKey(List<KeyProvider> providers, RealmModel realm, KeyUse use, String algorithm) {
         for (KeyProvider p : providers) {
-            for (KeyWrapper key : p .getKeys()) {
+            for (KeyWrapper key : p.getKeys()) {
                 if (key.getStatus().isActive() && matches(key, use, algorithm)) {
                     if (logger.isTraceEnabled()) {
                         logger.tracev("Active key found: realm={0} kid={1} algorithm={2} use={3}", realm.getName(), key.getKid(), algorithm, use.name());
@@ -124,7 +120,7 @@ public class DefaultKeyManager implements KeyManager {
     public List<KeyWrapper> getKeys(RealmModel realm, KeyUse use, String algorithm) {
         List<KeyWrapper> keys = new LinkedList<>();
         for (KeyProvider p : getProviders(realm)) {
-            for (KeyWrapper key : p .getKeys()) {
+            for (KeyWrapper key : p.getKeys()) {
                 if (key.getStatus().isEnabled() && matches(key, use, algorithm)) {
                     keys.add(key);
                 }

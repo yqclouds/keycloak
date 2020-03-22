@@ -24,11 +24,7 @@ import org.keycloak.component.ComponentModel;
 import org.keycloak.federation.kerberos.impl.KerberosServerSubjectAuthenticator;
 import org.keycloak.federation.kerberos.impl.KerberosUsernamePasswordAuthenticator;
 import org.keycloak.federation.kerberos.impl.SPNEGOAuthenticator;
-import org.keycloak.models.AuthenticationExecutionModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.LDAPConstants;
-import org.keycloak.models.RealmModel;
+import org.keycloak.models.*;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
 import org.keycloak.representations.idm.CredentialRepresentation;
@@ -47,20 +43,9 @@ import java.util.List;
  */
 public class KerberosFederationProviderFactory implements UserStorageProviderFactory<KerberosFederationProvider> {
 
-    private static final Logger logger = Logger.getLogger(KerberosFederationProviderFactory.class);
     public static final String PROVIDER_NAME = "kerberos";
-
-    @Override
-    public KerberosFederationProvider create(KeycloakSession session, ComponentModel model) {
-        return new KerberosFederationProvider(session, new UserStorageProviderModel(model), this);
-    }
-
-    @Override
-    public String getId() {
-        return PROVIDER_NAME;
-    }
-
     protected static final List<ProviderConfigProperty> configProperties;
+    private static final Logger logger = Logger.getLogger(KerberosFederationProviderFactory.class);
 
     static {
         configProperties = getConfigProps();
@@ -110,7 +95,17 @@ public class KerberosFederationProviderFactory implements UserStorageProviderFac
                 .build();
     }
 
-     @Override
+    @Override
+    public KerberosFederationProvider create(KeycloakSession session, ComponentModel model) {
+        return new KerberosFederationProvider(session, new UserStorageProviderModel(model), this);
+    }
+
+    @Override
+    public String getId() {
+        return PROVIDER_NAME;
+    }
+
+    @Override
     public List<ProviderConfigProperty> getConfigProperties() {
         return configProperties;
     }

@@ -31,11 +31,7 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.security.PrivilegedExceptionAction;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Provides abstraction to handle differences between various JDK vendors (Sun, IBM)
@@ -44,12 +40,19 @@ import java.util.Set;
  */
 public abstract class KerberosJdkProvider {
 
+    public static KerberosJdkProvider getProvider() {
+        if (Environment.IS_IBM_JAVA) {
+            return new IBMJDKProvider();
+        } else {
+            return new SunJDKProvider();
+        }
+    }
+
     public abstract Configuration createJaasConfigurationForServer(String keytab, String serverPrincipal, boolean debug);
+
     public abstract Configuration createJaasConfigurationForUsernamePasswordLogin(boolean debug);
 
     public abstract KerberosTicket gssCredentialToKerberosTicket(KerberosTicket kerberosTicket, GSSCredential gssCredential);
-
-
 
     public GSSCredential kerberosTicketToGSSCredential(KerberosTicket kerberosTicket) {
         return kerberosTicketToGSSCredential(kerberosTicket, GSSCredential.DEFAULT_LIFETIME, GSSCredential.INITIATE_ONLY);
@@ -83,17 +86,7 @@ public abstract class KerberosJdkProvider {
     }
 
 
-    public static KerberosJdkProvider getProvider() {
-        if (Environment.IS_IBM_JAVA) {
-            return new IBMJDKProvider();
-        } else {
-            return new SunJDKProvider();
-        }
-    }
-
-
     // IMPL Subclasses
-
 
     // Works for Oracle and OpenJDK
     private static class SunJDKProvider extends KerberosJdkProvider {
@@ -115,7 +108,7 @@ public abstract class KerberosJdkProvider {
                     options.put("principal", serverPrincipal);
                     options.put("debug", String.valueOf(debug));
                     AppConfigurationEntry kerberosLMConfiguration = new AppConfigurationEntry("com.sun.security.auth.module.Krb5LoginModule", AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, options);
-                    return new AppConfigurationEntry[] { kerberosLMConfiguration };
+                    return new AppConfigurationEntry[]{kerberosLMConfiguration};
                 }
             };
         }
@@ -131,7 +124,7 @@ public abstract class KerberosJdkProvider {
                     options.put("storeKey", "true");
                     options.put("debug", String.valueOf(debug));
                     AppConfigurationEntry kerberosLMConfiguration = new AppConfigurationEntry("com.sun.security.auth.module.Krb5LoginModule", AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, options);
-                    return new AppConfigurationEntry[] { kerberosLMConfiguration };
+                    return new AppConfigurationEntry[]{kerberosLMConfiguration};
                 }
             };
         }
@@ -174,13 +167,13 @@ public abstract class KerberosJdkProvider {
                 public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
                     Map<String, Object> options = new HashMap<>();
                     options.put("noAddress", "true");
-                    options.put("credsType","acceptor");
+                    options.put("credsType", "acceptor");
                     options.put("useKeytab", keytabUrl);
                     options.put("principal", serverPrincipal);
                     options.put("debug", String.valueOf(debug));
 
                     AppConfigurationEntry kerberosLMConfiguration = new AppConfigurationEntry("com.ibm.security.auth.module.Krb5LoginModule", AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, options);
-                    return new AppConfigurationEntry[] { kerberosLMConfiguration };
+                    return new AppConfigurationEntry[]{kerberosLMConfiguration};
                 }
             };
         }
@@ -203,11 +196,11 @@ public abstract class KerberosJdkProvider {
                 @Override
                 public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
                     Map<String, Object> options = new HashMap<>();
-                    options.put("credsType","initiator");
+                    options.put("credsType", "initiator");
                     options.put("noAddress", "true");
                     options.put("debug", String.valueOf(debug));
                     AppConfigurationEntry kerberosLMConfiguration = new AppConfigurationEntry("com.ibm.security.auth.module.Krb5LoginModule", AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, options);
-                    return new AppConfigurationEntry[] { kerberosLMConfiguration };
+                    return new AppConfigurationEntry[]{kerberosLMConfiguration};
                 }
             };
         }

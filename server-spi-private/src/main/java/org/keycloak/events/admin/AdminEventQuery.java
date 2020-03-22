@@ -24,7 +24,7 @@ import java.util.List;
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public interface AdminEventQuery {
-    
+
     /**
      * Search by resource realm
      *
@@ -32,7 +32,7 @@ public interface AdminEventQuery {
      * @return Associated <code>AdminEventQuery</code> for method chaining
      */
     AdminEventQuery realm(String realmId);
-    
+
     /**
      * Search by authentication realm
      *
@@ -40,7 +40,7 @@ public interface AdminEventQuery {
      * @return Associated <code>AdminEventQuery</code> for method chaining
      */
     AdminEventQuery authRealm(String realmId);
-    
+
     /**
      * Search by authenticated client
      *
@@ -75,10 +75,11 @@ public interface AdminEventQuery {
 
     /**
      * Search by {@link ResourceType}.
+     *
      * @param resourceTypes
      * @return <code>this</code> for method chaining
      */
-    AdminEventQuery resourceType(ResourceType ... resourceTypes);
+    AdminEventQuery resourceType(ResourceType... resourceTypes);
 
     /**
      * Search by resource path. Supports wildcard <code>*</code>. For example:
@@ -95,7 +96,7 @@ public interface AdminEventQuery {
 
     /**
      * Search by events after the specified time
-     * 
+     *
      * @param fromTime from date
      * @return <code>this</code> for method chaining
      */
@@ -103,7 +104,7 @@ public interface AdminEventQuery {
 
     /**
      * Search by events before the specified time
-     * 
+     *
      * @param toTime to date
      * @return <code>this</code> for method chaining
      */
@@ -111,7 +112,7 @@ public interface AdminEventQuery {
 
     /**
      * Used for pagination
-     * 
+     *
      * @param first first result to return
      * @return <code>this</code> for method chaining
      */
@@ -119,7 +120,7 @@ public interface AdminEventQuery {
 
     /**
      * Use for pagination
-     * 
+     *
      * @param max the maximum results to return
      * @return <code>this</code> for method chaining
      */
@@ -127,7 +128,7 @@ public interface AdminEventQuery {
 
     /**
      * Executes the query and returns the results
-     * 
+     *
      * @return
      */
     List<AdminEvent> getResultList();

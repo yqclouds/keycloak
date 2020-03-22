@@ -17,21 +17,22 @@
 
 package org.keycloak.theme;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
  * Test the KeycloakEscape utility.
- * 
+ *
  * @author Stan Silvert
  */
 public class KeycloakSanitizerTest {
     private KeycloakSanitizerMethod kcEscape = new KeycloakSanitizerMethod();
-    
+
     @Test
     public void testEscapes() throws Exception {
         List<String> html = new ArrayList();
@@ -39,27 +40,28 @@ public class KeycloakSanitizerTest {
         html.add("<div class=\"kc-logo-text\"><script>alert('foo');</script><span>Keycloak</span></div>");
         String expectedResult = "<div class=\"kc-logo-text\"><span>Keycloak</span></div>";
         assertResult(expectedResult, html);
-        
+
         html.set(0, "<h1>Foo</h1>");
         expectedResult = "<h1>Foo</h1>";
         assertResult(expectedResult, html);
-        
+
         html.set(0, "<div class=\"kc-logo-text\"><span>Keycloak</span></div><svg onload=alert(document.cookie);>");
         expectedResult = "<div class=\"kc-logo-text\"><span>Keycloak</span></div>";
         assertResult(expectedResult, html);
-        
+
         html.set(0, null);
         expectedResult = null;
         try {
             assertResult(expectedResult, html);
             fail("Expected NPE");
-        } catch (NullPointerException npe) {}
-        
+        } catch (NullPointerException npe) {
+        }
+
         html.set(0, "");
         expectedResult = "";
         assertResult(expectedResult, html);
     }
-    
+
     private void assertResult(String expectedResult, List<String> html) throws Exception {
         String result = kcEscape.exec(html).toString();
         assertEquals(expectedResult, result);

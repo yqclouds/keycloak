@@ -15,7 +15,9 @@
   ~ * See the License for the specific language governing permissions and
   ~ * limitations under the License.
   -->
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
     <changeSet author="sguilhen@redhat.com" id="4.7.0-KEYCLOAK-1267">
         <addColumn tableName="REALM">
@@ -26,9 +28,11 @@
 
 
     <changeSet author="keycloak" id="4.7.0-KEYCLOAK-7275">
-        <renameColumn tableName="OFFLINE_USER_SESSION" oldColumnName="LAST_SESSION_REFRESH" newColumnName="CREATED_ON" columnDataType="INT" />
+        <renameColumn tableName="OFFLINE_USER_SESSION" oldColumnName="LAST_SESSION_REFRESH" newColumnName="CREATED_ON"
+                      columnDataType="INT"/>
 
-        <addNotNullConstraint tableName="OFFLINE_USER_SESSION" columnName="CREATED_ON" columnDataType="INT" defaultNullValue="0" />
+        <addNotNullConstraint tableName="OFFLINE_USER_SESSION" columnName="CREATED_ON" columnDataType="INT"
+                              defaultNullValue="0"/>
 
         <addColumn tableName="OFFLINE_USER_SESSION">
             <column name="LAST_SESSION_REFRESH" type="INT" defaultValueNumeric="0">
@@ -37,7 +41,8 @@
         </addColumn>
 
         <!--Update "lastSessionRefresh" to the current time when migrating from previous version-->
-        <customChange class="org.keycloak.connections.jpa.updater.liquibase.custom.JpaUpdate4_7_0_OfflineSessionsTimestamps"/>
+        <customChange
+                class="org.keycloak.connections.jpa.updater.liquibase.custom.JpaUpdate4_7_0_OfflineSessionsTimestamps"/>
 
         <createIndex indexName="IDX_OFFLINE_USS_CREATEDON" tableName="OFFLINE_USER_SESSION">
             <column name="CREATED_ON" type="INT"/>

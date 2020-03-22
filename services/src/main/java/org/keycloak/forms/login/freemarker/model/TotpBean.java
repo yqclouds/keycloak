@@ -41,8 +41,8 @@ public class TotpBean {
     private final String totpSecretEncoded;
     private final String totpSecretQrCode;
     private final boolean enabled;
-    private UriBuilder uriBuilder;
     private final List<CredentialModel> otpCredentials;
+    private UriBuilder uriBuilder;
 
     public TotpBean(KeycloakSession session, RealmModel realm, UserModel user, UriBuilder uriBuilder) {
         this.realm = realm;

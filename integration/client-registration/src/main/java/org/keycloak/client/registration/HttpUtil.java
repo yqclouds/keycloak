@@ -20,11 +20,7 @@ package org.keycloak.client.registration;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.*;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.keycloak.common.util.StreamUtil;
@@ -47,6 +43,16 @@ class HttpUtil {
     HttpUtil(HttpClient httpClient, String baseUri) {
         this.httpClient = httpClient;
         this.baseUri = baseUri;
+    }
+
+    static String getUrl(String baseUri, String... path) {
+        StringBuilder s = new StringBuilder();
+        s.append(baseUri);
+        for (String p : path) {
+            s.append('/');
+            s.append(p);
+        }
+        return s.toString();
     }
 
     void setAuth(Auth auth) {
@@ -78,9 +84,9 @@ class HttpUtil {
             throw new ClientRegistrationException("Failed to send request", e);
         }
     }
-    
+
     private String contentType(String contentType, Charset charset) {
-    	return contentType + ";charset=" + charset.name();
+        return contentType + ";charset=" + charset.name();
     }
 
     InputStream doGet(String acceptType, String... path) throws ClientRegistrationException {
@@ -165,16 +171,6 @@ class HttpUtil {
                 throw new ClientRegistrationException("Failed to close http client", e);
             }
         }
-    }
-
-    static String getUrl(String baseUri, String... path) {
-        StringBuilder s = new StringBuilder();
-        s.append(baseUri);
-        for (String p : path) {
-            s.append('/');
-            s.append(p);
-        }
-        return s.toString();
     }
 
     private void addAuth(HttpRequestBase request) {

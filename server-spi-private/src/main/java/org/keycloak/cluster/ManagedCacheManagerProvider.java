@@ -21,10 +21,10 @@ import org.keycloak.Config;
 
 /**
  * A Service Provider Interface (SPI) that allows to plug-in a cache manager instance.
- * 
+ *
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
 public interface ManagedCacheManagerProvider {
-    
+
     <C> C getCacheManager(Config.Scope config);
 }

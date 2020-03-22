@@ -30,7 +30,8 @@ public class CmdStdinContext {
     private OIDCClientRepresentation oidcClient;
     private String content;
 
-    public CmdStdinContext() {}
+    public CmdStdinContext() {
+    }
 
     public EndpointType getEndpointType() {
         return regType;

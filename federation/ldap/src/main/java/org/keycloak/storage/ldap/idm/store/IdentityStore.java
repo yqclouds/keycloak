@@ -27,7 +27,7 @@ import java.util.List;
 
 /**
  * IdentityStore representation providing minimal SPI
- *
+ * <p>
  * TODO: Rather remove this abstraction
  *
  * @author Boleslaw Dawidowicz
@@ -67,17 +67,19 @@ public interface IdentityStore {
 
     /**
      * Adds a member to a group.
-     * @param groupDn The DN of the group object
+     *
+     * @param groupDn        The DN of the group object
      * @param memberAttrName The member attribute name
-     * @param value The value (it can be uid or dn depending the group type)
+     * @param value          The value (it can be uid or dn depending the group type)
      */
     public void addMemberToGroup(String groupDn, String memberAttrName, String value);
 
     /**
      * Removes a member from a group.
-     * @param groupDn The DN of the group object
+     *
+     * @param groupDn        The DN of the group object
      * @param memberAttrName The member attribute name
-     * @param value The value (it can be uid or dn depending the group type)
+     * @param value          The value (it can be uid or dn depending the group type)
      */
     public void removeMemberFromGroup(String groupDn, String memberAttrName, String value);
 
@@ -98,7 +100,7 @@ public interface IdentityStore {
     /**
      * Validates the specified credentials.
      *
-     * @param user Keycloak user
+     * @param user     Keycloak user
      * @param password Ldap password
      * @throws AuthenticationException if authentication is not successful
      */
@@ -107,8 +109,8 @@ public interface IdentityStore {
     /**
      * Updates the specified credential value.
      *
-     * @param user Keycloak user
-     * @param password Ldap password
+     * @param user                    Keycloak user
+     * @param password                Ldap password
      * @param passwordUpdateDecorator Callback to be executed before/after password update. Can be null
      */
     void updatePassword(LDAPObject user, String password, LDAPOperationDecorator passwordUpdateDecorator);

@@ -25,5 +25,6 @@ import org.keycloak.models.RealmModel;
 public interface UserNotBeforeFederatedStorage {
 
     void setNotBeforeForUser(RealmModel realm, String userId, int notBefore);
+
     int getNotBeforeOfUser(RealmModel realm, String userId);
 }

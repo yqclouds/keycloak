@@ -16,20 +16,15 @@
  */
 package org.keycloak.representations.idm.authorization;
 
-import java.net.URI;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.keycloak.json.StringListMapDeserializer;
+
+import java.net.URI;
+import java.util.*;
 
 /**
  * <p>One or more resources that the resource server manages as a set of protected resources.
@@ -65,10 +60,10 @@ public class ResourceRepresentation {
     /**
      * Creates a new instance.
      *
-     * @param name a human-readable string describing a set of one or more resources
-     * @param uris a {@link List} of {@link URI} that provides network locations for the resource set being registered
-     * @param type a string uniquely identifying the semantics of the resource set
-     * @param scopes the available scopes for this resource set
+     * @param name    a human-readable string describing a set of one or more resources
+     * @param uris    a {@link List} of {@link URI} that provides network locations for the resource set being registered
+     * @param type    a string uniquely identifying the semantics of the resource set
+     * @param scopes  the available scopes for this resource set
      * @param iconUri a {@link URI} for a graphic icon representing the resource set
      */
     public ResourceRepresentation(String name, Set<ScopeRepresentation> scopes, Set<String> uris, String type, String iconUri) {
@@ -86,9 +81,9 @@ public class ResourceRepresentation {
     /**
      * Creates a new instance.
      *
-     * @param name a human-readable string describing a set of one or more resources
-     * @param uris a {@link List} of {@link URI} that provides the network location for the resource set being registered
-     * @param type a string uniquely identifying the semantics of the resource set
+     * @param name   a human-readable string describing a set of one or more resources
+     * @param uris   a {@link List} of {@link URI} that provides the network location for the resource set being registered
+     * @param type   a string uniquely identifying the semantics of the resource set
      * @param scopes the available scopes for this resource set
      */
     public ResourceRepresentation(String name, Set<ScopeRepresentation> scopes, Set<String> uris, String type) {
@@ -102,9 +97,9 @@ public class ResourceRepresentation {
     /**
      * Creates a new instance.
      *
-     * @param name a human-readable string describing a set of one or more resources
+     * @param name      a human-readable string describing a set of one or more resources
      * @param serverUri a {@link URI} that identifies this resource server
-     * @param scopes the available scopes for this resource set
+     * @param scopes    the available scopes for this resource set
      */
     public ResourceRepresentation(String name, Set<ScopeRepresentation> scopes) {
         this(name, scopes, (Set<String>) null, null, null);
@@ -121,26 +116,33 @@ public class ResourceRepresentation {
 
     /**
      * Creates a new instance.
-     *
      */
     public ResourceRepresentation() {
         this(null, null, (Set<String>) null, null, null);
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getId() {
         return this.id;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public String getName() {
         return this.name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getDisplayName() {
         return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     @Deprecated
@@ -153,40 +155,16 @@ public class ResourceRepresentation {
         return this.uris.iterator().next();
     }
 
-    public Set<String> getUris() {
-        return this.uris;
-    }
-
-    public String getType() {
-        return this.type;
-    }
-
-    public Set<ScopeRepresentation> getScopes() {
-        if (this.scopes == null) {
-            return Collections.emptySet();
-        }
-
-        return Collections.unmodifiableSet(this.scopes);
-    }
-
-    public String getIconUri() {
-        return this.iconUri;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
     @Deprecated
     @JsonSetter("uri")
     public void setUri(String uri) {
         if (uri != null && !"".equalsIgnoreCase(uri.trim())) {
             this.uris = Collections.singleton(uri);
         }
+    }
+
+    public Set<String> getUris() {
+        return this.uris;
     }
 
     public void setUris(Set<String> uris) {
@@ -202,14 +180,34 @@ public class ResourceRepresentation {
         }
     }
 
+    public String getType() {
+        return this.type;
+    }
+
     public void setType(String type) {
         if (type != null && !"".equalsIgnoreCase(type.trim())) {
             this.type = type;
         }
     }
 
+    public Set<ScopeRepresentation> getScopes() {
+        if (this.scopes == null) {
+            return Collections.emptySet();
+        }
+
+        return Collections.unmodifiableSet(this.scopes);
+    }
+
     public void setScopes(Set<ScopeRepresentation> scopes) {
         this.scopes = scopes;
+    }
+
+    public String getIconUri() {
+        return this.iconUri;
+    }
+
+    public void setIconUri(String iconUri) {
+        this.iconUri = iconUri;
     }
 
     /**
@@ -220,10 +218,6 @@ public class ResourceRepresentation {
     @JsonSetter("resource_scopes")
     private void setScopesUma(Set<ScopeRepresentation> scopes) {
         this.scopes = scopes;
-    }
-
-    public void setIconUri(String iconUri) {
-        this.iconUri = iconUri;
     }
 
     public ResourceOwnerRepresentation getOwner() {

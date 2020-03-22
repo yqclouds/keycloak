@@ -24,13 +24,13 @@ public interface WebAuthnConstants {
     final String CHALLENGE = "challenge";
     final String ORIGIN = "origin";
     final String ERROR = "error";
-    final String PUBLIC_KEY_CREDENTIAL_ID= "publicKeyCredentialId";
+    final String PUBLIC_KEY_CREDENTIAL_ID = "publicKeyCredentialId";
     final String CREDENTIAL_ID = "credentialId";
     final String CLIENT_DATA_JSON = "clientDataJSON";
     final String AUTHENTICATOR_DATA = "authenticatorData";
     final String SIGNATURE = "signature";
     final String USER_HANDLE = "userHandle";
-    final String ATTESTATION_OBJECT= "attestationObject";
+    final String ATTESTATION_OBJECT = "attestationObject";
     final String AUTHENTICATOR_LABEL = "authenticatorLabel";
     final String RP_ENTITY_NAME = "rpEntityName";
     final String SIGNATURE_ALGORITHMS = "signatureAlgorithms";
@@ -64,6 +64,6 @@ public interface WebAuthnConstants {
     final String OPTION_PREFERED = "preferred";
     final String OPTION_DISCOURAGED = "discouraged";
     final String OPTION_NOT_SPECIFIED = "";
-    
+
 
 }

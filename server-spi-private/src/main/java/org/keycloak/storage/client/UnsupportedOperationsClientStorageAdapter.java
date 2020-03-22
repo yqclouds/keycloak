@@ -55,12 +55,12 @@ public abstract class UnsupportedOperationsClientStorageAdapter implements Clien
     public final Set<RoleModel> getRoles() {
         return Collections.EMPTY_SET;
     }
-    
+
     @Override
     public final Set<RoleModel> getRoles(Integer first, Integer max) {
         return Collections.EMPTY_SET;
     }
-    
+
     @Override
     public final Set<RoleModel> searchForRoles(String search, Integer first, Integer max) {
         return Collections.EMPTY_SET;

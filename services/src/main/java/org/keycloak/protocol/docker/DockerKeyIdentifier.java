@@ -5,11 +5,7 @@ import org.keycloak.models.utils.Base32;
 import java.security.Key;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -22,7 +18,7 @@ import java.util.stream.Stream;
  * 1) Take the DER encoded public key which the JWT token was signed against.
  * 2) Create a SHA256 hash out of it and truncate to 240bits.
  * 3) Split the result into 12 base32 encoded groups with : as delimiter.
- *
+ * <p>
  * Ex: "kid": "PYYO:TEWU:V7JH:26JV:AQTZ:LJC3:SXVJ:XGHA:34F2:2LAQ:ZRMK:Z7Q6"
  *
  * @see https://docs.docker.com/registry/spec/auth/jwt/
@@ -87,6 +83,12 @@ public class DockerKeyIdentifier {
     // Could probably be generalized with size and delimiter arguments, but leaving it here for now until someone else needs it.
     public static class DelimitingCollector implements Collector<Byte, StringBuilder, String> {
 
+        private static boolean needsDelimiter(final int maxLength, final String delimiter, final StringBuilder builder) {
+            final int lastDelimiter = builder.lastIndexOf(delimiter);
+            final int charsSinceLastDelimiter = builder.length() - lastDelimiter;
+            return charsSinceLastDelimiter > maxLength;
+        }
+
         @Override
         public Supplier<StringBuilder> supplier() {
             return () -> new StringBuilder();
@@ -101,12 +103,6 @@ public class DockerKeyIdentifier {
 
                 stringBuilder.append(new String(new byte[]{aByte}));
             });
-        }
-
-        private static boolean needsDelimiter(final int maxLength, final String delimiter, final StringBuilder builder) {
-            final int lastDelimiter = builder.lastIndexOf(delimiter);
-            final int charsSinceLastDelimiter = builder.length() - lastDelimiter;
-            return charsSinceLastDelimiter > maxLength;
         }
 
         @Override

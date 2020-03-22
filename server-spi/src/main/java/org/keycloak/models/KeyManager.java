@@ -19,8 +19,8 @@ package org.keycloak.models;
 
 import org.keycloak.crypto.KeyUse;
 import org.keycloak.crypto.KeyWrapper;
-import org.keycloak.keys.SecretKeyMetadata;
 import org.keycloak.keys.RsaKeyMetadata;
+import org.keycloak.keys.SecretKeyMetadata;
 
 import javax.crypto.SecretKey;
 import java.security.PrivateKey;

@@ -27,6 +27,25 @@ package org.keycloak.dom.saml.v1.assertion;
  */
 public class SAML11SubjectType {
 
+    protected SAML11SubjectConfirmationType subjectConfirmation;
+    protected SAML11SubjectTypeChoice choice;
+
+    public SAML11SubjectConfirmationType getSubjectConfirmation() {
+        return subjectConfirmation;
+    }
+
+    public void setSubjectConfirmation(SAML11SubjectConfirmationType subjectConfirmation) {
+        this.subjectConfirmation = subjectConfirmation;
+    }
+
+    public SAML11SubjectTypeChoice getChoice() {
+        return choice;
+    }
+
+    public void setChoice(SAML11SubjectTypeChoice choice) {
+        this.choice = choice;
+    }
+
     public static class SAML11SubjectTypeChoice {
 
         protected SAML11NameIdentifierType nameID;
@@ -48,25 +67,5 @@ public class SAML11SubjectType {
         public SAML11SubjectConfirmationType getSubjectConfirmation() {
             return subjectConfirmation;
         }
-    }
-
-    protected SAML11SubjectConfirmationType subjectConfirmation;
-
-    protected SAML11SubjectTypeChoice choice;
-
-    public SAML11SubjectConfirmationType getSubjectConfirmation() {
-        return subjectConfirmation;
-    }
-
-    public void setSubjectConfirmation(SAML11SubjectConfirmationType subjectConfirmation) {
-        this.subjectConfirmation = subjectConfirmation;
-    }
-
-    public SAML11SubjectTypeChoice getChoice() {
-        return choice;
-    }
-
-    public void setChoice(SAML11SubjectTypeChoice choice) {
-        this.choice = choice;
     }
 }

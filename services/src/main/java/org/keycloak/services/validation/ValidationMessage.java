@@ -72,8 +72,7 @@ public class ValidationMessage {
     public String getMessage(Properties localizedMessages) {
         if (getLocalizedMessageKey() != null) {
             return MessageFormat.format(localizedMessages.getProperty(getLocalizedMessageKey(), getMessage()), getLocalizedMessageParameters());
-        }
-        else {
+        } else {
             return getMessage();
         }
     }

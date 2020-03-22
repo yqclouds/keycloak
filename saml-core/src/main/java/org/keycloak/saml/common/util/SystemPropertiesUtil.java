@@ -43,7 +43,9 @@ public class SystemPropertiesUtil {
         if (StringUtil.isNullOrEmpty(SecurityActions.getSystemProperty(xacmlValidation, ""))) {
             SecurityActions.setSystemProperty(xacmlValidation, "false");
         }
-    };
+    }
+
+    ;
 
     /**
      * No-op call such that the default system properties are set
@@ -53,11 +55,12 @@ public class SystemPropertiesUtil {
 
     /**
      * Get the System Property
-     * @param key key of the system property
+     *
+     * @param key          key of the system property
      * @param defaultValue default value to be returned if the system property is not set
      * @return
      */
-    public static String getSystemProperty(final String key, final String defaultValue){
-        return SecurityActions.getSystemProperty(key,defaultValue);
+    public static String getSystemProperty(final String key, final String defaultValue) {
+        return SecurityActions.getSystemProperty(key, defaultValue);
     }
 }

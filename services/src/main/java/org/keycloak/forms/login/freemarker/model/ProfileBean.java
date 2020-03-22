@@ -31,11 +31,9 @@ import java.util.Map;
 public class ProfileBean {
 
     private static final Logger logger = Logger.getLogger(ProfileBean.class);
-
+    private final Map<String, String> attributes = new HashMap<>();
     private UpdateProfileContext user;
     private MultivaluedMap<String, String> formData;
-
-    private final Map<String, String> attributes = new HashMap<>();
 
     public ProfileBean(UpdateProfileContext user, MultivaluedMap<String, String> formData) {
         this.user = user;
@@ -69,7 +67,9 @@ public class ProfileBean {
         return user.isEditUsernameAllowed();
     }
 
-    public String getUsername() { return formData != null ? formData.getFirst("username") : user.getUsername(); }
+    public String getUsername() {
+        return formData != null ? formData.getFirst("username") : user.getUsername();
+    }
 
     public String getFirstName() {
         return formData != null ? formData.getFirst("firstName") : user.getFirstName();

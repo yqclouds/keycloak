@@ -17,18 +17,18 @@
 
 package org.keycloak.models.cache.infinispan.authorization.events;
 
+import org.infinispan.commons.marshall.Externalizer;
+import org.infinispan.commons.marshall.MarshallUtil;
+import org.infinispan.commons.marshall.SerializeWith;
 import org.keycloak.models.cache.infinispan.authorization.StoreFactoryCacheManager;
 import org.keycloak.models.cache.infinispan.events.InvalidationEvent;
-
 import org.keycloak.models.sessions.infinispan.util.KeycloakMarshallUtil;
+
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.HashSet;
 import java.util.Set;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.MarshallUtil;
-import org.infinispan.commons.marshall.SerializeWith;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>

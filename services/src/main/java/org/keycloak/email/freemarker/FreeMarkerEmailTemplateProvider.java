@@ -17,18 +17,6 @@
 
 package org.keycloak.email.freemarker;
 
-import java.io.IOException;
-import java.net.URI;
-import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-
-import org.jboss.logging.Logger;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.common.util.ObjectUtil;
 import org.keycloak.email.EmailException;
@@ -50,11 +38,17 @@ import org.keycloak.theme.Theme;
 import org.keycloak.theme.beans.LinkExpirationFormatterMethod;
 import org.keycloak.theme.beans.MessageFormatterMethod;
 
+import java.io.IOException;
+import java.net.URI;
+import java.text.MessageFormat;
+import java.util.*;
+
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
 
+    protected final Map<String, Object> attributes = new HashMap<>();
     protected KeycloakSession session;
     /**
      * authenticationSession can be null for some email sendings, it is filled only for email sendings performed as part of the authentication session (email verification, password reset, broker link
@@ -64,7 +58,6 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
     protected FreeMarkerUtil freeMarker;
     protected RealmModel realm;
     protected UserModel user;
-    protected final Map<String, Object> attributes = new HashMap<>();
 
     public FreeMarkerEmailTemplateProvider(KeycloakSession session, FreeMarkerUtil freeMarker) {
         this.session = session;
@@ -179,10 +172,10 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
 
     /**
      * Add link info into template attributes.
-     * 
-     * @param link to add
+     *
+     * @param link                to add
      * @param expirationInMinutes to add
-     * @param attributes to add link info into
+     * @param attributes          to add link info into
      */
     protected void addLinkInfoIntoAttributes(String link, long expirationInMinutes, Map<String, Object> attributes) throws EmailException {
         attributes.put("link", link);

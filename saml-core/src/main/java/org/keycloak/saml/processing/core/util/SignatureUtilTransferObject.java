@@ -97,7 +97,6 @@ public class SignatureUtilTransferObject {
      * Get the {@link X509Certificate} used for signing
      *
      * @return
-     *
      * @since 2.5.0
      */
     public X509Certificate getX509Certificate() {
@@ -108,7 +107,6 @@ public class SignatureUtilTransferObject {
      * Set the {@link X509Certificate} used for signing
      *
      * @param x509Certificate
-     *
      * @since 2.5.0
      */
     public void setX509Certificate(X509Certificate x509Certificate) {

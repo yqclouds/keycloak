@@ -14,6 +14,10 @@ import static org.keycloak.models.AuthenticationExecutionModel.Requirement;
 
 public class DockerAuthenticatorFactory implements AuthenticatorFactory {
 
+    private static final Requirement[] REQUIREMENT_CHOICES = {
+            Requirement.REQUIRED,
+    };
+
     @Override
     public String getHelpText() {
         return "Uses HTTP Basic authentication to validate docker users, returning a docker error token on auth failure";
@@ -38,10 +42,6 @@ public class DockerAuthenticatorFactory implements AuthenticatorFactory {
     public boolean isConfigurable() {
         return false;
     }
-
-    private static final Requirement[] REQUIREMENT_CHOICES = {
-            Requirement.REQUIRED,
-    };
 
     @Override
     public Requirement[] getRequirementChoices() {

@@ -29,12 +29,7 @@ public enum SignatureAlgorithm {
     RSA_SHA1("http://www.w3.org/2000/09/xmldsig#rsa-sha1", "http://www.w3.org/2000/09/xmldsig#sha1", "SHA1withRSA"),
     RSA_SHA256("http://www.w3.org/2001/04/xmldsig-more#rsa-sha256", "http://www.w3.org/2001/04/xmlenc#sha256", "SHA256withRSA"),
     RSA_SHA512("http://www.w3.org/2001/04/xmldsig-more#rsa-sha512", "http://www.w3.org/2001/04/xmlenc#sha512", "SHA512withRSA"),
-    DSA_SHA1("http://www.w3.org/2000/09/xmldsig#dsa-sha1", "http://www.w3.org/2000/09/xmldsig#sha1", "SHA1withDSA")
-    ;
-    private final String xmlSignatureMethod;
-    private final String xmlSignatureDigestMethod;
-    private final String javaSignatureAlgorithm;
-
+    DSA_SHA1("http://www.w3.org/2000/09/xmldsig#dsa-sha1", "http://www.w3.org/2000/09/xmldsig#sha1", "SHA1withDSA");
     private static final Map<String, SignatureAlgorithm> signatureMethodMap = new HashMap<>();
     private static final Map<String, SignatureAlgorithm> signatureDigestMethodMap = new HashMap<>();
 
@@ -50,18 +45,22 @@ public enum SignatureAlgorithm {
         signatureDigestMethodMap.put(DSA_SHA1.getXmlSignatureDigestMethod(), DSA_SHA1);
     }
 
+    private final String xmlSignatureMethod;
+    private final String xmlSignatureDigestMethod;
+    private final String javaSignatureAlgorithm;
+
+    SignatureAlgorithm(String xmlSignatureMethod, String xmlSignatureDigestMethod, String javaSignatureAlgorithm) {
+        this.xmlSignatureMethod = xmlSignatureMethod;
+        this.xmlSignatureDigestMethod = xmlSignatureDigestMethod;
+        this.javaSignatureAlgorithm = javaSignatureAlgorithm;
+    }
+
     public static SignatureAlgorithm getFromXmlMethod(String xml) {
         return signatureMethodMap.get(xml);
     }
 
     public static SignatureAlgorithm getFromXmlDigest(String xml) {
         return signatureDigestMethodMap.get(xml);
-    }
-
-    SignatureAlgorithm(String xmlSignatureMethod, String xmlSignatureDigestMethod, String javaSignatureAlgorithm) {
-        this.xmlSignatureMethod = xmlSignatureMethod;
-        this.xmlSignatureDigestMethod = xmlSignatureDigestMethod;
-        this.javaSignatureAlgorithm = javaSignatureAlgorithm;
     }
 
     public String getXmlSignatureMethod() {

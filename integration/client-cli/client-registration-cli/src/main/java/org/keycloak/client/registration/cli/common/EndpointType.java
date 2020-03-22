@@ -34,7 +34,7 @@ public enum EndpointType {
     private String preferredName;
     private Set<String> alternativeNames;
 
-    private EndpointType(String endpoint, String preferredName, String ... alternativeNames) {
+    private EndpointType(String endpoint, String preferredName, String... alternativeNames) {
         this.endpoint = endpoint;
         this.preferredName = preferredName;
         this.alternativeNames = new HashSet(Arrays.asList(alternativeNames));

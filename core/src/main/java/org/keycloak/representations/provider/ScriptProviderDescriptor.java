@@ -16,14 +16,14 @@
  */
 package org.keycloak.representations.provider;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 public class ScriptProviderDescriptor {
 
@@ -57,7 +57,7 @@ public class ScriptProviderDescriptor {
     public void addAuthenticator(String name, String fileName) {
         addProvider(AUTHENTICATORS, name, fileName, null);
     }
-    
+
     private void addProvider(String type, String name, String fileName, String description) {
         List<ScriptProviderMetadata> authenticators = providers.get(type);
 

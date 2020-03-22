@@ -63,7 +63,7 @@ public class OutputUtil {
             node = listNode;
         }
 
-        for (JsonNode item: node) {
+        for (JsonNode item : node) {
             StringBuilder buffer = new StringBuilder();
             printObjectAsCsv(buffer, item, fields, unquoted);
 
@@ -92,7 +92,7 @@ public class OutputUtil {
                 }
             }
         } else if (node.isArray()) {
-            for (JsonNode item: node) {
+            for (JsonNode item : node) {
                 printObjectAsCsv(out, item, fields, unquoted);
             }
         } else if (node != null) {

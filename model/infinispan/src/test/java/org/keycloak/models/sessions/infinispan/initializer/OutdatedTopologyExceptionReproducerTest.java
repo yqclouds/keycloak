@@ -60,7 +60,7 @@ public class OutdatedTopologyExceptionReproducerTest {
             List<CacheOperations> cacheOpsList = new ArrayList<>();
             AtomicReference<Exception> exceptionHolder = new AtomicReference<>();
 
-            for (int i=0 ; i<THREADS_COUNT ; i++) {
+            for (int i = 0; i < THREADS_COUNT; i++) {
                 String key = "key-" + i;
                 CacheOperations cacheOps = new CacheOperations(node1Cache, key, exceptionHolder);
                 cacheOps.start();

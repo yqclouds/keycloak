@@ -18,13 +18,9 @@
 package org.keycloak.services.util;
 
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.ModelException;
-import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.representations.idm.CertificateRepresentation;
 import org.keycloak.representations.idm.ClientRepresentation;
 
-import java.security.PublicKey;
-import java.security.cert.X509Certificate;
 import java.util.HashMap;
 
 /**

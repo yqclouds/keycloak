@@ -19,13 +19,7 @@ package org.keycloak.storage.jpa.entity;
 
 import org.keycloak.storage.jpa.KeyUtils;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 
 /**
@@ -33,23 +27,23 @@ import java.io.Serializable;
  * @version $Revision: 1 $
  */
 @NamedQueries({
-        @NamedQuery(name="getFederatedUserRequiredActionsByUser", query="select action from FederatedUserRequiredActionEntity action where action.userId = :userId and action.realmId=:realmId"),
-        @NamedQuery(name="deleteFederatedUserRequiredActionsByUser", query="delete from FederatedUserRequiredActionEntity action where action.realmId=:realmId and action.userId = :userId"),
-        @NamedQuery(name="deleteFederatedUserRequiredActionsByRealm", query="delete from FederatedUserRequiredActionEntity action where action.realmId=:realmId"),
-        @NamedQuery(name="deleteFederatedUserRequiredActionsByStorageProvider", query="delete from FederatedUserRequiredActionEntity e where e.storageProviderId=:storageProviderId"),
-        @NamedQuery(name="deleteFederatedUserRequiredActionsByRealmAndLink", query="delete from FederatedUserRequiredActionEntity action where action.userId IN (select u.id from UserEntity u where u.realmId=:realmId and u.federationLink=:link)")
+        @NamedQuery(name = "getFederatedUserRequiredActionsByUser", query = "select action from FederatedUserRequiredActionEntity action where action.userId = :userId and action.realmId=:realmId"),
+        @NamedQuery(name = "deleteFederatedUserRequiredActionsByUser", query = "delete from FederatedUserRequiredActionEntity action where action.realmId=:realmId and action.userId = :userId"),
+        @NamedQuery(name = "deleteFederatedUserRequiredActionsByRealm", query = "delete from FederatedUserRequiredActionEntity action where action.realmId=:realmId"),
+        @NamedQuery(name = "deleteFederatedUserRequiredActionsByStorageProvider", query = "delete from FederatedUserRequiredActionEntity e where e.storageProviderId=:storageProviderId"),
+        @NamedQuery(name = "deleteFederatedUserRequiredActionsByRealmAndLink", query = "delete from FederatedUserRequiredActionEntity action where action.userId IN (select u.id from UserEntity u where u.realmId=:realmId and u.federationLink=:link)")
 })
 @Entity
-@Table(name="FED_USER_REQUIRED_ACTION")
+@Table(name = "FED_USER_REQUIRED_ACTION")
 @IdClass(FederatedUserRequiredActionEntity.Key.class)
 public class FederatedUserRequiredActionEntity {
 
     @Id
-    @Column(name="USER_ID")
+    @Column(name = "USER_ID")
     protected String userId;
 
     @Id
-    @Column(name="REQUIRED_ACTION")
+    @Column(name = "REQUIRED_ACTION")
     protected String action;
 
     @Column(name = "REALM_ID")
@@ -91,6 +85,27 @@ public class FederatedUserRequiredActionEntity {
         this.storageProviderId = storageProviderId;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        if (!(o instanceof FederatedUserRequiredActionEntity)) return false;
+
+        FederatedUserRequiredActionEntity key = (FederatedUserRequiredActionEntity) o;
+
+        if (action != key.action) return false;
+        if (userId != null ? !userId.equals(key.userId != null ? key.userId : null) : key.userId != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = userId != null ? userId.hashCode() : 0;
+        result = 31 * result + (action != null ? action.hashCode() : 0);
+        return result;
+    }
+
     public static class Key implements Serializable {
 
         protected String userId;
@@ -121,7 +136,8 @@ public class FederatedUserRequiredActionEntity {
             Key key = (Key) o;
 
             if (action != key.action) return false;
-            if (userId != null ? !userId.equals(key.userId != null ? key.userId : null) : key.userId != null) return false;
+            if (userId != null ? !userId.equals(key.userId != null ? key.userId : null) : key.userId != null)
+                return false;
 
             return true;
         }
@@ -132,27 +148,6 @@ public class FederatedUserRequiredActionEntity {
             result = 31 * result + (action != null ? action.hashCode() : 0);
             return result;
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null) return false;
-        if (!(o instanceof FederatedUserRequiredActionEntity)) return false;
-
-        FederatedUserRequiredActionEntity key = (FederatedUserRequiredActionEntity) o;
-
-        if (action != key.action) return false;
-        if (userId != null ? !userId.equals(key.userId != null ? key.userId : null) : key.userId != null) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = userId != null ? userId.hashCode() : 0;
-        result = 31 * result + (action != null ? action.hashCode() : 0);
-        return result;
     }
 
 

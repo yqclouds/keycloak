@@ -33,7 +33,8 @@ import java.util.stream.Collectors;
 public class ValidationMessages {
     private Set<ValidationMessage> messages = new LinkedHashSet<>();
 
-    public ValidationMessages() {}
+    public ValidationMessages() {
+    }
 
     public ValidationMessages(String... messages) {
         for (String message : messages) {

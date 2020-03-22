@@ -23,11 +23,8 @@ import liquibase.exception.UnexpectedLiquibaseException;
 import liquibase.executor.Executor;
 import liquibase.executor.ExecutorService;
 import liquibase.lockservice.StandardLockService;
-import liquibase.statement.core.CreateDatabaseChangeLogLockTableStatement;
-import liquibase.statement.core.DropTableStatement;
-import liquibase.statement.core.InitializeDatabaseChangeLogLockTableStatement;
-import liquibase.statement.core.LockDatabaseChangeLogStatement;
-import liquibase.statement.core.RawSqlStatement;
+import liquibase.statement.SqlStatement;
+import liquibase.statement.core.*;
 import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
 import org.keycloak.common.util.reflections.Reflections;
@@ -39,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import liquibase.statement.SqlStatement;
 
 /**
  * Liquibase lock service, which has some bugfixes and assumes timeouts to be configured in milliseconds
@@ -175,7 +171,7 @@ public class CustomLockService extends StandardLockService {
         while (nextAttempt) {
             locked = acquireLock(lockStmt);
             if (!locked) {
-                int remainingTime = ((int)(timeToGiveUp / 1000)) - Time.currentTime();
+                int remainingTime = ((int) (timeToGiveUp / 1000)) - Time.currentTime();
                 if (remainingTime > 0) {
                     log.debugf("Will try to acquire log another time. Remaining time: %d seconds", remainingTime);
                 } else {
@@ -187,7 +183,7 @@ public class CustomLockService extends StandardLockService {
         }
 
         if (!locked) {
-            int timeout = ((int)(getChangeLogLockWaitTime() / 1000));
+            int timeout = ((int) (getChangeLogLockWaitTime() / 1000));
             throw new IllegalStateException("Could not acquire change log lock within specified timeout " + timeout + " seconds.  Currently locked by other transaction");
         }
     }

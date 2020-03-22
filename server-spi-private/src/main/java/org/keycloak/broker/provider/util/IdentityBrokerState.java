@@ -22,40 +22,16 @@ import java.util.regex.Pattern;
 /**
  * Encapsulates parsing logic related to state passed to identity provider in "state" (or RelayState) parameter
  *
- *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class IdentityBrokerState {
 
     private static final Pattern DOT = Pattern.compile("\\.");
-
-
-    public static IdentityBrokerState decoded(String state, String clientId, String tabId) {
-        String encodedState = state + "." + tabId + "." + clientId;
-
-        return new IdentityBrokerState(state, clientId, tabId, encodedState);
-    }
-
-
-    public static IdentityBrokerState encoded(String encodedState) {
-        String[] decoded = DOT.split(encodedState, 3);
-
-        String state =(decoded.length > 0) ? decoded[0] : null;
-        String tabId = (decoded.length > 1) ? decoded[1] : null;
-        String clientId = (decoded.length > 2) ? decoded[2] : null;
-
-        return new IdentityBrokerState(state, clientId, tabId, encodedState);
-    }
-
-
-
     private final String decodedState;
     private final String clientId;
     private final String tabId;
-
     // Encoded form of whole state
     private final String encoded;
-
     private IdentityBrokerState(String decodedStateParam, String clientId, String tabId, String encoded) {
         this.decodedState = decodedStateParam;
         this.clientId = clientId;
@@ -63,6 +39,21 @@ public class IdentityBrokerState {
         this.encoded = encoded;
     }
 
+    public static IdentityBrokerState decoded(String state, String clientId, String tabId) {
+        String encodedState = state + "." + tabId + "." + clientId;
+
+        return new IdentityBrokerState(state, clientId, tabId, encodedState);
+    }
+
+    public static IdentityBrokerState encoded(String encodedState) {
+        String[] decoded = DOT.split(encodedState, 3);
+
+        String state = (decoded.length > 0) ? decoded[0] : null;
+        String tabId = (decoded.length > 1) ? decoded[1] : null;
+        String clientId = (decoded.length > 2) ? decoded[2] : null;
+
+        return new IdentityBrokerState(state, clientId, tabId, encodedState);
+    }
 
     public String getDecodedState() {
         return decodedState;

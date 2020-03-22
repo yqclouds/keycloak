@@ -2,21 +2,16 @@ package org.keycloak.services.resources.account;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.keycloak.common.Profile;
 import org.keycloak.common.Version;
 import org.keycloak.events.EventStoreProvider;
-import org.keycloak.models.ClientModel;
 import org.keycloak.models.Constants;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.protocol.oidc.utils.RedirectUtils;
 import org.keycloak.services.Urls;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.Auth;
 import org.keycloak.services.managers.AuthenticationManager;
-import org.keycloak.services.managers.ClientManager;
-import org.keycloak.services.managers.RealmManager;
+import org.keycloak.services.resources.RealmsResource;
 import org.keycloak.services.util.ResolveRelative;
 import org.keycloak.services.validation.Validation;
 import org.keycloak.theme.BrowserSecurityHeaderSetup;
@@ -31,37 +26,31 @@ import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.ws.rs.core.UriInfo;
-import org.keycloak.services.resources.RealmsResource;
 
 /**
  * Created by st on 29/03/17.
  */
 public class AccountConsole {
     private static final Logger logger = Logger.getLogger(AccountConsole.class);
-    
+
     private final Pattern bundleParamPattern = Pattern.compile("(\\{\\s*(\\d+)\\s*\\})");
-
-    @Context
-    protected KeycloakSession session;
-
     private final AppAuthManager authManager;
     private final RealmModel realm;
     private final ClientModel client;
     private final Theme theme;
-
+    @Context
+    protected KeycloakSession session;
     private Auth auth;
 
     public AccountConsole(RealmModel realm, ClientModel client, Theme theme) {
@@ -93,14 +82,14 @@ public class AccountConsole {
             map.put("realm", realm);
             map.put("resourceUrl", Urls.themeRoot(authUrl).getPath() + "/" + Constants.ACCOUNT_MANAGEMENT_CLIENT_ID + "/" + theme.getName());
             map.put("resourceVersion", Version.RESOURCES_VERSION);
-            
+
             String[] referrer = getReferrer();
             if (referrer != null) {
                 map.put("referrer", referrer[0]);
                 map.put("referrerName", referrer[1]);
                 map.put("referrer_uri", referrer[2]);
             }
-            
+
             UserModel user = null;
             if (auth != null) user = auth.getUser();
             Locale locale = session.getContext().resolveLocale(user);
@@ -110,11 +99,11 @@ public class AccountConsole {
             map.put("msgJSON", messagesToJsonString(messages));
             map.put("supportedLocales", supportedLocales(messages));
             map.put("properties", theme.getProperties());
-            
+
             EventStoreProvider eventStore = session.getProvider(EventStoreProvider.class);
             map.put("isEventsEnabled", eventStore != null && realm.isEventsEnabled());
             map.put("isAuthorizationEnabled", true);
-            
+
             boolean isTotpConfigured = false;
             if (user != null) {
                 isTotpConfigured = session.userCredentialManager().isConfiguredFor(realm, user, realm.getOTPPolicy().getType());
@@ -128,7 +117,7 @@ public class AccountConsole {
             return builder.build();
         }
     }
-    
+
     private Map<String, String> supportedLocales(Properties messages) throws IOException {
         Map<String, String> supportedLocales = new HashMap<>();
         for (String l : realm.getSupportedLocales()) {
@@ -137,28 +126,28 @@ public class AccountConsole {
         }
         return supportedLocales;
     }
-    
+
     private String messagesToJsonString(Properties props) {
         if (props == null) return "";
-        
+
         JsonObjectBuilder json = Json.createObjectBuilder();
         for (String prop : props.stringPropertyNames()) {
             json.add(prop, convertPropValue(props.getProperty(prop)));
         }
-        
+
         return json.build().toString();
     }
-    
+
     private String convertPropValue(String propertyValue) {
         propertyValue = propertyValue.replace("''", "%27");
         propertyValue = propertyValue.replace("'", "%27");
         propertyValue = propertyValue.replace("\"", "%22");
-        
+
         propertyValue = putJavaParamsInNgTranslateFormat(propertyValue);
 
         return propertyValue;
     }
-    
+
     // Put java resource bundle params in ngx-translate format
     // Do you like {0} and {1} ?
     //    becomes
@@ -171,7 +160,7 @@ public class AccountConsole {
 
         return propertyValue;
     }
-    
+
     @GET
     @Path("index.html")
     public Response getIndexHtmlRedirect() {
@@ -194,7 +183,7 @@ public class AccountConsole {
             } else {
                 referrerUri = ResolveRelative.resolveRelativeUri(session, client.getRootUrl(), referrerClient.getBaseUrl());
             }
-            
+
             if (referrerUri != null) {
                 String referrerName = referrerClient.getName();
                 if (Validation.isBlank(referrerName)) {

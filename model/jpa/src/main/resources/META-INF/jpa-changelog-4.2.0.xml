@@ -15,12 +15,14 @@
   ~ * See the License for the specific language governing permissions and
   ~ * limitations under the License.
   -->
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
     <changeSet author="wadahiro@gmail.com" id="4.2.0-KEYCLOAK-6313">
         <addColumn tableName="REQUIRED_ACTION_PROVIDER">
             <column name="PRIORITY" type="INT"/>
         </addColumn>
     </changeSet>
- 
+
 </databaseChangeLog>

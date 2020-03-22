@@ -17,19 +17,19 @@
 
 package org.keycloak.models.sessions.infinispan.stream;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.Predicate;
-
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.entities.AuthenticatedClientSessionEntity;
 import org.keycloak.models.sessions.infinispan.util.KeycloakMarshallUtil;
+
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Predicate;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -47,6 +47,7 @@ public class AuthenticatedClientSessionPredicate implements Predicate<Map.Entry<
 
     /**
      * Creates a client session predicate.
+     *
      * @param realm
      * @return
      */

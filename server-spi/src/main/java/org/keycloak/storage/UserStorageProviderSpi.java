@@ -17,11 +17,7 @@
 
 package org.keycloak.storage;
 
-import org.keycloak.provider.Provider;
-import org.keycloak.provider.ProviderConfigProperty;
-import org.keycloak.provider.ProviderConfigurationBuilder;
-import org.keycloak.provider.ProviderFactory;
-import org.keycloak.provider.Spi;
+import org.keycloak.provider.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -30,26 +26,6 @@ import java.util.List;
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class UserStorageProviderSpi implements Spi {
-
-    @Override
-    public boolean isInternal() {
-        return false;
-    }
-
-    @Override
-    public String getName() {
-        return "storage";
-    }
-
-    @Override
-    public Class<? extends Provider> getProviderClass() {
-        return UserStorageProvider.class;
-    }
-
-    @Override
-    public Class<? extends ProviderFactory> getProviderFactoryClass() {
-        return UserStorageProviderFactory.class;
-    }
 
     private static final List<ProviderConfigProperty> commonConfig;
 
@@ -88,6 +64,26 @@ public class UserStorageProviderSpi implements Spi {
     public static List<ProviderConfigProperty> commonConfig() {
         return commonConfig;
 
+    }
+
+    @Override
+    public boolean isInternal() {
+        return false;
+    }
+
+    @Override
+    public String getName() {
+        return "storage";
+    }
+
+    @Override
+    public Class<? extends Provider> getProviderClass() {
+        return UserStorageProvider.class;
+    }
+
+    @Override
+    public Class<? extends ProviderFactory> getProviderFactoryClass() {
+        return UserStorageProviderFactory.class;
     }
 
 }

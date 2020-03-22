@@ -18,11 +18,7 @@
 package org.keycloak.models.jpa;
 
 import org.keycloak.common.util.MultivaluedHashMap;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.GroupModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleContainerModel;
-import org.keycloak.models.RoleModel;
+import org.keycloak.models.*;
 import org.keycloak.models.jpa.entities.GroupAttributeEntity;
 import org.keycloak.models.jpa.entities.GroupEntity;
 import org.keycloak.models.jpa.entities.GroupRoleMappingEntity;
@@ -30,20 +26,15 @@ import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.RoleUtils;
 
 import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import javax.persistence.LockModeType;
+import javax.persistence.TypedQuery;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class GroupAdapter implements GroupModel , JpaModel<GroupEntity> {
+public class GroupAdapter implements GroupModel, JpaModel<GroupEntity> {
 
     protected GroupEntity group;
     protected EntityManager em;
@@ -53,6 +44,13 @@ public class GroupAdapter implements GroupModel , JpaModel<GroupEntity> {
         this.em = em;
         this.group = group;
         this.realm = realm;
+    }
+
+    public static GroupEntity toEntity(GroupModel model, EntityManager em) {
+        if (model instanceof GroupAdapter) {
+            return ((GroupAdapter) model).getEntity();
+        }
+        return em.getReference(GroupEntity.class, model.getId());
     }
 
     public GroupEntity getEntity() {
@@ -77,19 +75,7 @@ public class GroupAdapter implements GroupModel , JpaModel<GroupEntity> {
     @Override
     public GroupModel getParent() {
         String parentId = this.getParentId();
-        return parentId == null? null : realm.getGroupById(parentId);
-    }
-
-    @Override
-    public String getParentId() {
-        return GroupEntity.TOP_PARENT_ID.equals(group.getParentId())? null : group.getParentId();
-    }
-
-    public static GroupEntity toEntity(GroupModel model, EntityManager em) {
-        if (model instanceof GroupAdapter) {
-            return ((GroupAdapter)model).getEntity();
-        }
-        return em.getReference(GroupEntity.class, model.getId());
+        return parentId == null ? null : realm.getGroupById(parentId);
     }
 
     @Override
@@ -100,6 +86,11 @@ public class GroupAdapter implements GroupModel , JpaModel<GroupEntity> {
             GroupEntity parentEntity = toEntity(parent, em);
             group.setParentId(parentEntity.getId());
         }
+    }
+
+    @Override
+    public String getParentId() {
+        return GroupEntity.TOP_PARENT_ID.equals(group.getParentId()) ? null : group.getParentId();
     }
 
     @Override
@@ -299,9 +290,9 @@ public class GroupAdapter implements GroupModel , JpaModel<GroupEntity> {
         for (RoleModel role : roleMappings) {
             RoleContainerModel container = role.getContainer();
             if (container instanceof ClientModel) {
-                ClientModel appModel = (ClientModel)container;
+                ClientModel appModel = (ClientModel) container;
                 if (appModel.getId().equals(app.getId())) {
-                   roles.add(role);
+                    roles.add(role);
                 }
             }
         }
@@ -321,7 +312,6 @@ public class GroupAdapter implements GroupModel , JpaModel<GroupEntity> {
     public int hashCode() {
         return getId().hashCode();
     }
-
 
 
 }

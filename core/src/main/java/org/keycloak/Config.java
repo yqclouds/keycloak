@@ -42,12 +42,39 @@ public class Config {
     }
 
     public static Scope scope(String... scope) {
-         return configProvider.scope(scope);
+        return configProvider.scope(scope);
     }
 
     public static interface ConfigProvider {
 
         String getProvider(String spi);
+
+        Scope scope(String... scope);
+
+    }
+
+    /**
+     * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
+     */
+    public static interface Scope {
+
+        String get(String key);
+
+        String get(String key, String defaultValue);
+
+        String[] getArray(String key);
+
+        Integer getInt(String key);
+
+        Integer getInt(String key, Integer defaultValue);
+
+        Long getLong(String key);
+
+        Long getLong(String key, Long defaultValue);
+
+        Boolean getBoolean(String key);
+
+        Boolean getBoolean(String key, Boolean defaultValue);
 
         Scope scope(String... scope);
 
@@ -152,33 +179,6 @@ public class Config {
             }
             return new SystemPropertiesScope(sb.toString());
         }
-
-    }
-
-    /**
-     * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
-     */
-    public static interface Scope {
-
-        String get(String key);
-
-        String get(String key, String defaultValue);
-
-        String[] getArray(String key);
-
-        Integer getInt(String key);
-
-        Integer getInt(String key, Integer defaultValue);
-
-        Long getLong(String key);
-
-        Long getLong(String key, Long defaultValue);
-
-        Boolean getBoolean(String key);
-
-        Boolean getBoolean(String key, Boolean defaultValue);
-
-        Scope scope(String... scope);
 
     }
 }

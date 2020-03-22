@@ -40,7 +40,7 @@ public class SAMLKeyDescriptorParser extends AbstractStaxSamlMetadataParser<KeyD
 
     @Override
     protected void processSubElement(XMLEventReader xmlEventReader, KeyDescriptorType target, SAMLMetadataQNames element, StartElement elementDetail) throws ParsingException {
-        switch(element) {
+        switch (element) {
             case KEY_INFO:
                 target.setKeyInfo(StaxParserUtil.getDOMElement(xmlEventReader));
                 break;

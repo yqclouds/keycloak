@@ -17,53 +17,43 @@
 
 package org.keycloak.models.jpa.entities;
 
+import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
 
 /**
  * @author <a href="mailto:bburke@redhat.com">Bill Burke</a>
  */
 @Entity
-@Table(name="COMPONENT")
+@Table(name = "COMPONENT")
 public class ComponentEntity {
 
     @Id
-    @Column(name="ID", length = 36)
-    @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
+    @Column(name = "ID", length = 36)
+    @Access(AccessType.PROPERTY)
+    // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
     protected String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REALM_ID")
     protected RealmEntity realm;
 
-    @Column(name="NAME")
+    @Column(name = "NAME")
     protected String name;
 
-    @Column(name="PROVIDER_TYPE")
+    @Column(name = "PROVIDER_TYPE")
     protected String providerType;
 
-    @Column(name="PROVIDER_ID")
+    @Column(name = "PROVIDER_ID")
     protected String providerId;
 
-    @Column(name="PARENT_ID")
+    @Column(name = "PARENT_ID")
     protected String parentId;
 
-    @Column(name="SUB_TYPE")
+    @Column(name = "SUB_TYPE")
     protected String subType;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade ={ CascadeType.ALL}, orphanRemoval = true, mappedBy = "component")
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL}, orphanRemoval = true, mappedBy = "component")
     Set<ComponentConfigEntity> componentConfigs = new HashSet<>();
 
     public String getId() {

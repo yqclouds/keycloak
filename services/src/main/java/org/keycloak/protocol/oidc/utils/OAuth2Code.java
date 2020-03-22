@@ -23,7 +23,7 @@ import java.util.UUID;
 
 /**
  * Data associated with the oauth2 code.
- *
+ * <p>
  * Those data are typically valid just for the very short time - they're created at the point before we redirect to the application
  * after successful and they're removed when application sends requests to the token endpoint (code-to-token endpoint) to exchange the
  * single-use OAuth2 code parameter for those data.

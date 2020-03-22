@@ -40,6 +40,16 @@ public class MemoryInfoRepresentation {
         return rep;
     }
 
+    private static String formatMemory(long bytes) {
+        if (bytes > 1024L * 1024L) {
+            return bytes / (1024L * 1024L) + " MB";
+        } else if (bytes > 1024L) {
+            return bytes / (1024L) + " kB";
+        } else {
+            return bytes + " B";
+        }
+    }
+
     public long getTotal() {
         return total;
     }
@@ -66,16 +76,6 @@ public class MemoryInfoRepresentation {
 
     public long getFreePercentage() {
         return freePercentage;
-    }
-
-    private static String formatMemory(long bytes) {
-        if (bytes > 1024L * 1024L) {
-            return bytes / (1024L * 1024L) + " MB";
-        } else if (bytes > 1024L) {
-            return bytes / (1024L) + " kB";
-        } else {
-            return bytes + " B";
-        }
     }
 
 }

@@ -100,7 +100,7 @@ public class SkeletonKeyTokenTest {
         byte[] bytes = bso.toByteArray();
         ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
         ObjectInputStream ois = new ObjectInputStream(bis);
-        principal = (KeycloakPrincipal)ois.readObject();
+        principal = (KeycloakPrincipal) ois.readObject();
         ctx = principal.getKeycloakSecurityContext();
         token = ctx.getToken();
         idToken = ctx.getIdToken();

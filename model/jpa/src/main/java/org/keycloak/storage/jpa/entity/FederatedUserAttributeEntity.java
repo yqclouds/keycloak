@@ -17,35 +17,29 @@
 
 package org.keycloak.storage.jpa.entity;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 @NamedQueries({
-        @NamedQuery(name="getFederatedAttributesByNameAndValue", query="select attr.userId from FederatedUserAttributeEntity attr where attr.name = :name and attr.value = :value and attr.realmId=:realmId"),
-        @NamedQuery(name="getFederatedAttributesByUser", query="select attr from FederatedUserAttributeEntity attr where attr.userId = :userId and attr.realmId=:realmId"),
-        @NamedQuery(name="deleteUserFederatedAttributesByUser", query="delete from  FederatedUserAttributeEntity attr where attr.userId = :userId and attr.realmId=:realmId"),
-        @NamedQuery(name="deleteUserFederatedAttributesByUserAndName", query="delete from  FederatedUserAttributeEntity attr where attr.userId = :userId and attr.name=:name and attr.realmId=:realmId"),
-        @NamedQuery(name="deleteUserFederatedAttributesByRealm", query="delete from  FederatedUserAttributeEntity attr where attr.realmId=:realmId"),
-        @NamedQuery(name="deleteFederatedAttributesByStorageProvider", query="delete from FederatedUserAttributeEntity e where e.storageProviderId=:storageProviderId"),
-        @NamedQuery(name="deleteUserFederatedAttributesByRealmAndLink", query="delete from  FederatedUserAttributeEntity attr where attr.userId IN (select u.id from UserEntity u where u.realmId=:realmId and u.federationLink=:link)")
+        @NamedQuery(name = "getFederatedAttributesByNameAndValue", query = "select attr.userId from FederatedUserAttributeEntity attr where attr.name = :name and attr.value = :value and attr.realmId=:realmId"),
+        @NamedQuery(name = "getFederatedAttributesByUser", query = "select attr from FederatedUserAttributeEntity attr where attr.userId = :userId and attr.realmId=:realmId"),
+        @NamedQuery(name = "deleteUserFederatedAttributesByUser", query = "delete from  FederatedUserAttributeEntity attr where attr.userId = :userId and attr.realmId=:realmId"),
+        @NamedQuery(name = "deleteUserFederatedAttributesByUserAndName", query = "delete from  FederatedUserAttributeEntity attr where attr.userId = :userId and attr.name=:name and attr.realmId=:realmId"),
+        @NamedQuery(name = "deleteUserFederatedAttributesByRealm", query = "delete from  FederatedUserAttributeEntity attr where attr.realmId=:realmId"),
+        @NamedQuery(name = "deleteFederatedAttributesByStorageProvider", query = "delete from FederatedUserAttributeEntity e where e.storageProviderId=:storageProviderId"),
+        @NamedQuery(name = "deleteUserFederatedAttributesByRealmAndLink", query = "delete from  FederatedUserAttributeEntity attr where attr.userId IN (select u.id from UserEntity u where u.realmId=:realmId and u.federationLink=:link)")
 })
-@Table(name="FED_USER_ATTRIBUTE")
+@Table(name = "FED_USER_ATTRIBUTE")
 @Entity
 public class FederatedUserAttributeEntity {
 
     @Id
-    @Column(name="ID", length = 36)
-    @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
+    @Column(name = "ID", length = 36)
+    @Access(AccessType.PROPERTY)
+    // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
     protected String id;
 
     @Column(name = "USER_ID")

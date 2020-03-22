@@ -29,13 +29,13 @@ import java.util.Set;
 public interface RoleModel {
     String getName();
 
+    void setName(String name);
+
     String getDescription();
 
     void setDescription(String description);
 
     String getId();
-
-    void setName(String name);
 
     boolean isComposite();
 

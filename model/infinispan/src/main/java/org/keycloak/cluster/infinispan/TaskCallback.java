@@ -17,11 +17,11 @@
 
 package org.keycloak.cluster.infinispan;
 
+import org.jboss.logging.Logger;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
-import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -31,28 +31,18 @@ class TaskCallback {
     protected static final Logger logger = Logger.getLogger(TaskCallback.class);
 
     static final int LATCH_TIMEOUT_MS = 10000;
-
-    private volatile boolean success;
-
-    private volatile Future<Boolean> future;
-
     private final CountDownLatch taskCompletedLatch = new CountDownLatch(1);
     private final CountDownLatch futureAvailableLatch = new CountDownLatch(1);
-
-
-    public void setSuccess(boolean success) {
-        this.success = success;
-    }
+    private volatile boolean success;
+    private volatile Future<Boolean> future;
 
     public boolean isSuccess() {
         return success;
     }
 
-    public void setFuture(Future<Boolean> future) {
-        this.future = future;
-        this.futureAvailableLatch.countDown();
+    public void setSuccess(boolean success) {
+        this.success = success;
     }
-
 
     public Future<Boolean> getFuture() {
         try {
@@ -65,6 +55,10 @@ class TaskCallback {
         return future;
     }
 
+    public void setFuture(Future<Boolean> future) {
+        this.future = future;
+        this.futureAvailableLatch.countDown();
+    }
 
     public CountDownLatch getTaskCompletedLatch() {
         return taskCompletedLatch;

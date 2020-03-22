@@ -38,14 +38,10 @@ import java.sql.SQLException;
 public class LiquibaseDBLockProvider implements DBLockProvider {
 
     private static final Logger logger = Logger.getLogger(LiquibaseDBLockProvider.class);
-
-    // 10 should be sufficient
-    private int DEFAULT_MAX_ATTEMPTS = 10;
-
-
     private final LiquibaseDBLockProviderFactory factory;
     private final KeycloakSession session;
-
+    // 10 should be sufficient
+    private int DEFAULT_MAX_ATTEMPTS = 10;
     private CustomLockService lockService;
     private Connection dbConnection;
     private boolean initialized = false;

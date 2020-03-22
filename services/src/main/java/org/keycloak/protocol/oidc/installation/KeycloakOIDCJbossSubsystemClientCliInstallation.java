@@ -17,7 +17,6 @@
 
 package org.keycloak.protocol.oidc.installation;
 
-import static org.keycloak.protocol.util.ClientCliInstallationUtil.quote;
 import org.keycloak.Config;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
@@ -31,20 +30,22 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.Map;
 
+import static org.keycloak.protocol.util.ClientCliInstallationUtil.quote;
+
 public class KeycloakOIDCJbossSubsystemClientCliInstallation implements ClientInstallationProvider {
 
     @Override
     public Response generateInstallation(KeycloakSession session, RealmModel realm, ClientModel client, URI baseUri) {
         String deploymentName = "WAR MODULE NAME.war";
         StringBuilder builder = new StringBuilder();
-        
+
         builder
                 .append("/subsystem=keycloak/secure-deployment=").append(quote(deploymentName)).append("/:add( \\\n")
                 .append("    realm=").append(quote(realm.getName())).append(", \\\n")
                 .append("    resource=").append(quote(client.getClientId())).append(", \\\n")
                 .append("    auth-server-url=").append(baseUri).append(", \\\n");
 
-        if (client.isBearerOnly()){
+        if (client.isBearerOnly()) {
             builder.append("    bearer-only=true, \\\n");
         } else if (client.isPublicClient()) {
             builder.append("    public-client=true, \\\n");
@@ -63,8 +64,8 @@ public class KeycloakOIDCJbossSubsystemClientCliInstallation implements ClientIn
             Map<String, Object> adapterConfig = KeycloakOIDCClientInstallation.getClientCredentialsAdapterConfig(session, client);
             for (Map.Entry<String, Object> entry : adapterConfig.entrySet()) {
                 builder.append("/subsystem=keycloak/secure-deployment=").append(quote(deploymentName)).append("/")
-                       .append("credential=").append(entry.getKey()).append(":add(value=").append(entry.getValue())
-                       .append(")\n");
+                        .append("credential=").append(entry.getKey()).append(":add(value=").append(entry.getValue())
+                        .append(")\n");
             }
         }
         return Response.ok(builder.toString(), MediaType.TEXT_PLAIN_TYPE).build();

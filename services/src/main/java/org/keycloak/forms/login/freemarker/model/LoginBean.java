@@ -31,7 +31,7 @@ public class LoginBean {
 
     private String rememberMe;
 
-    public LoginBean(MultivaluedMap<String, String> formData){
+    public LoginBean(MultivaluedMap<String, String> formData) {
         if (formData != null) {
             username = formData.getFirst("username");
             password = formData.getFirst("password");

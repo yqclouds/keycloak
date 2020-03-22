@@ -37,11 +37,7 @@ import org.keycloak.storage.ldap.mappers.membership.MembershipType;
 import org.keycloak.storage.ldap.mappers.membership.UserRolesRetrieveStrategy;
 import org.keycloak.storage.ldap.mappers.membership.role.RoleMapperConfig;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -163,7 +159,7 @@ public class GroupLDAPStorageMapperFactory extends AbstractLDAPStorageMapperFact
             config.property().name(GroupMapperConfig.MODE)
                     .label("Mode")
                     .helpText("LDAP_ONLY means that specified group mappings are writable to LDAP. "
-                              + "READ_ONLY means that group mappings are not writable to LDAP.")
+                            + "READ_ONLY means that group mappings are not writable to LDAP.")
                     .type(ProviderConfigProperty.LIST_TYPE)
                     .options(NO_IMPORT_MODES)
                     .defaultValue(mode)
@@ -266,7 +262,7 @@ public class GroupLDAPStorageMapperFactory extends AbstractLDAPStorageMapperFact
         checkMandatoryConfigAttribute(GroupMapperConfig.MODE, "Mode", config);
 
         String mt = config.getConfig().getFirst(CommonLDAPGroupMapperConfig.MEMBERSHIP_ATTRIBUTE_TYPE);
-        MembershipType membershipType = mt==null ? MembershipType.DN : Enum.valueOf(MembershipType.class, mt);
+        MembershipType membershipType = mt == null ? MembershipType.DN : Enum.valueOf(MembershipType.class, mt);
         boolean preserveGroupInheritance = Boolean.parseBoolean(config.getConfig().getFirst(GroupMapperConfig.PRESERVE_GROUP_INHERITANCE));
         if (preserveGroupInheritance && membershipType != MembershipType.DN) {
             throw new ComponentValidationException("ldapErrorCantPreserveGroupInheritanceWithUIDMembershipType");

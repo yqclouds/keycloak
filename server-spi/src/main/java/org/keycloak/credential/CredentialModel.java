@@ -17,17 +17,16 @@
 
 package org.keycloak.credential;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.keycloak.common.util.Base64;
+import org.keycloak.common.util.MultivaluedHashMap;
+import org.keycloak.util.JsonSerialization;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.keycloak.common.util.Base64;
-import org.keycloak.common.util.MultivaluedHashMap;
-import org.keycloak.models.credential.PasswordCredentialModel;
-import org.keycloak.util.JsonSerialization;
 
 /**
  * Used just in cases when we want to "directly" update or retrieve the hash or salt of user credential (For example during export/import)
@@ -36,22 +35,28 @@ import org.keycloak.util.JsonSerialization;
  */
 public class CredentialModel implements Serializable {
 
-    @Deprecated /** Use PasswordCredentialModel.TYPE instead **/
+    @Deprecated
+    /** Use PasswordCredentialModel.TYPE instead **/
     public static final String PASSWORD = "password";
 
-    @Deprecated /** Use PasswordCredentialModel.PASSWORD_HISTORY instead **/
+    @Deprecated
+    /** Use PasswordCredentialModel.PASSWORD_HISTORY instead **/
     public static final String PASSWORD_HISTORY = "password-history";
 
-    @Deprecated /** Legacy stuff. Not used in Keycloak anymore **/
+    @Deprecated
+    /** Legacy stuff. Not used in Keycloak anymore **/
     public static final String PASSWORD_TOKEN = "password-token";
 
-    @Deprecated /** Use OTPCredentialModel.TYPE instead **/
+    @Deprecated
+    /** Use OTPCredentialModel.TYPE instead **/
     public static final String OTP = "otp";
 
-    @Deprecated /** Use OTPCredentialModel.TOTP instead **/
+    @Deprecated
+    /** Use OTPCredentialModel.TOTP instead **/
     public static final String TOTP = "totp";
 
-    @Deprecated /** Use OTPCredentialModel.HOTP instead **/
+    @Deprecated
+    /** Use OTPCredentialModel.HOTP instead **/
     public static final String HOTP = "hotp";
 
     // Secret is same as password but it is not hashed
@@ -68,6 +73,14 @@ public class CredentialModel implements Serializable {
     private String secretData;
     private String credentialData;
 
+    public static Comparator<CredentialModel> comparingByStartDateDesc() {
+        return (o1, o2) -> { // sort by date descending
+            Long o1Date = o1.getCreatedDate() == null ? Long.MIN_VALUE : o1.getCreatedDate();
+            Long o2Date = o2.getCreatedDate() == null ? Long.MIN_VALUE : o2.getCreatedDate();
+            return (-o1Date.compareTo(o2Date));
+        };
+    }
+
     public CredentialModel shallowClone() {
         CredentialModel res = new CredentialModel();
         res.id = id;
@@ -82,6 +95,7 @@ public class CredentialModel implements Serializable {
     public String getId() {
         return id;
     }
+
     public void setId(String id) {
         this.id = id;
     }
@@ -89,6 +103,7 @@ public class CredentialModel implements Serializable {
     public String getType() {
         return type;
     }
+
     public void setType(String type) {
         this.type = type;
     }
@@ -96,6 +111,7 @@ public class CredentialModel implements Serializable {
     public String getUserLabel() {
         return userLabel;
     }
+
     public void setUserLabel(String userLabel) {
         this.userLabel = userLabel;
     }
@@ -103,6 +119,7 @@ public class CredentialModel implements Serializable {
     public Long getCreatedDate() {
         return createdDate;
     }
+
     public void setCreatedDate(Long createdDate) {
         this.createdDate = createdDate;
     }
@@ -110,6 +127,7 @@ public class CredentialModel implements Serializable {
     public String getSecretData() {
         return secretData;
     }
+
     public void setSecretData(String secretData) {
         this.secretData = secretData;
     }
@@ -117,16 +135,9 @@ public class CredentialModel implements Serializable {
     public String getCredentialData() {
         return credentialData;
     }
+
     public void setCredentialData(String credentialData) {
         this.credentialData = credentialData;
-    }
-
-    public static Comparator<CredentialModel> comparingByStartDateDesc() {
-        return (o1, o2) -> { // sort by date descending
-            Long o1Date = o1.getCreatedDate() == null ? Long.MIN_VALUE : o1.getCreatedDate();
-            Long o2Date = o2.getCreatedDate() == null ? Long.MIN_VALUE : o2.getCreatedDate();
-            return (-o1Date.compareTo(o2Date));
-        };
     }
 
     // DEPRECATED - the methods below exists for the backwards compatibility
@@ -285,7 +296,7 @@ public class CredentialModel implements Serializable {
         }
 
         Object obj = credentialData.get("config");
-        return obj == null ? null : new MultivaluedHashMap<>((Map)obj);
+        return obj == null ? null : new MultivaluedHashMap<>((Map) obj);
     }
 
     /**

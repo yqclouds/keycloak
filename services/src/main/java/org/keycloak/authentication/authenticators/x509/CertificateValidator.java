@@ -35,31 +35,13 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.security.auth.x500.X500Principal;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLConnection;
 import java.security.GeneralSecurityException;
-import java.security.cert.CRLException;
-import java.security.cert.CertPathValidatorException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509CRL;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.security.cert.*;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -71,292 +53,6 @@ import java.util.stream.Collectors;
 public class CertificateValidator {
 
     private static final ServicesLogger logger = ServicesLogger.LOGGER;
-
-    enum KeyUsageBits {
-        DIGITAL_SIGNATURE(0, "digitalSignature"),
-        NON_REPUDIATION(1, "nonRepudiation"),
-        KEY_ENCIPHERMENT(2, "keyEncipherment"),
-        DATA_ENCIPHERMENT(3, "dataEncipherment"),
-        KEY_AGREEMENT(4, "keyAgreement"),
-        KEYCERTSIGN(5, "keyCertSign"),
-        CRLSIGN(6, "cRLSign"),
-        ENCIPHERMENT_ONLY(7, "encipherOnly"),
-        DECIPHER_ONLY(8, "decipherOnly");
-
-        private int value;
-        private String name;
-
-        KeyUsageBits(int value, String name) {
-
-            if (value < 0 || value > 8)
-                throw new IllegalArgumentException("value");
-            if (name == null || name.trim().length() == 0)
-                throw new IllegalArgumentException("name");
-            this.value = value;
-            this.name = name.trim();
-        }
-
-        public int getInt() { return this.value; }
-        public String getName() {  return this.name; }
-
-        static public KeyUsageBits parse(String name) throws IllegalArgumentException, IndexOutOfBoundsException {
-            if (name == null || name.trim().length() == 0)
-                throw new IllegalArgumentException("name");
-
-            for (KeyUsageBits bit : KeyUsageBits.values()) {
-                if (bit.getName().equalsIgnoreCase(name))
-                    return bit;
-            }
-            throw new IndexOutOfBoundsException("name");
-        }
-
-        static public KeyUsageBits fromValue(int value) throws IndexOutOfBoundsException {
-            if (value < 0 || value > 8)
-                throw new IndexOutOfBoundsException("value");
-            for (KeyUsageBits bit : KeyUsageBits.values())
-                if (bit.getInt() == value)
-                    return bit;
-            throw new IndexOutOfBoundsException("value");
-        }
-    }
-
-    public static class LdapContext {
-        private final String ldapFactoryClassName;
-
-        public LdapContext() {
-            ldapFactoryClassName = "com.sun.jndi.ldap.LdapCtxFactory";
-        }
-
-        public LdapContext(String ldapFactoryClassName) {
-            this.ldapFactoryClassName = ldapFactoryClassName;
-        }
-
-        public String getLdapFactoryClassName() {
-            return ldapFactoryClassName;
-        }
-    }
-
-    public abstract static class OCSPChecker {
-        /**
-         * Requests certificate revocation status using OCSP. The OCSP responder URI
-         * is obtained from the certificate's AIA extension.
-         * @param cert the certificate to be checked
-         * @param issuerCertificate The issuer certificate
-         * @return revocation status
-         */
-        public abstract OCSPUtils.OCSPRevocationStatus check(X509Certificate cert, X509Certificate issuerCertificate) throws CertPathValidatorException;
-    }
-
-    public abstract static class CRLLoaderImpl {
-        /**
-         * Returns a collection of {@link X509CRL}
-         * @return
-         * @throws GeneralSecurityException
-         */
-        public abstract Collection<X509CRL> getX509CRLs() throws GeneralSecurityException;
-    }
-
-    public static class BouncyCastleOCSPChecker extends OCSPChecker {
-
-        private final String responderUri;
-        private final X509Certificate responderCert;
-
-        BouncyCastleOCSPChecker(String responderUri, X509Certificate responderCert) {
-            this.responderUri = responderUri;
-            this.responderCert = responderCert;
-        }
-
-        @Override
-        public OCSPUtils.OCSPRevocationStatus check(X509Certificate cert, X509Certificate issuerCertificate) throws CertPathValidatorException {
-
-            OCSPUtils.OCSPRevocationStatus ocspRevocationStatus = null;
-            if (responderUri == null || responderUri.trim().length() == 0) {
-                // Obtains revocation status of a certificate using OCSP and assuming
-                // most common defaults. If responderUri is not specified,
-                // then OCS responder URI is retrieved from the
-                // certificate's AIA extension.
-                // OCSP responses must be signed with the issuer certificate
-                // or with another certificate that must be:
-                // 1) signed by the issuer certificate,
-                // 2) Includes the value of OCSPsigning in ExtendedKeyUsage v3 extension
-                // 3) Certificate is valid at the time
-                ocspRevocationStatus = OCSPUtils.check(cert, issuerCertificate);
-            }
-            else {
-                URI uri;
-                try {
-                    uri = new URI(responderUri);
-                } catch (URISyntaxException e) {
-                    String message = String.format("Unable to check certificate revocation status using OCSP.\n%s", e.getMessage());
-                    throw new CertPathValidatorException(message, e);
-                }
-                logger.tracef("Responder URI \"%s\" will be used to verify revocation status of the certificate using OCSP with responderCert=%s",
-                        uri.toString(), responderCert);
-                // Obtains the revocation status of a certificate using OCSP.
-                // OCSP responder's certificate is assumed to be the issuer's certificate
-                // certificate.
-                // responderUri overrides the contents (if any) of the certificate's AIA extension
-                ocspRevocationStatus = OCSPUtils.check(cert, issuerCertificate, uri, responderCert, null);
-            }
-            return ocspRevocationStatus;
-        }
-    }
-
-    public static class CRLLoaderProxy extends CRLLoaderImpl {
-        private final X509CRL _crl;
-        public CRLLoaderProxy(X509CRL crl) {
-            _crl = crl;
-        }
-        public Collection<X509CRL> getX509CRLs() throws GeneralSecurityException {
-            return Collections.singleton(_crl);
-        }
-    }
-
-    // Delegate to list of other CRLLoaders
-    public static class CRLListLoader extends CRLLoaderImpl {
-
-        private final List<CRLLoaderImpl> delegates;
-
-        public CRLListLoader(String cRLConfigValue) {
-            String[] delegatePaths = Constants.CFG_DELIMITER_PATTERN.split(cRLConfigValue);
-            this.delegates = Arrays.stream(delegatePaths)
-                    .map(CRLFileLoader::new)
-                    .collect(Collectors.toList());
-        }
-
-
-        @Override
-        public Collection<X509CRL> getX509CRLs() throws GeneralSecurityException {
-            Collection<X509CRL> result = new LinkedList<>();
-            for (CRLLoaderImpl delegate : delegates) {
-                result.addAll(delegate.getX509CRLs());
-            }
-            return result;
-        }
-    }
-
-    public static class CRLFileLoader extends CRLLoaderImpl {
-
-        private final String cRLPath;
-        private final LdapContext ldapContext;
-
-        public CRLFileLoader(String cRLPath) {
-            this.cRLPath = cRLPath;
-            ldapContext = new LdapContext();
-        }
-
-        public CRLFileLoader(String cRLPath, LdapContext ldapContext) {
-            this.cRLPath = cRLPath;
-            this.ldapContext = ldapContext;
-
-            if (ldapContext == null)
-                throw new NullPointerException("Context cannot be null");
-        }
-        public Collection<X509CRL> getX509CRLs() throws GeneralSecurityException {
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            Collection<X509CRL> crlColl = null;
-
-            if (cRLPath != null) {
-                if (cRLPath.startsWith("http") || cRLPath.startsWith("https")) {
-                    // load CRL using remote URI
-                    try {
-                        crlColl = loadFromURI(cf, new URI(cRLPath));
-                    } catch (URISyntaxException e) {
-                        logger.error(e.getMessage());
-                    }
-                } else if (cRLPath.startsWith("ldap")) {
-                    // load CRL from LDAP
-                    try {
-                        crlColl = loadCRLFromLDAP(cf, new URI(cRLPath));
-                    } catch(URISyntaxException e) {
-                        logger.error(e.getMessage());
-                    }
-                } else {
-                    // load CRL from file
-                    crlColl = loadCRLFromFile(cf, cRLPath);
-                }
-            }
-            if (crlColl == null || crlColl.size() == 0) {
-                String message = String.format("Unable to load CRL from \"%s\"", cRLPath);
-                throw new GeneralSecurityException(message);
-            }
-            return crlColl;
-        }
-
-        private Collection<X509CRL> loadFromURI(CertificateFactory cf, URI remoteURI) throws GeneralSecurityException {
-            try {
-                logger.debugf("Loading CRL from %s", remoteURI.toString());
-
-                URLConnection conn = remoteURI.toURL().openConnection();
-                conn.setDoInput(true);
-                conn.setUseCaches(false);
-                X509CRL crl = loadFromStream(cf, conn.getInputStream());
-                return Collections.singleton(crl);
-            }
-            catch(IOException ex) {
-                logger.errorf(ex.getMessage());
-            }
-            return Collections.emptyList();
-
-        }
-
-        private Collection<X509CRL> loadCRLFromLDAP(CertificateFactory cf, URI remoteURI) throws GeneralSecurityException {
-            Hashtable<String, String> env = new Hashtable<>(2);
-            env.put(Context.INITIAL_CONTEXT_FACTORY, ldapContext.getLdapFactoryClassName());
-            env.put(Context.PROVIDER_URL, remoteURI.toString());
-
-            try {
-                DirContext ctx = new InitialDirContext(env);
-                try {
-                    Attributes attrs = ctx.getAttributes("");
-                    Attribute cRLAttribute = attrs.get("certificateRevocationList;binary");
-                    byte[] data = (byte[])cRLAttribute.get();
-                    if (data == null || data.length == 0) {
-                        throw new CertificateException(String.format("Failed to download CRL from \"%s\"", remoteURI.toString()));
-                    }
-                    X509CRL crl = loadFromStream(cf, new ByteArrayInputStream(data));
-                    return Collections.singleton(crl);
-                } finally {
-                    ctx.close();
-                }
-            } catch (NamingException e) {
-                logger.error(e.getMessage());
-            } catch(IOException e) {
-                logger.error(e.getMessage());
-            }
-
-            return Collections.emptyList();
-        }
-
-        private Collection<X509CRL> loadCRLFromFile(CertificateFactory cf, String relativePath) throws GeneralSecurityException {
-            try {
-                String configDir = System.getProperty("jboss.server.config.dir");
-                if (configDir != null) {
-                    File f = new File(configDir + File.separator + relativePath);
-                    if (f.isFile()) {
-                        logger.debugf("Loading CRL from %s", f.getAbsolutePath());
-
-                        if (!f.canRead()) {
-                            throw new IOException(String.format("Unable to read CRL from \"%s\"", f.getAbsolutePath()));
-                        }
-                        X509CRL crl = loadFromStream(cf, new FileInputStream(f.getAbsolutePath()));
-                        return Collections.singleton(crl);
-                    }
-                }
-            }
-            catch(IOException ex) {
-                logger.errorf(ex.getMessage());
-            }
-            return Collections.emptyList();
-        }
-        private X509CRL loadFromStream(CertificateFactory cf, InputStream is) throws IOException, CRLException {
-            DataInputStream dis = new DataInputStream(is);
-            X509CRL crl = (X509CRL)cf.generateCRL(dis);
-            dis.close();
-            return crl;
-        }
-    }
-
     KeycloakSession session;
     X509Certificate[] _certChain;
     int _keyUsageBits;
@@ -366,12 +62,11 @@ public class CertificateValidator {
     CRLLoaderImpl _crlLoader;
     boolean _ocspEnabled;
     OCSPChecker ocspChecker;
-
     public CertificateValidator() {
 
     }
     protected CertificateValidator(X509Certificate[] certChain,
-                         int keyUsageBits, List<String> extendedKeyUsage,
+                                   int keyUsageBits, List<String> extendedKeyUsage,
                                    boolean cRLCheckingEnabled,
                                    boolean cRLDPCheckingEnabled,
                                    CRLLoaderImpl crlLoader,
@@ -459,10 +154,41 @@ public class CertificateValidator {
         }
     }
 
+    private static void checkRevocationStatusUsingCRL(X509Certificate[] certs, CRLLoaderImpl crLoader, KeycloakSession session) throws GeneralSecurityException {
+        Collection<X509CRL> crlColl = crLoader.getX509CRLs();
+        if (crlColl != null && crlColl.size() > 0) {
+            for (X509CRL it : crlColl) {
+                CRLUtils.check(certs, it, session);
+            }
+        }
+    }
+
+    private static List<String> getCRLDistributionPoints(X509Certificate cert) {
+        try {
+            return CRLUtils.getCRLDistributionPoints(cert);
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+        return new ArrayList<>();
+    }
+
+    private static void checkRevocationStatusUsingCRLDistributionPoints(X509Certificate[] certs, KeycloakSession session) throws GeneralSecurityException {
+
+        List<String> distributionPoints = getCRLDistributionPoints(certs[0]);
+        if (distributionPoints == null || distributionPoints.size() == 0) {
+            throw new GeneralSecurityException("Could not find any CRL distribution points in the certificate, unable to check the certificate revocation status using CRL/DP.");
+        }
+        for (String dp : distributionPoints) {
+            logger.tracef("CRL Distribution point: \"%s\"", dp);
+            checkRevocationStatusUsingCRL(certs, new CRLFileLoader(dp), session);
+        }
+    }
+
     public CertificateValidator validateKeyUsage() throws GeneralSecurityException {
         validateKeyUsage(_certChain, _keyUsageBits);
         return this;
     }
+
     public CertificateValidator validateExtendedKeyUsage() throws GeneralSecurityException {
         validateExtendedKeyUsage(_certChain, _extendedKeyUsage);
         return this;
@@ -472,22 +198,21 @@ public class CertificateValidator {
         if (!isValidationEnabled) {
             return this;
         }
-        for (int i = 0; i < _certChain.length; i++)
-        {
+        for (int i = 0; i < _certChain.length; i++) {
             X509Certificate x509Certificate = _certChain[i];
             if (x509Certificate.getNotBefore().getTime() > Time.currentTimeMillis()) {
                 String serialNumber = x509Certificate.getSerialNumber().toString(16).replaceAll("..(?!$)",
-                  "$0 ");
+                        "$0 ");
                 String message =
-                  "certificate with serialnumber '" + serialNumber
-                    + "' is not valid yet: " + x509Certificate.getNotBefore().toString();
+                        "certificate with serialnumber '" + serialNumber
+                                + "' is not valid yet: " + x509Certificate.getNotBefore().toString();
                 throw new GeneralSecurityException(message);
             }
             if (x509Certificate.getNotAfter().getTime() < Time.currentTimeMillis()) {
                 String serialNumber = x509Certificate.getSerialNumber().toString(16).replaceAll("..(?!$)",
-                  "$0 ");
+                        "$0 ");
                 String message = "certificate with serialnumber '" + serialNumber
-                                   + "' has expired on: " + x509Certificate.getNotAfter().toString();
+                        + "' has expired on: " + x509Certificate.getNotAfter().toString();
                 throw new GeneralSecurityException(message);
             }
         }
@@ -519,7 +244,7 @@ public class CertificateValidator {
         X509Certificate issuer = null;
 
         if (certs == null || certs.length == 0) {
-             throw new GeneralSecurityException("No certificates sent");
+            throw new GeneralSecurityException("No certificates sent");
         } else if (certs.length > 1) {
             cert = certs[0];
             issuer = certs[1];
@@ -542,47 +267,16 @@ public class CertificateValidator {
 
         if (rs.getRevocationStatus() == OCSPUtils.RevocationStatus.UNKNOWN) {
             throw new GeneralSecurityException("Unable to determine certificate's revocation status.");
-        }
-        else if (rs.getRevocationStatus() == OCSPUtils.RevocationStatus.REVOKED) {
+        } else if (rs.getRevocationStatus() == OCSPUtils.RevocationStatus.REVOKED) {
 
             StringBuilder sb = new StringBuilder();
             sb.append("Certificate's been revoked.");
             sb.append("\n");
             sb.append(rs.getRevocationReason().toString());
             sb.append("\n");
-            sb.append(String.format("Revoked on: %s",rs.getRevocationTime().toString()));
+            sb.append(String.format("Revoked on: %s", rs.getRevocationTime().toString()));
 
             throw new GeneralSecurityException(sb.toString());
-        }
-    }
-
-    private static void checkRevocationStatusUsingCRL(X509Certificate[] certs, CRLLoaderImpl crLoader, KeycloakSession session) throws GeneralSecurityException {
-        Collection<X509CRL> crlColl = crLoader.getX509CRLs();
-        if (crlColl != null && crlColl.size() > 0) {
-            for (X509CRL it : crlColl) {
-                CRLUtils.check(certs, it, session);
-            }
-        }
-    }
-    private static List<String> getCRLDistributionPoints(X509Certificate cert) {
-        try {
-            return CRLUtils.getCRLDistributionPoints(cert);
-        }
-        catch(IOException e) {
-            logger.error(e.getMessage());
-        }
-        return new ArrayList<>();
-    }
-
-    private static void checkRevocationStatusUsingCRLDistributionPoints(X509Certificate[] certs, KeycloakSession session) throws GeneralSecurityException {
-
-        List<String> distributionPoints = getCRLDistributionPoints(certs[0]);
-        if (distributionPoints == null || distributionPoints.size() == 0) {
-            throw new GeneralSecurityException("Could not find any CRL distribution points in the certificate, unable to check the certificate revocation status using CRL/DP.");
-        }
-        for (String dp : distributionPoints) {
-            logger.tracef("CRL Distribution point: \"%s\"", dp);
-            checkRevocationStatusUsingCRL(certs, new CRLFileLoader(dp), session);
         }
     }
 
@@ -601,6 +295,299 @@ public class CertificateValidator {
             checkRevocationUsingOCSP(_certChain);
         }
         return this;
+    }
+
+    enum KeyUsageBits {
+        DIGITAL_SIGNATURE(0, "digitalSignature"),
+        NON_REPUDIATION(1, "nonRepudiation"),
+        KEY_ENCIPHERMENT(2, "keyEncipherment"),
+        DATA_ENCIPHERMENT(3, "dataEncipherment"),
+        KEY_AGREEMENT(4, "keyAgreement"),
+        KEYCERTSIGN(5, "keyCertSign"),
+        CRLSIGN(6, "cRLSign"),
+        ENCIPHERMENT_ONLY(7, "encipherOnly"),
+        DECIPHER_ONLY(8, "decipherOnly");
+
+        private int value;
+        private String name;
+
+        KeyUsageBits(int value, String name) {
+
+            if (value < 0 || value > 8)
+                throw new IllegalArgumentException("value");
+            if (name == null || name.trim().length() == 0)
+                throw new IllegalArgumentException("name");
+            this.value = value;
+            this.name = name.trim();
+        }
+
+        static public KeyUsageBits parse(String name) throws IllegalArgumentException, IndexOutOfBoundsException {
+            if (name == null || name.trim().length() == 0)
+                throw new IllegalArgumentException("name");
+
+            for (KeyUsageBits bit : KeyUsageBits.values()) {
+                if (bit.getName().equalsIgnoreCase(name))
+                    return bit;
+            }
+            throw new IndexOutOfBoundsException("name");
+        }
+
+        static public KeyUsageBits fromValue(int value) throws IndexOutOfBoundsException {
+            if (value < 0 || value > 8)
+                throw new IndexOutOfBoundsException("value");
+            for (KeyUsageBits bit : KeyUsageBits.values())
+                if (bit.getInt() == value)
+                    return bit;
+            throw new IndexOutOfBoundsException("value");
+        }
+
+        public int getInt() {
+            return this.value;
+        }
+
+        public String getName() {
+            return this.name;
+        }
+    }
+
+    public static class LdapContext {
+        private final String ldapFactoryClassName;
+
+        public LdapContext() {
+            ldapFactoryClassName = "com.sun.jndi.ldap.LdapCtxFactory";
+        }
+
+        public LdapContext(String ldapFactoryClassName) {
+            this.ldapFactoryClassName = ldapFactoryClassName;
+        }
+
+        public String getLdapFactoryClassName() {
+            return ldapFactoryClassName;
+        }
+    }
+
+    public abstract static class OCSPChecker {
+        /**
+         * Requests certificate revocation status using OCSP. The OCSP responder URI
+         * is obtained from the certificate's AIA extension.
+         *
+         * @param cert              the certificate to be checked
+         * @param issuerCertificate The issuer certificate
+         * @return revocation status
+         */
+        public abstract OCSPUtils.OCSPRevocationStatus check(X509Certificate cert, X509Certificate issuerCertificate) throws CertPathValidatorException;
+    }
+
+    public abstract static class CRLLoaderImpl {
+        /**
+         * Returns a collection of {@link X509CRL}
+         *
+         * @return
+         * @throws GeneralSecurityException
+         */
+        public abstract Collection<X509CRL> getX509CRLs() throws GeneralSecurityException;
+    }
+
+    public static class BouncyCastleOCSPChecker extends OCSPChecker {
+
+        private final String responderUri;
+        private final X509Certificate responderCert;
+
+        BouncyCastleOCSPChecker(String responderUri, X509Certificate responderCert) {
+            this.responderUri = responderUri;
+            this.responderCert = responderCert;
+        }
+
+        @Override
+        public OCSPUtils.OCSPRevocationStatus check(X509Certificate cert, X509Certificate issuerCertificate) throws CertPathValidatorException {
+
+            OCSPUtils.OCSPRevocationStatus ocspRevocationStatus = null;
+            if (responderUri == null || responderUri.trim().length() == 0) {
+                // Obtains revocation status of a certificate using OCSP and assuming
+                // most common defaults. If responderUri is not specified,
+                // then OCS responder URI is retrieved from the
+                // certificate's AIA extension.
+                // OCSP responses must be signed with the issuer certificate
+                // or with another certificate that must be:
+                // 1) signed by the issuer certificate,
+                // 2) Includes the value of OCSPsigning in ExtendedKeyUsage v3 extension
+                // 3) Certificate is valid at the time
+                ocspRevocationStatus = OCSPUtils.check(cert, issuerCertificate);
+            } else {
+                URI uri;
+                try {
+                    uri = new URI(responderUri);
+                } catch (URISyntaxException e) {
+                    String message = String.format("Unable to check certificate revocation status using OCSP.\n%s", e.getMessage());
+                    throw new CertPathValidatorException(message, e);
+                }
+                logger.tracef("Responder URI \"%s\" will be used to verify revocation status of the certificate using OCSP with responderCert=%s",
+                        uri.toString(), responderCert);
+                // Obtains the revocation status of a certificate using OCSP.
+                // OCSP responder's certificate is assumed to be the issuer's certificate
+                // certificate.
+                // responderUri overrides the contents (if any) of the certificate's AIA extension
+                ocspRevocationStatus = OCSPUtils.check(cert, issuerCertificate, uri, responderCert, null);
+            }
+            return ocspRevocationStatus;
+        }
+    }
+
+    public static class CRLLoaderProxy extends CRLLoaderImpl {
+        private final X509CRL _crl;
+
+        public CRLLoaderProxy(X509CRL crl) {
+            _crl = crl;
+        }
+
+        public Collection<X509CRL> getX509CRLs() throws GeneralSecurityException {
+            return Collections.singleton(_crl);
+        }
+    }
+
+    // Delegate to list of other CRLLoaders
+    public static class CRLListLoader extends CRLLoaderImpl {
+
+        private final List<CRLLoaderImpl> delegates;
+
+        public CRLListLoader(String cRLConfigValue) {
+            String[] delegatePaths = Constants.CFG_DELIMITER_PATTERN.split(cRLConfigValue);
+            this.delegates = Arrays.stream(delegatePaths)
+                    .map(CRLFileLoader::new)
+                    .collect(Collectors.toList());
+        }
+
+
+        @Override
+        public Collection<X509CRL> getX509CRLs() throws GeneralSecurityException {
+            Collection<X509CRL> result = new LinkedList<>();
+            for (CRLLoaderImpl delegate : delegates) {
+                result.addAll(delegate.getX509CRLs());
+            }
+            return result;
+        }
+    }
+
+    public static class CRLFileLoader extends CRLLoaderImpl {
+
+        private final String cRLPath;
+        private final LdapContext ldapContext;
+
+        public CRLFileLoader(String cRLPath) {
+            this.cRLPath = cRLPath;
+            ldapContext = new LdapContext();
+        }
+
+        public CRLFileLoader(String cRLPath, LdapContext ldapContext) {
+            this.cRLPath = cRLPath;
+            this.ldapContext = ldapContext;
+
+            if (ldapContext == null)
+                throw new NullPointerException("Context cannot be null");
+        }
+
+        public Collection<X509CRL> getX509CRLs() throws GeneralSecurityException {
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            Collection<X509CRL> crlColl = null;
+
+            if (cRLPath != null) {
+                if (cRLPath.startsWith("http") || cRLPath.startsWith("https")) {
+                    // load CRL using remote URI
+                    try {
+                        crlColl = loadFromURI(cf, new URI(cRLPath));
+                    } catch (URISyntaxException e) {
+                        logger.error(e.getMessage());
+                    }
+                } else if (cRLPath.startsWith("ldap")) {
+                    // load CRL from LDAP
+                    try {
+                        crlColl = loadCRLFromLDAP(cf, new URI(cRLPath));
+                    } catch (URISyntaxException e) {
+                        logger.error(e.getMessage());
+                    }
+                } else {
+                    // load CRL from file
+                    crlColl = loadCRLFromFile(cf, cRLPath);
+                }
+            }
+            if (crlColl == null || crlColl.size() == 0) {
+                String message = String.format("Unable to load CRL from \"%s\"", cRLPath);
+                throw new GeneralSecurityException(message);
+            }
+            return crlColl;
+        }
+
+        private Collection<X509CRL> loadFromURI(CertificateFactory cf, URI remoteURI) throws GeneralSecurityException {
+            try {
+                logger.debugf("Loading CRL from %s", remoteURI.toString());
+
+                URLConnection conn = remoteURI.toURL().openConnection();
+                conn.setDoInput(true);
+                conn.setUseCaches(false);
+                X509CRL crl = loadFromStream(cf, conn.getInputStream());
+                return Collections.singleton(crl);
+            } catch (IOException ex) {
+                logger.errorf(ex.getMessage());
+            }
+            return Collections.emptyList();
+
+        }
+
+        private Collection<X509CRL> loadCRLFromLDAP(CertificateFactory cf, URI remoteURI) throws GeneralSecurityException {
+            Hashtable<String, String> env = new Hashtable<>(2);
+            env.put(Context.INITIAL_CONTEXT_FACTORY, ldapContext.getLdapFactoryClassName());
+            env.put(Context.PROVIDER_URL, remoteURI.toString());
+
+            try {
+                DirContext ctx = new InitialDirContext(env);
+                try {
+                    Attributes attrs = ctx.getAttributes("");
+                    Attribute cRLAttribute = attrs.get("certificateRevocationList;binary");
+                    byte[] data = (byte[]) cRLAttribute.get();
+                    if (data == null || data.length == 0) {
+                        throw new CertificateException(String.format("Failed to download CRL from \"%s\"", remoteURI.toString()));
+                    }
+                    X509CRL crl = loadFromStream(cf, new ByteArrayInputStream(data));
+                    return Collections.singleton(crl);
+                } finally {
+                    ctx.close();
+                }
+            } catch (NamingException e) {
+                logger.error(e.getMessage());
+            } catch (IOException e) {
+                logger.error(e.getMessage());
+            }
+
+            return Collections.emptyList();
+        }
+
+        private Collection<X509CRL> loadCRLFromFile(CertificateFactory cf, String relativePath) throws GeneralSecurityException {
+            try {
+                String configDir = System.getProperty("jboss.server.config.dir");
+                if (configDir != null) {
+                    File f = new File(configDir + File.separator + relativePath);
+                    if (f.isFile()) {
+                        logger.debugf("Loading CRL from %s", f.getAbsolutePath());
+
+                        if (!f.canRead()) {
+                            throw new IOException(String.format("Unable to read CRL from \"%s\"", f.getAbsolutePath()));
+                        }
+                        X509CRL crl = loadFromStream(cf, new FileInputStream(f.getAbsolutePath()));
+                        return Collections.singleton(crl);
+                    }
+                }
+            } catch (IOException ex) {
+                logger.errorf(ex.getMessage());
+            }
+            return Collections.emptyList();
+        }
+
+        private X509CRL loadFromStream(CertificateFactory cf, InputStream is) throws IOException, CRLException {
+            DataInputStream dis = new DataInputStream(is);
+            X509CRL crl = (X509CRL) cf.generateCRL(dis);
+            dis.close();
+            return crl;
+        }
     }
 
     /**
@@ -626,9 +613,36 @@ public class CertificateValidator {
             _keyUsageBits = 0;
         }
 
+        public CertificateValidatorBuilder session(KeycloakSession session) {
+            this.session = session;
+            return this;
+        }
+
+        public KeyUsageValidationBuilder keyUsage() {
+            return new KeyUsageValidationBuilder(this);
+        }
+
+        public ExtendedKeyUsageValidationBuilder extendedKeyUsage() {
+            return new ExtendedKeyUsageValidationBuilder(this);
+        }
+
+        public RevocationStatusCheckBuilder revocation() {
+            return new RevocationStatusCheckBuilder(this);
+        }
+
+        public CertificateValidator build(X509Certificate[] certs) {
+            if (_crlLoader == null) {
+                _crlLoader = new CRLFileLoader("");
+            }
+            return new CertificateValidator(certs, _keyUsageBits, _extendedKeyUsage,
+                    _crlCheckingEnabled, _crldpEnabled, _crlLoader, _ocspEnabled,
+                    new BouncyCastleOCSPChecker(_responderUri, _responderCert), session);
+        }
+
         public class KeyUsageValidationBuilder {
 
             CertificateValidatorBuilder _parent;
+
             KeyUsageValidationBuilder(CertificateValidatorBuilder parent) {
                 _parent = parent;
             }
@@ -637,34 +651,42 @@ public class CertificateValidator {
                 _keyUsageBits |= 1 << KeyUsageBits.DIGITAL_SIGNATURE.getInt();
                 return this;
             }
+
             public KeyUsageValidationBuilder enablecRLSignBit() {
                 _keyUsageBits |= 1 << KeyUsageBits.CRLSIGN.getInt();
                 return this;
             }
+
             public KeyUsageValidationBuilder enableDataEncriphermentBit() {
                 _keyUsageBits |= 1 << KeyUsageBits.DATA_ENCIPHERMENT.getInt();
                 return this;
             }
+
             public KeyUsageValidationBuilder enableDecipherOnlyBit() {
                 _keyUsageBits |= 1 << KeyUsageBits.DECIPHER_ONLY.getInt();
                 return this;
             }
+
             public KeyUsageValidationBuilder enableEnciphermentOnlyBit() {
                 _keyUsageBits |= 1 << KeyUsageBits.ENCIPHERMENT_ONLY.getInt();
                 return this;
             }
+
             public KeyUsageValidationBuilder enableKeyAgreementBit() {
                 _keyUsageBits |= 1 << KeyUsageBits.KEY_AGREEMENT.getInt();
                 return this;
             }
+
             public KeyUsageValidationBuilder enableKeyEnciphermentBit() {
                 _keyUsageBits |= 1 << KeyUsageBits.KEY_ENCIPHERMENT.getInt();
                 return this;
             }
+
             public KeyUsageValidationBuilder enableKeyCertSign() {
                 _keyUsageBits |= 1 << KeyUsageBits.KEYCERTSIGN.getInt();
                 return this;
             }
+
             public KeyUsageValidationBuilder enableNonRepudiationBit() {
                 _keyUsageBits |= 1 << KeyUsageBits.NON_REPUDIATION.getInt();
                 return this;
@@ -683,22 +705,38 @@ public class CertificateValidator {
                 for (String s : strs) {
                     try {
                         KeyUsageBits bit = KeyUsageBits.parse(s.trim());
-                        switch(bit) {
-                            case CRLSIGN: enablecRLSignBit(); break;
-                            case DATA_ENCIPHERMENT: enableDataEncriphermentBit(); break;
-                            case DECIPHER_ONLY: enableDecipherOnlyBit(); break;
-                            case DIGITAL_SIGNATURE: enableDigitalSignatureBit(); break;
-                            case ENCIPHERMENT_ONLY: enableEnciphermentOnlyBit(); break;
-                            case KEY_AGREEMENT: enableKeyAgreementBit(); break;
-                            case KEY_ENCIPHERMENT: enableKeyEnciphermentBit(); break;
-                            case KEYCERTSIGN: enableKeyCertSign(); break;
-                            case NON_REPUDIATION: enableNonRepudiationBit(); break;
+                        switch (bit) {
+                            case CRLSIGN:
+                                enablecRLSignBit();
+                                break;
+                            case DATA_ENCIPHERMENT:
+                                enableDataEncriphermentBit();
+                                break;
+                            case DECIPHER_ONLY:
+                                enableDecipherOnlyBit();
+                                break;
+                            case DIGITAL_SIGNATURE:
+                                enableDigitalSignatureBit();
+                                break;
+                            case ENCIPHERMENT_ONLY:
+                                enableEnciphermentOnlyBit();
+                                break;
+                            case KEY_AGREEMENT:
+                                enableKeyAgreementBit();
+                                break;
+                            case KEY_ENCIPHERMENT:
+                                enableKeyEnciphermentBit();
+                                break;
+                            case KEYCERTSIGN:
+                                enableKeyCertSign();
+                                break;
+                            case NON_REPUDIATION:
+                                enableNonRepudiationBit();
+                                break;
                         }
-                    }
-                    catch(IllegalArgumentException e) {
+                    } catch (IllegalArgumentException e) {
                         logger.warnf("Unable to parse key usage bit: \"%s\"", s);
-                    }
-                    catch(IndexOutOfBoundsException e) {
+                    } catch (IndexOutOfBoundsException e) {
                         logger.warnf("Invalid key usage bit: \"%s\"", s);
                     }
                 }
@@ -710,6 +748,7 @@ public class CertificateValidator {
         public class ExtendedKeyUsageValidationBuilder {
 
             CertificateValidatorBuilder _parent;
+
             protected ExtendedKeyUsageValidationBuilder(CertificateValidatorBuilder parent) {
                 _parent = parent;
             }
@@ -729,6 +768,7 @@ public class CertificateValidator {
         public class RevocationStatusCheckBuilder {
 
             CertificateValidatorBuilder _parent;
+
             protected RevocationStatusCheckBuilder(CertificateValidatorBuilder parent) {
                 _parent = parent;
             }
@@ -751,6 +791,7 @@ public class CertificateValidator {
                     return new GotOCSP();
                 }
             }
+
             public class GotCRLDP {
                 public GotCRLRelativePath cRLrelativePath(String value) {
                     if (value != null)
@@ -771,7 +812,7 @@ public class CertificateValidator {
                         try {
                             _responderCert = XMLSignatureUtil.getX509CertificateFromKeyInfoString(responderCert);
                             _responderCert.checkValidity();
-                        } catch(CertificateException e) {
+                        } catch (CertificateException e) {
                             logger.warnf("Ignoring invalid certificate: %s", _responderCert);
                             _responderCert = null;
                         } catch (ProcessingException e) {
@@ -786,32 +827,6 @@ public class CertificateValidator {
                     return _parent;
                 }
             }
-        }
-
-        public CertificateValidatorBuilder session(KeycloakSession session) {
-            this.session = session;
-            return this;
-        }
-
-        public KeyUsageValidationBuilder keyUsage() {
-            return new KeyUsageValidationBuilder(this);
-        }
-
-        public ExtendedKeyUsageValidationBuilder extendedKeyUsage() {
-            return new ExtendedKeyUsageValidationBuilder(this);
-        }
-
-        public RevocationStatusCheckBuilder revocation() {
-            return new RevocationStatusCheckBuilder(this);
-        }
-
-        public CertificateValidator build(X509Certificate[] certs) {
-            if (_crlLoader == null) {
-                 _crlLoader = new CRLFileLoader("");
-            }
-            return new CertificateValidator(certs, _keyUsageBits, _extendedKeyUsage,
-                    _crlCheckingEnabled, _crldpEnabled, _crlLoader, _ocspEnabled,
-                    new BouncyCastleOCSPChecker(_responderUri, _responderCert), session);
         }
     }
 

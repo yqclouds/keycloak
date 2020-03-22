@@ -31,7 +31,7 @@ public interface Migration {
 
     /**
      * Called after full import of representation.
-     *
+     * <p>
      * Implementations of this method should try not make assumptions about what was imported from the representations.
      * We have no idea what the user will do to an exported json file.
      *
@@ -40,8 +40,7 @@ public interface Migration {
      * @param rep
      * @param skipUserDependent
      */
-    default
-    void migrateImport(KeycloakSession session, RealmModel realm, RealmRepresentation rep, boolean skipUserDependent) {
+    default void migrateImport(KeycloakSession session, RealmModel realm, RealmRepresentation rep, boolean skipUserDependent) {
 
     }
 

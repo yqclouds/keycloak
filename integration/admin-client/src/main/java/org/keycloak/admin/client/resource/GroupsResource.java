@@ -34,6 +34,7 @@ public interface GroupsResource {
 
     /**
      * Get all groups.
+     *
      * @return A list containing all groups.
      */
     @GET
@@ -43,8 +44,9 @@ public interface GroupsResource {
 
     /**
      * Get groups by pagination params.
+     *
      * @param first index of the first element
-     * @param max max number of occurrences
+     * @param max   max number of occurrences
      * @return A list containing the slice of all groups.
      */
     @GET
@@ -55,9 +57,10 @@ public interface GroupsResource {
 
     /**
      * Get groups by pagination params.
+     *
      * @param search max number of occurrences
-     * @param first index of the first element
-     * @param max max number of occurrences
+     * @param first  index of the first element
+     * @param max    max number of occurrences
      * @return A list containing the slice of all groups.
      */
     @GET
@@ -70,9 +73,10 @@ public interface GroupsResource {
 
     /**
      * Get groups by pagination params.
-     * @param search max number of occurrences
-     * @param first index of the first element
-     * @param max max number of occurrences
+     *
+     * @param search              max number of occurrences
+     * @param first               index of the first element
+     * @param max                 max number of occurrences
      * @param briefRepresentation if false, return groups with their attributes
      * @return A list containing the slice of all groups.
      */
@@ -84,8 +88,10 @@ public interface GroupsResource {
                                      @QueryParam("first") Integer first,
                                      @QueryParam("max") Integer max,
                                      @QueryParam("briefRepresentation") @DefaultValue("true") boolean briefRepresentation);
+
     /**
      * Counts all groups.
+     *
      * @return A map containing key "count" with number of groups as value.
      */
     @GET
@@ -97,6 +103,7 @@ public interface GroupsResource {
 
     /**
      * Counts groups by name search.
+     *
      * @param search max number of occurrences
      * @return A map containing key "count" with number of groups as value which matching with search.
      */
@@ -109,6 +116,7 @@ public interface GroupsResource {
 
     /**
      * Counts groups by name search.
+     *
      * @param onlyTopGroups <code>true</code> or <code>false</code> for filter only top level groups count
      * @return A map containing key "count" with number of top level groups.
      */

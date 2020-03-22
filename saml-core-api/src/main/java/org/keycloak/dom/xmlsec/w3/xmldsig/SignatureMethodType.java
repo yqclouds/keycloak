@@ -57,7 +57,7 @@ public class SignatureMethodType {
 
     /**
      * Gets the value of the content property.
-     *
+     * <p>
      * {@link Object } {@link String }
      */
     public List<Object> getContent() {

@@ -19,7 +19,7 @@ package org.keycloak.representations.adapters.config;
 
 /**
  * Configuration options relevant for configuring http client that can be used by adapter.
- *
+ * <p>
  * NOTE: keep in sync with adapters/saml/core/src/main/java/org/keycloak/adapters/AdapterHttpClientConfig.java until unified.
  *
  * @author hmlnarik
@@ -49,6 +49,7 @@ public interface AdapterHttpClientConfig {
     /**
      * Returns boolean flag whether any hostname verification is done on the server's
      * certificate, {@code true} means that verification is not done.
+     *
      * @return
      */
     boolean isAllowAnyHostname();

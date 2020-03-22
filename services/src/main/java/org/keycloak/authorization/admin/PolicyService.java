@@ -17,25 +17,6 @@
  */
 package org.keycloak.authorization.admin;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authorization.AuthorizationProvider;
@@ -58,9 +39,21 @@ import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentati
 import org.keycloak.representations.idm.authorization.PolicyProviderRepresentation;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.services.ErrorResponseException;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.resources.admin.AdminEventBuilder;
+import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.util.JsonSerialization;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -186,19 +179,19 @@ public class PolicyService {
         Map<String, String[]> search = new HashMap<>();
 
         if (id != null && !"".equals(id.trim())) {
-            search.put("id", new String[] {id});
+            search.put("id", new String[]{id});
         }
 
         if (name != null && !"".equals(name.trim())) {
-            search.put("name", new String[] {name});
+            search.put("name", new String[]{name});
         }
 
         if (type != null && !"".equals(type.trim())) {
-            search.put("type", new String[] {type});
+            search.put("type", new String[]{type});
         }
 
         if (owner != null && !"".equals(owner.trim())) {
-            search.put("owner", new String[] {owner});
+            search.put("owner", new String[]{owner});
         }
 
         StoreFactory storeFactory = authorization.getStoreFactory();
@@ -224,7 +217,7 @@ public class PolicyService {
 
                 search.put("resource", resources.toArray(new String[resources.size()]));
             } else {
-                search.put("resource", new String[] {resourceModel.getId()});
+                search.put("resource", new String[]{resourceModel.getId()});
             }
         }
 
@@ -245,12 +238,12 @@ public class PolicyService {
 
                 search.put("scope", scopes.toArray(new String[scopes.size()]));
             } else {
-                search.put("scope", new String[] {scopeModel.getId()});
+                search.put("scope", new String[]{scopeModel.getId()});
             }
         }
 
         if (permission != null) {
-            search.put("permission", new String[] {permission.toString()});
+            search.put("permission", new String[]{permission.toString()});
         }
 
         return Response.ok(

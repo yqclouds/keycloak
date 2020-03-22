@@ -18,41 +18,17 @@
 package org.keycloak.models.jpa;
 
 import org.keycloak.common.util.MultivaluedHashMap;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.GroupModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleContainerModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.jpa.entities.GroupEntity;
-import org.keycloak.models.jpa.entities.UserAttributeEntity;
-import org.keycloak.models.jpa.entities.UserEntity;
-import org.keycloak.models.jpa.entities.UserGroupMembershipEntity;
-import org.keycloak.models.jpa.entities.UserRequiredActionEntity;
-import org.keycloak.models.jpa.entities.UserRoleMappingEntity;
+import org.keycloak.models.*;
+import org.keycloak.models.jpa.entities.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.RoleUtils;
 
 import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Objects;
-import java.util.stream.Stream;
-import javax.persistence.LockModeType;
+import javax.persistence.criteria.*;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -60,10 +36,10 @@ import javax.persistence.LockModeType;
  */
 public class UserAdapter implements UserModel, JpaModel<UserEntity> {
 
+    private final KeycloakSession session;
     protected UserEntity user;
     protected EntityManager em;
     protected RealmModel realm;
-    private final KeycloakSession session;
 
     public UserAdapter(KeycloakSession session, RealmModel realm, EntityManager em, UserEntity user) {
         this.em = em;
@@ -151,7 +127,7 @@ public class UserAdapter implements UserModel, JpaModel<UserEntity> {
     public void setAttribute(String name, List<String> values) {
         // Remove all existing
         removeAttribute(name);
-        for (Iterator<String> it = values.stream().filter(Objects::nonNull).iterator(); it.hasNext();) {
+        for (Iterator<String> it = values.stream().filter(Objects::nonNull).iterator(); it.hasNext(); ) {
             persistAttributeValue(name, it.next());
         }
     }

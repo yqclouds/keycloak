@@ -17,8 +17,6 @@
 
 package org.keycloak.models.cache.infinispan.authorization;
 
-import static org.keycloak.models.cache.infinispan.InfinispanCacheRealmProviderFactory.REALM_CLEAR_CACHE_EVENTS;
-
 import org.infinispan.Cache;
 import org.jboss.logging.Logger;
 import org.keycloak.Config;
@@ -32,16 +30,17 @@ import org.keycloak.models.cache.authorization.CachedStoreProviderFactory;
 import org.keycloak.models.cache.infinispan.entities.Revisioned;
 import org.keycloak.models.cache.infinispan.events.InvalidationEvent;
 
+import static org.keycloak.models.cache.infinispan.InfinispanCacheRealmProviderFactory.REALM_CLEAR_CACHE_EVENTS;
+
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class InfinispanCacheStoreFactoryProviderFactory implements CachedStoreProviderFactory {
 
-    private static final Logger log = Logger.getLogger(InfinispanCacheStoreFactoryProviderFactory.class);
     public static final String AUTHORIZATION_CLEAR_CACHE_EVENTS = "AUTHORIZATION_CLEAR_CACHE_EVENTS";
     public static final String AUTHORIZATION_INVALIDATION_EVENTS = "AUTHORIZATION_INVALIDATION_EVENTS";
-
+    private static final Logger log = Logger.getLogger(InfinispanCacheStoreFactoryProviderFactory.class);
     protected volatile StoreFactoryCacheManager storeCache;
 
     @Override

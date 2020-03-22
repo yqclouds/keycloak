@@ -17,18 +17,6 @@
 
 package org.keycloak.forms.account.freemarker.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.core.UriInfo;
-
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.model.PermissionTicket;
 import org.keycloak.authorization.model.Policy;
@@ -43,6 +31,10 @@ import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.authorization.ScopeRepresentation;
 import org.keycloak.services.util.ResolveRelative;
+
+import javax.ws.rs.core.UriInfo;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -139,6 +131,42 @@ public class AuthorizationBean {
 
     private ResourceBean getResource(String id) {
         return new ResourceBean(authorization.getStoreFactory().getResourceStore().findById(id, null));
+    }
+
+    private Collection<RequesterBean> toPermissionRepresentation(List<PermissionTicket> permissionRequests) {
+        Map<String, RequesterBean> requests = new HashMap<>();
+
+        for (PermissionTicket ticket : permissionRequests) {
+            Resource resource = ticket.getResource();
+
+            if (!resource.isOwnerManagedAccess()) {
+                continue;
+            }
+
+            requests.computeIfAbsent(ticket.getRequester(), resourceId -> new RequesterBean(ticket, authorization)).addScope(ticket);
+        }
+
+        return requests.values();
+    }
+
+    private Collection<ResourceBean> toResourceRepresentation(List<PermissionTicket> tickets) {
+        Map<String, ResourceBean> requests = new HashMap<>();
+
+        for (PermissionTicket ticket : tickets) {
+            Resource resource = ticket.getResource();
+
+            if (!resource.isOwnerManagedAccess()) {
+                continue;
+            }
+
+            requests.computeIfAbsent(resource.getId(), resourceId -> getResource(resourceId)).addPermission(ticket, authorization);
+        }
+
+        return requests.values();
+    }
+
+    private List<PermissionTicket> findPermissions(Map<String, String> filters) {
+        return authorization.getStoreFactory().getPermissionTicketStore().find(filters, null, -1, -1);
     }
 
     public static class RequesterBean {
@@ -277,9 +305,9 @@ public class AuthorizationBean {
         public Collection<ManagedPermissionBean> getPolicies() {
             Map<String, String[]> filters = new HashMap<>();
 
-            filters.put("type", new String[] {"uma"});
-            filters.put("resource", new String[] {this.resource.getId()});
-            filters.put("owner", new String[] {getOwner().getId()});
+            filters.put("type", new String[]{"uma"});
+            filters.put("resource", new String[]{this.resource.getId()});
+            filters.put("owner", new String[]{getOwner().getId()});
 
             List<Policy> policies = authorization.getStoreFactory().getPolicyStore().findByResourceServer(filters, getResourceServer().getId(), -1, -1);
 
@@ -310,42 +338,6 @@ public class AuthorizationBean {
         private void addPermission(PermissionTicket ticket, AuthorizationProvider authorization) {
             permissions.computeIfAbsent(ticket.getRequester(), key -> new RequesterBean(ticket, authorization)).addScope(ticket);
         }
-    }
-
-    private Collection<RequesterBean> toPermissionRepresentation(List<PermissionTicket> permissionRequests) {
-        Map<String, RequesterBean> requests = new HashMap<>();
-
-        for (PermissionTicket ticket : permissionRequests) {
-            Resource resource = ticket.getResource();
-
-            if (!resource.isOwnerManagedAccess()) {
-                continue;
-            }
-
-            requests.computeIfAbsent(ticket.getRequester(), resourceId -> new RequesterBean(ticket, authorization)).addScope(ticket);
-        }
-
-        return requests.values();
-    }
-
-    private Collection<ResourceBean> toResourceRepresentation(List<PermissionTicket> tickets) {
-        Map<String, ResourceBean> requests = new HashMap<>();
-
-        for (PermissionTicket ticket : tickets) {
-            Resource resource = ticket.getResource();
-
-            if (!resource.isOwnerManagedAccess()) {
-                continue;
-            }
-
-            requests.computeIfAbsent(resource.getId(), resourceId -> getResource(resourceId)).addPermission(ticket, authorization);
-        }
-
-        return requests.values();
-    }
-
-    private List<PermissionTicket> findPermissions(Map<String, String> filters) {
-        return authorization.getStoreFactory().getPermissionTicketStore().find(filters, null, -1, -1);
     }
 
     public class ResourceServerBean {

@@ -26,7 +26,7 @@ import java.util.Set;
 /**
  * The cache entry, which contains list of all identityProvider links for particular user. It needs to be updated every time when any
  * federation link is added, removed or updated for the user
- * 
+ *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class CachedFederatedIdentityLinks extends AbstractRevisioned implements InRealm {

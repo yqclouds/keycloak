@@ -19,13 +19,7 @@ package org.keycloak.admin.client.resource;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -47,12 +41,12 @@ public interface ResourcesResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     List<ResourceRepresentation> find(@QueryParam("name") String name,
-                  @QueryParam("uri") String uri,
-                  @QueryParam("owner") String owner,
-                  @QueryParam("type") String type,
-                  @QueryParam("scope") String scope,
-                  @QueryParam("first") Integer firstResult,
-                  @QueryParam("max") Integer maxResult);
+                                      @QueryParam("uri") String uri,
+                                      @QueryParam("owner") String owner,
+                                      @QueryParam("type") String type,
+                                      @QueryParam("scope") String scope,
+                                      @QueryParam("first") Integer firstResult,
+                                      @QueryParam("max") Integer maxResult);
 
     @GET
     @NoCache

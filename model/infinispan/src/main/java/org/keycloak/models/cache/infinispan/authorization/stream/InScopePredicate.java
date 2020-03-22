@@ -1,17 +1,17 @@
 package org.keycloak.models.cache.infinispan.authorization.stream;
 
-import java.io.Serializable;
-import java.util.Map;
-import java.util.function.Predicate;
-
-import org.keycloak.models.cache.infinispan.authorization.entities.InScope;
-import org.keycloak.models.cache.infinispan.entities.Revisioned;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.commons.marshall.SerializeWith;
+import org.keycloak.models.cache.infinispan.authorization.entities.InScope;
+import org.keycloak.models.cache.infinispan.entities.Revisioned;
+
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.Serializable;
+import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -36,7 +36,7 @@ public class InScopePredicate implements Predicate<Map.Entry<String, Revisioned>
         if (value == null) return false;
         if (!(value instanceof InScope)) return false;
 
-        return scopeId.equals(((InScope)value).getScopeId());
+        return scopeId.equals(((InScope) value).getScopeId());
     }
 
     public static class ExternalizerImpl implements Externalizer<InScopePredicate> {

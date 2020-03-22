@@ -18,6 +18,7 @@
 package org.keycloak.saml;
 
 import org.keycloak.dom.saml.v2.assertion.NameIDType;
+import org.keycloak.dom.saml.v2.protocol.ExtensionsType;
 import org.keycloak.dom.saml.v2.protocol.LogoutRequestType;
 import org.keycloak.saml.common.exceptions.ConfigurationException;
 import org.keycloak.saml.common.exceptions.ParsingException;
@@ -29,19 +30,18 @@ import org.w3c.dom.Document;
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
-import org.keycloak.dom.saml.v2.protocol.ExtensionsType;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public class SAML2LogoutRequestBuilder implements SamlProtocolExtensionsAwareBuilder<SAML2LogoutRequestBuilder> {
+    protected final List<NodeGenerator> extensions = new LinkedList<>();
     protected NameIDType nameId;
     protected String sessionIndex;
     protected long assertionExpiration;
     protected String destination;
     protected String issuer;
-    protected final List<NodeGenerator> extensions = new LinkedList<>();
 
     public SAML2LogoutRequestBuilder destination(String destination) {
         this.destination = destination;
@@ -72,7 +72,6 @@ public class SAML2LogoutRequestBuilder implements SamlProtocolExtensionsAwareBui
     }
 
     /**
-     *
      * @param userPrincipal
      * @param userPrincipalFormat
      * @return
@@ -85,7 +84,7 @@ public class SAML2LogoutRequestBuilder implements SamlProtocolExtensionsAwareBui
         if (userPrincipalFormat != null) {
             nid.setFormat(URI.create(userPrincipalFormat));
         }
-        
+
         return nameId(nid);
     }
 
@@ -117,10 +116,11 @@ public class SAML2LogoutRequestBuilder implements SamlProtocolExtensionsAwareBui
         if (sessionIndex != null) lort.addSessionIndex(sessionIndex);
 
 
-        if (assertionExpiration > 0) lort.setNotOnOrAfter(XMLTimeUtil.add(lort.getIssueInstant(), assertionExpiration * 1000));
+        if (assertionExpiration > 0)
+            lort.setNotOnOrAfter(XMLTimeUtil.add(lort.getIssueInstant(), assertionExpiration * 1000));
         lort.setDestination(URI.create(destination));
 
-        if (! this.extensions.isEmpty()) {
+        if (!this.extensions.isEmpty()) {
             ExtensionsType extensionsType = new ExtensionsType();
             for (NodeGenerator extension : this.extensions) {
                 extensionsType.addExtension(extension);

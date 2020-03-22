@@ -18,20 +18,7 @@
 
 package org.keycloak.authorization.jpa.entities;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,16 +31,17 @@ import java.util.List;
 })
 @NamedQueries(
         {
-                @NamedQuery(name="findScopeIdByName", query="select s.id from ScopeEntity s where s.resourceServer.id = :serverId and s.name = :name"),
-                @NamedQuery(name="findScopeIdByResourceServer", query="select s.id from ScopeEntity s where s.resourceServer.id = :serverId"),
-                @NamedQuery(name="deleteScopeByResourceServer", query="delete from ScopeEntity s where s.resourceServer.id = :serverId")
+                @NamedQuery(name = "findScopeIdByName", query = "select s.id from ScopeEntity s where s.resourceServer.id = :serverId and s.name = :name"),
+                @NamedQuery(name = "findScopeIdByResourceServer", query = "select s.id from ScopeEntity s where s.resourceServer.id = :serverId"),
+                @NamedQuery(name = "deleteScopeByResourceServer", query = "delete from ScopeEntity s where s.resourceServer.id = :serverId")
         }
 )
 public class ScopeEntity {
 
     @Id
-    @Column(name="ID", length = 36)
-    @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
+    @Column(name = "ID", length = 36)
+    @Access(AccessType.PROPERTY)
+    // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
     private String id;
 
     @Column(name = "NAME")
@@ -89,16 +77,16 @@ public class ScopeEntity {
         this.name = name;
     }
 
+    public String getDisplayName() {
+        return displayName;
+    }
+
     public void setDisplayName(String displayName) {
         if (displayName != null && !"".equals(displayName.trim())) {
             this.displayName = displayName;
         } else {
             this.displayName = null;
         }
-    }
-
-    public String getDisplayName() {
-        return displayName;
     }
 
     public String getIconUri() {
@@ -113,16 +101,16 @@ public class ScopeEntity {
         return resourceServer;
     }
 
+    public void setResourceServer(final ResourceServerEntity resourceServer) {
+        this.resourceServer = resourceServer;
+    }
+
     public List<PolicyEntity> getPolicies() {
         return policies;
     }
 
     public void setPolicies(List<PolicyEntity> policies) {
         this.policies = policies;
-    }
-
-    public void setResourceServer(final ResourceServerEntity resourceServer) {
-        this.resourceServer = resourceServer;
     }
 
     @Override

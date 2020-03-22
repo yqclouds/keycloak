@@ -19,9 +19,9 @@ package org.keycloak.theme;
 
 import freemarker.template.TemplateMethodModelEx;
 import freemarker.template.TemplateModelException;
+import org.owasp.html.PolicyFactory;
 
 import java.util.List;
-import org.owasp.html.PolicyFactory;
 
 /**
  * Allows sanitizing of html that uses Freemarker ?no_esc.  This way, html
@@ -29,19 +29,19 @@ import org.owasp.html.PolicyFactory;
  * deemed unsafe will be stripped out.
  */
 public class KeycloakSanitizerMethod implements TemplateMethodModelEx {
-    
+
     private static final PolicyFactory KEYCLOAK_POLICY = KeycloakSanitizerPolicy.POLICY_DEFINITION;
-    
+
     @Override
     public Object exec(List list) throws TemplateModelException {
         if ((list.isEmpty()) || (list.get(0) == null)) {
             throw new NullPointerException("Can not escape null value.");
         }
-        
+
         String html = list.get(0).toString();
         String sanitized = KEYCLOAK_POLICY.sanitize(html);
-        
+
         return sanitized;
     }
-    
+
 }

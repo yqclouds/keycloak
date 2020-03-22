@@ -28,10 +28,10 @@ public class ClientValidator {
     /**
      * Checks if the Client's Redirect URIs doesn't contain any URI fragments (like http://example.org/auth#fragment)
      *
-     * @see <a href="https://issues.jboss.org/browse/KEYCLOAK-3421">KEYCLOAK-3421</a>
      * @param client
      * @param messages
      * @return true if Redirect URIs doesn't contain any URI with fragments
+     * @see <a href="https://issues.jboss.org/browse/KEYCLOAK-3421">KEYCLOAK-3421</a>
      */
     public static boolean validate(ClientRepresentation client, ValidationMessages messages) {
         boolean isValid = true;

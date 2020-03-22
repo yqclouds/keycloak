@@ -20,6 +20,9 @@ import java.util.Vector;
 import static org.freedesktop.dbus.Gettext.getString;
 
 public class MethodCall extends Message {
+    private static long REPLY_WAIT_TIMEOUT = 20000;
+    Message reply = null;
+
     MethodCall() {
     }
 
@@ -76,8 +79,6 @@ public class MethodCall extends Message {
         if (Debug.debug) Debug.print("marshalled size (" + blen + "): " + Hexdump.format(blen));
     }
 
-    private static long REPLY_WAIT_TIMEOUT = 20000;
-
     /**
      * Set the default timeout for method calls.
      * Default is 20s.
@@ -87,8 +88,6 @@ public class MethodCall extends Message {
     public static void setDefaultTimeout(long timeout) {
         REPLY_WAIT_TIMEOUT = timeout;
     }
-
-    Message reply = null;
 
     public synchronized boolean hasReply() {
         return null != reply;

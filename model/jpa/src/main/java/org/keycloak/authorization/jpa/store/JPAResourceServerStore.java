@@ -18,11 +18,7 @@
 package org.keycloak.authorization.jpa.store;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.jpa.entities.PermissionTicketEntity;
-import org.keycloak.authorization.jpa.entities.PolicyEntity;
-import org.keycloak.authorization.jpa.entities.ResourceEntity;
-import org.keycloak.authorization.jpa.entities.ResourceServerEntity;
-import org.keycloak.authorization.jpa.entities.ScopeEntity;
+import org.keycloak.authorization.jpa.entities.*;
 import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.authorization.store.ResourceServerStore;
 import org.keycloak.models.ModelException;

@@ -20,18 +20,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.events.Event;
 import org.keycloak.forms.account.AccountPages;
 import org.keycloak.forms.account.AccountProvider;
-import org.keycloak.forms.account.freemarker.model.AccountBean;
-import org.keycloak.forms.account.freemarker.model.AccountFederatedIdentityBean;
-import org.keycloak.forms.account.freemarker.model.ApplicationsBean;
-import org.keycloak.forms.account.freemarker.model.AuthorizationBean;
-import org.keycloak.forms.account.freemarker.model.FeaturesBean;
-import org.keycloak.forms.account.freemarker.model.LogBean;
-import org.keycloak.forms.account.freemarker.model.PasswordBean;
-import org.keycloak.forms.account.freemarker.model.RealmBean;
-import org.keycloak.forms.account.freemarker.model.ReferrerBean;
-import org.keycloak.forms.account.freemarker.model.SessionsBean;
-import org.keycloak.forms.account.freemarker.model.TotpBean;
-import org.keycloak.forms.account.freemarker.model.UrlBean;
+import org.keycloak.forms.account.freemarker.model.*;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -42,30 +31,15 @@ import org.keycloak.theme.BrowserSecurityHeaderSetup;
 import org.keycloak.theme.FreeMarkerException;
 import org.keycloak.theme.FreeMarkerUtil;
 import org.keycloak.theme.Theme;
-import org.keycloak.theme.beans.AdvancedMessageFormatterMethod;
-import org.keycloak.theme.beans.LocaleBean;
-import org.keycloak.theme.beans.MessageBean;
-import org.keycloak.theme.beans.MessageFormatterMethod;
-import org.keycloak.theme.beans.MessageType;
-import org.keycloak.theme.beans.MessagesPerFieldBean;
+import org.keycloak.theme.beans.*;
 import org.keycloak.utils.MediaType;
 
-import javax.ws.rs.core.CacheControl;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.net.URI;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -135,7 +109,7 @@ public class FreeMarkerAccountProvider implements AccountProvider {
         URI baseUri = uriInfo.getBaseUri();
         UriBuilder baseUriBuilder = uriInfo.getBaseUriBuilder();
         for (Map.Entry<String, List<String>> e : uriInfo.getQueryParameters().entrySet()) {
-           baseUriBuilder.queryParam(e.getKey(), e.getValue().toArray());
+            baseUriBuilder.queryParam(e.getKey(), e.getValue().toArray());
         }
         URI baseQueryUri = baseUriBuilder.build();
 
@@ -149,7 +123,7 @@ public class FreeMarkerAccountProvider implements AccountProvider {
             attributes.put("referrer", new ReferrerBean(referrer));
         }
 
-        if(realm != null){
+        if (realm != null) {
             attributes.put("realm", new RealmBean(realm));
         }
 
@@ -211,8 +185,8 @@ public class FreeMarkerAccountProvider implements AccountProvider {
     /**
      * Load message bundle and place it into <code>msg</code> template attribute. Also load Theme properties and place them into <code>properties</code> template attribute.
      *
-     * @param theme actual Theme to load bundle from
-     * @param locale to load bundle for
+     * @param theme      actual Theme to load bundle from
+     * @param locale     to load bundle for
      * @param attributes template attributes to add resources to
      * @return message bundle for other use
      */
@@ -236,9 +210,9 @@ public class FreeMarkerAccountProvider implements AccountProvider {
     /**
      * Handle messages to be shown on the page - set them to template attributes
      *
-     * @param locale to be used for message text loading
+     * @param locale         to be used for message text loading
      * @param messagesBundle to be used for message text loading
-     * @param attributes template attributes to messages related info to
+     * @param attributes     template attributes to messages related info to
      * @see #messageType
      * @see #messages
      */
@@ -261,10 +235,10 @@ public class FreeMarkerAccountProvider implements AccountProvider {
     /**
      * Process FreeMarker template and prepare Response. Some fields are used for rendering also.
      *
-     * @param theme to be used (provided by <code>getTheme()</code>)
-     * @param page to be rendered
+     * @param theme      to be used (provided by <code>getTheme()</code>)
+     * @param page       to be rendered
      * @param attributes pushed to the template
-     * @param locale to be used
+     * @param locale     to be used
      * @return Response object to be returned to the browser, never null
      */
     protected Response processTemplate(Theme theme, AccountPages page, Map<String, Object> attributes, Locale locale) {
@@ -295,7 +269,7 @@ public class FreeMarkerAccountProvider implements AccountProvider {
         if (message == null)
             return null;
         if (messagesBundle.containsKey(message.getMessage())) {
-	    return new MessageFormat(messagesBundle.getProperty(message.getMessage()), locale).format(message.getParameters());
+            return new MessageFormat(messagesBundle.getProperty(message.getMessage()), locale).format(message.getParameters());
         } else {
             return message.getMessage();
         }
@@ -311,20 +285,20 @@ public class FreeMarkerAccountProvider implements AccountProvider {
 
 
     @Override
-    public AccountProvider setError(Response.Status status, String message, Object ... parameters) {
+    public AccountProvider setError(Response.Status status, String message, Object... parameters) {
         this.status = status;
         setMessage(MessageType.ERROR, message, parameters);
         return this;
     }
 
     @Override
-    public AccountProvider setSuccess(String message, Object ... parameters) {
+    public AccountProvider setSuccess(String message, Object... parameters) {
         setMessage(MessageType.SUCCESS, message, parameters);
         return this;
     }
 
     @Override
-    public AccountProvider setWarning(String message, Object ... parameters) {
+    public AccountProvider setWarning(String message, Object... parameters) {
         setMessage(MessageType.WARNING, message, parameters);
         return this;
     }

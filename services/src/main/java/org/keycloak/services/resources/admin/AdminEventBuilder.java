@@ -72,17 +72,18 @@ public class AdminEventBuilder {
     }
 
     /**
-     * Refreshes the builder assuming that the realm event information has 
+     * Refreshes the builder assuming that the realm event information has
      * changed. Thought to be used when the updateRealmEventsConfig has
-     * modified the events configuration. Now the store and the listeners are 
+     * modified the events configuration. Now the store and the listeners are
      * updated to have previous and new setup.
+     *
      * @param session The session
      * @return The same builder
      */
     public AdminEventBuilder refreshRealmEventsConfig(KeycloakSession session) {
         return this.updateStore(session).addListeners(session);
     }
-    
+
     private AdminEventBuilder updateStore(KeycloakSession session) {
         if (realm.isAdminEventsEnabled() && store == null) {
             this.store = session.getProvider(EventStoreProvider.class);
@@ -92,7 +93,7 @@ public class AdminEventBuilder {
         }
         return this;
     }
-    
+
     private AdminEventBuilder addListeners(KeycloakSession session) {
         Set<String> extraListeners = realm.getEventsListeners();
         if (extraListeners != null && !extraListeners.isEmpty()) {
@@ -115,7 +116,7 @@ public class AdminEventBuilder {
         return this;
     }
 
-    public AdminEventBuilder resource(ResourceType resourceType){
+    public AdminEventBuilder resource(ResourceType resourceType) {
         adminEvent.setResourceType(resourceType);
         return this;
     }
@@ -123,15 +124,15 @@ public class AdminEventBuilder {
     /**
      * Setter for custom resource types with values different from {@link ResourceType}.
      */
-    public AdminEventBuilder resource(String resourceType){
+    public AdminEventBuilder resource(String resourceType) {
         adminEvent.setResourceTypeAsString(resourceType);
         return this;
     }
 
     public AdminEventBuilder authRealm(RealmModel realm) {
         AuthDetails authDetails = adminEvent.getAuthDetails();
-        if(authDetails == null) {
-            authDetails =  new AuthDetails();
+        if (authDetails == null) {
+            authDetails = new AuthDetails();
             authDetails.setRealmId(realm.getId());
         } else {
             authDetails.setRealmId(realm.getId());
@@ -142,8 +143,8 @@ public class AdminEventBuilder {
 
     public AdminEventBuilder authClient(ClientModel client) {
         AuthDetails authDetails = adminEvent.getAuthDetails();
-        if(authDetails == null) {
-            authDetails =  new AuthDetails();
+        if (authDetails == null) {
+            authDetails = new AuthDetails();
             authDetails.setClientId(client.getId());
         } else {
             authDetails.setClientId(client.getId());
@@ -154,8 +155,8 @@ public class AdminEventBuilder {
 
     public AdminEventBuilder authUser(UserModel user) {
         AuthDetails authDetails = adminEvent.getAuthDetails();
-        if(authDetails == null) {
-            authDetails =  new AuthDetails();
+        if (authDetails == null) {
+            authDetails = new AuthDetails();
             authDetails.setUserId(user.getId());
         } else {
             authDetails.setUserId(user.getId());
@@ -166,8 +167,8 @@ public class AdminEventBuilder {
 
     public AdminEventBuilder authIpAddress(String ipAddress) {
         AuthDetails authDetails = adminEvent.getAuthDetails();
-        if(authDetails == null) {
-            authDetails =  new AuthDetails();
+        if (authDetails == null) {
+            authDetails = new AuthDetails();
             authDetails.setIpAddress(ipAddress);
         } else {
             authDetails.setIpAddress(ipAddress);
@@ -237,7 +238,7 @@ public class AdminEventBuilder {
 
     private void send() {
         boolean includeRepresentation = false;
-        if(realm.isAdminEventsDetailsEnabled()) {
+        if (realm.isAdminEventsDetailsEnabled()) {
             includeRepresentation = true;
         }
         adminEvent.setTime(Time.currentTimeMillis());

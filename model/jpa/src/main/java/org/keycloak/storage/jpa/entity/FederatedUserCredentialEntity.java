@@ -17,63 +17,49 @@
 
 package org.keycloak.storage.jpa.entity;
 
-import org.keycloak.models.jpa.entities.UserEntity;
-
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.Lob;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import java.util.ArrayList;
-import java.util.Collection;
+import javax.persistence.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 @NamedQueries({
-        @NamedQuery(name="federatedUserCredentialByUser", query="select cred from FederatedUserCredentialEntity cred where cred.userId = :userId order by cred.priority"),
-        @NamedQuery(name="federatedUserCredentialByUserAndType", query="select cred from FederatedUserCredentialEntity cred where cred.userId = :userId and cred.type = :type order by cred.priority"),
-        @NamedQuery(name="federatedUserCredentialByNameAndType", query="select cred from FederatedUserCredentialEntity cred where cred.userId = :userId and cred.type = :type and cred.userLabel = :userLabel order by cred.priority"),
-        @NamedQuery(name="deleteFederatedUserCredentialByUser", query="delete from FederatedUserCredentialEntity cred where cred.userId = :userId and cred.realmId = :realmId"),
-        @NamedQuery(name="deleteFederatedUserCredentialByUserAndType", query="delete from FederatedUserCredentialEntity cred where cred.userId = :userId and cred.type = :type"),
-        @NamedQuery(name="deleteFederatedUserCredentialByUserAndTypeAndUserLabel", query="delete from FederatedUserCredentialEntity cred where cred.userId = :userId and cred.type = :type and cred.userLabel = :userLabel"),
-        @NamedQuery(name="deleteFederatedUserCredentialsByRealm", query="delete from FederatedUserCredentialEntity cred where cred.realmId=:realmId"),
-        @NamedQuery(name="deleteFederatedUserCredentialsByStorageProvider", query="delete from FederatedUserCredentialEntity cred where cred.storageProviderId=:storageProviderId"),
-        @NamedQuery(name="deleteFederatedUserCredentialsByRealmAndLink", query="delete from FederatedUserCredentialEntity cred where cred.userId IN (select u.id from UserEntity u where u.realmId=:realmId and u.federationLink=:link)")
+        @NamedQuery(name = "federatedUserCredentialByUser", query = "select cred from FederatedUserCredentialEntity cred where cred.userId = :userId order by cred.priority"),
+        @NamedQuery(name = "federatedUserCredentialByUserAndType", query = "select cred from FederatedUserCredentialEntity cred where cred.userId = :userId and cred.type = :type order by cred.priority"),
+        @NamedQuery(name = "federatedUserCredentialByNameAndType", query = "select cred from FederatedUserCredentialEntity cred where cred.userId = :userId and cred.type = :type and cred.userLabel = :userLabel order by cred.priority"),
+        @NamedQuery(name = "deleteFederatedUserCredentialByUser", query = "delete from FederatedUserCredentialEntity cred where cred.userId = :userId and cred.realmId = :realmId"),
+        @NamedQuery(name = "deleteFederatedUserCredentialByUserAndType", query = "delete from FederatedUserCredentialEntity cred where cred.userId = :userId and cred.type = :type"),
+        @NamedQuery(name = "deleteFederatedUserCredentialByUserAndTypeAndUserLabel", query = "delete from FederatedUserCredentialEntity cred where cred.userId = :userId and cred.type = :type and cred.userLabel = :userLabel"),
+        @NamedQuery(name = "deleteFederatedUserCredentialsByRealm", query = "delete from FederatedUserCredentialEntity cred where cred.realmId=:realmId"),
+        @NamedQuery(name = "deleteFederatedUserCredentialsByStorageProvider", query = "delete from FederatedUserCredentialEntity cred where cred.storageProviderId=:storageProviderId"),
+        @NamedQuery(name = "deleteFederatedUserCredentialsByRealmAndLink", query = "delete from FederatedUserCredentialEntity cred where cred.userId IN (select u.id from UserEntity u where u.realmId=:realmId and u.federationLink=:link)")
 
 })
-@Table(name="FED_USER_CREDENTIAL")
+@Table(name = "FED_USER_CREDENTIAL")
 @Entity
 public class FederatedUserCredentialEntity {
     @Id
-    @Column(name="ID", length = 36)
-    @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
+    @Column(name = "ID", length = 36)
+    @Access(AccessType.PROPERTY)
+    // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
     protected String id;
 
-    @Column(name="SECRET_DATA")
+    @Column(name = "SECRET_DATA")
     protected String secretData;
 
-    @Column(name="CREDENTIAL_DATA")
+    @Column(name = "CREDENTIAL_DATA")
     protected String credentialData;
 
-    @Column(name="TYPE")
+    @Column(name = "TYPE")
     protected String type;
 
-    @Column(name="USER_LABEL")
+    @Column(name = "USER_LABEL")
     protected String userLabel;
 
-    @Column(name="CREATED_DATE")
+    @Column(name = "CREATED_DATE")
     protected Long createdDate;
 
-    @Column(name="USER_ID")
+    @Column(name = "USER_ID")
     protected String userId;
 
     @Column(name = "REALM_ID")
@@ -82,17 +68,18 @@ public class FederatedUserCredentialEntity {
     @Column(name = "STORAGE_PROVIDER_ID")
     protected String storageProviderId;
 
-    @Column(name="PRIORITY")
+    @Column(name = "PRIORITY")
     protected int priority;
 
     @Deprecated // Needed just for backwards compatibility when migrating old credentials
-    @Column(name="SALT")
+    @Column(name = "SALT")
     protected byte[] salt;
 
 
     public String getId() {
         return id;
     }
+
     public void setId(String id) {
         this.id = id;
     }
@@ -101,6 +88,7 @@ public class FederatedUserCredentialEntity {
     public String getType() {
         return type;
     }
+
     public void setType(String type) {
         this.type = type;
     }
@@ -108,6 +96,7 @@ public class FederatedUserCredentialEntity {
     public String getUserLabel() {
         return userLabel;
     }
+
     public void setUserLabel(String userLabel) {
         this.userLabel = userLabel;
     }
@@ -115,6 +104,7 @@ public class FederatedUserCredentialEntity {
     public Long getCreatedDate() {
         return createdDate;
     }
+
     public void setCreatedDate(Long createdDate) {
         this.createdDate = createdDate;
     }
@@ -122,6 +112,7 @@ public class FederatedUserCredentialEntity {
     public String getSecretData() {
         return secretData;
     }
+
     public void setSecretData(String secretData) {
         this.secretData = secretData;
     }
@@ -129,15 +120,16 @@ public class FederatedUserCredentialEntity {
     public String getCredentialData() {
         return credentialData;
     }
+
     public void setCredentialData(String credentialData) {
         this.credentialData = credentialData;
     }
 
 
-
     public String getUserId() {
         return userId;
     }
+
     public void setUserId(String userId) {
         this.userId = userId;
     }
@@ -145,6 +137,7 @@ public class FederatedUserCredentialEntity {
     public String getRealmId() {
         return realmId;
     }
+
     public void setRealmId(String realmId) {
         this.realmId = realmId;
     }
@@ -152,6 +145,7 @@ public class FederatedUserCredentialEntity {
     public String getStorageProviderId() {
         return storageProviderId;
     }
+
     public void setStorageProviderId(String storageProviderId) {
         this.storageProviderId = storageProviderId;
     }

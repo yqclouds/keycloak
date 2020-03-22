@@ -17,12 +17,6 @@
 
 package org.keycloak.models.sessions.infinispan;
 
-import java.util.Collections;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
@@ -30,6 +24,12 @@ import org.keycloak.models.UserModel;
 import org.keycloak.models.sessions.infinispan.entities.AuthenticationSessionEntity;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * NOTE: Calling setter doesn't automatically enlist for update
@@ -282,7 +282,8 @@ public class AuthenticationSessionAdapter implements AuthenticationSessionModel 
 
     @Override
     public UserModel getAuthenticatedUser() {
-        return entity.getAuthUserId() == null ? null : session.users().getUserById(entity.getAuthUserId(), getRealm());    }
+        return entity.getAuthUserId() == null ? null : session.users().getUserById(entity.getAuthUserId(), getRealm());
+    }
 
     @Override
     public void setAuthenticatedUser(UserModel user) {

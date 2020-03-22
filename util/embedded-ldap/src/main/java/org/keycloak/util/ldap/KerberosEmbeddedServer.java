@@ -41,28 +41,20 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class KerberosEmbeddedServer extends LDAPEmbeddedServer {
 
-    private static final Logger log = Logger.getLogger(KerberosEmbeddedServer.class);
-
     public static final String PROPERTY_KERBEROS_REALM = "kerberos.realm";
     public static final String PROPERTY_KDC_PORT = "kerberos.port";
     public static final String PROPERTY_KDC_ENCTYPES = "kerberos.encTypes";
-
-    private static final String DEFAULT_KERBEROS_LDIF_FILE = "classpath:kerberos/default-users.ldif";
-
     public static final String DEFAULT_KERBEROS_REALM = "KEYCLOAK.ORG";
     public static final String DEFAULT_KERBEROS_REALM_2 = "KC2.COM";
-
+    private static final Logger log = Logger.getLogger(KerberosEmbeddedServer.class);
+    private static final String DEFAULT_KERBEROS_LDIF_FILE = "classpath:kerberos/default-users.ldif";
     private static final String DEFAULT_KDC_PORT = "6088";
     private static final String DEFAULT_KDC_ENCRYPTION_TYPES = "aes128-cts-hmac-sha1-96, des-cbc-md5, des3-cbc-sha1-kd";
 
@@ -73,6 +65,22 @@ public class KerberosEmbeddedServer extends LDAPEmbeddedServer {
     private KdcServer kdcServer;
 
 
+    public KerberosEmbeddedServer(Properties defaultProperties) {
+        super(defaultProperties);
+
+        this.ldifFile = readProperty(PROPERTY_LDIF_FILE, DEFAULT_KERBEROS_LDIF_FILE);
+
+        this.kerberosRealm = readProperty(PROPERTY_KERBEROS_REALM, DEFAULT_KERBEROS_REALM);
+        String kdcPort = readProperty(PROPERTY_KDC_PORT, DEFAULT_KDC_PORT);
+        this.kdcPort = Integer.parseInt(kdcPort);
+        this.kdcEncryptionTypes = readProperty(PROPERTY_KDC_ENCTYPES, DEFAULT_KDC_ENCRYPTION_TYPES);
+
+        if (ldapSaslPrincipal == null || ldapSaslPrincipal.isEmpty()) {
+            String hostname = getHostnameForSASLPrincipal(bindHost);
+            this.ldapSaslPrincipal = "ldap/" + hostname + "@" + this.kerberosRealm;
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         Properties defaultProperties = new Properties();
         defaultProperties.put(PROPERTY_DSF, DSF_FILE);
@@ -82,7 +90,6 @@ public class KerberosEmbeddedServer extends LDAPEmbeddedServer {
 
         execute(args, defaultProperties);
     }
-
 
     public static void configureDefaultPropertiesForRealm(String kerberosRealm, Properties properties) {
         log.infof("Using kerberos realm: %s", kerberosRealm);
@@ -100,7 +107,6 @@ public class KerberosEmbeddedServer extends LDAPEmbeddedServer {
                     + DEFAULT_KERBEROS_REALM_2 + " ]");
         }
     }
-
 
     public static void execute(String[] args, Properties defaultProperties) throws Exception {
         final KerberosEmbeddedServer kerberosEmbeddedServer = new KerberosEmbeddedServer(defaultProperties);
@@ -120,24 +126,6 @@ public class KerberosEmbeddedServer extends LDAPEmbeddedServer {
 
         });
     }
-
-
-    public KerberosEmbeddedServer(Properties defaultProperties) {
-        super(defaultProperties);
-
-        this.ldifFile = readProperty(PROPERTY_LDIF_FILE, DEFAULT_KERBEROS_LDIF_FILE);
-
-        this.kerberosRealm = readProperty(PROPERTY_KERBEROS_REALM, DEFAULT_KERBEROS_REALM);
-        String kdcPort = readProperty(PROPERTY_KDC_PORT, DEFAULT_KDC_PORT);
-        this.kdcPort = Integer.parseInt(kdcPort);
-        this.kdcEncryptionTypes = readProperty(PROPERTY_KDC_ENCTYPES, DEFAULT_KDC_ENCRYPTION_TYPES);
-
-        if (ldapSaslPrincipal == null || ldapSaslPrincipal.isEmpty()) {
-            String hostname = getHostnameForSASLPrincipal(bindHost);
-            this.ldapSaslPrincipal = "ldap/" + hostname + "@" + this.kerberosRealm;
-        }
-    }
-
 
     @Override
     public void init() throws Exception {
@@ -162,7 +150,7 @@ public class KerberosEmbeddedServer extends LDAPEmbeddedServer {
         LdapServer ldapServer = super.createLdapServer();
 
         ldapServer.setSaslHost(this.bindHost);
-        ldapServer.setSaslPrincipal( this.ldapSaslPrincipal);
+        ldapServer.setSaslPrincipal(this.ldapSaslPrincipal);
         ldapServer.setSaslRealms(new ArrayList<String>());
 
         ldapServer.addSaslMechanismHandler(SupportedSaslMechanisms.PLAIN, new PlainMechanismHandler());
@@ -218,11 +206,11 @@ public class KerberosEmbeddedServer extends LDAPEmbeddedServer {
         Set<EncryptionType> encryptionTypes = new HashSet<EncryptionType>();
         String[] configEncTypes = kdcEncryptionTypes.split(",");
 
-        for ( String enc : configEncTypes ) {
+        for (String enc : configEncTypes) {
             enc = enc.trim();
-            for ( EncryptionType type : EncryptionType.getEncryptionTypes() ) {
-                if ( type.getName().equalsIgnoreCase( enc ) ) {
-                    encryptionTypes.add( type );
+            for (EncryptionType type : EncryptionType.getEncryptionTypes()) {
+                if (type.getName().equalsIgnoreCase(enc)) {
+                    encryptionTypes.add(type);
                 }
             }
         }
@@ -246,7 +234,7 @@ public class KerberosEmbeddedServer extends LDAPEmbeddedServer {
             // we accept cases like
             //     bunny -> bunny.rabbit.hole
             if (canonicalized.toLowerCase(Locale.ENGLISH).startsWith(
-                    hostName.toLowerCase(Locale.ENGLISH)+".")) {
+                    hostName.toLowerCase(Locale.ENGLISH) + ".")) {
                 hostName = canonicalized;
             }
         } catch (UnknownHostException | SecurityException e) {
@@ -254,7 +242,6 @@ public class KerberosEmbeddedServer extends LDAPEmbeddedServer {
         }
         return hostName.toLowerCase(Locale.ENGLISH);
     }
-
 
 
     /**
@@ -269,7 +256,25 @@ public class KerberosEmbeddedServer extends LDAPEmbeddedServer {
         }
 
         /**
-         *
+         * @throws java.io.IOException if we cannot bind to the sockets
+         */
+        @Override
+        public void start() throws IOException, LdapInvalidDnException {
+            super.start();
+
+            try {
+
+                // override initialized replay cache with a dummy implementation
+                Field replayCacheField = KdcServer.class.getDeclaredField("replayCache");
+                replayCacheField.setAccessible(true);
+                replayCacheField.set(this, new DummyReplayCache());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+        /**
          * Dummy implementation of the ApacheDS kerberos replay cache. Essentially disables kerbores ticket replay checks.
          * https://issues.jboss.org/browse/JBPAPP-10974
          *
@@ -290,25 +295,6 @@ public class KerberosEmbeddedServer extends LDAPEmbeddedServer {
 
             @Override
             public void clear() {
-            }
-
-        }
-
-        /**
-         * @throws java.io.IOException if we cannot bind to the sockets
-         */
-        @Override
-        public void start() throws IOException, LdapInvalidDnException {
-            super.start();
-
-            try {
-
-                // override initialized replay cache with a dummy implementation
-                Field replayCacheField = KdcServer.class.getDeclaredField("replayCache");
-                replayCacheField.setAccessible(true);
-                replayCacheField.set(this, new DummyReplayCache());
-            } catch (Exception e) {
-                throw new RuntimeException(e);
             }
 
         }

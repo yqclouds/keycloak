@@ -25,12 +25,7 @@ import org.keycloak.models.LDAPConstants;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.storage.ldap.LDAPConfig;
-import org.keycloak.storage.ldap.mappers.FullNameLDAPStorageMapper;
-import org.keycloak.storage.ldap.mappers.FullNameLDAPStorageMapperFactory;
-import org.keycloak.storage.ldap.mappers.LDAPMappersComparator;
-import org.keycloak.storage.ldap.mappers.LDAPStorageMapper;
-import org.keycloak.storage.ldap.mappers.UserAttributeLDAPStorageMapper;
-import org.keycloak.storage.ldap.mappers.UserAttributeLDAPStorageMapperFactory;
+import org.keycloak.storage.ldap.mappers.*;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -39,7 +34,6 @@ import java.util.List;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class LDAPMappersComparatorTest {
-
 
 
     @Test
@@ -70,7 +64,7 @@ public class LDAPMappersComparatorTest {
 
     private void assertOrder(List<ComponentModel> result, String... names) {
         Assert.assertEquals(result.size(), names.length);
-        for (int i=0 ; i<names.length ; i++) {
+        for (int i = 0; i < names.length; i++) {
             Assert.assertEquals(names[i], result.get(i).getName());
         }
     }
@@ -78,7 +72,7 @@ public class LDAPMappersComparatorTest {
     private List<ComponentModel> getMappers() {
         List<ComponentModel> result = new LinkedList<>();
 
-        ComponentModel mapperModel = KeycloakModelUtils.createComponentModel("first name",  "fed-provider", UserAttributeLDAPStorageMapperFactory.PROVIDER_ID, LDAPStorageMapper.class.getName(),
+        ComponentModel mapperModel = KeycloakModelUtils.createComponentModel("first name", "fed-provider", UserAttributeLDAPStorageMapperFactory.PROVIDER_ID, LDAPStorageMapper.class.getName(),
                 UserAttributeLDAPStorageMapper.USER_MODEL_ATTRIBUTE, UserModel.FIRST_NAME,
                 UserAttributeLDAPStorageMapper.LDAP_ATTRIBUTE, LDAPConstants.GIVENNAME,
                 UserAttributeLDAPStorageMapper.READ_ONLY, "true",
@@ -87,7 +81,7 @@ public class LDAPMappersComparatorTest {
         mapperModel.setId("idd1");
         result.add(mapperModel);
 
-        mapperModel = KeycloakModelUtils.createComponentModel("username-cn", "fed-provider", UserAttributeLDAPStorageMapperFactory.PROVIDER_ID,LDAPStorageMapper.class.getName(),
+        mapperModel = KeycloakModelUtils.createComponentModel("username-cn", "fed-provider", UserAttributeLDAPStorageMapperFactory.PROVIDER_ID, LDAPStorageMapper.class.getName(),
                 UserAttributeLDAPStorageMapper.USER_MODEL_ATTRIBUTE, UserModel.USERNAME,
                 UserAttributeLDAPStorageMapper.LDAP_ATTRIBUTE, LDAPConstants.CN,
                 UserAttributeLDAPStorageMapper.READ_ONLY, "true",
@@ -96,13 +90,13 @@ public class LDAPMappersComparatorTest {
         mapperModel.setId("idd2");
         result.add(mapperModel);
 
-        mapperModel = KeycloakModelUtils.createComponentModel("full name", "fed-provider", FullNameLDAPStorageMapperFactory.PROVIDER_ID,LDAPStorageMapper.class.getName(),
+        mapperModel = KeycloakModelUtils.createComponentModel("full name", "fed-provider", FullNameLDAPStorageMapperFactory.PROVIDER_ID, LDAPStorageMapper.class.getName(),
                 FullNameLDAPStorageMapper.LDAP_FULL_NAME_ATTRIBUTE, LDAPConstants.CN,
                 UserAttributeLDAPStorageMapper.READ_ONLY, "true");
         mapperModel.setId("idd3");
         result.add(mapperModel);
 
-        mapperModel = KeycloakModelUtils.createComponentModel("sAMAccountName", "fed-provider", UserAttributeLDAPStorageMapperFactory.PROVIDER_ID,LDAPStorageMapper.class.getName(),
+        mapperModel = KeycloakModelUtils.createComponentModel("sAMAccountName", "fed-provider", UserAttributeLDAPStorageMapperFactory.PROVIDER_ID, LDAPStorageMapper.class.getName(),
                 UserAttributeLDAPStorageMapper.USER_MODEL_ATTRIBUTE, UserModel.USERNAME,
                 UserAttributeLDAPStorageMapper.LDAP_ATTRIBUTE, LDAPConstants.SAM_ACCOUNT_NAME,
                 UserAttributeLDAPStorageMapper.READ_ONLY, "false",

@@ -16,14 +16,13 @@
  */
 package org.keycloak.services.managers;
 
-import javax.ws.rs.NotAuthorizedException;
-
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.util.ObjectUtil;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 
+import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
 import java.util.regex.Pattern;
@@ -44,7 +43,8 @@ public class AppAuthManager extends AuthenticationManager {
         if (authResult == null) return null;
         // refresh the cookies!
         createLoginCookie(session, realm, authResult.getUser(), authResult.getSession(), session.getContext().getUri(), session.getContext().getConnection());
-        if (authResult.getSession().isRememberMe()) createRememberMeCookie(realm, authResult.getUser().getUsername(), session.getContext().getUri(), session.getContext().getConnection());
+        if (authResult.getSession().isRememberMe())
+            createRememberMeCookie(realm, authResult.getUser().getUsername(), session.getContext().getUri(), session.getContext().getConnection());
         return authResult;
     }
 
@@ -60,12 +60,12 @@ public class AppAuthManager extends AuthenticationManager {
         }
 
         String[] split = WHITESPACES.split(authHeader.trim());
-        if (split.length != 2){
+        if (split.length != 2) {
             return null;
         }
 
         String bearerPart = split[0];
-        if (!bearerPart.equalsIgnoreCase(BEARER)){
+        if (!bearerPart.equalsIgnoreCase(BEARER)) {
             return null;
         }
 
@@ -93,7 +93,7 @@ public class AppAuthManager extends AuthenticationManager {
      *
      * @param headers
      * @return the token string or {@literal null} of the Authorization header is missing
-     * @throws  NotAuthorizedException if the Authorization header is not of type Bearer, or the token string is missing.
+     * @throws NotAuthorizedException if the Authorization header is not of type Bearer, or the token string is missing.
      */
     public String extractAuthorizationHeaderToken(HttpHeaders headers) {
         String authHeader = headers.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION);
@@ -101,7 +101,7 @@ public class AppAuthManager extends AuthenticationManager {
             return null;
         }
         String tokenString = extractTokenStringFromAuthHeader(authHeader);
-        if (tokenString == null ){
+        if (tokenString == null) {
             throw new NotAuthorizedException(BEARER);
         }
         return tokenString;

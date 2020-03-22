@@ -45,6 +45,7 @@ public class FreeMarkerAccountProviderFactory implements AccountProviderFactory 
     public void postInit(KeycloakSessionFactory factory) {
 
     }
+
     @Override
     public void close() {
         freeMarker = null;

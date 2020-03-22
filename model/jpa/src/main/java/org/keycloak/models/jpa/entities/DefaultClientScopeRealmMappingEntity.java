@@ -17,18 +17,8 @@
 
 package org.keycloak.models.jpa.entities;
 
+import javax.persistence.*;
 import java.io.Serializable;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
 
 /**
  * Binding between realm and default clientScope
@@ -36,26 +26,26 @@ import javax.persistence.Table;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 @NamedQueries({
-        @NamedQuery(name="defaultClientScopeRealmMappingIdsByRealm", query="select m.clientScope.id from DefaultClientScopeRealmMappingEntity m where m.realm = :realm and m.defaultScope = :defaultScope"),
-        @NamedQuery(name="deleteDefaultClientScopeRealmMapping", query="delete from DefaultClientScopeRealmMappingEntity where realm = :realm and clientScope = :clientScope"),
-        @NamedQuery(name="deleteDefaultClientScopeRealmMappingByRealm", query="delete from DefaultClientScopeRealmMappingEntity where realm = :realm")
+        @NamedQuery(name = "defaultClientScopeRealmMappingIdsByRealm", query = "select m.clientScope.id from DefaultClientScopeRealmMappingEntity m where m.realm = :realm and m.defaultScope = :defaultScope"),
+        @NamedQuery(name = "deleteDefaultClientScopeRealmMapping", query = "delete from DefaultClientScopeRealmMappingEntity where realm = :realm and clientScope = :clientScope"),
+        @NamedQuery(name = "deleteDefaultClientScopeRealmMappingByRealm", query = "delete from DefaultClientScopeRealmMappingEntity where realm = :realm")
 })
 @Entity
-@Table(name="DEFAULT_CLIENT_SCOPE")
+@Table(name = "DEFAULT_CLIENT_SCOPE")
 @IdClass(DefaultClientScopeRealmMappingEntity.Key.class)
 public class DefaultClientScopeRealmMappingEntity {
 
     @Id
-    @ManyToOne(fetch= FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "SCOPE_ID")
     protected ClientScopeEntity clientScope;
 
     @Id
-    @ManyToOne(fetch= FetchType.LAZY)
-    @JoinColumn(name="REALM_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "REALM_ID")
     protected RealmEntity realm;
 
-    @Column(name="DEFAULT_SCOPE")
+    @Column(name = "DEFAULT_SCOPE")
     protected boolean defaultScope;
 
     public ClientScopeEntity getClientScope() {
@@ -80,6 +70,29 @@ public class DefaultClientScopeRealmMappingEntity {
 
     public void setDefaultScope(boolean defaultScope) {
         this.defaultScope = defaultScope;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof DefaultClientScopeRealmMappingEntity)) return false;
+
+        DefaultClientScopeRealmMappingEntity key = (DefaultClientScopeRealmMappingEntity) o;
+
+        if (clientScope != null ? !clientScope.getId().equals(key.clientScope != null ? key.clientScope.getId() : null) : key.clientScope != null)
+            return false;
+        if (realm != null ? !realm.getId().equals(key.realm != null ? key.realm.getId() : null) : key.realm != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = clientScope != null ? clientScope.getId().hashCode() : 0;
+        result = 31 * result + (realm != null ? realm.getId().hashCode() : 0);
+        return result;
     }
 
     public static class Key implements Serializable {
@@ -111,8 +124,10 @@ public class DefaultClientScopeRealmMappingEntity {
 
             DefaultClientScopeRealmMappingEntity.Key key = (DefaultClientScopeRealmMappingEntity.Key) o;
 
-            if (clientScope != null ? !clientScope.getId().equals(key.clientScope != null ? key.clientScope.getId() : null) : key.clientScope != null) return false;
-            if (realm != null ? !realm.getId().equals(key.realm != null ? key.realm.getId() : null) : key.realm != null) return false;
+            if (clientScope != null ? !clientScope.getId().equals(key.clientScope != null ? key.clientScope.getId() : null) : key.clientScope != null)
+                return false;
+            if (realm != null ? !realm.getId().equals(key.realm != null ? key.realm.getId() : null) : key.realm != null)
+                return false;
 
             return true;
         }
@@ -123,26 +138,5 @@ public class DefaultClientScopeRealmMappingEntity {
             result = 31 * result + (realm != null ? realm.getId().hashCode() : 0);
             return result;
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!(o instanceof DefaultClientScopeRealmMappingEntity)) return false;
-
-        DefaultClientScopeRealmMappingEntity key = (DefaultClientScopeRealmMappingEntity) o;
-
-        if (clientScope != null ? !clientScope.getId().equals(key.clientScope != null ? key.clientScope.getId() : null) : key.clientScope != null) return false;
-        if (realm != null ? !realm.getId().equals(key.realm != null ? key.realm.getId() : null) : key.realm != null) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = clientScope != null ? clientScope.getId().hashCode() : 0;
-        result = 31 * result + (realm != null ? realm.getId().hashCode() : 0);
-        return result;
     }
 }

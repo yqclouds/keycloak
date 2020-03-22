@@ -17,13 +17,9 @@
 
 package org.keycloak.representations.idm.authorization;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-
 import org.keycloak.representations.AccessToken;
+
+import java.util.*;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -76,44 +72,44 @@ public class AuthorizationRequest {
         return rptToken;
     }
 
-    public void setClaimToken(String claimToken) {
-        this.claimToken = claimToken;
-    }
-
     public String getClaimToken() {
         return claimToken;
     }
 
-    public void setClaimTokenFormat(String claimTokenFormat) {
-        this.claimTokenFormat = claimTokenFormat;
+    public void setClaimToken(String claimToken) {
+        this.claimToken = claimToken;
     }
 
     public String getClaimTokenFormat() {
         return claimTokenFormat;
     }
 
-    public void setPct(String pct) {
-        this.pct = pct;
+    public void setClaimTokenFormat(String claimTokenFormat) {
+        this.claimTokenFormat = claimTokenFormat;
     }
 
     public String getPct() {
         return pct;
     }
 
-    public void setScope(String scope) {
-        this.scope = scope;
+    public void setPct(String pct) {
+        this.pct = pct;
     }
 
     public String getScope() {
         return scope;
     }
 
-    public void setPermissions(PermissionTicketToken permissions) {
-        this.permissions = permissions;
+    public void setScope(String scope) {
+        this.scope = scope;
     }
 
     public PermissionTicketToken getPermissions() {
         return permissions;
+    }
+
+    public void setPermissions(PermissionTicketToken permissions) {
+        this.permissions = permissions;
     }
 
     public Metadata getMetadata() {
@@ -124,20 +120,20 @@ public class AuthorizationRequest {
         this.metadata = metadata;
     }
 
-    public void setAudience(String audience) {
-        this.audience = audience;
-    }
-
     public String getAudience() {
         return audience;
     }
 
-    public void setSubjectToken(String subjectToken) {
-        this.subjectToken = subjectToken;
+    public void setAudience(String audience) {
+        this.audience = audience;
     }
 
     public String getSubjectToken() {
         return subjectToken;
+    }
+
+    public void setSubjectToken(String subjectToken) {
+        this.subjectToken = subjectToken;
     }
 
     public Map<String, List<String>> getClaims() {
@@ -174,12 +170,12 @@ public class AuthorizationRequest {
         permission.getScopes().addAll(Arrays.asList(scopes));
     }
 
-    public void setSubmitRequest(boolean submitRequest) {
-        this.submitRequest = submitRequest;
-    }
-
     public boolean isSubmitRequest() {
         return submitRequest && ticket != null;
+    }
+
+    public void setSubmitRequest(boolean submitRequest) {
+        this.submitRequest = submitRequest;
     }
 
     public static class Metadata {
@@ -207,12 +203,12 @@ public class AuthorizationRequest {
             this.limit = limit;
         }
 
-        public void setResponseMode(String responseMode) {
-            this.responseMode = responseMode;
-        }
-
         public String getResponseMode() {
             return responseMode;
+        }
+
+        public void setResponseMode(String responseMode) {
+            this.responseMode = responseMode;
         }
     }
 }

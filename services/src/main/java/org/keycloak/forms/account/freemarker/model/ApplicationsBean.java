@@ -18,26 +18,14 @@
 package org.keycloak.forms.account.freemarker.model;
 
 import org.keycloak.common.util.MultivaluedHashMap;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.Constants;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.OrderedModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserConsentModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.protocol.oidc.TokenManager;
 import org.keycloak.services.managers.UserSessionManager;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import org.keycloak.services.util.ResolveRelative;
 import org.keycloak.storage.StorageId;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -51,7 +39,7 @@ public class ApplicationsBean {
         Set<ClientModel> offlineClients = new UserSessionManager(session).findClientsWithOfflineToken(realm, user);
 
         for (ClientModel client : getApplications(session, realm, user)) {
-            if (isAdminClient(client) && ! AdminPermissions.realms(session, realm, user).isAdmin()) {
+            if (isAdminClient(client) && !AdminPermissions.realms(session, realm, user).isAdmin()) {
                 continue;
             }
 
@@ -64,7 +52,7 @@ public class ApplicationsBean {
 
             // Don't show applications, which user doesn't have access into (any available roles)
             // unless this is can be changed by approving/revoking consent
-            if (! isAdminClient(client) && availableRoles.isEmpty() && ! client.isConsentRequired()) {
+            if (!isAdminClient(client) && availableRoles.isEmpty() && !client.isConsentRequired()) {
                 continue;
             }
 
@@ -96,7 +84,7 @@ public class ApplicationsBean {
 
     public static boolean isAdminClient(ClientModel client) {
         return client.getClientId().equals(Constants.ADMIN_CLI_CLIENT_ID)
-          || client.getClientId().equals(Constants.ADMIN_CONSOLE_CLIENT_ID);
+                || client.getClientId().equals(Constants.ADMIN_CONSOLE_CLIENT_ID);
     }
 
     private Set<ClientModel> getApplications(KeycloakSession session, RealmModel realm, UserModel user) {
@@ -142,12 +130,12 @@ public class ApplicationsBean {
 
     public static class ApplicationEntry {
 
-        private KeycloakSession session;
         private final List<RoleModel> realmRolesAvailable;
         private final MultivaluedHashMap<String, ClientRoleEntry> resourceRolesAvailable;
         private final ClientModel client;
         private final List<String> clientScopesGranted;
         private final List<String> additionalGrants;
+        private KeycloakSession session;
 
         public ApplicationEntry(KeycloakSession session, List<RoleModel> realmRolesAvailable, MultivaluedHashMap<String, ClientRoleEntry> resourceRolesAvailable,
                                 ClientModel client, List<String> clientScopesGranted, List<String> additionalGrants) {
@@ -174,7 +162,7 @@ public class ApplicationsBean {
         public String getEffectiveUrl() {
             return ResolveRelative.resolveRelativeUri(session, getClient().getRootUrl(), getClient().getBaseUrl());
         }
-        
+
         public ClientModel getClient() {
             return client;
         }

@@ -25,7 +25,7 @@ import java.security.GeneralSecurityException;
  * @since May 22, 2009
  */
 public class ConfigurationException extends GeneralSecurityException {
-    
+
     public ConfigurationException() {
         super();
     }

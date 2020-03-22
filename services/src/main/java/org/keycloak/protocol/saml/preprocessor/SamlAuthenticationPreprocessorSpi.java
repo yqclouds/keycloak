@@ -21,9 +21,7 @@ import org.keycloak.provider.ProviderFactory;
 import org.keycloak.provider.Spi;
 
 /**
- * 
  * @author <a href="mailto:gideon.caranzo@thalesgroup.com">Gideon Caranzo</a>
- *
  */
 public class SamlAuthenticationPreprocessorSpi implements Spi {
 

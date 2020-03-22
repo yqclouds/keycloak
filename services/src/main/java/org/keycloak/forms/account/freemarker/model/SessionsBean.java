@@ -22,11 +22,7 @@ import org.keycloak.models.ClientModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserSessionModel;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -57,7 +53,9 @@ public class SessionsBean {
             this.session = session;
         }
 
-        public String getId() {return session.getId(); }
+        public String getId() {
+            return session.getId();
+        }
 
         public String getIpAddress() {
             return session.getIpAddress();

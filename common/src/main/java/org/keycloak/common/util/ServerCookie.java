@@ -29,32 +29,38 @@ import java.util.TimeZone;
  * Server-side cookie representation.  borrowed from Tomcat.
  */
 public class ServerCookie implements Serializable {
+    /**
+     * GMT timezone - all HTTP dates are on GMT
+     */
+    public final static TimeZone GMT_ZONE = TimeZone.getTimeZone("GMT");
     private static final String tspecials = ",; ";
     private static final String tspecials2 = "()<>@,;:\\\"/[]?={} \t";
+    /**
+     * US locale - all HTTP dates are in english
+     */
+    private final static Locale LOCALE_US = Locale.US;
+    /**
+     * Pattern used for old cookies
+     */
+    private final static String OLD_COOKIE_PATTERN = "EEE, dd-MMM-yyyy HH:mm:ss z";
+    private final static DateFormat OLD_COOKIE_FORMAT = new SimpleDateFormat(OLD_COOKIE_PATTERN, LOCALE_US);
+    private static final String ancientDate = formatOldCookie(new Date(10000));
 
-    public enum SameSiteAttributeValue {
-        NONE("None"); // we currently support only SameSite=None; this might change in the future
+    // -------------------- Cookie parsing tools
 
-        private final String specValue;
-        SameSiteAttributeValue(String specValue) {
-            this.specValue = specValue;
-        }
-
-        @Override
-        public java.lang.String toString() {
-            return specValue;
-        }
+    static {
+        OLD_COOKIE_FORMAT.setTimeZone(GMT_ZONE);
     }
 
     /*
-    * Tests a string and returns true if the string counts as a
-    * reserved token in the Java language.
-    *
-    * @param value the <code>String</code> to be tested
-    *
-    * @return      <code>true</code> if the <code>String</code> is a reserved
-    *              token; <code>false</code> if it is not
-    */
+     * Tests a string and returns true if the string counts as a
+     * reserved token in the Java language.
+     *
+     * @param value the <code>String</code> to be tested
+     *
+     * @return      <code>true</code> if the <code>String</code> is a reserved
+     *              token; <code>false</code> if it is not
+     */
     public static boolean isToken(String value) {
         if (value == null) return true;
         int len = value.length();
@@ -82,7 +88,6 @@ public class ServerCookie implements Serializable {
         return false;
     }
 
-
     public static boolean isToken2(String value) {
         if (value == null) return true;
         int len = value.length();
@@ -109,14 +114,11 @@ public class ServerCookie implements Serializable {
                 || name.equalsIgnoreCase("Secure")      // rfc2019
                 || name.equalsIgnoreCase("Version")     // rfc2019
             // TODO remaining RFC2965 attributes
-                ) {
+        ) {
             return false;
         }
         return true;
     }
-
-    // -------------------- Cookie parsing tools
-
 
     /**
      * Return the header name to set the cookie, based on cookie version.
@@ -138,26 +140,6 @@ public class ServerCookie implements Serializable {
         }
     }
 
-    /**
-     * US locale - all HTTP dates are in english
-     */
-    private final static Locale LOCALE_US = Locale.US;
-
-    /**
-     * GMT timezone - all HTTP dates are on GMT
-     */
-    public final static TimeZone GMT_ZONE = TimeZone.getTimeZone("GMT");
-    /**
-     * Pattern used for old cookies
-     */
-    private final static String OLD_COOKIE_PATTERN = "EEE, dd-MMM-yyyy HH:mm:ss z";
-
-
-    private final static DateFormat OLD_COOKIE_FORMAT = new SimpleDateFormat(OLD_COOKIE_PATTERN, LOCALE_US);
-    static{
-        OLD_COOKIE_FORMAT.setTimeZone(GMT_ZONE);
-    }
-
     public static String formatOldCookie(Date d) {
         String ocf = null;
         synchronized (OLD_COOKIE_FORMAT) {
@@ -172,10 +154,6 @@ public class ServerCookie implements Serializable {
             OLD_COOKIE_FORMAT.format(d, sb, fp);
         }
     }
-
-
-    private static final String ancientDate = formatOldCookie(new Date(10000));
-
 
     // TODO RFC2965 fields also need to be passed
     public static void appendCookieValue(StringBuffer headerBuf,
@@ -311,7 +289,6 @@ public class ServerCookie implements Serializable {
         }
     }
 
-
     /**
      * Escapes any double quotes in the given string.
      *
@@ -341,6 +318,22 @@ public class ServerCookie implements Serializable {
         }
 
         return b.toString();
+    }
+
+
+    public enum SameSiteAttributeValue {
+        NONE("None"); // we currently support only SameSite=None; this might change in the future
+
+        private final String specValue;
+
+        SameSiteAttributeValue(String specValue) {
+            this.specValue = specValue;
+        }
+
+        @Override
+        public java.lang.String toString() {
+            return specValue;
+        }
     }
 
 }

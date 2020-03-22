@@ -13,19 +13,19 @@ public class KeycloakDeploymentInfo {
     private boolean themeResources;
     private Map<Class<? extends Spi>, List<ProviderFactory>> providers = new HashMap<>();
 
-    public boolean isProvider() {
-        return services || themes || themeResources || !providers.isEmpty();
-    }
-
-    public boolean hasServices() {
-        return services;
+    private KeycloakDeploymentInfo() {
     }
 
     public static KeycloakDeploymentInfo create() {
         return new KeycloakDeploymentInfo();
     }
 
-    private KeycloakDeploymentInfo() {
+    public boolean isProvider() {
+        return services || themes || themeResources || !providers.isEmpty();
+    }
+
+    public boolean hasServices() {
+        return services;
     }
 
     public KeycloakDeploymentInfo name(String name) {

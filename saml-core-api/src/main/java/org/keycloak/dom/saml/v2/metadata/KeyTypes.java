@@ -41,10 +41,6 @@ public enum KeyTypes {
         value = v;
     }
 
-    public String value() {
-        return value;
-    }
-
     public static KeyTypes fromValue(String v) {
         for (KeyTypes c : KeyTypes.values()) {
             if (c.value.equals(v)) {
@@ -52,5 +48,9 @@ public enum KeyTypes {
             }
         }
         throw new IllegalArgumentException(v);
+    }
+
+    public String value() {
+        return value;
     }
 }

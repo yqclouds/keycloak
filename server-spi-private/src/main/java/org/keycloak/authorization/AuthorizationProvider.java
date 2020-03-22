@@ -18,34 +18,25 @@
 
 package org.keycloak.authorization;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import org.keycloak.authorization.model.PermissionTicket;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.model.*;
 import org.keycloak.authorization.permission.evaluator.Evaluators;
 import org.keycloak.authorization.policy.evaluation.PolicyEvaluator;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
-import org.keycloak.authorization.store.PermissionTicketStore;
-import org.keycloak.authorization.store.PolicyStore;
-import org.keycloak.authorization.store.ResourceServerStore;
-import org.keycloak.authorization.store.ResourceStore;
-import org.keycloak.authorization.store.ScopeStore;
-import org.keycloak.authorization.store.StoreFactory;
+import org.keycloak.authorization.store.*;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.cache.authorization.CachedStoreFactoryProvider;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.provider.Provider;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * <p>The main contract here is the creation of {@link org.keycloak.authorization.permission.evaluator.PermissionEvaluator} instances.  Usually
@@ -76,10 +67,10 @@ import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentati
 public final class AuthorizationProvider implements Provider {
 
     private final PolicyEvaluator policyEvaluator;
-    private StoreFactory storeFactory;
-    private StoreFactory storeFactoryDelegate;
     private final KeycloakSession keycloakSession;
     private final RealmModel realm;
+    private StoreFactory storeFactory;
+    private StoreFactory storeFactoryDelegate;
 
     public AuthorizationProvider(KeycloakSession session, RealmModel realm, PolicyEvaluator policyEvaluator) {
         this.keycloakSession = session;
@@ -99,7 +90,7 @@ public final class AuthorizationProvider implements Provider {
 
     /**
      * Cache sits in front of this
-     *
+     * <p>
      * Returns a {@link StoreFactory}.
      *
      * @return the {@link StoreFactory}
@@ -137,7 +128,7 @@ public final class AuthorizationProvider implements Provider {
      * Returns a {@link PolicyProviderFactory} given a <code>type</code>.
      *
      * @param type the type of the policy provider
-     * @param <F> the expected type of the provider
+     * @param <F>  the expected type of the provider
      * @return a {@link PolicyProviderFactory} with the given <code>type</code>
      */
     public PolicyProviderFactory getProviderFactory(String type) {
@@ -148,7 +139,7 @@ public final class AuthorizationProvider implements Provider {
      * Returns a {@link PolicyProviderFactory} given a <code>type</code>.
      *
      * @param type the type of the policy provider
-     * @param <P> the expected type of the provider
+     * @param <P>  the expected type of the provider
      * @return a {@link PolicyProvider} with the given <code>type</code>
      */
     public <P extends PolicyProvider> P getProvider(String type) {
@@ -225,13 +216,13 @@ public final class AuthorizationProvider implements Provider {
             }
 
             @Override
-            public void setReadOnly(boolean readOnly) {
-                storeFactory.setReadOnly(readOnly);
+            public boolean isReadOnly() {
+                return storeFactory.isReadOnly();
             }
 
             @Override
-            public boolean isReadOnly() {
-                return storeFactory.isReadOnly();
+            public void setReadOnly(boolean readOnly) {
+                storeFactory.setReadOnly(readOnly);
             }
         };
     }

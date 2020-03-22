@@ -23,10 +23,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import static org.keycloak.client.admin.cli.util.ConfigUtil.DEFAULT_CONFIG_FILE_STRING;
-import static org.keycloak.client.admin.cli.util.OsUtil.CMD;
-import static org.keycloak.client.admin.cli.util.OsUtil.EOL;
-import static org.keycloak.client.admin.cli.util.OsUtil.OS_ARCH;
-import static org.keycloak.client.admin.cli.util.OsUtil.PROMPT;
+import static org.keycloak.client.admin.cli.util.OsUtil.*;
 
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
@@ -57,32 +54,6 @@ public class CreateCmd extends AbstractRequestCmd {
 
     //@OptionGroup(shortName = 's', name = "set", description = "Set attribute to the specified value")
     //Map<String, String> attributes = new LinkedHashMap<>();
-
-    @Override
-    void initOptions() {
-        // set options on parent
-        super.file = file;
-        super.body = body;
-        super.fields = fields;
-        super.printHeaders = printHeaders;
-        super.returnId = returnId;
-        super.outputResult = outputResult;
-        super.compressed = compressed;
-        super.httpVerb = "post";
-    }
-
-    @Override
-    protected boolean nothingToDo() {
-        return noOptions() && file == null && body == null && (args == null || args.size() == 0);
-    }
-
-    protected String suggestHelp() {
-        return EOL + "Try '" + CMD + " help create' for more information";
-    }
-
-    protected String help() {
-        return usage();
-    }
 
     public static String usage() {
         StringWriter sb = new StringWriter();
@@ -181,6 +152,32 @@ public class CreateCmd extends AbstractRequestCmd {
         out.println();
         out.println("Use '" + CMD + " help' for general information and a list of commands");
         return sb.toString();
+    }
+
+    @Override
+    void initOptions() {
+        // set options on parent
+        super.file = file;
+        super.body = body;
+        super.fields = fields;
+        super.printHeaders = printHeaders;
+        super.returnId = returnId;
+        super.outputResult = outputResult;
+        super.compressed = compressed;
+        super.httpVerb = "post";
+    }
+
+    @Override
+    protected boolean nothingToDo() {
+        return noOptions() && file == null && body == null && (args == null || args.size() == 0);
+    }
+
+    protected String suggestHelp() {
+        return EOL + "Try '" + CMD + " help create' for more information";
+    }
+
+    protected String help() {
+        return usage();
     }
 
 }

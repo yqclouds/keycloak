@@ -1,4 +1,6 @@
-<samlp:LogoutRequest xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns="urn:oasis:names:tc:SAML:2.0:assertion" Destination="http://localhost:8081/auth/realms/saml-demo/protocol/saml" ID="ID_4790c6a3-4b9f-4c0a-a368-5c0e498544e4" IssueInstant="2016-11-01T14:36:43.194Z" Version="2.0">
+<samlp:LogoutRequest xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns="urn:oasis:names:tc:SAML:2.0:assertion"
+                     Destination="http://localhost:8081/auth/realms/saml-demo/protocol/saml"
+                     ID="ID_4790c6a3-4b9f-4c0a-a368-5c0e498544e4" IssueInstant="2016-11-01T14:36:43.194Z" Version="2.0">
     <saml:Issuer xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion">http://localhost:8080/sales-post-enc/</saml:Issuer>
     <dsig:Signature xmlns:dsig="http://www.w3.org/2000/09/xmldsig#">
         <dsig:SignedInfo>
@@ -27,6 +29,8 @@
             </dsig:KeyValue>
         </dsig:KeyInfo>
     </dsig:Signature>
-    <saml:NameID xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" Format="urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified">bburke</saml:NameID>
+    <saml:NameID xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
+                 Format="urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified">bburke
+    </saml:NameID>
     <samlp:SessionIndex>a3b2df1c-1095-487b-8b56-f62818c449e3</samlp:SessionIndex>
 </samlp:LogoutRequest>

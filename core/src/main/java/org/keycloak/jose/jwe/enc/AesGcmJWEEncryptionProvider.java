@@ -35,7 +35,7 @@ public class AesGcmJWEEncryptionProvider extends AesGcmEncryptionProvider {
         }
     }
 
-	@Override
+    @Override
     protected int getExpectedAesKeyLength() {
         return expectedAesKeyLength;
     }

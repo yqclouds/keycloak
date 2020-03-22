@@ -25,7 +25,7 @@ import org.keycloak.saml.processing.web.util.PostBindingUtil;
 
 /**
  * This was failing on IBM JDK
- * 
+ *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class SAMLParsingTest {

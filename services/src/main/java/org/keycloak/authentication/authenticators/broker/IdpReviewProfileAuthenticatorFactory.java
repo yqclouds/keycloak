@@ -36,9 +36,26 @@ import java.util.List;
 public class IdpReviewProfileAuthenticatorFactory implements AuthenticatorFactory {
 
     public static final String PROVIDER_ID = "idp-review-profile";
+    public static final String UPDATE_PROFILE_ON_FIRST_LOGIN = "update.profile.on.first.login";
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
     static IdpReviewProfileAuthenticator SINGLETON = new IdpReviewProfileAuthenticator();
 
-    public static final String UPDATE_PROFILE_ON_FIRST_LOGIN = "update.profile.on.first.login";
+    static {
+        ProviderConfigProperty property;
+        property = new ProviderConfigProperty();
+        property.setName(UPDATE_PROFILE_ON_FIRST_LOGIN);
+        property.setLabel("{{:: 'update-profile-on-first-login' | translate}}");
+        property.setType(ProviderConfigProperty.LIST_TYPE);
+        List<String> updateProfileValues = Arrays.asList(IdentityProviderRepresentation.UPFLM_ON, IdentityProviderRepresentation.UPFLM_MISSING, IdentityProviderRepresentation.UPFLM_OFF);
+        property.setOptions(updateProfileValues);
+        property.setDefaultValue(IdentityProviderRepresentation.UPFLM_MISSING);
+        property.setHelpText("Define conditions under which a user has to review and update his profile after first-time login. Value 'On' means that"
+                + " page for reviewing profile will be displayed and user can review and update his profile. Value 'off' means that page won't be displayed."
+                + " Value 'missing' means that page is displayed just when some required attribute is missing (wasn't downloaded from identity provider). Value 'missing' is the default one."
+                + " WARN: In case that user clicks 'Review profile info' on link duplications page, the update page will be always displayed. You would need to disable this authenticator to never display the page.");
+
+        configProperties.add(property);
+    }
 
     @Override
     public Authenticator create(KeycloakSession session) {
@@ -94,26 +111,6 @@ public class IdpReviewProfileAuthenticatorFactory implements AuthenticatorFactor
     public boolean isUserSetupAllowed() {
         return false;
     }
-
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
-
-    static {
-        ProviderConfigProperty property;
-        property = new ProviderConfigProperty();
-        property.setName(UPDATE_PROFILE_ON_FIRST_LOGIN);
-        property.setLabel("{{:: 'update-profile-on-first-login' | translate}}");
-        property.setType(ProviderConfigProperty.LIST_TYPE);
-        List<String> updateProfileValues = Arrays.asList(IdentityProviderRepresentation.UPFLM_ON, IdentityProviderRepresentation.UPFLM_MISSING, IdentityProviderRepresentation.UPFLM_OFF);
-        property.setOptions(updateProfileValues);
-        property.setDefaultValue(IdentityProviderRepresentation.UPFLM_MISSING);
-        property.setHelpText("Define conditions under which a user has to review and update his profile after first-time login. Value 'On' means that"
-                + " page for reviewing profile will be displayed and user can review and update his profile. Value 'off' means that page won't be displayed."
-                + " Value 'missing' means that page is displayed just when some required attribute is missing (wasn't downloaded from identity provider). Value 'missing' is the default one."
-                + " WARN: In case that user clicks 'Review profile info' on link duplications page, the update page will be always displayed. You would need to disable this authenticator to never display the page.");
-
-        configProperties.add(property);
-    }
-
 
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {

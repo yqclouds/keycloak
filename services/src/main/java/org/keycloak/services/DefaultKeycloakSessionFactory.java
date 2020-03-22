@@ -21,40 +21,23 @@ import org.keycloak.Config;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.provider.EnvironmentDependentProviderFactory;
-import org.keycloak.provider.KeycloakDeploymentInfo;
-import org.keycloak.provider.Provider;
-import org.keycloak.provider.ProviderEvent;
-import org.keycloak.provider.ProviderEventListener;
-import org.keycloak.provider.ProviderFactory;
-import org.keycloak.provider.ProviderManager;
-import org.keycloak.provider.ProviderManagerDeployer;
-import org.keycloak.provider.ProviderManagerRegistry;
-import org.keycloak.provider.Spi;
+import org.keycloak.provider.*;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import org.keycloak.theme.DefaultThemeManagerFactory;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, ProviderManagerDeployer {
 
     private static final Logger logger = Logger.getLogger(DefaultKeycloakSessionFactory.class);
-
+    protected CopyOnWriteArrayList<ProviderEventListener> listeners = new CopyOnWriteArrayList<>();
+    // TODO: Likely should be changed to int and use Time.currentTime() to be compatible with all our "time" reps
+    protected long serverStartupTimestamp;
     private Set<Spi> spis = new HashSet<>();
     private Map<Class<? extends Provider>, String> provider = new HashMap<>();
     private volatile Map<Class<? extends Provider>, Map<String, ProviderFactory>> factoriesMap = new HashMap<>();
-    protected CopyOnWriteArrayList<ProviderEventListener> listeners = new CopyOnWriteArrayList<>();
-
     private DefaultThemeManagerFactory themeManagerFactory;
-
-    // TODO: Likely should be changed to int and use Time.currentTime() to be compatible with all our "time" reps
-    protected long serverStartupTimestamp;
 
     @Override
     public void register(ProviderEventListener listener) {
@@ -312,7 +295,7 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
     }
 
     public KeycloakSession create() {
-        KeycloakSession session =  new DefaultKeycloakSession(this);
+        KeycloakSession session = new DefaultKeycloakSession(this);
         return session;
     }
 
@@ -335,7 +318,7 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
 
     @Override
     public <T extends Provider> ProviderFactory<T> getProviderFactory(Class<T> clazz) {
-         return getProviderFactory(clazz, provider.get(clazz));
+        return getProviderFactory(clazz, provider.get(clazz));
     }
 
     @Override

@@ -20,7 +20,10 @@ package org.keycloak.authentication.requiredactions;
 import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.OAuth2Constants;
-import org.keycloak.authentication.*;
+import org.keycloak.authentication.DisplayTypeRequiredActionFactory;
+import org.keycloak.authentication.RequiredActionContext;
+import org.keycloak.authentication.RequiredActionFactory;
+import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.authentication.actiontoken.verifyemail.VerifyEmailActionToken;
 import org.keycloak.common.util.Time;
 import org.keycloak.email.EmailException;
@@ -33,12 +36,15 @@ import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.*;
 import org.keycloak.services.Urls;
 import org.keycloak.services.validation.Validation;
-
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
+
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriBuilderException;
+import javax.ws.rs.core.UriInfo;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import javax.ws.rs.core.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -46,6 +52,7 @@ import javax.ws.rs.core.*;
  */
 public class VerifyEmail implements RequiredActionProvider, RequiredActionFactory, DisplayTypeRequiredActionFactory {
     private static final Logger logger = Logger.getLogger(VerifyEmail.class);
+
     @Override
     public void evaluateTriggers(RequiredActionContext context) {
         if (context.getRealm().isVerifyEmail() && !context.getUser().isEmailVerified()) {
@@ -53,6 +60,7 @@ public class VerifyEmail implements RequiredActionProvider, RequiredActionFactor
             logger.debug("User is required to verify email");
         }
     }
+
     @Override
     public void requiredActionChallenge(RequiredActionContext context) {
         AuthenticationSessionModel authSession = context.getAuthenticationSession();
@@ -73,7 +81,7 @@ public class VerifyEmail implements RequiredActionProvider, RequiredActionFactor
         Response challenge;
 
         // Do not allow resending e-mail by simple page refresh, i.e. when e-mail sent, it should be resent properly via email-verification endpoint
-        if (! Objects.equals(authSession.getAuthNote(Constants.VERIFY_EMAIL_KEY), email)) {
+        if (!Objects.equals(authSession.getAuthNote(Constants.VERIFY_EMAIL_KEY), email)) {
             authSession.setAuthNote(Constants.VERIFY_EMAIL_KEY, email);
             EventBuilder event = context.getEvent().clone().event(EventType.SEND_VERIFY_EMAIL).detail(Details.EMAIL, email);
             challenge = sendVerifyEmail(context.getSession(), loginFormsProvider, context.getUser(), context.getAuthenticationSession(), event);
@@ -151,11 +159,11 @@ public class VerifyEmail implements RequiredActionProvider, RequiredActionFactor
 
         try {
             session
-              .getProvider(EmailTemplateProvider.class)
-              .setAuthenticationSession(authSession)
-              .setRealm(realm)
-              .setUser(user)
-              .sendVerifyEmail(link, expirationInMinutes);
+                    .getProvider(EmailTemplateProvider.class)
+                    .setAuthenticationSession(authSession)
+                    .setRealm(realm)
+                    .setUser(user)
+                    .sendVerifyEmail(link, expirationInMinutes);
             event.success();
         } catch (EmailException e) {
             logger.error("Failed to send verification email", e);

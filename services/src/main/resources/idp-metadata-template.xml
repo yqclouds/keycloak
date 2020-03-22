@@ -17,29 +17,29 @@
   -->
 
 <EntitiesDescriptor Name="urn:keycloak" xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
-					xmlns:dsig="http://www.w3.org/2000/09/xmldsig#">
-	<EntityDescriptor entityID="${idp.entityID}">
-		<IDPSSODescriptor WantAuthnRequestsSigned="true"
-			protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
-${idp.signing.certificates}
-			<SingleLogoutService
-					Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
-					Location="${idp.sls.HTTP-POST}" />
-			<SingleLogoutService
-					Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
-					Location="${idp.sso.HTTP-Redirect}" />
-			<NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:persistent</NameIDFormat>
-			<NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</NameIDFormat>
-			<NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</NameIDFormat>
-			<NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</NameIDFormat>
-			<SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
-				Location="${idp.sso.HTTP-POST}" />
-			<SingleSignOnService
-				Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
-				Location="${idp.sso.HTTP-Redirect}" />
-			<SingleSignOnService
-				Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP"
-				Location="${idp.sso.HTTP-POST}" />
-		</IDPSSODescriptor>
-	</EntityDescriptor>
+>
+    <EntityDescriptor entityID="${idp.entityID}">
+        <IDPSSODescriptor WantAuthnRequestsSigned="true"
+                          protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+            ${idp.signing.certificates}
+            <SingleLogoutService
+                    Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+                    Location="${idp.sls.HTTP-POST}"/>
+            <SingleLogoutService
+                    Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+                    Location="${idp.sso.HTTP-Redirect}"/>
+            <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:persistent</NameIDFormat>
+            <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</NameIDFormat>
+            <NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</NameIDFormat>
+            <NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</NameIDFormat>
+            <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+                                 Location="${idp.sso.HTTP-POST}"/>
+            <SingleSignOnService
+                    Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+                    Location="${idp.sso.HTTP-Redirect}"/>
+            <SingleSignOnService
+                    Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP"
+                    Location="${idp.sso.HTTP-POST}"/>
+        </IDPSSODescriptor>
+    </EntityDescriptor>
 </EntitiesDescriptor>

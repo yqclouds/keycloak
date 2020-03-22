@@ -24,10 +24,7 @@ import java.util.Map;
 
 import static org.keycloak.client.registration.cli.util.OsUtil.CMD;
 import static org.keycloak.client.registration.cli.util.OsUtil.PROMPT;
-import static org.keycloak.client.registration.cli.util.ReflectionUtil.getAttributeListWithJSonTypes;
-import static org.keycloak.client.registration.cli.util.ReflectionUtil.isBasicType;
-import static org.keycloak.client.registration.cli.util.ReflectionUtil.isListType;
-import static org.keycloak.client.registration.cli.util.ReflectionUtil.isMapType;
+import static org.keycloak.client.registration.cli.util.ReflectionUtil.*;
 
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
@@ -42,6 +39,36 @@ public class AttrsCmd extends AbstractGlobalOptionsCmd {
     protected List<String> args;
 
     protected String attr;
+
+    public static String usage() {
+        StringWriter sb = new StringWriter();
+        PrintWriter out = new PrintWriter(sb);
+        out.println("Usage: " + CMD + " attrs [ATTRIBUTE] [ARGUMENTS]");
+        out.println();
+        out.println("List available configuration attributes.");
+        out.println();
+        out.println("Arguments:");
+        out.println();
+        out.println("  Global options:");
+        out.println("    -x                   Print full stack trace when exiting with error");
+        out.println();
+        out.println("  Command specific options:");
+        out.println("    ATTRIBUTE            Attribute key (if omitted all attributes for the endpoint type are listed)");
+        out.println("                         Dot notation can be used to target sub-attributes.");
+        out.println("    -e, --endpoint TYPE  Endpoint type to use - one of: 'default', 'oidc' (if omitted 'default' is used)");
+        out.println();
+        out.println("Examples:");
+        out.println();
+        out.println("List all attributes for default endpoint:");
+        out.println("  " + PROMPT + " " + CMD + " attrs");
+        out.println();
+        out.println("List (sub)attributes of 'protocolMappers' attribute for default endpoint:");
+        out.println("  " + PROMPT + " " + CMD + " attrs protocolMappers");
+        out.println();
+        out.println();
+        out.println("Use '" + CMD + " help' for general information and a list of commands");
+        return sb.toString();
+    }
 
     @Override
     public CommandResult execute(CommandInvocation commandInvocation) throws CommandException, InterruptedException {
@@ -125,35 +152,5 @@ public class AttrsCmd extends AbstractGlobalOptionsCmd {
 
     protected String help() {
         return usage();
-    }
-
-    public static String usage() {
-        StringWriter sb = new StringWriter();
-        PrintWriter out = new PrintWriter(sb);
-        out.println("Usage: " + CMD + " attrs [ATTRIBUTE] [ARGUMENTS]");
-        out.println();
-        out.println("List available configuration attributes.");
-        out.println();
-        out.println("Arguments:");
-        out.println();
-        out.println("  Global options:");
-        out.println("    -x                   Print full stack trace when exiting with error");
-        out.println();
-        out.println("  Command specific options:");
-        out.println("    ATTRIBUTE            Attribute key (if omitted all attributes for the endpoint type are listed)");
-        out.println("                         Dot notation can be used to target sub-attributes.");
-        out.println("    -e, --endpoint TYPE  Endpoint type to use - one of: 'default', 'oidc' (if omitted 'default' is used)");
-        out.println();
-        out.println("Examples:");
-        out.println();
-        out.println("List all attributes for default endpoint:");
-        out.println("  " + PROMPT + " " + CMD + " attrs");
-        out.println();
-        out.println("List (sub)attributes of 'protocolMappers' attribute for default endpoint:");
-        out.println("  " + PROMPT + " " + CMD + " attrs protocolMappers");
-        out.println();
-        out.println();
-        out.println("Use '" + CMD + " help' for general information and a list of commands");
-        return sb.toString();
     }
 }

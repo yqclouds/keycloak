@@ -35,7 +35,7 @@ import java.util.Set;
  * This class handles both realm roles and client roles.  It delegates to
  * RealmRolesPartialImport and ClientRolesPartialImport, which are no longer used
  * directly by the PartialImportManager.
- *
+ * <p>
  * The strategy is to utilize RepresentationToModel.importRoles().  That way,
  * the complex code for bulk creation of roles is kept in one place.  To do this, the
  * logic for skip needs to remove the roles that are going to be skipped so that
@@ -46,14 +46,12 @@ import java.util.Set;
  */
 public class RolesPartialImport implements PartialImport<RolesRepresentation> {
 
-    private Set<RoleRepresentation> realmRolesToOverwrite;
-    private Set<RoleRepresentation> realmRolesToSkip;
-
-    private Map<String, Set<RoleRepresentation>> clientRolesToOverwrite;
-    private Map<String, Set<RoleRepresentation>> clientRolesToSkip;
-
     private final RealmRolesPartialImport realmRolesPI = new RealmRolesPartialImport();
     private final ClientRolesPartialImport clientRolesPI = new ClientRolesPartialImport();
+    private Set<RoleRepresentation> realmRolesToOverwrite;
+    private Set<RoleRepresentation> realmRolesToSkip;
+    private Map<String, Set<RoleRepresentation>> clientRolesToOverwrite;
+    private Map<String, Set<RoleRepresentation>> clientRolesToSkip;
 
     @Override
     public void prepare(PartialImportRepresentation rep, RealmModel realm, KeycloakSession session) throws ErrorResponseException {

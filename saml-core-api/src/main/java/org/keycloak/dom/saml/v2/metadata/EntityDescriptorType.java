@@ -65,115 +65,15 @@ import java.util.List;
  */
 public class EntityDescriptorType extends TypeWithOtherAttributes {
 
-    public static class EDTChoiceType {
-
-        private List<EDTDescriptorChoiceType> descriptors = new ArrayList<>();
-
-        private AffiliationDescriptorType affiliationDescriptor;
-
-        public EDTChoiceType(List<EDTDescriptorChoiceType> descriptors) {
-            this.descriptors = descriptors;
-        }
-
-        public EDTChoiceType(AffiliationDescriptorType affiliationDescriptor) {
-            this.affiliationDescriptor = affiliationDescriptor;
-        }
-
-        public List<EDTDescriptorChoiceType> getDescriptors() {
-            return Collections.unmodifiableList(descriptors);
-        }
-
-        public AffiliationDescriptorType getAffiliationDescriptor() {
-            return affiliationDescriptor;
-        }
-
-        public static EDTChoiceType oneValue(EDTDescriptorChoiceType edt) {
-            List<EDTDescriptorChoiceType> aList = new ArrayList<>();
-            aList.add(edt);
-            return new EDTChoiceType(aList);
-        }
-    }
-
-    public static class EDTDescriptorChoiceType {
-
-        private RoleDescriptorType roleDescriptor;
-
-        private IDPSSODescriptorType idpDescriptor;
-
-        private SPSSODescriptorType spDescriptor;
-
-        private AuthnAuthorityDescriptorType authnDescriptor;
-
-        private AttributeAuthorityDescriptorType attribDescriptor;
-
-        private PDPDescriptorType pdpDescriptor;
-
-        public EDTDescriptorChoiceType(AuthnAuthorityDescriptorType authnDescriptor) {
-            this.authnDescriptor = authnDescriptor;
-        }
-
-        public EDTDescriptorChoiceType(AttributeAuthorityDescriptorType attribDescriptor) {
-            this.attribDescriptor = attribDescriptor;
-        }
-
-        public EDTDescriptorChoiceType(PDPDescriptorType pdpDescriptor) {
-            this.pdpDescriptor = pdpDescriptor;
-        }
-
-        public EDTDescriptorChoiceType(SSODescriptorType sso) {
-            if (sso instanceof IDPSSODescriptorType) {
-                this.idpDescriptor = (IDPSSODescriptorType) sso;
-            } else
-                this.spDescriptor = (SPSSODescriptorType) sso;
-        }
-
-        public EDTDescriptorChoiceType(RoleDescriptorType roleDescriptor) {
-            this.roleDescriptor = roleDescriptor;
-        }
-
-        public RoleDescriptorType getRoleDescriptor() {
-            return roleDescriptor;
-        }
-
-        public IDPSSODescriptorType getIdpDescriptor() {
-            return idpDescriptor;
-        }
-
-        public SPSSODescriptorType getSpDescriptor() {
-            return spDescriptor;
-        }
-
-        public AuthnAuthorityDescriptorType getAuthnDescriptor() {
-            return authnDescriptor;
-        }
-
-        public AttributeAuthorityDescriptorType getAttribDescriptor() {
-            return attribDescriptor;
-        }
-
-        public PDPDescriptorType getPdpDescriptor() {
-            return pdpDescriptor;
-        }
-    }
-
     protected Element signature;
-
     protected ExtensionsType extensions;
-
     protected List<EDTChoiceType> choiceType = new ArrayList<>();
-
     protected OrganizationType organization;
-
     protected List<ContactType> contactPerson = new ArrayList<>();
-
     protected List<AdditionalMetadataLocationType> additionalMetadataLocation = new ArrayList<AdditionalMetadataLocationType>();
-
     protected String entityID;
-
     protected XMLGregorianCalendar validUntil;
-
     protected Duration cacheDuration;
-
     protected String id;
 
     public EntityDescriptorType(String entityID) {
@@ -386,5 +286,96 @@ public class EntityDescriptorType extends TypeWithOtherAttributes {
      */
     public void setID(String value) {
         this.id = value;
+    }
+
+    public static class EDTChoiceType {
+
+        private List<EDTDescriptorChoiceType> descriptors = new ArrayList<>();
+
+        private AffiliationDescriptorType affiliationDescriptor;
+
+        public EDTChoiceType(List<EDTDescriptorChoiceType> descriptors) {
+            this.descriptors = descriptors;
+        }
+
+        public EDTChoiceType(AffiliationDescriptorType affiliationDescriptor) {
+            this.affiliationDescriptor = affiliationDescriptor;
+        }
+
+        public static EDTChoiceType oneValue(EDTDescriptorChoiceType edt) {
+            List<EDTDescriptorChoiceType> aList = new ArrayList<>();
+            aList.add(edt);
+            return new EDTChoiceType(aList);
+        }
+
+        public List<EDTDescriptorChoiceType> getDescriptors() {
+            return Collections.unmodifiableList(descriptors);
+        }
+
+        public AffiliationDescriptorType getAffiliationDescriptor() {
+            return affiliationDescriptor;
+        }
+    }
+
+    public static class EDTDescriptorChoiceType {
+
+        private RoleDescriptorType roleDescriptor;
+
+        private IDPSSODescriptorType idpDescriptor;
+
+        private SPSSODescriptorType spDescriptor;
+
+        private AuthnAuthorityDescriptorType authnDescriptor;
+
+        private AttributeAuthorityDescriptorType attribDescriptor;
+
+        private PDPDescriptorType pdpDescriptor;
+
+        public EDTDescriptorChoiceType(AuthnAuthorityDescriptorType authnDescriptor) {
+            this.authnDescriptor = authnDescriptor;
+        }
+
+        public EDTDescriptorChoiceType(AttributeAuthorityDescriptorType attribDescriptor) {
+            this.attribDescriptor = attribDescriptor;
+        }
+
+        public EDTDescriptorChoiceType(PDPDescriptorType pdpDescriptor) {
+            this.pdpDescriptor = pdpDescriptor;
+        }
+
+        public EDTDescriptorChoiceType(SSODescriptorType sso) {
+            if (sso instanceof IDPSSODescriptorType) {
+                this.idpDescriptor = (IDPSSODescriptorType) sso;
+            } else
+                this.spDescriptor = (SPSSODescriptorType) sso;
+        }
+
+        public EDTDescriptorChoiceType(RoleDescriptorType roleDescriptor) {
+            this.roleDescriptor = roleDescriptor;
+        }
+
+        public RoleDescriptorType getRoleDescriptor() {
+            return roleDescriptor;
+        }
+
+        public IDPSSODescriptorType getIdpDescriptor() {
+            return idpDescriptor;
+        }
+
+        public SPSSODescriptorType getSpDescriptor() {
+            return spDescriptor;
+        }
+
+        public AuthnAuthorityDescriptorType getAuthnDescriptor() {
+            return authnDescriptor;
+        }
+
+        public AttributeAuthorityDescriptorType getAttribDescriptor() {
+            return attribDescriptor;
+        }
+
+        public PDPDescriptorType getPdpDescriptor() {
+            return pdpDescriptor;
+        }
     }
 }

@@ -39,8 +39,8 @@ public abstract class AbstractGeneratedSecretKeyProvider implements KeyProvider 
     private final String kid;
     private final SecretKey secretKey;
     private final KeyUse use;
-    private String type;
     private final String algorithm;
+    private String type;
 
     public AbstractGeneratedSecretKeyProvider(ComponentModel model, KeyUse use, String type, String algorithm) {
         this.status = KeyStatus.from(model.get(Attributes.ACTIVE_KEY, true), model.get(Attributes.ENABLED_KEY, true));

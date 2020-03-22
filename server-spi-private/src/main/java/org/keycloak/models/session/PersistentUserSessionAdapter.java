@@ -18,13 +18,7 @@
 package org.keycloak.models.session;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ModelException;
-import org.keycloak.models.OfflineUserSessionModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.util.JsonSerialization;
 
 import java.io.IOException;
@@ -38,12 +32,11 @@ import java.util.Map;
 public class PersistentUserSessionAdapter implements OfflineUserSessionModel {
 
     private final PersistentUserSessionModel model;
+    private final RealmModel realm;
+    private final Map<String, AuthenticatedClientSessionModel> authenticatedClientSessions;
     private UserModel user;
     private String userId;
-    private final RealmModel realm;
     private KeycloakSession session;
-    private final Map<String, AuthenticatedClientSessionModel> authenticatedClientSessions;
-
     private PersistentUserSessionData data;
 
     public PersistentUserSessionAdapter(UserSessionModel other) {
@@ -182,7 +175,7 @@ public class PersistentUserSessionAdapter implements OfflineUserSessionModel {
 
     @Override
     public void removeAuthenticatedClientSessions(Collection<String> removedClientUUIDS) {
-        if (removedClientUUIDS == null || ! removedClientUUIDS.iterator().hasNext()) {
+        if (removedClientUUIDS == null || !removedClientUUIDS.iterator().hasNext()) {
             return;
         }
 
@@ -191,7 +184,7 @@ public class PersistentUserSessionAdapter implements OfflineUserSessionModel {
 
     @Override
     public String getNote(String name) {
-        return getData().getNotes()==null ? null : getData().getNotes().get(name);
+        return getData().getNotes() == null ? null : getData().getNotes().get(name);
     }
 
     @Override
@@ -234,7 +227,7 @@ public class PersistentUserSessionAdapter implements OfflineUserSessionModel {
 
     @Override
     public void setState(State state) {
-        String stateStr = state==null ? null : state.toString();
+        String stateStr = state == null ? null : state.toString();
         getData().setState(stateStr);
     }
 

@@ -17,10 +17,6 @@
 
 package org.keycloak.services.clientregistration.policy;
 
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
 import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.events.Details;
@@ -31,6 +27,9 @@ import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.clientregistration.ClientRegistrationContext;
 import org.keycloak.services.clientregistration.ClientRegistrationProvider;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
@@ -38,7 +37,7 @@ public class ClientRegistrationPolicyManager {
 
     private static final Logger logger = Logger.getLogger(ClientRegistrationPolicyManager.class);
 
-    public static void triggerBeforeRegister(ClientRegistrationContext context, RegistrationAuth authType) throws ClientRegistrationPolicyException  {
+    public static void triggerBeforeRegister(ClientRegistrationContext context, RegistrationAuth authType) throws ClientRegistrationPolicyException {
         triggerPolicies(context.getSession(), context.getProvider(), authType, "before register client", (ClientRegistrationPolicy policy) -> {
 
             policy.beforeRegister(context);
@@ -60,7 +59,7 @@ public class ClientRegistrationPolicyManager {
     }
 
 
-    public static void triggerBeforeUpdate(ClientRegistrationContext context, RegistrationAuth authType, ClientModel client) throws ClientRegistrationPolicyException  {
+    public static void triggerBeforeUpdate(ClientRegistrationContext context, RegistrationAuth authType, ClientModel client) throws ClientRegistrationPolicyException {
         triggerPolicies(context.getSession(), context.getProvider(), authType, "before update client " + client.getClientId(), (ClientRegistrationPolicy policy) -> {
 
             policy.beforeUpdate(context, client);
@@ -97,7 +96,6 @@ public class ClientRegistrationPolicyManager {
     }
 
 
-
     private static void triggerPolicies(KeycloakSession session, ClientRegistrationProvider provider, RegistrationAuth authType, String opDescription, ClientRegOperation op) throws ClientRegistrationPolicyException {
         RealmModel realm = session.getContext().getRealm();
 
@@ -131,13 +129,13 @@ public class ClientRegistrationPolicyManager {
         }
     }
 
+    public static String getComponentTypeKey(RegistrationAuth authType) {
+        return authType.toString().toLowerCase();
+    }
+
     private interface ClientRegOperation {
 
         void run(ClientRegistrationPolicy policy) throws ClientRegistrationPolicyException;
 
-    }
-
-    public static String getComponentTypeKey(RegistrationAuth authType) {
-        return authType.toString().toLowerCase();
     }
 }

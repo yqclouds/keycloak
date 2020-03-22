@@ -64,7 +64,6 @@ public class JAXPValidationUtil {
      * Based on system property "picketlink.schema.validate" set to "true", do schema validation
      *
      * @param samlDocument
-     *
      * @throws org.keycloak.saml.common.exceptions.ProcessingException
      */
     public static void checkSchemaValidation(Node samlDocument) throws ProcessingException {

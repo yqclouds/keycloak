@@ -15,16 +15,17 @@
  * limitations under the License.
  */
 package org.keycloak.saml.processing.core.parsers.util;
+
 import org.keycloak.dom.saml.v2.assertion.NameIDType;
 import org.keycloak.saml.common.PicketLinkLogger;
 import org.keycloak.saml.common.PicketLinkLoggerFactory;
 import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.util.StaxParserUtil;
-
 import org.keycloak.saml.processing.core.parsers.saml.assertion.SAMLAssertionQNames;
-import java.util.Objects;
+
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.StartElement;
+import java.util.Objects;
 
 /**
  * Utility methods for SAML Parser
@@ -40,9 +41,7 @@ public class SAMLParserUtil {
      * Parse a {@code NameIDType}
      *
      * @param xmlEventReader
-     *
      * @return
-     *
      * @throws ParsingException
      */
     public static NameIDType parseNameIDType(XMLEventReader xmlEventReader) throws ParsingException {
@@ -62,7 +61,7 @@ public class SAMLParserUtil {
 
     public static void validateAttributeValue(StartElement element, HasQName attributeName, String expectedValue) throws ParsingException {
         String value = StaxParserUtil.getRequiredAttributeValue(element, attributeName);
-        if (! Objects.equals(expectedValue, value)) {
+        if (!Objects.equals(expectedValue, value)) {
             throw LOGGER.parserException(new RuntimeException(
                     String.format("%s %s required to be \"%s\"", element.getName(), attributeName.getQName(), expectedValue)));
         }

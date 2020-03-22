@@ -32,7 +32,6 @@ import java.security.NoSuchAlgorithmException;
  * <p>Passwords are returned with a Base64 encoding.</p>
  *
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
- *
  */
 public class SHAPasswordEncoder {
 

@@ -22,11 +22,7 @@ import org.keycloak.broker.oidc.KeycloakOIDCIdentityProviderFactory;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.ConfigConstants;
 import org.keycloak.broker.provider.IdentityBrokerException;
-import org.keycloak.models.IdentityProviderMapperModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.JsonWebToken;
@@ -41,7 +37,7 @@ import java.util.List;
 public class ExternalKeycloakRoleToRoleMapper extends AbstractClaimMapper {
 
     public static final String[] COMPATIBLE_PROVIDERS = {KeycloakOIDCIdentityProviderFactory.PROVIDER_ID};
-
+    public static final String PROVIDER_ID = "keycloak-oidc-role-to-role-idp-mapper";
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
     private static final String EXTERNAL_ROLE = "external.role";
 
@@ -61,9 +57,6 @@ public class ExternalKeycloakRoleToRoleMapper extends AbstractClaimMapper {
         property.setType(ProviderConfigProperty.ROLE_TYPE);
         configProperties.add(property);
     }
-
-    public static final String PROVIDER_ID = "keycloak-oidc-role-to-role-idp-mapper";
-
 
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {
@@ -98,8 +91,8 @@ public class ExternalKeycloakRoleToRoleMapper extends AbstractClaimMapper {
         }
     }
 
-    private RoleModel hasRole(RealmModel realm,IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
-        JsonWebToken token = (JsonWebToken)context.getContextData().get(KeycloakOIDCIdentityProvider.VALIDATED_ACCESS_TOKEN);
+    private RoleModel hasRole(RealmModel realm, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
+        JsonWebToken token = (JsonWebToken) context.getContextData().get(KeycloakOIDCIdentityProvider.VALIDATED_ACCESS_TOKEN);
         //if (token == null) return;
         String roleName = mapperModel.getConfig().get(ConfigConstants.ROLE);
         String[] parseRole = KeycloakModelUtils.parseRole(mapperModel.getConfig().get(EXTERNAL_ROLE));

@@ -21,11 +21,6 @@ import org.keycloak.models.KeycloakSession;
 
 public interface ClientValidationContext {
 
-    enum Event {
-        CREATE,
-        UPDATE
-    }
-
     Event getEvent();
 
     KeycloakSession getSession();
@@ -35,5 +30,10 @@ public interface ClientValidationContext {
     String getError();
 
     ClientValidationContext invalid(String error);
+
+    enum Event {
+        CREATE,
+        UPDATE
+    }
 
 }

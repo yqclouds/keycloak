@@ -18,74 +18,40 @@ package org.keycloak.services.resources.admin;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotFoundException;
-import org.keycloak.authentication.AuthenticationFlow;
-import org.keycloak.authentication.Authenticator;
-import org.keycloak.authentication.ClientAuthenticator;
-import org.keycloak.authentication.ClientAuthenticatorFactory;
-import org.keycloak.authentication.ConfigurableAuthenticatorFactory;
-import org.keycloak.authentication.FormAction;
-import org.keycloak.authentication.FormAuthenticator;
-import org.keycloak.authentication.RequiredActionFactory;
-import org.keycloak.authentication.RequiredActionProvider;
+import org.keycloak.authentication.*;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.AuthenticationExecutionModel;
-import org.keycloak.models.AuthenticationFlowModel;
-import org.keycloak.models.AuthenticatorConfigModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RequiredActionProviderModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.DefaultAuthenticationFlows;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderFactory;
-import org.keycloak.representations.idm.AuthenticationExecutionInfoRepresentation;
-import org.keycloak.representations.idm.AuthenticationExecutionRepresentation;
-import org.keycloak.representations.idm.AuthenticationFlowRepresentation;
-import org.keycloak.representations.idm.AuthenticatorConfigInfoRepresentation;
-import org.keycloak.representations.idm.AuthenticatorConfigRepresentation;
-import org.keycloak.representations.idm.ConfigPropertyRepresentation;
-import org.keycloak.representations.idm.RequiredActionProviderRepresentation;
+import org.keycloak.representations.idm.*;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.utils.CredentialHelper;
+import org.keycloak.utils.ReservedCharValidator;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import org.keycloak.utils.ReservedCharValidator;
 
 /**
- * @resource Authentication Management
  * @author Bill Burke
+ * @resource Authentication Management
  */
 public class AuthenticationManagementResource {
 
+    protected static final Logger logger = Logger.getLogger(AuthenticationManagementResource.class);
     private final RealmModel realm;
     private final KeycloakSession session;
     private AdminPermissionEvaluator auth;
     private AdminEventBuilder adminEvent;
-
-    protected static final Logger logger = Logger.getLogger(AuthenticationManagementResource.class);
 
     public AuthenticationManagementResource(RealmModel realm, KeycloakSession session, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.realm = realm;
@@ -94,9 +60,53 @@ public class AuthenticationManagementResource {
         this.adminEvent = adminEvent.resource(ResourceType.AUTH_FLOW);
     }
 
+    public static AuthenticationFlowModel copyFlow(RealmModel realm, AuthenticationFlowModel flow, String newName) {
+        AuthenticationFlowModel copy = new AuthenticationFlowModel();
+        copy.setAlias(newName);
+        copy.setDescription(flow.getDescription());
+        copy.setProviderId(flow.getProviderId());
+        copy.setBuiltIn(false);
+        copy.setTopLevel(flow.isTopLevel());
+        copy = realm.addAuthenticationFlow(copy);
+        copy(realm, newName, flow, copy);
+        return copy;
+    }
+
+    public static void copy(RealmModel realm, String newName, AuthenticationFlowModel from, AuthenticationFlowModel to) {
+        for (AuthenticationExecutionModel execution : realm.getAuthenticationExecutions(from.getId())) {
+            if (execution.isAuthenticatorFlow()) {
+                AuthenticationFlowModel subFlow = realm.getAuthenticationFlowById(execution.getFlowId());
+                AuthenticationFlowModel copy = new AuthenticationFlowModel();
+                copy.setAlias(newName + " " + subFlow.getAlias());
+                copy.setDescription(subFlow.getDescription());
+                copy.setProviderId(subFlow.getProviderId());
+                copy.setBuiltIn(false);
+                copy.setTopLevel(false);
+                copy = realm.addAuthenticationFlow(copy);
+                execution.setFlowId(copy.getId());
+                copy(realm, newName, subFlow, copy);
+            }
+            execution.setId(null);
+            execution.setParentFlow(to.getId());
+            realm.addAuthenticatorExecution(execution);
+        }
+    }
+
+    public static RequiredActionProviderRepresentation toRepresentation(RequiredActionProviderModel model) {
+        RequiredActionProviderRepresentation rep = new RequiredActionProviderRepresentation();
+        rep.setAlias(model.getAlias());
+        rep.setProviderId(model.getProviderId());
+        rep.setName(model.getName());
+        rep.setDefaultAction(model.isDefaultAction());
+        rep.setPriority(model.getPriority());
+        rep.setEnabled(model.isEnabled());
+        rep.setConfig(model.getConfig());
+        return rep;
+    }
+
     /**
      * Get form providers
-     *
+     * <p>
      * Returns a list of form providers.
      */
     @Path("/form-providers")
@@ -112,7 +122,7 @@ public class AuthenticationManagementResource {
 
     /**
      * Get authenticator providers
-     *
+     * <p>
      * Returns a list of authenticator providers.
      */
     @Path("/authenticator-providers")
@@ -128,7 +138,7 @@ public class AuthenticationManagementResource {
 
     /**
      * Get client authenticator providers
-     *
+     * <p>
      * Returns a list of client authenticator providers.
      */
     @Path("/client-authenticator-providers")
@@ -147,7 +157,7 @@ public class AuthenticationManagementResource {
         for (ProviderFactory factory : factories) {
             Map<String, Object> data = new HashMap<>();
             data.put("id", factory.getId());
-            ConfigurableAuthenticatorFactory configured = (ConfigurableAuthenticatorFactory)factory;
+            ConfigurableAuthenticatorFactory configured = (ConfigurableAuthenticatorFactory) factory;
             data.put("description", configured.getHelpText());
             data.put("displayName", configured.getDisplayType());
 
@@ -158,7 +168,7 @@ public class AuthenticationManagementResource {
 
     /**
      * Get form action providers
-     *
+     * <p>
      * Returns a list of form action providers.
      */
     @Path("/form-action-providers")
@@ -172,10 +182,9 @@ public class AuthenticationManagementResource {
         return buildProviderMetadata(factories);
     }
 
-
     /**
      * Get authentication flows
-     *
+     * <p>
      * Returns a list of authentication flows.
      */
     @Path("/flows")
@@ -215,7 +224,7 @@ public class AuthenticationManagementResource {
         if (realm.getFlowByAlias(flow.getAlias()) != null) {
             return ErrorResponse.exists("Flow " + flow.getAlias() + " already exists");
         }
-        
+
         ReservedCharValidator.validate(flow.getAlias());
 
         AuthenticationFlowModel createdModel = realm.addAuthenticationFlow(RepresentationToModel.toModel(flow));
@@ -281,10 +290,10 @@ public class AuthenticationManagementResource {
     @NoCache
     public void deleteFlow(@PathParam("id") String id) {
         auth.realm().requireManageRealm();
-        
+
         deleteFlow(id, true);
     }
-    
+
     private void deleteFlow(String id, boolean isTopMostLevel) {
         AuthenticationFlowModel flow = realm.getAuthenticationFlowById(id);
         if (flow == null) {
@@ -293,26 +302,27 @@ public class AuthenticationManagementResource {
         if (flow.isBuiltIn()) {
             throw new BadRequestException("Can't delete built in flow");
         }
-        
+
         List<AuthenticationExecutionModel> executions = realm.getAuthenticationExecutions(id);
         for (AuthenticationExecutionModel execution : executions) {
-            if(execution.getFlowId() != null) {
+            if (execution.getFlowId() != null) {
                 deleteFlow(execution.getFlowId(), false);
             }
         }
         realm.removeAuthenticationFlow(flow);
 
         // Use just one event for top-level flow. Using separate events won't work properly for flows of depth 2 or bigger
-        if (isTopMostLevel) adminEvent.operation(OperationType.DELETE).resourcePath(session.getContext().getUri()).success();
+        if (isTopMostLevel)
+            adminEvent.operation(OperationType.DELETE).resourcePath(session.getContext().getUri()).success();
     }
 
     /**
      * Copy existing authentication flow under a new name
-     *
+     * <p>
      * The new name is given as 'newName' attribute of the passed JSON object
      *
      * @param flowAlias Name of the existing authentication flow
-     * @param data JSON containing 'newName' attribute
+     * @param data      JSON containing 'newName' attribute
      */
     @Path("/flows/{flowAlias}/copy")
     @POST
@@ -340,43 +350,11 @@ public class AuthenticationManagementResource {
 
     }
 
-    public static AuthenticationFlowModel copyFlow(RealmModel realm, AuthenticationFlowModel flow, String newName) {
-        AuthenticationFlowModel copy = new AuthenticationFlowModel();
-        copy.setAlias(newName);
-        copy.setDescription(flow.getDescription());
-        copy.setProviderId(flow.getProviderId());
-        copy.setBuiltIn(false);
-        copy.setTopLevel(flow.isTopLevel());
-        copy = realm.addAuthenticationFlow(copy);
-        copy(realm, newName, flow, copy);
-        return copy;
-    }
-
-    public static void copy(RealmModel realm, String newName, AuthenticationFlowModel from, AuthenticationFlowModel to) {
-        for (AuthenticationExecutionModel execution : realm.getAuthenticationExecutions(from.getId())) {
-            if (execution.isAuthenticatorFlow()) {
-                AuthenticationFlowModel subFlow = realm.getAuthenticationFlowById(execution.getFlowId());
-                AuthenticationFlowModel copy = new AuthenticationFlowModel();
-                copy.setAlias(newName + " " + subFlow.getAlias());
-                copy.setDescription(subFlow.getDescription());
-                copy.setProviderId(subFlow.getProviderId());
-                copy.setBuiltIn(false);
-                copy.setTopLevel(false);
-                copy = realm.addAuthenticationFlow(copy);
-                execution.setFlowId(copy.getId());
-                copy(realm, newName, subFlow, copy);
-            }
-            execution.setId(null);
-            execution.setParentFlow(to.getId());
-            realm.addAuthenticatorExecution(execution);
-        }
-    }
-
     /**
      * Add new flow with new execution to existing flow
      *
      * @param flowAlias Alias of parent authentication flow
-     * @param data New authentication flow / execution JSON data containing 'alias', 'type', 'provider', and 'description' attributes
+     * @param data      New authentication flow / execution JSON data containing 'alias', 'type', 'provider', and 'description' attributes
      */
     @Path("/flows/{flowAlias}/executions/flow")
     @POST
@@ -429,7 +407,7 @@ public class AuthenticationManagementResource {
      * Add new authentication execution to a flow
      *
      * @param flowAlias Alias of parent flow
-     * @param data New execution JSON data containing 'provider' attribute
+     * @param data      New execution JSON data containing 'provider' attribute
      */
     @Path("/flows/{flowAlias}/executions/execution")
     @POST
@@ -553,7 +531,7 @@ public class AuthenticationManagementResource {
 
                 if (factory.isConfigurable()) {
                     String authenticatorConfigId = execution.getAuthenticatorConfig();
-                    if(authenticatorConfigId != null) {
+                    if (authenticatorConfigId != null) {
                         AuthenticatorConfigModel authenticatorConfig = realm.getAuthenticatorConfigById(authenticatorConfigId);
 
                         if (authenticatorConfig != null) {
@@ -610,7 +588,7 @@ public class AuthenticationManagementResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public Response getExecution(final @PathParam("executionId") String executionId) {
-    	//http://localhost:8080/auth/admin/realms/master/authentication/executions/cf26211b-9e68-4788-b754-1afd02e59d7f
+        //http://localhost:8080/auth/admin/realms/master/authentication/executions/cf26211b-9e68-4788-b754-1afd02e59d7f
         auth.realm().requireManageRealm();
 
         final Optional<AuthenticationExecutionModel> model = Optional.ofNullable(realm.getAuthenticationExecutionById(executionId));
@@ -657,7 +635,6 @@ public class AuthenticationManagementResource {
         }
         return parentFlow;
     }
-
 
     /**
      * Raise execution's priority
@@ -744,7 +721,6 @@ public class AuthenticationManagementResource {
         adminEvent.operation(OperationType.UPDATE).resource(ResourceType.AUTH_EXECUTION).resourcePath(session.getContext().getUri()).success();
     }
 
-
     /**
      * Delete execution
      *
@@ -767,9 +743,9 @@ public class AuthenticationManagementResource {
             throw new BadRequestException("It is illegal to remove execution from a built in flow");
         }
 
-        if(model.getFlowId() != null) {
-        	AuthenticationFlowModel nonTopLevelFlow = realm.getAuthenticationFlowById(model.getFlowId());
-        	realm.removeAuthenticationFlow(nonTopLevelFlow);
+        if (model.getFlowId() != null) {
+            AuthenticationFlowModel nonTopLevelFlow = realm.getAuthenticationFlowById(model.getFlowId());
+            realm.removeAuthenticationFlow(nonTopLevelFlow);
         }
 
         realm.removeAuthenticatorExecution(model);
@@ -777,12 +753,11 @@ public class AuthenticationManagementResource {
         adminEvent.operation(OperationType.DELETE).resource(ResourceType.AUTH_EXECUTION).resourcePath(session.getContext().getUri()).success();
     }
 
-
     /**
      * Update execution with new configuration
      *
      * @param execution Execution id
-     * @param json JSON with new configuration
+     * @param json      JSON with new configuration
      * @return
      */
     @Path("/executions/{executionId}/config")
@@ -791,7 +766,7 @@ public class AuthenticationManagementResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response newExecutionConfig(@PathParam("executionId") String execution, AuthenticatorConfigRepresentation json) {
         auth.realm().requireManageRealm();
-        
+
         ReservedCharValidator.validate(json.getAlias());
 
         AuthenticationExecutionModel model = realm.getAuthenticationExecutionById(execution);
@@ -817,14 +792,14 @@ public class AuthenticationManagementResource {
      * Get execution's configuration
      *
      * @param execution Execution id
-     * @param id Configuration id
+     * @param id        Configuration id
      * @deprecated Use rather {@link #getAuthenticatorConfig(String)}
      */
     @Path("/executions/{executionId}/config/{id}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
-    public AuthenticatorConfigRepresentation getAuthenticatorConfig(@PathParam("executionId") String execution,@PathParam("id") String id) {
+    public AuthenticatorConfigRepresentation getAuthenticatorConfig(@PathParam("executionId") String execution, @PathParam("id") String id) {
         auth.realm().requireViewRealm();
 
         AuthenticatorConfigModel config = realm.getAuthenticatorConfigById(id);
@@ -837,7 +812,7 @@ public class AuthenticationManagementResource {
 
     /**
      * Get unregistered required actions
-     *
+     * <p>
      * Returns a list of unregistered required actions.
      */
     @Path("unregistered-required-actions")
@@ -901,10 +876,9 @@ public class AuthenticationManagementResource {
         return actions.isEmpty() ? 0 : actions.get(actions.size() - 1).getPriority() + 1;
     }
 
-    
     /**
      * Get required actions
-     *
+     * <p>
      * Returns a list of required actions.
      */
     @Path("required-actions")
@@ -922,20 +896,9 @@ public class AuthenticationManagementResource {
         return list;
     }
 
-    public static RequiredActionProviderRepresentation toRepresentation(RequiredActionProviderModel model) {
-        RequiredActionProviderRepresentation rep = new RequiredActionProviderRepresentation();
-        rep.setAlias(model.getAlias());
-        rep.setProviderId(model.getProviderId());
-        rep.setName(model.getName());
-        rep.setDefaultAction(model.isDefaultAction());
-        rep.setPriority(model.getPriority());
-        rep.setEnabled(model.isEnabled());
-        rep.setConfig(model.getConfig());
-        return rep;
-    }
-
     /**
      * Get required action for alias
+     *
      * @param alias Alias of required action
      */
     @Path("required-actions/{alias}")
@@ -957,7 +920,7 @@ public class AuthenticationManagementResource {
      * Update required action
      *
      * @param alias Alias of required action
-     * @param rep JSON describing new state of required action
+     * @param rep   JSON describing new state of required action
      */
     @Path("required-actions/{alias}")
     @PUT
@@ -985,6 +948,7 @@ public class AuthenticationManagementResource {
 
     /**
      * Delete required action
+     *
      * @param alias Alias of required action
      */
     @Path("required-actions/{alias}")
@@ -1101,7 +1065,7 @@ public class AuthenticationManagementResource {
     }
 
     /**
-     *  Get configuration descriptions for all clients
+     * Get configuration descriptions for all clients
      */
     @Path("per-client-config-description")
     @GET
@@ -1132,6 +1096,7 @@ public class AuthenticationManagementResource {
 
     /**
      * Create new authenticator configuration
+     *
      * @param rep JSON describing new authenticator configuration
      * @deprecated Use {@link #newExecutionConfig(String, AuthenticatorConfigRepresentation)} instead
      */
@@ -1143,7 +1108,7 @@ public class AuthenticationManagementResource {
         auth.realm().requireManageRealm();
 
         ReservedCharValidator.validate(rep.getAlias());
-        
+
         AuthenticatorConfigModel config = realm.addAuthenticatorConfig(RepresentationToModel.toModel(rep));
         adminEvent.operation(OperationType.CREATE).resource(ResourceType.AUTHENTICATOR_CONFIG).resourcePath(session.getContext().getUri(), config.getId()).representation(rep).success();
         return Response.created(session.getContext().getUri().getAbsolutePathBuilder().path(config.getId()).build()).build();
@@ -1151,6 +1116,7 @@ public class AuthenticationManagementResource {
 
     /**
      * Get authenticator configuration
+     *
      * @param id Configuration id
      */
     @Path("config/{id}")
@@ -1170,6 +1136,7 @@ public class AuthenticationManagementResource {
 
     /**
      * Delete authenticator configuration
+     *
      * @param id Configuration id
      */
     @Path("config/{id}")
@@ -1199,7 +1166,8 @@ public class AuthenticationManagementResource {
 
     /**
      * Update authenticator configuration
-     * @param id Configuration id
+     *
+     * @param id  Configuration id
      * @param rep JSON describing new state of authenticator configuration
      */
     @Path("config/{id}")
@@ -1214,7 +1182,7 @@ public class AuthenticationManagementResource {
         if (exists == null) {
             throw new NotFoundException("Could not find authenticator config");
         }
-        
+
         exists.setAlias(rep.getAlias());
         exists.setConfig(RepresentationToModel.removeEmptyString(rep.getConfig()));
         realm.updateAuthenticatorConfig(exists);

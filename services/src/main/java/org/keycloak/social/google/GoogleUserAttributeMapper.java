@@ -20,21 +20,21 @@ import org.keycloak.broker.oidc.mappers.AbstractJsonUserAttributeMapper;
 
 /**
  * User attribute mapper.
- * 
+ *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class GoogleUserAttributeMapper extends AbstractJsonUserAttributeMapper {
 
-	private static final String[] cp = new String[] { GoogleIdentityProviderFactory.PROVIDER_ID };
+    private static final String[] cp = new String[]{GoogleIdentityProviderFactory.PROVIDER_ID};
 
-	@Override
-	public String[] getCompatibleProviders() {
-		return cp;
-	}
+    @Override
+    public String[] getCompatibleProviders() {
+        return cp;
+    }
 
-	@Override
-	public String getId() {
-		return "google-user-attribute-mapper";
-	}
+    @Override
+    public String getId() {
+        return "google-user-attribute-mapper";
+    }
 
 }

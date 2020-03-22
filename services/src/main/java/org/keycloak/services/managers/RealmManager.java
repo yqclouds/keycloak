@@ -17,49 +17,25 @@
 package org.keycloak.services.managers;
 
 import org.keycloak.Config;
-import org.keycloak.common.Profile;
 import org.keycloak.common.enums.SslRequired;
 import org.keycloak.migration.MigrationModelManager;
-import org.keycloak.models.AccountRoles;
-import org.keycloak.models.AdminRoles;
-import org.keycloak.models.BrowserSecurityHeaders;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.Constants;
-import org.keycloak.models.ImpersonationConstants;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.OTPPolicy;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RealmProvider;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionProvider;
+import org.keycloak.models.*;
 import org.keycloak.models.session.UserSessionPersisterProvider;
-import org.keycloak.models.utils.DefaultAuthenticationFlows;
-import org.keycloak.models.utils.DefaultClientScopes;
-import org.keycloak.models.utils.DefaultRequiredActions;
-import org.keycloak.models.utils.KeycloakModelUtils;
-import org.keycloak.models.utils.RepresentationToModel;
+import org.keycloak.models.utils.*;
 import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.protocol.oidc.OIDCConfigAttributes;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.OIDCLoginProtocolFactory;
 import org.keycloak.protocol.oidc.mappers.AudienceResolveProtocolMapper;
-import org.keycloak.representations.idm.ApplicationRepresentation;
-import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.ClientScopeRepresentation;
-import org.keycloak.representations.idm.OAuthClientRepresentation;
-import org.keycloak.representations.idm.RealmEventsConfigRepresentation;
-import org.keycloak.representations.idm.RealmRepresentation;
-import org.keycloak.representations.idm.RoleRepresentation;
+import org.keycloak.representations.idm.*;
+import org.keycloak.services.clientregistration.policy.DefaultClientRegistrationPolicies;
 import org.keycloak.sessions.AuthenticationSessionProvider;
 import org.keycloak.storage.UserStorageProviderModel;
-import org.keycloak.services.clientregistration.policy.DefaultClientRegistrationPolicies;
+import org.keycloak.utils.ReservedCharValidator;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import org.keycloak.utils.ReservedCharValidator;
 
 /**
  * Per request object
@@ -159,7 +135,8 @@ public class RealmManager {
 
     protected void setupAdminConsole(RealmModel realm) {
         ClientModel adminConsole = realm.getClientByClientId(Constants.ADMIN_CONSOLE_CLIENT_ID);
-        if (adminConsole == null) adminConsole = KeycloakModelUtils.createClient(realm, Constants.ADMIN_CONSOLE_CLIENT_ID);
+        if (adminConsole == null)
+            adminConsole = KeycloakModelUtils.createClient(realm, Constants.ADMIN_CONSOLE_CLIENT_ID);
         adminConsole.setName("${client_" + Constants.ADMIN_CONSOLE_CLIENT_ID + "}");
 
         adminConsole.setRootUrl(Constants.AUTH_ADMIN_URL_PROP);
@@ -204,6 +181,7 @@ public class RealmManager {
         }
 
     }
+
     public void addQueryCompositeRoles(ClientModel realmAccess) {
         RoleModel queryClients = realmAccess.getRole(AdminRoles.QUERY_CLIENTS);
         RoleModel queryUsers = realmAccess.getRole(AdminRoles.QUERY_USERS);
@@ -224,7 +202,6 @@ public class RealmManager {
     public String getRealmAdminClientId(RealmRepresentation realm) {
         return Constants.REALM_MANAGEMENT_CLIENT_ID;
     }
-
 
 
     protected void setupRealmDefaults(RealmModel realm) {
@@ -270,7 +247,7 @@ public class RealmManager {
                 authSessions.onRealmRemoved(realm);
             }
 
-          // Refresh periodic sync tasks for configured storageProviders
+            // Refresh periodic sync tasks for configured storageProviders
             List<UserStorageProviderModel> storageProviders = realm.getUserStorageProviders();
             UserStorageSyncManager storageSync = new UserStorageSyncManager();
             for (UserStorageProviderModel provider : storageProviders) {
@@ -287,13 +264,13 @@ public class RealmManager {
         if (rep.getEventsListeners() != null) {
             realm.setEventsListeners(new HashSet<>(rep.getEventsListeners()));
         }
-        if(rep.getEnabledEventTypes() != null) {
+        if (rep.getEnabledEventTypes() != null) {
             realm.setEnabledEventTypes(new HashSet<>(rep.getEnabledEventTypes()));
         }
-        if(rep.isAdminEventsEnabled() != null) {
+        if (rep.isAdminEventsEnabled() != null) {
             realm.setAdminEventsEnabled(rep.isAdminEventsEnabled());
         }
-        if(rep.isAdminEventsDetailsEnabled() != null){
+        if (rep.isAdminEventsDetailsEnabled() != null) {
             realm.setAdminEventsDetailsEnabled(rep.isAdminEventsDetailsEnabled());
         }
     }
@@ -306,7 +283,7 @@ public class RealmManager {
         ClientModel masterApp = adminRealm.getClientByClientId(KeycloakModelUtils.getMasterRealmAdminApplicationClientId(realm.getName()));
         if (masterApp != null) {
             realm.setMasterAdminClient(masterApp);
-        }  else {
+        } else {
             createMasterAdminManagement(realm);
         }
     }
@@ -327,7 +304,7 @@ public class RealmManager {
             adminRealm = model.getRealm(Config.getAdminRealm());
             adminRole = adminRealm.getRole(AdminRoles.ADMIN);
         }
-        adminRole.setDescription("${role_"+AdminRoles.ADMIN+"}");
+        adminRole.setDescription("${role_" + AdminRoles.ADMIN + "}");
 
         ClientModel realmAdminApp = KeycloakModelUtils.createClient(adminRealm, KeycloakModelUtils.getMasterRealmAdminApplicationClientId(realm.getName()));
         // No localized name for now
@@ -337,7 +314,7 @@ public class RealmManager {
 
         for (String r : AdminRoles.ALL_REALM_ROLES) {
             RoleModel role = realmAdminApp.addRole(r);
-            role.setDescription("${role_"+r+"}");
+            role.setDescription("${role_" + r + "}");
             adminRole.addCompositeRole(role);
         }
         addQueryCompositeRoles(realmAdminApp);
@@ -359,7 +336,9 @@ public class RealmManager {
 
 
     private void setupRealmAdminManagement(RealmModel realm) {
-        if (realm.getName().equals(Config.getAdminRealm())) { return; } // don't need to do this for master realm
+        if (realm.getName().equals(Config.getAdminRealm())) {
+            return;
+        } // don't need to do this for master realm
 
         String realmAdminClientId = getRealmAdminClientId(realm);
         ClientModel realmAdminClient = realm.getClientByClientId(realmAdminClientId);
@@ -387,7 +366,9 @@ public class RealmManager {
 
 
     private void checkRealmAdminManagementRoles(RealmModel realm) {
-        if (realm.getName().equals(Config.getAdminRealm())) { return; } // don't need to do this for master realm
+        if (realm.getName().equals(Config.getAdminRealm())) {
+            return;
+        } // don't need to do this for master realm
 
         String realmAdminClientId = getRealmAdminClientId(realm);
         ClientModel realmAdminClient = realm.getClientByClientId(realmAdminClientId);
@@ -488,7 +469,7 @@ public class RealmManager {
 
             for (String role : Constants.BROKER_SERVICE_ROLES) {
                 RoleModel roleModel = client.addRole(role);
-                roleModel.setDescription("${role_"+ role.toLowerCase().replaceAll("_", "-") +"}");
+                roleModel.setDescription("${role_" + role.toLowerCase().replaceAll("_", "-") + "}");
             }
         }
     }
@@ -565,7 +546,7 @@ public class RealmManager {
 
                 if (Boolean.TRUE.equals(client.getAuthorizationServicesEnabled())) {
                     RepresentationToModel.createResourceServer(clientModel, session, true);
-                    if(!skipUserDependent) {
+                    if (!skipUserDependent) {
                         RepresentationToModel.importAuthorizationSettings(client, clientModel, session);
                     }
                 }
@@ -579,9 +560,9 @@ public class RealmManager {
         }
 
         if (rep.getRoles() != null || hasRealmAdminManagementClient(rep)) {
-        	// Assert all admin roles are available once import took place. This is needed due to import from previous version where JSON file may not contain all admin roles
-        	checkMasterAdminManagementRoles(realm);
-        	checkRealmAdminManagementRoles(realm);
+            // Assert all admin roles are available once import took place. This is needed due to import from previous version where JSON file may not contain all admin roles
+            checkMasterAdminManagementRoles(realm);
+            checkRealmAdminManagementRoles(realm);
         }
 
         // Could happen when migrating from older version and I have exported JSON file, which contains "realm-management" client but not "impersonation" client
@@ -589,7 +570,7 @@ public class RealmManager {
         if (postponeImpersonationSetup) {
             setupImpersonationService(realm);
             String realmAdminClientId = getRealmAdminClientId(realm);
-         }
+        }
 
         if (postponeAdminCliSetup) {
             setupAdminCli(realm);
@@ -626,7 +607,7 @@ public class RealmManager {
     }
 
     private boolean hasRealmAdminManagementClient(RealmRepresentation rep) {
-        String realmAdminClientId =  Config.getAdminRealm().equals(rep.getRealm()) ?  KeycloakModelUtils.getMasterRealmAdminApplicationClientId(rep.getRealm()) : getRealmAdminClientId(rep);
+        String realmAdminClientId = Config.getAdminRealm().equals(rep.getRealm()) ? KeycloakModelUtils.getMasterRealmAdminApplicationClientId(rep.getRealm()) : getRealmAdminClientId(rep);
         return hasClient(rep, realmAdminClientId);
     }
 
@@ -734,6 +715,7 @@ public class RealmManager {
             public RealmModel getCreatedRealm() {
                 return realm;
             }
+
             @Override
             public KeycloakSession getKeycloakSession() {
                 return session;

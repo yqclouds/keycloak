@@ -29,18 +29,19 @@ import org.keycloak.provider.ProviderFactory;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public interface IdentityProviderMapper extends Provider, ProviderFactory<IdentityProviderMapper>,ConfiguredProvider {
+public interface IdentityProviderMapper extends Provider, ProviderFactory<IdentityProviderMapper>, ConfiguredProvider {
     String ANY_PROVIDER = "*";
 
     String[] getCompatibleProviders();
+
     String getDisplayCategory();
+
     String getDisplayType();
 
     /**
      * Called to determine what keycloak username and email to use to process the login request from the external IDP.
      * It's called before "FirstBrokerLogin" flow, so can be used to map attributes to BrokeredIdentityContext ( BrokeredIdentityContext.setUserAttribute ),
      * which will be available on "Review Profile" page and in authenticators during FirstBrokerLogin flow
-     *
      *
      * @param session
      * @param realm

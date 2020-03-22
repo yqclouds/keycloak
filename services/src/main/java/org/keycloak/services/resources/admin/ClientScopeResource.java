@@ -21,43 +21,32 @@ import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ModelDuplicateException;
-import org.keycloak.models.ModelException;
-import org.keycloak.models.RealmModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.ClientScopeRepresentation;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 
 /**
  * Base resource class for managing one particular client of a realm.
  *
- * @resource Client Scopes
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
+ * @resource Client Scopes
  */
 public class ClientScopeResource {
     protected static final Logger logger = Logger.getLogger(ClientScopeResource.class);
     protected RealmModel realm;
-    private AdminPermissionEvaluator auth;
-    private AdminEventBuilder adminEvent;
     protected ClientScopeModel clientScope;
     protected KeycloakSession session;
+    private AdminPermissionEvaluator auth;
+    private AdminEventBuilder adminEvent;
 
     public ClientScopeResource(RealmModel realm, AdminPermissionEvaluator auth, ClientScopeModel clientScope, KeycloakSession session, AdminEventBuilder adminEvent) {
         this.realm = realm;
@@ -91,6 +80,7 @@ public class ClientScopeResource {
 
     /**
      * Update the client scope
+     *
      * @param rep
      * @return
      */
@@ -129,7 +119,6 @@ public class ClientScopeResource {
 
     /**
      * Delete the client scope
-     *
      */
     @DELETE
     @NoCache
@@ -144,7 +133,6 @@ public class ClientScopeResource {
             return ErrorResponse.error(me.getMessage(), Response.Status.BAD_REQUEST);
         }
     }
-
 
 
 }

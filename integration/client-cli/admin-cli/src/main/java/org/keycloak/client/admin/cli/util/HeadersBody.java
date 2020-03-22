@@ -49,7 +49,7 @@ public class HeadersBody {
     }
 
     public String readBodyString() {
-        byte [] buffer = readBodyBytes();
+        byte[] buffer = readBodyBytes();
         return new String(buffer, Charset.forName(getContentCharset()));
     }
 

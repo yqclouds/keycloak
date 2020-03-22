@@ -40,7 +40,7 @@ public interface IdentityProviderFactory<T extends IdentityProvider> extends Pro
      * <code>model</code>.</p>
      *
      * @param session
-     * @param model The configuration to be used to create the identity provider.
+     * @param model   The configuration to be used to create the identity provider.
      * @return
      */
     T create(KeycloakSession session, IdentityProviderModel model);
@@ -57,10 +57,10 @@ public interface IdentityProviderFactory<T extends IdentityProvider> extends Pro
 
     /**
      * <p>Creates a provider specific {@link IdentityProviderModel} instance.
-     * 
+     *
      * <p>Providers may want to implement their own {@link IdentityProviderModel} type so that validations
      * can be performed when managing the provider configuration
-     * 
+     *
      * @return the provider specific instance
      */
     <C extends IdentityProviderModel> C createConfig();

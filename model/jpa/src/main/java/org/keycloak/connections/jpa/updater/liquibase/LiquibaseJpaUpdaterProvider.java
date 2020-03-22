@@ -64,16 +64,17 @@ import java.util.Set;
  */
 public class LiquibaseJpaUpdaterProvider implements JpaUpdaterProvider {
 
-    private static final Logger logger = Logger.getLogger(LiquibaseJpaUpdaterProvider.class);
-
     public static final String CHANGELOG = "META-INF/jpa-changelog-master.xml";
-
     public static final String DEPLOYMENT_ID_COLUMN = "DEPLOYMENT_ID";
-
+    private static final Logger logger = Logger.getLogger(LiquibaseJpaUpdaterProvider.class);
     private final KeycloakSession session;
 
     public LiquibaseJpaUpdaterProvider(KeycloakSession session) {
         this.session = session;
+    }
+
+    public static String getTable(String table, String defaultSchema) {
+        return defaultSchema != null ? defaultSchema + "." + table : table;
     }
 
     @Override
@@ -140,7 +141,7 @@ public class LiquibaseJpaUpdaterProvider implements JpaUpdaterProvider {
                 changelogHistoryService.generateDeploymentId();
                 String deploymentId = changelogHistoryService.getDeploymentId();
 
-                logger.debugv("Adding missing column {0}={1} to {2} table", DEPLOYMENT_ID_COLUMN, deploymentId,changelogTable.getName());
+                logger.debugv("Adding missing column {0}={1} to {2} table", DEPLOYMENT_ID_COLUMN, deploymentId, changelogTable.getName());
 
                 List<SqlStatement> statementsToExecute = new ArrayList<>();
                 statementsToExecute.add(new AddColumnStatement(database.getLiquibaseCatalogName(), database.getLiquibaseSchemaName(),
@@ -296,10 +297,6 @@ public class LiquibaseJpaUpdaterProvider implements JpaUpdaterProvider {
 
     @Override
     public void close() {
-    }
-
-    public static String getTable(String table, String defaultSchema) {
-        return defaultSchema != null ? defaultSchema + "." + table : table;
     }
 
 }

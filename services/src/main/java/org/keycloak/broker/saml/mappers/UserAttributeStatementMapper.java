@@ -3,16 +3,6 @@
  */
 package org.keycloak.broker.saml.mappers;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
 import org.keycloak.broker.provider.AbstractIdentityProviderMapper;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.saml.SAMLEndpoint;
@@ -27,28 +17,25 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.provider.ProviderConfigProperty;
 
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 /**
  * @author <a href="mailto:frelibert@yahoo.com">Frederik Libert</a>
- *
  */
 public class UserAttributeStatementMapper extends AbstractIdentityProviderMapper {
 
-    private static final String USER_ATTR_LOCALE = "locale";
-
-    private static final String[] COMPATIBLE_PROVIDERS = {SAMLIdentityProviderFactory.PROVIDER_ID};
-
-    private static final List<ProviderConfigProperty> CONFIG_PROPERTIES = new ArrayList<>();
-
     public static final String ATTRIBUTE_NAME_PATTERN = "attribute.name.pattern";
-
     public static final String USER_ATTRIBUTE_FIRST_NAME = "user.attribute.firstName";
-
     public static final String USER_ATTRIBUTE_LAST_NAME = "user.attribute.lastName";
-
     public static final String USER_ATTRIBUTE_EMAIL = "user.attribute.email";
-
     public static final String USER_ATTRIBUTE_LANGUAGE = "user.attribute.language";
-    
+    public static final String PROVIDER_ID = "saml-user-attributestatement-idp-mapper";
+    private static final String USER_ATTR_LOCALE = "locale";
+    private static final String[] COMPATIBLE_PROVIDERS = {SAMLIdentityProviderFactory.PROVIDER_ID};
+    private static final List<ProviderConfigProperty> CONFIG_PROPERTIES = new ArrayList<>();
     private static final String USE_FRIENDLY_NAMES = "use.friendly.names";
 
     static {
@@ -90,8 +77,6 @@ public class UserAttributeStatementMapper extends AbstractIdentityProviderMapper
         property.setType(ProviderConfigProperty.BOOLEAN_TYPE);
         CONFIG_PROPERTIES.add(property);
     }
-
-    public static final String PROVIDER_ID = "saml-user-attributestatement-idp-mapper";
 
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {
@@ -141,7 +126,7 @@ public class UserAttributeStatementMapper extends AbstractIdentityProviderMapper
                     setIfNotEmpty(context::setLastName, attributeValuesInContext);
                 } else if (Objects.equals(attribute, langAttribute)) {
                     context.setUserAttribute(USER_ATTR_LOCALE, attributeValuesInContext);
-                } 
+                }
             }
         }
     }
@@ -177,13 +162,13 @@ public class UserAttributeStatementMapper extends AbstractIdentityProviderMapper
             } else if (Objects.equals(attribute, lastNameAttribute)) {
                 setIfNotEmpty(context::setLastName, attributeValuesInContext);
             } else if (Objects.equals(attribute, langAttribute)) {
-                if(attributeValuesInContext == null) {
+                if (attributeValuesInContext == null) {
                     user.removeAttribute(USER_ATTR_LOCALE);
                 } else {
                     user.setAttribute(USER_ATTR_LOCALE, attributeValuesInContext);
                 }
                 assertedUserAttributes.add(USER_ATTR_LOCALE);
-            } 
+            }
             // Mark attribute as handled
             assertedUserAttributes.add(attribute);
         }
@@ -205,10 +190,10 @@ public class UserAttributeStatementMapper extends AbstractIdentityProviderMapper
         AssertionType assertion = (AssertionType) context.getContextData().get(SAMLEndpoint.SAML_ASSERTION);
 
         return assertion.getAttributeStatements().stream()//
-            .flatMap(statement -> statement.getAttributes().stream())//
-            .filter(item -> !attributePattern.isPresent() || attributePattern.get().matcher(item.getAttribute().getName()).matches())//
-            .map(ASTChoiceType::getAttribute)//
-            .collect(Collectors.toList());
+                .flatMap(statement -> statement.getAttributes().stream())//
+                .filter(item -> !attributePattern.isPresent() || attributePattern.get().matcher(item.getAttribute().getName()).matches())//
+                .map(ASTChoiceType::getAttribute)//
+                .collect(Collectors.toList());
     }
 
     private void setIfNotEmpty(Consumer<String> consumer, List<String> values) {

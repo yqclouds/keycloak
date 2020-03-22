@@ -17,33 +17,6 @@
  */
 package org.keycloak.authorization.admin;
 
-import static org.keycloak.models.utils.ModelToRepresentation.toRepresentation;
-import static org.keycloak.models.utils.RepresentationToModel.toModel;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.authorization.AuthorizationProvider;
@@ -57,11 +30,7 @@ import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.common.util.PathMatcher;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.Constants;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.representations.idm.authorization.ResourceOwnerRepresentation;
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
@@ -69,6 +38,17 @@ import org.keycloak.representations.idm.authorization.ScopeRepresentation;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static org.keycloak.models.utils.ModelToRepresentation.toRepresentation;
+import static org.keycloak.models.utils.RepresentationToModel.toModel;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -365,19 +345,19 @@ public class ResourceSetService {
         Map<String, String[]> search = new HashMap<>();
 
         if (id != null && !"".equals(id.trim())) {
-            search.put("id", new String[] {id});
+            search.put("id", new String[]{id});
         }
 
         if (name != null && !"".equals(name.trim())) {
-            search.put("name", new String[] {name});
-            
+            search.put("name", new String[]{name});
+
             if (exactName != null && exactName) {
-                search.put(Resource.EXACT_NAME, new String[] {Boolean.TRUE.toString()});
+                search.put(Resource.EXACT_NAME, new String[]{Boolean.TRUE.toString()});
             }
         }
 
         if (uri != null && !"".equals(uri.trim())) {
-            search.put("uri", new String[] {uri});
+            search.put("uri", new String[]{uri});
         }
 
         if (owner != null && !"".equals(owner.trim())) {
@@ -394,17 +374,17 @@ public class ResourceSetService {
                 }
             }
 
-            search.put("owner", new String[] {owner});
+            search.put("owner", new String[]{owner});
         }
 
         if (type != null && !"".equals(type.trim())) {
-            search.put("type", new String[] {type});
+            search.put("type", new String[]{type});
         }
 
         if (scope != null && !"".equals(scope.trim())) {
             HashMap<String, String[]> scopeFilter = new HashMap<>();
 
-            scopeFilter.put("name", new String[] {scope});
+            scopeFilter.put("name", new String[]{scope});
 
             List<Scope> scopes = authorization.getStoreFactory().getScopeStore().findByResourceServer(scopeFilter, resourceServer.getId(), -1, -1);
 
@@ -420,8 +400,8 @@ public class ResourceSetService {
         if (matchingUri != null && matchingUri && resources.isEmpty()) {
             HashMap<String, String[]> attributes = new HashMap<>();
 
-            attributes.put("uri_not_null", new String[] {"true"});
-            attributes.put("owner", new String[] {resourceServer.getId()});
+            attributes.put("uri_not_null", new String[]{"true"});
+            attributes.put("owner", new String[]{resourceServer.getId()});
 
             List<Resource> serverResources = storeFactory.getResourceStore().findByResourceServer(attributes, this.resourceServer.getId(), firstResult != null ? firstResult : -1, maxResult != null ? maxResult : -1);
 

@@ -32,16 +32,15 @@ public class Comparators {
         return new UserSessionTimestampComparator();
     }
 
+    public static Comparator<UserSessionEntity> userSessionLastSessionRefresh() {
+        return new UserSessionLastSessionRefreshComparator();
+    }
+
     private static class UserSessionTimestampComparator implements Comparator<UserSessionTimestamp>, Serializable {
         @Override
         public int compare(UserSessionTimestamp u1, UserSessionTimestamp u2) {
             return u1.getClientSessionTimestamp() - u2.getClientSessionTimestamp();
         }
-    }
-
-
-    public static Comparator<UserSessionEntity> userSessionLastSessionRefresh() {
-        return new UserSessionLastSessionRefreshComparator();
     }
 
     private static class UserSessionLastSessionRefreshComparator implements Comparator<UserSessionEntity>, Serializable {

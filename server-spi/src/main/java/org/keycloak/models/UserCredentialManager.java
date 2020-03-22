@@ -63,6 +63,7 @@ public interface UserCredentialManager extends UserCredentialStore {
 
     /**
      * Creates a credential from the credentialModel, by looping through the providers to find a match for the type
+     *
      * @param realm
      * @param user
      * @param model
@@ -72,6 +73,7 @@ public interface UserCredentialManager extends UserCredentialStore {
 
     /**
      * Updates the credential label and invalidates the cache for the user.
+     *
      * @param realm
      * @param user
      * @param credentialId
@@ -125,7 +127,6 @@ public interface UserCredentialManager extends UserCredentialStore {
      * Given a CredentialInput, authenticate the user.  This is used in the case where the credential must be processed
      * to determine and find the user.  An example is Kerberos where the kerberos token might be validated and processed
      * by a variety of different storage providers.
-     *
      *
      * @param session
      * @param realm

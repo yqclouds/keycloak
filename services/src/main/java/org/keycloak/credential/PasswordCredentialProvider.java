@@ -19,16 +19,11 @@ package org.keycloak.credential;
 import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
 import org.keycloak.credential.hash.PasswordHashProvider;
-import org.keycloak.models.ModelException;
-import org.keycloak.models.credential.PasswordCredentialModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.PasswordPolicy;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserCredentialModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.cache.CachedUserModel;
 import org.keycloak.models.cache.OnUserCache;
 import org.keycloak.models.cache.UserCache;
+import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.policy.PasswordPolicyManagerProvider;
 import org.keycloak.policy.PolicyError;
 
@@ -113,7 +108,7 @@ public class PasswordCredentialProvider implements CredentialProvider<PasswordCr
                 getCredentialStore().createCredential(realm, user, oldPassword);
             }
         }
-        
+
         // 3) remove old password history items
         List<CredentialModel> passwordHistoryList = getCredentialStore().getStoredCredentialsByType(realm, user, PasswordCredentialModel.PASSWORD_HISTORY);
         final int passwordHistoryListMaxSize = Math.max(0, expiredPasswordsPolicyValue - 1);

@@ -16,18 +16,14 @@
  */
 package org.keycloak.saml.processing.core.saml.v2.util;
 
+import org.keycloak.common.util.Time;
 import org.keycloak.saml.common.PicketLinkLogger;
 import org.keycloak.saml.common.PicketLinkLoggerFactory;
 import org.keycloak.saml.common.constants.GeneralConstants;
 import org.keycloak.saml.common.util.SecurityActions;
 import org.keycloak.saml.common.util.SystemPropertiesUtil;
-import org.keycloak.common.util.Time;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeConstants;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.Duration;
-import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.datatype.*;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
@@ -41,13 +37,22 @@ import java.util.concurrent.TimeUnit;
 public class XMLTimeUtil {
 
     private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final ThreadLocal<DatatypeFactory> DATATYPE_FACTORY = new ThreadLocal<DatatypeFactory>() {
+        @Override
+        protected DatatypeFactory initialValue() {
+            try {
+                return newDatatypeFactory();
+            } catch (DatatypeConfigurationException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    };
 
     /**
      * Add additional time in miliseconds
      *
-     * @param value calendar whose value needs to be updated
+     * @param value  calendar whose value needs to be updated
      * @param millis
-     *
      * @return calendar value with the addition
      */
     public static XMLGregorianCalendar add(XMLGregorianCalendar value, long millis) {
@@ -72,11 +77,10 @@ public class XMLTimeUtil {
      *
      * @param value
      * @param millis miliseconds entered in a positive value
-     *
      * @return
      */
     public static XMLGregorianCalendar subtract(XMLGregorianCalendar value, long millis) {
-        return add(value, - millis);
+        return add(value, -millis);
     }
 
     /**
@@ -85,7 +89,6 @@ public class XMLTimeUtil {
      * "GMT"
      *
      * @param timezone
-     *
      * @return
      */
     public static XMLGregorianCalendar getIssueInstant(String timezone) {
@@ -131,7 +134,6 @@ public class XMLTimeUtil {
      * Convert the minutes into miliseconds
      *
      * @param valueInMins
-     *
      * @return
      */
     public static long inMilis(int valueInMins) {
@@ -144,7 +146,6 @@ public class XMLTimeUtil {
      * @param now
      * @param notbefore
      * @param notOnOrAfter
-     *
      * @return
      */
     public static boolean isValid(XMLGregorianCalendar now, XMLGregorianCalendar notbefore, XMLGregorianCalendar notOnOrAfter) {
@@ -175,7 +176,6 @@ public class XMLTimeUtil {
      * be calculated in milliseconds.
      *
      * @param timeValue
-     *
      * @return
      */
     public static Duration parseAsDuration(String timeValue) {
@@ -201,7 +201,6 @@ public class XMLTimeUtil {
      * Given a string representing xml time, parse into {@code XMLGregorianCalendar}
      *
      * @param timeString
-     *
      * @return
      */
     public static XMLGregorianCalendar parse(String timeString) {
@@ -209,22 +208,10 @@ public class XMLTimeUtil {
         return factory.newXMLGregorianCalendar(timeString);
     }
 
-    private static final ThreadLocal<DatatypeFactory> DATATYPE_FACTORY = new ThreadLocal<DatatypeFactory>() {
-        @Override
-        protected DatatypeFactory initialValue() {
-            try {
-                return newDatatypeFactory();
-            } catch (DatatypeConfigurationException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    };
-
     /**
      * Create a new {@link DatatypeFactory}
      *
      * @return
-     *
      * @throws DatatypeConfigurationException
      */
     private static DatatypeFactory newDatatypeFactory() throws DatatypeConfigurationException {

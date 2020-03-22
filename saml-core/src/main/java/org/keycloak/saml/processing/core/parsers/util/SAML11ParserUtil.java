@@ -16,29 +16,12 @@
  */
 package org.keycloak.saml.processing.core.parsers.util;
 
-import org.keycloak.dom.saml.v1.assertion.SAML11ActionType;
-import org.keycloak.dom.saml.v1.assertion.SAML11AttributeStatementType;
-import org.keycloak.dom.saml.v1.assertion.SAML11AttributeType;
-import org.keycloak.dom.saml.v1.assertion.SAML11AudienceRestrictionCondition;
-import org.keycloak.dom.saml.v1.assertion.SAML11AuthenticationStatementType;
-import org.keycloak.dom.saml.v1.assertion.SAML11AuthorityBindingType;
-import org.keycloak.dom.saml.v1.assertion.SAML11AuthorizationDecisionStatementType;
-import org.keycloak.dom.saml.v1.assertion.SAML11ConditionsType;
-import org.keycloak.dom.saml.v1.assertion.SAML11DecisionType;
-import org.keycloak.dom.saml.v1.assertion.SAML11SubjectConfirmationType;
-import org.keycloak.dom.saml.v1.assertion.SAML11SubjectLocalityType;
-import org.keycloak.dom.saml.v1.assertion.SAML11SubjectStatementType;
-import org.keycloak.dom.saml.v1.assertion.SAML11SubjectType;
+import org.keycloak.dom.saml.v1.assertion.*;
 import org.keycloak.dom.saml.v1.protocol.SAML11AttributeQueryType;
 import org.keycloak.dom.saml.v1.protocol.SAML11AuthenticationQueryType;
 import org.keycloak.dom.saml.v1.protocol.SAML11AuthorizationDecisionQueryType;
 import org.keycloak.dom.saml.v2.assertion.SubjectConfirmationDataType;
-import org.keycloak.dom.xmlsec.w3.xmldsig.DSAKeyValueType;
-import org.keycloak.dom.xmlsec.w3.xmldsig.KeyInfoType;
-import org.keycloak.dom.xmlsec.w3.xmldsig.KeyValueType;
-import org.keycloak.dom.xmlsec.w3.xmldsig.RSAKeyValueType;
-import org.keycloak.dom.xmlsec.w3.xmldsig.X509CertificateType;
-import org.keycloak.dom.xmlsec.w3.xmldsig.X509DataType;
+import org.keycloak.dom.xmlsec.w3.xmldsig.*;
 import org.keycloak.saml.common.PicketLinkLogger;
 import org.keycloak.saml.common.PicketLinkLoggerFactory;
 import org.keycloak.saml.common.constants.GeneralConstants;
@@ -50,8 +33,9 @@ import org.keycloak.saml.common.util.StaxParserUtil;
 import org.keycloak.saml.processing.core.parsers.saml.SAML11SubjectParser;
 import org.keycloak.saml.processing.core.saml.v1.SAML11Constants;
 import org.keycloak.saml.processing.core.saml.v2.util.XMLTimeUtil;
-
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
@@ -60,8 +44,6 @@ import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import java.net.URI;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * Utility for parsing SAML 1.1 payload
@@ -77,9 +59,7 @@ public class SAML11ParserUtil {
      * Parse the AuthnStatement inside the assertion
      *
      * @param xmlEventReader
-     *
      * @return
-     *
      * @throws ParsingException
      */
     public static SAML11AuthenticationStatementType parseAuthenticationStatement(XMLEventReader xmlEventReader)
@@ -177,9 +157,7 @@ public class SAML11ParserUtil {
      * Parse the {@link org.keycloak.dom.saml.v1.assertion.SAML11SubjectConfirmationType}
      *
      * @param xmlEventReader
-     *
      * @return
-     *
      * @throws ParsingException
      */
     public static SAML11SubjectConfirmationType parseSAML11SubjectConfirmation(XMLEventReader xmlEventReader)
@@ -225,9 +203,7 @@ public class SAML11ParserUtil {
      * Parse the {@link SubjectConfirmationDataType}
      *
      * @param xmlEventReader
-     *
      * @return
-     *
      * @throws ParsingException
      */
     public static SubjectConfirmationDataType parseSubjectConfirmationData(XMLEventReader xmlEventReader)
@@ -285,9 +261,7 @@ public class SAML11ParserUtil {
      * Parse an {@code SAML11AttributeStatementType}
      *
      * @param xmlEventReader
-     *
      * @return
-     *
      * @throws ParsingException
      */
     public static SAML11AttributeStatementType parseSAML11AttributeStatement(XMLEventReader xmlEventReader)
@@ -325,9 +299,7 @@ public class SAML11ParserUtil {
      * Parse a {@link SAML11AttributeType}
      *
      * @param xmlEventReader
-     *
      * @return
-     *
      * @throws ParsingException
      */
     public static SAML11AttributeType parseSAML11Attribute(XMLEventReader xmlEventReader) throws ParsingException {
@@ -357,7 +329,6 @@ public class SAML11ParserUtil {
      * Parse an {@code SAML11AttributeType}
      *
      * @param xmlEventReader
-     *
      * @throws ParsingException
      */
     public static void parseAttributeType(XMLEventReader xmlEventReader, StartElement startElement, String rootTag,
@@ -389,9 +360,7 @@ public class SAML11ParserUtil {
      * Parse Attribute value
      *
      * @param xmlEventReader
-     *
      * @return
-     *
      * @throws ParsingException
      */
     public static Object parseAttributeValue(XMLEventReader xmlEventReader) throws ParsingException {
@@ -466,9 +435,7 @@ public class SAML11ParserUtil {
      * Parse {@link org.keycloak.dom.saml.v1.assertion.SAML11ConditionsType}
      *
      * @param xmlEventReader
-     *
      * @return
-     *
      * @throws ParsingException
      */
     public static SAML11ConditionsType parseSAML11Conditions(XMLEventReader xmlEventReader) throws ParsingException {
@@ -640,9 +607,7 @@ public class SAML11ParserUtil {
      * Given a dsig:DSAKeyValue element, return {@link DSAKeyValueType}
      *
      * @param element
-     *
      * @return
-     *
      * @throws org.keycloak.saml.common.exceptions.ParsingException
      */
     private static DSAKeyValueType getDSAKeyValue(Element element) throws ParsingException {
@@ -681,9 +646,7 @@ public class SAML11ParserUtil {
      * Parse the {@link SAML11AttributeQueryType}
      *
      * @param xmlEventReader
-     *
      * @return
-     *
      * @throws ParsingException
      */
     public static SAML11AttributeQueryType parseSAML11AttributeQuery(XMLEventReader xmlEventReader) throws ParsingException {
@@ -719,9 +682,7 @@ public class SAML11ParserUtil {
      * Parse the {@link SAML11AttributeQueryType}
      *
      * @param xmlEventReader
-     *
      * @return
-     *
      * @throws ParsingException
      */
     public static SAML11AuthenticationQueryType parseSAML11AuthenticationQuery(XMLEventReader xmlEventReader)
@@ -758,9 +719,7 @@ public class SAML11ParserUtil {
      * Parse the {@link SAML11AuthorizationDecisionQueryType}
      *
      * @param xmlEventReader
-     *
      * @return
-     *
      * @throws ParsingException
      */
     public static SAML11AuthorizationDecisionQueryType parseSAML11AuthorizationDecisionQueryType(XMLEventReader xmlEventReader)

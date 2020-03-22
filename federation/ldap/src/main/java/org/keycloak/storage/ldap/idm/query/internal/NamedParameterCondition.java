@@ -50,12 +50,12 @@ public abstract class NamedParameterCondition implements Condition {
     }
 
     @Override
-    public void setBinary(boolean binary) {
-        this.binary = binary;
+    public boolean isBinary() {
+        return binary;
     }
 
     @Override
-    public boolean isBinary() {
-        return binary;
+    public void setBinary(boolean binary) {
+        this.binary = binary;
     }
 }

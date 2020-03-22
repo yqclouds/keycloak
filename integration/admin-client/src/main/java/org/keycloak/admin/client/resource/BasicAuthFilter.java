@@ -17,12 +17,12 @@
 
 package org.keycloak.admin.client.resource;
 
+import org.keycloak.common.util.Base64;
+
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.core.HttpHeaders;
 import java.io.IOException;
-
-import org.keycloak.common.util.Base64;
 
 /**
  * @author rodrigo.sasaki@icarros.com.br
@@ -43,6 +43,6 @@ public class BasicAuthFilter implements ClientRequestFilter {
         String authHeader = "Basic " + Base64.encodeBytes(pair.getBytes());
         requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION, authHeader);
     }
-    
-    
+
+
 }

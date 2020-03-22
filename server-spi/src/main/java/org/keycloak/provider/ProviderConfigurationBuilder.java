@@ -24,7 +24,6 @@ import java.util.List;
 /**
  * Builds a list of ProviderConfigProperty instances.
  *
- *
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class ProviderConfigurationBuilder {
@@ -54,6 +53,7 @@ public class ProviderConfigurationBuilder {
         properties.add(property);
         return this;
     }
+
     public ProviderConfigurationBuilder property(String name, String label, String helpText, String type, Object defaultValue, List<String> options) {
         ProviderConfigProperty property = new ProviderConfigProperty(name, label, helpText, type, defaultValue);
         property.setOptions(options);
@@ -110,11 +110,10 @@ public class ProviderConfigurationBuilder {
 
         /**
          * Property type.  i.e. boolean, string.
-         * @see ProviderConfigProperty
-         *
          *
          * @param type
          * @return
+         * @see ProviderConfigProperty
          */
         public ProviderConfigPropertyBuilder type(String type) {
             this.type = type;

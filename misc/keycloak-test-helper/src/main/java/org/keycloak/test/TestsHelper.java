@@ -27,13 +27,7 @@ import org.keycloak.admin.client.Keycloak;
 import org.keycloak.client.registration.Auth;
 import org.keycloak.client.registration.ClientRegistration;
 import org.keycloak.client.registration.ClientRegistrationException;
-import org.keycloak.representations.idm.ClientInitialAccessCreatePresentation;
-import org.keycloak.representations.idm.ClientInitialAccessPresentation;
-import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.CredentialRepresentation;
-import org.keycloak.representations.idm.RealmRepresentation;
-import org.keycloak.representations.idm.RoleRepresentation;
-import org.keycloak.representations.idm.UserRepresentation;
+import org.keycloak.representations.idm.*;
 import org.keycloak.test.builders.ClientBuilder;
 
 import javax.ws.rs.WebApplicationException;
@@ -60,8 +54,8 @@ public class TestsHelper {
     public static String initialAccessCode;
 
     public static String appName;
-    
-    public static int initialAccessTokenCount = 2; 
+
+    public static int initialAccessTokenCount = 2;
 
     protected static String clientConfiguration;
 
@@ -87,7 +81,7 @@ public class TestsHelper {
 
         return clientConfiguration;
     }
-    
+
     public static String createDirectGrantClient() {
         return createClient(ClientBuilder.create("test-dga").accessType(PUBLIC));
     }
@@ -106,7 +100,7 @@ public class TestsHelper {
 
     public static boolean testGetWithAuth(String endpoint, String token) throws IOException {
         CloseableHttpClient client = HttpClientBuilder.create().build();
-       
+
         try {
             HttpGet get = new HttpGet(baseUrl + endpoint);
             get.addHeader("Authorization", "Bearer " + token);
@@ -236,7 +230,7 @@ public class TestsHelper {
         representation.setName("user");
 
         keycloak.realms().realm(realmName).roles().create(representation);
-        RoleRepresentation realmRole =  keycloak.realms().realm(realmName).roles().get("user").toRepresentation();
+        RoleRepresentation realmRole = keycloak.realms().realm(realmName).roles().get("user").toRepresentation();
         keycloak.realms().realm(realmName).users().get(userId).roles().realmLevel().add(Arrays.asList(realmRole));
         return true;
 
@@ -255,5 +249,5 @@ public class TestsHelper {
         String path = location.getPath();
         return path.substring(path.lastIndexOf('/') + 1);
     }
-    
+
 }

@@ -34,7 +34,7 @@ public class DefaultThemeManagerFactory {
     private ConcurrentHashMap<ThemeKey, Theme> themeCache;
 
     public DefaultThemeManagerFactory() {
-        if(Config.scope("theme").getBoolean("cacheThemes", true)) {
+        if (Config.scope("theme").getBoolean("cacheThemes", true)) {
             themeCache = new ConcurrentHashMap<>();
         }
     }
@@ -81,13 +81,13 @@ public class DefaultThemeManagerFactory {
         private String name;
         private Theme.Type type;
 
-        public static ThemeKey get(String name, Theme.Type type) {
-            return new ThemeKey(name, type);
-        }
-
         private ThemeKey(String name, Theme.Type type) {
             this.name = name;
             this.type = type;
+        }
+
+        public static ThemeKey get(String name, Theme.Type type) {
+            return new ThemeKey(name, type);
         }
 
         public String getName() {

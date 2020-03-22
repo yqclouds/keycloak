@@ -18,15 +18,7 @@ package org.keycloak.services.managers;
 
 import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientSessionContext;
-import org.keycloak.models.Constants;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.models.session.UserSessionPersisterProvider;
 import org.keycloak.services.ServicesLogger;
 
@@ -36,7 +28,6 @@ import java.util.Set;
 
 
 /**
- *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class UserSessionManager {
@@ -146,7 +137,7 @@ public class UserSessionManager {
 
     private void createOfflineClientSession(UserModel user, AuthenticatedClientSessionModel clientSession, UserSessionModel offlineUserSession) {
         if (logger.isTraceEnabled()) {
-            logger.tracef("Creating new offline token client session. ClientSessionId: '%s', UserSessionID: '%s' , Username: '%s', Client: '%s'" ,
+            logger.tracef("Creating new offline token client session. ClientSessionId: '%s', UserSessionID: '%s' , Username: '%s', Client: '%s'",
                     clientSession.getId(), offlineUserSession.getId(), user.getUsername(), clientSession.getClient().getClientId());
         }
 
@@ -157,7 +148,7 @@ public class UserSessionManager {
     // Check if userSession has any offline clientSessions attached to it. Remove userSession if not
     private void checkOfflineUserSessionHasClientSessions(RealmModel realm, UserModel user, UserSessionModel userSession) {
         // TODO: Might need optimization to prevent loading client sessions from cache
-        if (! userSession.getAuthenticatedClientSessions().isEmpty()) {
+        if (!userSession.getAuthenticatedClientSessions().isEmpty()) {
             return;
         }
 

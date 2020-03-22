@@ -1,5 +1,8 @@
 package org.keycloak.models.cache.infinispan.stream;
 
+import org.infinispan.commons.marshall.Externalizer;
+import org.infinispan.commons.marshall.MarshallUtil;
+import org.infinispan.commons.marshall.SerializeWith;
 import org.keycloak.models.cache.infinispan.entities.InRealm;
 import org.keycloak.models.cache.infinispan.entities.Revisioned;
 
@@ -9,9 +12,6 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.function.Predicate;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.MarshallUtil;
-import org.infinispan.commons.marshall.SerializeWith;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -36,7 +36,7 @@ public class InRealmPredicate implements Predicate<Map.Entry<String, Revisioned>
         if (value == null) return false;
         if (!(value instanceof InRealm)) return false;
 
-        return realm.equals(((InRealm)value).getRealm());
+        return realm.equals(((InRealm) value).getRealm());
     }
 
     public static class ExternalizerImpl implements Externalizer<InRealmPredicate> {

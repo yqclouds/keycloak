@@ -40,7 +40,7 @@ public class CrossDCLastSessionRefreshStoreFactory extends AbstractLastSessionRe
 
     public CrossDCLastSessionRefreshStore createAndInit(KeycloakSession kcSession, Cache<String, SessionEntityWrapper<UserSessionEntity>> cache,
                                                         long timerIntervalMs, int maxIntervalBetweenMessagesSeconds, int maxCount, boolean offline) {
-        String eventKey = offline ? LSR_OFFLINE_PERIODIC_TASK_NAME :  LSR_PERIODIC_TASK_NAME;
+        String eventKey = offline ? LSR_OFFLINE_PERIODIC_TASK_NAME : LSR_PERIODIC_TASK_NAME;
         CrossDCLastSessionRefreshStore store = createStoreInstance(maxIntervalBetweenMessagesSeconds, maxCount, eventKey);
 
         // Register listener
@@ -57,7 +57,6 @@ public class CrossDCLastSessionRefreshStoreFactory extends AbstractLastSessionRe
     protected CrossDCLastSessionRefreshStore createStoreInstance(int maxIntervalBetweenMessagesSeconds, int maxCount, String eventKey) {
         return new CrossDCLastSessionRefreshStore(maxIntervalBetweenMessagesSeconds, maxCount, eventKey);
     }
-
 
 
 }

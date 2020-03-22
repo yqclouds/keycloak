@@ -17,17 +17,19 @@
 
 package org.keycloak.models;
 
+import org.jboss.logging.Logger;
+import org.keycloak.crypto.Algorithm;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.jboss.logging.Logger;
-import org.keycloak.crypto.Algorithm;
-
 public class WebAuthnPolicy implements Serializable {
 
     protected static final Logger logger = Logger.getLogger(WebAuthnPolicy.class);
+    // TODO : must be thread safe list
+    public static WebAuthnPolicy DEFAULT_POLICY = new WebAuthnPolicy(new ArrayList<>(Arrays.asList(Algorithm.ES256)));
     // required
     protected String rpEntityName;
     protected List<String> signatureAlgorithms;
@@ -47,9 +49,6 @@ public class WebAuthnPolicy implements Serializable {
     public WebAuthnPolicy(List<String> signatureAlgorithms) {
         this.signatureAlgorithms = signatureAlgorithms;
     }
-
-    // TODO : must be thread safe list
-    public static WebAuthnPolicy DEFAULT_POLICY = new WebAuthnPolicy(new ArrayList<>(Arrays.asList(Algorithm.ES256)));
 
     public String getRpEntityName() {
         return rpEntityName;

@@ -17,10 +17,6 @@
 
 package org.keycloak.models.sessions.infinispan.changes;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.jboss.logging.Logger;
@@ -31,6 +27,10 @@ import org.keycloak.models.sessions.infinispan.CacheDecorators;
 import org.keycloak.models.sessions.infinispan.entities.SessionEntity;
 import org.keycloak.models.sessions.infinispan.remotestore.RemoteCacheInvoker;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -164,7 +164,7 @@ public class InfinispanChangelogBasedTransaction<K, V extends SessionEntity> ext
     }
 
 
-    private void runOperationInCluster(K key, MergedUpdate<V> task,  SessionEntityWrapper<V> sessionWrapper) {
+    private void runOperationInCluster(K key, MergedUpdate<V> task, SessionEntityWrapper<V> sessionWrapper) {
         V session = sessionWrapper.getEntity();
         SessionUpdateTask.CacheOperation operation = task.getOperation(session);
 
@@ -198,7 +198,7 @@ public class InfinispanChangelogBasedTransaction<K, V extends SessionEntity> ext
                 replace(key, task, sessionWrapper);
                 break;
             default:
-                throw new IllegalStateException("Unsupported state " +  operation);
+                throw new IllegalStateException("Unsupported state " + operation);
         }
 
     }

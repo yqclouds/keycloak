@@ -17,21 +17,21 @@
 
 package org.keycloak.models.cache.infinispan.events;
 
-import java.util.Set;
-
-import org.keycloak.models.cache.infinispan.UserCacheManager;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.commons.marshall.SerializeWith;
+import org.keycloak.models.cache.infinispan.UserCacheManager;
+
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 @SerializeWith(UserCacheRealmInvalidationEvent.ExternalizerImpl.class)
-public class UserCacheRealmInvalidationEvent  extends InvalidationEvent implements UserCacheInvalidationEvent {
+public class UserCacheRealmInvalidationEvent extends InvalidationEvent implements UserCacheInvalidationEvent {
 
     private String realmId;
 

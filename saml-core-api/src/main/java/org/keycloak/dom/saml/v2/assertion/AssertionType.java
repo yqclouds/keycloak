@@ -20,11 +20,7 @@ import org.keycloak.dom.saml.common.CommonAssertionType;
 import org.w3c.dom.Element;
 
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * <complexType name="AssertionType"> <sequence> <element ref="saml:Issuer"/> <element ref="ds:Signature"
@@ -42,24 +38,18 @@ import java.util.Set;
  */
 public class AssertionType extends CommonAssertionType {
 
-    private Element signature;
-
     private final String version = "2.0";
-
-    private AdviceType advice;
-
-    private NameIDType issuer;
-
-    private SubjectType subject;
-
-    private ConditionsType conditions;
-
     private final Set<StatementAbstractType> statements = new LinkedHashSet<StatementAbstractType>();
+    private Element signature;
+    private AdviceType advice;
+    private NameIDType issuer;
+    private SubjectType subject;
+    private ConditionsType conditions;
 
     /**
      * Create an assertion
      *
-     * @param iD ID of the assertion (Required)
+     * @param iD           ID of the assertion (Required)
      * @param issueInstant {@link XMLGregorianCalendar} issue instant (required)
      * @param version
      */

@@ -23,11 +23,7 @@ import org.keycloak.authorization.admin.AuthorizationService;
 import org.keycloak.events.Errors;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ModelDuplicateException;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.authorization.ResourceServerRepresentation;
@@ -42,15 +38,7 @@ import org.keycloak.services.validation.PairwiseClientValidator;
 import org.keycloak.services.validation.ValidationMessages;
 import org.keycloak.validation.ClientValidationUtil;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -64,18 +52,17 @@ import static java.lang.Boolean.TRUE;
 /**
  * Base resource class for managing a realm's clients.
  *
- * @resource Clients
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
+ * @resource Clients
  */
 public class ClientsResource {
     protected static final Logger logger = Logger.getLogger(ClientsResource.class);
     protected RealmModel realm;
-    private AdminPermissionEvaluator auth;
-    private AdminEventBuilder adminEvent;
-
     @Context
     protected KeycloakSession session;
+    private AdminPermissionEvaluator auth;
+    private AdminEventBuilder adminEvent;
 
     public ClientsResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.realm = realm;
@@ -86,14 +73,14 @@ public class ClientsResource {
 
     /**
      * Get clients belonging to the realm
-     *
+     * <p>
      * Returns a list of clients belonging to the realm
      *
-     * @param clientId filter by clientId
+     * @param clientId     filter by clientId
      * @param viewableOnly filter clients that cannot be viewed in full by admin
-     * @param search whether this is a search query or a getClientById query
-     * @param firstResult the first result
-     * @param maxResults the max results to return
+     * @param search       whether this is a search query or a getClientById query
+     * @param firstResult  the first result
+     * @param maxResults   the max results to return
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -124,21 +111,21 @@ public class ClientsResource {
             }
         } else {
             List<ClientModel> clientModels = Collections.emptyList();
-            if(search) {
+            if (search) {
                 clientModels = realm.searchClientByClientId(clientId, firstResult, maxResults);
             } else {
                 ClientModel client = realm.getClientByClientId(clientId);
-                if(client != null) {
+                if (client != null) {
                     clientModels = Collections.singletonList(client);
                 }
             }
             if (clientModels != null) {
-                for(ClientModel clientModel : clientModels) {
+                for (ClientModel clientModel : clientModels) {
                     if (auth.clients().canView(clientModel)) {
                         ClientRepresentation representation = ModelToRepresentation.toRepresentation(clientModel, session);
                         representation.setAccess(auth.clients().getAccess(clientModel));
                         rep.add(representation);
-                    } else if (!viewableOnly && auth.clients().canView(clientModel)){
+                    } else if (!viewableOnly && auth.clients().canView(clientModel)) {
                         ClientRepresentation client = new ClientRepresentation();
                         client.setId(clientModel.getId());
                         client.setClientId(clientModel.getClientId());
@@ -157,7 +144,7 @@ public class ClientsResource {
 
     /**
      * Create a new client
-     *
+     * <p>
      * Client's client_id must be unique!
      *
      * @param rep

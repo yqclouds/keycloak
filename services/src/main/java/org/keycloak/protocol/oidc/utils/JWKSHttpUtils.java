@@ -27,13 +27,12 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class JWKSHttpUtils {
 
     public static JSONWebKeySet sendJwksRequest(KeycloakSession session, String jwksURI) throws IOException {
-        try (InputStream is = session.getProvider(HttpClientProvider.class).get(jwksURI)){
+        try (InputStream is = session.getProvider(HttpClientProvider.class).get(jwksURI)) {
             String keySetString = StreamUtil.readString(is);
             return JsonSerialization.readValue(keySetString, JSONWebKeySet.class);
         }

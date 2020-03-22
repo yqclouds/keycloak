@@ -17,11 +17,6 @@
 
 package org.keycloak.protocol.oidc.mappers;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
@@ -30,17 +25,21 @@ import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.IDToken;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class AudienceProtocolMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper {
 
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
-
     public static final String INCLUDED_CLIENT_AUDIENCE = "included.client.audience";
+    public static final String PROVIDER_ID = "oidc-audience-mapper";
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
     private static final String INCLUDED_CLIENT_AUDIENCE_LABEL = "included.client.audience.label";
     private static final String INCLUDED_CLIENT_AUDIENCE_HELP_TEXT = "included.client.audience.tooltip";
-
     private static final String INCLUDED_CUSTOM_AUDIENCE = "included.custom.audience";
     private static final String INCLUDED_CUSTOM_AUDIENCE_LABEL = "included.custom.audience.label";
     private static final String INCLUDED_CUSTOM_AUDIENCE_HELP_TEXT = "included.custom.audience.tooltip";
@@ -72,8 +71,28 @@ public class AudienceProtocolMapper extends AbstractOIDCProtocolMapper implement
         }
     }
 
-    public static final String PROVIDER_ID = "oidc-audience-mapper";
+    public static ProtocolMapperModel createClaimMapper(String name,
+                                                        String includedClientAudience,
+                                                        String includedCustomAudience,
+                                                        boolean accessToken, boolean idToken) {
+        ProtocolMapperModel mapper = new ProtocolMapperModel();
+        mapper.setName(name);
+        mapper.setProtocolMapper(PROVIDER_ID);
+        mapper.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
 
+        Map<String, String> config = new HashMap<>();
+        if (includedClientAudience != null) {
+            config.put(INCLUDED_CLIENT_AUDIENCE, includedClientAudience);
+        }
+        if (includedCustomAudience != null) {
+            config.put(INCLUDED_CUSTOM_AUDIENCE, includedCustomAudience);
+        }
+
+        if (accessToken) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ACCESS_TOKEN, "true");
+        if (idToken) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ID_TOKEN, "true");
+        mapper.setConfig(config);
+        return mapper;
+    }
 
     public List<ProviderConfigProperty> getConfigProperties() {
         return configProperties;
@@ -110,28 +129,5 @@ public class AudienceProtocolMapper extends AbstractOIDCProtocolMapper implement
 
         if (audienceValue == null) return;
         token.addAudience(audienceValue);
-    }
-
-    public static ProtocolMapperModel createClaimMapper(String name,
-                                                        String includedClientAudience,
-                                                        String includedCustomAudience,
-                                                        boolean accessToken, boolean idToken) {
-        ProtocolMapperModel mapper = new ProtocolMapperModel();
-        mapper.setName(name);
-        mapper.setProtocolMapper(PROVIDER_ID);
-        mapper.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
-
-        Map<String, String> config = new HashMap<>();
-        if (includedClientAudience != null) {
-            config.put(INCLUDED_CLIENT_AUDIENCE, includedClientAudience);
-        }
-        if (includedCustomAudience != null) {
-            config.put(INCLUDED_CUSTOM_AUDIENCE, includedCustomAudience);
-        }
-
-        if (accessToken) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ACCESS_TOKEN, "true");
-        if (idToken) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ID_TOKEN, "true");
-        mapper.setConfig(config);
-        return mapper;
     }
 }

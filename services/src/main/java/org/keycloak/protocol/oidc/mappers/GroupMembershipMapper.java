@@ -25,11 +25,7 @@ import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.IDToken;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Maps user group membership
@@ -39,6 +35,7 @@ import java.util.Map;
  */
 public class GroupMembershipMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
 
+    public static final String PROVIDER_ID = "oidc-group-membership-mapper";
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
 
     static {
@@ -54,8 +51,26 @@ public class GroupMembershipMapper extends AbstractOIDCProtocolMapper implements
         OIDCAttributeMapperHelper.addIncludeInTokensConfig(configProperties, GroupMembershipMapper.class);
     }
 
-    public static final String PROVIDER_ID = "oidc-group-membership-mapper";
+    public static boolean useFullPath(ProtocolMapperModel mappingModel) {
+        return "true".equals(mappingModel.getConfig().get("full.path"));
+    }
 
+    public static ProtocolMapperModel create(String name,
+                                             String tokenClaimName,
+                                             boolean consentRequired, String consentText,
+                                             boolean accessToken, boolean idToken) {
+        ProtocolMapperModel mapper = new ProtocolMapperModel();
+        mapper.setName(name);
+        mapper.setProtocolMapper(PROVIDER_ID);
+        mapper.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
+        Map<String, String> config = new HashMap<String, String>();
+        config.put(OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME, tokenClaimName);
+        if (accessToken) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ACCESS_TOKEN, "true");
+        if (idToken) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ID_TOKEN, "true");
+        mapper.setConfig(config);
+
+        return mapper;
+    }
 
     public List<ProviderConfigProperty> getConfigProperties() {
         return configProperties;
@@ -81,13 +96,9 @@ public class GroupMembershipMapper extends AbstractOIDCProtocolMapper implements
         return "Map user group membership";
     }
 
-    public static boolean useFullPath(ProtocolMapperModel mappingModel) {
-        return "true".equals(mappingModel.getConfig().get("full.path"));
-    }
-
-
     /**
      * Adds the group membership information to the {@link IDToken#otherClaims}.
+     *
      * @param token
      * @param mappingModel
      * @param userSession
@@ -106,23 +117,6 @@ public class GroupMembershipMapper extends AbstractOIDCProtocolMapper implements
         String protocolClaim = mappingModel.getConfig().get(OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME);
 
         token.getOtherClaims().put(protocolClaim, membership);
-    }
-
-    public static ProtocolMapperModel create(String name,
-                                      String tokenClaimName,
-                                      boolean consentRequired, String consentText,
-                                      boolean accessToken, boolean idToken) {
-        ProtocolMapperModel mapper = new ProtocolMapperModel();
-        mapper.setName(name);
-        mapper.setProtocolMapper(PROVIDER_ID);
-        mapper.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
-        Map<String, String> config = new HashMap<String, String>();
-        config.put(OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME, tokenClaimName);
-        if (accessToken) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ACCESS_TOKEN, "true");
-        if (idToken) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ID_TOKEN, "true");
-        mapper.setConfig(config);
-        
-        return mapper;
     }
 
 

@@ -17,7 +17,6 @@
 
 package org.keycloak.admin.client.token;
 
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.keycloak.admin.client.Config;
 import org.keycloak.admin.client.resource.BasicAuthFilter;
@@ -28,24 +27,19 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Form;
 
-import static org.keycloak.OAuth2Constants.CLIENT_CREDENTIALS;
-import static org.keycloak.OAuth2Constants.CLIENT_ID;
-import static org.keycloak.OAuth2Constants.GRANT_TYPE;
-import static org.keycloak.OAuth2Constants.PASSWORD;
-import static org.keycloak.OAuth2Constants.REFRESH_TOKEN;
+import static org.keycloak.OAuth2Constants.*;
 
 /**
  * @author rodrigo.sasaki@icarros.com.br
  */
 public class TokenManager {
     private static final long DEFAULT_MIN_VALIDITY = 30;
-
-    private AccessTokenResponse currentToken;
-    private long expirationTime;
-    private long minTokenValidity = DEFAULT_MIN_VALIDITY;
     private final Config config;
     private final TokenService tokenService;
     private final String accessTokenGrantType;
+    private AccessTokenResponse currentToken;
+    private long expirationTime;
+    private long minTokenValidity = DEFAULT_MIN_VALIDITY;
 
     public TokenManager(Config config, Client client) {
         this.config = config;
@@ -78,7 +72,7 @@ public class TokenManager {
         Form form = new Form().param(GRANT_TYPE, accessTokenGrantType);
         if (PASSWORD.equals(accessTokenGrantType)) {
             form.param("username", config.getUsername())
-                .param("password", config.getPassword());
+                    .param("password", config.getPassword());
         }
 
         if (config.isPublicClient()) {
@@ -95,7 +89,7 @@ public class TokenManager {
 
     public synchronized AccessTokenResponse refreshToken() {
         Form form = new Form().param(GRANT_TYPE, REFRESH_TOKEN)
-                              .param(REFRESH_TOKEN, currentToken.getRefreshToken());
+                .param(REFRESH_TOKEN, currentToken.getRefreshToken());
 
         if (config.isPublicClient()) {
             form.param(CLIENT_ID, config.getClientId());

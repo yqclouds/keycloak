@@ -111,11 +111,9 @@ public class SubjectType implements Serializable {
 
     public static class STSubType implements Serializable {
 
-        private BaseIDAbstractType baseID;
-
-        private EncryptedElementType encryptedID;
-
         protected List<SubjectConfirmationType> subjectConfirmation = new ArrayList<SubjectConfirmationType>();
+        private BaseIDAbstractType baseID;
+        private EncryptedElementType encryptedID;
 
         public void addBaseID(BaseIDAbstractType base) {
             this.baseID = base;

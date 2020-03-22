@@ -16,11 +16,10 @@
 
 package org.keycloak.credential;
 
-import com.webauthn4j.converter.util.ObjectConverter;
-import org.keycloak.common.util.Base64Url;
-
 import com.webauthn4j.converter.util.CborConverter;
+import com.webauthn4j.converter.util.ObjectConverter;
 import com.webauthn4j.data.attestation.statement.AttestationStatement;
+import org.keycloak.common.util.Base64Url;
 
 public class AttestationStatementConverter {
 

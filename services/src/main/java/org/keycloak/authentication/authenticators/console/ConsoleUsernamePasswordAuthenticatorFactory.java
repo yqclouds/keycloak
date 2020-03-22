@@ -35,6 +35,9 @@ import java.util.List;
 public class ConsoleUsernamePasswordAuthenticatorFactory implements AuthenticatorFactory {
 
     public static final String PROVIDER_ID = "console-username-password";
+    public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionModel.Requirement.REQUIRED
+    };
 
     @Override
     public Authenticator create(KeycloakSession session) {
@@ -70,9 +73,6 @@ public class ConsoleUsernamePasswordAuthenticatorFactory implements Authenticato
     public boolean isConfigurable() {
         return false;
     }
-    public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED
-    };
 
     @Override
     public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {

@@ -1,18 +1,18 @@
 package org.keycloak.saml.processing.core.saml.v2.util;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.security.cert.X509Certificate;
-
 import org.bouncycastle.util.Arrays;
 import org.junit.Test;
 import org.keycloak.common.util.Base64;
 import org.keycloak.common.util.DerUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.security.cert.X509Certificate;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class AssertionUtilTest {
 
@@ -25,28 +25,28 @@ public class AssertionUtilTest {
 
     @Test
     public void testSaml20Signed() throws Exception {
-        
+
         X509Certificate decodeCertificate = DerUtils.decodeCertificate(new ByteArrayInputStream(Base64.decode(PUBLIC_CERT)));
-        
+
         try (InputStream st = AssertionUtilTest.class.getResourceAsStream("saml20-signed-response.xml")) {
             Document document = DocumentUtil.getDocument(st);
-            
+
             Element assertion = DocumentUtil.getDirectChildElement(document.getDocumentElement(), "urn:oasis:names:tc:SAML:2.0:assertion", "Assertion");
-            
+
             assertTrue(AssertionUtil.isSignatureValid(assertion, decodeCertificate.getPublicKey()));
-            
+
             // test manipulation of signature
             Element signatureElement = AssertionUtil.getSignature(assertion);
             byte[] validSignature = Base64.decode(signatureElement.getTextContent());
-            
+
             // change the signature value slightly
             byte[] invalidSignature = Arrays.clone(validSignature);
             invalidSignature[0] ^= invalidSignature[0];
             signatureElement.setTextContent(Base64.encodeBytes(invalidSignature));
-            
+
             // check that signature now is invalid
             assertFalse(AssertionUtil.isSignatureValid(document.getDocumentElement(), decodeCertificate.getPublicKey()));
-            
+
             // restore valid signature, but remove Signature element, check that still invalid
             signatureElement.setTextContent(Base64.encodeBytes(validSignature));
 

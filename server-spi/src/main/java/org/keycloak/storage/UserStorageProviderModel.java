@@ -31,19 +31,16 @@ public class UserStorageProviderModel extends CacheableStorageProviderModel {
     public static final String FULL_SYNC_PERIOD = "fullSyncPeriod";
     public static final String CHANGED_SYNC_PERIOD = "changedSyncPeriod";
     public static final String LAST_SYNC = "lastSync";
-
-    public UserStorageProviderModel() {
-        setProviderType(UserStorageProvider.class.getName());
-    }
-
-    public UserStorageProviderModel(ComponentModel copy) {
-        super(copy);
-    }
-
     private transient Integer fullSyncPeriod;
     private transient Integer changedSyncPeriod;
     private transient Integer lastSync;
     private transient Boolean importEnabled;
+    public UserStorageProviderModel() {
+        setProviderType(UserStorageProvider.class.getName());
+    }
+    public UserStorageProviderModel(ComponentModel copy) {
+        super(copy);
+    }
 
     public boolean isImportEnabled() {
         if (importEnabled == null) {

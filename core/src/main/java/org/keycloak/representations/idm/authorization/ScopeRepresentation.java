@@ -40,7 +40,7 @@ public class ScopeRepresentation {
     /**
      * Creates an instance.
      *
-     * @param name the a human-readable string describing some scope (extent) of access
+     * @param name    the a human-readable string describing some scope (extent) of access
      * @param iconUri a {@link URI} for a graphic icon representing the scope
      */
     public ScopeRepresentation(String name, String iconUri) {
@@ -68,12 +68,24 @@ public class ScopeRepresentation {
         return this.name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getDisplayName() {
         return displayName;
     }
 
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
     public String getIconUri() {
         return this.iconUri;
+    }
+
+    public void setIconUri(String iconUri) {
+        this.iconUri = iconUri;
     }
 
     public String getId() {
@@ -82,18 +94,6 @@ public class ScopeRepresentation {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    public void setIconUri(String iconUri) {
-        this.iconUri = iconUri;
     }
 
     public List<PolicyRepresentation> getPolicies() {

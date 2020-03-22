@@ -24,10 +24,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import static org.keycloak.client.admin.cli.util.ConfigUtil.DEFAULT_CONFIG_FILE_STRING;
-import static org.keycloak.client.admin.cli.util.OsUtil.CMD;
-import static org.keycloak.client.admin.cli.util.OsUtil.EOL;
-import static org.keycloak.client.admin.cli.util.OsUtil.OS_ARCH;
-import static org.keycloak.client.admin.cli.util.OsUtil.PROMPT;
+import static org.keycloak.client.admin.cli.util.OsUtil.*;
 
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
@@ -61,36 +58,6 @@ public class UpdateCmd extends AbstractRequestCmd {
 
     //@GroupOption(shortName = 's', name = "set", description = "Set specific attribute to a specified value", hasValue = true)
     //private List<String> attributes = new ArrayList<>();
-
-
-    @Override
-    void initOptions() {
-        // set options on parent
-        super.file = file;
-        super.body = body;
-        super.fields = fields;
-        super.printHeaders = printHeaders;
-        super.returnId = false;
-        super.outputResult = true;
-        super.compressed = compressed;
-        super.mergeMode = mergeMode;
-        super.noMerge = noMerge;
-        super.outputResult = outputResult;
-        super.httpVerb = "put";
-    }
-
-    @Override
-    protected boolean nothingToDo() {
-        return noOptions() && file == null && body == null && (args == null || args.size() == 0);
-    }
-
-    protected String suggestHelp() {
-        return EOL + "Try '" + CMD + " help update' for more information";
-    }
-
-    protected String help() {
-        return usage();
-    }
 
     public static String usage() {
         StringWriter sb = new StringWriter();
@@ -174,5 +141,34 @@ public class UpdateCmd extends AbstractRequestCmd {
         out.println();
         out.println("Use '" + CMD + " help' for general information and a list of commands");
         return sb.toString();
+    }
+
+    @Override
+    void initOptions() {
+        // set options on parent
+        super.file = file;
+        super.body = body;
+        super.fields = fields;
+        super.printHeaders = printHeaders;
+        super.returnId = false;
+        super.outputResult = true;
+        super.compressed = compressed;
+        super.mergeMode = mergeMode;
+        super.noMerge = noMerge;
+        super.outputResult = outputResult;
+        super.httpVerb = "put";
+    }
+
+    @Override
+    protected boolean nothingToDo() {
+        return noOptions() && file == null && body == null && (args == null || args.size() == 0);
+    }
+
+    protected String suggestHelp() {
+        return EOL + "Try '" + CMD + " help update' for more information";
+    }
+
+    protected String help() {
+        return usage();
     }
 }

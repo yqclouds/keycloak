@@ -17,12 +17,10 @@
 
 package org.keycloak.saml;
 
-import java.util.LinkedList;
-import java.util.List;
 import org.keycloak.dom.saml.v2.assertion.NameIDType;
 import org.keycloak.dom.saml.v2.protocol.ExtensionsType;
-import org.keycloak.dom.saml.v2.protocol.StatusResponseType;
 import org.keycloak.dom.saml.v2.protocol.ResponseType;
+import org.keycloak.dom.saml.v2.protocol.StatusResponseType;
 import org.keycloak.saml.common.exceptions.ConfigurationException;
 import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.exceptions.ProcessingException;
@@ -32,16 +30,19 @@ import org.keycloak.saml.processing.core.saml.v2.factories.JBossSAMLAuthnRespons
 import org.keycloak.saml.processing.core.saml.v2.util.XMLTimeUtil;
 import org.w3c.dom.Document;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public class SAML2ErrorResponseBuilder implements SamlProtocolExtensionsAwareBuilder<SAML2ErrorResponseBuilder> {
 
+    protected final List<NodeGenerator> extensions = new LinkedList<>();
     protected String status;
     protected String destination;
     protected String issuer;
-    protected final List<NodeGenerator> extensions = new LinkedList<>();
 
     public SAML2ErrorResponseBuilder status(String status) {
         this.status = status;
@@ -76,7 +77,7 @@ public class SAML2ErrorResponseBuilder implements SamlProtocolExtensionsAwareBui
             statusResponse.setIssuer(issuer);
             statusResponse.setDestination(destination);
 
-            if (! this.extensions.isEmpty()) {
+            if (!this.extensions.isEmpty()) {
                 ExtensionsType extensionsType = new ExtensionsType();
                 for (NodeGenerator extension : this.extensions) {
                     extensionsType.addExtension(extension);

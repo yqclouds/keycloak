@@ -34,7 +34,8 @@ public interface KeyLocator {
 
     /**
      * Returns a key with a particular ID.
-     * @param kid Key ID
+     *
+     * @param kid           Key ID
      * @param configuration Configuration
      * @return key, which should be used for verify signature on given "input"
      * @throws KeyManagementException

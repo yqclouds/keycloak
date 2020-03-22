@@ -19,7 +19,6 @@ package org.keycloak.representations.account;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
- *
  * @author Stan Silvert
  */
 public class LinkedAccountRepresentation implements Comparable<LinkedAccountRepresentation> {
@@ -29,7 +28,7 @@ public class LinkedAccountRepresentation implements Comparable<LinkedAccountRepr
     private String providerName;
     private String displayName;
     private String linkedUsername;
-    
+
     @JsonIgnore
     private String guiOrder;
 
@@ -48,7 +47,7 @@ public class LinkedAccountRepresentation implements Comparable<LinkedAccountRepr
     public void setConnected(boolean connected) {
         this.connected = connected;
     }
-    
+
     public boolean isSocial() {
         return this.isSocial;
     }
@@ -93,8 +92,8 @@ public class LinkedAccountRepresentation implements Comparable<LinkedAccountRepr
     public int compareTo(LinkedAccountRepresentation rep) {
         if (this.getGuiOrder() == null) return -1;
         if (rep.getGuiOrder() == null) return 1;
-        
+
         return rep.getGuiOrder().compareTo(this.getGuiOrder());
     }
-    
+
 }

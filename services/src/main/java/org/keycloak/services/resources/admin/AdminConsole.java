@@ -21,20 +21,11 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.HttpResponse;
-import javax.ws.rs.NotFoundException;
 import org.keycloak.Config;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.Version;
-import org.keycloak.common.util.KeycloakUriBuilder;
-import org.keycloak.models.AdminRoles;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.Constants;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.protocol.oidc.OIDCLoginProtocolService;
-import org.keycloak.protocol.oidc.utils.WebOriginsUtils;
 import org.keycloak.services.Urls;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.AuthenticationManager;
@@ -47,26 +38,16 @@ import org.keycloak.theme.Theme;
 import org.keycloak.urls.UrlType;
 import org.keycloak.utils.MediaType;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -98,68 +79,6 @@ public class AdminConsole {
         this.authManager = new AppAuthManager();
     }
 
-    public static class WhoAmI {
-        protected String userId;
-        protected String realm;
-        protected String displayName;
-
-        @JsonProperty("createRealm")
-        protected boolean createRealm;
-        @JsonProperty("realm_access")
-        protected Map<String, Set<String>> realmAccess = new HashMap<String, Set<String>>();
-
-        public WhoAmI() {
-        }
-
-        public WhoAmI(String userId, String realm, String displayName, boolean createRealm, Map<String, Set<String>> realmAccess) {
-            this.userId = userId;
-            this.realm = realm;
-            this.displayName = displayName;
-            this.createRealm = createRealm;
-            this.realmAccess = realmAccess;
-        }
-
-        public String getUserId() {
-            return userId;
-        }
-
-        public void setUserId(String userId) {
-            this.userId = userId;
-        }
-
-        public String getRealm() {
-            return realm;
-        }
-
-        public void setRealm(String realm) {
-            this.realm = realm;
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public void setDisplayName(String displayName) {
-            this.displayName = displayName;
-        }
-
-        public boolean isCreateRealm() {
-            return createRealm;
-        }
-
-        public void setCreateRealm(boolean createRealm) {
-            this.createRealm = createRealm;
-        }
-
-        public Map<String, Set<String>> getRealmAccess() {
-            return realmAccess;
-        }
-
-        public void setRealmAccess(Map<String, Set<String>> realmAccess) {
-            this.realmAccess = realmAccess;
-        }
-    }
-
     /**
      * Adapter configuration for the admin console for this realm
      *
@@ -174,7 +93,8 @@ public class AdminConsole {
         if (consoleApp == null) {
             throw new NotFoundException("Could not find admin console client");
         }
-        return new ClientManager(new RealmManager(session)).toInstallationRepresentation(realm, consoleApp, session.getContext().getUri().getBaseUri());    }
+        return new ClientManager(new RealmManager(session)).toInstallationRepresentation(realm, consoleApp, session.getContext().getUri().getBaseUri());
+    }
 
     /**
      * Permission information
@@ -192,7 +112,7 @@ public class AdminConsole {
         if (authResult == null) {
             return Response.status(401).build();
         }
-        UserModel user= authResult.getUser();
+        UserModel user = authResult.getUser();
         String displayName;
         if ((user.getFirstName() != null && !user.getFirstName().trim().equals("")) || (user.getLastName() != null && !user.getLastName().trim().equals(""))) {
             displayName = user.getFirstName();
@@ -323,7 +243,8 @@ public class AdminConsole {
     }
 
     @GET
-    @Path("{indexhtml: index.html}") // this expression is a hack to get around jaxdoclet generation bug.  Doesn't like index.html
+    @Path("{indexhtml: index.html}")
+    // this expression is a hack to get around jaxdoclet generation bug.  Doesn't like index.html
     public Response getIndexHtmlRedirect() {
         return Response.status(302).location(session.getContext().getUri(UrlType.ADMIN).getRequestUriBuilder().path("../").build()).build();
     }
@@ -333,6 +254,68 @@ public class AdminConsole {
     @Produces(MediaType.APPLICATION_JSON)
     public Properties getMessages(@QueryParam("lang") String lang) {
         return AdminRoot.getMessages(session, realm, lang, "admin-messages");
+    }
+
+    public static class WhoAmI {
+        protected String userId;
+        protected String realm;
+        protected String displayName;
+
+        @JsonProperty("createRealm")
+        protected boolean createRealm;
+        @JsonProperty("realm_access")
+        protected Map<String, Set<String>> realmAccess = new HashMap<String, Set<String>>();
+
+        public WhoAmI() {
+        }
+
+        public WhoAmI(String userId, String realm, String displayName, boolean createRealm, Map<String, Set<String>> realmAccess) {
+            this.userId = userId;
+            this.realm = realm;
+            this.displayName = displayName;
+            this.createRealm = createRealm;
+            this.realmAccess = realmAccess;
+        }
+
+        public String getUserId() {
+            return userId;
+        }
+
+        public void setUserId(String userId) {
+            this.userId = userId;
+        }
+
+        public String getRealm() {
+            return realm;
+        }
+
+        public void setRealm(String realm) {
+            this.realm = realm;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public void setDisplayName(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public boolean isCreateRealm() {
+            return createRealm;
+        }
+
+        public void setCreateRealm(boolean createRealm) {
+            this.createRealm = createRealm;
+        }
+
+        public Map<String, Set<String>> getRealmAccess() {
+            return realmAccess;
+        }
+
+        public void setRealmAccess(Map<String, Set<String>> realmAccess) {
+            this.realmAccess = realmAccess;
+        }
     }
 
 }

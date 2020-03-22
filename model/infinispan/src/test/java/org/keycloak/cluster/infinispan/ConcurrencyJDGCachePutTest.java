@@ -17,11 +17,6 @@
 
 package org.keycloak.cluster.infinispan;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
@@ -37,9 +32,13 @@ import org.infinispan.persistence.remote.RemoteStore;
 import org.infinispan.persistence.remote.configuration.RemoteStoreConfigurationBuilder;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * Test concurrency for remoteStore (backed by HotRod RemoteCaches) against external JDG. Especially tests "putIfAbsent" contract.
- *
+ * <p>
  * Steps: {@see ConcurrencyJDGRemoteCacheClientListenersTest}
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -54,7 +53,7 @@ public class ConcurrencyJDGCachePutTest {
 
     public static void main(String[] args) throws Exception {
         // Init map somehow
-        for (int i=0 ; i<1000 ; i++) {
+        for (int i = 0; i < 1000; i++) {
             String key = "key-" + i;
             state.put(key, new EntryInfo());
         }
@@ -112,6 +111,41 @@ public class ConcurrencyJDGCachePutTest {
         return new Worker(cache, threadId);
     }
 
+    public static int getClusterStartupTime(Cache<String, Integer> cache, String cacheKey, EntryInfo wrapper, int myThreadId) {
+        Integer startupTime = myThreadId == 1 ? Integer.parseInt(cacheKey.substring(4)) : Integer.parseInt(cacheKey.substring(4)) * 2;
+
+        // Concurrency doesn't work correctly with this
+        //Integer existingClusterStartTime = (Integer) cache.putIfAbsent(cacheKey, startupTime);
+
+        // Concurrency works fine with this
+        RemoteCache remoteCache = cache.getAdvancedCache().getComponentRegistry().getComponent(PersistenceManager.class).getStores(RemoteStore.class).iterator().next().getRemoteCache();
+
+        Integer existingClusterStartTime = null;
+        for (int i = 0; i < 10; i++) {
+            try {
+                existingClusterStartTime = (Integer) remoteCache.withFlags(Flag.FORCE_RETURN_VALUE).putIfAbsent(cacheKey, startupTime);
+                break;
+            } catch (HotRodClientException ce) {
+                if (i == 9) {
+                    throw ce;
+                    //break;
+                } else {
+                    wrapper.exceptions.incrementAndGet();
+                    System.err.println("Exception: i=" + i + " for key: " + cacheKey + " and myThreadId: " + myThreadId);
+                }
+            }
+        }
+
+        if (existingClusterStartTime == null
+//                || startupTime.equals(remoteCache.get(cacheKey))
+        ) {
+            wrapper.successfulInitializations.incrementAndGet();
+            return startupTime;
+        } else {
+            wrapper.failedInitializations.incrementAndGet();
+            return existingClusterStartTime;
+        }
+    }
 
     @ClientListener
     public static class HotRodListener {
@@ -131,7 +165,6 @@ public class ConcurrencyJDGCachePutTest {
         }
 
     }
-
 
     private static class Worker extends Thread {
 
@@ -164,42 +197,6 @@ public class ConcurrencyJDGCachePutTest {
 
     }
 
-    public static int getClusterStartupTime(Cache<String, Integer> cache, String cacheKey, EntryInfo wrapper, int myThreadId) {
-        Integer startupTime = myThreadId==1 ? Integer.parseInt(cacheKey.substring(4)) : Integer.parseInt(cacheKey.substring(4)) * 2;
-
-        // Concurrency doesn't work correctly with this
-        //Integer existingClusterStartTime = (Integer) cache.putIfAbsent(cacheKey, startupTime);
-
-        // Concurrency works fine with this
-        RemoteCache remoteCache = cache.getAdvancedCache().getComponentRegistry().getComponent(PersistenceManager.class).getStores(RemoteStore.class).iterator().next().getRemoteCache();
-
-        Integer existingClusterStartTime = null;
-        for (int i=0 ; i<10 ; i++) {
-            try {
-                existingClusterStartTime = (Integer) remoteCache.withFlags(Flag.FORCE_RETURN_VALUE).putIfAbsent(cacheKey, startupTime);
-                break;
-            } catch (HotRodClientException ce) {
-                if (i == 9) {
-                    throw ce;
-                    //break;
-                } else {
-                    wrapper.exceptions.incrementAndGet();
-                    System.err.println("Exception: i=" + i + " for key: " + cacheKey + " and myThreadId: " + myThreadId);
-                }
-            }
-        }
-
-        if (existingClusterStartTime == null
-//                || startupTime.equals(remoteCache.get(cacheKey))
-                ) {
-            wrapper.successfulInitializations.incrementAndGet();
-            return startupTime;
-        } else {
-            wrapper.failedInitializations.incrementAndGet();
-            return existingClusterStartTime;
-        }
-    }
-
     public static class EntryInfo {
         AtomicInteger successfulInitializations = new AtomicInteger(0);
         AtomicInteger successfulListenerWrites = new AtomicInteger(0);
@@ -211,10 +208,9 @@ public class ConcurrencyJDGCachePutTest {
         @Override
         public String toString() {
             return String.format("Inits: %d, listeners: %d, failedInits: %d, exceptions: %s, th1: %d, th2: %d", successfulInitializations.get(), successfulListenerWrites.get(),
-            failedInitializations.get(), exceptions.get(), th1.get(), th2.get());
+                    failedInitializations.get(), exceptions.get(), th1.get(), th2.get());
         }
     }
-
 
 
 }

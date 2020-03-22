@@ -17,9 +17,6 @@
 
 package org.keycloak.models.sessions.infinispan;
 
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
-
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.commons.api.BasicCache;
 import org.jboss.logging.Logger;
@@ -27,10 +24,12 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.SingleUseTokenStoreProvider;
 import org.keycloak.models.sessions.infinispan.entities.ActionTokenValueEntity;
 
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+
 /**
  * TODO: Check if Boolean can be used as single-use cache argument instead of ActionTokenValueEntity. With respect to other single-use cache usecases like "Revoke Refresh Token" .
  * Also with respect to the usage of streams iterating over "actionTokens" cache (check there are no ClassCastExceptions when casting values directly to ActionTokenValueEntity)
- *
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */

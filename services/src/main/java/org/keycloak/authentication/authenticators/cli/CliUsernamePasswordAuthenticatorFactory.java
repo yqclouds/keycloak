@@ -36,6 +36,9 @@ public class CliUsernamePasswordAuthenticatorFactory implements AuthenticatorFac
 
     public static final String PROVIDER_ID = "cli-username-password";
     public static final CliUsernamePasswordAuthenticator SINGLETON = new CliUsernamePasswordAuthenticator();
+    public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionModel.Requirement.REQUIRED
+    };
 
     @Override
     public Authenticator create(KeycloakSession session) {
@@ -71,9 +74,6 @@ public class CliUsernamePasswordAuthenticatorFactory implements AuthenticatorFac
     public boolean isConfigurable() {
         return false;
     }
-    public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED
-    };
 
     @Override
     public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {

@@ -17,11 +17,7 @@
 
 package org.keycloak.federation.kerberos.impl;
 
-import org.ietf.jgss.GSSContext;
-import org.ietf.jgss.GSSCredential;
-import org.ietf.jgss.GSSException;
-import org.ietf.jgss.GSSManager;
-import org.ietf.jgss.Oid;
+import org.ietf.jgss.*;
 import org.jboss.logging.Logger;
 import org.keycloak.common.constants.KerberosConstants;
 import org.keycloak.common.util.Base64;
@@ -118,6 +114,35 @@ public class SPNEGOAuthenticator {
         return username;
     }
 
+    protected GSSContext establishContext() throws GSSException, IOException {
+        GSSManager manager = GSSManager.getInstance();
+
+        Oid[] supportedMechs = new Oid[]{KerberosConstants.KRB5_OID, KerberosConstants.SPNEGO_OID};
+        GSSCredential gssCredential = manager.createCredential(null, GSSCredential.INDEFINITE_LIFETIME, supportedMechs, GSSCredential.ACCEPT_ONLY);
+        GSSContext gssContext = manager.createContext(gssCredential);
+
+        byte[] inputToken = Base64.decode(spnegoToken);
+        byte[] respToken = gssContext.acceptSecContext(inputToken, 0, inputToken.length);
+        responseToken = Base64.encodeBytes(respToken);
+
+        return gssContext;
+    }
+
+    protected void logAuthDetails(GSSContext gssContext) throws GSSException {
+        if (log.isDebugEnabled()) {
+            String message = new StringBuilder("SPNEGO Security context accepted with token: " + responseToken)
+                    .append(", established: ").append(gssContext.isEstablished())
+                    .append(", credDelegState: ").append(gssContext.getCredDelegState())
+                    .append(", mutualAuthState: ").append(gssContext.getMutualAuthState())
+                    .append(", lifetime: ").append(gssContext.getLifetime())
+                    .append(", confState: ").append(gssContext.getConfState())
+                    .append(", integState: ").append(gssContext.getIntegState())
+                    .append(", srcName: ").append(gssContext.getSrcName())
+                    .append(", targName: ").append(gssContext.getTargName())
+                    .toString();
+            log.debug(message);
+        }
+    }
 
     private class AcceptSecContext implements PrivilegedExceptionAction<Boolean> {
 
@@ -155,38 +180,6 @@ public class SPNEGOAuthenticator {
             }
         }
 
-    }
-
-
-    protected GSSContext establishContext() throws GSSException, IOException {
-        GSSManager manager = GSSManager.getInstance();
-
-        Oid[] supportedMechs = new Oid[] { KerberosConstants.KRB5_OID, KerberosConstants.SPNEGO_OID };
-        GSSCredential gssCredential = manager.createCredential(null, GSSCredential.INDEFINITE_LIFETIME, supportedMechs, GSSCredential.ACCEPT_ONLY);
-        GSSContext gssContext = manager.createContext(gssCredential);
-
-        byte[] inputToken = Base64.decode(spnegoToken);
-        byte[] respToken = gssContext.acceptSecContext(inputToken, 0, inputToken.length);
-        responseToken = Base64.encodeBytes(respToken);
-
-        return gssContext;
-    }
-
-
-    protected void logAuthDetails(GSSContext gssContext) throws GSSException {
-        if (log.isDebugEnabled()) {
-            String message = new StringBuilder("SPNEGO Security context accepted with token: " + responseToken)
-                    .append(", established: ").append(gssContext.isEstablished())
-                    .append(", credDelegState: ").append(gssContext.getCredDelegState())
-                    .append(", mutualAuthState: ").append(gssContext.getMutualAuthState())
-                    .append(", lifetime: ").append(gssContext.getLifetime())
-                    .append(", confState: ").append(gssContext.getConfState())
-                    .append(", integState: ").append(gssContext.getIntegState())
-                    .append(", srcName: ").append(gssContext.getSrcName())
-                    .append(", targName: ").append(gssContext.getTargName())
-                    .toString();
-            log.debug(message);
-        }
     }
 
 }

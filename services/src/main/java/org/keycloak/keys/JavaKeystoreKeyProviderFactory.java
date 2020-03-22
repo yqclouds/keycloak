@@ -33,24 +33,17 @@ import static org.keycloak.provider.ProviderConfigProperty.STRING_TYPE;
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class JavaKeystoreKeyProviderFactory extends AbstractRsaKeyProviderFactory {
-    private static final Logger logger = Logger.getLogger(JavaKeystoreKeyProviderFactory.class);
-
     public static final String ID = "java-keystore";
-
+    private static final Logger logger = Logger.getLogger(JavaKeystoreKeyProviderFactory.class);
+    private static final String HELP_TEXT = "Loads keys from a Java keys file";
     public static String KEYSTORE_KEY = "keystore";
     public static ProviderConfigProperty KEYSTORE_PROPERTY = new ProviderConfigProperty(KEYSTORE_KEY, "Keystore", "Path to keys file", STRING_TYPE, null);
-
     public static String KEYSTORE_PASSWORD_KEY = "keystorePassword";
     public static ProviderConfigProperty KEYSTORE_PASSWORD_PROPERTY = new ProviderConfigProperty(KEYSTORE_PASSWORD_KEY, "Keystore Password", "Password for the keys", STRING_TYPE, null, true);
-
     public static String KEY_ALIAS_KEY = "keyAlias";
     public static ProviderConfigProperty KEY_ALIAS_PROPERTY = new ProviderConfigProperty(KEY_ALIAS_KEY, "Key Alias", "Alias for the private key", STRING_TYPE, null);
-
     public static String KEY_PASSWORD_KEY = "keyPassword";
     public static ProviderConfigProperty KEY_PASSWORD_PROPERTY = new ProviderConfigProperty(KEY_PASSWORD_KEY, "Key Password", "Password for the private key", STRING_TYPE, null, true);
-
-    private static final String HELP_TEXT = "Loads keys from a Java keys file";
-
     private static final List<ProviderConfigProperty> CONFIG_PROPERTIES = AbstractRsaKeyProviderFactory.configurationBuilder()
             .property(KEYSTORE_PROPERTY)
             .property(KEYSTORE_PASSWORD_PROPERTY)

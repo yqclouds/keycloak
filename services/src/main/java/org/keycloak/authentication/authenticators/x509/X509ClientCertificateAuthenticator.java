@@ -18,15 +18,6 @@
 
 package org.keycloak.authentication.authenticators.x509;
 
-import java.security.cert.X509Certificate;
-import java.util.Enumeration;
-import java.util.LinkedList;
-import java.util.List;
-import javax.ws.rs.core.MultivaluedHashMap;
-
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAuthenticator;
 import org.keycloak.events.Details;
@@ -36,10 +27,17 @@ import org.keycloak.models.ModelDuplicateException;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.FormMessage;
 
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import java.security.cert.X509Certificate;
+import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * @author <a href="mailto:pnalyvayko@agi.com">Peter Nalyvayko</a>
  * @version $Revision: 1 $
- *
  */
 public class X509ClientCertificateAuthenticator extends AbstractX509ClientCertificateAuthenticator {
 
@@ -83,10 +81,10 @@ public class X509ClientCertificateAuthenticator extends AbstractX509ClientCertif
                 CertificateValidator.CertificateValidatorBuilder builder = certificateValidationParameters(context.getSession(), config);
                 CertificateValidator validator = builder.build(certs);
                 validator.checkRevocationStatus()
-                         .validateKeyUsage()
-                         .validateExtendedKeyUsage()
-                         .validateTimestamps(config.isCertValidationEnabled());
-            } catch(Exception e) {
+                        .validateKeyUsage()
+                        .validateExtendedKeyUsage()
+                        .validateTimestamps(config.isCertValidationEnabled());
+            } catch (Exception e) {
                 logger.error(e.getMessage(), e);
                 // TODO use specific locale to load error messages
                 String errorMessage = "Certificate validation's failed.";
@@ -114,8 +112,7 @@ public class X509ClientCertificateAuthenticator extends AbstractX509ClientCertif
                 context.getEvent().detail(Details.USERNAME, userIdentity.toString());
                 context.getAuthenticationSession().setAuthNote(AbstractUsernameFormAuthenticator.ATTEMPTED_USERNAME, userIdentity.toString());
                 user = getUserIdentityToModelMapper(config).find(context, userIdentity);
-            }
-            catch(ModelDuplicateException e) {
+            } catch (ModelDuplicateException e) {
                 logger.modelDuplicateException(e);
                 String errorMessage = "X509 certificate authentication's failed.";
                 // TODO is calling form().setErrors enough to show errors on login screen?
@@ -170,13 +167,11 @@ public class X509ClientCertificateAuthenticator extends AbstractX509ClientCertif
                 context.forceChallenge(createSuccessResponse(context, certs[0].getSubjectDN().getName()));
                 // Do not set the flow status yet, we want to display a form to let users
                 // choose whether to accept the identity from certificate or to specify username/password explicitly
-            }
-            else {
+            } else {
                 // Bypass the confirmation page and log the user in
                 context.success();
             }
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             logger.errorf("[X509ClientCertificateAuthenticator:authenticate] Exception: %s", e.getMessage());
             context.attempted();
         }
@@ -185,7 +180,7 @@ public class X509ClientCertificateAuthenticator extends AbstractX509ClientCertif
     private Response createErrorResponse(AuthenticationFlowContext context,
                                          String subjectDN,
                                          String errorMessage,
-                                         String ... errorParameters) {
+                                         String... errorParameters) {
 
         return createResponse(context, subjectDN, false, errorMessage, errorParameters);
     }
@@ -196,10 +191,10 @@ public class X509ClientCertificateAuthenticator extends AbstractX509ClientCertif
     }
 
     private Response createResponse(AuthenticationFlowContext context,
-                                         String subjectDN,
-                                         boolean isUserEnabled,
-                                         String errorMessage,
-                                         Object[] errorParameters) {
+                                    String subjectDN,
+                                    boolean isUserEnabled,
+                                    String errorMessage,
+                                    Object[] errorParameters) {
 
         LoginFormsProvider form = context.form();
         if (errorMessage != null && errorMessage.trim().length() > 0) {
@@ -218,7 +213,7 @@ public class X509ClientCertificateAuthenticator extends AbstractX509ClientCertif
             form.setErrors(errors);
         }
 
-        MultivaluedMap<String,String> formData = new MultivaluedHashMap<>();
+        MultivaluedMap<String, String> formData = new MultivaluedHashMap<>();
         formData.add("username", context.getUser() != null ? context.getUser().getUsername() : "unknown user");
         formData.add("subjectDN", subjectDN);
         formData.add("isUserEnabled", String.valueOf(isUserEnabled));
@@ -231,7 +226,7 @@ public class X509ClientCertificateAuthenticator extends AbstractX509ClientCertif
     private void dumpContainerAttributes(AuthenticationFlowContext context) {
 
         Enumeration<String> attributeNames = context.getHttpRequest().getAttributeNames();
-        while(attributeNames.hasMoreElements()) {
+        while (attributeNames.hasMoreElements()) {
             String a = attributeNames.nextElement();
             logger.tracef("[X509ClientCertificateAuthenticator:dumpContainerAttributes] \"%s\"", a);
         }

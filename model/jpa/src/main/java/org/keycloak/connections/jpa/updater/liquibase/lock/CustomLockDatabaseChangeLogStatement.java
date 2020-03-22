@@ -20,7 +20,6 @@ package org.keycloak.connections.jpa.updater.liquibase.lock;
 import liquibase.statement.core.LockDatabaseChangeLogStatement;
 
 /**
- *
  * @author rmartinc
  */
 public class CustomLockDatabaseChangeLogStatement extends LockDatabaseChangeLogStatement {

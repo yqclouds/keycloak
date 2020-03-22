@@ -24,16 +24,14 @@ import java.util.Map;
  */
 public class IdentityProviderRepresentation {
 
+    public static final String UPFLM_ON = "on";
+    public static final String UPFLM_MISSING = "missing";
+    public static final String UPFLM_OFF = "off";
     protected String alias;
     protected String displayName;
     protected String internalId;
     protected String providerId;
     protected boolean enabled = true;
-
-    public static final String UPFLM_ON = "on";
-    public static final String UPFLM_MISSING = "missing";
-    public static final String UPFLM_OFF = "off";
-
     /**
      * Mode of profile update after first login when user is created over this identity provider. Possible values:
      * <ul>
@@ -41,7 +39,7 @@ public class IdentityProviderRepresentation {
      * <li><code>missing</code> - update profile page is presented for users with missing some of mandatory user profile fields
      * <li><code>off</code> - update profile page is newer shown after first login
      * </ul>
-     * 
+     *
      * @see #UPFLM_ON
      * @see #UPFLM_MISSING
      * @see #UPFLM_OFF
@@ -107,9 +105,8 @@ public class IdentityProviderRepresentation {
     }
 
     /**
-     * 
      * Deprecated because replaced by {@link #updateProfileFirstLoginMode}. Kept here to allow import of old realms.
-     * 
+     *
      * @deprecated {@link #setUpdateProfileFirstLoginMode(String)}
      */
     @Deprecated

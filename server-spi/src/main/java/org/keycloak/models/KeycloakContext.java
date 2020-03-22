@@ -36,6 +36,7 @@ public interface KeycloakContext {
 
     /**
      * Returns the URI assuming it is a frontend request. To resolve URI for a backend request use {@link #getUri(UrlType)}
+     *
      * @return
      */
     KeycloakUriInfo getUri();
@@ -68,13 +69,13 @@ public interface KeycloakContext {
     void setConnection(ClientConnection connection);
 
     Locale resolveLocale(UserModel user);
-    
+
     /**
      * Get current AuthenticationSessionModel, can be null out of the AuthenticationSession context.
-     * 
+     *
      * @return current AuthenticationSessionModel or null
      */
-    AuthenticationSessionModel getAuthenticationSession(); 
-    
+    AuthenticationSessionModel getAuthenticationSession();
+
     void setAuthenticationSession(AuthenticationSessionModel authenticationSession);
 }

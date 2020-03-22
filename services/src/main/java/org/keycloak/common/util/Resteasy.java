@@ -44,8 +44,8 @@ public final class Resteasy {
 
     /**
      * Push the given {@code instance} with type/key {@code type} to the Resteasy context associated with the current thread.
-     * 
-     * @param type the type/key to associate the {@code instance} with 
+     *
+     * @param type     the type/key to associate the {@code instance} with
      * @param instance the instance
      */
     public static void pushContext(Class type, Object instance) {
@@ -55,8 +55,8 @@ public final class Resteasy {
     /**
      * Lookup the instance associated with the given type/key {@code type} from the Resteasy context associated with the current thread.
      *
-     * @param type the type/key to lookup 
-     * @return the instance associated with the given {@code type} or null if non-existent.                
+     * @param type the type/key to lookup
+     * @return the instance associated with the given {@code type} or null if non-existent.
      */
     public static <R> R getContextData(Class<R> type) {
         return provider.getContextData(type);
@@ -72,7 +72,7 @@ public final class Resteasy {
     /**
      * Push the given {@code instance} with type/key {@code type} to the Resteasy global context.
      *
-     * @param type the type/key to associate the {@code instance} with
+     * @param type     the type/key to associate the {@code instance} with
      * @param instance the instance
      */
     public static void pushDefaultContextObject(Class type, Object instance) {

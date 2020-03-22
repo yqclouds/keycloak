@@ -23,46 +23,20 @@ import org.keycloak.common.util.Time;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.credential.UserCredentialStore;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.FederatedIdentityModel;
-import org.keycloak.models.GroupModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ModelDuplicateException;
-import org.keycloak.models.ModelException;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserConsentModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.jpa.JpaUserCredentialStore;
-import org.keycloak.models.jpa.entities.CredentialEntity;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.storage.StorageId;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.client.ClientStorageProvider;
 import org.keycloak.storage.federated.UserFederatedStorageProvider;
-import org.keycloak.storage.jpa.entity.BrokerLinkEntity;
-import org.keycloak.storage.jpa.entity.FederatedUser;
-import org.keycloak.storage.jpa.entity.FederatedUserAttributeEntity;
-import org.keycloak.storage.jpa.entity.FederatedUserConsentClientScopeEntity;
-import org.keycloak.storage.jpa.entity.FederatedUserConsentEntity;
-import org.keycloak.storage.jpa.entity.FederatedUserCredentialEntity;
-import org.keycloak.storage.jpa.entity.FederatedUserGroupMembershipEntity;
-import org.keycloak.storage.jpa.entity.FederatedUserRequiredActionEntity;
+import org.keycloak.storage.jpa.entity.*;
 import org.keycloak.storage.jpa.entity.FederatedUserRequiredActionEntity.Key;
-import org.keycloak.storage.jpa.entity.FederatedUserRoleMappingEntity;
 
 import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Set;
 import javax.persistence.LockModeType;
+import javax.persistence.TypedQuery;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -89,7 +63,6 @@ public class JpaUserFederatedStorageProvider implements
 
     /**
      * We create an entry so that its easy to iterate over all things in the database.  Specifically useful for export
-     *
      */
     protected void createIndex(RealmModel realm, String userId) {
         if (em.find(FederatedUser.class, userId) == null) {
@@ -330,7 +303,7 @@ public class JpaUserFederatedStorageProvider implements
 
     private FederatedUserConsentEntity getGrantedConsentEntity(String userId, String clientId, LockModeType lockMode) {
         StorageId clientStorageId = new StorageId(clientId);
-        String queryName = clientStorageId.isLocal() ?  "userFederatedConsentByUserAndClient" : "userFederatedConsentByUserAndExternalClient";
+        String queryName = clientStorageId.isLocal() ? "userFederatedConsentByUserAndClient" : "userFederatedConsentByUserAndExternalClient";
         TypedQuery<FederatedUserConsentEntity> query = em.createNamedQuery(queryName, FederatedUserConsentEntity.class);
         query.setLockMode(lockMode);
         query.setParameter("userId", userId);
@@ -357,7 +330,7 @@ public class JpaUserFederatedStorageProvider implements
         }
 
         StorageId clientStorageId = null;
-        if ( entity.getClientId() == null) {
+        if (entity.getClientId() == null) {
             clientStorageId = new StorageId(entity.getClientStorageProvider(), entity.getExternalClientId());
         } else {
             clientStorageId = new StorageId(entity.getClientId());
@@ -424,7 +397,7 @@ public class JpaUserFederatedStorageProvider implements
         MultivaluedHashMap<String, String> attrs = getAttributes(realm, userId);
         String notBeforeStr = attrs.getFirst("fedNotBefore");
 
-        return notBeforeStr==null ? 0 : Integer.parseInt(notBeforeStr);
+        return notBeforeStr == null ? 0 : Integer.parseInt(notBeforeStr);
     }
 
     @Override
@@ -751,7 +724,7 @@ public class JpaUserFederatedStorageProvider implements
             if (id.equals(credential.getId())) {
                 ourCredentialIndex = i;
                 ourCredential = credential;
-            } else if(newPreviousCredentialId != null && newPreviousCredentialId.equals(credential.getId())) {
+            } else if (newPreviousCredentialId != null && newPreviousCredentialId.equals(credential.getId())) {
                 newPreviousCredentialIndex = i;
             }
             i++;
@@ -768,7 +741,7 @@ public class JpaUserFederatedStorageProvider implements
         }
 
         // 3 - Compute index where we move our credential
-        int toMoveIndex = newPreviousCredentialId==null ? 0 : newPreviousCredentialIndex + 1;
+        int toMoveIndex = newPreviousCredentialId == null ? 0 : newPreviousCredentialIndex + 1;
 
         // 4 - Insert our credential to new position, remove it from the old position
         newList.add(toMoveIndex, ourCredential);
@@ -793,7 +766,7 @@ public class JpaUserFederatedStorageProvider implements
         Object count = em.createNamedQuery("getFederatedUserCount")
                 .setParameter("realmId", realm.getId())
                 .getSingleResult();
-        return ((Number)count).intValue();
+        return ((Number) count).intValue();
     }
 
     @Override
@@ -837,11 +810,11 @@ public class JpaUserFederatedStorageProvider implements
         } else {
             em.createNamedQuery("deleteFederatedUserConsentClientScopesByExternalClient")
                     .setParameter("clientStorageProvider", clientStorageId.getProviderId())
-                    .setParameter("externalClientId",clientStorageId.getExternalId())
+                    .setParameter("externalClientId", clientStorageId.getExternalId())
                     .executeUpdate();
             em.createNamedQuery("deleteFederatedUserConsentsByExternalClient")
                     .setParameter("clientStorageProvider", clientStorageId.getProviderId())
-                    .setParameter("externalClientId",clientStorageId.getExternalId())
+                    .setParameter("externalClientId", clientStorageId.getExternalId())
                     .executeUpdate();
 
         }
@@ -933,10 +906,10 @@ public class JpaUserFederatedStorageProvider implements
                     .executeUpdate();
         } else if (model.getProviderType().equals(ClientStorageProvider.class.getName())) {
             em.createNamedQuery("deleteFederatedUserConsentClientScopesByClientStorageProvider")
-                    .setParameter("clientStorageProvider",  model.getId())
+                    .setParameter("clientStorageProvider", model.getId())
                     .executeUpdate();
             em.createNamedQuery("deleteFederatedUserConsentsByClientStorageProvider")
-                    .setParameter("clientStorageProvider",  model.getId())
+                    .setParameter("clientStorageProvider", model.getId())
                     .executeUpdate();
 
         }

@@ -26,13 +26,13 @@ import java.util.List;
  */
 public class AuthenticationFlowRepresentation implements Serializable {
 
+    protected List<AuthenticationExecutionExportRepresentation> authenticationExecutions;
     private String id;
     private String alias;
     private String description;
     private String providerId;
     private boolean topLevel;
     private boolean builtIn;
-    protected List<AuthenticationExecutionExportRepresentation> authenticationExecutions;
 
     public String getId() {
         return id;

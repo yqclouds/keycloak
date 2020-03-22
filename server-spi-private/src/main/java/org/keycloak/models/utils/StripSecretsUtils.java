@@ -20,12 +20,7 @@ package org.keycloak.models.utils;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
-import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.ComponentExportRepresentation;
-import org.keycloak.representations.idm.ComponentRepresentation;
-import org.keycloak.representations.idm.IdentityProviderRepresentation;
-import org.keycloak.representations.idm.RealmRepresentation;
-import org.keycloak.representations.idm.UserRepresentation;
+import org.keycloak.representations.idm.*;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -43,11 +38,11 @@ public class StripSecretsUtils {
 
     private static String maskNonVaultValue(String value) {
         return value == null
-          ? null
-          : (VAULT_VALUE.matcher(value).matches()
-             ? value
-             : ComponentRepresentation.SECRET_VALUE
-            );
+                ? null
+                : (VAULT_VALUE.matcher(value).matches()
+                ? value
+                : ComponentRepresentation.SECRET_VALUE
+        );
     }
 
     public static ComponentRepresentation strip(KeycloakSession session, ComponentRepresentation rep) {
@@ -116,14 +111,14 @@ public class StripSecretsUtils {
 
         List<UserRepresentation> users = rep.getUsers();
         if (users != null) {
-            for (UserRepresentation u: users) {
+            for (UserRepresentation u : users) {
                 strip(u);
             }
         }
 
         users = rep.getFederatedUsers();
         if (users != null) {
-            for (UserRepresentation u: users) {
+            for (UserRepresentation u : users) {
                 strip(u);
             }
         }
@@ -167,8 +162,8 @@ public class StripSecretsUtils {
         }
 
         MultivaluedHashMap<String, ComponentExportRepresentation> sub = rep.getSubComponents();
-        for (Map.Entry<String, List<ComponentExportRepresentation>> ent: sub.entrySet()) {
-            for (ComponentExportRepresentation c: ent.getValue()) {
+        for (Map.Entry<String, List<ComponentExportRepresentation>> ent : sub.entrySet()) {
+            for (ComponentExportRepresentation c : ent.getValue()) {
                 strip(session, ent.getKey(), c);
             }
         }

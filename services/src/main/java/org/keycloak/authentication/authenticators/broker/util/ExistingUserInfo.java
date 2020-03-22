@@ -29,12 +29,21 @@ public class ExistingUserInfo {
     private String duplicateAttributeName;
     private String duplicateAttributeValue;
 
-    public ExistingUserInfo() {}
+    public ExistingUserInfo() {
+    }
 
     public ExistingUserInfo(String existingUserId, String duplicateAttributeName, String duplicateAttributeValue) {
         this.existingUserId = existingUserId;
         this.duplicateAttributeName = duplicateAttributeName;
         this.duplicateAttributeValue = duplicateAttributeValue;
+    }
+
+    public static ExistingUserInfo deserialize(String serialized) {
+        try {
+            return JsonSerialization.readValue(serialized, ExistingUserInfo.class);
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
     }
 
     public String getExistingUserId() {
@@ -66,14 +75,6 @@ public class ExistingUserInfo {
             return JsonSerialization.writeValueAsString(this);
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    public static ExistingUserInfo deserialize(String serialized) {
-        try {
-            return JsonSerialization.readValue(serialized, ExistingUserInfo.class);
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
         }
     }
 }

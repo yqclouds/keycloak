@@ -31,11 +31,10 @@ import java.util.List;
  * @version $Revision: 1 $
  */
 public class MigrationModelAdapter implements MigrationModel {
-    protected EntityManager em;
-    protected MigrationModelEntity latest;
-
     private static final int RESOURCE_TAG_LENGTH = 5;
     private static final char[] RESOURCE_TAG_CHARSET = "0123456789abcdefghijklmnopqrstuvwxyz".toCharArray();
+    protected EntityManager em;
+    protected MigrationModelEntity latest;
 
     public MigrationModelAdapter(EntityManager em) {
         this.em = em;
@@ -45,22 +44,6 @@ public class MigrationModelAdapter implements MigrationModel {
     @Override
     public String getStoredVersion() {
         return latest != null ? latest.getVersion() : null;
-    }
-
-    @Override
-    public String getResourcesTag() {
-        return latest != null ? latest.getId() : null;
-    }
-
-    private void init() {
-        TypedQuery<MigrationModelEntity> q = em.createNamedQuery("getLatest", MigrationModelEntity.class);
-        q.setMaxResults(1);
-        List<MigrationModelEntity> l = q.getResultList();
-        if (l.isEmpty()) {
-            latest = null;
-        } else {
-            latest = l.get(0);
-        }
     }
 
     @Override
@@ -80,6 +63,22 @@ public class MigrationModelAdapter implements MigrationModel {
         em.persist(entity);
 
         latest = entity;
+    }
+
+    @Override
+    public String getResourcesTag() {
+        return latest != null ? latest.getId() : null;
+    }
+
+    private void init() {
+        TypedQuery<MigrationModelEntity> q = em.createNamedQuery("getLatest", MigrationModelEntity.class);
+        q.setMaxResults(1);
+        List<MigrationModelEntity> l = q.getResultList();
+        if (l.isEmpty()) {
+            latest = null;
+        } else {
+            latest = l.get(0);
+        }
     }
 
     private String createResourceTag() {

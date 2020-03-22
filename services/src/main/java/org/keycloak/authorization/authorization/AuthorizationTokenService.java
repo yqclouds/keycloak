@@ -16,37 +16,16 @@
  */
 package org.keycloak.authorization.authorization;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiFunction;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.common.DefaultEvaluationContext;
 import org.keycloak.authorization.common.KeycloakIdentity;
+import org.keycloak.authorization.model.PermissionTicket;
 import org.keycloak.authorization.model.Resource;
 import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.authorization.model.Scope;
-import org.keycloak.authorization.model.PermissionTicket;
 import org.keycloak.authorization.permission.ResourcePermission;
 import org.keycloak.authorization.policy.evaluation.EvaluationContext;
 import org.keycloak.authorization.policy.evaluation.PermissionTicketAwareDecisionResultCollector;
@@ -58,13 +37,7 @@ import org.keycloak.authorization.util.Permissions;
 import org.keycloak.authorization.util.Tokens;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.events.EventBuilder;
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientSessionContext;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserSessionModel;
-import org.keycloak.models.UserSessionProvider;
+import org.keycloak.models.*;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.TokenManager;
 import org.keycloak.protocol.oidc.TokenManager.AccessTokenResponseBuilder;
@@ -83,10 +56,21 @@ import org.keycloak.services.Urls;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.managers.AuthenticationSessionManager;
 import org.keycloak.services.resources.Cors;
+import org.keycloak.services.util.DefaultClientSessionContext;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
 import org.keycloak.util.JsonSerialization;
-import org.keycloak.services.util.DefaultClientSessionContext;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -99,6 +83,7 @@ public class AuthorizationTokenService {
     private static final String RESPONSE_MODE_DECISION = "decision";
     private static final String RESPONSE_MODE_PERMISSIONS = "permissions";
     private static final String RESPONSE_MODE_DECISION_RESULT = "result";
+    private static final AuthorizationTokenService INSTANCE = new AuthorizationTokenService();
     private static Map<String, BiFunction<KeycloakAuthorizationRequest, AuthorizationProvider, EvaluationContext>> SUPPORTED_CLAIM_TOKEN_FORMATS;
 
     static {
@@ -108,7 +93,7 @@ public class AuthorizationTokenService {
 
             if (claimToken != null) {
                 Map claims;
-                
+
                 try {
                     claims = JsonSerialization.readValue(Base64Url.decode(request.getClaimToken()), Map.class);
                     request.setClaims(claims);
@@ -118,7 +103,7 @@ public class AuthorizationTokenService {
                 }
 
                 KeycloakIdentity identity;
-                
+
                 try {
                     identity = new KeycloakIdentity(authorization.getKeycloakSession(),
                             Tokens.getAccessToken(request.getSubjectToken(), authorization.getKeycloakSession()));
@@ -149,7 +134,7 @@ public class AuthorizationTokenService {
             }
 
             KeycloakIdentity identity;
-            
+
             try {
                 identity = new KeycloakIdentity(keycloakSession, idToken);
             } catch (Exception cause) {
@@ -159,8 +144,6 @@ public class AuthorizationTokenService {
             return new DefaultEvaluationContext(identity, request.getClaims(), keycloakSession);
         });
     }
-
-    private static final AuthorizationTokenService INSTANCE = new AuthorizationTokenService();
 
     public static AuthorizationTokenService instance() {
         return INSTANCE;

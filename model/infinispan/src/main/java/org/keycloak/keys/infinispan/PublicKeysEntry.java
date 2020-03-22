@@ -17,10 +17,10 @@
 
 package org.keycloak.keys.infinispan;
 
+import org.keycloak.crypto.KeyWrapper;
+
 import java.io.Serializable;
 import java.util.Map;
-
-import org.keycloak.crypto.KeyWrapper;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>

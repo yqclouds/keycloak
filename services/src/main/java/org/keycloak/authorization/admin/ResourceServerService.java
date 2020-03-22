@@ -17,20 +17,6 @@
  */
 package org.keycloak.authorization.admin;
 
-import static org.keycloak.models.utils.ModelToRepresentation.toRepresentation;
-
-import java.util.HashMap;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.model.ResourceServer;
@@ -42,16 +28,18 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
-import org.keycloak.representations.idm.authorization.DecisionStrategy;
-import org.keycloak.representations.idm.authorization.Logic;
-import org.keycloak.representations.idm.authorization.PolicyRepresentation;
-import org.keycloak.representations.idm.authorization.ResourcePermissionRepresentation;
-import org.keycloak.representations.idm.authorization.ResourceRepresentation;
-import org.keycloak.representations.idm.authorization.ResourceServerRepresentation;
+import org.keycloak.representations.idm.authorization.*;
 import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import java.util.Collections;
+import java.util.HashMap;
+
+import static org.keycloak.models.utils.ModelToRepresentation.toRepresentation;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -62,8 +50,8 @@ public class ResourceServerService {
     private final AdminPermissionEvaluator auth;
     private final AdminEventBuilder adminEvent;
     private final KeycloakSession session;
-    private ResourceServer resourceServer;
     private final ClientModel client;
+    private ResourceServer resourceServer;
 
     public ResourceServerService(AuthorizationProvider authorization, ResourceServer resourceServer, ClientModel client, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.authorization = authorization;
@@ -205,7 +193,7 @@ public class ResourceServerService {
         defaultPolicyConfig.put("code", "// by default, grants any permission associated with this policy\n$evaluation.grant();\n");
 
         defaultPolicy.setConfig(defaultPolicyConfig);
-        
+
         session.setAttribute("ALLOW_CREATE_POLICY", true);
 
         getPolicyResource().create(defaultPolicy);

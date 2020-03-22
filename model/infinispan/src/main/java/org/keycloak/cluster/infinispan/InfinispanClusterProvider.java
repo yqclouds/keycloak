@@ -31,14 +31,12 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
- *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class InfinispanClusterProvider implements ClusterProvider {
 
-    protected static final Logger logger = Logger.getLogger(InfinispanClusterProvider.class);
-
     public static final String CLUSTER_STARTUP_TIME_KEY = "cluster-start-time";
+    protected static final Logger logger = Logger.getLogger(InfinispanClusterProvider.class);
     private static final String TASK_KEY_PREFIX = "task::";
 
     private final int clusterStartupTime;

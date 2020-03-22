@@ -28,7 +28,7 @@ public class PermissionTicketRepresentation {
     private boolean granted;
     private String scopeName;
     private String resourceName;
-    private String requester; 
+    private String requester;
     private String ownerName;
     private String requesterName;
 
@@ -72,43 +72,43 @@ public class PermissionTicketRepresentation {
         this.granted = granted;
     }
 
+    public String getScopeName() {
+        return scopeName;
+    }
+
     public void setScopeName(String scopeName) {
         this.scopeName = scopeName;
     }
 
-    public String getScopeName() {
-        return scopeName;
+    public String getResourceName() {
+        return resourceName;
     }
 
     public void setResourceName(String resourceName) {
         this.resourceName = resourceName;
     }
 
-    public String getResourceName() {
-        return resourceName;
-    }
-    
-    public void setRequesterName(String requesterName) {
-        this.requesterName = requesterName;
-    }
-
     public String getRequesterName() {
         return requesterName;
     }
-    
-    public void setRequester(String requester) {
-        this.requester = requester;
+
+    public void setRequesterName(String requesterName) {
+        this.requesterName = requesterName;
     }
 
     public String getRequester() {
         return requester;
     }
-    
-    public void setOwnerName(String ownerName) {
-        this.ownerName = ownerName;
+
+    public void setRequester(String requester) {
+        this.requester = requester;
     }
 
     public String getOwnerName() {
         return ownerName;
+    }
+
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
     }
 }

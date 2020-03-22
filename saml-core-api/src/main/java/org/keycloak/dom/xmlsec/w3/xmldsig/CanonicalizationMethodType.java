@@ -47,12 +47,12 @@ public class CanonicalizationMethodType {
         this.algorithm = algorithm;
     }
 
-    public void setContent(Object content) {
-        this.content = content;
-    }
-
     public Object getContent() {
         return this.content;
+    }
+
+    public void setContent(Object content) {
+        this.content = content;
     }
 
     /**

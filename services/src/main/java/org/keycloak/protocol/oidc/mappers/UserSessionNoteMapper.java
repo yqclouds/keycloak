@@ -37,6 +37,7 @@ import java.util.Map;
  */
 public class UserSessionNoteMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper {
 
+    public static final String PROVIDER_ID = "oidc-usersessionmodel-note-mapper";
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     static {
@@ -48,41 +49,6 @@ public class UserSessionNoteMapper extends AbstractOIDCProtocolMapper implements
         property.setType(ProviderConfigProperty.STRING_TYPE);
         configProperties.add(property);
         OIDCAttributeMapperHelper.addAttributeConfig(configProperties, UserSessionNoteMapper.class);
-    }
-
-    public static final String PROVIDER_ID = "oidc-usersessionmodel-note-mapper";
-
-
-    public List<ProviderConfigProperty> getConfigProperties() {
-        return configProperties;
-    }
-
-    @Override
-    public String getId() {
-        return PROVIDER_ID;
-    }
-
-    @Override
-    public String getDisplayType() {
-        return "User Session Note";
-    }
-
-    @Override
-    public String getDisplayCategory() {
-        return TOKEN_MAPPER_CATEGORY;
-    }
-
-    @Override
-    public String getHelpText() {
-        return "Map a custom user session note to a token claim.";
-    }
-
-    protected void setClaim(IDToken token, ProtocolMapperModel mappingModel, UserSessionModel userSession) {
-
-        String noteName = mappingModel.getConfig().get(ProtocolMapperUtils.USER_SESSION_NOTE);
-        String noteValue = userSession.getNote(noteName);
-        if (noteValue == null) return;
-        OIDCAttributeMapperHelper.mapClaim(token, mappingModel, noteValue);
     }
 
     public static ProtocolMapperModel createClaimMapper(String name,
@@ -116,6 +82,38 @@ public class UserSessionNoteMapper extends AbstractOIDCProtocolMapper implements
                 "String",
                 true, true
         );
+    }
+
+    public List<ProviderConfigProperty> getConfigProperties() {
+        return configProperties;
+    }
+
+    @Override
+    public String getId() {
+        return PROVIDER_ID;
+    }
+
+    @Override
+    public String getDisplayType() {
+        return "User Session Note";
+    }
+
+    @Override
+    public String getDisplayCategory() {
+        return TOKEN_MAPPER_CATEGORY;
+    }
+
+    @Override
+    public String getHelpText() {
+        return "Map a custom user session note to a token claim.";
+    }
+
+    protected void setClaim(IDToken token, ProtocolMapperModel mappingModel, UserSessionModel userSession) {
+
+        String noteName = mappingModel.getConfig().get(ProtocolMapperUtils.USER_SESSION_NOTE);
+        String noteValue = userSession.getNote(noteName);
+        if (noteValue == null) return;
+        OIDCAttributeMapperHelper.mapClaim(token, mappingModel, noteValue);
     }
 
 }

@@ -31,11 +31,8 @@ import java.io.IOException;
 public class ExportImportManager {
 
     private static final Logger logger = Logger.getLogger(ExportImportManager.class);
-
-    private KeycloakSessionFactory sessionFactory;
-
     private final String realmName;
-
+    private KeycloakSessionFactory sessionFactory;
     private ExportProvider exportProvider;
     private ImportProvider importProvider;
 

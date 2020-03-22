@@ -31,48 +31,14 @@ import org.keycloak.sessions.CommonClientSessionModel;
  */
 public class ClientSessionCode<CLIENT_SESSION extends CommonClientSessionModel> {
 
-    private KeycloakSession session;
     private final RealmModel realm;
     private final CLIENT_SESSION commonLoginSession;
-
-    public enum ActionType {
-        CLIENT,
-        LOGIN,
-        USER
-    }
+    private KeycloakSession session;
 
     public ClientSessionCode(KeycloakSession session, RealmModel realm, CLIENT_SESSION commonLoginSession) {
         this.session = session;
         this.realm = realm;
         this.commonLoginSession = commonLoginSession;
-    }
-
-    public static class ParseResult<CLIENT_SESSION extends CommonClientSessionModel> {
-        ClientSessionCode<CLIENT_SESSION> code;
-        boolean authSessionNotFound;
-        boolean illegalHash;
-        boolean expiredToken;
-        CLIENT_SESSION clientSession;
-
-        public ClientSessionCode<CLIENT_SESSION> getCode() {
-            return code;
-        }
-
-        public boolean isAuthSessionNotFound() {
-            return authSessionNotFound;
-        }
-
-        public boolean isIllegalHash() {
-            return illegalHash;
-        }
-
-        public boolean isExpiredToken() {
-            return expiredToken;
-        }
-
-        public CLIENT_SESSION getClientSession() {
-            return clientSession;
-        }
     }
 
     public static <CLIENT_SESSION extends CommonClientSessionModel> ParseResult<CLIENT_SESSION> parseResult(String code, String tabId,
@@ -103,7 +69,7 @@ public class ClientSessionCode<CLIENT_SESSION extends CommonClientSessionModel> 
             return result;
         }
         try {
-            CodeGenerateUtil.ClientSessionParser<CLIENT_SESSION> clientSessionParser = CodeGenerateUtil.getParser((Class<CLIENT_SESSION>)clientSession.getClass());
+            CodeGenerateUtil.ClientSessionParser<CLIENT_SESSION> clientSessionParser = CodeGenerateUtil.getParser((Class<CLIENT_SESSION>) clientSession.getClass());
             return parseResult(code, session, realm, result, clientSessionParser);
         } catch (RuntimeException e) {
             result.illegalHash = true;
@@ -131,19 +97,16 @@ public class ClientSessionCode<CLIENT_SESSION extends CommonClientSessionModel> 
         return result;
     }
 
-
     public static <CLIENT_SESSION extends CommonClientSessionModel> CLIENT_SESSION getClientSession(String code, String tabId, KeycloakSession session, RealmModel realm, ClientModel client,
                                                                                                     EventBuilder event, Class<CLIENT_SESSION> sessionClass) {
         CodeGenerateUtil.ClientSessionParser<CLIENT_SESSION> clientSessionParser = CodeGenerateUtil.getParser(sessionClass);
         return getClientSession(code, tabId, session, realm, client, event, clientSessionParser);
     }
 
-
     private static <CLIENT_SESSION extends CommonClientSessionModel> CLIENT_SESSION getClientSession(String code, String tabId, KeycloakSession session, RealmModel realm, ClientModel client, EventBuilder event,
                                                                                                      CodeGenerateUtil.ClientSessionParser<CLIENT_SESSION> clientSessionParser) {
         return clientSessionParser.parseSession(code, tabId, session, realm, client, event);
     }
-
 
     public CLIENT_SESSION getClientSession() {
         return commonLoginSession;
@@ -192,7 +155,6 @@ public class ClientSessionCode<CLIENT_SESSION extends CommonClientSessionModel> 
         parser.removeExpiredSession(session, commonLoginSession);
     }
 
-
     public void setAction(String action) {
         commonLoginSession.setAction(action);
 
@@ -203,6 +165,41 @@ public class ClientSessionCode<CLIENT_SESSION extends CommonClientSessionModel> 
     public String getOrGenerateCode() {
         CodeGenerateUtil.ClientSessionParser parser = CodeGenerateUtil.getParser(commonLoginSession.getClass());
         return parser.retrieveCode(session, commonLoginSession);
+    }
+
+
+    public enum ActionType {
+        CLIENT,
+        LOGIN,
+        USER
+    }
+
+    public static class ParseResult<CLIENT_SESSION extends CommonClientSessionModel> {
+        ClientSessionCode<CLIENT_SESSION> code;
+        boolean authSessionNotFound;
+        boolean illegalHash;
+        boolean expiredToken;
+        CLIENT_SESSION clientSession;
+
+        public ClientSessionCode<CLIENT_SESSION> getCode() {
+            return code;
+        }
+
+        public boolean isAuthSessionNotFound() {
+            return authSessionNotFound;
+        }
+
+        public boolean isIllegalHash() {
+            return illegalHash;
+        }
+
+        public boolean isExpiredToken() {
+            return expiredToken;
+        }
+
+        public CLIENT_SESSION getClientSession() {
+            return clientSession;
+        }
     }
 
 }

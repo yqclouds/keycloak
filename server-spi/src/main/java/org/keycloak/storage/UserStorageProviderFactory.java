@@ -105,14 +105,12 @@ public interface UserStorageProviderFactory<T extends UserStorageProvider> exten
      * @return
      */
     @Override
-    default
-    List<ProviderConfigProperty> getCommonProviderConfigProperties() {
+    default List<ProviderConfigProperty> getCommonProviderConfigProperties() {
         return UserStorageProviderSpi.commonConfig();
     }
 
     @Override
-    default
-    Map<String, Object> getTypeMetadata() {
+    default Map<String, Object> getTypeMetadata() {
         Map<String, Object> metadata = new HashMap<>();
         if (this instanceof ImportSynchronization) {
             metadata.put("synchronizable", true);

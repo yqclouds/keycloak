@@ -19,29 +19,11 @@ package org.keycloak.admin.client.resource;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.representations.adapters.action.GlobalRequestResult;
-import org.keycloak.representations.idm.AdminEventRepresentation;
-import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.ClientScopeRepresentation;
-import org.keycloak.representations.idm.EventRepresentation;
-import org.keycloak.representations.idm.GroupRepresentation;
-import org.keycloak.representations.idm.PartialImportRepresentation;
-import org.keycloak.representations.idm.RealmEventsConfigRepresentation;
-import org.keycloak.representations.idm.RealmRepresentation;
-import org.keycloak.representations.idm.TestLdapConnectionRepresentation;
+import org.keycloak.representations.idm.*;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import java.util.List;
 import java.util.Map;
 
@@ -92,7 +74,7 @@ public interface RealmResource {
 
     @Path("client-description-converter")
     @POST
-    @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_PLAIN })
+    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_PLAIN})
     @Produces(MediaType.APPLICATION_JSON)
     ClientRepresentation convertClientDescription(String description);
 
@@ -122,9 +104,9 @@ public interface RealmResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     List<EventRepresentation> getEvents(@QueryParam("type") List<String> types, @QueryParam("client") String client,
-            @QueryParam("user") String user, @QueryParam("dateFrom") String dateFrom, @QueryParam("dateTo") String dateTo,
-            @QueryParam("ipAddress") String ipAddress, @QueryParam("first") Integer firstResult,
-            @QueryParam("max") Integer maxResults);
+                                        @QueryParam("user") String user, @QueryParam("dateFrom") String dateFrom, @QueryParam("dateTo") String dateTo,
+                                        @QueryParam("ipAddress") String ipAddress, @QueryParam("first") Integer firstResult,
+                                        @QueryParam("max") Integer maxResults);
 
     @DELETE
     @Path("admin-events")
@@ -139,10 +121,10 @@ public interface RealmResource {
     @Path("admin-events")
     @Produces(MediaType.APPLICATION_JSON)
     List<AdminEventRepresentation> getAdminEvents(@QueryParam("operationTypes") List<String> operationTypes, @QueryParam("authRealm") String authRealm, @QueryParam("authClient") String authClient,
-            @QueryParam("authUser") String authUser, @QueryParam("authIpAddress") String authIpAddress,
-            @QueryParam("resourcePath") String resourcePath, @QueryParam("dateFrom") String dateFrom,
-            @QueryParam("dateTo") String dateTo, @QueryParam("first") Integer firstResult,
-            @QueryParam("max") Integer maxResults);
+                                                  @QueryParam("authUser") String authUser, @QueryParam("authIpAddress") String authIpAddress,
+                                                  @QueryParam("resourcePath") String resourcePath, @QueryParam("dateFrom") String dateFrom,
+                                                  @QueryParam("dateTo") String dateTo, @QueryParam("first") Integer firstResult,
+                                                  @QueryParam("max") Integer maxResults);
 
     @GET
     @Path("events/config")
@@ -199,7 +181,8 @@ public interface RealmResource {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     RealmRepresentation partialExport(@QueryParam("exportGroupsAndRoles") Boolean exportGroupsAndRoles,
-                                             @QueryParam("exportClients") Boolean exportClients);
+                                      @QueryParam("exportClients") Boolean exportClients);
+
     @Path("authentication")
     @Consumes(MediaType.APPLICATION_JSON)
     AuthenticationManagementResource flows();

@@ -16,14 +16,14 @@
  */
 package org.keycloak.representations.idm.authorization;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -58,10 +58,6 @@ public class Permission {
         this.claims = claims;
     }
 
-    public void setResourceId(String resourceId) {
-        this.resourceId = resourceId;
-    }
-
     public String getResourceId() {
         if (resourceId == null || "".equals(resourceId.trim())) {
             return null;
@@ -69,12 +65,16 @@ public class Permission {
         return this.resourceId;
     }
 
-    public void setResourceName(String resourceName) {
-        this.resourceName = resourceName;
+    public void setResourceId(String resourceId) {
+        this.resourceId = resourceId;
     }
 
     public String getResourceName() {
         return this.resourceName;
+    }
+
+    public void setResourceName(String resourceName) {
+        this.resourceName = resourceName;
     }
 
     public Set<String> getScopes() {
@@ -83,6 +83,10 @@ public class Permission {
         }
 
         return this.scopes;
+    }
+
+    public void setScopes(Set<String> scopes) {
+        this.scopes = scopes;
     }
 
     public Map<String, Set<String>> getClaims() {
@@ -130,9 +134,5 @@ public class Permission {
                 .append(", scopes=").append(scopes).append("}");
 
         return builder.toString();
-    }
-
-    public void setScopes(Set<String> scopes) {
-        this.scopes = scopes;
     }
 }

@@ -22,9 +22,10 @@ import org.keycloak.saml.common.constants.WSTrustConstants;
 import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.util.StaxParserUtil;
 import org.keycloak.saml.processing.core.parsers.saml.xmldsig.KeyInfoParser;
-import java.util.Objects;
+
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.StartElement;
+import java.util.Objects;
 
 public class SAMLSubjectConfirmationDataParser extends AbstractStaxSamlAssertionParser<SubjectConfirmationDataType> {
 

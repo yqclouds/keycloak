@@ -42,6 +42,7 @@ public class AbstractOAuthClient {
     protected String stateCookiePath;
     protected boolean isSecure;
     protected boolean publicClient;
+
     protected String getStateCode() {
         return counter.getAndIncrement() + "/" + UUID.randomUUID().toString();
     }

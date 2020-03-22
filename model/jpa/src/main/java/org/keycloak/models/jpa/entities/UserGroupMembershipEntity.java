@@ -17,16 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 
 /**
@@ -34,30 +25,30 @@ import java.io.Serializable;
  * @version $Revision: 1 $
  */
 @NamedQueries({
-        @NamedQuery(name="userMemberOf", query="select m from UserGroupMembershipEntity m where m.user = :user and m.groupId = :groupId"),
-        @NamedQuery(name="userGroupMembership", query="select m from UserGroupMembershipEntity m where m.user = :user"),
-        @NamedQuery(name="groupMembership", query="select g.user from UserGroupMembershipEntity g where g.groupId = :groupId order by g.user.username"),
-        @NamedQuery(name="deleteUserGroupMembershipByRealm", query="delete from  UserGroupMembershipEntity mapping where mapping.user IN (select u from UserEntity u where u.realmId=:realmId)"),
-        @NamedQuery(name="deleteUserGroupMembershipsByRealmAndLink", query="delete from  UserGroupMembershipEntity mapping where mapping.user IN (select u from UserEntity u where u.realmId=:realmId and u.federationLink=:link)"),
-        @NamedQuery(name="deleteUserGroupMembershipsByGroup", query="delete from UserGroupMembershipEntity m where m.groupId = :groupId"),
-        @NamedQuery(name="deleteUserGroupMembershipsByUser", query="delete from UserGroupMembershipEntity m where m.user = :user"),
-        @NamedQuery(name="searchForUserCountInGroups", query="select count(m.user) from UserGroupMembershipEntity m where m.user.realmId = :realmId and (m.user.serviceAccountClientLink is null) and " +
+        @NamedQuery(name = "userMemberOf", query = "select m from UserGroupMembershipEntity m where m.user = :user and m.groupId = :groupId"),
+        @NamedQuery(name = "userGroupMembership", query = "select m from UserGroupMembershipEntity m where m.user = :user"),
+        @NamedQuery(name = "groupMembership", query = "select g.user from UserGroupMembershipEntity g where g.groupId = :groupId order by g.user.username"),
+        @NamedQuery(name = "deleteUserGroupMembershipByRealm", query = "delete from  UserGroupMembershipEntity mapping where mapping.user IN (select u from UserEntity u where u.realmId=:realmId)"),
+        @NamedQuery(name = "deleteUserGroupMembershipsByRealmAndLink", query = "delete from  UserGroupMembershipEntity mapping where mapping.user IN (select u from UserEntity u where u.realmId=:realmId and u.federationLink=:link)"),
+        @NamedQuery(name = "deleteUserGroupMembershipsByGroup", query = "delete from UserGroupMembershipEntity m where m.groupId = :groupId"),
+        @NamedQuery(name = "deleteUserGroupMembershipsByUser", query = "delete from UserGroupMembershipEntity m where m.user = :user"),
+        @NamedQuery(name = "searchForUserCountInGroups", query = "select count(m.user) from UserGroupMembershipEntity m where m.user.realmId = :realmId and (m.user.serviceAccountClientLink is null) and " +
                 "( lower(m.user.username) like :search or lower(concat(m.user.firstName, ' ', m.user.lastName)) like :search or m.user.email like :search ) and m.group.id in :groupIds"),
-        @NamedQuery(name="userCountInGroups", query="select count(m.user) from UserGroupMembershipEntity m where m.user.realmId = :realmId and m.group.id in :groupIds")
+        @NamedQuery(name = "userCountInGroups", query = "select count(m.user) from UserGroupMembershipEntity m where m.user.realmId = :realmId and m.group.id in :groupIds")
 })
-@Table(name="USER_GROUP_MEMBERSHIP")
+@Table(name = "USER_GROUP_MEMBERSHIP")
 @Entity
 @IdClass(UserGroupMembershipEntity.Key.class)
 public class UserGroupMembershipEntity {
 
     @Id
-    @ManyToOne(fetch= FetchType.LAZY)
-    @JoinColumn(name="USER_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "USER_ID")
     protected UserEntity user;
 
     @Id
-    @ManyToOne(fetch= FetchType.LAZY)
-    @JoinColumn(name="GROUP_ID", insertable=false, updatable=false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "GROUP_ID", insertable = false, updatable = false)
     protected GroupEntity group;
 
     @Id
@@ -78,6 +69,27 @@ public class UserGroupMembershipEntity {
 
     public void setGroupId(String groupId) {
         this.groupId = groupId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        if (!(o instanceof UserGroupMembershipEntity)) return false;
+
+        UserGroupMembershipEntity key = (UserGroupMembershipEntity) o;
+
+        if (!groupId.equals(key.groupId)) return false;
+        if (!user.equals(key.user)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = user.hashCode();
+        result = 31 * result + groupId.hashCode();
+        return result;
     }
 
     public static class Key implements Serializable {
@@ -121,27 +133,6 @@ public class UserGroupMembershipEntity {
             result = 31 * result + groupId.hashCode();
             return result;
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null) return false;
-        if (!(o instanceof UserGroupMembershipEntity)) return false;
-
-        UserGroupMembershipEntity key = (UserGroupMembershipEntity) o;
-
-        if (!groupId.equals(key.groupId)) return false;
-        if (!user.equals(key.user)) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = user.hashCode();
-        result = 31 * result + groupId.hashCode();
-        return result;
     }
 
 }

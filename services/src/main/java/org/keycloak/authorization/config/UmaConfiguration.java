@@ -17,8 +17,6 @@
  */
 package org.keycloak.authorization.config;
 
-import javax.ws.rs.core.UriBuilder;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.keycloak.authorization.AuthorizationService;
 import org.keycloak.authorization.protection.ProtectionService;
@@ -29,10 +27,19 @@ import org.keycloak.protocol.oidc.representations.OIDCConfigurationRepresentatio
 import org.keycloak.services.resources.RealmsResource;
 import org.keycloak.wellknown.WellKnownProvider;
 
+import javax.ws.rs.core.UriBuilder;
+
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
 public class UmaConfiguration extends OIDCConfigurationRepresentation {
+
+    @JsonProperty("resource_registration_endpoint")
+    private String resourceRegistrationEndpoint;
+    @JsonProperty("permission_endpoint")
+    private String permissionEndpoint;
+    @JsonProperty("policy_endpoint")
+    private String policyEndpoint;
 
     public static final UmaConfiguration create(KeycloakSession session) {
         WellKnownProvider oidcProvider = session.getProvider(WellKnownProvider.class, OIDCWellKnownProviderFactory.PROVIDER_ID);
@@ -64,15 +71,6 @@ public class UmaConfiguration extends OIDCConfigurationRepresentation {
         return configuration;
     }
 
-    @JsonProperty("resource_registration_endpoint")
-    private String resourceRegistrationEndpoint;
-
-    @JsonProperty("permission_endpoint")
-    private String permissionEndpoint;
-    
-    @JsonProperty("policy_endpoint")
-    private String policyEndpoint;
-
     public String getResourceRegistrationEndpoint() {
         return this.resourceRegistrationEndpoint;
     }
@@ -88,7 +86,7 @@ public class UmaConfiguration extends OIDCConfigurationRepresentation {
     void setPermissionEndpoint(String permissionEndpoint) {
         this.permissionEndpoint = permissionEndpoint;
     }
-    
+
     public String getPolicyEndpoint() {
         return this.policyEndpoint;
     }

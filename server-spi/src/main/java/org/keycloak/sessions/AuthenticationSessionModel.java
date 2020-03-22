@@ -17,10 +17,10 @@
 
 package org.keycloak.sessions;
 
+import org.keycloak.models.UserModel;
+
 import java.util.Map;
 import java.util.Set;
-
-import org.keycloak.models.UserModel;
 
 /**
  * Represents the state of the authentication. If the login is requested from different tabs of same browser, every browser
@@ -40,9 +40,13 @@ public interface AuthenticationSessionModel extends CommonClientSessionModel {
     RootAuthenticationSessionModel getParentSession();
 
     Map<String, ExecutionStatus> getExecutionStatus();
+
     void setExecutionStatus(String authenticator, ExecutionStatus status);
+
     void clearExecutionStatus();
+
     UserModel getAuthenticatedUser();
+
     void setAuthenticatedUser(UserModel user);
 
     /**
@@ -62,69 +66,78 @@ public interface AuthenticationSessionModel extends CommonClientSessionModel {
 
 
     /**
-     *  Sets the given user session note to the given value. User session notes are notes
-     *  you want be applied to the UserSessionModel when the client session is attached to it.
+     * Sets the given user session note to the given value. User session notes are notes
+     * you want be applied to the UserSessionModel when the client session is attached to it.
      */
     void setUserSessionNote(String name, String value);
+
     /**
-     *  Retrieves value of given user session note. User session notes are notes
-     *  you want be applied to the UserSessionModel when the client session is attached to it.
+     * Retrieves value of given user session note. User session notes are notes
+     * you want be applied to the UserSessionModel when the client session is attached to it.
      */
     Map<String, String> getUserSessionNotes();
+
     /**
-     *  Clears all user session notes. User session notes are notes
-     *  you want be applied to the UserSessionModel when the client session is attached to it.
+     * Clears all user session notes. User session notes are notes
+     * you want be applied to the UserSessionModel when the client session is attached to it.
      */
     void clearUserSessionNotes();
 
     /**
-     *  Retrieves value of the given authentication note to the given value. Authentication notes are notes
-     *  used typically by authenticators and authentication flows. They are cleared when
-     *  authentication session is restarted
+     * Retrieves value of the given authentication note to the given value. Authentication notes are notes
+     * used typically by authenticators and authentication flows. They are cleared when
+     * authentication session is restarted
      */
     String getAuthNote(String name);
+
     /**
-     *  Sets the given authentication note to the given value. Authentication notes are notes
-     *  used typically by authenticators and authentication flows. They are cleared when
-     *  authentication session is restarted
+     * Sets the given authentication note to the given value. Authentication notes are notes
+     * used typically by authenticators and authentication flows. They are cleared when
+     * authentication session is restarted
      */
     void setAuthNote(String name, String value);
+
     /**
-     *  Removes the given authentication note. Authentication notes are notes
-     *  used typically by authenticators and authentication flows. They are cleared when
-     *  authentication session is restarted
+     * Removes the given authentication note. Authentication notes are notes
+     * used typically by authenticators and authentication flows. They are cleared when
+     * authentication session is restarted
      */
     void removeAuthNote(String name);
+
     /**
-     *  Clears all authentication note. Authentication notes are notes
-     *  used typically by authenticators and authentication flows. They are cleared when
-     *  authentication session is restarted
+     * Clears all authentication note. Authentication notes are notes
+     * used typically by authenticators and authentication flows. They are cleared when
+     * authentication session is restarted
      */
     void clearAuthNotes();
 
     /**
-     *  Retrieves value of the given client note to the given value. Client notes are notes
-     *  specific to client protocol. They are NOT cleared when authentication session is restarted.
+     * Retrieves value of the given client note to the given value. Client notes are notes
+     * specific to client protocol. They are NOT cleared when authentication session is restarted.
      */
     String getClientNote(String name);
+
     /**
-     *  Sets the given client note to the given value. Client notes are notes
-     *  specific to client protocol. They are NOT cleared when authentication session is restarted.
+     * Sets the given client note to the given value. Client notes are notes
+     * specific to client protocol. They are NOT cleared when authentication session is restarted.
      */
     void setClientNote(String name, String value);
+
     /**
-     *  Removes the given client note. Client notes are notes
-     *  specific to client protocol. They are NOT cleared when authentication session is restarted.
+     * Removes the given client note. Client notes are notes
+     * specific to client protocol. They are NOT cleared when authentication session is restarted.
      */
     void removeClientNote(String name);
+
     /**
-     *  Retrieves the (name, value) map of client notes. Client notes are notes
-     *  specific to client protocol. They are NOT cleared when authentication session is restarted.
+     * Retrieves the (name, value) map of client notes. Client notes are notes
+     * specific to client protocol. They are NOT cleared when authentication session is restarted.
      */
     Map<String, String> getClientNotes();
+
     /**
-     *  Clears all client notes. Client notes are notes
-     *  specific to client protocol. They are NOT cleared when authentication session is restarted.
+     * Clears all client notes. Client notes are notes
+     * specific to client protocol. They are NOT cleared when authentication session is restarted.
      */
     void clearClientNotes();
 

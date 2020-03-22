@@ -30,15 +30,7 @@ import org.keycloak.models.utils.KeycloakModelUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -57,6 +49,14 @@ public class ResourceAdapter extends AbstractAuthorizationModel implements Resou
         this.storeFactory = storeFactory;
     }
 
+    public static ResourceEntity toEntity(EntityManager em, Resource resource) {
+        if (resource instanceof ResourceAdapter) {
+            return ((ResourceAdapter) resource).getEntity();
+        } else {
+            return em.getReference(ResourceEntity.class, resource.getId());
+        }
+    }
+
     @Override
     public ResourceEntity getEntity() {
         return entity;
@@ -70,6 +70,13 @@ public class ResourceAdapter extends AbstractAuthorizationModel implements Resou
     @Override
     public String getName() {
         return entity.getName();
+    }
+
+    @Override
+    public void setName(String name) {
+        throwExceptionIfReadonly();
+        entity.setName(name);
+
     }
 
     @Override
@@ -92,13 +99,6 @@ public class ResourceAdapter extends AbstractAuthorizationModel implements Resou
     public void updateUris(Set<String> uri) {
         throwExceptionIfReadonly();
         entity.setUris(uri);
-    }
-
-    @Override
-    public void setName(String name) {
-        throwExceptionIfReadonly();
-        entity.setName(name);
-
     }
 
     @Override
@@ -245,15 +245,6 @@ public class ResourceAdapter extends AbstractAuthorizationModel implements Resou
     @Override
     public boolean isFetched(String association) {
         return em.getEntityManagerFactory().getPersistenceUnitUtil().isLoaded(this, association);
-    }
-
-
-    public static ResourceEntity toEntity(EntityManager em, Resource resource) {
-        if (resource instanceof ResourceAdapter) {
-            return ((ResourceAdapter)resource).getEntity();
-        } else {
-            return em.getReference(ResourceEntity.class, resource.getId());
-        }
     }
 
     @Override

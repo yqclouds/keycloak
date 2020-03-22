@@ -59,6 +59,7 @@ public class JsonSerialization {
     public static String writeValueAsPrettyString(Object obj) throws IOException {
         return prettyMapper.writeValueAsString(obj);
     }
+
     public static String writeValueAsString(Object obj) throws IOException {
         return mapper.writeValueAsString(obj);
     }

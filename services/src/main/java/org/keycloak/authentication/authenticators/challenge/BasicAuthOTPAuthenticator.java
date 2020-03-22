@@ -23,11 +23,7 @@ import org.keycloak.authentication.CredentialValidator;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.credential.OTPCredentialProvider;
 import org.keycloak.events.Errors;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.OTPPolicy;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserCredentialModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.credential.OTPCredentialModel;
 import org.keycloak.services.messages.Messages;
 
@@ -71,7 +67,7 @@ public class BasicAuthOTPAuthenticator extends BasicAuthAuthenticator implements
 
         if (!valid) {
             context.getEvent().user(context.getUser()).error(Errors.INVALID_USER_CREDENTIALS);
-            if (context.getExecution().isRequired()){
+            if (context.getExecution().isRequired()) {
                 Response challengeResponse = challenge(context, Messages.INVALID_TOTP);
                 context.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS, challengeResponse);
             } else {
@@ -90,7 +86,7 @@ public class BasicAuthOTPAuthenticator extends BasicAuthAuthenticator implements
 
     @Override
     public OTPCredentialProvider getCredentialProvider(KeycloakSession session) {
-        return (OTPCredentialProvider)session.getProvider(CredentialProvider.class, "keycloak-otp");
+        return (OTPCredentialProvider) session.getProvider(CredentialProvider.class, "keycloak-otp");
     }
 }
 

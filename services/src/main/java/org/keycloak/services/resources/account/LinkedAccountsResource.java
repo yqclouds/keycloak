@@ -16,39 +16,14 @@
  */
 package org.keycloak.services.resources.account;
 
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.UUID;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.broker.social.SocialIdentityProvider;
 import org.keycloak.common.util.Base64Url;
-import org.keycloak.credential.CredentialModel;
 import org.keycloak.events.Details;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
-import org.keycloak.models.AccountRoles;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.FederatedIdentityModel;
-import org.keycloak.models.IdentityProviderModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ProviderFactory;
@@ -61,6 +36,15 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.Cors;
 import org.keycloak.services.validation.Validation;
 
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.*;
+
 import static org.keycloak.models.Constants.ACCOUNT_CONSOLE_CLIENT_ID;
 
 /**
@@ -70,7 +54,7 @@ import static org.keycloak.models.Constants.ACCOUNT_CONSOLE_CLIENT_ID;
  */
 public class LinkedAccountsResource {
     private static final Logger logger = Logger.getLogger(LinkedAccountsResource.class);
-    
+
     private final KeycloakSession session;
     private final HttpRequest request;
     private final ClientModel client;
@@ -79,11 +63,11 @@ public class LinkedAccountsResource {
     private final RealmModel realm;
     private final Auth auth;
 
-    public LinkedAccountsResource(KeycloakSession session, 
-                                  HttpRequest request, 
+    public LinkedAccountsResource(KeycloakSession session,
+                                  HttpRequest request,
                                   ClientModel client,
-                                  Auth auth, 
-                                  EventBuilder event, 
+                                  Auth auth,
+                                  EventBuilder event,
                                   UserModel user) {
         this.session = session;
         this.request = request;
@@ -93,7 +77,7 @@ public class LinkedAccountsResource {
         this.user = user;
         realm = session.getContext().getRealm();
     }
-    
+
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
@@ -102,23 +86,23 @@ public class LinkedAccountsResource {
         SortedSet<LinkedAccountRepresentation> linkedAccounts = getLinkedAccounts(this.session, this.realm, this.user);
         return Cors.add(request, Response.ok(linkedAccounts)).auth().allowedOrigins(auth.getToken()).build();
     }
-    
+
     private Set<String> findSocialIds() {
-       Set<String> socialIds = new HashSet();
-       List<ProviderFactory> providerFactories = session.getKeycloakSessionFactory().getProviderFactories(SocialIdentityProvider.class);
-       for (ProviderFactory factory: providerFactories) {
-           socialIds.add(factory.getId());
-       }
-       
-       return socialIds;
+        Set<String> socialIds = new HashSet();
+        List<ProviderFactory> providerFactories = session.getKeycloakSessionFactory().getProviderFactories(SocialIdentityProvider.class);
+        for (ProviderFactory factory : providerFactories) {
+            socialIds.add(factory.getId());
+        }
+
+        return socialIds;
     }
 
     public SortedSet<LinkedAccountRepresentation> getLinkedAccounts(KeycloakSession session, RealmModel realm, UserModel user) {
         List<IdentityProviderModel> identityProviders = realm.getIdentityProviders();
         SortedSet<LinkedAccountRepresentation> linkedAccounts = new TreeSet<>();
-        
+
         if (identityProviders == null || identityProviders.isEmpty()) return linkedAccounts;
-        
+
         Set<String> socialIds = findSocialIds();
         Set<FederatedIdentityModel> identities = session.users().getFederatedIdentities(user, realm);
         for (IdentityProviderModel provider : identityProviders) {
@@ -144,10 +128,10 @@ public class LinkedAccountsResource {
             }
             linkedAccounts.add(rep);
         }
-        
+
         return linkedAccounts;
     }
-    
+
     private FederatedIdentityModel getIdentity(Set<FederatedIdentityModel> identities, String providerId) {
         for (FederatedIdentityModel link : identities) {
             if (providerId.equals(link.getIdentityProvider())) {
@@ -156,28 +140,28 @@ public class LinkedAccountsResource {
         }
         return null;
     }
-    
+
     @GET
     @Path("/{providerId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Deprecated
-    public Response buildLinkedAccountURI(@PathParam("providerId") String providerId, 
-                                     @QueryParam("redirectUri") String redirectUri) {
+    public Response buildLinkedAccountURI(@PathParam("providerId") String providerId,
+                                          @QueryParam("redirectUri") String redirectUri) {
         auth.require(AccountRoles.MANAGE_ACCOUNT);
-        
+
         if (redirectUri == null) {
             ErrorResponse.error(Messages.INVALID_REDIRECT_URI, Response.Status.BAD_REQUEST);
         }
-        
+
         String errorMessage = checkCommonPreconditions(providerId);
         if (errorMessage != null) {
             return ErrorResponse.error(errorMessage, Response.Status.BAD_REQUEST);
         }
-        
+
         try {
             String nonce = UUID.randomUUID().toString();
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-            String input = nonce + auth.getSession().getId() +  ACCOUNT_CONSOLE_CLIENT_ID + providerId;
+            String input = nonce + auth.getSession().getId() + ACCOUNT_CONSOLE_CLIENT_ID + providerId;
             byte[] check = md.digest(input.getBytes(StandardCharsets.UTF_8));
             String hash = Base64Url.encode(check);
             URI linkUri = Urls.identityProviderLinkRequest(this.session.getContext().getUri().getBaseUri(), providerId, realm.getName());
@@ -189,30 +173,30 @@ public class LinkedAccountsResource {
                     .queryParam("client_id", ACCOUNT_CONSOLE_CLIENT_ID)
                     .queryParam("redirect_uri", redirectUri)
                     .build();
-            
+
             AccountLinkUriRepresentation rep = new AccountLinkUriRepresentation();
             rep.setAccountLinkUri(linkUri);
             rep.setHash(hash);
             rep.setNonce(nonce);
-            
+
             return Cors.add(request, Response.ok(rep)).auth().allowedOrigins(auth.getToken()).build();
         } catch (Exception spe) {
             spe.printStackTrace();
             return ErrorResponse.error(Messages.FAILED_TO_PROCESS_RESPONSE, Response.Status.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     @DELETE
     @Path("/{providerId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response removeLinkedAccount(@PathParam("providerId") String providerId) {
         auth.require(AccountRoles.MANAGE_ACCOUNT);
-        
+
         String errorMessage = checkCommonPreconditions(providerId);
         if (errorMessage != null) {
             return ErrorResponse.error(errorMessage, Response.Status.BAD_REQUEST);
         }
-        
+
         FederatedIdentityModel link = session.users().getFederatedIdentity(user, providerId, realm);
         if (link == null) {
             return ErrorResponse.error(Messages.FEDERATED_IDENTITY_NOT_ACTIVE, Response.Status.BAD_REQUEST);
@@ -222,7 +206,7 @@ public class LinkedAccountsResource {
         if (!(session.users().getFederatedIdentities(user, realm).size() > 1 || user.getFederationLink() != null || isPasswordSet())) {
             return ErrorResponse.error(Messages.FEDERATED_IDENTITY_REMOVING_LAST_PROVIDER, Response.Status.BAD_REQUEST);
         }
-        
+
         session.users().removeFederatedIdentity(realm, user, providerId);
 
         logger.debugv("Social provider {0} removed successfully from user {1}", providerId, user.getUsername());
@@ -235,36 +219,36 @@ public class LinkedAccountsResource {
 
         return Cors.add(request, Response.ok()).auth().allowedOrigins(auth.getToken()).build();
     }
-    
+
     private String checkCommonPreconditions(String providerId) {
         auth.require(AccountRoles.MANAGE_ACCOUNT);
-        
+
         if (Validation.isEmpty(providerId)) {
             return Messages.MISSING_IDENTITY_PROVIDER;
         }
-        
+
         if (!isValidProvider(providerId)) {
             return Messages.IDENTITY_PROVIDER_NOT_FOUND;
         }
-        
+
         if (!user.isEnabled()) {
             return Messages.ACCOUNT_DISABLED;
         }
-        
+
         return null;
     }
-    
+
     private boolean isPasswordSet() {
         return session.userCredentialManager().isConfiguredFor(realm, user, PasswordCredentialModel.TYPE);
     }
-    
+
     private boolean isValidProvider(String providerId) {
         for (IdentityProviderModel model : realm.getIdentityProviders()) {
             if (model.getAlias().equals(providerId)) {
                 return true;
             }
         }
-        
+
         return false;
     }
 }

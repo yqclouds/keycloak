@@ -35,9 +35,8 @@ import javax.persistence.EntityManagerFactory;
 public class HibernateStatsReporter implements ScheduledTask {
 
     private static final int LIMIT = 100; // Just hardcoded for now
-
-    private final EntityManagerFactory emf;
     private static final Logger logger = Logger.getLogger(HibernateStatsReporter.class);
+    private final EntityManagerFactory emf;
 
     public HibernateStatsReporter(EntityManagerFactory emf) {
         this.emf = emf;

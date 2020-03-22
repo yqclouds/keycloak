@@ -16,22 +16,18 @@
  */
 package org.keycloak.protocol.saml.mappers;
 
+import org.jboss.logging.Logger;
+import org.keycloak.dom.saml.v2.assertion.AudienceRestrictionType;
+import org.keycloak.dom.saml.v2.protocol.ResponseType;
+import org.keycloak.models.*;
+import org.keycloak.protocol.saml.SamlProtocol;
+import org.keycloak.provider.ProviderConfigProperty;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.jboss.logging.Logger;
-import org.keycloak.dom.saml.v2.assertion.AudienceRestrictionType;
-import org.keycloak.dom.saml.v2.protocol.ResponseType;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientSessionContext;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserSessionModel;
-import org.keycloak.protocol.saml.SamlProtocol;
-import org.keycloak.provider.ProviderConfigProperty;
 
 /**
  * SAML audience resolve mapper. The mapper adds all client_ids of \"allowed\"
@@ -42,10 +38,8 @@ import org.keycloak.provider.ProviderConfigProperty;
  */
 public class SAMLAudienceResolveProtocolMapper extends AbstractSAMLProtocolMapper implements SAMLLoginResponseMapper {
 
-    protected static final Logger logger = Logger.getLogger(SAMLAudienceResolveProtocolMapper.class);
-
     public static final String PROVIDER_ID = "saml-audience-resolve-mapper";
-
+    protected static final Logger logger = Logger.getLogger(SAMLAudienceResolveProtocolMapper.class);
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
 
     @Override
@@ -76,8 +70,8 @@ public class SAMLAudienceResolveProtocolMapper extends AbstractSAMLProtocolMappe
 
     @Override
     public ResponseType transformLoginResponse(ResponseType response,
-            ProtocolMapperModel mappingModel, KeycloakSession session,
-            UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
+                                               ProtocolMapperModel mappingModel, KeycloakSession session,
+                                               UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
         // get the audience restriction
         AudienceRestrictionType aud = SAMLAudienceProtocolMapper.locateAudienceRestriction(response);
         if (aud != null) {

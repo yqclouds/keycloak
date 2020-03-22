@@ -17,8 +17,9 @@
 
 package org.keycloak.saml;
 
-import javax.xml.stream.XMLStreamWriter;
 import org.keycloak.saml.common.exceptions.ProcessingException;
+
+import javax.xml.stream.XMLStreamWriter;
 
 /**
  * Implementations of this interface are builders that can register &lt;samlp:Extensions&gt;
@@ -27,6 +28,14 @@ import org.keycloak.saml.common.exceptions.ProcessingException;
  * @author hmlnarik
  */
 public interface SamlProtocolExtensionsAwareBuilder<T> {
+
+    /**
+     * Adds a given node subtree as a SAML protocol extension into the SAML protocol message.
+     *
+     * @param extension
+     * @return
+     */
+    T addExtension(NodeGenerator extension);
 
     public interface NodeGenerator {
         /**
@@ -38,12 +47,4 @@ public interface SamlProtocolExtensionsAwareBuilder<T> {
          */
         void write(XMLStreamWriter writer) throws ProcessingException;
     }
-
-    /**
-     * Adds a given node subtree as a SAML protocol extension into the SAML protocol message.
-     *
-     * @param extension
-     * @return
-     */
-    T addExtension(NodeGenerator extension);
 }

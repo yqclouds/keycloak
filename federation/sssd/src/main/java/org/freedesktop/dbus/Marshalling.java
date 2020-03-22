@@ -16,20 +16,9 @@ import org.freedesktop.dbus.types.DBusListType;
 import org.freedesktop.dbus.types.DBusMapType;
 import org.freedesktop.dbus.types.DBusStructType;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
+import java.lang.reflect.*;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 
 import static org.freedesktop.dbus.Gettext.getString;
 
@@ -38,6 +27,7 @@ import static org.freedesktop.dbus.Gettext.getString;
  */
 public class Marshalling {
     private static Map<Type, String[]> typeCache = new HashMap<Type, String[]>();
+    private static StringBuffer[] out = new StringBuffer[10];
 
     /**
      * Will return the DBus type corresponding to the given Java type.
@@ -86,8 +76,6 @@ public class Marshalling {
     public static String[] getDBusType(Type c, boolean basic) throws DBusException {
         return recursiveGetDBusType(c, basic, 0);
     }
-
-    private static StringBuffer[] out = new StringBuffer[10];
 
     @SuppressWarnings("unchecked")
     public static String[] recursiveGetDBusType(Type c, boolean basic, int level) throws DBusException {

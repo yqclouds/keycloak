@@ -116,7 +116,7 @@ public class AttributeKey {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (Component c: components) {
+        for (Component c : components) {
             if (sb.length() > 0) {
                 sb.append(".");
             }
@@ -124,7 +124,6 @@ public class AttributeKey {
         }
         return sb.toString();
     }
-
 
 
     public static class Component {

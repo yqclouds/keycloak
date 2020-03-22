@@ -18,13 +18,13 @@
 
 package org.keycloak.models.credential;
 
-import java.io.IOException;
-
 import org.keycloak.common.util.Time;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.models.credential.dto.WebAuthnCredentialData;
 import org.keycloak.models.credential.dto.WebAuthnSecretData;
 import org.keycloak.util.JsonSerialization;
+
+import java.io.IOException;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>

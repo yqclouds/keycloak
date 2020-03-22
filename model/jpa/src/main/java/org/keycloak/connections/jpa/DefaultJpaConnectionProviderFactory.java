@@ -47,11 +47,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -59,20 +55,11 @@ import java.util.Map;
 public class DefaultJpaConnectionProviderFactory implements JpaConnectionProviderFactory, ServerInfoAwareProviderFactory {
 
     private static final Logger logger = Logger.getLogger(DefaultJpaConnectionProviderFactory.class);
-
-    enum MigrationStrategy {
-        UPDATE, VALIDATE, MANUAL
-    }
-
     private volatile EntityManagerFactory emf;
-
     private Config.Scope config;
-
     private Map<String, String> operationalInfo;
-
     private boolean jtaEnabled;
     private JtaTransactionManagerLookup jtaLookup;
-
     private KeycloakSessionFactory factory;
 
     @Override
@@ -249,7 +236,6 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
         }
     }
 
-
     protected String detectDialect(Connection connection) {
         String driverDialect = config.get("driverDialect");
         if (driverDialect != null && driverDialect.length() > 0) {
@@ -400,6 +386,10 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
         } else {
             return MigrationStrategy.UPDATE;
         }
+    }
+
+    enum MigrationStrategy {
+        UPDATE, VALIDATE, MANUAL
     }
 
 }

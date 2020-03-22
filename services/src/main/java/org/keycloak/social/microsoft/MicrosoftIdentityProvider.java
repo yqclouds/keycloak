@@ -26,27 +26,23 @@ import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.IdentityBrokerException;
 import org.keycloak.broker.provider.util.SimpleHttp;
 import org.keycloak.broker.social.SocialIdentityProvider;
-
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.KeycloakSession;
-
 import org.keycloak.services.validation.Validation;
 
 /**
- * 
  * Identity provider for Microsoft account. Uses OAuth 2 protocol of Microsoft Graph as documented at
  * <a href="https://docs.microsoft.com/en-us/onedrive/developer/rest-api/getting-started/graph-oauth">https://docs.microsoft.com/en-us/onedrive/developer/rest-api/getting-started/graph-oauth</a>
- * 
+ *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class MicrosoftIdentityProvider extends AbstractOAuth2IdentityProvider implements SocialIdentityProvider {
-
-    private static final Logger log = Logger.getLogger(MicrosoftIdentityProvider.class);
 
     public static final String AUTH_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"; // authorization code endpoint
     public static final String TOKEN_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/token"; // token endpoint
     public static final String PROFILE_URL = "https://graph.microsoft.com/v1.0/me/"; // user profile service endpoint
     public static final String DEFAULT_SCOPE = "User.read"; // the User.read scope should be sufficient to obtain all necessary user info
+    private static final Logger log = Logger.getLogger(MicrosoftIdentityProvider.class);
 
     public MicrosoftIdentityProvider(KeycloakSession session, OAuth2IdentityProviderConfig config) {
         super(session, config);

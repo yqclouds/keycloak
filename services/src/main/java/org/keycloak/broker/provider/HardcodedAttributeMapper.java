@@ -33,6 +33,8 @@ import java.util.List;
 public class HardcodedAttributeMapper extends AbstractIdentityProviderMapper {
     public static final String ATTRIBUTE = "attribute";
     public static final String ATTRIBUTE_VALUE = "attribute.value";
+    public static final String[] COMPATIBLE_PROVIDERS = {ANY_PROVIDER};
+    public static final String PROVIDER_ID = "hardcoded-attribute-idp-mapper";
     protected static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
 
     static {
@@ -51,8 +53,6 @@ public class HardcodedAttributeMapper extends AbstractIdentityProviderMapper {
         configProperties.add(property);
     }
 
-
-
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {
         return configProperties;
@@ -67,11 +67,6 @@ public class HardcodedAttributeMapper extends AbstractIdentityProviderMapper {
     public String getDisplayType() {
         return "Hardcoded Attribute";
     }
-
-    public static final String[] COMPATIBLE_PROVIDERS = {ANY_PROVIDER};
-
-
-    public static final String PROVIDER_ID = "hardcoded-attribute-idp-mapper";
 
     @Override
     public String getId() {

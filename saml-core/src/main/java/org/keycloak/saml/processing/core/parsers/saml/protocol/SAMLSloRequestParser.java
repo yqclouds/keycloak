@@ -22,13 +22,12 @@ import org.keycloak.dom.saml.v2.protocol.LogoutRequestType;
 import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.util.StaxParserUtil;
 import org.keycloak.saml.processing.core.parsers.util.SAMLParserUtil;
-
 import org.keycloak.saml.processing.core.saml.v2.util.XMLTimeUtil;
+import org.w3c.dom.Element;
+
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.StartElement;
-import org.w3c.dom.Element;
-import static org.keycloak.saml.processing.core.parsers.saml.protocol.SAMLRequestAbstractParser.VERSION_2_0;
 
 /**
  * Parse the Single Log Out requests
@@ -64,7 +63,7 @@ public class SAMLSloRequestParser extends SAMLRequestAbstractParser<LogoutReques
 
     @Override
     protected void processSubElement(XMLEventReader xmlEventReader, LogoutRequestType target,
-      SAMLProtocolQNames element, StartElement elementDetail) throws ParsingException {
+                                     SAMLProtocolQNames element, StartElement elementDetail) throws ParsingException {
         switch (element) {
             case ISSUER:
             case SIGNATURE:

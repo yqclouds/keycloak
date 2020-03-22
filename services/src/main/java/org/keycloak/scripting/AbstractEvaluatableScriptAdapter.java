@@ -1,11 +1,11 @@
 package org.keycloak.scripting;
 
+import org.keycloak.models.ScriptModel;
+
 import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
-
-import org.keycloak.models.ScriptModel;
 
 /**
  * Abstract class for wrapping a {@link ScriptModel} to make it evaluatable.
@@ -59,8 +59,7 @@ abstract class AbstractEvaluatableScriptAdapter implements EvaluatableScriptAdap
     private Object evalUnchecked(final Bindings bindings) {
         try {
             return eval(bindings);
-        }
-        catch (ScriptException e) {
+        } catch (ScriptException e) {
             throw new ScriptExecutionException(scriptModel, e);
         }
     }

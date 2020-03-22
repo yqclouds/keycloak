@@ -21,9 +21,8 @@ import java.util.Locale;
 import java.util.Optional;
 
 public class DockerAuthenticator extends HttpBasicAuthenticator {
-    private static final Logger logger = Logger.getLogger(DockerAuthenticator.class);
-
     public static final String ID = "docker-http-basic-authenticator";
+    private static final Logger logger = Logger.getLogger(DockerAuthenticator.class);
 
     @Override
     protected void notValidCredentialsAction(final AuthenticationFlowContext context, final RealmModel realm, final UserModel user) {
@@ -40,7 +39,7 @@ public class DockerAuthenticator extends HttpBasicAuthenticator {
     protected void userDisabledAction(AuthenticationFlowContext context, RealmModel realm, UserModel user, String eventError) {
         context.getEvent().user(user);
         context.getEvent().error(eventError);
-        final DockerError error = new DockerError("UNAUTHORIZED","Invalid username or password.",
+        final DockerError error = new DockerError("UNAUTHORIZED", "Invalid username or password.",
                 Collections.singletonList(new DockerAccess(context.getAuthenticationSession().getClientNote(DockerAuthV2Protocol.SCOPE_PARAM))));
         context.failure(AuthenticationFlowError.USER_DISABLED, new ResponseBuilderImpl()
                 .status(Response.Status.UNAUTHORIZED)
@@ -57,7 +56,7 @@ public class DockerAuthenticator extends HttpBasicAuthenticator {
         context.getEvent().user(userId);
         context.getEvent().error(Errors.INVALID_USER_CREDENTIALS);
 
-        final DockerError error = new DockerError("UNAUTHORIZED","Invalid username or password.",
+        final DockerError error = new DockerError("UNAUTHORIZED", "Invalid username or password.",
                 Collections.singletonList(new DockerAccess(context.getAuthenticationSession().getClientNote(DockerAuthV2Protocol.SCOPE_PARAM))));
 
         context.failure(AuthenticationFlowError.INVALID_USER, new ResponseBuilderImpl()

@@ -17,24 +17,6 @@
  */
 package org.keycloak.authorization.jpa.store;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Consumer;
-
-import javax.persistence.EntityManager;
-import javax.persistence.FlushModeType;
-import javax.persistence.NoResultException;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.jpa.entities.PolicyEntity;
 import org.keycloak.authorization.model.Policy;
@@ -43,7 +25,14 @@ import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
-import javax.persistence.LockModeType;
+
+import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -52,6 +41,7 @@ public class JPAPolicyStore implements PolicyStore {
 
     private final EntityManager entityManager;
     private final AuthorizationProvider provider;
+
     public JPAPolicyStore(EntityManager entityManager, AuthorizationProvider provider) {
         this.entityManager = entityManager;
         this.provider = provider;
@@ -244,7 +234,7 @@ public class JPAPolicyStore implements PolicyStore {
 
     @Override
     public List<Policy> findByScopeIds(List<String> scopeIds, String resourceServerId) {
-        if (scopeIds==null || scopeIds.isEmpty()) {
+        if (scopeIds == null || scopeIds.isEmpty()) {
             return Collections.emptyList();
         }
 

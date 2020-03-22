@@ -25,16 +25,8 @@ import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.utils.KeycloakModelUtils;
 
-import javax.persistence.EntityManager;
-import javax.persistence.FlushModeType;
-import javax.persistence.NoResultException;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.*;
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -149,7 +141,7 @@ public class JPAResourceStore implements ResourceStore {
 
         for (ResourceEntity entity : result) {
             Resource cached = resourceStore.findById(entity.getId(), resourceServerId);
-            
+
             if (cached != null) {
                 consumer.accept(cached);
             }
@@ -229,10 +221,10 @@ public class JPAResourceStore implements ResourceStore {
             } else if ("owner".equals(name)) {
                 predicates.add(root.get(name).in(value));
             } else if (!Resource.EXACT_NAME.equals(name)) {
-                if ("name".equals(name) && attributes.containsKey(Resource.EXACT_NAME) && Boolean.valueOf(attributes.get(Resource.EXACT_NAME)[0]) 
+                if ("name".equals(name) && attributes.containsKey(Resource.EXACT_NAME) && Boolean.valueOf(attributes.get(Resource.EXACT_NAME)[0])
                         && value.length > 0 && value[0] != null) {
                     predicates.add(builder.equal(builder.lower(root.get(name)), value[0].toLowerCase()));
-                } else if (value.length > 0 &&  value[0] != null) {
+                } else if (value.length > 0 && value[0] != null) {
                     predicates.add(builder.like(builder.lower(root.get(name)), "%" + value[0].toLowerCase() + "%"));
                 }
             }

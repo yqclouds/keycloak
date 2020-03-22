@@ -23,13 +23,7 @@ import org.keycloak.common.util.Resteasy;
 import org.keycloak.config.ConfigProviderFactory;
 import org.keycloak.exportimport.ExportImportManager;
 import org.keycloak.migration.MigrationModelManager;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.KeycloakSessionTask;
-import org.keycloak.models.ModelDuplicateException;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserProvider;
+import org.keycloak.models.*;
 import org.keycloak.models.dblock.DBLockManager;
 import org.keycloak.models.dblock.DBLockProvider;
 import org.keycloak.models.utils.KeycloakModelUtils;
@@ -47,11 +41,7 @@ import org.keycloak.services.managers.ApplianceBootstrap;
 import org.keycloak.services.managers.RealmManager;
 import org.keycloak.services.managers.UserStorageSyncManager;
 import org.keycloak.services.resources.admin.AdminRoot;
-import org.keycloak.services.scheduled.ClearExpiredClientInitialAccessTokens;
-import org.keycloak.services.scheduled.ClearExpiredEvents;
-import org.keycloak.services.scheduled.ClearExpiredUserSessions;
-import org.keycloak.services.scheduled.ClusterAwareScheduledTaskRunner;
-import org.keycloak.services.scheduled.ScheduledTaskRunner;
+import org.keycloak.services.scheduled.*;
 import org.keycloak.services.util.ObjectMapperResolver;
 import org.keycloak.timer.TimerProvider;
 import org.keycloak.transaction.JtaTransactionManagerLookup;
@@ -61,17 +51,8 @@ import javax.servlet.ServletContext;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.ws.rs.core.Application;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashSet;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.io.*;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -127,6 +108,35 @@ public class KeycloakApplication extends Application {
             platform.exit(t);
         }
 
+    }
+
+    public static KeycloakSessionFactory createSessionFactory() {
+        DefaultKeycloakSessionFactory factory = new DefaultKeycloakSessionFactory();
+        factory.init();
+        return factory;
+    }
+
+    public static void setupScheduledTasks(final KeycloakSessionFactory sessionFactory) {
+        long interval = Config.scope("scheduled").getLong("interval", 60L) * 1000;
+
+        KeycloakSession session = sessionFactory.create();
+        try {
+            TimerProvider timer = session.getProvider(TimerProvider.class);
+            timer.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new ClearExpiredEvents(), interval), interval, "ClearExpiredEvents");
+            timer.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new ClearExpiredClientInitialAccessTokens(), interval), interval, "ClearExpiredClientInitialAccessTokens");
+            timer.schedule(new ScheduledTaskRunner(sessionFactory, new ClearExpiredUserSessions()), interval, ClearExpiredUserSessions.TASK_NAME);
+            new UserStorageSyncManager().bootstrapPeriodic(sessionFactory, timer);
+        } finally {
+            session.close();
+        }
+    }
+
+    private static <T> T loadJson(InputStream is, Class<T> type) {
+        try {
+            return JsonSerialization.readValue(is, type);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to parse json", e);
+        }
     }
 
     protected void startup() {
@@ -234,7 +244,6 @@ public class KeycloakApplication extends Application {
         return exportImportManager;
     }
 
-
     protected void migrateModel() {
         KeycloakSession session = sessionFactory.create();
         try {
@@ -261,27 +270,6 @@ public class KeycloakApplication extends Application {
             throw new RuntimeException("No valid ConfigProvider found");
         }
 
-    }
-
-    public static KeycloakSessionFactory createSessionFactory() {
-        DefaultKeycloakSessionFactory factory = new DefaultKeycloakSessionFactory();
-        factory.init();
-        return factory;
-    }
-
-    public static void setupScheduledTasks(final KeycloakSessionFactory sessionFactory) {
-        long interval = Config.scope("scheduled").getLong("interval", 60L) * 1000;
-
-        KeycloakSession session = sessionFactory.create();
-        try {
-            TimerProvider timer = session.getProvider(TimerProvider.class);
-            timer.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new ClearExpiredEvents(), interval), interval, "ClearExpiredEvents");
-            timer.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new ClearExpiredClientInitialAccessTokens(), interval), interval, "ClearExpiredClientInitialAccessTokens");
-            timer.schedule(new ScheduledTaskRunner(sessionFactory, new ClearExpiredUserSessions()), interval, ClearExpiredUserSessions.TASK_NAME);
-            new UserStorageSyncManager().bootstrapPeriodic(sessionFactory, timer);
-        } finally {
-            session.close();
-        }
     }
 
     public KeycloakSessionFactory getSessionFactory() {
@@ -406,14 +394,6 @@ public class KeycloakApplication extends Application {
                     ServicesLogger.LOGGER.failedToDeleteFile(addUserFile.getAbsolutePath());
                 }
             }
-        }
-    }
-
-    private static <T> T loadJson(InputStream is, Class<T> type) {
-        try {
-            return JsonSerialization.readValue(is, type);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to parse json", e);
         }
     }
 

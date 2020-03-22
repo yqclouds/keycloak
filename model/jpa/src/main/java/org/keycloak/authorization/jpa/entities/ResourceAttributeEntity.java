@@ -16,34 +16,25 @@
  */
 package org.keycloak.authorization.jpa.entities;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
 @NamedQueries({
-        @NamedQuery(name="deleteResourceAttributesByNameAndResource", query="delete from ResourceAttributeEntity attr where attr.resource.id = :resourceId and attr.name = :name")
+        @NamedQuery(name = "deleteResourceAttributesByNameAndResource", query = "delete from ResourceAttributeEntity attr where attr.resource.id = :resourceId and attr.name = :name")
 })
-@Table(name="RESOURCE_ATTRIBUTE")
+@Table(name = "RESOURCE_ATTRIBUTE")
 @Entity
 public class ResourceAttributeEntity {
 
     @Id
-    @Column(name="ID", length = 36)
-    @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
+    @Column(name = "ID", length = 36)
+    @Access(AccessType.PROPERTY)
+    // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
     private String id;
 
-    @ManyToOne(fetch= FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "RESOURCE_ID")
     private ResourceEntity resource;
 

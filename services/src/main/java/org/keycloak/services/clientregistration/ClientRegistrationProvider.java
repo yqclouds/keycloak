@@ -25,12 +25,12 @@ import org.keycloak.provider.Provider;
  */
 public interface ClientRegistrationProvider extends Provider {
 
-    void setAuth(ClientRegistrationAuth auth);
-
     ClientRegistrationAuth getAuth();
 
-    void setEvent(EventBuilder event);
+    void setAuth(ClientRegistrationAuth auth);
 
     EventBuilder getEvent();
+
+    void setEvent(EventBuilder event);
 
 }

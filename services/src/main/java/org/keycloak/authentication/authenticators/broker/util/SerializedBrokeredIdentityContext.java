@@ -24,11 +24,7 @@ import org.keycloak.broker.provider.IdentityProvider;
 import org.keycloak.broker.provider.IdentityProviderDataMarshaller;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.common.util.reflections.Reflections;
-import org.keycloak.models.Constants;
-import org.keycloak.models.IdentityProviderModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ModelException;
-import org.keycloak.models.RealmModel;
+import org.keycloak.models.*;
 import org.keycloak.services.resources.IdentityBrokerService;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.util.JsonSerialization;
@@ -60,6 +56,48 @@ public class SerializedBrokeredIdentityContext implements UpdateProfileContext {
 
     private String identityProviderId;
     private Map<String, ContextDataEntry> contextData = new HashMap<>();
+
+    public static SerializedBrokeredIdentityContext serialize(BrokeredIdentityContext context) {
+        SerializedBrokeredIdentityContext ctx = new SerializedBrokeredIdentityContext();
+        ctx.setId(context.getId());
+        ctx.setBrokerUsername(context.getUsername());
+        ctx.setModelUsername(context.getModelUsername());
+        ctx.setEmail(context.getEmail());
+        ctx.setFirstName(context.getFirstName());
+        ctx.setLastName(context.getLastName());
+        ctx.setBrokerSessionId(context.getBrokerSessionId());
+        ctx.setBrokerUserId(context.getBrokerUserId());
+        ctx.setToken(context.getToken());
+        ctx.setIdentityProviderId(context.getIdpConfig().getAlias());
+
+        ctx.emailAsUsername = context.getAuthenticationSession().getRealm().isRegistrationEmailAsUsername();
+
+        IdentityProviderDataMarshaller serializer = context.getIdp().getMarshaller();
+
+        for (Map.Entry<String, Object> entry : context.getContextData().entrySet()) {
+            Object value = entry.getValue();
+            String serializedValue = serializer.serialize(value);
+
+            ContextDataEntry ctxEntry = ContextDataEntry.create(value.getClass().getName(), serializedValue);
+            ctx.getContextData().put(entry.getKey(), ctxEntry);
+        }
+        return ctx;
+    }
+
+    public static SerializedBrokeredIdentityContext readFromAuthenticationSession(AuthenticationSessionModel authSession, String noteKey) {
+        String asString = authSession.getAuthNote(noteKey);
+        if (asString == null) {
+            return null;
+        } else {
+            try {
+                SerializedBrokeredIdentityContext serializedCtx = JsonSerialization.readValue(asString, SerializedBrokeredIdentityContext.class);
+                serializedCtx.emailAsUsername = authSession.getRealm().isRegistrationEmailAsUsername();
+                return serializedCtx;
+            } catch (IOException ioe) {
+                throw new RuntimeException(ioe);
+            }
+        }
+    }
 
     @JsonIgnore
     @Override
@@ -286,33 +324,6 @@ public class SerializedBrokeredIdentityContext implements UpdateProfileContext {
         return ctx;
     }
 
-    public static SerializedBrokeredIdentityContext serialize(BrokeredIdentityContext context) {
-        SerializedBrokeredIdentityContext ctx = new SerializedBrokeredIdentityContext();
-        ctx.setId(context.getId());
-        ctx.setBrokerUsername(context.getUsername());
-        ctx.setModelUsername(context.getModelUsername());
-        ctx.setEmail(context.getEmail());
-        ctx.setFirstName(context.getFirstName());
-        ctx.setLastName(context.getLastName());
-        ctx.setBrokerSessionId(context.getBrokerSessionId());
-        ctx.setBrokerUserId(context.getBrokerUserId());
-        ctx.setToken(context.getToken());
-        ctx.setIdentityProviderId(context.getIdpConfig().getAlias());
-
-        ctx.emailAsUsername = context.getAuthenticationSession().getRealm().isRegistrationEmailAsUsername();
-
-        IdentityProviderDataMarshaller serializer = context.getIdp().getMarshaller();
-
-        for (Map.Entry<String, Object> entry : context.getContextData().entrySet()) {
-            Object value = entry.getValue();
-            String serializedValue = serializer.serialize(value);
-
-            ContextDataEntry ctxEntry = ContextDataEntry.create(value.getClass().getName(), serializedValue);
-            ctx.getContextData().put(entry.getKey(), ctxEntry);
-        }
-        return ctx;
-    }
-
     // Save this context as note to authSession
     public void saveToAuthenticationSession(AuthenticationSessionModel authSession, String noteKey) {
         try {
@@ -323,25 +334,17 @@ public class SerializedBrokeredIdentityContext implements UpdateProfileContext {
         }
     }
 
-    public static SerializedBrokeredIdentityContext readFromAuthenticationSession(AuthenticationSessionModel authSession, String noteKey) {
-        String asString = authSession.getAuthNote(noteKey);
-        if (asString == null) {
-            return null;
-        } else {
-            try {
-                SerializedBrokeredIdentityContext serializedCtx = JsonSerialization.readValue(asString, SerializedBrokeredIdentityContext.class);
-                serializedCtx.emailAsUsername = authSession.getRealm().isRegistrationEmailAsUsername();
-                return serializedCtx;
-            } catch (IOException ioe) {
-                throw new RuntimeException(ioe);
-            }
-        }
-    }
-
     public static class ContextDataEntry {
 
         private String clazz;
         private String data;
+
+        public static ContextDataEntry create(String clazz, String data) {
+            ContextDataEntry entry = new ContextDataEntry();
+            entry.setClazz(clazz);
+            entry.setData(data);
+            return entry;
+        }
 
         public String getClazz() {
             return clazz;
@@ -357,13 +360,6 @@ public class SerializedBrokeredIdentityContext implements UpdateProfileContext {
 
         public void setData(String data) {
             this.data = data;
-        }
-
-        public static ContextDataEntry create(String clazz, String data) {
-            ContextDataEntry entry = new ContextDataEntry();
-            entry.setClazz(clazz);
-            entry.setData(data);
-            return entry;
         }
     }
 }

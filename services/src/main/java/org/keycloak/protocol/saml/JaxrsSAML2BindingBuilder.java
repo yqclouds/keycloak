@@ -44,30 +44,14 @@ public class JaxrsSAML2BindingBuilder extends BaseSAML2BindingBuilder<JaxrsSAML2
         this.session = session;
     }
 
-    public class PostBindingBuilder extends BasePostBindingBuilder {
-        public PostBindingBuilder(JaxrsSAML2BindingBuilder builder, Document document) throws ProcessingException {
-            super(builder, document);
-        }
+    @Override
+    public RedirectBindingBuilder redirectBinding(Document document) throws ProcessingException {
+        return new RedirectBindingBuilder(this, document);
+    }
 
-        public Response request(String actionUrl) throws ConfigurationException, ProcessingException, IOException {
-            return createResponse(actionUrl, GeneralConstants.SAML_REQUEST_KEY);
-        }
-
-        public Response response(String actionUrl) throws ConfigurationException, ProcessingException, IOException {
-            return createResponse(actionUrl, GeneralConstants.SAML_RESPONSE_KEY);
-        }
-
-        private Response createResponse(String actionUrl, String key) throws ProcessingException, ConfigurationException, IOException {
-            MultivaluedMap<String,String> formData = new MultivaluedHashMap<>();
-            formData.add(GeneralConstants.URL, actionUrl);
-            formData.add(key, BaseSAML2BindingBuilder.getSAMLResponse(document));
-
-            if (this.getRelayState() != null) {
-                formData.add(GeneralConstants.RELAY_STATE, this.getRelayState());
-            }
-
-            return session.getProvider(LoginFormsProvider.class).setFormData(formData).createSamlPostForm();
-        }
+    @Override
+    public PostBindingBuilder postBinding(Document document) throws ProcessingException {
+        return new PostBindingBuilder(this, document);
     }
 
     public static class RedirectBindingBuilder extends BaseRedirectBindingBuilder {
@@ -95,17 +79,31 @@ public class JaxrsSAML2BindingBuilder extends BaseSAML2BindingBuilder<JaxrsSAML2
 
     }
 
-    @Override
-    public RedirectBindingBuilder redirectBinding(Document document) throws ProcessingException  {
-        return new RedirectBindingBuilder(this, document);
+    public class PostBindingBuilder extends BasePostBindingBuilder {
+        public PostBindingBuilder(JaxrsSAML2BindingBuilder builder, Document document) throws ProcessingException {
+            super(builder, document);
+        }
+
+        public Response request(String actionUrl) throws ConfigurationException, ProcessingException, IOException {
+            return createResponse(actionUrl, GeneralConstants.SAML_REQUEST_KEY);
+        }
+
+        public Response response(String actionUrl) throws ConfigurationException, ProcessingException, IOException {
+            return createResponse(actionUrl, GeneralConstants.SAML_RESPONSE_KEY);
+        }
+
+        private Response createResponse(String actionUrl, String key) throws ProcessingException, ConfigurationException, IOException {
+            MultivaluedMap<String, String> formData = new MultivaluedHashMap<>();
+            formData.add(GeneralConstants.URL, actionUrl);
+            formData.add(key, BaseSAML2BindingBuilder.getSAMLResponse(document));
+
+            if (this.getRelayState() != null) {
+                formData.add(GeneralConstants.RELAY_STATE, this.getRelayState());
+            }
+
+            return session.getProvider(LoginFormsProvider.class).setFormData(formData).createSamlPostForm();
+        }
     }
-
-    @Override
-    public PostBindingBuilder postBinding(Document document) throws ProcessingException  {
-        return new PostBindingBuilder(this, document);
-    }
-
-
 
 
 }

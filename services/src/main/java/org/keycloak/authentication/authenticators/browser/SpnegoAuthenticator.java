@@ -25,11 +25,7 @@ import org.keycloak.authentication.Authenticator;
 import org.keycloak.common.constants.KerberosConstants;
 import org.keycloak.events.Errors;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.CredentialValidationOutput;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserCredentialModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.services.messages.Messages;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -42,9 +38,12 @@ import java.util.Map;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class SpnegoAuthenticator extends AbstractUsernameFormAuthenticator implements Authenticator{
+public class SpnegoAuthenticator extends AbstractUsernameFormAuthenticator implements Authenticator {
     public static final String KERBEROS_DISABLED = "kerberos_disabled";
     private static final Logger logger = Logger.getLogger(SpnegoAuthenticator.class);
+    // This is used for testing only.  Selenium will execute the HTML challenge sent back which results in the javascript
+    // redirecting.  Our old Selenium tests expect that the current URL will be the original openid redirect.
+    public static boolean bypassChallengeJavascript = false;
 
     @Override
     public boolean requiresUser() {
@@ -103,7 +102,7 @@ public class SpnegoAuthenticator extends AbstractUsernameFormAuthenticator imple
             context.success();
         } else if (output.getAuthStatus() == CredentialValidationOutput.Status.CONTINUE) {
             String spnegoResponseToken = (String) output.getState().get(KerberosConstants.RESPONSE_TOKEN);
-            Response challenge =  challengeNegotiation(context, spnegoResponseToken);
+            Response challenge = challengeNegotiation(context, spnegoResponseToken);
             context.challenge(challenge);
         } else {
             context.getEvent().error(Errors.INVALID_USER_CREDENTIALS);
@@ -127,12 +126,9 @@ public class SpnegoAuthenticator extends AbstractUsernameFormAuthenticator imple
         }
     }
 
-    // This is used for testing only.  Selenium will execute the HTML challenge sent back which results in the javascript
-    // redirecting.  Our old Selenium tests expect that the current URL will be the original openid redirect.
-    public static boolean bypassChallengeJavascript = false;
-
     /**
      * 401 challenge sent back that bypasses
+     *
      * @param context
      * @param negotiateHeader
      * @return

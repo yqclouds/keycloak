@@ -1,7 +1,6 @@
-<EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
-                  xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
-                  xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+<EntityDescriptor xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
                   xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"
+                  xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
                   entityID="https://IdentityProvider.com/SAML">
     <ds:Signature>...</ds:Signature>
     <AuthnAuthorityDescriptor ID="ID" protocolSupportEnumeration="http://www.example.com/ http://www.example2.com/">
@@ -43,16 +42,19 @@
             <TelephoneNumber>string</TelephoneNumber>
         </ContactPerson>
         <AuthnQueryService Binding="http://www.example.com/" Location="http://www.example.com/">...</AuthnQueryService>
-        <AssertionIDRequestService Binding="http://www.example.com/" Location="http://www.example.com/">...</AssertionIDRequestService>
+        <AssertionIDRequestService Binding="http://www.example.com/" Location="http://www.example.com/">...
+        </AssertionIDRequestService>
         <NameIDFormat>http://www.example.com/</NameIDFormat>
     </AuthnAuthorityDescriptor>
     <Organization>
         <OrganizationName xml:lang="en">Identity Providers R
-            US</OrganizationName>
+            US
+        </OrganizationName>
         <OrganizationDisplayName xml:lang="en">
             Identity Providers R US, a Division of Lerxst Corp.
         </OrganizationDisplayName>
         <OrganizationURL
-                xml:lang="en">https://IdentityProvider.com</OrganizationURL>
+                xml:lang="en">https://IdentityProvider.com
+        </OrganizationURL>
     </Organization>
 </EntityDescriptor>

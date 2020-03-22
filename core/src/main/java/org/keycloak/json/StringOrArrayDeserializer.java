@@ -39,7 +39,7 @@ public class StringOrArrayDeserializer extends JsonDeserializer<Object> {
             }
             return a.toArray(new String[a.size()]);
         } else {
-            return new String[] { jsonNode.textValue() };
+            return new String[]{jsonNode.textValue()};
         }
     }
 

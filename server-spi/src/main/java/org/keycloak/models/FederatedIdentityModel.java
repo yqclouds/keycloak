@@ -22,10 +22,10 @@ package org.keycloak.models;
  */
 public class FederatedIdentityModel {
 
-    private String token;
     private final String userId;
     private final String identityProvider;
     private final String userName;
+    private String token;
 
     public FederatedIdentityModel(String identityProvider, String userId, String userName) {
         this(identityProvider, userId, userName, null);

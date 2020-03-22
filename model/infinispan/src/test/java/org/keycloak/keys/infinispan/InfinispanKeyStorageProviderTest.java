@@ -17,14 +17,6 @@
 
 package org.keycloak.keys.infinispan;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -41,16 +33,23 @@ import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.crypto.KeyWrapper;
 import org.keycloak.keys.PublicKeyLoader;
 
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class InfinispanKeyStorageProviderTest {
 
-    private Map<String, AtomicInteger> counters = new ConcurrentHashMap<>();
-
     Cache<String, PublicKeysEntry> keys = getKeysCache();
     Map<String, FutureTask<PublicKeysEntry>> tasksInProgress = new ConcurrentHashMap<>();
     int minTimeBetweenRequests = 10;
+    private Map<String, AtomicInteger> counters = new ConcurrentHashMap<>();
 
     @Before
     public void before() {
@@ -66,7 +65,7 @@ public class InfinispanKeyStorageProviderTest {
     public void testConcurrency() throws Exception {
         // Just one thread will execute the task
         List<Thread> threads = new LinkedList<>();
-        for (int i=0 ; i<10 ; i++) {
+        for (int i = 0; i < 10; i++) {
             Thread t = new Thread(new SampleWorker("model1"));
             threads.add(t);
         }
@@ -75,11 +74,11 @@ public class InfinispanKeyStorageProviderTest {
         threads.clear();
 
         // model1 won't be executed due to lastRequestTime. model2 will be executed just with one thread
-        for (int i=0 ; i<10 ; i++) {
+        for (int i = 0; i < 10; i++) {
             Thread t = new Thread(new SampleWorker("model1"));
             threads.add(t);
         }
-        for (int i=0 ; i<10 ; i++) {
+        for (int i = 0; i < 10; i++) {
             Thread t = new Thread(new SampleWorker("model2"));
             threads.add(t);
         }
@@ -92,11 +91,11 @@ public class InfinispanKeyStorageProviderTest {
         Time.setOffset(20);
 
         // Time updated. So another thread should successfully run loader for both model1 and model2
-        for (int i=0 ; i<10 ; i++) {
+        for (int i = 0; i < 10; i++) {
             Thread t = new Thread(new SampleWorker("model1"));
             threads.add(t);
         }
-        for (int i=0 ; i<10 ; i++) {
+        for (int i = 0; i < 10; i++) {
             Thread t = new Thread(new SampleWorker("model2"));
             threads.add(t);
         }
@@ -116,6 +115,23 @@ public class InfinispanKeyStorageProviderTest {
         }
     }
 
+    protected Cache<String, PublicKeysEntry> getKeysCache() {
+        GlobalConfigurationBuilder gcb = new GlobalConfigurationBuilder();
+        gcb.globalJmxStatistics().allowDuplicateDomains(true).enabled(true);
+
+        final DefaultCacheManager cacheManager = new DefaultCacheManager(gcb.build());
+
+        ConfigurationBuilder cb = new ConfigurationBuilder();
+        cb.memory()
+                .evictionStrategy(EvictionStrategy.REMOVE)
+                .evictionType(EvictionType.COUNT)
+                .size(InfinispanConnectionProvider.KEYS_CACHE_DEFAULT_MAX);
+        cb.jmxStatistics().enabled(true);
+        Configuration cfg = cb.build();
+
+        cacheManager.defineConfiguration(InfinispanConnectionProvider.KEYS_CACHE_NAME, cfg);
+        return cacheManager.getCache(InfinispanConnectionProvider.KEYS_CACHE_NAME);
+    }
 
     private class SampleWorker implements Runnable {
 
@@ -134,7 +150,6 @@ public class InfinispanKeyStorageProviderTest {
 
     }
 
-
     private class SampleLoader implements PublicKeyLoader {
 
         private final String modelKey;
@@ -151,24 +166,5 @@ public class InfinispanKeyStorageProviderTest {
             currentCounter.incrementAndGet();
             return Collections.emptyMap();
         }
-    }
-
-
-    protected Cache<String, PublicKeysEntry> getKeysCache() {
-        GlobalConfigurationBuilder gcb = new GlobalConfigurationBuilder();
-        gcb.globalJmxStatistics().allowDuplicateDomains(true).enabled(true);
-
-        final DefaultCacheManager cacheManager = new DefaultCacheManager(gcb.build());
-
-        ConfigurationBuilder cb = new ConfigurationBuilder();
-        cb.memory()
-                .evictionStrategy(EvictionStrategy.REMOVE)
-                .evictionType(EvictionType.COUNT)
-                .size(InfinispanConnectionProvider.KEYS_CACHE_DEFAULT_MAX);
-        cb.jmxStatistics().enabled(true);
-        Configuration cfg = cb.build();
-
-        cacheManager.defineConfiguration(InfinispanConnectionProvider.KEYS_CACHE_NAME, cfg);
-        return cacheManager.getCache(InfinispanConnectionProvider.KEYS_CACHE_NAME);
     }
 }

@@ -27,6 +27,7 @@ public class SAMLOrganizationParser extends AbstractStaxSamlMetadataParser<Organ
     public static SAMLOrganizationParser getInstance() {
         return INSTANCE;
     }
+
     @Override
     protected OrganizationType instantiateElement(XMLEventReader xmlEventReader, StartElement element) throws ParsingException {
         return new OrganizationType();

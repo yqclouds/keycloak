@@ -42,20 +42,12 @@ public abstract class AbstractEcdsaKeyProviderFactory implements KeyProviderFact
     protected static ProviderConfigProperty ECDSA_ELLIPTIC_CURVE_PROPERTY = new ProviderConfigProperty(ECDSA_ELLIPTIC_CURVE_KEY, "Elliptic Curve", "Elliptic Curve used in ECDSA", LIST_TYPE,
             String.valueOf(GeneratedEcdsaKeyProviderFactory.DEFAULT_ECDSA_ELLIPTIC_CURVE),
             "P-256", "P-384", "P-521");
- 
+
     public final static ProviderConfigurationBuilder configurationBuilder() {
         return ProviderConfigurationBuilder.create()
                 .property(Attributes.PRIORITY_PROPERTY)
                 .property(Attributes.ENABLED_PROPERTY)
                 .property(Attributes.ACTIVE_PROPERTY);
-    }
-
-    @Override
-    public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel model) throws ComponentValidationException {
-        ConfigurationValidationHelper.check(model)
-                .checkLong(Attributes.PRIORITY_PROPERTY, false)
-                .checkBoolean(Attributes.ENABLED_PROPERTY, false)
-                .checkBoolean(Attributes.ACTIVE_PROPERTY, false);
     }
 
     public static KeyPair generateEcdsaKeyPair(String keySpecName) {
@@ -73,46 +65,54 @@ public abstract class AbstractEcdsaKeyProviderFactory implements KeyProviderFact
     public static String convertECDomainParmNistRepToSecRep(String ecInNistRep) {
         // convert Elliptic Curve Domain Parameter Name in NIST to SEC which is used to generate its EC key
         String ecInSecRep = null;
-        switch(ecInNistRep) {
-            case "P-256" :
-            	ecInSecRep = "secp256r1";
+        switch (ecInNistRep) {
+            case "P-256":
+                ecInSecRep = "secp256r1";
                 break;
-            case "P-384" :
-            	ecInSecRep = "secp384r1";
+            case "P-384":
+                ecInSecRep = "secp384r1";
                 break;
-            case "P-521" :
-            	ecInSecRep = "secp521r1";
+            case "P-521":
+                ecInSecRep = "secp521r1";
                 break;
-            default :
+            default:
                 // return null
         }
         return ecInSecRep;
     }
 
     public static String convertECDomainParmNistRepToAlgorithm(String ecInNistRep) {
-        switch(ecInNistRep) {
-            case "P-256" :
+        switch (ecInNistRep) {
+            case "P-256":
                 return Algorithm.ES256;
-            case "P-384" :
+            case "P-384":
                 return Algorithm.ES384;
-            case "P-521" :
+            case "P-521":
                 return Algorithm.ES512;
-            default :
+            default:
                 return null;
         }
     }
 
     public static String convertAlgorithmToECDomainParmNistRep(String algorithm) {
-        switch(algorithm) {
-            case Algorithm.ES256 :
+        switch (algorithm) {
+            case Algorithm.ES256:
                 return "P-256";
-            case Algorithm.ES384 :
+            case Algorithm.ES384:
                 return "P-384";
-            case Algorithm.ES512 :
+            case Algorithm.ES512:
                 return "P-521";
-            default :
+            default:
                 return null;
         }
+    }
+
+    @Override
+    public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel model) throws ComponentValidationException {
+        ConfigurationValidationHelper.check(model)
+                .checkLong(Attributes.PRIORITY_PROPERTY, false)
+                .checkBoolean(Attributes.ENABLED_PROPERTY, false)
+                .checkBoolean(Attributes.ACTIVE_PROPERTY, false);
     }
 
 }

@@ -17,7 +17,6 @@
 
 package org.keycloak.protocol.saml.installation;
 
-import static org.keycloak.protocol.util.ClientCliInstallationUtil.quote;
 import org.keycloak.Config;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
@@ -26,12 +25,14 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.ClientInstallationProvider;
 import org.keycloak.protocol.saml.SamlClient;
 import org.keycloak.protocol.saml.SamlProtocol;
+import org.keycloak.services.resources.RealmsResource;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.net.URI;
 import javax.ws.rs.core.UriBuilder;
-import org.keycloak.services.resources.RealmsResource;
+import java.net.URI;
+
+import static org.keycloak.protocol.util.ClientCliInstallationUtil.quote;
 
 public class KeycloakSamlSubsystemCliInstallation implements ClientInstallationProvider {
 
@@ -42,7 +43,7 @@ public class KeycloakSamlSubsystemCliInstallation implements ClientInstallationP
         String entityId = client.getBaseUrl() == null ? "SPECIFY YOUR entityID!" : client.getBaseUrl();
         String bindingUrl = RealmsResource.protocolUrl(UriBuilder.fromUri(baseUri))
                 .build(realm.getName(), SamlProtocol.LOGIN_PROTOCOL).toString();
-        
+
         builder.append("/subsystem=keycloak-saml/secure-deployment=YOUR-WAR.war/:add\n\n")
                 .append("/subsystem=keycloak-saml/secure-deployment=YOUR-WAR.war/SP=")
                 .append(quote(entityId))
@@ -67,7 +68,7 @@ public class KeycloakSamlSubsystemCliInstallation implements ClientInstallationP
                     .append(quote(samlClient.getClientEncryptingPrivateKey() == null ? "PRIVATE KEY NOT SET UP OR KNOWN" : samlClient.getClientEncryptingPrivateKey()))
                     .append(")\n\n");
         }
-        
+
         builder.append("/subsystem=keycloak-saml/secure-deployment=YOUR-WAR.war/SP=")
                 .append(quote(entityId))
                 .append("/IDP=idp/:add( \\\n    SingleSignOnService={ \\\n        signRequest=")
@@ -106,7 +107,7 @@ public class KeycloakSamlSubsystemCliInstallation implements ClientInstallationP
                         .append(")\n");
             }
         }
-        
+
         return Response.ok(builder.toString(), MediaType.TEXT_PLAIN_TYPE).build();
     }
 

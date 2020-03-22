@@ -16,12 +16,7 @@
  */
 package org.keycloak.models.cache.infinispan.authorization;
 
-import org.keycloak.authorization.model.CachedModel;
-import org.keycloak.authorization.model.PermissionTicket;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.model.*;
 import org.keycloak.models.cache.infinispan.authorization.entities.CachedPermissionTicket;
 
 /**
@@ -33,6 +28,7 @@ public class PermissionTicketAdapter implements PermissionTicket, CachedModel<Pe
     protected CachedPermissionTicket cached;
     protected StoreFactoryCacheSession cacheSession;
     protected PermissionTicket updated;
+    protected boolean invalidated;
 
     public PermissionTicketAdapter(CachedPermissionTicket cached, StoreFactoryCacheSession cacheSession) {
         this.cached = cached;
@@ -48,8 +44,6 @@ public class PermissionTicketAdapter implements PermissionTicket, CachedModel<Pe
         }
         return updated;
     }
-
-    protected boolean invalidated;
 
     protected void invalidateFlag() {
         invalidated = true;

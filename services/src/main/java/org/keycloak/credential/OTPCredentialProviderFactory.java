@@ -23,7 +23,8 @@ import org.keycloak.models.KeycloakSession;
  * @version $Revision: 1 $
  */
 public class OTPCredentialProviderFactory implements CredentialProviderFactory<OTPCredentialProvider> {
-    public static final String PROVIDER_ID="keycloak-otp";
+    public static final String PROVIDER_ID = "keycloak-otp";
+
     @Override
     public OTPCredentialProvider create(KeycloakSession session) {
         return new OTPCredentialProvider(session);

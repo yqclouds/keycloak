@@ -1,8 +1,5 @@
 package org.keycloak.authentication.authenticators.conditional;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
@@ -10,6 +7,9 @@ import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ConditionalUserConfiguredAuthenticator implements ConditionalAuthenticator {
     public static final ConditionalUserConfiguredAuthenticator SINGLETON = new ConditionalUserConfiguredAuthenticator();
@@ -21,7 +21,7 @@ public class ConditionalUserConfiguredAuthenticator implements ConditionalAuthen
 
     private boolean matchConditionInFlow(AuthenticationFlowContext context, String flowId) {
         List<AuthenticationExecutionModel> executions = context.getRealm().getAuthenticationExecutions(flowId);
-        if (executions==null) {
+        if (executions == null) {
             return true;
         }
         List<AuthenticationExecutionModel> requiredExecutions = new ArrayList<>();
@@ -50,7 +50,7 @@ public class ConditionalUserConfiguredAuthenticator implements ConditionalAuthen
         });
         if (!requiredExecutions.isEmpty()) {
             return requiredExecutions.stream().allMatch(e -> isConfiguredFor(e, context));
-        } else  if (!alternativeExecutions.isEmpty()) {
+        } else if (!alternativeExecutions.isEmpty()) {
             return alternativeExecutions.stream().anyMatch(e -> isConfiguredFor(e, context));
         }
         return true;

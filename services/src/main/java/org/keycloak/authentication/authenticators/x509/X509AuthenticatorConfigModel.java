@@ -32,61 +32,12 @@ public class X509AuthenticatorConfigModel extends AuthenticatorConfigModel {
 
     private static final long serialVersionUID = 1L;
 
-    public enum IdentityMapperType {
-        USER_ATTRIBUTE(USER_ATTRIBUTE_MAPPER),
-        USERNAME_EMAIL(USERNAME_EMAIL_MAPPER);
-
-        private String name;
-        IdentityMapperType(String name) {
-            this.name = name;
-        }
-        public String getName() {  return this.name; }
-        static public IdentityMapperType parse(String name) throws IllegalArgumentException, IndexOutOfBoundsException {
-            if (name == null || name.trim().length() == 0)
-                throw new IllegalArgumentException("name");
-
-            for (IdentityMapperType value : IdentityMapperType.values()) {
-                if (value.getName().equalsIgnoreCase(name))
-                    return value;
-            }
-            throw new IndexOutOfBoundsException("name");
-        }
-    }
-
-    public enum MappingSourceType {
-        SERIALNUMBER(MAPPING_SOURCE_CERT_SERIALNUMBER),
-        ISSUERDN(MAPPING_SOURCE_CERT_ISSUERDN),
-        SUBJECTDN_CN(MAPPING_SOURCE_CERT_SUBJECTDN_CN),
-        SUBJECTDN_EMAIL(MAPPING_SOURCE_CERT_SUBJECTDN_EMAIL),
-        SUBJECTALTNAME_EMAIL(MAPPING_SOURCE_CERT_SUBJECTALTNAME_EMAIL),
-        SUBJECTALTNAME_OTHERNAME(MAPPING_SOURCE_CERT_SUBJECTALTNAME_OTHERNAME),
-        SUBJECTDN(MAPPING_SOURCE_CERT_SUBJECTDN),
-        SHA256_THUMBPRINT(MAPPING_SOURCE_CERT_SHA256_THUMBPRINT),
-        SERIALNUMBER_ISSUERDN(MAPPING_SOURCE_CERT_SERIALNUMBER_ISSUERDN),
-        CERTIFICATE_PEM(MAPPING_SOURCE_CERT_CERTIFICATE_PEM);
-        
-        private String name;
-        MappingSourceType(String name) {
-            this.name = name;
-        }
-        public String getName() {  return this.name; }
-        public static MappingSourceType parse(String name) throws IllegalArgumentException, IndexOutOfBoundsException {
-            if (name == null || name.trim().length() == 0)
-                throw new IllegalArgumentException("name");
-
-            for (MappingSourceType value : MappingSourceType.values()) {
-                if (value.getName().equalsIgnoreCase(name))
-                    return value;
-            }
-            throw new IndexOutOfBoundsException("name");
-        }
-    }
-
     public X509AuthenticatorConfigModel(AuthenticatorConfigModel model) {
         this.setAlias(model.getAlias());
         this.setId(model.getId());
         this.setConfig(model.getConfig());
     }
+
     public X509AuthenticatorConfigModel() {
 
     }
@@ -176,7 +127,7 @@ public class X509AuthenticatorConfigModel extends AuthenticatorConfigModel {
     }
 
     public String getRegularExpression() {
-        return getConfig().getOrDefault(REGULAR_EXPRESSION,DEFAULT_MATCH_ALL_EXPRESSION);
+        return getConfig().getOrDefault(REGULAR_EXPRESSION, DEFAULT_MATCH_ALL_EXPRESSION);
     }
 
     public X509AuthenticatorConfigModel setRegularExpression(String value) {
@@ -231,13 +182,13 @@ public class X509AuthenticatorConfigModel extends AuthenticatorConfigModel {
         return Boolean.parseBoolean(getConfig().get(CONFIRMATION_PAGE_DISALLOWED));
     }
 
-    public boolean getConfirmationPageAllowed() {
-        return !Boolean.parseBoolean(getConfig().get(CONFIRMATION_PAGE_DISALLOWED));
-    }
-
     public X509AuthenticatorConfigModel setConfirmationPageDisallowed(boolean value) {
         getConfig().put(CONFIRMATION_PAGE_DISALLOWED, Boolean.toString(value));
         return this;
+    }
+
+    public boolean getConfirmationPageAllowed() {
+        return !Boolean.parseBoolean(getConfig().get(CONFIRMATION_PAGE_DISALLOWED));
     }
 
     public X509AuthenticatorConfigModel setConfirmationPageAllowed(boolean value) {
@@ -262,7 +213,7 @@ public class X509AuthenticatorConfigModel extends AuthenticatorConfigModel {
         getConfig().put(TIMESTAMP_VALIDATION, Boolean.toString(value));
         return this;
     }
-    
+
     public boolean isSerialnumberHex() {
         return Boolean.parseBoolean(getConfig().get(SERIALNUMBER_HEX));
     }
@@ -270,5 +221,65 @@ public class X509AuthenticatorConfigModel extends AuthenticatorConfigModel {
     public X509AuthenticatorConfigModel setSerialnumberHex(boolean value) {
         getConfig().put(SERIALNUMBER_HEX, Boolean.toString(value));
         return this;
+    }
+
+    public enum IdentityMapperType {
+        USER_ATTRIBUTE(USER_ATTRIBUTE_MAPPER),
+        USERNAME_EMAIL(USERNAME_EMAIL_MAPPER);
+
+        private String name;
+
+        IdentityMapperType(String name) {
+            this.name = name;
+        }
+
+        static public IdentityMapperType parse(String name) throws IllegalArgumentException, IndexOutOfBoundsException {
+            if (name == null || name.trim().length() == 0)
+                throw new IllegalArgumentException("name");
+
+            for (IdentityMapperType value : IdentityMapperType.values()) {
+                if (value.getName().equalsIgnoreCase(name))
+                    return value;
+            }
+            throw new IndexOutOfBoundsException("name");
+        }
+
+        public String getName() {
+            return this.name;
+        }
+    }
+
+    public enum MappingSourceType {
+        SERIALNUMBER(MAPPING_SOURCE_CERT_SERIALNUMBER),
+        ISSUERDN(MAPPING_SOURCE_CERT_ISSUERDN),
+        SUBJECTDN_CN(MAPPING_SOURCE_CERT_SUBJECTDN_CN),
+        SUBJECTDN_EMAIL(MAPPING_SOURCE_CERT_SUBJECTDN_EMAIL),
+        SUBJECTALTNAME_EMAIL(MAPPING_SOURCE_CERT_SUBJECTALTNAME_EMAIL),
+        SUBJECTALTNAME_OTHERNAME(MAPPING_SOURCE_CERT_SUBJECTALTNAME_OTHERNAME),
+        SUBJECTDN(MAPPING_SOURCE_CERT_SUBJECTDN),
+        SHA256_THUMBPRINT(MAPPING_SOURCE_CERT_SHA256_THUMBPRINT),
+        SERIALNUMBER_ISSUERDN(MAPPING_SOURCE_CERT_SERIALNUMBER_ISSUERDN),
+        CERTIFICATE_PEM(MAPPING_SOURCE_CERT_CERTIFICATE_PEM);
+
+        private String name;
+
+        MappingSourceType(String name) {
+            this.name = name;
+        }
+
+        public static MappingSourceType parse(String name) throws IllegalArgumentException, IndexOutOfBoundsException {
+            if (name == null || name.trim().length() == 0)
+                throw new IllegalArgumentException("name");
+
+            for (MappingSourceType value : MappingSourceType.values()) {
+                if (value.getName().equalsIgnoreCase(name))
+                    return value;
+            }
+            throw new IndexOutOfBoundsException("name");
+        }
+
+        public String getName() {
+            return this.name;
+        }
     }
 }

@@ -19,13 +19,7 @@ package org.keycloak.storage.ldap.idm.model;
 
 import org.jboss.logging.Logger;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -33,23 +27,17 @@ import java.util.Set;
 public class LDAPObject {
 
     private static final Logger logger = Logger.getLogger(LDAPObject.class);
-
+    private final List<String> objectClasses = new LinkedList<>();
+    // NOTE: names of read-only attributes are lower-cased to avoid case sensitivity issues
+    private final List<String> readOnlyAttributeNames = new LinkedList<>();
+    private final Map<String, Set<String>> attributes = new HashMap<>();
+    // Copy of "attributes" containing lower-cased keys
+    private final Map<String, Set<String>> lowerCasedAttributes = new HashMap<>();
+    // range attributes are always read from 0 to max so just saving the top value
+    private final Map<String, Integer> rangedAttributes = new HashMap<>();
     private String uuid;
     private LDAPDn dn;
     private String rdnAttributeName;
-
-    private final List<String> objectClasses = new LinkedList<>();
-
-    // NOTE: names of read-only attributes are lower-cased to avoid case sensitivity issues
-    private final List<String> readOnlyAttributeNames = new LinkedList<>();
-
-    private final Map<String, Set<String>> attributes = new HashMap<>();
-
-    // Copy of "attributes" containing lower-cased keys
-    private final Map<String, Set<String>> lowerCasedAttributes = new HashMap<>();
-
-    // range attributes are always read from 0 to max so just saving the top value
-    private final Map<String, Integer> rangedAttributes = new HashMap<>();
 
     public String getUuid() {
         return uuid;

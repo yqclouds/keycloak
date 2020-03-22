@@ -17,10 +17,6 @@
 
 package org.keycloak.storage.ldap.mappers;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
 import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.RealmModel;
@@ -32,19 +28,20 @@ import org.keycloak.storage.ldap.LDAPUtils;
 import org.keycloak.storage.ldap.idm.model.LDAPObject;
 import org.keycloak.storage.ldap.idm.query.internal.LDAPQuery;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
 
 public class HardcodedAttributeMapper extends AbstractLDAPStorageMapper {
 
+    public static final String USER_MODEL_ATTRIBUTE = "user.model.attribute";
+    public static final String ATTRIBUTE_VALUE = "attribute.value";
     private static final Logger logger = Logger.getLogger(HardcodedAttributeMapper.class);
-
+    private static final Map<String, Property<Object>> userModelProperties = LDAPUtils.getUserModelProperties();
     public HardcodedAttributeMapper(ComponentModel mapperModel, LDAPStorageProvider ldapProvider) {
         super(mapperModel, ldapProvider);
     }
-
-    private static final Map<String, Property<Object>> userModelProperties = LDAPUtils.getUserModelProperties();
-
-    public static final String USER_MODEL_ATTRIBUTE = "user.model.attribute";
-    public static final String ATTRIBUTE_VALUE = "attribute.value";
 
     @Override
     public void onImportUserFromLDAP(LDAPObject ldapUser, UserModel user, RealmModel realm, boolean isCreate) {
@@ -74,7 +71,7 @@ public class HardcodedAttributeMapper extends AbstractLDAPStorageMapper {
 
             @Override
             public List<String> getAttribute(String name) {
-                if(userModelAttrName.equals(name)){
+                if (userModelAttrName.equals(name)) {
                     return Arrays.asList(attributeValue);
                 }
                 return super.getAttribute(name);
@@ -82,7 +79,7 @@ public class HardcodedAttributeMapper extends AbstractLDAPStorageMapper {
 
             @Override
             public boolean isEmailVerified() {
-                if(userModelAttrName.equals("emailVerified")){
+                if (userModelAttrName.equals("emailVerified")) {
                     return Boolean.valueOf(attributeValue);
                 }
                 return super.isEmailVerified();
@@ -90,44 +87,44 @@ public class HardcodedAttributeMapper extends AbstractLDAPStorageMapper {
 
             @Override
             public boolean isEnabled() {
-                if(userModelAttrName.equals("enabled")){
+                if (userModelAttrName.equals("enabled")) {
                     return Boolean.valueOf(attributeValue);
                 }
                 return super.isEnabled();
             }
-           
-       };
-       return delegate;
-   }
 
-   private String getUserModelAttribute() {
-       return mapperModel.getConfig().getFirst(USER_MODEL_ATTRIBUTE);
-   }
+        };
+        return delegate;
+    }
 
-   String getAttributeValue() {
-      return mapperModel.getConfig().getFirst(ATTRIBUTE_VALUE);
-   }
+    private String getUserModelAttribute() {
+        return mapperModel.getConfig().getFirst(USER_MODEL_ATTRIBUTE);
+    }
 
-   protected void setPropertyOnUserModel(Property<Object> userModelProperty, UserModel user, String ldapAttrValue) {
-       if (ldapAttrValue == null) {
-           userModelProperty.setValue(user, null);
-       } else {
-           Class<Object> clazz = userModelProperty.getJavaClass();
+    String getAttributeValue() {
+        return mapperModel.getConfig().getFirst(ATTRIBUTE_VALUE);
+    }
 
-           if (String.class.equals(clazz)) {
-               userModelProperty.setValue(user, ldapAttrValue);
-           } else if (Boolean.class.equals(clazz) || boolean.class.equals(clazz)) {
-               Boolean boolVal = Boolean.valueOf(ldapAttrValue);
-               userModelProperty.setValue(user, boolVal);
-           } else {
-               logger.warnf("Don't know how to set the property '%s' on user '%s' . Value of LDAP attribute is '%s' ", userModelProperty.getName(), user.getUsername(), ldapAttrValue.toString());
-           }
-       }
-   }
+    protected void setPropertyOnUserModel(Property<Object> userModelProperty, UserModel user, String ldapAttrValue) {
+        if (ldapAttrValue == null) {
+            userModelProperty.setValue(user, null);
+        } else {
+            Class<Object> clazz = userModelProperty.getJavaClass();
+
+            if (String.class.equals(clazz)) {
+                userModelProperty.setValue(user, ldapAttrValue);
+            } else if (Boolean.class.equals(clazz) || boolean.class.equals(clazz)) {
+                Boolean boolVal = Boolean.valueOf(ldapAttrValue);
+                userModelProperty.setValue(user, boolVal);
+            } else {
+                logger.warnf("Don't know how to set the property '%s' on user '%s' . Value of LDAP attribute is '%s' ", userModelProperty.getName(), user.getUsername(), ldapAttrValue.toString());
+            }
+        }
+    }
 
     @Override
     public void beforeLDAPQuery(LDAPQuery query) {
-       
+
     }
 
 }

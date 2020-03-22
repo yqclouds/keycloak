@@ -16,14 +16,9 @@
  */
 package org.keycloak.scripting;
 
-import javax.script.Bindings;
-import javax.script.Compilable;
-import javax.script.CompiledScript;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-
 import org.keycloak.models.ScriptModel;
+
+import javax.script.*;
 
 /**
  * A {@link ScriptingProvider} that uses a {@link ScriptEngineManager} to evaluate scripts with a {@link ScriptEngine}.
@@ -117,8 +112,7 @@ public class DefaultScriptingProvider implements ScriptingProvider {
         try {
             Thread.currentThread().setContextClassLoader(DefaultScriptingProvider.class.getClassLoader());
             return scriptEngineManager.getEngineByMimeType(script.getMimeType());
-        }
-        finally {
+        } finally {
             Thread.currentThread().setContextClassLoader(cl);
         }
     }

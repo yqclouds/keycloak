@@ -17,15 +17,10 @@
 package org.keycloak.services.resources.admin;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
-import javax.ws.rs.NotFoundException;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.Constants;
-import org.keycloak.models.GroupModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.ManagementPermissionReference;
@@ -35,27 +30,15 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluato
 import org.keycloak.services.resources.admin.permissions.AdminPermissionManagement;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
- * @resource Groups
  * @author Bill Burke
+ * @resource Groups
  */
 public class GroupResource {
 
@@ -73,9 +56,31 @@ public class GroupResource {
         this.group = group;
     }
 
-     /**
-     *
-     *
+    public static void updateGroup(GroupRepresentation rep, GroupModel model) {
+        if (rep.getName() != null) model.setName(rep.getName());
+
+        if (rep.getAttributes() != null) {
+            Set<String> attrsToRemove = new HashSet<>(model.getAttributes().keySet());
+            attrsToRemove.removeAll(rep.getAttributes().keySet());
+            for (Map.Entry<String, List<String>> attr : rep.getAttributes().entrySet()) {
+                model.setAttribute(attr.getKey(), attr.getValue());
+            }
+
+            for (String attr : attrsToRemove) {
+                model.removeAttribute(attr);
+            }
+        }
+    }
+
+    public static ManagementPermissionReference toMgmtRef(GroupModel group, AdminPermissionManagement permissions) {
+        ManagementPermissionReference ref = new ManagementPermissionReference();
+        ref.setEnabled(true);
+        ref.setResource(permissions.groups().resource(group).getId());
+        ref.setScopePermissions(permissions.groups().getPermissions(group));
+        return ref;
+    }
+
+    /**
      * @return
      */
     @GET
@@ -101,19 +106,19 @@ public class GroupResource {
     public Response updateGroup(GroupRepresentation rep) {
         this.auth.groups().requireManage(group);
 
-        for (GroupModel sibling: siblings()) {
+        for (GroupModel sibling : siblings()) {
             if (Objects.equals(sibling.getId(), group.getId())) continue;
             if (sibling.getName().equals(rep.getName())) {
                 return ErrorResponse.exists("Sibling group named '" + rep.getName() + "' already exists.");
             }
         }
-        
+
         updateGroup(rep, group);
         adminEvent.operation(OperationType.UPDATE).resourcePath(session.getContext().getUri()).representation(rep).success();
-        
+
         return Response.noContent().build();
     }
-    
+
     private List<GroupModel> siblings() {
         if (group.getParentId() == null) {
             return realm.getTopLevelGroups();
@@ -129,7 +134,6 @@ public class GroupResource {
         realm.removeGroup(group);
         adminEvent.operation(OperationType.DELETE).resourcePath(session.getContext().getUri()).success();
     }
-
 
     /**
      * Set or create child.  This will just set the parent if it exists.  Create it and set the parent
@@ -163,8 +167,8 @@ public class GroupResource {
             child = realm.createGroup(rep.getName(), group);
             updateGroup(rep, child);
             URI uri = session.getContext().getUri().getBaseUriBuilder()
-                                           .path(session.getContext().getUri().getMatchedURIs().get(2))
-                                           .path(child.getId()).build();
+                    .path(session.getContext().getUri().getMatchedURIs().get(2))
+                    .path(child.getId()).build();
             builder.status(201).location(uri);
             rep.setId(child.getId());
             adminEvent.operation(OperationType.CREATE);
@@ -176,27 +180,11 @@ public class GroupResource {
         return builder.type(MediaType.APPLICATION_JSON_TYPE).entity(childRep).build();
     }
 
-    public static void updateGroup(GroupRepresentation rep, GroupModel model) {
-        if (rep.getName() != null) model.setName(rep.getName());
-
-        if (rep.getAttributes() != null) {
-            Set<String> attrsToRemove = new HashSet<>(model.getAttributes().keySet());
-            attrsToRemove.removeAll(rep.getAttributes().keySet());
-            for (Map.Entry<String, List<String>> attr : rep.getAttributes().entrySet()) {
-                model.setAttribute(attr.getKey(), attr.getValue());
-            }
-
-            for (String attr : attrsToRemove) {
-                model.removeAttribute(attr);
-            }
-        }
-    }
-
     @Path("role-mappings")
     public RoleMapperResource getRoleMappings() {
         AdminPermissionEvaluator.RequirePermissionCheck manageCheck = () -> auth.groups().requireManage(group);
         AdminPermissionEvaluator.RequirePermissionCheck viewCheck = () -> auth.groups().requireView(group);
-        RoleMapperResource resource =  new RoleMapperResource(realm, auth, group, adminEvent, manageCheck, viewCheck);
+        RoleMapperResource resource = new RoleMapperResource(realm, auth, group, adminEvent, manageCheck, viewCheck);
         ResteasyProviderFactory.getInstance().injectProperties(resource);
         return resource;
 
@@ -204,14 +192,14 @@ public class GroupResource {
 
     /**
      * Get users
-     *
+     * <p>
      * Returns a list of users, filtered according to query parameters
      *
-     * @param firstResult Pagination offset
-     * @param maxResults Maximum results size (defaults to 100)
+     * @param firstResult         Pagination offset
+     * @param maxResults          Maximum results size (defaults to 100)
      * @param briefRepresentation Only return basic information (only guaranteed to return id, username, created, first and last name,
-     *  email, enabled state, email verification state, federation link, and access.
-     *  Note that it means that namely user attributes, required actions, and not before are not returned.)
+     *                            email, enabled state, email verification state, federation link, and access.
+     *                            Note that it means that namely user attributes, required actions, and not before are not returned.)
      * @return
      */
     @GET
@@ -222,7 +210,7 @@ public class GroupResource {
                                                @QueryParam("max") Integer maxResults,
                                                @QueryParam("briefRepresentation") Boolean briefRepresentation) {
         this.auth.groups().requireViewMembers(group);
-        
+
         firstResult = firstResult != null ? firstResult : 0;
         maxResults = maxResults != null ? maxResults : Constants.DEFAULT_MAX_RESULTS;
         boolean briefRepresentationB = briefRepresentation != null && briefRepresentation;
@@ -259,18 +247,8 @@ public class GroupResource {
         return toMgmtRef(group, permissions);
     }
 
-    public static ManagementPermissionReference toMgmtRef(GroupModel group, AdminPermissionManagement permissions) {
-        ManagementPermissionReference ref = new ManagementPermissionReference();
-        ref.setEnabled(true);
-        ref.setResource(permissions.groups().resource(group).getId());
-        ref.setScopePermissions(permissions.groups().getPermissions(group));
-        return ref;
-    }
-
-
     /**
      * Return object stating whether client Authorization permissions have been initialized or not and a reference
-     *
      *
      * @return initialized manage permissions reference
      */

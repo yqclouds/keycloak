@@ -10,16 +10,15 @@ import java.util.List;
 
 /**
  * Per the docker auth v2 spec, access is defined like this:
- *
- *        {
- *        "type": "repository",
- *        "name": "samalba/my-app",
- *        "actions": [
- *           "push",
- *           "pull"
- *         ]
- *        }
- *
+ * <p>
+ * {
+ * "type": "repository",
+ * "name": "samalba/my-app",
+ * "actions": [
+ * "push",
+ * "pull"
+ * ]
+ * }
  */
 public class DockerAccess {
 

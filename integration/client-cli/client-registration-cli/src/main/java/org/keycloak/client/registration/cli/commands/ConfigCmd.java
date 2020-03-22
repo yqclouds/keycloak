@@ -19,8 +19,8 @@ package org.keycloak.client.registration.cli.commands;
 
 import org.jboss.aesh.cl.Arguments;
 import org.jboss.aesh.cl.GroupCommandDefinition;
-import org.jboss.aesh.console.command.CommandException;
 import org.jboss.aesh.console.command.Command;
+import org.jboss.aesh.console.command.CommandException;
 import org.jboss.aesh.console.command.CommandResult;
 import org.jboss.aesh.console.command.invocation.CommandInvocation;
 
@@ -35,12 +35,24 @@ import static org.keycloak.client.registration.cli.util.OsUtil.EOL;
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
  */
 
-@GroupCommandDefinition(name = "config", description = "COMMAND [ARGUMENTS]", groupCommands = {ConfigCredentialsCmd.class} )
+@GroupCommandDefinition(name = "config", description = "COMMAND [ARGUMENTS]", groupCommands = {ConfigCredentialsCmd.class})
 public class ConfigCmd extends AbstractAuthOptionsCmd implements Command {
 
     @Arguments
     protected List<String> args;
 
+    public static String usage() {
+        StringWriter sb = new StringWriter();
+        PrintWriter out = new PrintWriter(sb);
+        out.println("Usage: " + CMD + " config SUB_COMMAND [ARGUMENTS]");
+        out.println();
+        out.println("Where SUB_COMMAND is one of: 'credentials', 'truststore', 'initial-token', 'registration-token'");
+        out.println();
+        out.println();
+        out.println("Use '" + CMD + " help config SUB_COMMAND' for more info.");
+        out.println("Use '" + CMD + " help' for general information and a list of commands.");
+        return sb.toString();
+    }
 
     public CommandResult execute(CommandInvocation commandInvocation) throws CommandException, InterruptedException {
         try {
@@ -93,18 +105,5 @@ public class ConfigCmd extends AbstractAuthOptionsCmd implements Command {
 
     protected String help() {
         return usage();
-    }
-
-    public static String usage() {
-        StringWriter sb = new StringWriter();
-        PrintWriter out = new PrintWriter(sb);
-        out.println("Usage: " + CMD + " config SUB_COMMAND [ARGUMENTS]");
-        out.println();
-        out.println("Where SUB_COMMAND is one of: 'credentials', 'truststore', 'initial-token', 'registration-token'");
-        out.println();
-        out.println();
-        out.println("Use '" + CMD + " help config SUB_COMMAND' for more info.");
-        out.println("Use '" + CMD + " help' for general information and a list of commands.");
-        return sb.toString();
     }
 }

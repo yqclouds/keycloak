@@ -16,11 +16,7 @@
  */
 package org.keycloak.client.admin.cli.util;
 
-import org.keycloak.client.admin.cli.config.ConfigData;
-import org.keycloak.client.admin.cli.config.ConfigHandler;
-import org.keycloak.client.admin.cli.config.ConfigUpdateOperation;
-import org.keycloak.client.admin.cli.config.InMemoryConfigHandler;
-import org.keycloak.client.admin.cli.config.RealmConfigData;
+import org.keycloak.client.admin.cli.config.*;
 import org.keycloak.representations.AccessTokenResponse;
 
 /**

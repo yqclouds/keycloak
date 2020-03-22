@@ -17,20 +17,20 @@
 
 package org.keycloak.models.cache.infinispan.events;
 
+import org.infinispan.commons.marshall.Externalizer;
+import org.infinispan.commons.marshall.MarshallUtil;
+import org.infinispan.commons.marshall.SerializeWith;
+import org.keycloak.models.FederatedIdentityModel;
+import org.keycloak.models.cache.infinispan.UserCacheManager;
+import org.keycloak.models.sessions.infinispan.util.KeycloakMarshallUtil;
+
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
-import org.keycloak.models.FederatedIdentityModel;
-import org.keycloak.models.cache.infinispan.UserCacheManager;
-import org.keycloak.models.sessions.infinispan.util.KeycloakMarshallUtil;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.MarshallUtil;
-import org.infinispan.commons.marshall.SerializeWith;
 
 /**
  * Used when user added/removed

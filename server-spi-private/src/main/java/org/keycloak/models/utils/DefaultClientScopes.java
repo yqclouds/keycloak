@@ -17,17 +17,13 @@
 
 package org.keycloak.models.utils;
 
-import java.util.List;
-
 import org.keycloak.OAuth2Constants;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.Constants;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
+import org.keycloak.models.*;
 import org.keycloak.protocol.LoginProtocol;
 import org.keycloak.protocol.LoginProtocolFactory;
 import org.keycloak.provider.ProviderFactory;
+
+import java.util.List;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -35,7 +31,6 @@ import org.keycloak.provider.ProviderFactory;
 public class DefaultClientScopes {
 
     /**
-     *
      * @param session
      * @param realm
      * @param addScopesToExistingClients true when creating new realm. False when migrating from previous version

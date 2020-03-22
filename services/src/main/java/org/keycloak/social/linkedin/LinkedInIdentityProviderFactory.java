@@ -18,35 +18,35 @@ package org.keycloak.social.linkedin;
 
 import org.keycloak.broker.oidc.OAuth2IdentityProviderConfig;
 import org.keycloak.broker.provider.AbstractIdentityProviderFactory;
-import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.broker.social.SocialIdentityProviderFactory;
+import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
 
 /**
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class LinkedInIdentityProviderFactory extends AbstractIdentityProviderFactory<LinkedInIdentityProvider>
-		implements SocialIdentityProviderFactory<LinkedInIdentityProvider> {
+        implements SocialIdentityProviderFactory<LinkedInIdentityProvider> {
 
-	public static final String PROVIDER_ID = "linkedin";
+    public static final String PROVIDER_ID = "linkedin";
 
-	@Override
-	public String getName() {
-		return "LinkedIn";
-	}
+    @Override
+    public String getName() {
+        return "LinkedIn";
+    }
 
-	@Override
-	public LinkedInIdentityProvider create(KeycloakSession session, IdentityProviderModel model) {
-		return new LinkedInIdentityProvider(session, new OAuth2IdentityProviderConfig(model));
-	}
+    @Override
+    public LinkedInIdentityProvider create(KeycloakSession session, IdentityProviderModel model) {
+        return new LinkedInIdentityProvider(session, new OAuth2IdentityProviderConfig(model));
+    }
 
-	@Override
-	public OAuth2IdentityProviderConfig createConfig() {
-		return new OAuth2IdentityProviderConfig();
-	}
+    @Override
+    public OAuth2IdentityProviderConfig createConfig() {
+        return new OAuth2IdentityProviderConfig();
+    }
 
-	@Override
-	public String getId() {
-		return PROVIDER_ID;
-	}
+    @Override
+    public String getId() {
+        return PROVIDER_ID;
+    }
 }

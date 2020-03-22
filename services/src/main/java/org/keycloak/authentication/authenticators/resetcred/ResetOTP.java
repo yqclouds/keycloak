@@ -41,7 +41,7 @@ public class ResetOTP extends AbstractSetRequiredActionAuthenticator implements 
 
     @Override
     public OTPCredentialProvider getCredentialProvider(KeycloakSession session) {
-        return (OTPCredentialProvider)session.getProvider(CredentialProvider.class, "keycloak-otp");
+        return (OTPCredentialProvider) session.getProvider(CredentialProvider.class, "keycloak-otp");
     }
 
     @Override

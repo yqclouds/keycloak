@@ -17,62 +17,50 @@
 
 package org.keycloak.models.jpa.entities;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.MapKeyColumn;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Map;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@Table(name="REQUIRED_ACTION_PROVIDER")
+@Table(name = "REQUIRED_ACTION_PROVIDER")
 @Entity
 @NamedQueries({
-        @NamedQuery(name="deleteRequiredActionProviderByRealm", query="delete from RequiredActionProviderEntity action where action.realm = :realm"),})
+        @NamedQuery(name = "deleteRequiredActionProviderByRealm", query = "delete from RequiredActionProviderEntity action where action.realm = :realm"),})
 public class RequiredActionProviderEntity {
     @Id
-    @Column(name="ID", length = 36)
-    @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
+    @Column(name = "ID", length = 36)
+    @Access(AccessType.PROPERTY)
+    // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
     protected String id;
 
-    @Column(name="ALIAS")
+    @Column(name = "ALIAS")
     protected String alias;
 
-    @Column(name="NAME")
+    @Column(name = "NAME")
     protected String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REALM_ID")
     protected RealmEntity realm;
 
-    @Column(name="PROVIDER_ID")
+    @Column(name = "PROVIDER_ID")
     protected String providerId;
 
-    @Column(name="ENABLED")
+    @Column(name = "ENABLED")
     protected boolean enabled;
 
-    @Column(name="DEFAULT_ACTION")
+    @Column(name = "DEFAULT_ACTION")
     protected boolean defaultAction;
 
-    @Column(name="PRIORITY")
+    @Column(name = "PRIORITY")
     protected int priority;
 
     @ElementCollection
-    @MapKeyColumn(name="NAME")
-    @Column(name="VALUE")
-    @CollectionTable(name="REQUIRED_ACTION_CONFIG", joinColumns={ @JoinColumn(name="REQUIRED_ACTION_ID") })
+    @MapKeyColumn(name = "NAME")
+    @Column(name = "VALUE")
+    @CollectionTable(name = "REQUIRED_ACTION_CONFIG", joinColumns = {@JoinColumn(name = "REQUIRED_ACTION_ID")})
     private Map<String, String> config;
 
     public String getId() {

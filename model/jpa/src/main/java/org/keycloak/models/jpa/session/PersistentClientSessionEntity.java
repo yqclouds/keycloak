@@ -17,30 +17,24 @@
 
 package org.keycloak.models.jpa.session;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 @NamedQueries({
-        @NamedQuery(name="deleteClientSessionsByRealm", query="delete from PersistentClientSessionEntity sess where sess.userSessionId IN (select u.userSessionId from PersistentUserSessionEntity u where u.realmId = :realmId)"),
-        @NamedQuery(name="deleteClientSessionsByClient", query="delete from PersistentClientSessionEntity sess where sess.clientId = :clientId"),
-        @NamedQuery(name="deleteClientSessionsByExternalClient", query="delete from PersistentClientSessionEntity sess where sess.clientStorageProvider = :clientStorageProvider and sess.externalClientId = :externalClientId"),
-        @NamedQuery(name="deleteClientSessionsByClientStorageProvider", query="delete from PersistentClientSessionEntity sess where sess.clientStorageProvider = :clientStorageProvider"),
-        @NamedQuery(name="deleteClientSessionsByUser", query="delete from PersistentClientSessionEntity sess where sess.userSessionId IN (select u.userSessionId from PersistentUserSessionEntity u where u.userId = :userId)"),
-        @NamedQuery(name="deleteClientSessionsByUserSession", query="delete from PersistentClientSessionEntity sess where sess.userSessionId = :userSessionId and sess.offline = :offline"),
-        @NamedQuery(name="deleteExpiredClientSessions", query="delete from PersistentClientSessionEntity sess where sess.userSessionId IN (select u.userSessionId from PersistentUserSessionEntity u where u.realmId = :realmId AND u.offline = :offline AND u.lastSessionRefresh < :lastSessionRefresh)"),
-        @NamedQuery(name="findClientSessionsByUserSession", query="select sess from PersistentClientSessionEntity sess where sess.userSessionId=:userSessionId and sess.offline = :offline"),
-        @NamedQuery(name="findClientSessionsByUserSessions", query="select sess from PersistentClientSessionEntity sess where sess.offline = :offline and sess.userSessionId IN (:userSessionIds) order by sess.userSessionId")
+        @NamedQuery(name = "deleteClientSessionsByRealm", query = "delete from PersistentClientSessionEntity sess where sess.userSessionId IN (select u.userSessionId from PersistentUserSessionEntity u where u.realmId = :realmId)"),
+        @NamedQuery(name = "deleteClientSessionsByClient", query = "delete from PersistentClientSessionEntity sess where sess.clientId = :clientId"),
+        @NamedQuery(name = "deleteClientSessionsByExternalClient", query = "delete from PersistentClientSessionEntity sess where sess.clientStorageProvider = :clientStorageProvider and sess.externalClientId = :externalClientId"),
+        @NamedQuery(name = "deleteClientSessionsByClientStorageProvider", query = "delete from PersistentClientSessionEntity sess where sess.clientStorageProvider = :clientStorageProvider"),
+        @NamedQuery(name = "deleteClientSessionsByUser", query = "delete from PersistentClientSessionEntity sess where sess.userSessionId IN (select u.userSessionId from PersistentUserSessionEntity u where u.userId = :userId)"),
+        @NamedQuery(name = "deleteClientSessionsByUserSession", query = "delete from PersistentClientSessionEntity sess where sess.userSessionId = :userSessionId and sess.offline = :offline"),
+        @NamedQuery(name = "deleteExpiredClientSessions", query = "delete from PersistentClientSessionEntity sess where sess.userSessionId IN (select u.userSessionId from PersistentUserSessionEntity u where u.realmId = :realmId AND u.offline = :offline AND u.lastSessionRefresh < :lastSessionRefresh)"),
+        @NamedQuery(name = "findClientSessionsByUserSession", query = "select sess from PersistentClientSessionEntity sess where sess.userSessionId=:userSessionId and sess.offline = :offline"),
+        @NamedQuery(name = "findClientSessionsByUserSessions", query = "select sess from PersistentClientSessionEntity sess where sess.offline = :offline and sess.userSessionId IN (:userSessionIds) order by sess.userSessionId")
 })
-@Table(name="OFFLINE_CLIENT_SESSION")
+@Table(name = "OFFLINE_CLIENT_SESSION")
 @Entity
 @IdClass(PersistentClientSessionEntity.Key.class)
 public class PersistentClientSessionEntity {
@@ -52,25 +46,25 @@ public class PersistentClientSessionEntity {
     protected String userSessionId;
 
     @Id
-    @Column(name="CLIENT_ID", length = 36)
+    @Column(name = "CLIENT_ID", length = 36)
     protected String clientId;
 
     @Id
-    @Column(name="CLIENT_STORAGE_PROVIDER", length = 36)
+    @Column(name = "CLIENT_STORAGE_PROVIDER", length = 36)
     protected String clientStorageProvider;
 
     @Id
-    @Column(name="EXTERNAL_CLIENT_ID", length = 255)
+    @Column(name = "EXTERNAL_CLIENT_ID", length = 255)
     protected String externalClientId;
 
-    @Column(name="TIMESTAMP")
+    @Column(name = "TIMESTAMP")
     protected int timestamp;
 
     @Id
     @Column(name = "OFFLINE_FLAG")
     protected String offline;
 
-    @Column(name="DATA")
+    @Column(name = "DATA")
     protected String data;
 
     public String getUserSessionId() {
@@ -177,10 +171,13 @@ public class PersistentClientSessionEntity {
 
             Key key = (Key) o;
 
-            if (this.userSessionId != null ? !this.userSessionId.equals(key.userSessionId) : key.userSessionId != null) return false;
+            if (this.userSessionId != null ? !this.userSessionId.equals(key.userSessionId) : key.userSessionId != null)
+                return false;
             if (this.clientId != null ? !this.clientId.equals(key.clientId) : key.clientId != null) return false;
-            if (this.externalClientId != null ? !this.externalClientId.equals(key.clientId) : key.externalClientId != null) return false;
-            if (this.clientStorageProvider != null ? !this.clientStorageProvider.equals(key.clientId) : key.clientStorageProvider != null) return false;
+            if (this.externalClientId != null ? !this.externalClientId.equals(key.clientId) : key.externalClientId != null)
+                return false;
+            if (this.clientStorageProvider != null ? !this.clientStorageProvider.equals(key.clientId) : key.clientStorageProvider != null)
+                return false;
             if (this.offline != null ? !this.offline.equals(key.offline) : key.offline != null) return false;
 
             return true;

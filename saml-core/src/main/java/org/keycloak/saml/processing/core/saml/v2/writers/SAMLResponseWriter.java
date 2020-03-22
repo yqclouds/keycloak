@@ -19,13 +19,7 @@ package org.keycloak.saml.processing.core.saml.v2.writers;
 import org.keycloak.dom.saml.v2.assertion.AssertionType;
 import org.keycloak.dom.saml.v2.assertion.EncryptedAssertionType;
 import org.keycloak.dom.saml.v2.assertion.NameIDType;
-import org.keycloak.dom.saml.v2.protocol.ArtifactResponseType;
-import org.keycloak.dom.saml.v2.protocol.AuthnRequestType;
-import org.keycloak.dom.saml.v2.protocol.ResponseType;
-import org.keycloak.dom.saml.v2.protocol.StatusCodeType;
-import org.keycloak.dom.saml.v2.protocol.StatusDetailType;
-import org.keycloak.dom.saml.v2.protocol.StatusResponseType;
-import org.keycloak.dom.saml.v2.protocol.StatusType;
+import org.keycloak.dom.saml.v2.protocol.*;
 import org.keycloak.saml.common.constants.JBossSAMLConstants;
 import org.keycloak.saml.common.constants.JBossSAMLURIConstants;
 import org.keycloak.saml.common.exceptions.ProcessingException;
@@ -33,12 +27,11 @@ import org.keycloak.saml.common.util.StaxUtil;
 import org.keycloak.saml.common.util.StringUtil;
 import org.w3c.dom.Element;
 
+import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamWriter;
 import java.net.URI;
 import java.util.List;
-import org.keycloak.dom.saml.v2.protocol.ExtensionsType;
-import javax.xml.crypto.dsig.XMLSignature;
 
 /**
  * Write a SAML Response to stream
@@ -60,7 +53,6 @@ public class SAMLResponseWriter extends BaseWriter {
      *
      * @param response
      * @param out
-     *
      * @throws org.keycloak.saml.common.exceptions.ProcessingException
      */
     public void write(ResponseType response) throws ProcessingException {
@@ -72,7 +64,7 @@ public class SAMLResponseWriter extends BaseWriter {
 
         StaxUtil.writeStartElement(writer, PROTOCOL_PREFIX, JBossSAMLConstants.RESPONSE__PROTOCOL.get(), JBossSAMLURIConstants.PROTOCOL_NSURI.get());
 
-        if (forceWriteDsigNamespace && sig != null && sig.getPrefix() != null && ! sig.hasAttribute("xmlns:" + sig.getPrefix())) {
+        if (forceWriteDsigNamespace && sig != null && sig.getPrefix() != null && !sig.hasAttribute("xmlns:" + sig.getPrefix())) {
             StaxUtil.writeNameSpace(writer, sig.getPrefix(), XMLSignature.XMLNS);
         }
         StaxUtil.writeNameSpace(writer, PROTOCOL_PREFIX, JBossSAMLURIConstants.PROTOCOL_NSURI.get());
@@ -89,7 +81,7 @@ public class SAMLResponseWriter extends BaseWriter {
             StaxUtil.writeDOMElement(writer, sig);
         }
         ExtensionsType extensions = response.getExtensions();
-        if (extensions != null && extensions.getAny() != null && ! extensions.getAny().isEmpty()) {
+        if (extensions != null && extensions.getAny() != null && !extensions.getAny().isEmpty()) {
             write(extensions);
         }
 
@@ -134,7 +126,7 @@ public class SAMLResponseWriter extends BaseWriter {
             StaxUtil.writeDOMElement(writer, sig);
         }
         ExtensionsType extensions = response.getExtensions();
-        if (extensions != null && extensions.getAny() != null && ! extensions.getAny().isEmpty()) {
+        if (extensions != null && extensions.getAny() != null && !extensions.getAny().isEmpty()) {
             write(extensions);
         }
 
@@ -160,9 +152,8 @@ public class SAMLResponseWriter extends BaseWriter {
      * Write a {@code StatusResponseType}
      *
      * @param response
-     * @param qname QName of the starting element
+     * @param qname    QName of the starting element
      * @param out
-     *
      * @throws ProcessingException
      */
     public void write(StatusResponseType response, QName qname) throws ProcessingException {
@@ -186,7 +177,7 @@ public class SAMLResponseWriter extends BaseWriter {
             StaxUtil.writeDOMElement(writer, sig);
         }
         ExtensionsType extensions = response.getExtensions();
-        if (extensions != null && extensions.getAny() != null && ! extensions.getAny().isEmpty()) {
+        if (extensions != null && extensions.getAny() != null && !extensions.getAny().isEmpty()) {
             write(extensions);
         }
 
@@ -202,7 +193,6 @@ public class SAMLResponseWriter extends BaseWriter {
      *
      * @param status
      * @param out
-     *
      * @throws ProcessingException
      */
     public void write(StatusType status) throws ProcessingException {
@@ -230,7 +220,6 @@ public class SAMLResponseWriter extends BaseWriter {
      *
      * @param statusCodeType
      * @param out
-     *
      * @throws ProcessingException
      */
     public void write(StatusCodeType statusCodeType) throws ProcessingException {
@@ -253,7 +242,6 @@ public class SAMLResponseWriter extends BaseWriter {
      *
      * @param statusDetailType
      * @param out
-     *
      * @throws ProcessingException
      */
     public void write(StatusDetailType statusDetailType) throws ProcessingException {
@@ -266,7 +254,6 @@ public class SAMLResponseWriter extends BaseWriter {
      * Write the common attributes for all response types
      *
      * @param statusResponse
-     *
      * @throws ProcessingException
      */
     private void writeBaseAttributes(StatusResponseType statusResponse) throws ProcessingException {

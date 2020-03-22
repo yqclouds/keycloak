@@ -16,18 +16,18 @@
  */
 package org.keycloak.test.login.freemarker.model;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.keycloak.forms.login.freemarker.model.IdentityProviderBean;
 import org.keycloak.forms.login.freemarker.model.IdentityProviderBean.IdentityProvider;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * Unit test for {@link org.keycloak.forms.login.freemarker.model.IdentityProviderBean}
- * 
+ *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class IdentityProviderBeanTest {

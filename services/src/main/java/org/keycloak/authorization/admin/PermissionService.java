@@ -16,16 +16,16 @@
  */
 package org.keycloak.authorization.admin;
 
-import java.util.List;
-import java.util.Map;
-
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.model.Policy;
 import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.resources.admin.AdminEventBuilder;
+import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -46,8 +46,8 @@ public class PermissionService extends PolicyService {
         return new PolicyTypeService(type, resourceServer, authorization, auth, adminEvent) {
             @Override
             protected List<Object> doSearch(Integer firstResult, Integer maxResult, String fields, Map<String, String[]> filters) {
-                filters.put("permission", new String[] {Boolean.TRUE.toString()});
-                filters.put("type", new String[] {type});
+                filters.put("permission", new String[]{Boolean.TRUE.toString()});
+                filters.put("type", new String[]{type});
                 return super.doSearch(firstResult, maxResult, fields, filters);
             }
         };
@@ -55,7 +55,7 @@ public class PermissionService extends PolicyService {
 
     @Override
     protected List<Object> doSearch(Integer firstResult, Integer maxResult, String fields, Map<String, String[]> filters) {
-        filters.put("permission", new String[] {Boolean.TRUE.toString()});
+        filters.put("permission", new String[]{Boolean.TRUE.toString()});
         return super.doSearch(firstResult, maxResult, fields, filters);
     }
 

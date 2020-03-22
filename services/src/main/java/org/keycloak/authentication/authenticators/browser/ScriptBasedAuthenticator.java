@@ -20,11 +20,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
-import org.keycloak.models.AuthenticatorConfigModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.ScriptModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.scripting.InvocableScriptAdapter;
 import org.keycloak.scripting.ScriptExecutionException;
 import org.keycloak.scripting.ScriptingProvider;
@@ -89,14 +85,12 @@ import java.util.Map;
  */
 public class ScriptBasedAuthenticator implements Authenticator {
 
-    private static final Logger LOGGER = Logger.getLogger(ScriptBasedAuthenticator.class);
-
     static final String SCRIPT_CODE = "scriptCode";
     static final String SCRIPT_NAME = "scriptName";
     static final String SCRIPT_DESCRIPTION = "scriptDescription";
-
     static final String ACTION_FUNCTION_NAME = "action";
     static final String AUTHENTICATE_FUNCTION_NAME = "authenticate";
+    private static final Logger LOGGER = Logger.getLogger(ScriptBasedAuthenticator.class);
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {

@@ -27,6 +27,7 @@ import org.keycloak.models.UserModel;
 import java.util.List;
 
 /**
+ *
  */
 public class AuthenticatorConfiguredMethod implements TemplateMethodModelEx {
     private final RealmModel realm;

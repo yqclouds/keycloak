@@ -22,6 +22,7 @@ import org.keycloak.dom.saml.v2.assertion.OneTimeUseType;
 import org.keycloak.dom.saml.v2.assertion.ProxyRestrictionType;
 import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.util.StaxParserUtil;
+
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.StartElement;
 

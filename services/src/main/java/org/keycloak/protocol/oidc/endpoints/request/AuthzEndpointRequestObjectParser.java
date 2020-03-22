@@ -17,10 +17,6 @@
 package org.keycloak.protocol.oidc.endpoints.request;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.keycloak.jose.jws.Algorithm;
 import org.keycloak.jose.jws.JWSHeader;
 import org.keycloak.jose.jws.JWSInput;
@@ -28,6 +24,10 @@ import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.protocol.oidc.OIDCAdvancedConfigWrapper;
 import org.keycloak.util.JsonSerialization;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Parse the parameters from OIDC "request" object
@@ -57,7 +57,7 @@ class AuthzEndpointRequestObjectParser extends AuthzEndpointRequestParser {
         } else {
             this.requestParams = session.tokens().decodeClientJWT(requestObject, client, JsonNode.class);
             if (this.requestParams == null) {
-            	throw new RuntimeException("Failed to verify signature on 'request' object");
+                throw new RuntimeException("Failed to verify signature on 'request' object");
             }
         }
     }
@@ -77,7 +77,7 @@ class AuthzEndpointRequestObjectParser extends AuthzEndpointRequestParser {
     @Override
     protected Integer getIntParameter(String paramName) {
         Object val = this.requestParams.get(paramName);
-        return val==null ? null : Integer.parseInt(getParameter(paramName));
+        return val == null ? null : Integer.parseInt(getParameter(paramName));
     }
 
     @Override

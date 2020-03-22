@@ -27,9 +27,8 @@ import org.keycloak.sessions.AuthenticationSessionModel;
 
 /**
  * Provider interface for SAML authentication preprocessing.
- * 
- * @author <a href="mailto:gideon.caranzo@thalesgroup.com">Gideon Caranzo</a>
  *
+ * @author <a href="mailto:gideon.caranzo@thalesgroup.com">Gideon Caranzo</a>
  */
 public interface SamlAuthenticationPreprocessor extends Provider, ProviderFactory<SamlAuthenticationPreprocessor> {
 
@@ -37,17 +36,17 @@ public interface SamlAuthenticationPreprocessor extends Provider, ProviderFactor
      * Called before a login request is processed.
      */
     default AuthnRequestType beforeProcessingLoginRequest(AuthnRequestType authnRequest,
-            AuthenticationSessionModel authSession) {
+                                                          AuthenticationSessionModel authSession) {
         return authnRequest;
     }
 
     /**
      * Called before a logout request is processed.
-     * 
+     *
      * @param clientSession can be null if client is not applicable (e.g. when used within identity broker)
      */
     default LogoutRequestType beforeProcessingLogoutRequest(LogoutRequestType logoutRequest,
-            UserSessionModel authSession, AuthenticatedClientSessionModel clientSession) {
+                                                            UserSessionModel authSession, AuthenticatedClientSessionModel clientSession) {
         return logoutRequest;
     }
 
@@ -55,17 +54,17 @@ public interface SamlAuthenticationPreprocessor extends Provider, ProviderFactor
      * Called before a login request is sent.
      */
     default AuthnRequestType beforeSendingLoginRequest(AuthnRequestType authnRequest,
-            AuthenticationSessionModel clientSession) {
+                                                       AuthenticationSessionModel clientSession) {
         return authnRequest;
     }
 
     /**
      * Called before a logout request is sent.
-     * 
+     *
      * @param clientSession can be null if client is not applicable (e.g. when used within identity broker)
      */
     default LogoutRequestType beforeSendingLogoutRequest(LogoutRequestType logoutRequest,
-            UserSessionModel authSession, AuthenticatedClientSessionModel clientSession) {
+                                                         UserSessionModel authSession, AuthenticatedClientSessionModel clientSession) {
         return logoutRequest;
     }
 
@@ -73,7 +72,7 @@ public interface SamlAuthenticationPreprocessor extends Provider, ProviderFactor
      * Called before a login response is processed.
      */
     default StatusResponseType beforeProcessingLoginResponse(StatusResponseType statusResponse,
-            AuthenticationSessionModel authSession) {
+                                                             AuthenticationSessionModel authSession) {
         return statusResponse;
     }
 
@@ -81,7 +80,7 @@ public interface SamlAuthenticationPreprocessor extends Provider, ProviderFactor
      * Called before a response is sent back to the client.
      */
     default StatusResponseType beforeSendingResponse(StatusResponseType statusResponse,
-            AuthenticatedClientSessionModel clientSession) {
+                                                     AuthenticatedClientSessionModel clientSession) {
         return statusResponse;
     }
 

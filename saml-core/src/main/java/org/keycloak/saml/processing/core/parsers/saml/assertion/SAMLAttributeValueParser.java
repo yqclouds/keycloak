@@ -24,8 +24,7 @@ import org.keycloak.saml.common.parsers.StaxParser;
 import org.keycloak.saml.common.util.StaxParserUtil;
 import org.keycloak.saml.processing.core.parsers.util.SAMLParserUtil;
 import org.keycloak.saml.processing.core.saml.v2.util.XMLTimeUtil;
-import java.io.StringWriter;
-import java.util.Objects;
+
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLEventWriter;
@@ -34,9 +33,11 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
+import java.io.StringWriter;
+import java.util.Objects;
 
 /**
- * 
+ *
  */
 public class SAMLAttributeValueParser implements StaxParser {
 
@@ -48,6 +49,36 @@ public class SAMLAttributeValueParser implements StaxParser {
 
     public static SAMLAttributeValueParser getInstance() {
         return INSTANCE;
+    }
+
+    public static String parseAnyTypeAsString(XMLEventReader xmlEventReader) throws ParsingException {
+        try {
+            XMLEvent event = xmlEventReader.peek();
+            if (event.isStartElement()) {
+                event = xmlEventReader.nextTag();
+                StringWriter sw = new StringWriter();
+                XMLEventWriter writer = XMLOutputFactory.newInstance().createXMLEventWriter(sw);
+                //QName tagName = event.asStartElement().getName();
+                int tagLevel = 1;
+                do {
+                    writer.add(event);
+                    event = (XMLEvent) xmlEventReader.next();
+                    if (event.isStartElement()) {
+                        tagLevel++;
+                    }
+                    if (event.isEndElement()) {
+                        tagLevel--;
+                    }
+                } while (xmlEventReader.hasNext() && tagLevel > 0);
+                writer.add(event);
+                writer.flush();
+                return sw.toString();
+            } else {
+                return StaxParserUtil.getElementText(xmlEventReader);
+            }
+        } catch (Exception e) {
+            throw logger.parserError(e);
+        }
     }
 
     @Override
@@ -97,45 +128,15 @@ public class SAMLAttributeValueParser implements StaxParser {
             return StaxParserUtil.getElementText(xmlEventReader);
         } else if (typeValue.contains(":anyType")) {
             return parseAnyTypeAsString(xmlEventReader);
-        } else if(typeValue.contains(":base64Binary")){
+        } else if (typeValue.contains(":base64Binary")) {
             return StaxParserUtil.getElementText(xmlEventReader);
-        } else if(typeValue.contains(":date")){
+        } else if (typeValue.contains(":date")) {
             return XMLTimeUtil.parse(StaxParserUtil.getElementText(xmlEventReader));
-        } else if(typeValue.contains(":boolean")){
+        } else if (typeValue.contains(":boolean")) {
             return StaxParserUtil.getElementText(xmlEventReader);
         }
 
         throw logger.parserUnknownXSI(typeValue);
-    }
-
-    public static String parseAnyTypeAsString(XMLEventReader xmlEventReader) throws ParsingException {
-        try {
-            XMLEvent event = xmlEventReader.peek();
-            if (event.isStartElement()) {
-                event = xmlEventReader.nextTag();
-                StringWriter sw = new StringWriter();
-                XMLEventWriter writer = XMLOutputFactory.newInstance().createXMLEventWriter(sw);
-                //QName tagName = event.asStartElement().getName();
-                int tagLevel = 1;
-                do {
-                    writer.add(event);
-                    event = (XMLEvent) xmlEventReader.next();
-                    if (event.isStartElement()) {
-                        tagLevel++;
-                    }
-                    if (event.isEndElement()) {
-                        tagLevel--;
-                    }
-                } while (xmlEventReader.hasNext() && tagLevel > 0);
-                writer.add(event);
-                writer.flush();
-                return sw.toString();
-            } else {
-                return StaxParserUtil.getElementText(xmlEventReader);
-            }
-        } catch (Exception e) {
-            throw logger.parserError(e);
-        }
     }
 
 }

@@ -33,34 +33,37 @@ import java.util.UUID;
  */
 public class UserCredentialModel implements CredentialInput {
 
-    @Deprecated /** Use PasswordCredentialModel.TYPE instead **/
+    @Deprecated
+    /** Use PasswordCredentialModel.TYPE instead **/
     public static final String PASSWORD = PasswordCredentialModel.TYPE;
 
-    @Deprecated /** Use PasswordCredentialModel.PASSWORD_HISTORY instead **/
+    @Deprecated
+    /** Use PasswordCredentialModel.PASSWORD_HISTORY instead **/
     public static final String PASSWORD_HISTORY = PasswordCredentialModel.PASSWORD_HISTORY;
 
-    @Deprecated /**  Use OTPCredentialModel.TOTP instead **/
+    @Deprecated
+    /**  Use OTPCredentialModel.TOTP instead **/
     public static final String TOTP = OTPCredentialModel.TOTP;
 
-    @Deprecated /**  Use OTPCredentialModel.TOTP instead **/
+    @Deprecated
+    /**  Use OTPCredentialModel.TOTP instead **/
     public static final String HOTP = OTPCredentialModel.HOTP;
 
-    @Deprecated /** Legacy stuff. Not used in Keycloak anymore **/
+    @Deprecated
+    /** Legacy stuff. Not used in Keycloak anymore **/
     public static final String PASSWORD_TOKEN = CredentialModel.PASSWORD_TOKEN;
 
     public static final String SECRET = CredentialModel.SECRET;
     public static final String KERBEROS = CredentialModel.KERBEROS;
     public static final String CLIENT_CERT = CredentialModel.CLIENT_CERT;
-
+    // Additional context informations
+    protected Map<String, Object> notes = new HashMap<>();
     private String credentialId;
     private String type;
     private String challengeResponse;
     private String device;
     private String algorithm;
     private boolean adminRequest;
-
-    // Additional context informations
-    protected Map<String, Object> notes = new HashMap<>();
 
     public UserCredentialModel() {
     }
@@ -88,7 +91,8 @@ public class UserCredentialModel implements CredentialInput {
         return new PasswordUserCredentialModel("", PasswordCredentialModel.TYPE, password, adminRequest);
     }
 
-    @Deprecated /** passwordToken is legacy stuff. Not used in Keycloak anymore **/
+    @Deprecated
+    /** passwordToken is legacy stuff. Not used in Keycloak anymore **/
     public static UserCredentialModel passwordToken(String passwordToken) {
         return new UserCredentialModel("", PASSWORD_TOKEN, passwordToken);
     }
@@ -109,7 +113,7 @@ public class UserCredentialModel implements CredentialInput {
         return new UserCredentialModel("", TOTP, key);
     }
 
-    
+
     public static UserCredentialModel hotp(String key) {
         return new UserCredentialModel("", HOTP, key);
     }
@@ -124,6 +128,14 @@ public class UserCredentialModel implements CredentialInput {
 
     public static UserCredentialModel generateSecret() {
         return new UserCredentialModel("", SECRET, UUID.randomUUID().toString());
+    }
+
+    /**
+     * This method exists only because of the backwards compatibility
+     */
+    @Deprecated
+    public static boolean isOtp(String type) {
+        return TOTP.equals(type) || HOTP.equals(type);
     }
 
     @Override
@@ -147,14 +159,6 @@ public class UserCredentialModel implements CredentialInput {
 
     public boolean isAdminRequest() {
         return adminRequest;
-    }
-
-    /**
-     * This method exists only because of the backwards compatibility
-     */
-    @Deprecated
-    public static boolean isOtp(String type) {
-        return TOTP.equals(type) || HOTP.equals(type);
     }
 
     /**

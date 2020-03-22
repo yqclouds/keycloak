@@ -19,11 +19,7 @@ package org.keycloak.storage.ldap.mappers.msad;
 
 import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.models.LDAPConstants;
-import org.keycloak.models.ModelException;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserCredentialModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.ldap.LDAPStorageProvider;
 import org.keycloak.storage.ldap.idm.model.LDAPObject;
@@ -201,7 +197,6 @@ public class MSADUserAccountControlStorageMapper extends AbstractLDAPStorageMapp
             ldapProvider.getLdapIdentityStore().update(ldapUser);
         }
     }
-
 
 
     public class MSADUserModelDelegate extends TxAwareLDAPUserModelDelegate {

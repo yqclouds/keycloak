@@ -18,7 +18,6 @@
 package org.keycloak.social.facebook;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.keycloak.OAuthErrorException;
 import org.keycloak.broker.oidc.AbstractOAuth2IdentityProvider;
 import org.keycloak.broker.oidc.OAuth2IdentityProviderConfig;
 import org.keycloak.broker.oidc.mappers.AbstractJsonUserAttributeMapper;
@@ -26,65 +25,59 @@ import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.IdentityBrokerException;
 import org.keycloak.broker.provider.util.SimpleHttp;
 import org.keycloak.broker.social.SocialIdentityProvider;
-import org.keycloak.events.Details;
-import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.services.ErrorResponseException;
-
-import javax.ws.rs.core.Response;
-import java.io.IOException;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class FacebookIdentityProvider extends AbstractOAuth2IdentityProvider implements SocialIdentityProvider {
 
-	public static final String AUTH_URL = "https://graph.facebook.com/oauth/authorize";
-	public static final String TOKEN_URL = "https://graph.facebook.com/oauth/access_token";
-	public static final String PROFILE_URL = "https://graph.facebook.com/me?fields=id,name,email,first_name,last_name";
-	public static final String DEFAULT_SCOPE = "email";
+    public static final String AUTH_URL = "https://graph.facebook.com/oauth/authorize";
+    public static final String TOKEN_URL = "https://graph.facebook.com/oauth/access_token";
+    public static final String PROFILE_URL = "https://graph.facebook.com/me?fields=id,name,email,first_name,last_name";
+    public static final String DEFAULT_SCOPE = "email";
 
-	public FacebookIdentityProvider(KeycloakSession session, OAuth2IdentityProviderConfig config) {
-		super(session, config);
-		config.setAuthorizationUrl(AUTH_URL);
-		config.setTokenUrl(TOKEN_URL);
-		config.setUserInfoUrl(PROFILE_URL);
-	}
+    public FacebookIdentityProvider(KeycloakSession session, OAuth2IdentityProviderConfig config) {
+        super(session, config);
+        config.setAuthorizationUrl(AUTH_URL);
+        config.setTokenUrl(TOKEN_URL);
+        config.setUserInfoUrl(PROFILE_URL);
+    }
 
-	protected BrokeredIdentityContext doGetFederatedIdentity(String accessToken) {
-		try {
-			JsonNode profile = SimpleHttp.doGet(PROFILE_URL, session).header("Authorization", "Bearer " + accessToken).asJson();
+    protected BrokeredIdentityContext doGetFederatedIdentity(String accessToken) {
+        try {
+            JsonNode profile = SimpleHttp.doGet(PROFILE_URL, session).header("Authorization", "Bearer " + accessToken).asJson();
 
-			return extractIdentityFromProfile(null, profile);
-		} catch (Exception e) {
-			throw new IdentityBrokerException("Could not obtain user profile from facebook.", e);
-		}
-	}
+            return extractIdentityFromProfile(null, profile);
+        } catch (Exception e) {
+            throw new IdentityBrokerException("Could not obtain user profile from facebook.", e);
+        }
+    }
 
-	@Override
-	protected boolean supportsExternalExchange() {
-		return true;
-	}
+    @Override
+    protected boolean supportsExternalExchange() {
+        return true;
+    }
 
-	@Override
-	protected String getProfileEndpointForValidation(EventBuilder event) {
-		return PROFILE_URL;
-	}
+    @Override
+    protected String getProfileEndpointForValidation(EventBuilder event) {
+        return PROFILE_URL;
+    }
 
-	@Override
-	protected BrokeredIdentityContext extractIdentityFromProfile(EventBuilder event, JsonNode profile) {
-		String id = getJsonProperty(profile, "id");
+    @Override
+    protected BrokeredIdentityContext extractIdentityFromProfile(EventBuilder event, JsonNode profile) {
+        String id = getJsonProperty(profile, "id");
 
-		BrokeredIdentityContext user = new BrokeredIdentityContext(id);
+        BrokeredIdentityContext user = new BrokeredIdentityContext(id);
 
-		String email = getJsonProperty(profile, "email");
+        String email = getJsonProperty(profile, "email");
 
-		user.setEmail(email);
+        user.setEmail(email);
 
-		String username = getJsonProperty(profile, "username");
+        String username = getJsonProperty(profile, "username");
 
-		if (username == null) {
+        if (username == null) {
             if (email != null) {
                 username = email;
             } else {
@@ -92,28 +85,28 @@ public class FacebookIdentityProvider extends AbstractOAuth2IdentityProvider imp
             }
         }
 
-		user.setUsername(username);
+        user.setUsername(username);
 
-		String firstName = getJsonProperty(profile, "first_name");
-		String lastName = getJsonProperty(profile, "last_name");
+        String firstName = getJsonProperty(profile, "first_name");
+        String lastName = getJsonProperty(profile, "last_name");
 
-		if (lastName == null) {
+        if (lastName == null) {
             lastName = "";
         } else {
             lastName = " " + lastName;
         }
 
-		user.setName(firstName + lastName);
-		user.setIdpConfig(getConfig());
-		user.setIdp(this);
+        user.setName(firstName + lastName);
+        user.setIdpConfig(getConfig());
+        user.setIdp(this);
 
-		AbstractJsonUserAttributeMapper.storeUserProfileForMapper(user, profile, getConfig().getAlias());
+        AbstractJsonUserAttributeMapper.storeUserProfileForMapper(user, profile, getConfig().getAlias());
 
-		return user;
-	}
+        return user;
+    }
 
-	@Override
-	protected String getDefaultScopes() {
-		return DEFAULT_SCOPE;
-	}
+    @Override
+    protected String getDefaultScopes() {
+        return DEFAULT_SCOPE;
+    }
 }

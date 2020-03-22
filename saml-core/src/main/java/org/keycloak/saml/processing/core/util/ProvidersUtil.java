@@ -18,8 +18,8 @@ package org.keycloak.saml.processing.core.util;
 
 import org.keycloak.saml.common.PicketLinkLogger;
 import org.keycloak.saml.common.PicketLinkLoggerFactory;
-
 import org.keycloak.saml.common.util.SecurityActions;
+
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.Provider;
@@ -66,9 +66,8 @@ public class ProvidersUtil {
     /**
      * Add a new JCE security provider to use for PicketLink.
      *
-     * @param name The name string of the provider (this may not be the real name of the provider)
+     * @param name     The name string of the provider (this may not be the real name of the provider)
      * @param provider A subclass of <code>java.security.Provider</code>
-     *
      * @return Returns the actual name of the provider that was loaded
      */
     private static String addJceProvider(String name, Provider provider) {

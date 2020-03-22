@@ -4,12 +4,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Creates a response understandable by the docker client in the form:
- *
- {
- "token" : "eyJh...nSQ",
- "expires_in" : 300,
- "issued_at" : "2016-09-02T10:56:33Z"
- }
+ * <p>
+ * {
+ * "token" : "eyJh...nSQ",
+ * "expires_in" : 300,
+ * "issued_at" : "2016-09-02T10:56:33Z"
+ * }
  */
 public class DockerResponse {
 

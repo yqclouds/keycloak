@@ -25,7 +25,7 @@ public class SessionTimeoutHelper {
 
     /**
      * Interval specifies maximum time, for which the "userSession.lastSessionRefresh" may contain stale value.
-     *
+     * <p>
      * For example, if there are 2 datacenters and sessionRefresh will happen on DC1, then the message about the updated lastSessionRefresh may
      * be sent to the DC2 later (EG. Some periodic thread will send the updated lastSessionRefresh times in batches with 60 seconds delay).
      */
@@ -34,10 +34,10 @@ public class SessionTimeoutHelper {
 
     /**
      * The maximum time difference, which will be still tolerated when checking userSession idle timeout.
-     *
+     * <p>
      * For example, if there are 2 datacenters and sessionRefresh happened on DC1, then we still want to tolerate some timeout on DC2 due the
      * fact that lastSessionRefresh of current userSession may be updated later from DC1.
-     *
+     * <p>
      * See {@link #PERIODIC_TASK_INTERVAL_SECONDS}
      */
     public static final int IDLE_TIMEOUT_WINDOW_SECONDS = 120;
@@ -45,10 +45,10 @@ public class SessionTimeoutHelper {
 
     /**
      * The maximum time difference, which will be still tolerated when checking userSession idle timeout with periodic cleaner threads.
-     *
+     * <p>
      * Just the sessions, with the timeout bigger than this value are considered really time-outed and can be garbage-collected (Considering the cross-dc
      * environment and the fact that some session updates on different DC can be postponed and seen on current DC with some delay).
-     *
+     * <p>
      * See {@link #PERIODIC_TASK_INTERVAL_SECONDS} and {@link #IDLE_TIMEOUT_WINDOW_SECONDS}
      */
     public static final int PERIODIC_CLEANER_IDLE_TIMEOUT_WINDOW_SECONDS = 180;

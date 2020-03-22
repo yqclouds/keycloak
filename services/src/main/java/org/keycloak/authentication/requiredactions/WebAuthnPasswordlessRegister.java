@@ -28,7 +28,6 @@ import org.keycloak.models.credential.WebAuthnCredentialModel;
 /**
  * Required action for register WebAuthn passwordless credential for the user. This class is temporary and will be likely
  * removed in the future during future improvements in authentication SPI
- *
  */
 public class WebAuthnPasswordlessRegister extends WebAuthnRegister {
 

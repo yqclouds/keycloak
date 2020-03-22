@@ -16,13 +16,6 @@
  */
 package org.keycloak.authorization.policy.evaluation;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.identity.Identity;
 import org.keycloak.authorization.model.PermissionTicket;
@@ -36,16 +29,19 @@ import org.keycloak.representations.idm.authorization.AuthorizationRequest;
 import org.keycloak.representations.idm.authorization.Permission;
 import org.keycloak.representations.idm.authorization.PermissionTicketToken;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
 public class PermissionTicketAwareDecisionResultCollector extends DecisionPermissionCollector {
 
     private final AuthorizationRequest request;
-    private PermissionTicketToken ticket;
     private final Identity identity;
-    private ResourceServer resourceServer;
     private final AuthorizationProvider authorization;
+    private PermissionTicketToken ticket;
+    private ResourceServer resourceServer;
 
     public PermissionTicketAwareDecisionResultCollector(AuthorizationRequest request, PermissionTicketToken ticket, Identity identity, ResourceServer resourceServer, AuthorizationProvider authorization) {
         super(authorization, resourceServer, request);

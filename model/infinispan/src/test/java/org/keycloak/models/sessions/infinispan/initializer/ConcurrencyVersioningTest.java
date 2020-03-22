@@ -32,65 +32,35 @@ import java.util.concurrent.Executors;
 @Ignore
 public class ConcurrencyVersioningTest {
 
-    public static abstract class AbstractThread implements Runnable {
-        EmbeddedCacheManager cacheManager;
-        boolean success;
-        CountDownLatch latch = new CountDownLatch(1);
-
-        public AbstractThread(EmbeddedCacheManager cacheManager) {
-            this.cacheManager = cacheManager;
-        }
-
-        public boolean isSuccess() {
-            return success;
-        }
-
-        public CountDownLatch getLatch() {
-            return latch;
-        }
-    }
-
-    public static class RemoveThread extends AbstractThread {
-        public RemoveThread(EmbeddedCacheManager cacheManager) {
-            super(cacheManager);
-        }
-
-        public void run() {
-            Cache<String, String> cache = cacheManager.getCache(InfinispanConnectionProvider.REALM_CACHE_NAME);
-            try {
-                startBatch(cache);
-                cache.remove("key");
-                //cache.getAdvancedCache().getTransactionManager().commit();
-                endBatch(cache);
-                success = true;
-            } catch (Exception e) {
-                success = false;
+    public static void startBatch(Cache<String, String> cache) {
+        try {
+            if (cache.getAdvancedCache().getTransactionManager().getStatus() == Status.STATUS_NO_TRANSACTION) {
+                System.out.println("begin");
+                cache.getAdvancedCache().getTransactionManager().begin();
             }
-            latch.countDown();
+        } catch (NotSupportedException e) {
+            throw new RuntimeException(e);
+        } catch (SystemException e) {
+            throw new RuntimeException(e);
         }
 
     }
 
+    public static void endBatch(Cache<String, String> cache) {
+        boolean commit = true;
+        try {
+            if (cache.getAdvancedCache().getTransactionManager().getStatus() == Status.STATUS_ACTIVE) {
+                if (commit) {
+                    cache.getAdvancedCache().getTransactionManager().commit();
 
-    public static class UpdateThread extends AbstractThread {
-        public UpdateThread(EmbeddedCacheManager cacheManager) {
-            super(cacheManager);
-        }
+                } else {
+                    cache.getAdvancedCache().getTransactionManager().rollback();
 
-        public void run() {
-            Cache<String, String> cache = cacheManager.getCache(InfinispanConnectionProvider.REALM_CACHE_NAME);
-            try {
-                startBatch(cache);
-                cache.putForExternalRead("key", "value2");
-                //cache.getAdvancedCache().getTransactionManager().commit();
-                endBatch(cache);
-                success = true;
-            } catch (Exception e) {
-                success = false;
+                }
             }
-            latch.countDown();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
     }
 
     /**
@@ -116,7 +86,6 @@ public class ConcurrencyVersioningTest {
         Assert.assertEquals(cache.get("key"), "value1");
         Assert.assertTrue(removeThread.isSuccess());
     }
-
 
     /**
      * Test that if a put of an existing key is removed after the put and before tx commit, it is evicted
@@ -200,39 +169,6 @@ public class ConcurrencyVersioningTest {
         Assert.assertTrue(removeThread.isSuccess());
     }
 
-
-    public static void startBatch(Cache<String, String> cache) {
-        try {
-            if (cache.getAdvancedCache().getTransactionManager().getStatus() == Status.STATUS_NO_TRANSACTION) {
-                System.out.println("begin");
-                cache.getAdvancedCache().getTransactionManager().begin();
-            }
-        } catch (NotSupportedException e) {
-            throw new RuntimeException(e);
-        } catch (SystemException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    public static void endBatch(Cache<String, String> cache) {
-        boolean commit = true;
-        try {
-            if (cache.getAdvancedCache().getTransactionManager().getStatus() == Status.STATUS_ACTIVE) {
-                if (commit) {
-                    cache.getAdvancedCache().getTransactionManager().commit();
-
-                } else {
-                    cache.getAdvancedCache().getTransactionManager().rollback();
-
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
     protected DefaultCacheManager getVersionedCacheManager() {
         GlobalConfigurationBuilder gcb = new GlobalConfigurationBuilder();
 
@@ -263,5 +199,65 @@ public class ConcurrencyVersioningTest {
         Configuration invalidationCacheConfiguration = invalidationConfigBuilder.build();
         cacheManager.defineConfiguration(InfinispanConnectionProvider.REALM_CACHE_NAME, invalidationCacheConfiguration);
         return cacheManager;
+    }
+
+    public static abstract class AbstractThread implements Runnable {
+        EmbeddedCacheManager cacheManager;
+        boolean success;
+        CountDownLatch latch = new CountDownLatch(1);
+
+        public AbstractThread(EmbeddedCacheManager cacheManager) {
+            this.cacheManager = cacheManager;
+        }
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public CountDownLatch getLatch() {
+            return latch;
+        }
+    }
+
+    public static class RemoveThread extends AbstractThread {
+        public RemoveThread(EmbeddedCacheManager cacheManager) {
+            super(cacheManager);
+        }
+
+        public void run() {
+            Cache<String, String> cache = cacheManager.getCache(InfinispanConnectionProvider.REALM_CACHE_NAME);
+            try {
+                startBatch(cache);
+                cache.remove("key");
+                //cache.getAdvancedCache().getTransactionManager().commit();
+                endBatch(cache);
+                success = true;
+            } catch (Exception e) {
+                success = false;
+            }
+            latch.countDown();
+        }
+
+    }
+
+    public static class UpdateThread extends AbstractThread {
+        public UpdateThread(EmbeddedCacheManager cacheManager) {
+            super(cacheManager);
+        }
+
+        public void run() {
+            Cache<String, String> cache = cacheManager.getCache(InfinispanConnectionProvider.REALM_CACHE_NAME);
+            try {
+                startBatch(cache);
+                cache.putForExternalRead("key", "value2");
+                //cache.getAdvancedCache().getTransactionManager().commit();
+                endBatch(cache);
+                success = true;
+            } catch (Exception e) {
+                success = false;
+            }
+            latch.countDown();
+        }
+
     }
 }

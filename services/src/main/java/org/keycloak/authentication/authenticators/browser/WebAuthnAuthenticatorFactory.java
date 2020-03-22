@@ -63,7 +63,7 @@ public class WebAuthnAuthenticatorFactory implements AuthenticatorFactory, Envir
         return "Authenticator for WebAuthn. Usually used for WebAuthn two-factor authentication";
     }
 
-   
+
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {
         return null;

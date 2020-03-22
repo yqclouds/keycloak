@@ -21,27 +21,25 @@ import org.apache.xml.security.encryption.EncryptedKey;
 import org.apache.xml.security.encryption.XMLCipher;
 import org.apache.xml.security.encryption.XMLEncryptionException;
 import org.apache.xml.security.utils.EncryptionConstants;
-
 import org.keycloak.saml.common.PicketLinkLogger;
 import org.keycloak.saml.common.PicketLinkLoggerFactory;
 import org.keycloak.saml.common.exceptions.ConfigurationException;
 import org.keycloak.saml.common.exceptions.ProcessingException;
 import org.keycloak.saml.common.util.DocumentUtil;
 import org.keycloak.saml.common.util.StringUtil;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.crypto.SecretKey;
+import javax.xml.XMLConstants;
+import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.namespace.QName;
 import java.security.Key;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Objects;
-import javax.xml.XMLConstants;
-import javax.xml.crypto.dsig.XMLSignature;
 
 /**
  * Utility for XML Encryption <b>Note: </b> This utility is currently using Apache XML Security library API. JSR-106 is
@@ -53,18 +51,16 @@ import javax.xml.crypto.dsig.XMLSignature;
  */
 public class XMLEncryptionUtil {
 
+    public static final String DS_KEY_INFO = "ds:KeyInfo";
     private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final String RSA_ENCRYPTION_SCHEME = Objects.equals(System.getProperty("keycloak.saml.key_trans.rsa_v1.5"), "true")
+            ? XMLCipher.RSA_v1dot5
+            : XMLCipher.RSA_OAEP;
 
     static {
         // Initialize the Apache XML Security Library
         org.apache.xml.security.Init.init();
     }
-
-    public static final String DS_KEY_INFO = "ds:KeyInfo";
-
-    private static final String RSA_ENCRYPTION_SCHEME = Objects.equals(System.getProperty("keycloak.saml.key_trans.rsa_v1.5"), "true")
-      ? XMLCipher.RSA_v1dot5
-      : XMLCipher.RSA_OAEP;
 
     /**
      * <p>
@@ -78,12 +74,10 @@ public class XMLEncryptionUtil {
      * </p>
      *
      * @param document
-     * @param keyToBeEncrypted Symmetric Key (SecretKey)
+     * @param keyToBeEncrypted          Symmetric Key (SecretKey)
      * @param keyUsedToEncryptSecretKey Asymmetric Key (Public Key)
-     * @param keySize Length of the key
-     *
+     * @param keySize                   Length of the key
      * @return
-     *
      * @throws org.keycloak.saml.common.exceptions.ProcessingException
      */
     public static EncryptedKey encryptKey(Document document, SecretKey keyToBeEncrypted, PublicKey keyUsedToEncryptSecretKey,
@@ -106,14 +100,13 @@ public class XMLEncryptionUtil {
      * Given an element in a Document, encrypt the element and replace the element in the document with the encrypted
      * data
      *
-     * @param elementQName QName of the element that we like to encrypt
+     * @param elementQName             QName of the element that we like to encrypt
      * @param document
      * @param publicKey
      * @param secretKey
      * @param keySize
-     * @param wrappingElementQName A QName of an element that will wrap the encrypted element
+     * @param wrappingElementQName     A QName of an element that will wrap the encrypted element
      * @param addEncryptedKeyInKeyInfo Need for the EncryptedKey to be placed in ds:KeyInfo
-     *
      * @throws ProcessingException
      */
     public static void encryptElement(QName elementQName, Document document, PublicKey publicKey, SecretKey secretKey,
@@ -163,7 +156,7 @@ public class XMLEncryptionUtil {
         // Create the wrapping element and set its attribute NS
         Element wrappingElement = encryptedDoc.createElementNS(wrappingElementQName.getNamespaceURI(), wrappingElementName);
 
-        if (! StringUtil.isNullOrEmpty(wrappingElementPrefix)) {
+        if (!StringUtil.isNullOrEmpty(wrappingElementPrefix)) {
             wrappingElement.setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, "xmlns:" + wrappingElementPrefix, wrappingElementQName.getNamespaceURI());
         }
 
@@ -215,7 +208,7 @@ public class XMLEncryptionUtil {
      *       &lt;/outer&gt;
      *    &lt;/root&gt;
      * </pre>
-     *
+     * <p>
      * would result in a document similar to
      *
      * <pre>
@@ -230,12 +223,11 @@ public class XMLEncryptionUtil {
      *
      * </p>
      *
-     * @param document the {@code Document} that contains the element to be encrypted.
-     * @param element the {@code Element} to be encrypted.
+     * @param document  the {@code Document} that contains the element to be encrypted.
+     * @param element   the {@code Element} to be encrypted.
      * @param publicKey the {@code PublicKey} that must be used to encrypt the secret key.
      * @param secretKey the {@code SecretKey} used to encrypt the specified element.
-     * @param keySize the size (in bits) of the secret key.
-     *
+     * @param keySize   the size (in bits) of the secret key.
      * @throws ProcessingException if an error occurs while encrypting the element with the specified params.
      */
     public static void encryptElement(Document document, Element element, PublicKey publicKey, SecretKey secretKey, int keySize)
@@ -286,15 +278,13 @@ public class XMLEncryptionUtil {
      * the
      * wrapping element.
      *
-     * @param document Document that contains an element to encrypt
-     * @param publicKey The Public Key used to encrypt the secret encryption key
-     * @param secretKey The secret encryption key
-     * @param keySize Length of key
-     * @param wrappingElementQName QName of the element to be used to wrap around the cipher data.
+     * @param document                 Document that contains an element to encrypt
+     * @param publicKey                The Public Key used to encrypt the secret encryption key
+     * @param secretKey                The secret encryption key
+     * @param keySize                  Length of key
+     * @param wrappingElementQName     QName of the element to be used to wrap around the cipher data.
      * @param addEncryptedKeyInKeyInfo Should the encrypted key be inside a KeyInfo or added as a peer of Cipher Data
-     *
      * @return An element that has the wrappingElementQName
-     *
      * @throws ProcessingException
      * @throws org.keycloak.saml.common.exceptions.ConfigurationException
      */
@@ -336,7 +326,7 @@ public class XMLEncryptionUtil {
         // Create the wrapping element and set its attribute NS
         Element wrappingElement = encryptedDoc.createElementNS(wrappingElementQName.getNamespaceURI(), wrappingElementName);
 
-        if (! StringUtil.isNullOrEmpty(wrappingElementPrefix)) {
+        if (!StringUtil.isNullOrEmpty(wrappingElementPrefix)) {
             wrappingElement.setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, "xmlns:" + wrappingElementPrefix, wrappingElementQName.getNamespaceURI());
         }
 
@@ -371,8 +361,7 @@ public class XMLEncryptionUtil {
      * Decrypt an encrypted element inside a document
      *
      * @param documentWithEncryptedElement
-     * @param privateKey key need to unwrap the encryption key
-     *
+     * @param privateKey                   key need to unwrap the encryption key
      * @return the document with the encrypted element replaced by the data element
      */
     public static Element decryptElementInDocument(Document documentWithEncryptedElement, PrivateKey privateKey)
@@ -427,7 +416,7 @@ public class XMLEncryptionUtil {
             }
         }
 
-        if(decryptedDoc == null){
+        if (decryptedDoc == null) {
             throw logger.nullValueError("decryptedDoc");
         }
 
@@ -447,7 +436,6 @@ public class XMLEncryptionUtil {
      *
      * @param publicKeyAlgo
      * @param keySize
-     *
      * @return
      */
     private static String getXMLEncryptionURLForKeyUnwrap(String publicKeyAlgo, int keySize) {
@@ -471,7 +459,6 @@ public class XMLEncryptionUtil {
      *
      * @param secretKey
      * @param keySize
-     *
      * @return
      */
     private static String getXMLEncryptionURL(String algo, int keySize) {

@@ -18,9 +18,9 @@
 package org.keycloak.models;
 
 
-import java.util.Map;
-
 import org.keycloak.sessions.CommonClientSessionModel;
+
+import java.util.Map;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -30,22 +30,29 @@ public interface AuthenticatedClientSessionModel extends CommonClientSessionMode
     String getId();
 
     int getTimestamp();
+
     void setTimestamp(int timestamp);
 
     /**
      * Detaches the client session from its user session.
      */
     void detachFromUserSession();
+
     UserSessionModel getUserSession();
 
     String getCurrentRefreshToken();
+
     void setCurrentRefreshToken(String currentRefreshToken);
 
     int getCurrentRefreshTokenUseCount();
+
     void setCurrentRefreshTokenUseCount(int currentRefreshTokenUseCount);
 
     String getNote(String name);
+
     void setNote(String name, String value);
+
     void removeNote(String name);
+
     Map<String, String> getNotes();
 }

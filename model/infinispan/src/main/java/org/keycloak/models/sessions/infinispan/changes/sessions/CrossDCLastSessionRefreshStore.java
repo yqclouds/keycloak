@@ -17,15 +17,15 @@
 
 package org.keycloak.models.sessions.infinispan.changes.sessions;
 
-import java.util.Map;
-
 import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.models.KeycloakSession;
 
+import java.util.Map;
+
 /**
  * Cross-DC based CrossDCLastSessionRefreshStore
- *
+ * <p>
  * Tracks the queue of lastSessionRefreshes, which were updated on this host. Those will be sent to the second DC in bulk, so second DC can update
  * lastSessionRefreshes on it's side. Message is sent either periodically or if there are lots of stored lastSessionRefreshes.
  *

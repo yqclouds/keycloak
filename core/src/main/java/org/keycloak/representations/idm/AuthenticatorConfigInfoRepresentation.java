@@ -42,16 +42,16 @@ public class AuthenticatorConfigInfoRepresentation {
         return helpText;
     }
 
+    public void setHelpText(String helpText) {
+        this.helpText = helpText;
+    }
+
     public String getProviderId() {
         return providerId;
     }
 
     public void setProviderId(String providerId) {
         this.providerId = providerId;
-    }
-
-    public void setHelpText(String helpText) {
-        this.helpText = helpText;
     }
 
     public List<ConfigPropertyRepresentation> getProperties() {

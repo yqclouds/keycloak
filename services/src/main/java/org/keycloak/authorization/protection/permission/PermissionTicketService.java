@@ -21,35 +21,27 @@ import org.keycloak.OAuthErrorException;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.common.KeycloakIdentity;
 import org.keycloak.authorization.model.PermissionTicket;
+import org.keycloak.authorization.model.Resource;
 import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.Scope;
 import org.keycloak.authorization.store.PermissionTicketStore;
+import org.keycloak.authorization.store.ResourceStore;
+import org.keycloak.authorization.store.ScopeStore;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.Constants;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.models.UserProvider;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.authorization.PermissionTicketRepresentation;
 import org.keycloak.services.ErrorResponseException;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.Scope;
-import org.keycloak.authorization.store.ResourceStore;
-import org.keycloak.authorization.store.ScopeStore;
-import org.keycloak.models.UserModel;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -81,52 +73,53 @@ public class PermissionTicketService {
             throw new ErrorResponseException("invalid_permission", "created permissions should have scope or scopeName", Response.Status.BAD_REQUEST);
         if (representation.getRequester() == null && representation.getRequesterName() == null)
             throw new ErrorResponseException("invalid_permission", "created permissions should have requester or requesterName", Response.Status.BAD_REQUEST);
-         
+
         ResourceStore rstore = this.authorization.getStoreFactory().getResourceStore();
         Resource resource = rstore.findById(representation.getResource(), resourceServer.getId());
-        if (resource == null ) throw new ErrorResponseException("invalid_resource_id", "Resource set with id [" + representation.getResource() + "] does not exists in this server.", Response.Status.BAD_REQUEST);
-        
+        if (resource == null)
+            throw new ErrorResponseException("invalid_resource_id", "Resource set with id [" + representation.getResource() + "] does not exists in this server.", Response.Status.BAD_REQUEST);
+
         if (!resource.getOwner().equals(this.identity.getId()))
             throw new ErrorResponseException("not_authorised", "permissions for [" + representation.getResource() + "] can be only created by the owner", Response.Status.FORBIDDEN);
-        
+
         UserModel user = null;
-        if(representation.getRequester() != null)
+        if (representation.getRequester() != null)
             user = this.authorization.getKeycloakSession().userStorageManager().getUserById(representation.getRequester(), this.authorization.getRealm());
-        else 
+        else
             user = this.authorization.getKeycloakSession().userStorageManager().getUserByUsername(representation.getRequesterName(), this.authorization.getRealm());
-        
+
         if (user == null)
             throw new ErrorResponseException("invalid_permission", "Requester does not exists in this server as user.", Response.Status.BAD_REQUEST);
-        
+
         Scope scope = null;
         ScopeStore sstore = this.authorization.getStoreFactory().getScopeStore();
 
-        if(representation.getScopeName() != null)
+        if (representation.getScopeName() != null)
             scope = sstore.findByName(representation.getScopeName(), resourceServer.getId());
         else
             scope = sstore.findById(representation.getScope(), resourceServer.getId());
 
-        if (scope == null && representation.getScope() !=null )
+        if (scope == null && representation.getScope() != null)
             throw new ErrorResponseException("invalid_scope", "Scope [" + representation.getScope() + "] is invalid", Response.Status.BAD_REQUEST);
-        if (scope == null && representation.getScopeName() !=null )
+        if (scope == null && representation.getScopeName() != null)
             throw new ErrorResponseException("invalid_scope", "Scope [" + representation.getScopeName() + "] is invalid", Response.Status.BAD_REQUEST);
 
         boolean match = resource.getScopes().contains(scope);
 
         if (!match)
-           throw new ErrorResponseException("invalid_resource_id", "Resource set with id [" + representation.getResource() + "] does not have Scope [" + scope.getName() + "]", Response.Status.BAD_REQUEST);     
-        
+            throw new ErrorResponseException("invalid_resource_id", "Resource set with id [" + representation.getResource() + "] does not have Scope [" + scope.getName() + "]", Response.Status.BAD_REQUEST);
+
         Map<String, String> attributes = new HashMap<>();
         attributes.put(PermissionTicket.RESOURCE, resource.getId());
         attributes.put(PermissionTicket.SCOPE, scope.getId());
         attributes.put(PermissionTicket.REQUESTER, user.getId());
-        
+
         if (!ticketStore.find(attributes, resourceServer.getId(), -1, -1).isEmpty())
             throw new ErrorResponseException("invalid_permission", "Permission already exists", Response.Status.BAD_REQUEST);
-        
+
         PermissionTicket ticket = ticketStore.create(resource.getId(), scope.getId(), user.getId(), resourceServer);
-        if(representation.isGranted())
-                ticket.setGrantedTimestamp(java.lang.System.currentTimeMillis());
+        if (representation.isGranted())
+            ticket.setGrantedTimestamp(java.lang.System.currentTimeMillis());
         representation = ModelToRepresentation.toRepresentation(ticket, authorization);
         return Response.ok(representation).build();
     }
@@ -144,7 +137,7 @@ public class PermissionTicketService {
         if (ticket == null) {
             throw new ErrorResponseException(OAuthErrorException.INVALID_REQUEST, "invalid_ticket", Response.Status.BAD_REQUEST);
         }
-        
+
         if (!ticket.getOwner().equals(this.identity.getId()) && !this.identity.isResourceServer())
             throw new ErrorResponseException("not_authorised", "permissions for [" + representation.getResource() + "] can be updated only by the owner or by the resource server", Response.Status.FORBIDDEN);
 
@@ -153,7 +146,7 @@ public class PermissionTicketService {
         return Response.noContent().build();
     }
 
-    
+
     @Path("{id}")
     @DELETE
     @Consumes("application/json")
@@ -168,7 +161,7 @@ public class PermissionTicketService {
         if (ticket == null) {
             throw new ErrorResponseException(OAuthErrorException.INVALID_REQUEST, "invalid_ticket", Response.Status.BAD_REQUEST);
         }
-        
+
         if (!ticket.getOwner().equals(this.identity.getId()) && !this.identity.isResourceServer() && !ticket.getRequester().equals(this.identity.getId()))
             throw new ErrorResponseException("not_authorised", "permissions for [" + ticket.getResource() + "] can be deleted only by the owner, the requester, or the resource server", Response.Status.FORBIDDEN);
 
@@ -220,9 +213,9 @@ public class PermissionTicketService {
         }
 
         return Response.ok().entity(permissionTicketStore.find(filters, resourceServer.getId(), firstResult != null ? firstResult : -1, maxResult != null ? maxResult : Constants.DEFAULT_MAX_RESULTS)
-                    .stream()
-                        .map(permissionTicket -> ModelToRepresentation.toRepresentation(permissionTicket, authorization, returnNames == null ? false : returnNames))
-                        .collect(Collectors.toList()))
+                .stream()
+                .map(permissionTicket -> ModelToRepresentation.toRepresentation(permissionTicket, authorization, returnNames == null ? false : returnNames))
+                .collect(Collectors.toList()))
                 .build();
     }
 

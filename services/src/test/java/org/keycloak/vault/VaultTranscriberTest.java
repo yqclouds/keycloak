@@ -17,6 +17,10 @@
 
 package org.keycloak.vault;
 
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
@@ -25,10 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 /**
  * Tests for the {@link DefaultVaultTranscriber} implementation.
  *
@@ -36,11 +36,9 @@ import org.junit.Test;
  */
 public class VaultTranscriberTest {
 
-    private final VaultTranscriber transcriber = new DefaultVaultTranscriber(new TestVaultProvider());
-
     private static Map<String, String> validExpressions;
-
     private static String[] invalidExpressions;
+    private final VaultTranscriber transcriber = new DefaultVaultTranscriber(new TestVaultProvider());
 
     @BeforeClass
     public static void init() {
@@ -52,7 +50,7 @@ public class VaultTranscriberTest {
         validExpressions.put("${vault.invalid_key}", null);
         validExpressions.put("${vault.${.id-!@#$%^&*_()}}", null);
         // invalid expressions.
-        invalidExpressions = new String[]{"${vault.}","$vault.id}", "{vault.id}", "${vault.id", "${vaultid}", ""};
+        invalidExpressions = new String[]{"${vault.}", "$vault.id}", "{vault.id}", "${vault.id", "${vaultid}", ""};
 
     }
 
@@ -65,7 +63,6 @@ public class VaultTranscriberTest {
      * the buffer and array representations of the secret) and then checks if the secrets have been overridden/destroyed after
      * the try-wih-resources block. For the latter, the tests checks if an empty {@link Optional} has been returned by the
      * transcriber.
-     *
      */
     @Test
     public void testGetRawSecretUsingValidExpressions() {
@@ -105,7 +102,6 @@ public class VaultTranscriberTest {
      * the value itself is assumed to be the secret and is enclosed in the secret class that is returned. Thus this test
      * checks if the returned secret matches the specified values (using both the buffer and array representation of the value)
      * and then checks if the secrets have been overridden/destroyed after the try-wih-resources block.
-     *
      */
     @Test
     public void testGetRawSecretUsingInvalidExpressions() {
@@ -134,7 +130,6 @@ public class VaultTranscriberTest {
 
     /**
      * Tests that a null vault expression always returns an empty secret.
-     *
      */
     @Test
     public void testGetRawSecretUsingNullExpression() {
@@ -154,7 +149,6 @@ public class VaultTranscriberTest {
      * the buffer and array representations of the secret) and then checks if the secrets have been overridden/destroyed after
      * the try-wih-resources block. For the latter, the tests checks if an empty {@link Optional} has been returned by the
      * transcriber.
-     *
      */
     @Test
     public void testGetCharSecretUsingValidExpressions() {
@@ -194,7 +188,6 @@ public class VaultTranscriberTest {
      * the value itself is assumed to be the secret and is enclosed in the secret class that is returned. Thus this test
      * checks if the returned secret matches the specified values (using both the buffer and array representation of the value)
      * and then checks if the secrets have been overridden/destroyed after the try-wih-resources block.
-     *
      */
     @Test
     public void testGetCharSecretUsingInvalidExpressions() {
@@ -223,7 +216,6 @@ public class VaultTranscriberTest {
 
     /**
      * Tests that a null vault expression always returns an empty secret.
-     *
      */
     @Test
     public void testGetCharSecretUsingNullExpression() {
@@ -242,7 +234,6 @@ public class VaultTranscriberTest {
      * any secret in the vault. For the former, the test compares the obtained secret against the expected secret. For the latter,
      * the tests checks if an empty {@link Optional} has been returned by the transcriber. Because strings are immutable,
      * this test doesn't verify if the secrets have been destroyed after the try-with-resources block.
-     *
      */
     @Test
     public void testGetStringSecretUsingValidExpressions() {
@@ -270,7 +261,6 @@ public class VaultTranscriberTest {
      * the value itself is assumed to be the secret and is enclosed in the secret class that is returned. Thus this test
      * checks if the returned secret matches the specified values. Again, due to the fact that strings are immutable, this test
      * doesn't verify if the secrets have been destroyed after the try-with-resources block.
-     *
      */
     @Test
     public void testGetStringSecretUsingInvalidExpressions() {
@@ -288,7 +278,6 @@ public class VaultTranscriberTest {
 
     /**
      * Tests that a null vault expression always returns an empty secret.
-     *
      */
     @Test
     public void testGetStringSecretUsingNullExpression() {
@@ -301,7 +290,6 @@ public class VaultTranscriberTest {
     /**
      * Tests that when no {@link VaultProvider} is supplied to the transcriber it uses a default implementation that
      * always returns empty secrets.
-     *
      */
     @Test
     public void testTranscriberWithNullProvider() {
@@ -337,8 +325,7 @@ public class VaultTranscriberTest {
         public VaultRawSecret obtainSecret(String vaultSecretId) {
             if (secrets.containsKey(vaultSecretId)) {
                 return DefaultVaultRawSecret.forBuffer(Optional.of(ByteBuffer.wrap(secrets.get(vaultSecretId))));
-            }
-            else {
+            } else {
                 return DefaultVaultRawSecret.forBuffer(Optional.empty());
             }
         }

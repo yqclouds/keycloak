@@ -17,12 +17,12 @@
 
 package org.keycloak.models.sessions.infinispan.util;
 
+import org.jboss.logging.Logger;
+
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-
-import org.jboss.logging.Logger;
 
 /**
  * Not thread-safe. Assumes tasks are added from single thread.

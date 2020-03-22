@@ -46,9 +46,7 @@ public class SAMLRequestedAuthnContextParser extends AbstractStaxSamlProtocolPar
      * Parse the attributes at the authnrequesttype element
      *
      * @param startElement
-     *
      * @return
-     *
      * @throws ParsingException
      */
     @Override

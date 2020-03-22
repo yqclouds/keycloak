@@ -23,7 +23,7 @@ import java.io.OutputStream;
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
  */
-public class AccessibleBufferOutputStream extends FilterOutputStream{
+public class AccessibleBufferOutputStream extends FilterOutputStream {
 
     private byte[] buf;
 
@@ -43,7 +43,7 @@ public class AccessibleBufferOutputStream extends FilterOutputStream{
     @Override
     public void write(int b) throws IOException {
         super.write(b);
-        buf = new byte[] {(byte) b};
+        buf = new byte[]{(byte) b};
     }
 
     @Override
@@ -59,7 +59,7 @@ public class AccessibleBufferOutputStream extends FilterOutputStream{
 
     public int getLastByte() {
         if (buf != null && buf.length > 0) {
-            return 0xFF & buf[buf.length-1];
+            return 0xFF & buf[buf.length - 1];
         }
         return -1;
     }

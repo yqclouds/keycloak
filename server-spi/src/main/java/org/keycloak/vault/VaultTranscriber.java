@@ -23,10 +23,9 @@ import java.lang.ref.WeakReference;
  * A facade to the configured vault provider that exposes utility methods for obtaining the vault secrets in different
  * formats (such as {@link VaultRawSecret}, {@link VaultCharSecret} or {@link VaultStringSecret}).
  *
+ * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  * @see VaultRawSecret
  * @see VaultCharSecret
- *
- * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
 public interface VaultTranscriber {
 
@@ -41,7 +40,7 @@ public interface VaultTranscriber {
      *
      * @param value a {@link String} that might be a vault expression containing a vault entry key.
      * @return a {@link VaultRawSecret} representing the secret that was read from the vault. If the specified value is not
-     *         a vault expression then the returned secret is the value itself encoded as a {@link VaultRawSecret}.
+     * a vault expression then the returned secret is the value itself encoded as a {@link VaultRawSecret}.
      */
     VaultRawSecret getRawSecret(final String value);
 
@@ -57,7 +56,7 @@ public interface VaultTranscriber {
      *
      * @param value a {@link String} that might be a vault expression containing a vault entry key.
      * @return a {@link VaultRawSecret} representing the secret that was read from the vault. If the specified value is not
-     *         a vault expression then the returned secret is the value itself encoded as a {@link VaultRawSecret}.
+     * a vault expression then the returned secret is the value itself encoded as a {@link VaultRawSecret}.
      */
     VaultCharSecret getCharSecret(final String value);
 
@@ -79,7 +78,7 @@ public interface VaultTranscriber {
      *
      * @param value a {@link String} that might be a vault expression containing a vault entry key.
      * @return a {@link VaultStringSecret} representing the secret that was read from the vault. If the specified value is not
-     *         a vault expression then the returned secret is the value itself encoded as a {@link VaultStringSecret}.
+     * a vault expression then the returned secret is the value itself encoded as a {@link VaultStringSecret}.
      */
     VaultStringSecret getStringSecret(final String value);
 

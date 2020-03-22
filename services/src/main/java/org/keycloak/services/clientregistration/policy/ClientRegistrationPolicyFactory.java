@@ -17,11 +17,11 @@
 
 package org.keycloak.services.clientregistration.policy;
 
-import java.util.List;
-
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
+
+import java.util.List;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>

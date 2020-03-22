@@ -32,7 +32,7 @@ public class DefaultThemeSelectorProvider implements ThemeSelectorProvider {
                 if (name == null || name.isEmpty()) {
                     name = session.getContext().getRealm().getLoginTheme();
                 }
-                
+
                 break;
             case ACCOUNT:
                 name = session.getContext().getRealm().getAccountTheme();

@@ -24,10 +24,6 @@ public class DBusExecutionException extends RuntimeException {
         super(message);
     }
 
-    public void setType(String type) {
-        this.type = type;
-    }
-
     /**
      * Get the DBus type of this exception. Use if this
      * was an exception we don't have a class file for.
@@ -35,5 +31,9 @@ public class DBusExecutionException extends RuntimeException {
     public String getType() {
         if (null == type) return getClass().getName();
         else return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

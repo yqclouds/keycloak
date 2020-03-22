@@ -40,25 +40,25 @@ public class SystemPropertiesJsonParserFactory extends MappingJsonFactory {
 
     @Override
     protected JsonParser _createParser(InputStream in, IOContext ctxt) throws IOException {
-        JsonParser delegate =  super._createParser(in, ctxt);
+        JsonParser delegate = super._createParser(in, ctxt);
         return new SystemPropertiesAwareJsonParser(delegate);
     }
 
     @Override
     protected JsonParser _createParser(Reader r, IOContext ctxt) throws IOException {
-        JsonParser delegate =  super._createParser(r, ctxt);
+        JsonParser delegate = super._createParser(r, ctxt);
         return new SystemPropertiesAwareJsonParser(delegate);
     }
 
     @Override
     protected JsonParser _createParser(char[] data, int offset, int len, IOContext ctxt, boolean recyclable) throws IOException {
-        JsonParser delegate =  super._createParser(data, offset, len, ctxt, recyclable);
+        JsonParser delegate = super._createParser(data, offset, len, ctxt, recyclable);
         return new SystemPropertiesAwareJsonParser(delegate);
     }
 
     @Override
     protected JsonParser _createParser(byte[] data, int offset, int len, IOContext ctxt) throws IOException {
-        JsonParser delegate =  super._createParser(data, offset, len, ctxt);
+        JsonParser delegate = super._createParser(data, offset, len, ctxt);
         return new SystemPropertiesAwareJsonParser(delegate);
     }
 

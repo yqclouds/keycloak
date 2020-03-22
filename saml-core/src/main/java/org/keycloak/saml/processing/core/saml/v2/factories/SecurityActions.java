@@ -36,7 +36,6 @@ class SecurityActions {
      *
      * @param theClass
      * @param fullQualifiedName
-     *
      * @return
      */
     static Class<?> loadClass(final Class<?> theClass, final String fullQualifiedName) {
@@ -74,7 +73,6 @@ class SecurityActions {
      *
      * @param classLoader
      * @param fullQualifiedName
-     *
      * @return
      */
     static Class<?> loadClass(final ClassLoader classLoader, final String fullQualifiedName) {
@@ -105,7 +103,6 @@ class SecurityActions {
      *
      * @param key
      * @param defaultValue
-     *
      * @return
      */
     static String getSystemProperty(final String key, final String defaultValue) {

@@ -19,12 +19,7 @@ package org.keycloak.broker.provider;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.common.util.KeycloakUriBuilder;
 import org.keycloak.events.EventBuilder;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.IdentityProviderModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
 import javax.ws.rs.core.MediaType;
@@ -89,7 +84,7 @@ public abstract class AbstractIdentityProvider<C extends IdentityProviderModel> 
         Map<String, String> error = new HashMap<>();
         error.put("error", "invalid_target");
         error.put("error_description", "target_exchange_unsupported");
-        return  Response.status(400).entity(error).type(MediaType.APPLICATION_JSON_TYPE).build();
+        return Response.status(400).entity(error).type(MediaType.APPLICATION_JSON_TYPE).build();
     }
 
     public Response exchangeNotLinked(UriInfo uriInfo, ClientModel authorizedClient, UserSessionModel tokenUserSession, UserModel tokenSubject) {

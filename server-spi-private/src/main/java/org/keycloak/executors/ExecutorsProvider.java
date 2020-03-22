@@ -17,9 +17,9 @@
 
 package org.keycloak.executors;
 
-import java.util.concurrent.ExecutorService;
-
 import org.keycloak.provider.Provider;
+
+import java.util.concurrent.ExecutorService;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>

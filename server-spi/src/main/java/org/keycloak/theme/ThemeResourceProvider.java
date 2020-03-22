@@ -17,18 +17,18 @@
 
 package org.keycloak.theme;
 
+import org.keycloak.provider.Provider;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Locale;
 import java.util.Properties;
 
-import org.keycloak.provider.Provider;
-
 /**
  * A theme resource provider can be used to load additional templates and resources. An example use of this would be
  * a custom authenticator that requires an additional template and a JavaScript file.
- *
+ * <p>
  * The theme is searched for templates and resources first. Theme resource providers are only searched if the template
  * or resource is not found. This allows overriding templates and resources from theme resource providers in the theme.
  *
@@ -56,14 +56,14 @@ public interface ThemeResourceProvider extends Provider {
 
     /**
      * Load the message bundle for the specific name and locale
-     * 
+     *
      * @param baseBundlename The base name of the bundle, such as "messages" in
-     * messages_en.properties.
-     * @param locale The locale of the desired message bundle.
+     *                       messages_en.properties.
+     * @param locale         The locale of the desired message bundle.
      * @return The localized messages from the bundle.
      * @throws IOException If bundle can not be read.
      */
-    default Properties getMessages(String baseBundlename, Locale locale) throws IOException{
+    default Properties getMessages(String baseBundlename, Locale locale) throws IOException {
         return new Properties();
     }
 

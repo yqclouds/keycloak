@@ -17,19 +17,20 @@
 
 package org.keycloak.models.sessions.infinispan.events;
 
-import org.keycloak.models.KeycloakSession;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.commons.marshall.SerializeWith;
+import org.keycloak.models.KeycloakSession;
+
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 @SerializeWith(ClientRemovedSessionEvent.ExternalizerImpl.class)
-public class ClientRemovedSessionEvent extends SessionClusterEvent  {
+public class ClientRemovedSessionEvent extends SessionClusterEvent {
 
     private String clientUuid;
 

@@ -23,12 +23,7 @@
  */
 package org.jvnet.libpam.impl;
 
-import com.sun.jna.Library;
-import com.sun.jna.Memory;
-import com.sun.jna.Native;
-import com.sun.jna.Platform;
-import com.sun.jna.Pointer;
-import com.sun.jna.Structure;
+import com.sun.jna.*;
 import com.sun.jna.ptr.IntByReference;
 import org.jvnet.libpam.PAMException;
 
@@ -39,6 +34,30 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  */
 public interface CLibrary extends Library {
+    public static final CLibrary libc = Instance.init();
+
+    Pointer calloc(int count, int size);
+
+    Pointer strdup(String s);
+
+    passwd getpwnam(String username);
+
+    /**
+     * Lists up group IDs of the given user. On Linux and most BSDs, but not on Solaris.
+     * See http://www.gnu.org/software/hello/manual/gnulib/getgrouplist.html
+     */
+    int getgrouplist(String user, int/*gid_t*/ group, Memory groups, IntByReference ngroups);
+
+    /**
+     * getgrouplist equivalent on Solaris.
+     * See http://mail.opensolaris.org/pipermail/sparks-discuss/2008-September/000528.html
+     */
+    int _getgroupsbymember(String user, Memory groups, int maxgids, int numgids);
+
+    group getgrgid(int/*gid_t*/ gid);
+
+    group getgrnam(String name);
+
     /**
      * Comparing http://linux.die.net/man/3/getpwnam
      * and my Mac OS X reveals that the structure of this field isn't very portable.
@@ -99,6 +118,9 @@ public interface CLibrary extends Library {
         }
     }
 
+    // other user/group related functions that are likely useful
+    // see http://www.gnu.org/software/libc/manual/html_node/Users-and-Groups.html#Users-and-Groups
+
     public class group extends Structure {
         public String gr_name;
         // ... the rest of the field is not interesting for us
@@ -107,34 +129,6 @@ public interface CLibrary extends Library {
             return Arrays.asList("gr_name");
         }
     }
-
-    Pointer calloc(int count, int size);
-
-    Pointer strdup(String s);
-
-    passwd getpwnam(String username);
-
-    /**
-     * Lists up group IDs of the given user. On Linux and most BSDs, but not on Solaris.
-     * See http://www.gnu.org/software/hello/manual/gnulib/getgrouplist.html
-     */
-    int getgrouplist(String user, int/*gid_t*/ group, Memory groups, IntByReference ngroups);
-
-    /**
-     * getgrouplist equivalent on Solaris.
-     * See http://mail.opensolaris.org/pipermail/sparks-discuss/2008-September/000528.html
-     */
-    int _getgroupsbymember(String user, Memory groups, int maxgids, int numgids);
-
-    group getgrgid(int/*gid_t*/ gid);
-
-    group getgrnam(String name);
-
-    // other user/group related functions that are likely useful
-    // see http://www.gnu.org/software/libc/manual/html_node/Users-and-Groups.html#Users-and-Groups
-
-
-    public static final CLibrary libc = Instance.init();
 
     static class Instance {
         private static CLibrary init() {

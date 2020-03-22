@@ -25,11 +25,7 @@ import org.keycloak.authentication.ValidationContext;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.AuthenticationExecutionModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.FormMessage;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.services.messages.Messages;
@@ -45,6 +41,10 @@ import java.util.List;
  */
 public class RegistrationProfile implements FormAction, FormActionFactory {
     public static final String PROVIDER_ID = "registration-profile-action";
+    private static AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionModel.Requirement.REQUIRED,
+            AuthenticationExecutionModel.Requirement.DISABLED
+    };
 
     @Override
     public String getHelpText() {
@@ -134,7 +134,6 @@ public class RegistrationProfile implements FormAction, FormActionFactory {
         return false;
     }
 
-
     @Override
     public void close() {
 
@@ -155,14 +154,11 @@ public class RegistrationProfile implements FormAction, FormActionFactory {
         return false;
     }
 
-    private static AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED,
-            AuthenticationExecutionModel.Requirement.DISABLED
-    };
     @Override
     public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {
         return REQUIREMENT_CHOICES;
     }
+
     @Override
     public FormAction create(KeycloakSession session) {
         return this;

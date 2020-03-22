@@ -17,15 +17,16 @@
 
 package org.keycloak.representations.idm;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.List;
 import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@JsonIgnoreProperties(ignoreUnknown=true) // Backwards compatibility of admin REST endpoints (ClientTemplateRepresentation was more rich)
+@JsonIgnoreProperties(ignoreUnknown = true)
+// Backwards compatibility of admin REST endpoints (ClientTemplateRepresentation was more rich)
 public class ClientScopeRepresentation {
 
     protected String id;

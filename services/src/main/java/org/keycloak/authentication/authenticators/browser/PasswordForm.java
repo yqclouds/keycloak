@@ -65,6 +65,6 @@ public class PasswordForm extends UsernamePasswordForm implements CredentialVali
 
     @Override
     public PasswordCredentialProvider getCredentialProvider(KeycloakSession session) {
-        return (PasswordCredentialProvider)session.getProvider(CredentialProvider.class, "keycloak-password");
+        return (PasswordCredentialProvider) session.getProvider(CredentialProvider.class, "keycloak-password");
     }
 }

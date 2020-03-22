@@ -23,10 +23,19 @@ package org.keycloak.models;
  */
 public interface KeycloakTransactionManager extends KeycloakTransaction {
 
+    JTAPolicy getJTAPolicy();
+
+    void setJTAPolicy(JTAPolicy policy);
+
+    void enlist(KeycloakTransaction transaction);
+
+    void enlistAfterCompletion(KeycloakTransaction transaction);
+
+    void enlistPrepare(KeycloakTransaction transaction);
+
     enum JTAPolicy {
         /**
          * Do not interact with JTA at all
-         *
          */
         NOT_SUPPORTED,
         /**
@@ -35,11 +44,4 @@ public interface KeycloakTransactionManager extends KeycloakTransaction {
          */
         REQUIRES_NEW,
     }
-
-    JTAPolicy getJTAPolicy();
-    void setJTAPolicy(JTAPolicy policy);
-    void enlist(KeycloakTransaction transaction);
-    void enlistAfterCompletion(KeycloakTransaction transaction);
-
-    void enlistPrepare(KeycloakTransaction transaction);
 }

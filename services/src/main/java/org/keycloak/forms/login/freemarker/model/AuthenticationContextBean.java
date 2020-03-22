@@ -18,13 +18,13 @@
 
 package org.keycloak.forms.login.freemarker.model;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationSelectionOption;
 import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAuthenticator;
 import org.keycloak.forms.login.LoginFormsPages;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -40,7 +40,7 @@ public class AuthenticationContextBean {
     }
 
     public List<AuthenticationSelectionOption> getAuthenticationSelections() {
-        return context==null ? Collections.emptyList() : context.getAuthenticationSelections();
+        return context == null ? Collections.emptyList() : context.getAuthenticationSelections();
     }
 
     public boolean showTryAnotherWayLink() {
@@ -49,7 +49,7 @@ public class AuthenticationContextBean {
 
 
     public boolean showUsername() {
-        return context != null && context.getUser() != null && context.getAuthenticationSession() != null && page!=LoginFormsPages.ERROR;
+        return context != null && context.getUser() != null && context.getAuthenticationSession() != null && page != LoginFormsPages.ERROR;
     }
 
     public boolean showResetCredentials() {

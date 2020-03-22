@@ -16,10 +16,11 @@
  */
 package org.keycloak.saml.common.constants;
 
+import javax.xml.namespace.QName;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import javax.xml.namespace.QName;
+
 import static org.keycloak.saml.common.constants.JBossSAMLURIConstants.*;
 
 /**
@@ -223,16 +224,74 @@ public enum JBossSAMLConstants {
     SIGNATURE_SHA1_WITH_RSA("http://www.w3.org/2000/09/xmldsig#rsa-sha1"),
     VERSION_2_0("2.0"),
 
-    /** @deprecated Use namespace-aware variant instead */
+    /**
+     * @deprecated Use namespace-aware variant instead
+     */
     RESPONSE("Response"),
-    /** @deprecated Use namespace-aware variant instead */
+    /**
+     * @deprecated Use namespace-aware variant instead
+     */
     EXTENSIONS("Extensions"),
 
-    UNKNOWN_VALUE(null)
-    ;
+    UNKNOWN_VALUE(null);
 
+    private static final ReverseLookup REVERSE_LOOKUP = new ReverseLookup();
     private final QName asQName;
     private final JBossSAMLURIConstants nsUri;
+
+    private JBossSAMLConstants(String name) {
+        this.asQName = name == null ? null : new QName(name);
+        this.nsUri = null;
+    }
+
+    private JBossSAMLConstants(JBossSAMLURIConstants namespaceUri, String name) {
+        this.nsUri = namespaceUri;
+        this.asQName = name == null ? null : new QName(namespaceUri.get(), name);
+    }
+
+    /**
+     * Returns an enum constant based if known for the given {@code key}, or the {@code defaultValue} otherwise.
+     *
+     * @param key
+     * @return
+     */
+    public static JBossSAMLConstants from(String key, JBossSAMLConstants defaultValue) {
+        final JBossSAMLConstants res = REVERSE_LOOKUP.from(key);
+        return res == null ? defaultValue : res;
+    }
+
+    /**
+     * Returns an enum constant based if known for the given {@code key}, or the {@code UNKNOWN_VALUE} otherwise.
+     *
+     * @param key
+     * @return
+     */
+    public static JBossSAMLConstants from(String key) {
+        return from(key, UNKNOWN_VALUE);
+    }
+
+    /**
+     * Returns an enum constant based if known for the given {@code name} (namespace-aware), or the {@code UNKNOWN_VALUE} otherwise.
+     *
+     * @param key
+     * @return
+     */
+    public static JBossSAMLConstants from(QName name) {
+        final JBossSAMLConstants res = REVERSE_LOOKUP.from(name);
+        return res == null ? UNKNOWN_VALUE : res;
+    }
+
+    public String get() {
+        return this.asQName == null ? null : this.asQName.getLocalPart();
+    }
+
+    public QName getAsQName() {
+        return asQName;
+    }
+
+    public JBossSAMLURIConstants getNsUri() {
+        return nsUri;
+    }
 
     private static class ReverseLookup {
         // Private class to make sure JBossSAMLURIConstants is fully initialized
@@ -268,57 +327,5 @@ public enum JBossSAMLConstants {
         public JBossSAMLConstants from(QName key) {
             return QNAME_CONSTANTS.get(key);
         }
-    }
-    private static final ReverseLookup REVERSE_LOOKUP = new ReverseLookup();
-
-    private JBossSAMLConstants(String name) {
-        this.asQName = name == null ? null : new QName(name);
-        this.nsUri = null;
-    }
-
-    private JBossSAMLConstants(JBossSAMLURIConstants namespaceUri, String name) {
-        this.nsUri = namespaceUri;
-        this.asQName = name == null ? null : new QName(namespaceUri.get(), name);
-    }
-
-    public String get() {
-        return this.asQName == null ? null : this.asQName.getLocalPart();
-    }
-
-    public QName getAsQName() {
-        return asQName;
-    }
-
-    public JBossSAMLURIConstants getNsUri() {
-        return nsUri;
-    }
-
-    /**
-     * Returns an enum constant based if known for the given {@code key}, or the {@code defaultValue} otherwise.
-     * @param key
-     * @return
-     */
-    public static JBossSAMLConstants from(String key, JBossSAMLConstants defaultValue) {
-        final JBossSAMLConstants res = REVERSE_LOOKUP.from(key);
-        return res == null ? defaultValue : res;
-    }
-
-    /**
-     * Returns an enum constant based if known for the given {@code key}, or the {@code UNKNOWN_VALUE} otherwise.
-     * @param key
-     * @return
-     */
-    public static JBossSAMLConstants from(String key) {
-        return from(key, UNKNOWN_VALUE);
-    }
-
-    /**
-     * Returns an enum constant based if known for the given {@code name} (namespace-aware), or the {@code UNKNOWN_VALUE} otherwise.
-     * @param key
-     * @return
-     */
-    public static JBossSAMLConstants from(QName name) {
-        final JBossSAMLConstants res = REVERSE_LOOKUP.from(name);
-        return res == null ? UNKNOWN_VALUE : res;
     }
 }

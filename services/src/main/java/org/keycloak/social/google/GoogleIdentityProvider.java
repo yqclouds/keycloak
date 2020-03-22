@@ -61,7 +61,7 @@ public class GoogleIdentityProvider extends OIDCIdentityProvider implements Soci
     @Override
     protected String getUserInfoUrl() {
         String uri = super.getUserInfoUrl();
-        if (((GoogleIdentityProviderConfig)getConfig()).isUserIp()) {
+        if (((GoogleIdentityProviderConfig) getConfig()).isUserIp()) {
             ClientConnection connection = session.getContext().getConnection();
             if (connection != null) {
                 uri = KeycloakUriBuilder.fromUri(super.getUserInfoUrl()).queryParam("userIp", connection.getRemoteAddr()).build().toString();
@@ -100,11 +100,11 @@ public class GoogleIdentityProvider extends OIDCIdentityProvider implements Soci
         if (hostedDomain != null) {
             uriBuilder.queryParam(OIDC_PARAMETER_HOSTED_DOMAINS, hostedDomain);
         }
-        
+
         if (googleConfig.isOfflineAccess()) {
             uriBuilder.queryParam(OIDC_PARAMETER_ACCESS_TYPE, ACCESS_TYPE_OFFLINE);
         }
-        
+
         return uriBuilder;
     }
 
@@ -123,7 +123,7 @@ public class GoogleIdentityProvider extends OIDCIdentityProvider implements Soci
             throw new IdentityBrokerException("Identity token does not contain hosted domain parameter.");
         }
 
-        if (hostedDomain.equals("*") || hostedDomain.equals(receivedHdParam))  {
+        if (hostedDomain.equals("*") || hostedDomain.equals(receivedHdParam)) {
             return token;
         }
 

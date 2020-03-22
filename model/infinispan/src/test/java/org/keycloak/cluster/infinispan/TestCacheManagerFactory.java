@@ -63,7 +63,7 @@ class TestCacheManagerFactory {
         ConfigurationBuilder cacheConfigBuilder = new ConfigurationBuilder();
 
         String host = "localhost";
-        int port = threadId==1 ? 12232 : 13232;
+        int port = threadId == 1 ? 12232 : 13232;
         //int port = 11222;
 
         return cacheConfigBuilder.persistence().addStore(builderClass)
@@ -79,12 +79,12 @@ class TestCacheManagerFactory {
                 //.protocolVersion(ProtocolVersion.PROTOCOL_VERSION_26)
                 //.maxBatchSize(5)
                 .addServer()
-                    .host(host)
-                    .port(port)
+                .host(host)
+                .port(port)
                 .connectionPool()
-                    .maxActive(20)
-                    .exhaustedAction(ExhaustedAction.CREATE_NEW)
+                .maxActive(20)
+                .exhaustedAction(ExhaustedAction.CREATE_NEW)
                 .async()
-                .   enabled(false).build();
+                .enabled(false).build();
     }
 }

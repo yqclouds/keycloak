@@ -18,7 +18,7 @@ package org.keycloak.crypto;
 
 import org.keycloak.models.KeycloakSession;
 
-public class ES512ClientSignatureVerifierProviderFactory  implements ClientSignatureVerifierProviderFactory {
+public class ES512ClientSignatureVerifierProviderFactory implements ClientSignatureVerifierProviderFactory {
 
     public static final String ID = Algorithm.ES512;
 

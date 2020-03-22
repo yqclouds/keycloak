@@ -27,9 +27,14 @@ import java.util.Set;
  */
 public interface UserBrokerLinkFederatedStorage {
     String getUserByFederatedIdentity(FederatedIdentityModel socialLink, RealmModel realm);
+
     void addFederatedIdentity(RealmModel realm, String userId, FederatedIdentityModel socialLink);
+
     boolean removeFederatedIdentity(RealmModel realm, String userId, String socialProvider);
+
     void updateFederatedIdentity(RealmModel realm, String userId, FederatedIdentityModel federatedIdentityModel);
+
     Set<FederatedIdentityModel> getFederatedIdentities(String userId, RealmModel realm);
+
     FederatedIdentityModel getFederatedIdentity(String userId, String socialProvider, RealmModel realm);
 }

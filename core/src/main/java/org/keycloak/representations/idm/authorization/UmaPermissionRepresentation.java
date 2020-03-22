@@ -25,7 +25,7 @@ import java.util.Set;
  * @author <a href="mailto:federico@martel-innovate.com">Federico M. Facca</a>
  */
 public class UmaPermissionRepresentation extends AbstractPolicyRepresentation {
-    
+
     private Set<String> roles;
     private Set<String> groups;
     private Set<String> clients;
@@ -35,10 +35,6 @@ public class UmaPermissionRepresentation extends AbstractPolicyRepresentation {
     @Override
     public String getType() {
         return "uma";
-    }
-
-    public void setRoles(Set<String> roles) {
-        this.roles = roles;
     }
 
     public void addRole(String... role) {
@@ -63,8 +59,8 @@ public class UmaPermissionRepresentation extends AbstractPolicyRepresentation {
         return roles;
     }
 
-    public void setGroups(Set<String> groups) {
-        this.groups = groups;
+    public void setRoles(Set<String> roles) {
+        this.roles = roles;
     }
 
     public void addGroup(String... group) {
@@ -85,8 +81,8 @@ public class UmaPermissionRepresentation extends AbstractPolicyRepresentation {
         return groups;
     }
 
-    public void setClients(Set<String> clients) {
-        this.clients = clients;
+    public void setGroups(Set<String> groups) {
+        this.groups = groups;
     }
 
     public void addClient(String... client) {
@@ -107,8 +103,8 @@ public class UmaPermissionRepresentation extends AbstractPolicyRepresentation {
         return clients;
     }
 
-    public void setUsers(Set<String> users) {
-        this.users = users;
+    public void setClients(Set<String> clients) {
+        this.clients = clients;
     }
 
     public void addUser(String... user) {
@@ -128,11 +124,15 @@ public class UmaPermissionRepresentation extends AbstractPolicyRepresentation {
         return this.users;
     }
 
-    public void setCondition(String condition) {
-        this.condition = condition;
+    public void setUsers(Set<String> users) {
+        this.users = users;
     }
 
     public String getCondition() {
         return condition;
+    }
+
+    public void setCondition(String condition) {
+        this.condition = condition;
     }
 }

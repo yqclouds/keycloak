@@ -1,11 +1,5 @@
 package org.keycloak.services.util;
 
-import java.security.GeneralSecurityException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
-
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.common.util.Base64Url;
@@ -13,16 +7,19 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.services.x509.X509ClientCertificateLookup;
 
+import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+
 public class MtlsHoKTokenUtil {
     // KEYCLOAK-6771 Certificate Bound Token
     // https://tools.ietf.org/html/draft-ietf-oauth-mtls-08#section-3.1
 
-    protected static final Logger logger = Logger.getLogger(MtlsHoKTokenUtil.class);
-
-    private static final String DIGEST_ALG = "SHA-256";
-
     public static final String CERT_VERIFY_ERROR_DESC = "Client certificate missing, or its thumbprint and one in the refresh token did NOT match";
-
+    protected static final Logger logger = Logger.getLogger(MtlsHoKTokenUtil.class);
+    private static final String DIGEST_ALG = "SHA-256";
 
     public static AccessToken.CertConf bindTokenWithClientCertificate(HttpRequest request, KeycloakSession session) {
         X509Certificate[] certs = getCertificateChain(request, session);
@@ -91,11 +88,11 @@ public class MtlsHoKTokenUtil {
 
     private static X509Certificate[] getCertificateChain(HttpRequest request, KeycloakSession session) {
         try {
-               // Get a x509 client certificate
+            // Get a x509 client certificate
             X509ClientCertificateLookup provider = session.getProvider(X509ClientCertificateLookup.class);
             if (provider == null) {
                 logger.errorv("\"{0}\" Spi is not available, did you forget to update the configuration?", X509ClientCertificateLookup.class);
-            return null;
+                return null;
             }
             X509Certificate[] certs = provider.getCertificateChain(request);
             return certs;
@@ -105,7 +102,7 @@ public class MtlsHoKTokenUtil {
         return null;
     }
 
-    private static String getCertificateThumbprintInSHA256DERX509Base64UrlEncoded (X509Certificate cert) throws NoSuchAlgorithmException, CertificateEncodingException {
+    private static String getCertificateThumbprintInSHA256DERX509Base64UrlEncoded(X509Certificate cert) throws NoSuchAlgorithmException, CertificateEncodingException {
         // need to calculate over DER encoding of the X.509 certificate
         //   https://tools.ietf.org/html/draft-ietf-oauth-mtls-08#section-3.1
         // in order to do that, call getEncoded()
@@ -117,7 +114,7 @@ public class MtlsHoKTokenUtil {
         return DERX509Base64UrlEncoded;
     }
 
-    private static void dumpCertInfo(X509Certificate[] certs) throws CertificateEncodingException  {
+    private static void dumpCertInfo(X509Certificate[] certs) throws CertificateEncodingException {
         logger.tracef(":: Try Holder of Key Token");
         logger.tracef(":: # of x509 Client Certificate in Certificate Chain = %d", certs.length);
         for (int i = 0; i < certs.length; i++) {
@@ -127,7 +124,8 @@ public class MtlsHoKTokenUtil {
             String DERX509Base64UrlEncoded = null;
             try {
                 DERX509Base64UrlEncoded = getCertificateThumbprintInSHA256DERX509Base64UrlEncoded(certs[i]);
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
             logger.tracef(":: certs[%d] Base64URL Encoded SHA-256 Hash of DER formatted first x509 Client Certificate in Certificate Chain = %s", i, DERX509Base64UrlEncoded);
             logger.tracef(":: certs[%d] DER Dump Bytes of first x509 Client Certificate TBScertificate in Certificate Chain = %d", i, certs[i].getTBSCertificate().length);
             logger.tracef(":: certs[%d] Signature Algorithm of first x509 Client Certificate in Certificate Chain = %s", i, certs[i].getSigAlgName());

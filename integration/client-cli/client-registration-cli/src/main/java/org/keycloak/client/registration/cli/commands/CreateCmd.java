@@ -27,9 +27,9 @@ import org.jboss.aesh.console.command.CommandResult;
 import org.jboss.aesh.console.command.invocation.CommandInvocation;
 import org.keycloak.client.registration.cli.aesh.EndpointTypeConverter;
 import org.keycloak.client.registration.cli.common.AttributeOperation;
-import org.keycloak.client.registration.cli.config.ConfigData;
 import org.keycloak.client.registration.cli.common.CmdStdinContext;
 import org.keycloak.client.registration.cli.common.EndpointType;
+import org.keycloak.client.registration.cli.config.ConfigData;
 import org.keycloak.client.registration.cli.util.HttpUtil;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.oidc.OIDCClientRepresentation;
@@ -44,28 +44,14 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static org.keycloak.client.registration.cli.common.AttributeOperation.Type.SET;
-import static org.keycloak.client.registration.cli.common.EndpointType.DEFAULT;
-import static org.keycloak.client.registration.cli.common.EndpointType.OIDC;
-import static org.keycloak.client.registration.cli.common.EndpointType.SAML2;
-import static org.keycloak.client.registration.cli.util.ConfigUtil.DEFAULT_CONFIG_FILE_STRING;
-import static org.keycloak.client.registration.cli.util.ConfigUtil.credentialsAvailable;
-import static org.keycloak.client.registration.cli.util.ConfigUtil.loadConfig;
-import static org.keycloak.client.registration.cli.util.ConfigUtil.saveMergeConfig;
-import static org.keycloak.client.registration.cli.util.HttpUtil.getExpectedContentType;
-import static org.keycloak.client.registration.cli.util.IoUtil.printErr;
-import static org.keycloak.client.registration.cli.util.IoUtil.readFully;
-import static org.keycloak.client.registration.cli.util.IoUtil.readSecret;
-import static org.keycloak.client.registration.cli.util.OsUtil.CMD;
-import static org.keycloak.client.registration.cli.util.OsUtil.EOL;
-import static org.keycloak.client.registration.cli.util.OsUtil.OS_ARCH;
-import static org.keycloak.client.registration.cli.util.OsUtil.PROMPT;
-import static org.keycloak.client.registration.cli.util.ParseUtil.mergeAttributes;
-import static org.keycloak.client.registration.cli.util.ParseUtil.parseFileOrStdin;
+import static org.keycloak.client.registration.cli.common.EndpointType.*;
 import static org.keycloak.client.registration.cli.util.AuthUtil.ensureToken;
-import static org.keycloak.client.registration.cli.util.ConfigUtil.setRegistrationToken;
+import static org.keycloak.client.registration.cli.util.ConfigUtil.*;
 import static org.keycloak.client.registration.cli.util.HttpUtil.doPost;
-import static org.keycloak.client.registration.cli.util.IoUtil.printOut;
-import static org.keycloak.client.registration.cli.util.ParseUtil.parseKeyVal;
+import static org.keycloak.client.registration.cli.util.HttpUtil.getExpectedContentType;
+import static org.keycloak.client.registration.cli.util.IoUtil.*;
+import static org.keycloak.client.registration.cli.util.OsUtil.*;
+import static org.keycloak.client.registration.cli.util.ParseUtil.*;
 
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
@@ -94,6 +80,73 @@ public class CreateCmd extends AbstractAuthOptionsCmd implements Command {
 
     @Arguments
     protected List<String> args;
+
+    public static String usage() {
+        StringWriter sb = new StringWriter();
+        PrintWriter out = new PrintWriter(sb);
+        out.println("Usage: " + CMD + " create [ARGUMENTS]");
+        out.println();
+        out.println("Command to create new client configurations on the server. If Initial Access Token is specified (-t TOKEN)");
+        out.println("or has previously been set for the server, and realm in the configuration ('" + CMD + " config initial-token'),");
+        out.println("then that will be used, otherwise session access / refresh tokens will be used.");
+        out.println();
+        out.println("Arguments:");
+        out.println();
+        out.println("  Global options:");
+        out.println("    -x                    Print full stack trace when exiting with error");
+        out.println("    --config              Path to the config file (" + DEFAULT_CONFIG_FILE_STRING + " by default)");
+        out.println("    --no-config           Don't use config file - no authentication info is loaded or saved");
+        out.println("    --truststore PATH     Path to a truststore containing trusted certificates");
+        out.println("    --trustpass PASSWORD  Truststore password (prompted for if not specified and --truststore is used)");
+        out.println("    CREDENTIALS OPTIONS   Same set of options as accepted by '" + CMD + " config credentials' in order to establish");
+        out.println("                          an authenticated sessions. In combination with --no-config option this allows transient");
+        out.println("                          (on-the-fly) authentication to be performed which leaves no tokens in config file.");
+        out.println();
+        out.println("  Command specific options:");
+        out.println("    -t, --token TOKEN     Use the specified Initial Access Token for authorization or read it from standard input ");
+        out.println("                          if '-' is specified. This overrides any token set by '" + CMD + " config initial-token'.");
+        out.println("                          If not specified, session credentials are used - see: CREDENTIALS OPTIONS.");
+        out.println("    -e, --endpoint TYPE   Endpoint type / document format to use - one of: 'default', 'oidc', 'saml2'.");
+        out.println("                          If not specified, the format is deduced from input file or falls back to 'default'.");
+        out.println("    -s, --set NAME=VALUE  Set a specific attribute NAME to a specified value VALUE");
+        out.println("    -f, --file FILENAME   Read object from file or standard input if FILENAME is set to '-'");
+        out.println("    -o, --output          After creation output the new client configuration to standard output");
+        out.println("    -c, --compressed      Don't pretty print the output");
+        out.println("    -i, --clientId        After creation only print clientId to standard output");
+        out.println();
+        out.println("Examples:");
+        out.println();
+        out.println("Create a new client using configuration read from standard input:");
+        if (OS_ARCH.isWindows()) {
+            out.println("  " + PROMPT + " echo { \"clientId\": \"my_client\" } | " + CMD + " create -f -");
+        } else {
+            out.println("  " + PROMPT + " " + CMD + " create -f - << EOF");
+            out.println("  {");
+            out.println("    \"clientId\": \"my_client\"");
+            out.println("  }");
+            out.println("  EOF");
+        }
+        out.println();
+        out.println("Since we didn't specify an endpoint type it will be deduced from configuration format.");
+        out.println("Supported formats include Keycloak default format, OIDC format, and SAML SP Metadata.");
+        out.println();
+        out.println("Creating a client using file as a template, and overriding some attributes:");
+        out.println("  " + PROMPT + " " + CMD + " create -f my_client.json -s clientId=my_client2 -s 'redirectUris=[\"http://localhost:8980/myapp/*\"]'");
+        out.println();
+        out.println("Creating a client using an Initial Access Token - you'll be prompted for a token:");
+        out.println("  " + PROMPT + " " + CMD + " create -s clientId=my_client2 -s 'redirectUris=[\"http://localhost:8980/myapp/*\"]' -t -");
+        out.println();
+        out.println("Creating a client using 'oidc' endpoint. Without setting endpoint type here it would be 'default':");
+        out.println("  " + PROMPT + " " + CMD + " create -e oidc -s 'redirect_uris=[\"http://localhost:8980/myapp/*\"]'");
+        out.println();
+        out.println("Creating a client using 'saml2' endpoint. In this case setting endpoint type is redundant since it is deduced ");
+        out.println("from file content:");
+        out.println("  " + PROMPT + " " + CMD + " create -e saml2 -f saml-sp-metadata.xml");
+        out.println();
+        out.println();
+        out.println("Use '" + CMD + " help' for general information and a list of commands");
+        return sb.toString();
+    }
 
     @Override
     public CommandResult execute(CommandInvocation commandInvocation) throws CommandException, InterruptedException {
@@ -244,73 +297,6 @@ public class CreateCmd extends AbstractAuthOptionsCmd implements Command {
 
     protected String help() {
         return usage();
-    }
-
-    public static String usage() {
-        StringWriter sb = new StringWriter();
-        PrintWriter out = new PrintWriter(sb);
-        out.println("Usage: " + CMD + " create [ARGUMENTS]");
-        out.println();
-        out.println("Command to create new client configurations on the server. If Initial Access Token is specified (-t TOKEN)");
-        out.println("or has previously been set for the server, and realm in the configuration ('" + CMD + " config initial-token'),");
-        out.println("then that will be used, otherwise session access / refresh tokens will be used.");
-        out.println();
-        out.println("Arguments:");
-        out.println();
-        out.println("  Global options:");
-        out.println("    -x                    Print full stack trace when exiting with error");
-        out.println("    --config              Path to the config file (" + DEFAULT_CONFIG_FILE_STRING + " by default)");
-        out.println("    --no-config           Don't use config file - no authentication info is loaded or saved");
-        out.println("    --truststore PATH     Path to a truststore containing trusted certificates");
-        out.println("    --trustpass PASSWORD  Truststore password (prompted for if not specified and --truststore is used)");
-        out.println("    CREDENTIALS OPTIONS   Same set of options as accepted by '" + CMD + " config credentials' in order to establish");
-        out.println("                          an authenticated sessions. In combination with --no-config option this allows transient");
-        out.println("                          (on-the-fly) authentication to be performed which leaves no tokens in config file.");
-        out.println();
-        out.println("  Command specific options:");
-        out.println("    -t, --token TOKEN     Use the specified Initial Access Token for authorization or read it from standard input ");
-        out.println("                          if '-' is specified. This overrides any token set by '" + CMD + " config initial-token'.");
-        out.println("                          If not specified, session credentials are used - see: CREDENTIALS OPTIONS.");
-        out.println("    -e, --endpoint TYPE   Endpoint type / document format to use - one of: 'default', 'oidc', 'saml2'.");
-        out.println("                          If not specified, the format is deduced from input file or falls back to 'default'.");
-        out.println("    -s, --set NAME=VALUE  Set a specific attribute NAME to a specified value VALUE");
-        out.println("    -f, --file FILENAME   Read object from file or standard input if FILENAME is set to '-'");
-        out.println("    -o, --output          After creation output the new client configuration to standard output");
-        out.println("    -c, --compressed      Don't pretty print the output");
-        out.println("    -i, --clientId        After creation only print clientId to standard output");
-        out.println();
-        out.println("Examples:");
-        out.println();
-        out.println("Create a new client using configuration read from standard input:");
-        if (OS_ARCH.isWindows()) {
-            out.println("  " + PROMPT + " echo { \"clientId\": \"my_client\" } | " + CMD + " create -f -");
-        } else {
-            out.println("  " + PROMPT + " " + CMD + " create -f - << EOF");
-            out.println("  {");
-            out.println("    \"clientId\": \"my_client\"");
-            out.println("  }");
-            out.println("  EOF");
-        }
-        out.println();
-        out.println("Since we didn't specify an endpoint type it will be deduced from configuration format.");
-        out.println("Supported formats include Keycloak default format, OIDC format, and SAML SP Metadata.");
-        out.println();
-        out.println("Creating a client using file as a template, and overriding some attributes:");
-        out.println("  " + PROMPT + " " + CMD + " create -f my_client.json -s clientId=my_client2 -s 'redirectUris=[\"http://localhost:8980/myapp/*\"]'");
-        out.println();
-        out.println("Creating a client using an Initial Access Token - you'll be prompted for a token:");
-        out.println("  " + PROMPT + " " + CMD + " create -s clientId=my_client2 -s 'redirectUris=[\"http://localhost:8980/myapp/*\"]' -t -");
-        out.println();
-        out.println("Creating a client using 'oidc' endpoint. Without setting endpoint type here it would be 'default':");
-        out.println("  " + PROMPT + " " + CMD + " create -e oidc -s 'redirect_uris=[\"http://localhost:8980/myapp/*\"]'");
-        out.println();
-        out.println("Creating a client using 'saml2' endpoint. In this case setting endpoint type is redundant since it is deduced ");
-        out.println("from file content:");
-        out.println("  " + PROMPT + " " + CMD + " create -e saml2 -f saml-sp-metadata.xml");
-        out.println();
-        out.println();
-        out.println("Use '" + CMD + " help' for general information and a list of commands");
-        return sb.toString();
     }
 
 }

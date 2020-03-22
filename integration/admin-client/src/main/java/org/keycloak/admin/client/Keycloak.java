@@ -34,7 +34,7 @@ import static org.keycloak.OAuth2Constants.PASSWORD;
 /**
  * Provides a Keycloak client. By default, this implementation uses a the default RestEasy client builder settings.
  * To customize the underling client, use a {@link KeycloakBuilder} to create a Keycloak client.
- *
+ * <p>
  * To read Responses, you can use {@link CreatedResponseUtil} for objects created
  *
  * @author rodrigo.sasaki@icarros.com.br
@@ -56,10 +56,6 @@ public class Keycloak implements AutoCloseable {
 
         target = (ResteasyWebTarget) client.target(config.getServerUrl());
         target.register(newAuthFilter());
-    }
-
-    private BearerAuthFilter newAuthFilter() {
-        return authToken != null ? new BearerAuthFilter(authToken) : new BearerAuthFilter(tokenManager);
     }
 
     private static Client newRestEasyClient(ResteasyJackson2Provider customJacksonProvider, SSLContext sslContext, boolean disableTrustManager) {
@@ -104,6 +100,10 @@ public class Keycloak implements AutoCloseable {
 
     public static Keycloak getInstance(String serverUrl, String realm, String clientId, String authToken, SSLContext sllSslContext) {
         return getInstance(serverUrl, realm, null, null, clientId, null, sllSslContext, null, false, authToken);
+    }
+
+    private BearerAuthFilter newAuthFilter() {
+        return authToken != null ? new BearerAuthFilter(authToken) : new BearerAuthFilter(tokenManager);
     }
 
     public RealmsResource realms() {

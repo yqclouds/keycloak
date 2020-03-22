@@ -18,22 +18,15 @@
 package org.keycloak.services.migration;
 
 import org.keycloak.migration.MigrationProvider;
-import org.keycloak.models.ClaimMask;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.utils.ModelToRepresentation;
+import org.keycloak.models.*;
 import org.keycloak.protocol.LoginProtocol;
 import org.keycloak.protocol.LoginProtocolFactory;
 import org.keycloak.protocol.oidc.OIDCLoginProtocolFactory;
-import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import org.keycloak.services.managers.RealmManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,6 +41,12 @@ public class DefaultMigrationProvider implements MigrationProvider {
 
     public DefaultMigrationProvider(KeycloakSession session) {
         this.session = session;
+    }
+
+    // With change to client scopes, there are not default protocolMappers dedicated to single client anymore. Instead, there are default client scopes
+    // and mappers dedicated to those scopes. So returning empty map for now
+    private static Map<String, ProtocolMapperRepresentation> getAllDefaultMappers(KeycloakSession session) {
+        return Collections.emptyMap();
     }
 
     @Override
@@ -84,12 +83,10 @@ public class DefaultMigrationProvider implements MigrationProvider {
         new RealmManager(session).setupAdminCli(realm);
     }
 
-
     @Override
     public ClientScopeModel addOIDCRolesClientScope(RealmModel realm) {
         return OIDCLoginProtocolFactory.addRolesClientScope(realm);
     }
-
 
     @Override
     public ClientScopeModel addOIDCWebOriginsClientScope(RealmModel realm) {
@@ -103,12 +100,5 @@ public class DefaultMigrationProvider implements MigrationProvider {
 
     @Override
     public void close() {
-    }
-
-
-    // With change to client scopes, there are not default protocolMappers dedicated to single client anymore. Instead, there are default client scopes
-    // and mappers dedicated to those scopes. So returning empty map for now
-    private static Map<String, ProtocolMapperRepresentation> getAllDefaultMappers(KeycloakSession session) {
-        return Collections.emptyMap();
     }
 }

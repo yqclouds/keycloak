@@ -16,12 +16,16 @@
 
 package org.keycloak.credential;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import com.webauthn4j.WebAuthnManager;
+import com.webauthn4j.authenticator.Authenticator;
+import com.webauthn4j.authenticator.AuthenticatorImpl;
 import com.webauthn4j.converter.util.ObjectConverter;
+import com.webauthn4j.data.AuthenticationData;
+import com.webauthn4j.data.AuthenticationParameters;
+import com.webauthn4j.data.attestation.authenticator.AAGUID;
+import com.webauthn4j.data.attestation.authenticator.AttestedCredentialData;
+import com.webauthn4j.data.attestation.authenticator.COSEKey;
+import com.webauthn4j.util.exception.WebAuthnException;
 import org.jboss.logging.Logger;
 import org.keycloak.authentication.requiredactions.WebAuthnRegisterFactory;
 import org.keycloak.common.util.Base64;
@@ -29,18 +33,13 @@ import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-
-import com.webauthn4j.WebAuthnManager;
-import com.webauthn4j.authenticator.Authenticator;
-import com.webauthn4j.authenticator.AuthenticatorImpl;
-import com.webauthn4j.data.AuthenticationData;
-import com.webauthn4j.data.AuthenticationParameters;
-import com.webauthn4j.data.attestation.authenticator.AAGUID;
-import com.webauthn4j.data.attestation.authenticator.AttestedCredentialData;
-import com.webauthn4j.data.attestation.authenticator.COSEKey;
-import com.webauthn4j.util.exception.WebAuthnException;
 import org.keycloak.models.credential.WebAuthnCredentialModel;
 import org.keycloak.models.credential.dto.WebAuthnCredentialData;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Credential provider for WebAuthn 2-factor credential of the user
@@ -90,7 +89,7 @@ public class WebAuthnCredentialProvider implements CredentialProvider<WebAuthnCr
     /**
      * Convert WebAuthn credential input to the model, which can be saved in the persistent storage (DB)
      *
-     * @param input should be typically WebAuthnCredentialModelInput
+     * @param input     should be typically WebAuthnCredentialModelInput
      * @param userLabel label for the credential
      */
     public WebAuthnCredentialModel getCredentialModelFromCredentialInput(CredentialInput input, String userLabel) {
@@ -206,7 +205,7 @@ public class WebAuthnCredentialProvider implements CredentialProvider<WebAuthnCr
             }
         } catch (WebAuthnException wae) {
             wae.printStackTrace();
-            throw(wae);
+            throw (wae);
         }
         // no authenticator matched
         return false;
@@ -228,7 +227,7 @@ public class WebAuthnCredentialProvider implements CredentialProvider<WebAuthnCr
     }
 
     public void dumpCredentialModel(WebAuthnCredentialModel credential, WebAuthnCredentialModelInput auth) {
-        if(logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
             logger.debug("  Persisted Credential Info::");
             logger.debug(credential);
             logger.debug("  Context Credential Info::");

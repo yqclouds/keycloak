@@ -17,8 +17,6 @@
 
 package org.keycloak.models.sessions.infinispan.util;
 
-import java.util.Set;
-
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.persistence.manager.PersistenceManager;
@@ -27,6 +25,8 @@ import org.infinispan.remoting.transport.Transport;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.connections.infinispan.TopologyInfo;
 import org.keycloak.models.KeycloakSession;
+
+import java.util.Set;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -57,7 +57,6 @@ public class InfinispanUtil {
 
 
     /**
-     *
      * @param cache
      * @return true if cluster coordinator OR if it's local cache
      */

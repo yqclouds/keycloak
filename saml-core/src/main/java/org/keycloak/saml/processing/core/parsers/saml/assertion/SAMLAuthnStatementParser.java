@@ -21,6 +21,7 @@ import org.keycloak.dom.saml.v2.assertion.SubjectLocalityType;
 import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.util.StaxParserUtil;
 import org.keycloak.saml.processing.core.saml.v2.util.XMLTimeUtil;
+
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.StartElement;

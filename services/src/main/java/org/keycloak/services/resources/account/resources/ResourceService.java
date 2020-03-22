@@ -16,21 +16,6 @@
  */
 package org.keycloak.services.resources.account.resources;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authorization.model.PermissionTicket;
 import org.keycloak.authorization.model.ResourceServer;
@@ -39,6 +24,10 @@ import org.keycloak.models.UserModel;
 import org.keycloak.models.UserProvider;
 import org.keycloak.services.managers.Auth;
 import org.keycloak.utils.MediaType;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.Response;
+import java.util.*;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -49,7 +38,7 @@ public class ResourceService extends AbstractResourceService {
     private final ResourceServer resourceServer;
 
     ResourceService(org.keycloak.authorization.model.Resource resource, KeycloakSession session, UserModel user,
-            Auth auth, HttpRequest request) {
+                    Auth auth, HttpRequest request) {
         super(session, user, auth, request);
         this.resource = resource;
         this.resourceServer = resource.getResourceServer();
@@ -57,7 +46,7 @@ public class ResourceService extends AbstractResourceService {
 
     /**
      * Returns a {@link Resource} where the {@link #user} is the resource owner.
-     * 
+     *
      * @return the resource
      */
     @GET
@@ -68,7 +57,7 @@ public class ResourceService extends AbstractResourceService {
 
     /**
      * Returns a list of {@link Permission} containing the users to which the {@link #user} granted access to a resource.
-     * 
+     *
      * @return the users with access to a resource
      */
     @GET
@@ -83,7 +72,7 @@ public class ResourceService extends AbstractResourceService {
 
         Collection<ResourcePermission> resources = toPermissions(ticketStore.find(filters, null, -1, -1));
         Collection<Permission> permissions = Collections.EMPTY_LIST;
-        
+
         if (!resources.isEmpty()) {
             permissions = resources.iterator().next().getPermissions();
         }
@@ -103,9 +92,9 @@ public class ResourceService extends AbstractResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response revoke(List<Permission> permissions) {
         if (permissions == null || permissions.isEmpty()) {
-            throw new BadRequestException("invalid_permissions");    
+            throw new BadRequestException("invalid_permissions");
         }
-        
+
         ResourceServer resourceServer = resource.getResourceServer();
         Map<String, String> filters = new HashMap<>();
 
@@ -149,11 +138,11 @@ public class ResourceService extends AbstractResourceService {
                 for (String scope : permission.getScopes()) {
                     grantPermission(user, scope);
                 }
-                
+
                 // remove all tickets that are not within the requested permissions
                 for (PermissionTicket ticket : tickets) {
                     ticketStore.delete(ticket.getId());
-                }                
+                }
             }
         }
 
@@ -174,13 +163,13 @@ public class ResourceService extends AbstractResourceService {
         filters.put(PermissionTicket.OWNER, user.getId());
         filters.put(PermissionTicket.GRANTED, Boolean.FALSE.toString());
         filters.put(PermissionTicket.RESOURCE, resource.getId());
-        
+
         Map<String, Permission> requests = new HashMap<>();
 
         for (PermissionTicket ticket : ticketStore.find(filters, null, -1, -1)) {
             requests.computeIfAbsent(ticket.getRequester(), requester -> new Permission(ticket, provider)).addScope(ticket.getScope().getName());
         }
-        
+
         return cors(Response.ok(requests.values()));
     }
 
@@ -196,7 +185,7 @@ public class ResourceService extends AbstractResourceService {
         if (scope == null) {
             scope = scopeStore.findById(scopeId, resourceServer.getId());
         }
-        
+
         return scope;
     }
 

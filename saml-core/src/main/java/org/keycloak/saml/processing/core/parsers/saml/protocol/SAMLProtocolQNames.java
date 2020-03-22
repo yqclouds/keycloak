@@ -1,13 +1,13 @@
 /*
  * Copyright 2018 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,11 +19,13 @@ package org.keycloak.saml.processing.core.parsers.saml.protocol;
 import org.keycloak.saml.common.constants.JBossSAMLURIConstants;
 import org.keycloak.saml.processing.core.parsers.saml.assertion.SAMLAssertionQNames;
 import org.keycloak.saml.processing.core.parsers.saml.xmldsig.XmlDSigQNames;
-import javax.xml.namespace.QName;
 import org.keycloak.saml.processing.core.parsers.util.HasQName;
+
+import javax.xml.namespace.QName;
 
 /**
  * Elements from saml-schema-protocol-2.0.xsd
+ *
  * @author hmlnarik
  */
 public enum SAMLProtocolQNames implements HasQName {
@@ -97,8 +99,7 @@ public enum SAMLProtocolQNames implements HasQName {
     ENCRYPTED_ID(SAMLAssertionQNames.ENCRYPTED_ID),
     SUBJECT(SAMLAssertionQNames.SUBJECT),
 
-    UNKNOWN_ELEMENT("")
-    ;
+    UNKNOWN_ELEMENT("");
 
     private final QName qName;
 

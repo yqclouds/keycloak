@@ -16,23 +16,22 @@
 
 package org.keycloak.credential;
 
-import org.keycloak.common.util.Base64;
-
 import com.webauthn4j.data.AuthenticationParameters;
 import com.webauthn4j.data.AuthenticationRequest;
 import com.webauthn4j.data.attestation.authenticator.AttestedCredentialData;
 import com.webauthn4j.data.attestation.authenticator.COSEKey;
 import com.webauthn4j.data.attestation.statement.AttestationStatement;
+import org.keycloak.common.util.Base64;
 
 public class WebAuthnCredentialModelInput implements CredentialInput {
 
+    private final String credentialType;
     private AttestedCredentialData attestedCredentialData;
     private AttestationStatement attestationStatement;
     private AuthenticationParameters authenticationParameters; // not persisted because it can only be used on authentication operation.
     private AuthenticationRequest authenticationRequest; // not persisted because it can only be used on authentication operation.
     private long count;
     private String credentialDBId;
-    private final String credentialType;
 
     public WebAuthnCredentialModelInput(String credentialType) {
         this.credentialType = credentialType;
@@ -58,12 +57,24 @@ public class WebAuthnCredentialModelInput implements CredentialInput {
         return attestedCredentialData;
     }
 
+    public void setAttestedCredentialData(AttestedCredentialData attestedCredentialData) {
+        this.attestedCredentialData = attestedCredentialData;
+    }
+
     public AttestationStatement getAttestationStatement() {
         return attestationStatement;
     }
 
+    public void setAttestationStatement(AttestationStatement attestationStatement) {
+        this.attestationStatement = attestationStatement;
+    }
+
     public long getCount() {
         return count;
+    }
+
+    public void setCount(long count) {
+        this.count = count;
     }
 
     public AuthenticationParameters getAuthenticationParameters() {
@@ -82,18 +93,6 @@ public class WebAuthnCredentialModelInput implements CredentialInput {
         this.authenticationRequest = authenticationRequest;
     }
 
-    public void setAttestedCredentialData(AttestedCredentialData attestedCredentialData) {
-        this.attestedCredentialData = attestedCredentialData;
-    }
-
-    public void setAttestationStatement(AttestationStatement attestationStatement) {
-        this.attestationStatement = attestationStatement;
-    }
-
-    public void setCount(long count) {
-        this.count = count;
-    }
-
     public String getCredentialDBId() {
         return credentialDBId;
     }
@@ -110,37 +109,37 @@ public class WebAuthnCredentialModelInput implements CredentialInput {
         StringBuilder sb = new StringBuilder("Credential Type = " + credentialType + ",");
         if (credentialDBId != null)
             sb.append("Credential DB Id = ")
-              .append(credentialDBId)
-              .append(",");
+                    .append(credentialDBId)
+                    .append(",");
         if (attestationStatement != null)
             sb.append("Attestation Statement Format = ")
-              .append(attestationStatement.getFormat())
-              .append(",");
+                    .append(attestationStatement.getFormat())
+                    .append(",");
         if (attestedCredentialData != null) {
             sb.append("AAGUID = ")
-              .append(attestedCredentialData.getAaguid().toString())
-              .append(",");
+                    .append(attestedCredentialData.getAaguid().toString())
+                    .append(",");
             sb.append("CREDENTIAL_ID = ")
-              .append(Base64.encodeBytes(attestedCredentialData.getCredentialId()))
-              .append(",");
+                    .append(Base64.encodeBytes(attestedCredentialData.getCredentialId()))
+                    .append(",");
             COSEKey credPubKey = attestedCredentialData.getCOSEKey();
             byte[] keyId = credPubKey.getKeyId();
             if (keyId != null)
                 sb.append("CREDENTIAL_PUBLIC_KEY.key_id = ")
-                  .append(Base64.encodeBytes(keyId))
-                  .append(",");
+                        .append(Base64.encodeBytes(keyId))
+                        .append(",");
             sb.append("CREDENTIAL_PUBLIC_KEY.algorithm = ")
-              .append(String.valueOf(credPubKey.getAlgorithm().getValue()))
-              .append(",");
+                    .append(String.valueOf(credPubKey.getAlgorithm().getValue()))
+                    .append(",");
             sb.append("CREDENTIAL_PUBLIC_KEY.key_type = ")
-              .append(credPubKey.getKeyType().name())
-              .append(",");
+                    .append(credPubKey.getKeyType().name())
+                    .append(",");
         }
         if (authenticationRequest != null) {
             // only set on Authentication
             sb.append("Credential Id = ")
-              .append(Base64.encodeBytes(authenticationRequest.getCredentialId()))
-              .append(",");
+                    .append(Base64.encodeBytes(authenticationRequest.getCredentialId()))
+                    .append(",");
         }
         if (sb.length() > 0)
             sb.deleteCharAt(sb.lastIndexOf(","));

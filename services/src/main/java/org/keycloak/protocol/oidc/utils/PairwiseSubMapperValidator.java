@@ -108,6 +108,7 @@ public class PairwiseSubMapperValidator {
         }
     }
 
-    public static class TypedList extends ArrayList<String> {}
+    public static class TypedList extends ArrayList<String> {
+    }
 
 }

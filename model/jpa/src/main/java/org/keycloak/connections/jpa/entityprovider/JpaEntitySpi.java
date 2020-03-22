@@ -23,29 +23,29 @@ import org.keycloak.provider.Spi;
 
 /**
  * @author <a href="mailto:erik.mulder@docdatapayments.com">Erik Mulder</a>
- * 
+ * <p>
  * Spi that allows for adding extra JPA entity's to the Keycloak entity manager.
  */
 public class JpaEntitySpi implements Spi {
 
-	@Override
-	public boolean isInternal() {
-		return true;
-	}
+    @Override
+    public boolean isInternal() {
+        return true;
+    }
 
-	@Override
-	public String getName() {
-		return "jpa-entity-provider";
-	}
+    @Override
+    public String getName() {
+        return "jpa-entity-provider";
+    }
 
-	@Override
-	public Class<? extends Provider> getProviderClass() {
-		return JpaEntityProvider.class;
-	}
+    @Override
+    public Class<? extends Provider> getProviderClass() {
+        return JpaEntityProvider.class;
+    }
 
-	@Override
-	public Class<? extends ProviderFactory> getProviderFactoryClass() {
-		return JpaEntityProviderFactory.class;
-	}
-	
+    @Override
+    public Class<? extends ProviderFactory> getProviderFactoryClass() {
+        return JpaEntityProviderFactory.class;
+    }
+
 }

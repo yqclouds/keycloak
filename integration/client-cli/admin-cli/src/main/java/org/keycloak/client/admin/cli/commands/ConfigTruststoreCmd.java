@@ -31,10 +31,7 @@ import java.util.List;
 import static org.keycloak.client.admin.cli.util.ConfigUtil.DEFAULT_CONFIG_FILE_STRING;
 import static org.keycloak.client.admin.cli.util.ConfigUtil.saveMergeConfig;
 import static org.keycloak.client.admin.cli.util.IoUtil.readSecret;
-import static org.keycloak.client.admin.cli.util.OsUtil.CMD;
-import static org.keycloak.client.admin.cli.util.OsUtil.EOL;
-import static org.keycloak.client.admin.cli.util.OsUtil.OS_ARCH;
-import static org.keycloak.client.admin.cli.util.OsUtil.PROMPT;
+import static org.keycloak.client.admin.cli.util.OsUtil.*;
 
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
@@ -46,6 +43,40 @@ public class ConfigTruststoreCmd extends AbstractAuthOptionsCmd {
 
     private boolean delete;
 
+    public static String usage() {
+        StringWriter sb = new StringWriter();
+        PrintWriter out = new PrintWriter(sb);
+        out.println("Usage: " + CMD + " config truststore [TRUSTSTORE | --delete] [--trustpass PASSWORD] [ARGUMENTS]");
+        out.println();
+        out.println("Command to configure a global truststore to use when using https to connect to Keycloak server.");
+        out.println();
+        out.println("Arguments:");
+        out.println();
+        out.println("  Global options:");
+        out.println("    -x                      Print full stack trace when exiting with error");
+        out.println("    --config                Path to the config file (" + DEFAULT_CONFIG_FILE_STRING + " by default)");
+        out.println();
+        out.println("  Command specific options:");
+        out.println("    TRUSTSTORE              Path to truststore file");
+        out.println("    --trustpass PASSWORD    Truststore password to unlock truststore (prompted for if set to '-')");
+        out.println("    -d, --delete            Remove truststore configuration");
+        out.println();
+        out.println();
+        out.println("Examples:");
+        out.println();
+        out.println("Specify a truststore - you will be prompted for truststore password every time it is used:");
+        out.println("  " + PROMPT + " " + CMD + " config truststore " + OS_ARCH.path("~/.keycloak/truststore.jks"));
+        out.println();
+        out.println("Specify a truststore, and password - truststore will automatically be used without prompting for password:");
+        out.println("  " + PROMPT + " " + CMD + " config truststore --storepass " + OS_ARCH.envVar("PASSWORD") + " " + OS_ARCH.path("~/.keycloak/truststore.jks"));
+        out.println();
+        out.println("Remove truststore configuration:");
+        out.println("  " + PROMPT + " " + CMD + " config truststore --delete");
+        out.println();
+        out.println();
+        out.println("Use '" + CMD + " help' for general information and a list of commands");
+        return sb.toString();
+    }
 
     protected void initFromParent(ConfigCmd parent) {
         this.parent = parent;
@@ -162,40 +193,5 @@ public class ConfigTruststoreCmd extends AbstractAuthOptionsCmd {
 
     protected String help() {
         return usage();
-    }
-
-    public static String usage() {
-        StringWriter sb = new StringWriter();
-        PrintWriter out = new PrintWriter(sb);
-        out.println("Usage: " + CMD + " config truststore [TRUSTSTORE | --delete] [--trustpass PASSWORD] [ARGUMENTS]");
-        out.println();
-        out.println("Command to configure a global truststore to use when using https to connect to Keycloak server.");
-        out.println();
-        out.println("Arguments:");
-        out.println();
-        out.println("  Global options:");
-        out.println("    -x                      Print full stack trace when exiting with error");
-        out.println("    --config                Path to the config file (" + DEFAULT_CONFIG_FILE_STRING + " by default)");
-        out.println();
-        out.println("  Command specific options:");
-        out.println("    TRUSTSTORE              Path to truststore file");
-        out.println("    --trustpass PASSWORD    Truststore password to unlock truststore (prompted for if set to '-')");
-        out.println("    -d, --delete            Remove truststore configuration");
-        out.println();
-        out.println();
-        out.println("Examples:");
-        out.println();
-        out.println("Specify a truststore - you will be prompted for truststore password every time it is used:");
-        out.println("  " + PROMPT + " " + CMD + " config truststore " + OS_ARCH.path("~/.keycloak/truststore.jks"));
-        out.println();
-        out.println("Specify a truststore, and password - truststore will automatically be used without prompting for password:");
-        out.println("  " + PROMPT + " " + CMD + " config truststore --storepass " + OS_ARCH.envVar("PASSWORD") + " " + OS_ARCH.path("~/.keycloak/truststore.jks"));
-        out.println();
-        out.println("Remove truststore configuration:");
-        out.println("  " + PROMPT + " " + CMD + " config truststore --delete");
-        out.println();
-        out.println();
-        out.println("Use '" + CMD + " help' for general information and a list of commands");
-        return sb.toString();
     }
 }

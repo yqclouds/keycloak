@@ -22,15 +22,10 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
 import org.keycloak.representations.KeyStoreConfig;
 import org.keycloak.representations.idm.CertificateRepresentation;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 /**
- *
  * @author Stan Silvert ssilvert@redhat.com (C) 2016 Red Hat Inc.
  */
 public interface ClientAttributeCertificateResource {
@@ -95,7 +90,7 @@ public interface ClientAttributeCertificateResource {
 
     /**
      * Generate a new keypair and certificate, and get the private key file
-     *
+     * <p>
      * Generates a keypair and certificate and serves the private key in a specified keystore format.
      * Only generated public certificate is saved in Keycloak DB - the private key is not.
      *

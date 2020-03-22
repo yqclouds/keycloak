@@ -29,12 +29,12 @@ import javax.ws.rs.core.Response;
 public class ErrorPageException extends WebApplicationException {
 
     private final KeycloakSession session;
-    private Response.Status status;
     private final String errorMessage;
     private final Object[] parameters;
     private final AuthenticationSessionModel authSession;
+    private Response.Status status;
 
-    
+
     public ErrorPageException(KeycloakSession session, Response.Status status, String errorMessage, Object... parameters) {
         this.session = session;
         this.status = status;
@@ -42,7 +42,7 @@ public class ErrorPageException extends WebApplicationException {
         this.parameters = parameters;
         this.authSession = null;
     }
-    
+
     public ErrorPageException(KeycloakSession session, AuthenticationSessionModel authSession, Response.Status status, String errorMessage, Object... parameters) {
         this.session = session;
         this.status = status;
@@ -50,7 +50,6 @@ public class ErrorPageException extends WebApplicationException {
         this.parameters = parameters;
         this.authSession = authSession;
     }
-
 
 
     @Override

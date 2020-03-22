@@ -17,15 +17,6 @@
 
 package org.keycloak.services.clientregistration.policy.impl;
 
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.ClientModel;
@@ -37,6 +28,15 @@ import org.keycloak.services.clientregistration.ClientRegistrationContext;
 import org.keycloak.services.clientregistration.ClientRegistrationProvider;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicyException;
+
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -53,6 +53,20 @@ public class TrustedHostClientRegistrationPolicy implements ClientRegistrationPo
         this.componentModel = componentModel;
     }
 
+    private static String relativeToAbsoluteURI(String rootUrl, String relative) {
+        if (relative == null) {
+            return null;
+        }
+
+        if (!relative.startsWith("/")) {
+            return relative;
+        } else if (rootUrl == null || rootUrl.isEmpty()) {
+            return null;
+        }
+
+        return rootUrl + relative;
+    }
+
     @Override
     public void beforeRegister(ClientRegistrationContext context) throws ClientRegistrationPolicyException {
         verifyHost();
@@ -62,8 +76,6 @@ public class TrustedHostClientRegistrationPolicy implements ClientRegistrationPo
     @Override
     public void afterRegister(ClientRegistrationContext context, ClientModel clientModel) {
     }
-
-
 
     @Override
     public void beforeUpdate(ClientRegistrationContext context, ClientModel clientModel) throws ClientRegistrationPolicyException {
@@ -81,12 +93,12 @@ public class TrustedHostClientRegistrationPolicy implements ClientRegistrationPo
         verifyHost();
     }
 
+    // IMPL
+
     @Override
     public void beforeDelete(ClientRegistrationProvider provider, ClientModel clientModel) throws ClientRegistrationPolicyException {
         verifyHost();
     }
-
-    // IMPL
 
     protected void verifyHost() throws ClientRegistrationPolicyException {
         boolean hostMustMatch = isHostMustMatch();
@@ -117,7 +129,6 @@ public class TrustedHostClientRegistrationPolicy implements ClientRegistrationPo
         throw new ClientRegistrationPolicyException("Host not trusted.");
     }
 
-
     protected List<String> getTrustedHosts() {
         List<String> trustedHostsConfig = componentModel.getConfig().getList(TrustedHostClientRegistrationPolicyFactory.TRUSTED_HOSTS);
         return trustedHostsConfig.stream().filter((String hostname) -> {
@@ -126,7 +137,6 @@ public class TrustedHostClientRegistrationPolicy implements ClientRegistrationPo
 
         }).collect(Collectors.toList());
     }
-
 
     protected List<String> getTrustedDomains() {
         List<String> trustedHostsConfig = componentModel.getConfig().getList(TrustedHostClientRegistrationPolicyFactory.TRUSTED_HOSTS);
@@ -141,7 +151,6 @@ public class TrustedHostClientRegistrationPolicy implements ClientRegistrationPo
 
         return domains;
     }
-
 
     protected String verifyHostInTrustedHosts(String hostAddress, List<String> trustedHosts) {
         for (String confHostName : trustedHosts) {
@@ -160,7 +169,6 @@ public class TrustedHostClientRegistrationPolicy implements ClientRegistrationPo
 
         return null;
     }
-
 
     protected String verifyHostInTrustedDomains(String hostAddress, List<String> trustedDomains) {
         if (!trustedDomains.isEmpty()) {
@@ -182,7 +190,6 @@ public class TrustedHostClientRegistrationPolicy implements ClientRegistrationPo
 
         return null;
     }
-
 
     protected void verifyClientUrls(ClientRegistrationContext context) throws ClientRegistrationPolicyException {
         boolean redirectUriMustMatch = isClientUrisMustMatch();
@@ -219,7 +226,6 @@ public class TrustedHostClientRegistrationPolicy implements ClientRegistrationPo
 
     }
 
-
     protected void checkURLTrusted(String url, List<String> trustedHosts, List<String> trustedDomains) throws ClientRegistrationPolicyException {
         try {
             String host = new URL(url).getHost();
@@ -244,21 +250,6 @@ public class TrustedHostClientRegistrationPolicy implements ClientRegistrationPo
         throw new ClientRegistrationPolicyException("URL doesn't match any trusted host or trusted domain");
     }
 
-
-    private static String relativeToAbsoluteURI(String rootUrl, String relative) {
-        if (relative == null) {
-            return null;
-        }
-
-        if (!relative.startsWith("/")) {
-            return relative;
-        } else if (rootUrl == null || rootUrl.isEmpty()) {
-            return null;
-        }
-
-        return rootUrl + relative;
-    }
-
     boolean isHostMustMatch() {
         return parseBoolean(TrustedHostClientRegistrationPolicyFactory.HOST_SENDING_REGISTRATION_REQUEST_MUST_MATCH);
     }
@@ -270,6 +261,6 @@ public class TrustedHostClientRegistrationPolicy implements ClientRegistrationPo
     // True by default
     private boolean parseBoolean(String propertyKey) {
         String val = componentModel.getConfig().getFirst(propertyKey);
-        return val==null || Boolean.parseBoolean(val);
+        return val == null || Boolean.parseBoolean(val);
     }
 }

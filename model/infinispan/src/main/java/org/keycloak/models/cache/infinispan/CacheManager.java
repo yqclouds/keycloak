@@ -3,52 +3,47 @@ package org.keycloak.models.cache.infinispan;
 import org.infinispan.Cache;
 import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterProvider;
-import org.keycloak.models.cache.infinispan.events.InvalidationEvent;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.cache.infinispan.entities.Revisioned;
+import org.keycloak.models.cache.infinispan.events.InvalidationEvent;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 /**
- *
  * Some notes on how this works:
-
+ * <p>
  * This implementation manages optimistic locking and version checks itself.  The reason is Infinispan just does behave
  * the way we need it to.  Not saying Infinispan is bad, just that we have specific caching requirements!
- *
+ * <p>
  * This is an invalidation cache implementation and requires to caches:
  * Cache 1 is an Invalidation Cache
  * Cache 2 is a local-only revision number cache.
- *
- *
+ * <p>
+ * <p>
  * Each node in the cluster maintains its own revision number cache for each entry in the main invalidation cache.  This revision
  * cache holds the version counter for each cached entity.
- *
+ * <p>
  * Cache listeners do not receive a @CacheEntryInvalidated event if that node does not have an entry for that item.  So, consider the following.
-
- 1. Node 1 gets current counter for user.  There currently isn't one as this user isn't cached.
- 2. Node 1 reads user from DB
- 3. Node 2 updates user
- 4. Node 2 calls cache.remove(user).  This does not result in an invalidation listener event to node 1!
- 5. node 1 checks version counter, checks pass. Stale entry is cached.
-
- The issue is that Node 1 doesn't have an entry for the user, so it never receives an invalidation listener event from Node 2 thus it can't bump the version.  So, when node 1 goes to cache the user it is stale as the version number was never bumped.
-
- So how is this issue fixed?  here is pseudo code:
-
- 1. Node 1 calls cacheManager.getCurrentRevision() to get the current local version counter of that User
- 2. Node 1 getCurrentRevision() pulls current counter for that user
- 3. Node 1 getCurrentRevision() adds a "invalidation.key.userid" to invalidation cache.  Its just a marker. nothing else
- 4. Node 2 update user
- 5. Node 2 does a cache.remove(user) cache.remove(invalidation.key.userid)
- 6. Node 1 receives invalidation event for invalidation.key.userid. Bumps the version counter for that user
- 7. node 1 version check fails, it doesn't cache the user
+ * <p>
+ * 1. Node 1 gets current counter for user.  There currently isn't one as this user isn't cached.
+ * 2. Node 1 reads user from DB
+ * 3. Node 2 updates user
+ * 4. Node 2 calls cache.remove(user).  This does not result in an invalidation listener event to node 1!
+ * 5. node 1 checks version counter, checks pass. Stale entry is cached.
+ * <p>
+ * The issue is that Node 1 doesn't have an entry for the user, so it never receives an invalidation listener event from Node 2 thus it can't bump the version.  So, when node 1 goes to cache the user it is stale as the version number was never bumped.
+ * <p>
+ * So how is this issue fixed?  here is pseudo code:
+ * <p>
+ * 1. Node 1 calls cacheManager.getCurrentRevision() to get the current local version counter of that User
+ * 2. Node 1 getCurrentRevision() pulls current counter for that user
+ * 3. Node 1 getCurrentRevision() adds a "invalidation.key.userid" to invalidation cache.  Its just a marker. nothing else
+ * 4. Node 2 update user
+ * 5. Node 2 does a cache.remove(user) cache.remove(invalidation.key.userid)
+ * 6. Node 1 receives invalidation event for invalidation.key.userid. Bumps the version counter for that user
+ * 7. node 1 version check fails, it doesn't cache the user
  *
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
@@ -92,7 +87,7 @@ public abstract class CacheManager {
     }
 
     public <T extends Revisioned> T get(String id, Class<T> type) {
-        Revisioned o = (Revisioned)cache.get(id);
+        Revisioned o = (Revisioned) cache.get(id);
         if (o == null) {
             return null;
         }
@@ -114,7 +109,7 @@ public abstract class CacheManager {
     }
 
     public Object invalidateObject(String id) {
-        Revisioned removed = (Revisioned)cache.remove(id);
+        Revisioned removed = (Revisioned) cache.remove(id);
 
         if (getLogger().isTraceEnabled()) {
             getLogger().tracef("Removed key='%s', value='%s' from cache", id, removed);
@@ -165,7 +160,8 @@ public abstract class CacheManager {
                 return;
             }
             if (rev > object.getRevision()) { // revision is ahead, don't cache
-                if (getLogger().isTraceEnabled()) getLogger().tracev("Skipped cache. Object revision {0}, Cache revision {1}", object.getRevision(), rev);
+                if (getLogger().isTraceEnabled())
+                    getLogger().tracev("Skipped cache. Object revision {0}, Cache revision {1}", object.getRevision(), rev);
                 return;
             }
             // revisions cache has a lower value than the object.revision, so update revision and add it to cache

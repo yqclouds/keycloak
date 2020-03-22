@@ -21,7 +21,7 @@ import org.keycloak.provider.ProviderFactory;
 
 /**
  * Factory for instantiating FormAuthenticators.  This is a singleton and created when Keycloak boots.
- *
+ * <p>
  * You must specify a file
  * META-INF/services/org.keycloak.authentication.FormAuthenticatorFactory in the jar that this class is contained in
  * This file must have the fully qualified class name of all your FormAuthenticatorFactory classes

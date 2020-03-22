@@ -37,11 +37,11 @@ import org.keycloak.dom.saml.v2.assertion.AttributeType;
  */
 public class RequestedAttributeType extends AttributeType {
 
+    protected Boolean isRequired = Boolean.FALSE;
+
     public RequestedAttributeType(String name) {
         super(name);
     }
-
-    protected Boolean isRequired = Boolean.FALSE;
 
     /**
      * Gets the value of the isRequired property.

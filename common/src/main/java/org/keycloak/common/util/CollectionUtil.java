@@ -32,9 +32,9 @@ public class CollectionUtil {
     public static String join(Collection<String> strings, String separator) {
         Iterator<String> iter = strings.iterator();
         StringBuilder sb = new StringBuilder();
-        if(iter.hasNext()){
+        if (iter.hasNext()) {
             sb.append(iter.next());
-            while(iter.hasNext()){
+            while (iter.hasNext()) {
                 sb.append(separator).append(iter.next());
             }
         }

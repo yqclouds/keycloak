@@ -16,19 +16,36 @@ import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import java.lang.annotation.Annotation;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.freedesktop.dbus.Gettext.getString;
 
 class ExportedObject {
+    Map<MethodTuple, Method> methods;
+    Reference<DBusInterface> object;
+    String introspectiondata;
+    public ExportedObject(DBusInterface object, boolean weakreferences) throws DBusException {
+        if (weakreferences)
+            this.object = new WeakReference<DBusInterface>(object);
+        else
+            this.object = new StrongReference<DBusInterface>(object);
+        introspectiondata = "";
+        methods = getExportedMethods(object.getClass());
+        introspectiondata +=
+                " <interface name=\"org.freedesktop.DBus.Introspectable\">\n" +
+                        "  <method name=\"Introspect\">\n" +
+                        "   <arg type=\"s\" direction=\"out\"/>\n" +
+                        "  </method>\n" +
+                        " </interface>\n";
+        introspectiondata +=
+                " <interface name=\"org.freedesktop.DBus.Peer\">\n" +
+                        "  <method name=\"Ping\">\n" +
+                        "  </method>\n" +
+                        " </interface>\n";
+    }
+
     @SuppressWarnings("unchecked")
     private String getAnnotations(AnnotatedElement c) {
         String ans = "";
@@ -135,30 +152,6 @@ class ExportedObject {
                 m.putAll(getExportedMethods(i));
             }
         return m;
-    }
-
-    Map<MethodTuple, Method> methods;
-    Reference<DBusInterface> object;
-    String introspectiondata;
-
-    public ExportedObject(DBusInterface object, boolean weakreferences) throws DBusException {
-        if (weakreferences)
-            this.object = new WeakReference<DBusInterface>(object);
-        else
-            this.object = new StrongReference<DBusInterface>(object);
-        introspectiondata = "";
-        methods = getExportedMethods(object.getClass());
-        introspectiondata +=
-                " <interface name=\"org.freedesktop.DBus.Introspectable\">\n" +
-                        "  <method name=\"Introspect\">\n" +
-                        "   <arg type=\"s\" direction=\"out\"/>\n" +
-                        "  </method>\n" +
-                        " </interface>\n";
-        introspectiondata +=
-                " <interface name=\"org.freedesktop.DBus.Peer\">\n" +
-                        "  <method name=\"Ping\">\n" +
-                        "  </method>\n" +
-                        " </interface>\n";
     }
 }
 

@@ -36,28 +36,9 @@ import static org.keycloak.client.admin.cli.util.OsUtil.PROMPT;
  */
 
 @GroupCommandDefinition(name = "kcadm", description = "COMMAND [ARGUMENTS]", groupCommands = {
-    HelpCmd.class, ConfigCmd.class, NewObjectCmd.class, CreateCmd.class, GetCmd.class, UpdateCmd.class, DeleteCmd.class,
-        AddRolesCmd.class, RemoveRolesCmd.class, GetRolesCmd.class, SetPasswordCmd.class} )
+        HelpCmd.class, ConfigCmd.class, NewObjectCmd.class, CreateCmd.class, GetCmd.class, UpdateCmd.class, DeleteCmd.class,
+        AddRolesCmd.class, RemoveRolesCmd.class, GetRolesCmd.class, SetPasswordCmd.class})
 public class KcAdmCmd extends AbstractGlobalOptionsCmd {
-
-    @Override
-    public CommandResult execute(CommandInvocation commandInvocation) throws CommandException, InterruptedException {
-        try {
-            // if --help was requested then status is SUCCESS
-            // if not we print help anyway, but status is FAILURE
-            if (printHelp()) {
-                return CommandResult.SUCCESS;
-            } else if (args != null && args.size() > 0) {
-                printErr("Unknown command: " + args.get(0));
-                return CommandResult.FAILURE;
-            } else {
-                printOut(usage());
-                return CommandResult.FAILURE;
-            }
-        } finally {
-            commandInvocation.stop();
-        }
-    }
 
     public static String usage() {
         StringWriter sb = new StringWriter();
@@ -97,5 +78,24 @@ public class KcAdmCmd extends AbstractGlobalOptionsCmd {
         out.println();
         out.println("Use '" + CMD + " help <command>' for more information about a given command.");
         return sb.toString();
+    }
+
+    @Override
+    public CommandResult execute(CommandInvocation commandInvocation) throws CommandException, InterruptedException {
+        try {
+            // if --help was requested then status is SUCCESS
+            // if not we print help anyway, but status is FAILURE
+            if (printHelp()) {
+                return CommandResult.SUCCESS;
+            } else if (args != null && args.size() > 0) {
+                printErr("Unknown command: " + args.get(0));
+                return CommandResult.FAILURE;
+            } else {
+                printOut(usage());
+                return CommandResult.FAILURE;
+            }
+        } finally {
+            commandInvocation.stop();
+        }
     }
 }

@@ -26,7 +26,6 @@ import org.keycloak.saml.common.constants.JBossSAMLURIConstants;
  * Holds info about the issuer for saml messages creation
  *
  * @param <JBossSAMLConstants>
- *
  * @author Anil.Saldhana@redhat.com
  * @since Dec 10, 2008
  */

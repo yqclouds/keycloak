@@ -17,8 +17,6 @@
 
 package org.keycloak.models.sessions.infinispan;
 
-import java.util.function.Supplier;
-
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
@@ -31,6 +29,8 @@ import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.SingleUseTokenStoreProviderFactory;
 import org.keycloak.models.sessions.infinispan.entities.ActionTokenValueEntity;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
+
+import java.util.function.Supplier;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>

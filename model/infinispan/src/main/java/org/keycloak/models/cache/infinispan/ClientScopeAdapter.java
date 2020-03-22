@@ -17,12 +17,7 @@
 
 package org.keycloak.models.cache.infinispan;
 
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleContainerModel;
-import org.keycloak.models.RoleModel;
+import org.keycloak.models.*;
 import org.keycloak.models.cache.infinispan.entities.CachedClientScope;
 
 import java.util.HashMap;
@@ -40,6 +35,7 @@ public class ClientScopeAdapter implements ClientScopeModel {
 
     protected ClientScopeModel updated;
     protected CachedClientScope cached;
+    protected boolean invalidated;
 
     public ClientScopeAdapter(RealmModel cachedRealm, CachedClientScope cached, RealmCacheSession cacheSession) {
         this.cachedRealm = cachedRealm;
@@ -55,7 +51,6 @@ public class ClientScopeAdapter implements ClientScopeModel {
         }
     }
 
-    protected boolean invalidated;
     public void invalidate() {
         invalidated = true;
     }
@@ -203,7 +198,7 @@ public class ClientScopeAdapter implements ClientScopeModel {
         for (RoleModel mapping : roles) {
             if (mapping.hasRole(role)) return true;
         }
-       return false;
+        return false;
     }
 
 

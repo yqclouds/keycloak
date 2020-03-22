@@ -2,11 +2,7 @@ package org.keycloak.protocol.docker.installation.compose;
 
 import org.keycloak.common.util.CertificateUtils;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.SecureRandom;
+import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.util.AbstractMap;

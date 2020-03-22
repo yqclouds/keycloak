@@ -16,40 +16,20 @@
  */
 package org.keycloak.client.admin.cli.util;
 
-import org.jboss.aesh.console.AeshConsoleBufferBuilder;
-import org.jboss.aesh.console.AeshInputProcessorBuilder;
-import org.jboss.aesh.console.ConsoleBuffer;
-import org.jboss.aesh.console.InputProcessor;
-import org.jboss.aesh.console.Prompt;
+import org.jboss.aesh.console.*;
 import org.jboss.aesh.console.command.invocation.CommandInvocation;
 import org.keycloak.client.admin.cli.aesh.Globals;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.AclEntry;
-import java.nio.file.attribute.AclEntryPermission;
-import java.nio.file.attribute.AclEntryType;
-import java.nio.file.attribute.AclFileAttributeView;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.UserPrincipal;
-import java.util.Formatter;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Set;
+import java.nio.file.attribute.*;
+import java.util.*;
 
-import static java.nio.file.Files.createDirectories;
-import static java.nio.file.Files.createFile;
-import static java.nio.file.Files.isDirectory;
-import static java.nio.file.Files.isRegularFile;
+import static java.nio.file.Files.*;
 import static org.keycloak.client.admin.cli.util.OsUtil.OS_ARCH;
 
 /**
@@ -122,7 +102,7 @@ public class IoUtil {
 
     public static String readFully(InputStream is) {
         StringBuilder out = new StringBuilder();
-        byte [] buf = new byte[8192];
+        byte[] buf = new byte[8192];
 
         int rc;
         try {
@@ -137,7 +117,7 @@ public class IoUtil {
 
     public static void copyStream(InputStream is, OutputStream os) {
 
-        byte [] buf = new byte[8192];
+        byte[] buf = new byte[8192];
 
         int rc;
         try (InputStream input = is) {
@@ -228,7 +208,7 @@ public class IoUtil {
         System.err.println(msg);
     }
 
-    public static void printfOut(String format, String ... params) {
+    public static void printfOut(String format, String... params) {
         System.out.println(new Formatter().format("WARN: " + format, params));
     }
 
@@ -240,11 +220,11 @@ public class IoUtil {
         System.err.println("WARN: " + msg);
     }
 
-    public static void warnfOut(String format, String ... params) {
+    public static void warnfOut(String format, String... params) {
         System.out.println(new Formatter().format("WARN: " + format, params));
     }
 
-    public static void warnfErr(String format, String ... params) {
+    public static void warnfErr(String format, String... params) {
         System.err.println(new Formatter().format("WARN: " + format, params));
     }
 

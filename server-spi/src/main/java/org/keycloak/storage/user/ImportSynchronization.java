@@ -27,5 +27,6 @@ import java.util.Date;
  */
 public interface ImportSynchronization {
     SynchronizationResult sync(KeycloakSessionFactory sessionFactory, String realmId, UserStorageProviderModel model);
+
     SynchronizationResult syncSince(Date lastSync, KeycloakSessionFactory sessionFactory, String realmId, UserStorageProviderModel model);
 }

@@ -20,22 +20,22 @@ import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.util.StaxParserUtil;
 import org.w3c.dom.Element;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.StartElement;
 import java.util.LinkedList;
 import java.util.List;
-import javax.xml.namespace.QName;
 
 /**
  * Parses any DOM tree to a list of DOM representations.
  */
 public class AnyDomParser extends AbstractStaxParser<List<Element>, AnyDomParser.Dom> {
 
-    public static enum Dom { ANY_DOM };
-
     public AnyDomParser(QName name) {
         super(name, Dom.ANY_DOM);
     }
+
+    ;
 
     public static AnyDomParser getInstance(QName name) {
         return new AnyDomParser(name);
@@ -60,5 +60,7 @@ public class AnyDomParser extends AbstractStaxParser<List<Element>, AnyDomParser
     protected Dom getElementFromName(QName name) {
         return Dom.ANY_DOM;
     }
+
+    public static enum Dom {ANY_DOM}
 
 }

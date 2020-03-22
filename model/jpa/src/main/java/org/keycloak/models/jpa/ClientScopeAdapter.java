@@ -17,29 +17,14 @@
 
 package org.keycloak.models.jpa;
 
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ModelDuplicateException;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleContainerModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.jpa.entities.ClientScopeAttributeEntity;
-import org.keycloak.models.jpa.entities.ClientScopeEntity;
-import org.keycloak.models.jpa.entities.ClientScopeRoleMappingEntity;
-import org.keycloak.models.jpa.entities.ProtocolMapperEntity;
-import org.keycloak.models.jpa.entities.RoleEntity;
+import org.keycloak.models.*;
+import org.keycloak.models.jpa.entities.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 
 import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import javax.persistence.LockModeType;
+import javax.persistence.TypedQuery;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -57,6 +42,13 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
         this.realm = realm;
         this.em = em;
         this.entity = entity;
+    }
+
+    public static ClientScopeEntity toClientScopeEntity(ClientScopeModel model, EntityManager em) {
+        if (model instanceof ClientScopeAdapter) {
+            return ((ClientScopeAdapter) model).getEntity();
+        }
+        return em.getReference(ClientScopeEntity.class, model.getId());
     }
 
     public ClientScopeEntity getEntity() {
@@ -85,10 +77,14 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
     }
 
     @Override
-    public String getDescription() { return entity.getDescription(); }
+    public String getDescription() {
+        return entity.getDescription();
+    }
 
     @Override
-    public void setDescription(String description) { entity.setDescription(description); }
+    public void setDescription(String description) {
+        entity.setDescription(description);
+    }
 
     @Override
     public String getProtocol() {
@@ -319,13 +315,6 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
         return getAttributes().get(name);
     }
 
-    public static ClientScopeEntity toClientScopeEntity(ClientScopeModel model, EntityManager em) {
-        if (model instanceof ClientScopeAdapter) {
-            return ((ClientScopeAdapter)model).getEntity();
-        }
-        return em.getReference(ClientScopeEntity.class, model.getId());
-    }
-
     @Override
     public Map<String, String> getAttributes() {
         Map<String, String> attrs = new HashMap<>();
@@ -349,8 +338,6 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
     public int hashCode() {
         return getId().hashCode();
     }
-
-
 
 
 }

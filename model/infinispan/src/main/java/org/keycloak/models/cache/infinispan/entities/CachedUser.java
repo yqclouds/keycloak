@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class CachedUser extends AbstractExtendableRevisioned implements InRealm  {
+public class CachedUser extends AbstractExtendableRevisioned implements InRealm {
 
     private final String realm;
     private final String username;

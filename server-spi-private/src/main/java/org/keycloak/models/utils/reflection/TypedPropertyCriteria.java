@@ -27,20 +27,8 @@ import java.lang.reflect.Method;
  */
 public class TypedPropertyCriteria implements PropertyCriteria {
 
-    /**
-     * <p> Different options can be used to match a specific property based on its type. Regardless of the option
-     * chosen, if the property type equals the <code>propertyClass</code> it will be selected. <p/> <ul> <li>SUB_TYPE:
-     * Also consider properties where its type is a subtype of <code>propertyClass</code>. .</li> <li>SUPER_TYPE: Also
-     * consider properties where its type is a superclass or superinterface of <code>propertyClass</code>. .</li> </ul>
-     * </p>
-     */
-    public enum MatchOption {
-        SUB_TYPE, SUPER_TYPE, ALL
-    }
-
     private final Class<?> propertyClass;
     private final MatchOption matchOption;
-
     public TypedPropertyCriteria(Class<?> propertyClass) {
         this(propertyClass, null);
     }
@@ -83,6 +71,17 @@ public class TypedPropertyCriteria implements PropertyCriteria {
         }
 
         return false;
+    }
+
+    /**
+     * <p> Different options can be used to match a specific property based on its type. Regardless of the option
+     * chosen, if the property type equals the <code>propertyClass</code> it will be selected. <p/> <ul> <li>SUB_TYPE:
+     * Also consider properties where its type is a subtype of <code>propertyClass</code>. .</li> <li>SUPER_TYPE: Also
+     * consider properties where its type is a superclass or superinterface of <code>propertyClass</code>. .</li> </ul>
+     * </p>
+     */
+    public enum MatchOption {
+        SUB_TYPE, SUPER_TYPE, ALL
     }
 }
 

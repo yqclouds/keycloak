@@ -28,15 +28,15 @@ import java.util.Collection;
  * @version $Revision: 1 $
  */
 @NamedQueries({
-        @NamedQuery(name="getGroupIdsByParent", query="select u.id from GroupEntity u where u.parentId = :parent"),
-        @NamedQuery(name="getGroupIdsByNameContaining", query="select u.id from GroupEntity u where u.realm.id = :realm and u.name like concat('%',:search,'%') order by u.name ASC"),
-        @NamedQuery(name="getTopLevelGroupIds", query="select u.id from GroupEntity u where u.parentId = :parent and u.realm.id = :realm order by u.name ASC"),
-        @NamedQuery(name="getGroupCount", query="select count(u) from GroupEntity u where u.realm.id = :realm"),
-        @NamedQuery(name="getTopLevelGroupCount", query="select count(u) from GroupEntity u where u.realm.id = :realm and u.parentId = :parent")
+        @NamedQuery(name = "getGroupIdsByParent", query = "select u.id from GroupEntity u where u.parentId = :parent"),
+        @NamedQuery(name = "getGroupIdsByNameContaining", query = "select u.id from GroupEntity u where u.realm.id = :realm and u.name like concat('%',:search,'%') order by u.name ASC"),
+        @NamedQuery(name = "getTopLevelGroupIds", query = "select u.id from GroupEntity u where u.parentId = :parent and u.realm.id = :realm order by u.name ASC"),
+        @NamedQuery(name = "getGroupCount", query = "select count(u) from GroupEntity u where u.realm.id = :realm"),
+        @NamedQuery(name = "getTopLevelGroupCount", query = "select count(u) from GroupEntity u where u.realm.id = :realm and u.parentId = :parent")
 })
 @Entity
-@Table(name="KEYCLOAK_GROUP",
-        uniqueConstraints = { @UniqueConstraint(columnNames = {"REALM_ID", "PARENT_GROUP", "NAME"})}
+@Table(name = "KEYCLOAK_GROUP",
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"REALM_ID", "PARENT_GROUP", "NAME"})}
 )
 public class GroupEntity {
 
@@ -46,25 +46,23 @@ public class GroupEntity {
     public static String TOP_PARENT_ID = " ";
 
     @Id
-    @Column(name="ID", length = 36)
-    @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
+    @Column(name = "ID", length = 36)
+    @Access(AccessType.PROPERTY)
+    // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
     protected String id;
 
     @Nationalized
     @Column(name = "NAME")
     protected String name;
-
+    @OneToMany(
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true, mappedBy = "group")
+    protected Collection<GroupAttributeEntity> attributes = new ArrayList<GroupAttributeEntity>();
     @Column(name = "PARENT_GROUP")
     private String parentId;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REALM_ID")
     private RealmEntity realm;
-
-    @OneToMany(
-            cascade = CascadeType.REMOVE,
-            orphanRemoval = true, mappedBy="group")
-    protected Collection<GroupAttributeEntity> attributes = new ArrayList<GroupAttributeEntity>();
 
     public String getId() {
         return id;

@@ -16,13 +16,8 @@
  */
 package org.keycloak.saml.processing.core.saml.v2.util;
 
-import org.keycloak.dom.saml.v2.assertion.AttributeStatementType;
+import org.keycloak.dom.saml.v2.assertion.*;
 import org.keycloak.dom.saml.v2.assertion.AttributeStatementType.ASTChoiceType;
-import org.keycloak.dom.saml.v2.assertion.AttributeType;
-import org.keycloak.dom.saml.v2.assertion.AuthnContextClassRefType;
-import org.keycloak.dom.saml.v2.assertion.AuthnContextType;
-import org.keycloak.dom.saml.v2.assertion.AuthnStatementType;
-import org.keycloak.dom.saml.v2.assertion.StatementAbstractType;
 import org.keycloak.saml.common.constants.JBossSAMLURIConstants;
 import org.keycloak.saml.common.util.StringUtil;
 import org.keycloak.saml.processing.core.constants.AttributeConstants;
@@ -31,13 +26,7 @@ import org.keycloak.saml.processing.core.saml.v2.constants.X500SAMLProfileConsta
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Deals with SAML2 Statements
@@ -53,9 +42,8 @@ public class StatementUtil {
     /**
      * Create an AuthnStatementType given the issue instant and the type of authentication
      *
-     * @param instant an instanceof {@link XMLGregorianCalendar}
+     * @param instant                   an instanceof {@link XMLGregorianCalendar}
      * @param authnContextClassRefValue indicate the type of authentication performed
-     *
      * @return {@link AuthnStatementType}
      */
     public static AuthnStatementType createAuthnStatement(XMLGregorianCalendar instant, String authnContextClassRefValue) {
@@ -77,7 +65,6 @@ public class StatementUtil {
      * Create an attribute statement with all the attributes
      *
      * @param attributes a map with keys from {@link AttributeConstants}
-     *
      * @return
      */
     public static AttributeStatementType createAttributeStatement(Map<String, Object> attributes) {
@@ -137,7 +124,6 @@ public class StatementUtil {
      * Given a set of roles, create an attribute statement
      *
      * @param roles
-     *
      * @return
      */
     public static AttributeStatementType createAttributeStatement(List<String> roles) {
@@ -158,7 +144,6 @@ public class StatementUtil {
      *
      * @param roles
      * @param multivalued if you want the attribute to be multi valued
-     *
      * @return
      */
     public static AttributeStatementType createAttributeStatementForRoles(List<String> roles, boolean multivalued) {
@@ -177,9 +162,8 @@ public class StatementUtil {
     /**
      * Given an attribute type and a value, create {@link AttributeStatementType}
      *
-     * @param key attribute type
+     * @param key   attribute type
      * @param value attribute value
-     *
      * @return
      */
     public static AttributeStatementType createAttributeStatement(String key, String value) {

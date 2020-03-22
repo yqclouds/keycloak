@@ -17,16 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 
 /**
@@ -34,25 +25,25 @@ import java.io.Serializable;
  * @version $Revision: 1 $
  */
 @NamedQueries({
-        @NamedQuery(name="usersInRole", query="select u from UserRoleMappingEntity m, UserEntity u where m.roleId=:roleId and u.id=m.user"),        
-        @NamedQuery(name="userHasRole", query="select m from UserRoleMappingEntity m where m.user = :user and m.roleId = :roleId"),
-        @NamedQuery(name="userRoleMappings", query="select m from UserRoleMappingEntity m where m.user = :user"),
-        @NamedQuery(name="userRoleMappingIds", query="select m.roleId from UserRoleMappingEntity m where m.user = :user"),
-        @NamedQuery(name="deleteUserRoleMappingsByRealm", query="delete from  UserRoleMappingEntity mapping where mapping.user IN (select u from UserEntity u where u.realmId=:realmId)"),
-        @NamedQuery(name="deleteUserRoleMappingsByRealmAndLink", query="delete from  UserRoleMappingEntity mapping where mapping.user IN (select u from UserEntity u where u.realmId=:realmId and u.federationLink=:link)"),
-        @NamedQuery(name="deleteUserRoleMappingsByRole", query="delete from UserRoleMappingEntity m where m.roleId = :roleId"),
-        @NamedQuery(name="deleteUserRoleMappingsByUser", query="delete from UserRoleMappingEntity m where m.user = :user"),
-        @NamedQuery(name="grantRoleToAllUsers", query="insert into UserRoleMappingEntity (roleId, user) select role.id, user from RoleEntity role, UserEntity user where role.id = :roleId AND role.realm.id = :realmId AND user.realmId = :realmId")
+        @NamedQuery(name = "usersInRole", query = "select u from UserRoleMappingEntity m, UserEntity u where m.roleId=:roleId and u.id=m.user"),
+        @NamedQuery(name = "userHasRole", query = "select m from UserRoleMappingEntity m where m.user = :user and m.roleId = :roleId"),
+        @NamedQuery(name = "userRoleMappings", query = "select m from UserRoleMappingEntity m where m.user = :user"),
+        @NamedQuery(name = "userRoleMappingIds", query = "select m.roleId from UserRoleMappingEntity m where m.user = :user"),
+        @NamedQuery(name = "deleteUserRoleMappingsByRealm", query = "delete from  UserRoleMappingEntity mapping where mapping.user IN (select u from UserEntity u where u.realmId=:realmId)"),
+        @NamedQuery(name = "deleteUserRoleMappingsByRealmAndLink", query = "delete from  UserRoleMappingEntity mapping where mapping.user IN (select u from UserEntity u where u.realmId=:realmId and u.federationLink=:link)"),
+        @NamedQuery(name = "deleteUserRoleMappingsByRole", query = "delete from UserRoleMappingEntity m where m.roleId = :roleId"),
+        @NamedQuery(name = "deleteUserRoleMappingsByUser", query = "delete from UserRoleMappingEntity m where m.user = :user"),
+        @NamedQuery(name = "grantRoleToAllUsers", query = "insert into UserRoleMappingEntity (roleId, user) select role.id, user from RoleEntity role, UserEntity user where role.id = :roleId AND role.realm.id = :realmId AND user.realmId = :realmId")
 
 })
-@Table(name="USER_ROLE_MAPPING")
+@Table(name = "USER_ROLE_MAPPING")
 @Entity
 @IdClass(UserRoleMappingEntity.Key.class)
-public class UserRoleMappingEntity  {
+public class UserRoleMappingEntity {
 
     @Id
-    @ManyToOne(fetch= FetchType.LAZY)
-    @JoinColumn(name="USER_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "USER_ID")
     protected UserEntity user;
 
     @Id
@@ -75,6 +66,26 @@ public class UserRoleMappingEntity  {
         this.roleId = roleId;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        if (!(o instanceof UserRoleMappingEntity)) return false;
+
+        UserRoleMappingEntity key = (UserRoleMappingEntity) o;
+
+        if (!roleId.equals(key.roleId)) return false;
+        if (!user.equals(key.user)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = user.hashCode();
+        result = 31 * result + roleId.hashCode();
+        return result;
+    }
 
     public static class Key implements Serializable {
 
@@ -117,27 +128,6 @@ public class UserRoleMappingEntity  {
             result = 31 * result + roleId.hashCode();
             return result;
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null) return false;
-        if (!(o instanceof UserRoleMappingEntity)) return false;
-
-        UserRoleMappingEntity key = (UserRoleMappingEntity) o;
-
-        if (!roleId.equals(key.roleId)) return false;
-        if (!user.equals(key.user)) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = user.hashCode();
-        result = 31 * result + roleId.hashCode();
-        return result;
     }
 
 }

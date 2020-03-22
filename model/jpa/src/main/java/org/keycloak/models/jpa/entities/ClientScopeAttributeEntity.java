@@ -17,32 +17,24 @@
 
 package org.keycloak.models.jpa.entities;
 
+import javax.persistence.*;
 import java.io.Serializable;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@Table(name="CLIENT_SCOPE_ATTRIBUTES")
+@Table(name = "CLIENT_SCOPE_ATTRIBUTES")
 @Entity
 @IdClass(ClientScopeAttributeEntity.Key.class)
 public class ClientScopeAttributeEntity {
 
     @Id
-    @ManyToOne(fetch= FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "SCOPE_ID")
     protected ClientScopeEntity clientScope;
 
     @Id
-    @Column(name="NAME")
+    @Column(name = "NAME")
     protected String name;
 
     @Column(name = "VALUE", length = 2048)
@@ -72,6 +64,27 @@ public class ClientScopeAttributeEntity {
         this.value = value;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof ClientScopeAttributeEntity)) return false;
+
+        ClientScopeAttributeEntity key = (ClientScopeAttributeEntity) o;
+
+        if (clientScope != null ? !clientScope.getId().equals(key.clientScope != null ? key.clientScope.getId() : null) : key.clientScope != null)
+            return false;
+        if (name != null ? !name.equals(key.name != null ? key.name : null) : key.name != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = clientScope != null ? clientScope.getId().hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        return result;
+    }
 
     public static class Key implements Serializable {
 
@@ -102,7 +115,8 @@ public class ClientScopeAttributeEntity {
 
             ClientScopeAttributeEntity.Key key = (ClientScopeAttributeEntity.Key) o;
 
-            if (clientScope != null ? !clientScope.getId().equals(key.clientScope != null ? key.clientScope.getId() : null) : key.clientScope != null) return false;
+            if (clientScope != null ? !clientScope.getId().equals(key.clientScope != null ? key.clientScope.getId() : null) : key.clientScope != null)
+                return false;
             if (name != null ? !name.equals(key.name != null ? key.name : null) : key.name != null) return false;
 
             return true;
@@ -114,27 +128,5 @@ public class ClientScopeAttributeEntity {
             result = 31 * result + (name != null ? name.hashCode() : 0);
             return result;
         }
-    }
-
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!(o instanceof ClientScopeAttributeEntity)) return false;
-
-        ClientScopeAttributeEntity key = (ClientScopeAttributeEntity) o;
-
-        if (clientScope != null ? !clientScope.getId().equals(key.clientScope != null ? key.clientScope.getId() : null) : key.clientScope != null) return false;
-        if (name != null ? !name.equals(key.name != null ? key.name : null) : key.name != null) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = clientScope != null ? clientScope.getId().hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        return result;
     }
 }

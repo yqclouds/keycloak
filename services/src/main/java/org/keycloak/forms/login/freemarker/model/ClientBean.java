@@ -29,8 +29,8 @@ import java.util.Map;
  */
 public class ClientBean {
 
-    private KeycloakSession session;
     protected ClientModel client;
+    private KeycloakSession session;
 
     public ClientBean(KeycloakSession session, ClientModel client) {
         this.session = session;
@@ -53,11 +53,11 @@ public class ClientBean {
         return ResolveRelative.resolveRelativeUri(session, client.getRootUrl(), client.getBaseUrl());
     }
 
-    public Map<String,String> getAttributes(){
+    public Map<String, String> getAttributes() {
         return client.getAttributes();
     }
 
-    public String getAttribute(String key){
+    public String getAttribute(String key) {
         return client.getAttribute(key);
     }
 }

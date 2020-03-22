@@ -26,11 +26,7 @@ import org.keycloak.broker.saml.SAMLIdentityProviderFactory;
 import org.keycloak.dom.saml.v2.assertion.AssertionType;
 import org.keycloak.dom.saml.v2.assertion.AttributeStatementType;
 import org.keycloak.dom.saml.v2.assertion.AttributeType;
-import org.keycloak.models.IdentityProviderMapperModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 
@@ -45,12 +41,11 @@ import java.util.Optional;
 public class AttributeToRoleMapper extends AbstractIdentityProviderMapper {
 
     public static final String[] COMPATIBLE_PROVIDERS = {SAMLIdentityProviderFactory.PROVIDER_ID};
-
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
-
     public static final String ATTRIBUTE_NAME = "attribute.name";
     public static final String ATTRIBUTE_FRIENDLY_NAME = "attribute.friendly.name";
     public static final String ATTRIBUTE_VALUE = "attribute.value";
+    public static final String PROVIDER_ID = "saml-role-idp-mapper";
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
 
     static {
         ProviderConfigProperty property;
@@ -79,8 +74,6 @@ public class AttributeToRoleMapper extends AbstractIdentityProviderMapper {
         property.setType(ProviderConfigProperty.ROLE_TYPE);
         configProperties.add(property);
     }
-
-    public static final String PROVIDER_ID = "saml-role-idp-mapper";
 
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {
@@ -123,7 +116,7 @@ public class AttributeToRoleMapper extends AbstractIdentityProviderMapper {
         String friendly = mapperModel.getConfig().get(ATTRIBUTE_FRIENDLY_NAME);
         if (friendly != null && friendly.trim().equals("")) friendly = null;
         String desiredValue = Optional.ofNullable(mapperModel.getConfig().get(ATTRIBUTE_VALUE)).orElse("");
-        AssertionType assertion = (AssertionType)context.getContextData().get(SAMLEndpoint.SAML_ASSERTION);
+        AssertionType assertion = (AssertionType) context.getContextData().get(SAMLEndpoint.SAML_ASSERTION);
         for (AttributeStatementType statement : assertion.getAttributeStatements()) {
             for (AttributeStatementType.ASTChoiceType choice : statement.getAttributes()) {
                 AttributeType attr = choice.getAttribute();
@@ -146,7 +139,7 @@ public class AttributeToRoleMapper extends AbstractIdentityProviderMapper {
         if (role == null) throw new IdentityBrokerException("Unable to find role: " + roleName);
         if (!isAttributePresent(mapperModel, context)) {
             user.deleteRoleMapping(role);
-        }else{
+        } else {
             user.grantRole(role);
         }
 

@@ -29,13 +29,9 @@ import java.io.StringWriter;
 import static org.keycloak.client.admin.cli.operations.UserOperations.getIdFromUsername;
 import static org.keycloak.client.admin.cli.operations.UserOperations.resetUserPassword;
 import static org.keycloak.client.admin.cli.util.AuthUtil.ensureToken;
-import static org.keycloak.client.admin.cli.util.ConfigUtil.DEFAULT_CONFIG_FILE_STRING;
-import static org.keycloak.client.admin.cli.util.ConfigUtil.credentialsAvailable;
-import static org.keycloak.client.admin.cli.util.ConfigUtil.loadConfig;
+import static org.keycloak.client.admin.cli.util.ConfigUtil.*;
 import static org.keycloak.client.admin.cli.util.IoUtil.readSecret;
-import static org.keycloak.client.admin.cli.util.OsUtil.CMD;
-import static org.keycloak.client.admin.cli.util.OsUtil.EOL;
-import static org.keycloak.client.admin.cli.util.OsUtil.PROMPT;
+import static org.keycloak.client.admin.cli.util.OsUtil.*;
 
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
@@ -55,6 +51,46 @@ public class SetPasswordCmd extends AbstractAuthOptionsCmd {
     @Option(shortName = 't', name = "temporary", description = "is password temporary", hasValue = false)
     boolean temporary;
 
+    public static String usage() {
+        StringWriter sb = new StringWriter();
+        PrintWriter out = new PrintWriter(sb);
+        out.println("Usage: " + CMD + " set-password (--username USERNAME | --userid ID) [--new-password PASSWORD] [ARGUMENTS]");
+        out.println();
+        out.println("Command to reset user's password.");
+        out.println();
+        out.println("Use `" + CMD + " config credentials` to establish an authenticated session, or use CREDENTIALS OPTIONS");
+        out.println("to perform one time authentication.");
+        out.println();
+        out.println("Arguments:");
+        out.println();
+        out.println("  Global options:");
+        out.println("    -x                    Print full stack trace when exiting with error");
+        out.println("    --config              Path to the config file (" + DEFAULT_CONFIG_FILE_STRING + " by default)");
+        out.println("    --no-config           Don't use config file - no authentication info is loaded or saved");
+        out.println("    --token               Token to use to invoke on Keycloak.  Other credential may be ignored if this flag is set.");
+        out.println("    --truststore PATH     Path to a truststore containing trusted certificates");
+        out.println("    --trustpass PASSWORD  Truststore password (prompted for if not specified and --truststore is used)");
+        out.println("    CREDENTIALS OPTIONS   Same set of options as accepted by '" + CMD + " config credentials' in order to establish");
+        out.println("                          an authenticated sessions. In combination with --no-config option this allows transient");
+        out.println("                          (on-the-fly) authentication to be performed which leaves no tokens in config file.");
+        out.println();
+        out.println("  Command specific options:");
+        out.println("    --username USERNAME       Identify target user by 'username'");
+        out.println("    --userid ID               Identify target user by 'id'");
+        out.println("    -p, --new-password        New password to set. If not specified you will be prompted for it.");
+        out.println("    -t, --temporary           Make the new password temporary - user has to change it on next logon");
+        out.println("    -a, --admin-root URL      URL of Admin REST endpoint root if not default - e.g. http://localhost:8080/auth/admin");
+        out.println("    -r, --target-realm REALM  Target realm to issue requests against if not the one authenticated against");
+        out.println();
+        out.println("Examples:");
+        out.println();
+        out.println("Set new temporary password for the user:");
+        out.println("  " + PROMPT + " " + CMD + " set-password -r demorealm --username testuser --new-password NEWPASS -t");
+        out.println();
+        out.println();
+        out.println("Use '" + CMD + " help' for general information and a list of commands");
+        return sb.toString();
+    }
 
     @Override
     public CommandResult execute(CommandInvocation commandInvocation) throws CommandException, InterruptedException {
@@ -72,7 +108,6 @@ public class SetPasswordCmd extends AbstractAuthOptionsCmd {
             commandInvocation.stop();
         }
     }
-
 
     public CommandResult process(CommandInvocation commandInvocation) throws CommandException, InterruptedException {
 
@@ -130,50 +165,8 @@ public class SetPasswordCmd extends AbstractAuthOptionsCmd {
         return EOL + "Try '" + CMD + " help set-password' for more information";
     }
 
-
     protected String help() {
         return usage();
-    }
-
-    public static String usage() {
-        StringWriter sb = new StringWriter();
-        PrintWriter out = new PrintWriter(sb);
-        out.println("Usage: " + CMD + " set-password (--username USERNAME | --userid ID) [--new-password PASSWORD] [ARGUMENTS]");
-        out.println();
-        out.println("Command to reset user's password.");
-        out.println();
-        out.println("Use `" + CMD + " config credentials` to establish an authenticated session, or use CREDENTIALS OPTIONS");
-        out.println("to perform one time authentication.");
-        out.println();
-        out.println("Arguments:");
-        out.println();
-        out.println("  Global options:");
-        out.println("    -x                    Print full stack trace when exiting with error");
-        out.println("    --config              Path to the config file (" + DEFAULT_CONFIG_FILE_STRING + " by default)");
-        out.println("    --no-config           Don't use config file - no authentication info is loaded or saved");
-        out.println("    --token               Token to use to invoke on Keycloak.  Other credential may be ignored if this flag is set.");
-        out.println("    --truststore PATH     Path to a truststore containing trusted certificates");
-        out.println("    --trustpass PASSWORD  Truststore password (prompted for if not specified and --truststore is used)");
-        out.println("    CREDENTIALS OPTIONS   Same set of options as accepted by '" + CMD + " config credentials' in order to establish");
-        out.println("                          an authenticated sessions. In combination with --no-config option this allows transient");
-        out.println("                          (on-the-fly) authentication to be performed which leaves no tokens in config file.");
-        out.println();
-        out.println("  Command specific options:");
-        out.println("    --username USERNAME       Identify target user by 'username'");
-        out.println("    --userid ID               Identify target user by 'id'");
-        out.println("    -p, --new-password        New password to set. If not specified you will be prompted for it.");
-        out.println("    -t, --temporary           Make the new password temporary - user has to change it on next logon");
-        out.println("    -a, --admin-root URL      URL of Admin REST endpoint root if not default - e.g. http://localhost:8080/auth/admin");
-        out.println("    -r, --target-realm REALM  Target realm to issue requests against if not the one authenticated against");
-        out.println();
-        out.println("Examples:");
-        out.println();
-        out.println("Set new temporary password for the user:");
-        out.println("  " + PROMPT + " " + CMD + " set-password -r demorealm --username testuser --new-password NEWPASS -t");
-        out.println();
-        out.println();
-        out.println("Use '" + CMD + " help' for general information and a list of commands");
-        return sb.toString();
     }
 
 }

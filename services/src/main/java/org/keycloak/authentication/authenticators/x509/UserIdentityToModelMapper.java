@@ -18,16 +18,16 @@
 
 package org.keycloak.authentication.authenticators.x509;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.models.Constants;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ModelDuplicateException;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:pnalyvayko@agi.com">Peter Nalyvayko</a>
@@ -36,6 +36,14 @@ import org.keycloak.models.utils.KeycloakModelUtils;
  */
 
 public abstract class UserIdentityToModelMapper {
+
+    public static UserIdentityToModelMapper getUsernameOrEmailMapper() {
+        return new UsernameOrEmailMapper();
+    }
+
+    public static UserIdentityToModelMapper getUserIdentityToCustomAttributeMapper(String attributeName) {
+        return new UserIdentityToCustomAttributeMapper(attributeName);
+    }
 
     public abstract UserModel find(AuthenticationFlowContext context, Object userIdentity) throws Exception;
 
@@ -49,6 +57,7 @@ public abstract class UserIdentityToModelMapper {
 
     static class UserIdentityToCustomAttributeMapper extends UserIdentityToModelMapper {
         private List<String> _customAttributes;
+
         UserIdentityToCustomAttributeMapper(String customAttributes) {
             _customAttributes = Arrays.asList(Constants.CFG_DELIMITER_PATTERN.split(customAttributes));
         }
@@ -62,11 +71,11 @@ public abstract class UserIdentityToModelMapper {
                 return null;
             }
             List<UserModel> users = session.users().searchForUserByUserAttribute(_customAttributes.get(0), userIdentityValues.get(0), context.getRealm());
-            
-            for (int i = 1; i <_customAttributes.size(); ++i) {
+
+            for (int i = 1; i < _customAttributes.size(); ++i) {
                 String customAttribute = _customAttributes.get(i);
                 String userIdentityValue = userIdentityValues.get(i);
-                
+
                 users = users.stream().filter(user -> user.getFirstAttribute(customAttribute).equals(userIdentityValue)).collect(Collectors.toList());
             }
             if (users != null && users.size() > 1) {
@@ -74,13 +83,5 @@ public abstract class UserIdentityToModelMapper {
             }
             return users != null && users.size() == 1 ? users.get(0) : null;
         }
-    }
-
-    public static UserIdentityToModelMapper getUsernameOrEmailMapper() {
-        return new UsernameOrEmailMapper();
-    }
-
-    public static UserIdentityToModelMapper getUserIdentityToCustomAttributeMapper(String attributeName) {
-        return new UserIdentityToCustomAttributeMapper(attributeName);
     }
 }

@@ -16,12 +16,11 @@
  */
 package org.keycloak.broker.oidc;
 
-import static org.keycloak.common.util.UriUtils.checkUrl;
-
 import org.keycloak.common.enums.SslRequired;
 import org.keycloak.models.IdentityProviderModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+
+import static org.keycloak.common.util.UriUtils.checkUrl;
 
 /**
  * @author Pedro Igor
@@ -45,6 +44,7 @@ public class OIDCIdentityProviderConfig extends OAuth2IdentityProviderConfig {
     public String getPrompt() {
         return getConfig().get("prompt");
     }
+
     public void setPrompt(String prompt) {
         getConfig().put("prompt", prompt);
     }
@@ -52,12 +52,15 @@ public class OIDCIdentityProviderConfig extends OAuth2IdentityProviderConfig {
     public String getIssuer() {
         return getConfig().get("issuer");
     }
+
     public void setIssuer(String issuer) {
         getConfig().put("issuer", issuer);
     }
+
     public String getLogoutUrl() {
         return getConfig().get("logoutUrl");
     }
+
     public void setLogoutUrl(String url) {
         getConfig().put("logoutUrl", url);
     }
@@ -132,7 +135,7 @@ public class OIDCIdentityProviderConfig extends OAuth2IdentityProviderConfig {
         }
     }
 
-    @Override 
+    @Override
     public void validate(RealmModel realm) {
         super.validate(realm);
         SslRequired sslRequired = realm.getSslRequired();

@@ -18,11 +18,7 @@ package org.keycloak.client.admin.cli.commands;
 
 import org.jboss.aesh.cl.Option;
 import org.jboss.aesh.console.command.invocation.CommandInvocation;
-import org.keycloak.client.admin.cli.config.ConfigData;
-import org.keycloak.client.admin.cli.config.ConfigHandler;
-import org.keycloak.client.admin.cli.config.FileConfigHandler;
-import org.keycloak.client.admin.cli.config.InMemoryConfigHandler;
-import org.keycloak.client.admin.cli.config.RealmConfigData;
+import org.keycloak.client.admin.cli.config.*;
 import org.keycloak.client.admin.cli.util.ConfigUtil;
 import org.keycloak.client.admin.cli.util.HttpUtil;
 import org.keycloak.client.admin.cli.util.IoUtil;
@@ -30,10 +26,7 @@ import org.keycloak.client.admin.cli.util.IoUtil;
 import java.io.File;
 
 import static org.keycloak.client.admin.cli.config.FileConfigHandler.setConfigFile;
-import static org.keycloak.client.admin.cli.util.ConfigUtil.DEFAULT_CLIENT;
-import static org.keycloak.client.admin.cli.util.ConfigUtil.checkAuthInfo;
-import static org.keycloak.client.admin.cli.util.ConfigUtil.checkServerInfo;
-import static org.keycloak.client.admin.cli.util.ConfigUtil.loadConfig;
+import static org.keycloak.client.admin.cli.util.ConfigUtil.*;
 
 
 /**
@@ -95,6 +88,9 @@ public abstract class AbstractAuthOptionsCmd extends AbstractGlobalOptionsCmd {
     @Option(name = "token", description = "Token to use for invocations.  With this option set, every other authentication option is ignored")
     String externalToken;
 
+    protected static String booleanOptionForCheck(boolean value) {
+        return value ? "true" : null;
+    }
 
     protected void initFromParent(AbstractAuthOptionsCmd parent) {
 
@@ -130,7 +126,6 @@ public abstract class AbstractAuthOptionsCmd extends AbstractGlobalOptionsCmd {
                 trustStore == null && trustPass == null && config == null && (args == null || args.size() == 0);
     }
 
-
     protected String getTargetRealm(ConfigData config) {
         return targetRealm != null ? targetRealm : config.getRealm();
     }
@@ -155,7 +150,7 @@ public abstract class AbstractAuthOptionsCmd extends AbstractGlobalOptionsCmd {
         }
     }
 
-    protected void setupTruststore(ConfigData configData, CommandInvocation invocation ) {
+    protected void setupTruststore(ConfigData configData, CommandInvocation invocation) {
 
         if (!configData.getServerUrl().startsWith("https:")) {
             return;
@@ -266,7 +261,7 @@ public abstract class AbstractAuthOptionsCmd extends AbstractGlobalOptionsCmd {
             rdata.setSecret(secret);
     }
 
-    protected void checkUnsupportedOptions(String ... options) {
+    protected void checkUnsupportedOptions(String... options) {
         if (options.length % 2 != 0) {
             throw new IllegalArgumentException("Even number of argument required");
         }
@@ -279,9 +274,5 @@ public abstract class AbstractAuthOptionsCmd extends AbstractGlobalOptionsCmd {
                 throw new IllegalArgumentException("Unsupported option: " + name);
             }
         }
-    }
-
-    protected static String booleanOptionForCheck(boolean value) {
-        return value ? "true" : null;
     }
 }

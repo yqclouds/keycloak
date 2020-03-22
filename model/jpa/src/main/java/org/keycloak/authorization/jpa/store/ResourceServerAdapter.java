@@ -42,6 +42,14 @@ public class ResourceServerAdapter extends AbstractAuthorizationModel implements
         this.storeFactory = storeFactory;
     }
 
+    public static ResourceServerEntity toEntity(EntityManager em, ResourceServer resource) {
+        if (resource instanceof ResourceAdapter) {
+            return ((ResourceServerAdapter) resource).getEntity();
+        } else {
+            return em.getReference(ResourceServerEntity.class, resource.getId());
+        }
+    }
+
     @Override
     public ResourceServerEntity getEntity() {
         return entity;
@@ -99,14 +107,6 @@ public class ResourceServerAdapter extends AbstractAuthorizationModel implements
     @Override
     public int hashCode() {
         return getId().hashCode();
-    }
-
-    public static ResourceServerEntity toEntity(EntityManager em, ResourceServer resource) {
-        if (resource instanceof ResourceAdapter) {
-            return ((ResourceServerAdapter)resource).getEntity();
-        } else {
-            return em.getReference(ResourceServerEntity.class, resource.getId());
-        }
     }
 
 

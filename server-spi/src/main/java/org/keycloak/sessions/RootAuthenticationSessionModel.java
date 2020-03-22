@@ -17,10 +17,10 @@
 
 package org.keycloak.sessions;
 
-import java.util.Map;
-
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.RealmModel;
+
+import java.util.Map;
 
 /**
  * Represents usually one browser session with potentially many browser tabs. Every browser tab is represented by {@link AuthenticationSessionModel}
@@ -31,14 +31,17 @@ import org.keycloak.models.RealmModel;
 public interface RootAuthenticationSessionModel {
 
     String getId();
+
     RealmModel getRealm();
 
     int getTimestamp();
+
     void setTimestamp(int timestamp);
 
 
     /**
      * Key is tabId, Value is AuthenticationSessionModel.
+     *
      * @return authentication sessions or empty map if no authenticationSessions presents. Never return null.
      */
     Map<String, AuthenticationSessionModel> getAuthenticationSessions();
@@ -61,6 +64,7 @@ public interface RootAuthenticationSessionModel {
     /**
      * Removes authentication session from root authentication session.
      * If there's no child authentication session left in the root authentication session, it's removed as well.
+     *
      * @param tabId String
      */
     void removeAuthenticationSessionByTabId(String tabId);

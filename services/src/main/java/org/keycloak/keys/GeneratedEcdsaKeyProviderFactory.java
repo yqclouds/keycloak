@@ -33,15 +33,11 @@ import java.util.List;
 
 public class GeneratedEcdsaKeyProviderFactory extends AbstractEcdsaKeyProviderFactory {
 
-    private static final Logger logger = Logger.getLogger(GeneratedEcdsaKeyProviderFactory.class);
-
     public static final String ID = "ecdsa-generated";
-
-    private static final String HELP_TEXT = "Generates ECDSA keys";
-
-     // secp256r1,NIST P-256,X9.62 prime256v1,1.2.840.10045.3.1.7
+    // secp256r1,NIST P-256,X9.62 prime256v1,1.2.840.10045.3.1.7
     public static final String DEFAULT_ECDSA_ELLIPTIC_CURVE = "P-256";
-
+    private static final Logger logger = Logger.getLogger(GeneratedEcdsaKeyProviderFactory.class);
+    private static final String HELP_TEXT = "Generates ECDSA keys";
     private static final List<ProviderConfigProperty> CONFIG_PROPERTIES = AbstractEcdsaKeyProviderFactory.configurationBuilder()
             .property(ECDSA_ELLIPTIC_CURVE_PROPERTY)
             .build();

@@ -41,9 +41,7 @@ public class SAMLMetadataUtil {
      * Get the {@link X509Certificate} from the KeyInfo
      *
      * @param keyDescriptor
-     *
      * @return
-     *
      * @throws org.keycloak.saml.common.exceptions.ProcessingException
      * @throws org.keycloak.saml.common.exceptions.ConfigurationException
      */

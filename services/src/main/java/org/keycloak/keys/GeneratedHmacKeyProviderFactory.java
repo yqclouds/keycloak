@@ -33,14 +33,10 @@ import java.util.List;
  */
 public class GeneratedHmacKeyProviderFactory extends AbstractGeneratedSecretKeyProviderFactory<GeneratedHmacKeyProvider> {
 
-    private static final Logger logger = Logger.getLogger(GeneratedHmacKeyProviderFactory.class);
-
     public static final String ID = "hmac-generated";
-
-    private static final String HELP_TEXT = "Generates HMAC secret key";
-
     public static final int DEFAULT_HMAC_KEY_SIZE = 64;
-
+    private static final Logger logger = Logger.getLogger(GeneratedHmacKeyProviderFactory.class);
+    private static final String HELP_TEXT = "Generates HMAC secret key";
     private static final List<ProviderConfigProperty> CONFIG_PROPERTIES = SecretKeyProviderUtils.configurationBuilder()
             .property(Attributes.SECRET_SIZE_PROPERTY)
             .property(Attributes.HS_ALGORITHM_PROPERTY)

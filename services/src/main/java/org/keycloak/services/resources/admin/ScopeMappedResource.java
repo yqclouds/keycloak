@@ -18,14 +18,9 @@
 package org.keycloak.services.resources.admin;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
-import javax.ws.rs.NotFoundException;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.ScopeContainerModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.ClientMappingsRepresentation;
@@ -33,27 +28,16 @@ import org.keycloak.representations.idm.MappingsRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Base class for managing the scope mappings of a specific client.
  *
- * @resource Scope Mappings
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
+ * @resource Scope Mappings
  */
 public class ScopeMappedResource {
     protected RealmModel realm;
@@ -76,6 +60,24 @@ public class ScopeMappedResource {
         this.adminEvent = adminEvent.resource(ResourceType.REALM_SCOPE_MAPPING);
         this.managePermission = managePermission;
         this.viewPermission = viewPermission;
+    }
+
+    public static List<RoleRepresentation> getAvailable(AdminPermissionEvaluator auth, ScopeContainerModel client, Set<RoleModel> roles) {
+        List<RoleRepresentation> available = new ArrayList<RoleRepresentation>();
+        for (RoleModel roleModel : roles) {
+            if (client.hasScope(roleModel)) continue;
+            if (!auth.roles().canMapClientScope(roleModel)) continue;
+            available.add(ModelToRepresentation.toBriefRepresentation(roleModel));
+        }
+        return available;
+    }
+
+    public static List<RoleRepresentation> getComposite(ScopeContainerModel client, Set<RoleModel> roles) {
+        List<RoleRepresentation> composite = new ArrayList<RoleRepresentation>();
+        for (RoleModel roleModel : roles) {
+            if (client.hasScope(roleModel)) composite.add(ModelToRepresentation.toBriefRepresentation(roleModel));
+        }
+        return composite;
     }
 
     /**
@@ -169,19 +171,9 @@ public class ScopeMappedResource {
         return getAvailable(auth, scopeContainer, roles);
     }
 
-    public static List<RoleRepresentation> getAvailable(AdminPermissionEvaluator auth, ScopeContainerModel client, Set<RoleModel> roles) {
-        List<RoleRepresentation> available = new ArrayList<RoleRepresentation>();
-        for (RoleModel roleModel : roles) {
-            if (client.hasScope(roleModel)) continue;
-            if (!auth.roles().canMapClientScope(roleModel)) continue;
-            available.add(ModelToRepresentation.toBriefRepresentation(roleModel));
-        }
-        return available;
-    }
-
     /**
      * Get effective realm-level roles associated with the client's scope
-     *
+     * <p>
      * What this does is recurse
      * any composite roles associated with the client's scope and adds the roles to this lists.  The method is really
      * to show a comprehensive total view of realm-level roles associated with the client.
@@ -201,14 +193,6 @@ public class ScopeMappedResource {
 
         Set<RoleModel> roles = realm.getRoles();
         return getComposite(scopeContainer, roles);
-    }
-
-    public static List<RoleRepresentation> getComposite(ScopeContainerModel client, Set<RoleModel> roles) {
-        List<RoleRepresentation> composite = new ArrayList<RoleRepresentation>();
-        for (RoleModel roleModel : roles) {
-            if (client.hasScope(roleModel)) composite.add(ModelToRepresentation.toBriefRepresentation(roleModel));
-        }
-        return composite;
     }
 
     /**
@@ -261,7 +245,7 @@ public class ScopeMappedResource {
                 roles.add(ModelToRepresentation.toBriefRepresentation(roleModel));
             }
 
-       } else {
+        } else {
             for (RoleRepresentation role : roles) {
                 RoleModel roleModel = realm.getRoleById(role.getId());
                 if (roleModel == null) {

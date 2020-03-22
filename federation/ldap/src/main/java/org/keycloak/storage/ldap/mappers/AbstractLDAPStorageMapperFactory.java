@@ -34,6 +34,16 @@ import java.util.Map;
  */
 public abstract class AbstractLDAPStorageMapperFactory implements LDAPStorageMapperFactory<LDAPStorageMapper> {
 
+    public static ProviderConfigProperty createConfigProperty(String name, String label, String helpText, String type, List<String> options) {
+        ProviderConfigProperty configProperty = new ProviderConfigProperty();
+        configProperty.setName(name);
+        configProperty.setLabel(label);
+        configProperty.setHelpText(helpText);
+        configProperty.setType(type);
+        configProperty.setOptions(options);
+        return configProperty;
+    }
+
     @Override
     public void init(Config.Scope config) {
     }
@@ -65,16 +75,6 @@ public abstract class AbstractLDAPStorageMapperFactory implements LDAPStorageMap
 
     @Override
     public void close() {
-    }
-
-    public static ProviderConfigProperty createConfigProperty(String name, String label, String helpText, String type, List<String> options) {
-        ProviderConfigProperty configProperty = new ProviderConfigProperty();
-        configProperty.setName(name);
-        configProperty.setLabel(label);
-        configProperty.setHelpText(helpText);
-        configProperty.setType(type);
-        configProperty.setOptions(options);
-        return configProperty;
     }
 
     protected void checkMandatoryConfigAttribute(String name, String displayName, ComponentModel mapperModel) throws ComponentValidationException {

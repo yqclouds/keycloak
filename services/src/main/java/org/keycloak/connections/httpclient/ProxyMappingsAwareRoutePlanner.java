@@ -40,28 +40,28 @@ import static org.keycloak.connections.httpclient.ProxyMappings.ProxyMapping;
  */
 public class ProxyMappingsAwareRoutePlanner extends DefaultRoutePlanner {
 
-  private static final Logger LOG = Logger.getLogger(ProxyMappingsAwareRoutePlanner.class);
+    private static final Logger LOG = Logger.getLogger(ProxyMappingsAwareRoutePlanner.class);
 
-  private final ProxyMappings proxyMappings;
+    private final ProxyMappings proxyMappings;
 
-  public ProxyMappingsAwareRoutePlanner(ProxyMappings proxyMappings) {
-    super(DefaultSchemePortResolver.INSTANCE);
-    this.proxyMappings = proxyMappings;
-  }
-
-  @Override
-  protected HttpHost determineProxy(HttpHost target, HttpRequest request, HttpContext context) throws HttpException {
-
-    String targetHostName = target.getHostName();
-    ProxyMapping proxyMapping = proxyMappings.getProxyFor(targetHostName);
-    LOG.debugf("Returning proxyMapping=%s for targetHost=%s", proxyMapping, targetHostName);
-    UsernamePasswordCredentials proxyCredentials = proxyMapping.getProxyCredentials();
-    HttpHost proxyHost = proxyMapping.getProxyHost();
-    if (proxyCredentials != null) {
-      CredentialsProvider credsProvider = new BasicCredentialsProvider();
-      credsProvider.setCredentials(new AuthScope(proxyHost.getHostName(), proxyHost.getPort()), proxyCredentials);
-      context.setAttribute(HttpClientContext.CREDS_PROVIDER, credsProvider);
+    public ProxyMappingsAwareRoutePlanner(ProxyMappings proxyMappings) {
+        super(DefaultSchemePortResolver.INSTANCE);
+        this.proxyMappings = proxyMappings;
     }
-    return proxyHost;
-  }
+
+    @Override
+    protected HttpHost determineProxy(HttpHost target, HttpRequest request, HttpContext context) throws HttpException {
+
+        String targetHostName = target.getHostName();
+        ProxyMapping proxyMapping = proxyMappings.getProxyFor(targetHostName);
+        LOG.debugf("Returning proxyMapping=%s for targetHost=%s", proxyMapping, targetHostName);
+        UsernamePasswordCredentials proxyCredentials = proxyMapping.getProxyCredentials();
+        HttpHost proxyHost = proxyMapping.getProxyHost();
+        if (proxyCredentials != null) {
+            CredentialsProvider credsProvider = new BasicCredentialsProvider();
+            credsProvider.setCredentials(new AuthScope(proxyHost.getHostName(), proxyHost.getPort()), proxyCredentials);
+            context.setAttribute(HttpClientContext.CREDS_PROVIDER, credsProvider);
+        }
+        return proxyHost;
+    }
 }

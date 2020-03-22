@@ -1,8 +1,8 @@
-<EntitiesDescriptor Name="https://your-federation.org/metadata/federation-name.xml"
-                    xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
-                    xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+<EntitiesDescriptor xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
                     xmlns:shibmd="urn:mace:shibboleth:metadata:1.0"
-                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    Name="https://your-federation.org/metadata/federation-name.xml"
+                    xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
+>
     <EntityDescriptor entityID="https://idp.example.org/idp/shibboleth">
 
         <IDPSSODescriptor protocolSupportEnumeration="urn:mace:shibboleth:1.0 urn:oasis:names:tc:SAML:2.0:protocol">
@@ -21,16 +21,17 @@
             <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</NameIDFormat>
 
             <SingleSignOnService Binding="urn:mace:shibboleth:1.0:profiles:AuthnRequest"
-                                 Location="https://idp.example.org/idp/profile/Shibboleth/SSO" />
+                                 Location="https://idp.example.org/idp/profile/Shibboleth/SSO"/>
 
             <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
-                                 Location="https://idp.example.org/idp/profile/SAML2/POST/SSO" />
+                                 Location="https://idp.example.org/idp/profile/SAML2/POST/SSO"/>
 
             <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
-                                 Location="https://idp.example.org/idp/profile/SAML2/Redirect/SSO" />
+                                 Location="https://idp.example.org/idp/profile/SAML2/Redirect/SSO"/>
         </IDPSSODescriptor>
 
-        <AttributeAuthorityDescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:1.1:protocol urn:oasis:names:tc:SAML:2.0:protocol">
+        <AttributeAuthorityDescriptor
+                protocolSupportEnumeration="urn:oasis:names:tc:SAML:1.1:protocol urn:oasis:names:tc:SAML:2.0:protocol">
 
             <KeyDescriptor>
                 <ds:KeyInfo>
@@ -41,10 +42,10 @@
             </KeyDescriptor>
 
             <AttributeService Binding="urn:oasis:names:tc:SAML:1.0:bindings:SOAP-binding"
-                              Location="https://idp.example.org:8443/idp/profile/SAML1/SOAP/AttributeQuery" />
+                              Location="https://idp.example.org:8443/idp/profile/SAML1/SOAP/AttributeQuery"/>
 
             <AttributeService Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP"
-                              Location="https://idp.example.org:8443/idp/profile/SAML2/SOAP/AttributeQuery" />
+                              Location="https://idp.example.org:8443/idp/profile/SAML2/SOAP/AttributeQuery"/>
 
             <NameIDFormat>urn:mace:shibboleth:1.0:nameIdentifier</NameIDFormat>
             <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</NameIDFormat>
@@ -53,7 +54,7 @@
 
         <Organization>
             <OrganizationName xml:lang="en">Your Identities</OrganizationName>
-            <OrganizationDisplayName xml:lang="en"> Your Identities</OrganizationDisplayName>
+            <OrganizationDisplayName xml:lang="en">Your Identities</OrganizationDisplayName>
             <OrganizationURL xml:lang="en">http://www.example.org/</OrganizationURL>
         </Organization>
         <ContactPerson contactType="technical">
@@ -66,14 +67,17 @@
 
     <!-- A service provider. -->
     <EntityDescriptor entityID="https://sp.example.org/shibboleth-sp">
-        <SPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol urn:oasis:names:tc:SAML:1.1:protocol">
+        <SPSSODescriptor
+                protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol urn:oasis:names:tc:SAML:1.1:protocol">
 
             <Extensions>
                 <idpdisc:DiscoveryResponse xmlns:idpdisc="urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol"
-                                           index="1" Binding="urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol"
+                                           index="1"
+                                           Binding="urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol"
                                            Location="http://sp.example.org/Shibboleth.sso/DS"/>
                 <idpdisc:DiscoveryResponse xmlns:idpdisc="urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol"
-                                           index="2" Binding="urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol"
+                                           index="2"
+                                           Binding="urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol"
                                            Location="https://sp.example.org/Shibboleth.sso/DS"/>
             </Extensions>
 
@@ -138,16 +142,17 @@
                 <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</NameIDFormat>
 
                 <SingleSignOnService Binding="urn:mace:shibboleth:1.0:profiles:AuthnRequest"
-                                     Location="https://idp.example.org/idp/profile/Shibboleth/SSO" />
+                                     Location="https://idp.example.org/idp/profile/Shibboleth/SSO"/>
 
                 <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
-                                     Location="https://idp.example.org/idp/profile/SAML2/POST/SSO" />
+                                     Location="https://idp.example.org/idp/profile/SAML2/POST/SSO"/>
 
                 <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
-                                     Location="https://idp.example.org/idp/profile/SAML2/Redirect/SSO" />
+                                     Location="https://idp.example.org/idp/profile/SAML2/Redirect/SSO"/>
             </IDPSSODescriptor>
 
-            <AttributeAuthorityDescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:1.1:protocol urn:oasis:names:tc:SAML:2.0:protocol">
+            <AttributeAuthorityDescriptor
+                    protocolSupportEnumeration="urn:oasis:names:tc:SAML:1.1:protocol urn:oasis:names:tc:SAML:2.0:protocol">
 
                 <KeyDescriptor>
                     <ds:KeyInfo>
@@ -158,10 +163,10 @@
                 </KeyDescriptor>
 
                 <AttributeService Binding="urn:oasis:names:tc:SAML:1.0:bindings:SOAP-binding"
-                                  Location="https://idp.example.org:8443/idp/profile/SAML1/SOAP/AttributeQuery" />
+                                  Location="https://idp.example.org:8443/idp/profile/SAML1/SOAP/AttributeQuery"/>
 
                 <AttributeService Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP"
-                                  Location="https://idp.example.org:8443/idp/profile/SAML2/SOAP/AttributeQuery" />
+                                  Location="https://idp.example.org:8443/idp/profile/SAML2/SOAP/AttributeQuery"/>
 
                 <NameIDFormat>urn:mace:shibboleth:1.0:nameIdentifier</NameIDFormat>
                 <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</NameIDFormat>
@@ -170,7 +175,7 @@
 
             <Organization>
                 <OrganizationName xml:lang="en">Your Identities</OrganizationName>
-                <OrganizationDisplayName xml:lang="en"> Your Identities</OrganizationDisplayName>
+                <OrganizationDisplayName xml:lang="en">Your Identities</OrganizationDisplayName>
                 <OrganizationURL xml:lang="en">http://www.example.org/</OrganizationURL>
             </Organization>
             <ContactPerson contactType="technical">
@@ -183,15 +188,18 @@
 
         <!-- A service provider. -->
         <EntityDescriptor entityID="https://sp.example.org/shibboleth-sp">
-            <SPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol urn:oasis:names:tc:SAML:1.1:protocol">
+            <SPSSODescriptor
+                    protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol urn:oasis:names:tc:SAML:1.1:protocol">
 
                 <Extensions>
-                    <idpdisc:DiscoveryResponse xmlns:idpdisc="urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol"
-                                               index="1" Binding="urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol"
-                                               Location="http://sp.example.org/Shibboleth.sso/DS"/>
-                    <idpdisc:DiscoveryResponse xmlns:idpdisc="urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol"
-                                               index="2" Binding="urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol"
-                                               Location="https://sp.example.org/Shibboleth.sso/DS"/>
+                    <idpdisc:DiscoveryResponse
+                            xmlns:idpdisc="urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol"
+                            index="1" Binding="urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol"
+                            Location="http://sp.example.org/Shibboleth.sso/DS"/>
+                    <idpdisc:DiscoveryResponse
+                            xmlns:idpdisc="urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol"
+                            index="2" Binding="urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol"
+                            Location="https://sp.example.org/Shibboleth.sso/DS"/>
                 </Extensions>
 
                 <KeyDescriptor>

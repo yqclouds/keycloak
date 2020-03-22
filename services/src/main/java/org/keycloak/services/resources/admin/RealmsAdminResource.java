@@ -18,15 +18,9 @@ package org.keycloak.services.resources.admin;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import javax.ws.rs.NotFoundException;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.common.ClientConnection;
-import org.keycloak.models.AdminRoles;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ModelDuplicateException;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.policy.PasswordPolicyNotMetException;
 import org.keycloak.protocol.oidc.TokenManager;
@@ -38,17 +32,8 @@ import org.keycloak.services.resources.KeycloakApplication;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.CacheControl;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,21 +41,24 @@ import java.util.List;
 /**
  * Top level resource for Admin REST API
  *
- * @resource Realms Admin
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
+ * @resource Realms Admin
  */
 public class RealmsAdminResource {
+    public static final CacheControl noCache = new CacheControl();
     protected static final Logger logger = Logger.getLogger(RealmsAdminResource.class);
+
+    static {
+        noCache.setNoCache(true);
+    }
+
     protected AdminAuth auth;
     protected TokenManager tokenManager;
-
     @Context
     protected KeycloakSession session;
-
     @Context
     protected KeycloakApplication keycloak;
-
     @Context
     protected ClientConnection clientConnection;
 
@@ -79,15 +67,9 @@ public class RealmsAdminResource {
         this.tokenManager = tokenManager;
     }
 
-    public static final CacheControl noCache = new CacheControl();
-
-    static {
-        noCache.setNoCache(true);
-    }
-
     /**
      * Get accessible realms
-     *
+     * <p>
      * Returns a list of accessible realms. The list is filtered based on what realms the caller is allowed to view.
      *
      * @return
@@ -121,7 +103,7 @@ public class RealmsAdminResource {
 
     /**
      * Import a realm
-     *
+     * <p>
      * Imports a realm from a full representation of that realm.  Realm name must be unique.
      *
      * @param rep JSON representation of the realm
@@ -170,7 +152,7 @@ public class RealmsAdminResource {
      * Base path for the admin REST API for one particular realm.
      *
      * @param headers
-     * @param name realm name (not id!)
+     * @param name    realm name (not id!)
      * @return
      */
     @Path("{realm}")
