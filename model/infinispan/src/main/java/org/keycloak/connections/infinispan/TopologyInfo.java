@@ -14,13 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.keycloak.connections.infinispan;
 
 import java.net.InetSocketAddress;
 import java.security.SecureRandom;
 import java.util.Objects;
-import java.util.Optional;
 
 import org.infinispan.Cache;
 import org.infinispan.distribution.DistributionManager;
@@ -153,7 +151,7 @@ public class TopologyInfo {
         Address address = getOwnerAddress(cache, key);
 
         // Local mode
-        if (address == null ||  (address == LocalModeAddress.INSTANCE)) {
+        if (address == null || (address == LocalModeAddress.INSTANCE)) {
             return myNodeName;
         }
 
