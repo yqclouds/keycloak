@@ -33,11 +33,8 @@
     <modules>
         <module>adapter-core</module>
         <module>installed</module>
-        <module>fuse7</module>
-        <module>kcinit</module>
         <module>jaxrs-oauth-client</module>
         <module>jetty</module>
-        <module>js</module>
         <module>osgi-adapter</module>
         <module>servlet-filter</module>
         <module>spring-boot</module>
@@ -47,20 +44,6 @@
         <module>spring-boot-legacy-container-bundle</module>
         <module>spring-security</module>
         <module>tomcat</module>
-        <module>undertow</module>
         <module>wildfly</module>
-        <module>wildfly-elytron</module>
     </modules>
-
-    <profiles>
-        <profile>
-            <id>AS7</id>
-            <activation>
-                <jdk>[,9)</jdk>
-            </activation>
-            <modules>
-                <module>as7-eap6</module>
-            </modules>
-        </profile>
-    </profiles>
 </project>

@@ -190,13 +190,13 @@
         <url>https://github.com/keycloak/keycloak/tree/master/</url>
     </scm>
 
-    <distributionManagement>
-        <repository>
-            <id>jboss-releases-repository</id>
-            <name>JBoss Releases Repository</name>
-            <url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
+<!--    <distributionManagement>-->
+<!--        <repository>-->
+<!--            <id>jboss-releases-repository</id>-->
+<!--            <name>JBoss Releases Repository</name>-->
+<!--            <url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/</url>-->
+<!--        </repository>-->
+<!--    </distributionManagement>-->
 
     <issueManagement>
         <system>JIRA</system>
@@ -1458,16 +1458,16 @@
     <build>
         <pluginManagement>
             <plugins>
-                <plugin>
-                    <groupId>org.sonatype.plugins</groupId>
-                    <artifactId>nexus-staging-maven-plugin</artifactId>
-                    <version>${nexus.staging.plugin.version}</version>
-                    <extensions>true</extensions>
-                    <configuration>
-                        <nexusUrl>https://repository.jboss.org/nexus</nexusUrl>
-                        <serverId>jboss-releases-repository</serverId>
-                    </configuration>
-                </plugin>
+<!--                <plugin>-->
+<!--                    <groupId>org.sonatype.plugins</groupId>-->
+<!--                    <artifactId>nexus-staging-maven-plugin</artifactId>-->
+<!--                    <version>${nexus.staging.plugin.version}</version>-->
+<!--                    <extensions>true</extensions>-->
+<!--                    <configuration>-->
+<!--                        <nexusUrl>https://repository.jboss.org/nexus</nexusUrl>-->
+<!--                        <serverId>jboss-releases-repository</serverId>-->
+<!--                    </configuration>-->
+<!--                </plugin>-->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
@@ -1682,7 +1682,7 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
+                            <additionalOptions>-Xdoclint:none</additionalOptions>
                             <failOnError>false</failOnError>
                             <excludePackageNames>cx.*:org.freedesktop*:org.jvnet*</excludePackageNames>
                         </configuration>
