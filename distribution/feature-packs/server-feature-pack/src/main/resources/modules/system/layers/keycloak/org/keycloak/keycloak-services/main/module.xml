@@ -27,7 +27,6 @@
     <dependencies>
         <module name="org.keycloak.keycloak-common" services="import"/>
         <module name="org.keycloak.keycloak-core" services="import"/>
-        <module name="org.keycloak.keycloak-js-adapter" services="import"/>
         <module name="org.keycloak.keycloak-kerberos-federation" services="import"/>
         <module name="org.keycloak.keycloak-ldap-federation" services="import"/>
         <module name="org.keycloak.keycloak-sssd-federation" optional="true" services="import"/>

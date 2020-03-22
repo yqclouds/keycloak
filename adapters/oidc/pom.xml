@@ -32,9 +32,7 @@
 
     <modules>
         <module>adapter-core</module>
-        <module>installed</module>
         <module>jaxrs-oauth-client</module>
-        <module>osgi-adapter</module>
         <module>servlet-filter</module>
         <module>spring-boot</module>
         <module>spring-boot2</module>
@@ -43,6 +41,5 @@
         <module>spring-boot-legacy-container-bundle</module>
         <module>spring-security</module>
         <module>tomcat</module>
-        <module>wildfly</module>
     </modules>
 </project>
