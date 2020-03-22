@@ -37,7 +37,6 @@
         <subsystem>security.xml</subsystem>
         <subsystem>security-manager.xml</subsystem>
         <subsystem>transactions.xml</subsystem>
-        <subsystem>keycloak-undertow.xml</subsystem>
         <subsystem>keycloak-server.xml</subsystem>
     </subsystems>
     <subsystems name="auth-server-clustered">
@@ -64,12 +63,10 @@
         <subsystem>security.xml</subsystem>
         <subsystem>security-manager.xml</subsystem>
         <subsystem>transactions.xml</subsystem>
-        <subsystem supplement="ha">keycloak-undertow.xml</subsystem>
         <subsystem>keycloak-server.xml</subsystem>
     </subsystems>
     <subsystems name="load-balancer">
         <subsystem>logging.xml</subsystem>
         <subsystem>io.xml</subsystem>
-        <subsystem>undertow-load-balancer.xml</subsystem>
     </subsystems>
 </config>

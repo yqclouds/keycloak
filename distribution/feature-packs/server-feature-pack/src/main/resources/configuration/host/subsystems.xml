@@ -21,6 +21,5 @@
     <subsystems>
         <subsystem>core-management.xml</subsystem>
         <subsystem>jmx.xml</subsystem>
-        <subsystem supplement="host">elytron.xml</subsystem>
     </subsystems>
 </config>

@@ -15,11 +15,6 @@
             <artifactId>keycloak-tomcat-adapter</artifactId>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>org.keycloak</groupId>
-            <artifactId>keycloak-undertow-adapter</artifactId>
-            <scope>compile</scope>
-        </dependency>
          <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-jetty93-adapter</artifactId>
@@ -42,12 +37,9 @@
                             <artifactSet>
                                 <includes>
                                     <include>org.keycloak:keycloak-tomcat-adapter</include>
-                                    <include>org.keycloak:keycloak-undertow-adapter</include>
                                     <include>org.keycloak:keycloak-jetty93-adapter</include>
                                     <include>org.keycloak:keycloak-tomcat-core-adapter</include>
                                     <include>org.keycloak:keycloak-tomcat-adapter-spi</include>
-                                    <include>org.keycloak:keycloak-undertow-adapter</include>
-                                    <include>org.keycloak:keycloak-undertow-adapter-spi</include>
                                     <include>org.keycloak:keycloak-jetty-core</include>
                                     <include>org.keycloak:keycloak-jetty-adapter-spi</include>
                                 </includes>

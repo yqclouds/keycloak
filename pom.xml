@@ -60,7 +60,6 @@
         <cxf.version>3.3.3</cxf.version>
         <cxf.jetty.version>3.3.3</cxf.jetty.version>
         <cxf.jaxrs.version>3.3.3</cxf.jaxrs.version>
-        <cxf.undertow.version>3.3.3</cxf.undertow.version>
         <dom4j.version>2.1.1</dom4j.version>
         <github.relaxng.version>2.3.1</github.relaxng.version>
         <h2.version>1.4.193</h2.version>
@@ -81,7 +80,6 @@
         <log4j.version>1.2.17</log4j.version>
         <!-- Will be used in the product. Upstream versions are overridden in the community profile -->
         <resteasy.version>3.9.3.SP1</resteasy.version>
-        <resteasy.undertow.version>${resteasy.version}</resteasy.undertow.version>
         <owasp.html.sanitizer.version>20191001.1</owasp.html.sanitizer.version>
         <slf4j-api.version>1.7.22</slf4j-api.version>
         <slf4j.version>1.7.22</slf4j.version>
@@ -91,9 +89,6 @@
         <sun.xml.ws.version>2.3.1</sun.xml.ws.version>
         <sun.activation.version>1.2.1</sun.activation.version>
         <org.glassfish.jaxb.xsom.version>2.3.1</org.glassfish.jaxb.xsom.version>
-        <undertow.version>2.0.28.Final</undertow.version>
-        <elytron.version>1.10.4.Final</elytron.version>
-        <elytron.undertow-server.version>1.6.0.Final</elytron.undertow-server.version>
         <jetty92.version>9.2.4.v20141103</jetty92.version>
         <jetty93.version>9.3.9.v20160517</jetty93.version>
         <jetty94.version>9.4.2.v20170220</jetty94.version>
@@ -184,41 +179,6 @@
         </license>
     </licenses>
 
-    <scm>
-        <connection>scm:git:git://github.com/keycloak/keycloak.git</connection>
-        <developerConnection>scm:git:git@github.com:keycloak/keycloak.git</developerConnection>
-        <url>https://github.com/keycloak/keycloak/tree/master/</url>
-    </scm>
-
-<!--    <distributionManagement>-->
-<!--        <repository>-->
-<!--            <id>jboss-releases-repository</id>-->
-<!--            <name>JBoss Releases Repository</name>-->
-<!--            <url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/</url>-->
-<!--        </repository>-->
-<!--    </distributionManagement>-->
-
-    <issueManagement>
-        <system>JIRA</system>
-        <url>http://jira.jboss.com/jira/browse/KEYCLOAK</url>
-    </issueManagement>
-
-    <developers>
-        <developer>
-            <id>patriot1burke</id>
-            <name>Bill Burke</name>
-            <email>bburke@redhat.co</email>
-            <organization>Red Hat</organization>
-            <roles>
-                <role>project-owner</role>
-            </roles>
-            <timezone>-5</timezone>
-        </developer>
-    </developers>
-
-    <contributors>
-    </contributors>
-
     <modules>
         <module>boms</module>
         <module>common</module>
@@ -230,7 +190,7 @@
         <module>saml-core</module>
         <module>federation</module>
         <module>services</module>
-        <module>themes</module>
+<!--        <module>themes</module>-->
         <module>model</module>
         <module>util</module>
         <module>wildfly</module>
@@ -367,21 +327,6 @@
                 <version>${resteasy.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-undertow</artifactId>
-                <version>${resteasy.undertow.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>io.undertow</groupId>
-                        <artifactId>undertow-servlet</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.undertow</groupId>
-                        <artifactId>undertow-core</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
                 <groupId>org.jboss.spec.javax.xml.bind</groupId>
                 <artifactId>jboss-jaxb-api_2.3_spec</artifactId>
                 <version>${jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec.version}</version>
@@ -395,16 +340,6 @@
                 <groupId>org.keycloak</groupId>
                 <artifactId>keycloak-wildfly-adapter-subsystem</artifactId>
                 <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.undertow</groupId>
-                <artifactId>undertow-servlet</artifactId>
-                <version>${undertow.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.undertow</groupId>
-                <artifactId>undertow-core</artifactId>
-                <version>${undertow.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
@@ -724,18 +659,6 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-undertow</artifactId>
-                <version>${wildfly.version}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>io.undertow.jastow</groupId>
-                        <artifactId>jastow</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
                 <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-subsystem-test-framework</artifactId>
                 <version>${wildfly.core.version}</version>
@@ -764,19 +687,9 @@
                 <version>${wildfly.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wildfly.security</groupId>
-                <artifactId>wildfly-elytron</artifactId>
-                <version>${elytron.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.wildfly.common</groupId>
                 <artifactId>wildfly-common</artifactId>
                 <version>${wildfly.common.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wildfly.security.elytron-web</groupId>
-                <artifactId>undertow-server</artifactId>
-                <version>${elytron.undertow-server.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
@@ -1055,27 +968,7 @@
             </dependency>
             <dependency>
                 <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-undertow-adapter-spi</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-undertow-adapter</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.keycloak</groupId>
                 <artifactId>keycloak-wildfly-adapter</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-wildfly-elytron-oidc-adapter</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-saml-wildfly-elytron-adapter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1166,11 +1059,6 @@
             <dependency>
                 <groupId>org.keycloak</groupId>
                 <artifactId>keycloak-saml-jetty94-adapter</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-saml-undertow-adapter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1597,7 +1485,6 @@
                 <jackson.version>2.9.10</jackson.version>
                 <jackson.databind.version>2.9.10.1</jackson.databind.version>
                 <resteasy.version>3.9.1.Final</resteasy.version>
-                <resteasy.undertow.version>${resteasy.version}</resteasy.undertow.version>
             </properties>
         </profile>
 
