@@ -30,7 +30,7 @@ public interface AuthChallenge {
     boolean challenge(HttpFacade exchange);
 
     /**
-     * Some platforms need the error code that will be sent (i.e. Undertow)
+     * Some platforms need the error code that will be sent
      *
      * @return
      */

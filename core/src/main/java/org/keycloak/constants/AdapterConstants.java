@@ -32,7 +32,7 @@ public interface AdapterConstants {
 
     // This param name is defined again in Keycloak Subsystem class
     // org.keycloak.subsystem.extensionKeycloakAdapterConfigDeploymentProcessor.  We have this value in
-    // two places to avoid dependency between Keycloak Subsystem and Keyclaok Undertow Integration.
+    // two places to avoid dependency between Keycloak Subsystem and Keycloak Undertow Integration.
     String AUTH_DATA_PARAM_NAME = "org.keycloak.json.adapterConfig";
 
     // Attribute passed in codeToToken request from adapter to Keycloak and saved in ClientSession. Contains ID of HttpSession on adapter

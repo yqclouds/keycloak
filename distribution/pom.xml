@@ -14,7 +14,6 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
@@ -39,23 +38,10 @@
         <module>adapters</module>
         <module>saml-adapters</module>
         <module>feature-packs</module>
-        <module>licenses-common</module>
         <module>maven-plugins</module>
         <module>server-dist</module>
         <module>server-overlay</module>
     </modules>
-
-    <repositories>
-        <!-- Needed for org.picketlink:picketlink-api -->
-        <repository>
-            <id>jboss-enterprise-maven-repository</id>
-            <name>JBoss Enterprise Maven Repository</name>
-            <url>https://maven.repository.redhat.com/ga/</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
 
     <profiles>
         <profile>
