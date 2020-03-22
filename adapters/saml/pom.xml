@@ -36,7 +36,6 @@
         <module>tomcat</module>
         <module>wildfly</module>
         <module>servlet-filter</module>
-        <module>wildfly-elytron</module>
     </modules>
 
     <profiles>
