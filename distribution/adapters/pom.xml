@@ -44,7 +44,6 @@
             </activation>
             <modules>
                 <module>tomcat-adapter-zip</module>
-                <module>tomcat7-adapter-zip</module>
             </modules>
         </profile>
     </profiles>
