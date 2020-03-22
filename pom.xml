@@ -14,33 +14,24 @@
 ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ~ See the License for the specific language governing permissions and
 ~ limitations under the License.
-
 -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
         <version>34</version>
     </parent>
-
-    <name>Keycloak</name>
-    <description>
-        Keycloak SSO
-    </description>
     <groupId>org.keycloak</groupId>
     <artifactId>keycloak-parent</artifactId>
     <version>9.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
+    <name>Keycloak</name>
+    <description>Keycloak SSO</description>
+
     <properties>
-        <product.rhsso.version>7.4.0.GA</product.rhsso.version>
-
-        <product.build-time>${timestamp}</product.build-time>
-
         <wildfly.version>18.0.1.Final</wildfly.version>
         <wildfly.build-tools.version>1.2.12.Final</wildfly.build-tools.version>
         <eap.version>7.3.0.GA-redhat-00004</eap.version>
@@ -73,8 +64,10 @@
         <jboss.logging.tools.version>2.2.0.Final</jboss.logging.tools.version>
         <jboss-jaxrs-api_2.1_spec>2.0.1.Final</jboss-jaxrs-api_2.1_spec>
         <jboss-transaction-api_1.3_spec>2.0.0.Final</jboss-transaction-api_1.3_spec>
-        <jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec.version>2.0.0.Final</jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec.version>
-        <jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec.version>2.0.0.Final</jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec.version>
+        <jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec.version>2.0.0.Final
+        </jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec.version>
+        <jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec.version>2.0.0.Final
+        </jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec.version>
         <log4j.version>1.2.17</log4j.version>
         <!-- Will be used in the product. Upstream versions are overridden in the community profile -->
         <resteasy.version>3.9.3.SP1</resteasy.version>
@@ -91,7 +84,7 @@
         <xmlsec.version>2.1.4</xmlsec.version>
         <glassfish.json.version>1.1.6</glassfish.json.version>
         <wildfly.common.version>1.5.1.Final</wildfly.common.version>
-        <ua-parser.version>1.4.3</ua-parser.version>        
+        <ua-parser.version>1.4.3</ua-parser.version>
         <picketbox.version>5.0.3.Final</picketbox.version>
         <google.guava.version>25.0-jre</google.guava.version>
 
@@ -145,7 +138,9 @@
         <surefire.memory.Xmx>2048m</surefire.memory.Xmx>
         <surefire.memory.metaspace>96m</surefire.memory.metaspace>
         <surefire.memory.metaspace.max>512m</surefire.memory.metaspace.max>
-        <surefire.memory.settings>-Xms${surefire.memory.Xms} -Xmx${surefire.memory.Xmx} -XX:MetaspaceSize=${surefire.memory.metaspace} -XX:MaxMetaspaceSize=${surefire.memory.metaspace.max}</surefire.memory.settings>
+        <surefire.memory.settings>-Xms${surefire.memory.Xms} -Xmx${surefire.memory.Xmx}
+            -XX:MetaspaceSize=${surefire.memory.metaspace} -XX:MaxMetaspaceSize=${surefire.memory.metaspace.max}
+        </surefire.memory.settings>
         <undertow.version>2.0.28.Final</undertow.version>
         <!-- Tomcat versions -->
         <tomcat8.version>8.5.38</tomcat8.version>
@@ -176,20 +171,15 @@
         <module>boms</module>
         <module>common</module>
         <module>core</module>
-        <module>dependencies</module>
         <module>server-spi</module>
         <module>server-spi-private</module>
         <module>saml-core-api</module>
         <module>saml-core</module>
         <module>federation</module>
         <module>services</module>
-<!--        <module>themes</module>-->
         <module>model</module>
         <module>util</module>
-        <module>wildfly</module>
         <module>integration</module>
-        <module>adapters</module>
-        <module>authz</module>
         <module>misc</module>
     </modules>
 
@@ -1110,16 +1100,16 @@
     <build>
         <pluginManagement>
             <plugins>
-<!--                <plugin>-->
-<!--                    <groupId>org.sonatype.plugins</groupId>-->
-<!--                    <artifactId>nexus-staging-maven-plugin</artifactId>-->
-<!--                    <version>${nexus.staging.plugin.version}</version>-->
-<!--                    <extensions>true</extensions>-->
-<!--                    <configuration>-->
-<!--                        <nexusUrl>https://repository.jboss.org/nexus</nexusUrl>-->
-<!--                        <serverId>jboss-releases-repository</serverId>-->
-<!--                    </configuration>-->
-<!--                </plugin>-->
+                <!--                <plugin>-->
+                <!--                    <groupId>org.sonatype.plugins</groupId>-->
+                <!--                    <artifactId>nexus-staging-maven-plugin</artifactId>-->
+                <!--                    <version>${nexus.staging.plugin.version}</version>-->
+                <!--                    <extensions>true</extensions>-->
+                <!--                    <configuration>-->
+                <!--                        <nexusUrl>https://repository.jboss.org/nexus</nexusUrl>-->
+                <!--                        <serverId>jboss-releases-repository</serverId>-->
+                <!--                    </configuration>-->
+                <!--                </plugin>-->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
@@ -1212,20 +1202,6 @@
                     <artifactId>frontend-maven-plugin</artifactId>
                     <version>${frontend.plugin.version}</version>
                 </plugin>
-                <plugin>
-                    <groupId>org.keycloak</groupId>
-                    <artifactId>keycloak-distribution-licenses-maven-plugin</artifactId>
-                    <version>${project.version}</version>
-                    <executions>
-                        <execution>
-                            <id>process-licenses</id>
-                            <goals>
-                                <goal>process</goal>
-                            </goals>
-                            <phase>process-resources</phase>
-                        </execution>
-                    </executions>
-                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -1243,82 +1219,15 @@
                 <product.name.full>Keycloak</product.name.full>
                 <product.slot>keycloak</product.slot>
                 <product.wildfly.console.slot>main</product.wildfly.console.slot>
-                <product.name-html>\u003Cdiv class="kc-logo-text"\u003E\u003Cspan\u003EKeycloak\u003C\u002Fspan\u003E\u003C\u002Fdiv\u003E</product.name-html>
+                <product.name-html>\u003Cdiv
+                    class="kc-logo-text"\u003E\u003Cspan\u003EKeycloak\u003C\u002Fspan\u003E\u003C\u002Fdiv\u003E
+                </product.name-html>
                 <product.version>${project.version}</product.version>
                 <product.default-profile>community</product.default-profile>
                 <jackson.version>2.9.10</jackson.version>
                 <jackson.databind.version>2.9.10.1</jackson.databind.version>
                 <resteasy.version>3.9.1.Final</resteasy.version>
             </properties>
-        </profile>
-
-        <profile>
-            <id>product</id>
-            <activation>
-                <property>
-                    <name>product</name>
-                </property>
-            </activation>
-            <properties>
-                <product.name.full>Red Hat Single Sign-On</product.name.full>
-                <product.name>rh-sso</product.name>
-                <product.slot>rh-sso</product.slot>
-                <product.wildfly.console.slot>eap</product.wildfly.console.slot>
-                <product.name-html>\u003Cstrong\u003ERed Hat\u003C\u002Fstrong\u003E\u003Csup\u003E\u00AE\u003C\u002Fsup\u003E Single Sign On</product.name-html>
-                <product.version>${product.rhsso.version}</product.version>
-                <product.default-profile>product</product.default-profile>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>build-helper-maven-plugin</artifactId>
-                        <version>1.7</version>
-                        <executions>
-                            <execution>
-                                <id>set-product-filename-version</id>
-                                <goals>
-                                    <goal>regex-property</goal>
-                                </goals>
-                                <phase>initialize</phase>
-                                <configuration>
-                                    <name>product.filename.version</name>
-                                    <value>${product.rhsso.version}</value>
-                                    <regex>^(\d+(\.\d+)?).*?$</regex>
-                                    <replacement>$1</replacement>
-                                    <failIfNoMatch>true</failIfNoMatch>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>testsuite</id>
-            <activation>
-                <property>
-                    <name>!skipTestsuite</name>
-                </property>
-            </activation>
-            <modules>
-
-            </modules>
-        </profile>
-
-        <profile>
-            <id>distribution</id>
-            <modules>
-                <module>distribution</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>jboss-release</id>
-            <modules>
-                <module>distribution</module>
-            </modules>
         </profile>
 
         <profile>

@@ -44,12 +44,6 @@ To build from source refer to the [building and working with the code base](docs
 
 To write tests refer to the [writing tests](docs/tests-development.md) guide.
 
-
-## Contributing
-
-Before contributing to Keycloak please read our [contributing guidelines](CONTRIBUTING.md).
-
-
 ## Other Keycloak Projects
 
 * [Keycloak](https://github.com/keycloak/keycloak) - Keycloak Server and Java adapters

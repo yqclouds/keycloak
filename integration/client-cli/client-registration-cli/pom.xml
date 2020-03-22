@@ -15,17 +15,16 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>keycloak-client-cli-parent</artifactId>
         <groupId>org.keycloak</groupId>
         <version>9.0.1-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
-
     <artifactId>keycloak-client-registration-cli</artifactId>
+
     <name>Keycloak Client Registration CLI</name>
     <description/>
 
@@ -72,8 +71,10 @@
                                         <include>org/keycloak/representations/adapters/config/**</include>
                                         <include>org/keycloak/representations/AccessTokenResponse.class</include>
                                         <include>org/keycloak/representations/idm/ClientRepresentation.class</include>
-                                        <include>org/keycloak/representations/idm/ProtocolMapperRepresentation.class</include>
-                                        <include>org/keycloak/representations/oidc/OIDCClientRepresentation.class</include>
+                                        <include>org/keycloak/representations/idm/ProtocolMapperRepresentation.class
+                                        </include>
+                                        <include>org/keycloak/representations/oidc/OIDCClientRepresentation.class
+                                        </include>
                                         <include>org/keycloak/representations/idm/authorization/**</include>
                                         <include>org/keycloak/representations/JsonWebToken.class</include>
                                         <include>org/keycloak/Token.class</include>
@@ -132,5 +133,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
