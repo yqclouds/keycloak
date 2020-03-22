@@ -1277,12 +1277,6 @@
             </dependency>
             <dependency>
                 <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-examples-dist</artifactId>
-                <version>${project.version}</version>
-                <type>zip</type>
-            </dependency>
-            <dependency>
-                <groupId>org.keycloak</groupId>
                 <artifactId>keycloak-tomcat7-adapter-dist</artifactId>
                 <version>${project.version}</version>
                 <type>zip</type>
@@ -1400,23 +1394,6 @@
                 <classifier>classes</classifier>
             </dependency>
 
-            <dependency>
-                <groupId>org.keycloak.example.demo</groupId>
-                <artifactId>cxf-jaxws-example</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.keycloak.example.demo</groupId>
-                <artifactId>customer-portal-example</artifactId>
-                <version>${project.version}</version>
-                <type>war</type>
-            </dependency>
-            <dependency>
-                <groupId>org.keycloak.example.demo</groupId>
-                <artifactId>product-portal-example</artifactId>
-                <version>${project.version}</version>
-                <type>war</type>
-            </dependency>
             <dependency>
                 <groupId>org.keycloak</groupId>
                 <artifactId>keycloak-client-registration-cli</artifactId>
@@ -1680,18 +1657,6 @@
         </profile>
 
         <profile>
-            <id>examples</id>
-            <activation>
-                <property>
-                    <name>!skipExamples</name>
-                </property>
-            </activation>
-            <modules>
-                <module>examples</module>
-            </modules>
-        </profile>
-
-        <profile>
             <id>distribution</id>
             <modules>
                 <module>distribution</module>
@@ -1737,22 +1702,5 @@
                 </plugins>
             </build>
         </profile>
-
-        <profile>
-            <id>quarkus</id>
-            <modules>
-                <module>quarkus</module>
-            </modules>
-            <dependencyManagement>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.keycloak</groupId>
-                        <artifactId>keycloak-quarkus-server</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                </dependencies>
-            </dependencyManagement>
-        </profile>
-
     </profiles>
 </project>

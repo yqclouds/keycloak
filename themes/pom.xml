@@ -89,8 +89,6 @@
                     <exclude>**/docs/**</exclude>
                     <exclude>**/demo/**</exclude>
                     <exclude>**/devtools/**</exclude>
-                    <exclude>**/example/**</exclude>
-                    <exclude>**/examples/**</exclude>
                     <exclude>**/grunt/**</exclude>
                     <exclude>**/less/**</exclude>
                     <exclude>**/sass/**</exclude>

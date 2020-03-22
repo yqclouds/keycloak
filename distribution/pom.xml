@@ -62,16 +62,8 @@
             <id>distribution-downloads</id>
             <modules>
                 <module>api-docs-dist</module>
-                <module>examples-dist</module>
                 <module>downloads</module>
             </modules>
         </profile>
-        <profile>
-            <id>quarkus</id>
-            <modules>
-                <module>server-x</module>
-            </modules>
-        </profile>
     </profiles>
-
 </project>
