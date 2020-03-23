@@ -171,6 +171,7 @@
         <module>util</module>
         <module>integration</module>
         <module>misc</module>
+        <module>web</module>
     </modules>
 
     <dependencyManagement>
