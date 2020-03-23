@@ -22,7 +22,6 @@ package org.keycloak.constants;
  * @version $Revision: 1 $
  */
 public interface ServiceUrlConstants {
-
     public static final String AUTH_PATH = "/realms/{realm-name}/protocol/openid-connect/auth";
     public static final String TOKEN_PATH = "/realms/{realm-name}/protocol/openid-connect/token";
     public static final String TOKEN_SERVICE_LOGOUT_PATH = "/realms/{realm-name}/protocol/openid-connect/logout";
@@ -33,5 +32,4 @@ public interface ServiceUrlConstants {
     public static final String JWKS_URL = "/realms/{realm-name}/protocol/openid-connect/certs";
     public static final String DISCOVERY_URL = "/realms/{realm-name}/.well-known/openid-configuration";
     String AUTHZ_DISCOVERY_URL = "/realms/{realm-name}/.well-known/uma2-configuration";
-
 }
