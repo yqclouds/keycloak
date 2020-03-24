@@ -61,7 +61,7 @@
         <jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec.version>2.0.0.Final
         </jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec.version>
         <log4j.version>1.2.17</log4j.version>
-        <resteasy.version>3.9.3.SP1</resteasy.version>
+        <resteasy.version>3.11.0.Final</resteasy.version>
         <owasp.html.sanitizer.version>20191001.1</owasp.html.sanitizer.version>
         <slf4j-api.version>1.7.22</slf4j-api.version>
         <slf4j.version>1.7.22</slf4j.version>
@@ -157,6 +157,7 @@
     </licenses>
 
     <modules>
+        <module>adapters</module>
         <module>authz</module>
         <module>boms</module>
         <module>common</module>
@@ -171,7 +172,6 @@
         <module>util</module>
         <module>integration</module>
         <module>misc</module>
-        <module>web</module>
     </modules>
 
     <dependencyManagement>
