@@ -19,11 +19,11 @@ import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.managers.ApplianceBootstrap;
 import org.keycloak.services.managers.RealmManager;
 import org.keycloak.services.managers.UserStorageSyncManager;
+import org.keycloak.services.resources.KeycloakApplication;
 import org.keycloak.services.scheduled.*;
 import org.keycloak.timer.TimerProvider;
 import org.keycloak.transaction.JtaTransactionManagerLookup;
 import org.keycloak.util.JsonSerialization;
-import org.keycloak.web.rs.KeycloakRsApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
@@ -38,13 +38,10 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 public class KeycloakApplicationListener implements ApplicationListener<ContextRefreshedEvent> {
     private static final Logger LOG = LoggerFactory.getLogger(KeycloakApplicationListener.class);
-
-    public static final AtomicBoolean BOOTSTRAP_ADMIN_USER = new AtomicBoolean(false);
 
     protected KeycloakSessionFactory sessionFactory;
 
@@ -58,10 +55,6 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
         loadConfig();
 
         this.sessionFactory = createSessionFactory();
-
-        KeycloakRsApplication application = new KeycloakRsApplication();
-        Resteasy.pushDefaultContextObject(KeycloakRsApplication.class,application);
-        Resteasy.pushContext(KeycloakRsApplication.class, application);
 
         Objects.requireNonNull(context.getServletContext()).setAttribute(KeycloakSessionFactory.class.getName(), this.sessionFactory);
     }
@@ -98,14 +91,13 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
             }
         });
 
-
         if (exportImportManager[0].isRunExport()) {
             exportImportManager[0].runExport();
         }
 
         KeycloakModelUtils.runJobInTransaction(sessionFactory, session -> {
             boolean shouldBootstrapAdmin = new ApplianceBootstrap(session).isNoMasterUser();
-            BOOTSTRAP_ADMIN_USER.set(shouldBootstrapAdmin);
+            KeycloakApplication.BOOTSTRAP_ADMIN_USER.set(shouldBootstrapAdmin);
         });
 
         sessionFactory.publish(new PostMigrationEvent());

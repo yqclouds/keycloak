@@ -3,17 +3,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.5.RELEASE</version>
+        <groupId>org.keycloak</groupId>
+        <artifactId>keycloak-parent</artifactId>
+        <version>9.0.1-SNAPSHOT</version>
     </parent>
-    <groupId>org.keycloak</groupId>
     <artifactId>web</artifactId>
-    <version>9.0.1-SNAPSHOT</version>
-
-    <properties>
-        <resteasy.version>3.11.0.Final</resteasy.version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -65,13 +59,6 @@
             <groupId>org.jboss.spec.javax.transaction</groupId>
             <artifactId>jboss-transaction-api_1.3_spec</artifactId>
             <version>2.0.0.Final</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.16.18</version>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 
