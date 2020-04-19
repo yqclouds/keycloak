@@ -17,8 +17,6 @@
 
 package org.keycloak.common.util;
 
-import java.util.ServiceLoader;
-
 /**
  * <p>Provides a layer of indirection to abstract invocations to Resteasy internal APIs. Making also possible to use different
  * versions of Resteasy (e.g.: v3 and v4) depending on the stack that the server is running.
@@ -35,7 +33,7 @@ public final class Resteasy {
     private static ResteasyProvider provider;
 
     static {
-        provider = ServiceLoader.load(ResteasyProvider.class, Resteasy.class.getClassLoader()).iterator().next();
+        provider = new DefaultResteasyProvider();
     }
 
     public static ResteasyProvider getProvider() {

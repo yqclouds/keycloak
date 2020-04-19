@@ -37,7 +37,6 @@ public class ProviderManagerRegistry {
         } else {
             deployer.deploy(pm);
         }
-
     }
 
     public synchronized void undeploy(ProviderManager pm) {

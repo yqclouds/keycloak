@@ -80,7 +80,7 @@ public abstract class CustomKeycloakTask implements CustomSqlChange {
 
             try {
                 DefaultKeycloakSessionFactory factory = new DefaultKeycloakSessionFactory();
-                factory.init();
+                factory.afterPropertiesSet();
                 this.kcSession = factory.create();
             } catch (Exception e) {
                 throw new SetupException("Exception when initializing factory", e);

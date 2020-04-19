@@ -3,7 +3,6 @@ package org.keycloak.web.listener;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.keycloak.Config;
 import org.keycloak.common.util.Resteasy;
-import org.keycloak.config.ConfigProviderFactory;
 import org.keycloak.exportimport.ExportImportManager;
 import org.keycloak.migration.MigrationModelManager;
 import org.keycloak.models.*;
@@ -14,7 +13,6 @@ import org.keycloak.models.utils.PostMigrationEvent;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.keycloak.services.DefaultKeycloakSessionFactory;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.managers.ApplianceBootstrap;
 import org.keycloak.services.managers.RealmManager;
@@ -26,6 +24,7 @@ import org.keycloak.transaction.JtaTransactionManagerLookup;
 import org.keycloak.util.JsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
@@ -37,13 +36,20 @@ import javax.servlet.ServletContext;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import java.io.*;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.StringTokenizer;
 
 @Component
 public class KeycloakApplicationListener implements ApplicationListener<ContextRefreshedEvent> {
     private static final Logger LOG = LoggerFactory.getLogger(KeycloakApplicationListener.class);
 
-    protected KeycloakSessionFactory sessionFactory;
+    private KeycloakSessionFactory sessionFactory;
+
+    @Autowired
+    public KeycloakApplicationListener(KeycloakSessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
+    }
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
@@ -52,28 +58,9 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
         LOG.debug("RestEasy provider: {}", Resteasy.getProvider().getClass().getName());
         Resteasy.pushContext(ServletContext.class, context.getServletContext());
 
-        loadConfig();
-
-        this.sessionFactory = createSessionFactory();
-
         Objects.requireNonNull(context.getServletContext()).setAttribute(KeycloakSessionFactory.class.getName(), this.sessionFactory);
-    }
 
-    protected void loadConfig() {
-        ServiceLoader<ConfigProviderFactory> loader = ServiceLoader.load(ConfigProviderFactory.class, getClass().getClassLoader());
-        try {
-            ConfigProviderFactory factory = loader.iterator().next();
-            LOG.debug("ConfigProvider: {}", factory.getClass().getName());
-            Config.init(factory.create().orElseThrow(() -> new RuntimeException("Failed to load Keycloak configuration")));
-        } catch (NoSuchElementException e) {
-            throw new RuntimeException("No valid ConfigProvider found");
-        }
-    }
-
-    private static KeycloakSessionFactory createSessionFactory() {
-        DefaultKeycloakSessionFactory factory = new DefaultKeycloakSessionFactory();
-        factory.init();
-        return factory;
+        startup();
     }
 
     @PostConstruct

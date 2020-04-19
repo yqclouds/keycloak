@@ -16,7 +16,6 @@
  */
 package org.keycloak.services;
 
-import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.models.KeycloakSession;
@@ -24,20 +23,58 @@ import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.*;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import org.keycloak.theme.DefaultThemeManagerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, ProviderManagerDeployer {
+public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, ProviderManagerDeployer, InitializingBean {
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultKeycloakSessionFactory.class);
 
-    private static final Logger logger = Logger.getLogger(DefaultKeycloakSessionFactory.class);
     protected CopyOnWriteArrayList<ProviderEventListener> listeners = new CopyOnWriteArrayList<>();
-    // TODO: Likely should be changed to int and use Time.currentTime() to be compatible with all our "time" reps
     protected long serverStartupTimestamp;
+
     private Set<Spi> spis = new HashSet<>();
-    private Map<Class<? extends Provider>, String> provider = new HashMap<>();
-    private volatile Map<Class<? extends Provider>, Map<String, ProviderFactory>> factoriesMap = new HashMap<>();
+    private volatile Map<Class<? extends Provider>, Map<String, ProviderFactory>> providerFactories = new HashMap<>();
+    private Map<Class<? extends Provider>, String> providers = new HashMap<>();
+
     private DefaultThemeManagerFactory themeManagerFactory;
+
+    private ProviderManager providerManager;
+
+    @Override
+    public void afterPropertiesSet() {
+        serverStartupTimestamp = System.currentTimeMillis();
+
+        spis.addAll(providerManager.loadSpis());
+        providerFactories = loadFactories(providerManager);
+
+        synchronized (ProviderManagerRegistry.SINGLETON) {
+            for (ProviderManager manager : ProviderManagerRegistry.SINGLETON.getPreBoot()) {
+                Map<Class<? extends Provider>, Map<String, ProviderFactory>> factoryMap = loadFactories(manager);
+                for (Map.Entry<Class<? extends Provider>, Map<String, ProviderFactory>> entry : factoryMap.entrySet()) {
+                    Map<String, ProviderFactory> factories = providerFactories.get(entry.getKey());
+                    if (factories == null) {
+                        providerFactories.put(entry.getKey(), entry.getValue());
+                    } else {
+                        factories.putAll(entry.getValue());
+                    }
+                }
+            }
+            checkProvider();
+            for (Map<String, ProviderFactory> factories : providerFactories.values()) {
+                for (ProviderFactory factory : factories.values()) {
+                    factory.postInit(this);
+                }
+            }
+            // make the session factory ready for hot deployment
+            ProviderManagerRegistry.SINGLETON.setDeployer(this);
+        }
+
+        AdminPermissions.registerListener(this);
+    }
 
     @Override
     public void register(ProviderEventListener listener) {
@@ -54,51 +91,6 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
         for (ProviderEventListener listener : listeners) {
             listener.onEvent(event);
         }
-    }
-
-    public void init() {
-        serverStartupTimestamp = System.currentTimeMillis();
-
-        ProviderManager pm = new ProviderManager(KeycloakDeploymentInfo.create().services(), getClass().getClassLoader(), Config.scope().getArray("providers"));
-        spis.addAll(pm.loadSpis());
-        factoriesMap = loadFactories(pm);
-
-        synchronized (ProviderManagerRegistry.SINGLETON) {
-            for (ProviderManager manager : ProviderManagerRegistry.SINGLETON.getPreBoot()) {
-                Map<Class<? extends Provider>, Map<String, ProviderFactory>> factoryMap = loadFactories(manager);
-                for (Map.Entry<Class<? extends Provider>, Map<String, ProviderFactory>> entry : factoryMap.entrySet()) {
-                    Map<String, ProviderFactory> factories = factoriesMap.get(entry.getKey());
-                    if (factories == null) {
-                        factoriesMap.put(entry.getKey(), entry.getValue());
-                    } else {
-                        factories.putAll(entry.getValue());
-                    }
-                }
-            }
-            checkProvider();
-            for (Map<String, ProviderFactory> factories : factoriesMap.values()) {
-                for (ProviderFactory factory : factories.values()) {
-                    factory.postInit(this);
-                }
-            }
-            // make the session factory ready for hot deployment
-            ProviderManagerRegistry.SINGLETON.setDeployer(this);
-        }
-
-        AdminPermissions.registerListener(this);
-
-        themeManagerFactory = new DefaultThemeManagerFactory();
-    }
-
-    protected Map<Class<? extends Provider>, Map<String, ProviderFactory>> getFactoriesCopy() {
-        Map<Class<? extends Provider>, Map<String, ProviderFactory>> copy = new HashMap<>();
-        for (Map.Entry<Class<? extends Provider>, Map<String, ProviderFactory>> entry : factoriesMap.entrySet()) {
-            Map<String, ProviderFactory> valCopy = new HashMap<>();
-            valCopy.putAll(entry.getValue());
-            copy.put(entry.getKey(), valCopy);
-        }
-        return copy;
-
     }
 
     @Override
@@ -122,7 +114,7 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
             }
 
         }
-        factoriesMap = copy;
+        providerFactories = copy;
         for (ProviderFactory factory : undeployed) {
             factory.close();
         }
@@ -137,7 +129,7 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
 
     @Override
     public void undeploy(ProviderManager pm) {
-        logger.debug("undeploy");
+        LOG.debug("undeploy");
         // we make a copy to avoid concurrent access exceptions
         Map<Class<? extends Provider>, Map<String, ProviderFactory>> copy = getFactoriesCopy();
         MultivaluedHashMap<Class<? extends Provider>, ProviderFactory> factories = pm.getLoadedFactories();
@@ -146,16 +138,26 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
             Map<String, ProviderFactory> registered = copy.get(entry.getKey());
             for (ProviderFactory factory : entry.getValue()) {
                 undeployed.add(factory);
-                logger.debugv("undeploying {0} of id {1}", factory.getClass().getName(), factory.getId());
+                LOG.debug("undeploying {} of id {}", factory.getClass().getName(), factory.getId());
                 if (registered != null) {
                     registered.remove(factory.getId());
                 }
             }
         }
-        factoriesMap = copy;
+        providerFactories = copy;
         for (ProviderFactory factory : undeployed) {
             factory.close();
         }
+    }
+
+    protected Map<Class<? extends Provider>, Map<String, ProviderFactory>> getFactoriesCopy() {
+        Map<Class<? extends Provider>, Map<String, ProviderFactory>> copy = new HashMap<>();
+        for (Map.Entry<Class<? extends Provider>, Map<String, ProviderFactory>> entry : providerFactories.entrySet()) {
+            Map<String, ProviderFactory> valCopy = new HashMap<>();
+            valCopy.putAll(entry.getValue());
+            copy.put(entry.getKey(), valCopy);
+        }
+        return copy;
     }
 
     protected DefaultThemeManagerFactory getThemeManagerFactory() {
@@ -166,18 +168,28 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
         for (Spi spi : spis) {
             String provider = Config.getProvider(spi.getName());
             if (provider != null) {
-                this.provider.put(spi.getProviderClass(), provider);
+                this.providers.put(spi.getProviderClass(), provider);
                 if (getProviderFactory(spi.getProviderClass(), provider) == null) {
                     throw new RuntimeException("Failed to find provider " + provider + " for " + spi.getName());
                 }
             } else {
-                Map<String, ProviderFactory> factories = factoriesMap.get(spi.getProviderClass());
+                Map<String, ProviderFactory> factories = providerFactories.get(spi.getProviderClass());
                 if (factories != null && factories.size() == 1) {
                     provider = factories.values().iterator().next().getId();
-                    this.provider.put(spi.getProviderClass(), provider);
+                    this.providers.put(spi.getProviderClass(), provider);
                 }
             }
         }
+    }
+
+    private boolean isEnabled(ProviderFactory factory, Config.Scope scope) {
+        if (!scope.getBoolean("enabled", true)) {
+            return false;
+        }
+        if (factory instanceof EnvironmentDependentProviderFactory) {
+            return ((EnvironmentDependentProviderFactory) factory).isSupported();
+        }
+        return true;
     }
 
     protected Map<Class<? extends Provider>, Map<String, ProviderFactory>> loadFactories(ProviderManager pm) {
@@ -186,7 +198,7 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
 
         for (Spi spi : spiList) {
 
-            Map<String, ProviderFactory> factories = new HashMap<String, ProviderFactory>();
+            Map<String, ProviderFactory> factories = new HashMap<>();
             factoryMap.put(spi.getProviderClass(), factories);
 
             String provider = Config.getProvider(spi.getName());
@@ -207,7 +219,7 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
 
                     factories.put(factory.getId(), factory);
 
-                    logger.debugv("Loaded SPI {0} (provider = {1})", spi.getName(), provider);
+                    LOG.debug("Loaded SPI {} (provider = {})", spi.getName(), provider);
                 }
 
             } else {
@@ -222,7 +234,7 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
 
                         factories.put(factory.getId(), factory);
                     } else {
-                        logger.debugv("SPI {0} provider {1} disabled", spi.getName(), factory.getId());
+                        LOG.debug("SPI {} provider {} disabled", spi.getName(), factory.getId());
                     }
                 }
             }
@@ -230,26 +242,16 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
         return factoryMap;
     }
 
-    private boolean isEnabled(ProviderFactory factory, Config.Scope scope) {
-        if (!scope.getBoolean("enabled", true)) {
-            return false;
-        }
-        if (factory instanceof EnvironmentDependentProviderFactory) {
-            return ((EnvironmentDependentProviderFactory) factory).isSupported();
-        }
-        return true;
-    }
-
     protected void loadSPIs(ProviderManager pm, List<Spi> spiList) {
         for (Spi spi : spiList) {
             spis.add(spi);
 
-            Map<String, ProviderFactory> factories = new HashMap<String, ProviderFactory>();
-            factoriesMap.put(spi.getProviderClass(), factories);
+            Map<String, ProviderFactory> factories = new HashMap<>();
+            providerFactories.put(spi.getProviderClass(), factories);
 
             String provider = Config.getProvider(spi.getName());
             if (provider != null) {
-                this.provider.put(spi.getProviderClass(), provider);
+                this.providers.put(spi.getProviderClass(), provider);
 
                 ProviderFactory factory = pm.load(spi, provider);
                 if (factory == null) {
@@ -265,7 +267,7 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
 
                 factories.put(factory.getId(), factory);
 
-                logger.debugv("Loaded SPI {0} (provider = {1})", spi.getName(), provider);
+                LOG.debug("Loaded SPI {} (provider = {})", spi.getName(), provider);
             } else {
                 for (ProviderFactory factory : pm.load(spi)) {
                     Config.Scope scope = Config.scope(spi.getName(), factory.getId());
@@ -278,29 +280,28 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
 
                         factories.put(factory.getId(), factory);
                     } else {
-                        logger.debugv("SPI {0} provider {1} disabled", spi.getName(), factory.getId());
+                        LOG.debug("SPI {} provider {} disabled", spi.getName(), factory.getId());
                     }
                 }
 
                 if (factories.size() == 1) {
                     provider = factories.values().iterator().next().getId();
-                    this.provider.put(spi.getProviderClass(), provider);
+                    this.providers.put(spi.getProviderClass(), provider);
 
-                    logger.debugv("Loaded SPI {0} (provider = {1})", spi.getName(), provider);
+                    LOG.debug("Loaded SPI {} (provider = {})", spi.getName(), provider);
                 } else {
-                    logger.debugv("Loaded SPI {0} (providers = {1})", spi.getName(), factories.keySet());
+                    LOG.debug("Loaded SPI {} (providers = {})", spi.getName(), factories.keySet());
                 }
             }
         }
     }
 
     public KeycloakSession create() {
-        KeycloakSession session = new DefaultKeycloakSession(this);
-        return session;
+        return new DefaultKeycloakSession(this);
     }
 
     <T extends Provider> String getDefaultProvider(Class<T> clazz) {
-        return provider.get(clazz);
+        return providers.get(clazz);
     }
 
     @Override
@@ -318,12 +319,12 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
 
     @Override
     public <T extends Provider> ProviderFactory<T> getProviderFactory(Class<T> clazz) {
-        return getProviderFactory(clazz, provider.get(clazz));
+        return getProviderFactory(clazz, providers.get(clazz));
     }
 
     @Override
     public <T extends Provider> ProviderFactory<T> getProviderFactory(Class<T> clazz, String id) {
-        Map<String, ProviderFactory> map = factoriesMap.get(clazz);
+        Map<String, ProviderFactory> map = providerFactories.get(clazz);
         if (map == null) {
             return null;
         }
@@ -332,24 +333,24 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
 
     @Override
     public List<ProviderFactory> getProviderFactories(Class<? extends Provider> clazz) {
-        List<ProviderFactory> list = new LinkedList<ProviderFactory>();
-        if (factoriesMap == null) return list;
-        Map<String, ProviderFactory> providerFactoryMap = factoriesMap.get(clazz);
+        List<ProviderFactory> list = new LinkedList<>();
+        if (providerFactories == null) return list;
+        Map<String, ProviderFactory> providerFactoryMap = providerFactories.get(clazz);
         if (providerFactoryMap == null) return list;
         list.addAll(providerFactoryMap.values());
         return list;
     }
 
     <T extends Provider> Set<String> getAllProviderIds(Class<T> clazz) {
-        Set<String> ids = new HashSet<String>();
-        for (ProviderFactory f : factoriesMap.get(clazz).values()) {
+        Set<String> ids = new HashSet<>();
+        for (ProviderFactory f : providerFactories.get(clazz).values()) {
             ids.add(f.getId());
         }
         return ids;
     }
 
     Class<? extends Provider> getProviderClass(String providerClassName) {
-        for (Class<? extends Provider> clazz : factoriesMap.keySet()) {
+        for (Class<? extends Provider> clazz : providerFactories.keySet()) {
             if (clazz.getName().equals(providerClassName)) {
                 return clazz;
             }
@@ -359,7 +360,7 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
 
     public void close() {
         ProviderManagerRegistry.SINGLETON.setDeployer(null);
-        for (Map<String, ProviderFactory> factories : factoriesMap.values()) {
+        for (Map<String, ProviderFactory> factories : providerFactories.values()) {
             for (ProviderFactory factory : factories.values()) {
                 factory.close();
             }
@@ -379,4 +380,11 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
         return serverStartupTimestamp;
     }
 
+    public void setThemeManagerFactory(DefaultThemeManagerFactory themeManagerFactory) {
+        this.themeManagerFactory = themeManagerFactory;
+    }
+
+    public void setProviderManager(ProviderManager providerManager) {
+        this.providerManager = providerManager;
+    }
 }

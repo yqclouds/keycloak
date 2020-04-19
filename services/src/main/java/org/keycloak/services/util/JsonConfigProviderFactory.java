@@ -31,7 +31,7 @@ import java.net.URL;
 import java.util.Optional;
 import java.util.Properties;
 
-public abstract class JsonConfigProviderFactory implements ConfigProviderFactory {
+public class JsonConfigProviderFactory implements ConfigProviderFactory {
 
     private static final Logger LOG = Logger.getLogger(JsonConfigProviderFactory.class);
 

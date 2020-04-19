@@ -16,39 +16,45 @@
  */
 package org.keycloak.provider;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.MultivaluedHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 import java.util.*;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-public class ProviderManager {
-
-    private static final Logger logger = Logger.getLogger(ProviderManager.class);
+public class ProviderManager implements InitializingBean {
+    private static final Logger LOG = LoggerFactory.getLogger(ProviderManager.class);
 
     private final KeycloakDeploymentInfo info;
-    private List<ProviderLoader> loaders = new LinkedList<ProviderLoader>();
-    private MultivaluedHashMap<Class<? extends Provider>, ProviderFactory> cache = new MultivaluedHashMap<>();
+    private final String[] resources;
+    private final ClassLoader baseClassLoader;
 
+    private List<ProviderLoader> loaders = new LinkedList<>();
+    private MultivaluedHashMap<Class<? extends Provider>, ProviderFactory> cache = new MultivaluedHashMap<>();
 
     public ProviderManager(KeycloakDeploymentInfo info, ClassLoader baseClassLoader, String... resources) {
         this.info = info;
-        List<ProviderLoaderFactory> factories = new LinkedList<ProviderLoaderFactory>();
+        this.baseClassLoader = baseClassLoader;
+        this.resources = resources;
+    }
+
+    @Override
+    public void afterPropertiesSet() {
+        List<ProviderLoaderFactory> factories = new LinkedList<>();
         for (ProviderLoaderFactory f : ServiceLoader.load(ProviderLoaderFactory.class, getClass().getClassLoader())) {
             factories.add(f);
         }
 
-        logger.debugv("Provider loaders {0}", factories);
-
-        loaders.add(new DefaultProviderLoader(info, baseClassLoader));
-        loaders.add(new DeploymentProviderLoader(info));
+        LOG.debug("Provider loaders {}", factories);
 
         if (resources != null) {
             for (String r : resources) {
                 String type = r.substring(0, r.indexOf(':'));
-                String resource = r.substring(r.indexOf(':') + 1, r.length());
+                String resource = r.substring(r.indexOf(':') + 1);
 
                 boolean found = false;
                 for (ProviderLoaderFactory f : factories) {
@@ -59,6 +65,7 @@ public class ProviderManager {
                         break;
                     }
                 }
+
                 if (!found) {
                     throw new RuntimeException("Provider loader for " + r + " not found");
                 }
@@ -125,4 +132,7 @@ public class ProviderManager {
         return info;
     }
 
+    public void setLoaders(List<ProviderLoader> loaders) {
+        this.loaders = loaders;
+    }
 }

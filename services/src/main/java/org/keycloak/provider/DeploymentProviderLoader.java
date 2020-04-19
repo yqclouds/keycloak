@@ -23,11 +23,11 @@ import java.util.List;
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
-final class DeploymentProviderLoader implements ProviderLoader {
+public final class DeploymentProviderLoader implements ProviderLoader {
 
     private final KeycloakDeploymentInfo info;
 
-    DeploymentProviderLoader(KeycloakDeploymentInfo info) {
+    public DeploymentProviderLoader(KeycloakDeploymentInfo info) {
         this.info = info;
     }
 
