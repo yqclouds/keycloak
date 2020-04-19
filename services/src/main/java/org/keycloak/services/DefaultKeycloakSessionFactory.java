@@ -27,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 
-import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -44,10 +43,6 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
     private DefaultThemeManagerFactory themeManagerFactory;
 
     private ProviderManager providerManager;
-
-    public void setSpis(Set<Spi> spis) {
-        this.spis = spis;
-    }
 
     @Override
     public void afterPropertiesSet() {
@@ -337,5 +332,9 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
 
     public void setProviderManager(ProviderManager providerManager) {
         this.providerManager = providerManager;
+    }
+
+    public void setSpis(Set<Spi> spis) {
+        this.spis = spis;
     }
 }
