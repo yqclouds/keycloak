@@ -87,7 +87,6 @@
         <apacheds.version>2.0.0-M21</apacheds.version>
         <apacheds.codec.version>1.0.0-M33</apacheds.codec.version>
         <google.zxing.version>3.4.0</google.zxing.version>
-        <freemarker.version>2.3.29</freemarker.version>
 
         <liquibase.version>3.5.5</liquibase.version>
         <mysql.version>8.0.18</mysql.version>
@@ -410,9 +409,8 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.freemarker</groupId>
-                <artifactId>freemarker</artifactId>
-                <version>${freemarker.version}</version>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-freemarker</artifactId>
             </dependency>
             <dependency>
                 <groupId>org.apache.santuario</groupId>

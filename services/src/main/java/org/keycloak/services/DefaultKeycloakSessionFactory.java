@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -44,11 +45,15 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
 
     private ProviderManager providerManager;
 
+    public void setSpis(Set<Spi> spis) {
+        this.spis = spis;
+    }
+
     @Override
     public void afterPropertiesSet() {
         serverStartupTimestamp = System.currentTimeMillis();
 
-        spis.addAll(providerManager.loadSpis());
+        // spis.addAll(providerManager.loadSpis());
         providerFactories = loadFactories(providerManager);
 
         synchronized (ProviderManagerRegistry.SINGLETON) {
@@ -240,60 +245,6 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
             }
         }
         return factoryMap;
-    }
-
-    protected void loadSPIs(ProviderManager pm, List<Spi> spiList) {
-        for (Spi spi : spiList) {
-            spis.add(spi);
-
-            Map<String, ProviderFactory> factories = new HashMap<>();
-            providerFactories.put(spi.getProviderClass(), factories);
-
-            String provider = Config.getProvider(spi.getName());
-            if (provider != null) {
-                this.providers.put(spi.getProviderClass(), provider);
-
-                ProviderFactory factory = pm.load(spi, provider);
-                if (factory == null) {
-                    throw new RuntimeException("Failed to find provider " + provider + " for " + spi.getName());
-                }
-
-                Config.Scope scope = Config.scope(spi.getName(), provider);
-                factory.init(scope);
-
-                if (spi.isInternal() && !isInternal(factory)) {
-                    ServicesLogger.LOGGER.spiMayChange(factory.getId(), factory.getClass().getName(), spi.getName());
-                }
-
-                factories.put(factory.getId(), factory);
-
-                LOG.debug("Loaded SPI {} (provider = {})", spi.getName(), provider);
-            } else {
-                for (ProviderFactory factory : pm.load(spi)) {
-                    Config.Scope scope = Config.scope(spi.getName(), factory.getId());
-                    if (scope.getBoolean("enabled", true)) {
-                        factory.init(scope);
-
-                        if (spi.isInternal() && !isInternal(factory)) {
-                            ServicesLogger.LOGGER.spiMayChange(factory.getId(), factory.getClass().getName(), spi.getName());
-                        }
-
-                        factories.put(factory.getId(), factory);
-                    } else {
-                        LOG.debug("SPI {} provider {} disabled", spi.getName(), factory.getId());
-                    }
-                }
-
-                if (factories.size() == 1) {
-                    provider = factories.values().iterator().next().getId();
-                    this.providers.put(spi.getProviderClass(), provider);
-
-                    LOG.debug("Loaded SPI {} (provider = {})", spi.getName(), provider);
-                } else {
-                    LOG.debug("Loaded SPI {} (providers = {})", spi.getName(), factories.keySet());
-                }
-            }
-        }
     }
 
     public KeycloakSession create() {
