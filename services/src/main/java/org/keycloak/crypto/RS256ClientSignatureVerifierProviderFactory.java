@@ -19,7 +19,7 @@ package org.keycloak.crypto;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 
-@ProviderFactory(id = Algorithm.RS256)
+@ProviderFactory(id = Algorithm.RS256, providerClasses = ClientSignatureVerifierProvider.class)
 public class RS256ClientSignatureVerifierProviderFactory implements ClientSignatureVerifierProviderFactory {
 
     public static final String ID = Algorithm.RS256;

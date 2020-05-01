@@ -58,7 +58,7 @@ import java.util.concurrent.TimeUnit;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "reset-credential-email")
+@ProviderFactory(id = "reset-credential-email", providerClasses = Authenticator.class)
 public class ResetCredentialEmail implements Authenticator, AuthenticatorFactory {
 
     public static final String PROVIDER_ID = "reset-credential-email";

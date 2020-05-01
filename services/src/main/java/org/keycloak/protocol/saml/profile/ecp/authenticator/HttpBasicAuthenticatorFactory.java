@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
-@ProviderFactory(id = "http-basic-authenticator")
+@ProviderFactory(id = "http-basic-authenticator", providerClasses = Authenticator.class)
 public class HttpBasicAuthenticatorFactory implements AuthenticatorFactory {
 
     public static final String PROVIDER_ID = "http-basic-authenticator";

@@ -11,7 +11,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 
-@ProviderFactory(id = "docker-v2-registry-config-file")
+@ProviderFactory(id = "docker-v2-registry-config-file", providerClasses = ClientInstallationProvider.class)
 public class DockerRegistryConfigFileInstallationProvider implements ClientInstallationProvider {
     @Override
     public ClientInstallationProvider create(final KeycloakSession session) {

@@ -17,7 +17,9 @@
 
 package org.keycloak.broker.oidc.mappers;
 
+import org.keycloak.broker.oidc.KeycloakOIDCIdentityProvider;
 import org.keycloak.broker.oidc.KeycloakOIDCIdentityProviderFactory;
+import org.keycloak.broker.oidc.OIDCIdentityProvider;
 import org.keycloak.broker.oidc.OIDCIdentityProviderFactory;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.ConfigConstants;
@@ -34,7 +36,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "oidc-role-idp-mapper")
+@ProviderFactory(id = "oidc-role-idp-mapper", providerClasses = {KeycloakOIDCIdentityProvider.class, OIDCIdentityProvider.class})
 public class ClaimToRoleMapper extends AbstractClaimMapper {
 
     public static final String[] COMPATIBLE_PROVIDERS = {KeycloakOIDCIdentityProviderFactory.PROVIDER_ID, OIDCIdentityProviderFactory.PROVIDER_ID};

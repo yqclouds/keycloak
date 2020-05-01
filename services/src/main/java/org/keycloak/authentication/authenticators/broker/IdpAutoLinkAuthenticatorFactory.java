@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:Ryan.Slominski@gmail.com">Ryan Slominski</a>
  */
-@ProviderFactory(id = "idp-auto-link")
+@ProviderFactory(id = "idp-auto-link", providerClasses = Authenticator.class)
 public class IdpAutoLinkAuthenticatorFactory implements AuthenticatorFactory {
     public static final String PROVIDER_ID = "idp-auto-link";
     static IdpAutoLinkAuthenticator SINGLETON = new IdpAutoLinkAuthenticator();

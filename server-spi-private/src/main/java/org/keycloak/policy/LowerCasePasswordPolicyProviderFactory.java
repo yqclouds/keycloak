@@ -23,7 +23,7 @@ import org.keycloak.stereotype.ProviderFactory;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = "lowerCase")
+@ProviderFactory(id = "lowerCase", providerClasses = PasswordPolicyProvider.class)
 public class LowerCasePasswordPolicyProviderFactory implements PasswordPolicyProviderFactory {
 
     public static final String ID = "lowerCase";

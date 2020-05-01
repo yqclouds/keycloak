@@ -23,7 +23,7 @@ import org.keycloak.stereotype.ProviderFactory;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = "install")
+@ProviderFactory(id = "install", providerClasses = ClientRegistrationProvider.class)
 public class AdapterInstallationClientRegistrationProviderFactory implements ClientRegistrationProviderFactory {
     @Override
     public ClientRegistrationProvider create(KeycloakSession session) {
