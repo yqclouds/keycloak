@@ -45,7 +45,7 @@ import java.util.concurrent.TimeUnit;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "UPDATE_PASSWORD")
+@ProviderFactory(id = "UPDATE_PASSWORD", providerClasses = RequiredActionProvider.class)
 public class UpdatePassword implements RequiredActionProvider, RequiredActionFactory, DisplayTypeRequiredActionFactory {
     private static final Logger logger = Logger.getLogger(UpdatePassword.class);
 

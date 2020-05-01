@@ -27,7 +27,7 @@ import org.keycloak.stereotype.ProviderFactory;
  * @author <a href="mailto:pnalyvayko@agi.com">Peter Nalyvayko</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "auth-x509-client-username-form")
+@ProviderFactory(id = "auth-x509-client-username-form", providerClasses = Authenticator.class)
 public class X509ClientCertificateAuthenticatorFactory extends AbstractX509ClientCertificateAuthenticatorFactory {
 
     public static final String PROVIDER_ID = "auth-x509-client-username-form";

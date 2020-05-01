@@ -40,7 +40,7 @@ import static org.keycloak.provider.ProviderConfigProperty.STRING_TYPE;
  *
  * @author <a href="mailto:thomas.darimont@gmail.com">Thomas Darimont</a>
  */
-@ProviderFactory(id = "auth-script-based")
+@ProviderFactory(id = "auth-script-based", providerClasses = Authenticator.class)
 public class ScriptBasedAuthenticatorFactory implements AuthenticatorFactory, EnvironmentDependentProviderFactory {
 
     public static final String PROVIDER_ID = "auth-script-based";

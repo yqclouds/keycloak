@@ -42,7 +42,7 @@ import java.util.*;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "saml2-entity-descriptor")
+@ProviderFactory(id = "saml2-entity-descriptor", providerClasses = ClientDescriptionConverter.class)
 public class EntityDescriptorDescriptionConverter implements ClientDescriptionConverter, ClientDescriptionConverterFactory {
 
     public static final String ID = "saml2-entity-descriptor";
@@ -216,5 +216,9 @@ public class EntityDescriptorDescriptionConverter implements ClientDescriptionCo
     @Override
     public String getId() {
         return ID;
+    }
+
+    @Override
+    public void close() {
     }
 }

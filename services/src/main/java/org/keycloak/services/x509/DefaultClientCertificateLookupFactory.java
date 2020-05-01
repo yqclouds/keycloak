@@ -31,7 +31,7 @@ import org.keycloak.stereotype.ProviderFactory;
  * @version $Revision: 1 $
  * @since 4/4/2017
  */
-@ProviderFactory(id = "default")
+@ProviderFactory(id = "default", providerClasses = X509ClientCertificateLookup.class)
 public class DefaultClientCertificateLookupFactory implements X509ClientCertificateLookupFactory {
     private final static String PROVIDER = "default";
     private final static X509ClientCertificateLookup SINGLETON =

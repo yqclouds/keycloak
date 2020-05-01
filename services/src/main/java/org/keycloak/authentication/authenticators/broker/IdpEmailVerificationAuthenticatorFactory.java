@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "idp-email-verification")
+@ProviderFactory(id = "idp-email-verification", providerClasses = Authenticator.class)
 public class IdpEmailVerificationAuthenticatorFactory implements AuthenticatorFactory {
 
     public static final String PROVIDER_ID = "idp-email-verification";

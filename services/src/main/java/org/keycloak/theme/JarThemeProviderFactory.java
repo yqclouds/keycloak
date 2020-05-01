@@ -27,7 +27,7 @@ import java.util.Enumeration;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory
+@ProviderFactory(id = "jar", providerClasses = ThemeProvider.class)
 public class JarThemeProviderFactory extends ClasspathThemeProviderFactory {
 
     public JarThemeProviderFactory() {

@@ -19,6 +19,7 @@ package org.keycloak.authentication.authenticators.directgrant;
 
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
+import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.CredentialValidator;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.credential.OTPCredentialProvider;
@@ -37,7 +38,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "direct-grant-validate-otp")
+@ProviderFactory(id = "direct-grant-validate-otp", providerClasses = Authenticator.class)
 public class ValidateOTP extends AbstractDirectGrantAuthenticator implements CredentialValidator<OTPCredentialProvider> {
 
     public static final String PROVIDER_ID = "direct-grant-validate-otp";

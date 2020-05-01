@@ -27,7 +27,7 @@ import org.keycloak.stereotype.ProviderFactory;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = PasswordPolicy.HASH_ALGORITHM_ID)
+@ProviderFactory(id = PasswordPolicy.HASH_ALGORITHM_ID, providerClasses = PasswordPolicyProvider.class)
 public class HashAlgorithmPasswordPolicyProviderFactory implements PasswordPolicyProviderFactory, PasswordPolicyProvider {
 
     private KeycloakSession session;

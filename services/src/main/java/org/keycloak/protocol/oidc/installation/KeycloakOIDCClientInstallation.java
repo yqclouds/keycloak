@@ -40,7 +40,7 @@ import java.util.Set;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "keycloak-oidc-keycloak-json")
+@ProviderFactory(id = "keycloak-oidc-keycloak-json", providerClasses = ClientInstallationProvider.class)
 public class KeycloakOIDCClientInstallation implements ClientInstallationProvider {
 
     public static Map<String, Object> getClientCredentialsAdapterConfig(KeycloakSession session, ClientModel client) {

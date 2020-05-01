@@ -31,7 +31,7 @@ import org.keycloak.stereotype.ProviderFactory;
 
 import java.security.KeyPair;
 import java.util.List;
-@ProviderFactory(id = "ecdsa-generated")
+@ProviderFactory(id = "ecdsa-generated", providerClasses = KeyProvider.class)
 public class GeneratedEcdsaKeyProviderFactory extends AbstractEcdsaKeyProviderFactory {
 
     public static final String ID = "ecdsa-generated";

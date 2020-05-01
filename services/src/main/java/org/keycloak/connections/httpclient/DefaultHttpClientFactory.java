@@ -59,7 +59,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = "default")
+@ProviderFactory(id = "default", providerClasses = HttpClientProvider.class)
 public class DefaultHttpClientFactory implements HttpClientFactory {
 
     private static final Logger logger = Logger.getLogger(DefaultHttpClientFactory.class);

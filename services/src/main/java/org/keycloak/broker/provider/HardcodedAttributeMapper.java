@@ -31,7 +31,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "hardcoded-attribute-idp-mapper")
+@ProviderFactory(id = "hardcoded-attribute-idp-mapper", providerClasses = IdentityProviderMapper.class)
 public class HardcodedAttributeMapper extends AbstractIdentityProviderMapper {
     public static final String ATTRIBUTE = "attribute";
     public static final String ATTRIBUTE_VALUE = "attribute.value";

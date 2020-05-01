@@ -20,6 +20,7 @@ import org.keycloak.TokenVerifier.Predicate;
 import org.keycloak.authentication.AuthenticationProcessor;
 import org.keycloak.authentication.actiontoken.AbstractActionTokenHandler;
 import org.keycloak.authentication.actiontoken.ActionTokenContext;
+import org.keycloak.authentication.actiontoken.ActionTokenHandler;
 import org.keycloak.authentication.actiontoken.TokenUtils;
 import org.keycloak.authentication.authenticators.broker.AbstractIdpAuthenticator;
 import org.keycloak.authentication.authenticators.broker.util.SerializedBrokeredIdentityContext;
@@ -39,7 +40,7 @@ import static org.keycloak.services.resources.LoginActionsService.RESET_CREDENTI
 /**
  * @author hmlnarik
  */
-@ProviderFactory
+@ProviderFactory(id = "reset-credentials", providerClasses = ActionTokenHandler.class)
 public class ResetCredentialsActionTokenHandler extends AbstractActionTokenHandler<ResetCredentialsActionToken> {
     public ResetCredentialsActionTokenHandler() {
         super(

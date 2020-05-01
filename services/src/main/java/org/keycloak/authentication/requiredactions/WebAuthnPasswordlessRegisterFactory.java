@@ -19,13 +19,14 @@
 package org.keycloak.authentication.requiredactions;
 
 import com.webauthn4j.validator.attestation.trustworthiness.certpath.CertPathTrustworthinessValidator;
+import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "webauthn-register-passwordless")
+@ProviderFactory(id = "webauthn-register-passwordless", providerClasses = RequiredActionProvider.class)
 public class WebAuthnPasswordlessRegisterFactory extends WebAuthnRegisterFactory {
 
     public static final String PROVIDER_ID = "webauthn-register-passwordless";

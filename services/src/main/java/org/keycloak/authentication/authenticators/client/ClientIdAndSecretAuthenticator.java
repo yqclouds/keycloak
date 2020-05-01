@@ -20,6 +20,7 @@ package org.keycloak.authentication.authenticators.client;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.ClientAuthenticationFlowContext;
+import org.keycloak.authentication.ClientAuthenticator;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
@@ -41,7 +42,7 @@ import java.util.*;
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "client-secret")
+@ProviderFactory(id = "client-secret", providerClasses = ClientAuthenticator.class)
 public class ClientIdAndSecretAuthenticator extends AbstractClientAuthenticator {
 
     public static final String PROVIDER_ID = "client-secret";

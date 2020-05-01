@@ -22,6 +22,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.ClientAuthenticationFlowContext;
+import org.keycloak.authentication.ClientAuthenticator;
 import org.keycloak.common.util.Time;
 import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.keys.loader.PublicKeyStorageManager;
@@ -51,7 +52,7 @@ import java.util.*;
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "client-jwt")
+@ProviderFactory(id = "client-jwt", providerClasses = ClientAuthenticator.class)
 public class JWTClientAuthenticator extends AbstractClientAuthenticator {
 
     public static final String PROVIDER_ID = "client-jwt";

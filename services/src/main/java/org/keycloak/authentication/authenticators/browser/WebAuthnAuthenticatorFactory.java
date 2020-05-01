@@ -28,7 +28,7 @@ import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.List;
 
-@ProviderFactory(id = "webauthn-authenticator")
+@ProviderFactory(id = "webauthn-authenticator", providerClasses = Authenticator.class)
 public class WebAuthnAuthenticatorFactory implements AuthenticatorFactory, EnvironmentDependentProviderFactory {
 
     public static final String PROVIDER_ID = "webauthn-authenticator";

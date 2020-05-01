@@ -21,7 +21,7 @@ import org.keycloak.jose.jwe.JWEConstants;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 
-@ProviderFactory(id = JWEConstants.A128GCM)
+@ProviderFactory(id = JWEConstants.A128GCM, providerClasses = ContentEncryptionProvider.class)
 public class Aes128GcmContentEncryptionProviderFactory implements ContentEncryptionProviderFactory {
     public static final String ID = JWEConstants.A128GCM;
 

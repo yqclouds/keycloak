@@ -21,6 +21,7 @@ import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.UserSessionModel;
+import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.AccessToken;
@@ -36,7 +37,7 @@ import java.util.List;
  *
  * @author <a href="mailto:thomas.darimont@gmail.com">Thomas Darimont</a>
  */
-@ProviderFactory(id = "oidc-usermodel-realm-role-mapper")
+@ProviderFactory(id = "oidc-usermodel-realm-role-mapper", providerClasses = ProtocolMapper.class)
 public class UserRealmRoleMappingMapper extends AbstractUserRoleMappingMapper {
 
     public static final String PROVIDER_ID = "oidc-usermodel-realm-role-mapper";

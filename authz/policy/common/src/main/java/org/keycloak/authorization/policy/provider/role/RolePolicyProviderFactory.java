@@ -31,6 +31,7 @@ import org.keycloak.models.*;
 import org.keycloak.models.RoleContainerModel.RoleRemovedEvent;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.representations.idm.authorization.RolePolicyRepresentation;
+import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.util.JsonSerialization;
 
 import java.io.IOException;
@@ -39,6 +40,7 @@ import java.util.*;
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
+@ProviderFactory(id = "role", providerClasses = PolicyProvider.class)
 public class RolePolicyProviderFactory implements PolicyProviderFactory<RolePolicyRepresentation> {
 
     private RolePolicyProvider provider = new RolePolicyProvider(this::toRepresentation);

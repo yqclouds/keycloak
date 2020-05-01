@@ -42,7 +42,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "registration-profile-action")
+@ProviderFactory(id = "registration-profile-action", providerClasses = FormAction.class)
 public class RegistrationProfile implements FormAction, FormActionFactory {
     public static final String PROVIDER_ID = "registration-profile-action";
     private static AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {

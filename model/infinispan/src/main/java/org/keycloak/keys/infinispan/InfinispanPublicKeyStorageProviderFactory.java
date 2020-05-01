@@ -44,7 +44,7 @@ import java.util.concurrent.FutureTask;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "infinispan")
+@ProviderFactory(id = "infinispan", providerClasses = PublicKeyStorageProvider.class)
 public class InfinispanPublicKeyStorageProviderFactory implements PublicKeyStorageProviderFactory {
 
     public static final String PROVIDER_ID = "infinispan";

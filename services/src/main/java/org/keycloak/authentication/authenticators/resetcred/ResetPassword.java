@@ -18,13 +18,16 @@
 package org.keycloak.authentication.authenticators.resetcred;
 
 import org.keycloak.authentication.AuthenticationFlowContext;
+import org.keycloak.authentication.Authenticator;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.PasswordCredentialModel;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "reset-password", providerClasses = Authenticator.class)
 public class ResetPassword extends AbstractSetRequiredActionAuthenticator {
 
     public static final String PROVIDER_ID = "reset-password";

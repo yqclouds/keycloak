@@ -18,6 +18,7 @@ package org.keycloak.broker.saml;
 
 import org.keycloak.Config.Scope;
 import org.keycloak.broker.provider.AbstractIdentityProviderFactory;
+import org.keycloak.broker.provider.IdentityProvider;
 import org.keycloak.dom.saml.v2.metadata.*;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
@@ -26,6 +27,7 @@ import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.util.DocumentUtil;
 import org.keycloak.saml.processing.core.parsers.saml.SAMLParser;
 import org.keycloak.saml.validators.DestinationValidator;
+import org.keycloak.stereotype.ProviderFactory;
 import org.w3c.dom.Element;
 
 import javax.xml.namespace.QName;
@@ -37,6 +39,7 @@ import java.util.Map;
 /**
  * @author Pedro Igor
  */
+@ProviderFactory(id = "saml", providerClasses = IdentityProvider.class)
 public class SAMLIdentityProviderFactory extends AbstractIdentityProviderFactory<SAMLIdentityProvider> {
 
     public static final String PROVIDER_ID = "saml";

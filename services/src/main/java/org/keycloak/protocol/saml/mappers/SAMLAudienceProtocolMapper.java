@@ -24,7 +24,9 @@ import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.UserSessionModel;
+import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -37,6 +39,7 @@ import java.util.List;
  *
  * @author rmartinc
  */
+@ProviderFactory(id = "saml-audience-mapper", providerClasses = ProtocolMapper.class)
 public class SAMLAudienceProtocolMapper extends AbstractSAMLProtocolMapper implements SAMLLoginResponseMapper {
 
     public static final String PROVIDER_ID = "saml-audience-mapper";

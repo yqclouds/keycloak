@@ -30,7 +30,7 @@ import javax.persistence.EntityManager;
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
-@ProviderFactory(id = "jpa")
+@ProviderFactory(id = "jpa", providerClasses = StoreFactory.class)
 public class JPAAuthorizationStoreFactory implements AuthorizationStoreFactory {
     @Override
     public StoreFactory create(KeycloakSession session) {

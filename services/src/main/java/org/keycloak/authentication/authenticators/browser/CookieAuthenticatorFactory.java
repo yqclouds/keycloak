@@ -33,7 +33,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "auth-cookie")
+@ProviderFactory(id = "auth-cookie", providerClasses = Authenticator.class)
 public class CookieAuthenticatorFactory implements AuthenticatorFactory, DisplayTypeAuthenticatorFactory {
     public static final String PROVIDER_ID = "auth-cookie";
     static CookieAuthenticator SINGLETON = new CookieAuthenticator();

@@ -34,7 +34,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "auth-otp-form")
+@ProviderFactory(id = "auth-otp-form", providerClasses = Authenticator.class)
 public class OTPFormAuthenticatorFactory implements AuthenticatorFactory, DisplayTypeAuthenticatorFactory {
 
     public static final String PROVIDER_ID = "auth-otp-form";

@@ -28,7 +28,7 @@ import java.io.File;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "dir")
+@ProviderFactory(id = "dir", providerClasses = ImportProvider.class)
 public class DirImportProviderFactory implements ImportProviderFactory {
     @Override
     public ImportProvider create(KeycloakSession session) {

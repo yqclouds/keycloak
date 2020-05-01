@@ -28,7 +28,7 @@ import javax.persistence.EntityManager;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "jpa")
+@ProviderFactory(id = "jpa", providerClasses = UserSessionPersisterProvider.class)
 public class JpaUserSessionPersisterProviderFactory implements UserSessionPersisterProviderFactory {
 
     public static final String ID = "jpa";

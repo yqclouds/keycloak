@@ -40,7 +40,7 @@ import java.util.Objects;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory
+@ProviderFactory(id = "UPDATE_PROFILE", providerClasses = RequiredActionProvider.class)
 public class UpdateProfile implements RequiredActionProvider, RequiredActionFactory, DisplayTypeRequiredActionFactory {
     @Override
     public InitiatedActionSupport initiatedActionSupport() {

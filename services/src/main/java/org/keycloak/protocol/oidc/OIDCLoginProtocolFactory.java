@@ -44,7 +44,7 @@ import static org.keycloak.models.ImpersonationSessionNote.IMPERSONATOR_USERNAME
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory
+@ProviderFactory(id = "openid-connect", providerClasses = LoginProtocol.class)
 public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
     public static final String USERNAME = "username";
     public static final String EMAIL = "email";

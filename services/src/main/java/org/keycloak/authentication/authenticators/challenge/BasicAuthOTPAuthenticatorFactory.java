@@ -31,7 +31,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "basic-auth-otp")
+@ProviderFactory(id = "basic-auth-otp", providerClasses = Authenticator.class)
 public class BasicAuthOTPAuthenticatorFactory implements AuthenticatorFactory {
     public static final String PROVIDER_ID = "basic-auth-otp";
     public static final BasicAuthOTPAuthenticator SINGLETON = new BasicAuthOTPAuthenticator();

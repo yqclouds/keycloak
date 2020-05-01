@@ -7,17 +7,18 @@ import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.common.Profile;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.ScriptModel;
 import org.keycloak.representations.idm.authorization.JSPolicyRepresentation;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.scripting.EvaluatableScriptAdapter;
 import org.keycloak.scripting.ScriptingProvider;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
+@ProviderFactory(id = "js", providerClasses = PolicyProvider.class)
 public class JSPolicyProviderFactory implements PolicyProviderFactory<JSPolicyRepresentation> {
 
     private final JSPolicyProvider provider = new JSPolicyProvider(this::getEvaluatableScript);
@@ -80,11 +81,6 @@ public class JSPolicyProviderFactory implements PolicyProviderFactory<JSPolicyRe
         int maxEntries = Integer.parseInt(config.get("cache-max-entries", "100"));
         int maxAge = Integer.parseInt(config.get("cache-entry-max-age", "-1"));
         scriptCache = new ScriptCache(maxEntries, maxAge);
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
     }
 
     @Override

@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "max-clients")
+@ProviderFactory(id = "max-clients", providerClasses = ClientRegistrationPolicy.class)
 public class MaxClientsClientRegistrationPolicyFactory extends AbstractClientRegistrationPolicyFactory {
 
     public static final String MAX_CLIENTS = "max-clients";

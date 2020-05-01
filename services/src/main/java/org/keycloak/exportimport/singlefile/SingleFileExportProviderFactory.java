@@ -28,7 +28,7 @@ import java.io.File;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "singleFile")
+@ProviderFactory(id = "singleFile", providerClasses = ExportProvider.class)
 public class SingleFileExportProviderFactory implements ExportProviderFactory {
 
     public static final String PROVIDER_ID = "singleFile";

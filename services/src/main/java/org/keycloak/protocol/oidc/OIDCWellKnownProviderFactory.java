@@ -25,7 +25,7 @@ import org.keycloak.wellknown.WellKnownProviderFactory;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = "openid-configuration")
+@ProviderFactory(id = "openid-configuration", providerClasses = WellKnownProvider.class)
 public class OIDCWellKnownProviderFactory implements WellKnownProviderFactory {
 
     public static final String PROVIDER_ID = "openid-configuration";

@@ -37,7 +37,7 @@ import java.util.zip.ZipOutputStream;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "mod-auth-mellon")
+@ProviderFactory(id = "mod-auth-mellon", providerClasses = ClientInstallationProvider.class)
 public class ModAuthMellonClientInstallation implements ClientInstallationProvider {
     @Override
     public Response generateInstallation(KeycloakSession session, RealmModel realm, ClientModel client, URI serverBaseUri) {

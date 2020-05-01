@@ -31,7 +31,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "no-cookie-redirect")
+@ProviderFactory(id = "no-cookie-redirect", providerClasses = Authenticator.class)
 public class NoCookieFlowRedirectAuthenticatorFactory implements AuthenticatorFactory {
 
     public static final String PROVIDER_ID = "no-cookie-redirect";

@@ -20,6 +20,7 @@ package org.keycloak.protocol.oidc.mappers;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.UserSessionModel;
 import org.keycloak.models.UserSessionNoteDescriptor;
+import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -36,7 +37,7 @@ import java.util.Map;
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "oidc-usersessionmodel-note-mapper")
+@ProviderFactory(id = "oidc-usersessionmodel-note-mapper", providerClasses = ProtocolMapper.class)
 public class UserSessionNoteMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper {
 
     public static final String PROVIDER_ID = "oidc-usersessionmodel-note-mapper";

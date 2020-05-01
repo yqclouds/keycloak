@@ -25,7 +25,7 @@ import org.keycloak.stereotype.ProviderFactory;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = "saml2-entity-descriptor")
+@ProviderFactory(id = "saml2-entity-descriptor", providerClasses = ClientRegistrationProvider.class)
 public class EntityDescriptorClientRegistrationProviderFactory implements ClientRegistrationProviderFactory {
     public static final String ID = "saml2-entity-descriptor";
 

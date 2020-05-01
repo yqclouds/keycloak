@@ -22,6 +22,7 @@ import org.keycloak.models.*;
 import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.saml.SamlProtocol;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,6 +35,7 @@ import java.util.Map;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "saml-role-name-mapper", providerClasses = ProtocolMapper.class)
 public class RoleNameMapper implements SAMLRoleNameMapper, ProtocolMapper {
 
     public static final String ROLE_CONFIG = "role";

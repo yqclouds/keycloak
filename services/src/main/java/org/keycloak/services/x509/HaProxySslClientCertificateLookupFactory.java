@@ -26,7 +26,7 @@ import org.keycloak.stereotype.ProviderFactory;
  * @version $Revision: 1 $
  * @since 4/4/2017
  */
-@ProviderFactory(id = "haproxy")
+@ProviderFactory(id = "haproxy", providerClasses = X509ClientCertificateLookup.class)
 public class HaProxySslClientCertificateLookupFactory extends AbstractClientCertificateFromHttpHeadersLookupFactory {
 
     private final static String PROVIDER = "haproxy";

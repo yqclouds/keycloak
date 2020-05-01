@@ -28,7 +28,7 @@ import org.keycloak.stereotype.ProviderFactory;
  * @version $Revision: 1 $
  * @date 7/31/2016
  */
-@ProviderFactory(id = "direct-grant-auth-x509-username")
+@ProviderFactory(id = "direct-grant-auth-x509-username", providerClasses = Authenticator.class)
 public class ValidateX509CertificateUsernameFactory extends AbstractX509ClientCertificateAuthenticatorFactory {
 
     public static final String PROVIDER_ID = "direct-grant-auth-x509-username";

@@ -18,13 +18,17 @@ package org.keycloak.social.gitlab;
 
 import org.keycloak.broker.oidc.OIDCIdentityProviderConfig;
 import org.keycloak.broker.provider.AbstractIdentityProviderFactory;
+import org.keycloak.broker.provider.IdentityProvider;
+import org.keycloak.broker.social.SocialIdentityProvider;
 import org.keycloak.broker.social.SocialIdentityProviderFactory;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author Pedro Igor
  */
+@ProviderFactory(id = "gitlab", providerClasses = SocialIdentityProvider.class)
 public class GitLabIdentityProviderFactory extends AbstractIdentityProviderFactory<GitLabIdentityProvider> implements SocialIdentityProviderFactory<GitLabIdentityProvider> {
 
     public static final String PROVIDER_ID = "gitlab";

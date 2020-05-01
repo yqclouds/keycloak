@@ -23,7 +23,7 @@ import org.keycloak.stereotype.ProviderFactory;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = "default")
+@ProviderFactory(id = "default", providerClasses = EmailSenderProvider.class)
 public class DefaultEmailSenderProviderFactory implements EmailSenderProviderFactory {
 
     @Override

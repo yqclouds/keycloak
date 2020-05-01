@@ -28,7 +28,7 @@ import java.io.File;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "dir")
+@ProviderFactory(id = "dir", providerClasses = ExportProvider.class)
 public class DirExportProviderFactory implements ExportProviderFactory {
     public static final String PROVIDER_ID = "dir";
 

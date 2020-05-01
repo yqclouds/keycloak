@@ -73,4 +73,7 @@ public interface IdentityProviderMapper extends Provider, ProviderFactory<Identi
     void updateBrokeredUser(KeycloakSession session, RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context);
 
 
+    @Override
+    default void close() {
+    }
 }

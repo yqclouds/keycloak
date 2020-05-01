@@ -31,6 +31,7 @@ import org.keycloak.models.*;
 import org.keycloak.models.UserModel.UserRemovedEvent;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.representations.idm.authorization.UserPolicyRepresentation;
+import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.util.JsonSerialization;
 
 import java.io.IOException;
@@ -40,6 +41,7 @@ import java.util.stream.Collectors;
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
+@ProviderFactory(id = "user", providerClasses = PolicyProvider.class)
 public class UserPolicyProviderFactory implements PolicyProviderFactory<UserPolicyRepresentation> {
 
     private UserPolicyProvider provider = new UserPolicyProvider(this::toRepresentation);

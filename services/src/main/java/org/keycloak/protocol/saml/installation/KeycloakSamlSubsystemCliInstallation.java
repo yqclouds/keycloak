@@ -33,7 +33,7 @@ import java.net.URI;
 
 import static org.keycloak.protocol.util.ClientCliInstallationUtil.quote;
 
-@ProviderFactory(id = "keycloak-saml-subsystem-cli")
+@ProviderFactory(id = "keycloak-saml-subsystem-cli", providerClasses = ClientInstallationProvider.class)
 public class KeycloakSamlSubsystemCliInstallation implements ClientInstallationProvider {
 
     @Override

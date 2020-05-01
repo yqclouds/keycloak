@@ -58,7 +58,7 @@ import java.util.Map;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = LDAPConstants.LDAP_PROVIDER)
+@ProviderFactory(id = LDAPConstants.LDAP_PROVIDER, providerClasses = UserStorageProvider.class)
 public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LDAPStorageProvider>, ImportSynchronization {
 
 

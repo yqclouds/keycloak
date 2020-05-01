@@ -18,6 +18,7 @@
 package org.keycloak.protocol.oidc.mappers;
 
 import org.keycloak.models.*;
+import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.utils.WebOriginsUtils;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -34,7 +35,7 @@ import java.util.Set;
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "oidc-allowed-origins-mapper")
+@ProviderFactory(id = "oidc-allowed-origins-mapper", providerClasses = ProtocolMapper.class)
 public class AllowedWebOriginsProtocolMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper {
 
     public static final String PROVIDER_ID = "oidc-allowed-origins-mapper";

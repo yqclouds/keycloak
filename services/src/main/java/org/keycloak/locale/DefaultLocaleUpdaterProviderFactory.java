@@ -19,7 +19,7 @@ package org.keycloak.locale;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 
-@ProviderFactory(id = "default")
+@ProviderFactory(id = "default", providerClasses = LocaleUpdaterProvider.class)
 public class DefaultLocaleUpdaterProviderFactory implements LocaleUpdaterProviderFactory {
     @Override
     public LocaleUpdaterProvider create(KeycloakSession session) {

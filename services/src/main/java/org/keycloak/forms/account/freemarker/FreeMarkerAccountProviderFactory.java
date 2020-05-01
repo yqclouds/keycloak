@@ -29,7 +29,7 @@ import javax.annotation.PreDestroy;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = "freemarker")
+@ProviderFactory(id = "freemarker", providerClasses = AccountProvider.class)
 public class FreeMarkerAccountProviderFactory implements AccountProviderFactory {
     @Autowired
     private FreeMarkerUtil freeMarker;

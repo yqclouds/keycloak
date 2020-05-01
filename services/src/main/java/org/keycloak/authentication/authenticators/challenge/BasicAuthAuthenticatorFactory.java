@@ -31,7 +31,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "basic-auth")
+@ProviderFactory(id = "basic-auth", providerClasses = Authenticator.class)
 public class BasicAuthAuthenticatorFactory implements AuthenticatorFactory {
     public static final String PROVIDER_ID = "basic-auth";
     public static final BasicAuthAuthenticator SINGLETON = new BasicAuthAuthenticator();

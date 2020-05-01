@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = "hmac-generated")
+@ProviderFactory(id = "hmac-generated", providerClasses = KeyProvider.class)
 public class GeneratedHmacKeyProviderFactory extends AbstractGeneratedSecretKeyProviderFactory<GeneratedHmacKeyProvider> {
 
     public static final String ID = "hmac-generated";

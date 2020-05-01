@@ -20,6 +20,7 @@ package org.keycloak.connections.jpa.updater.liquibase.lock;
 import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.dblock.DBLockProvider;
 import org.keycloak.models.dblock.DBLockProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,7 +30,7 @@ import javax.annotation.PostConstruct;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "jpa")
+@ProviderFactory(id = "jpa", providerClasses = DBLockProvider.class)
 public class LiquibaseDBLockProviderFactory implements DBLockProviderFactory {
 
     private static final Logger logger = Logger.getLogger(LiquibaseDBLockProviderFactory.class);

@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "default")
+@ProviderFactory(id = "default", providerClasses = ExecutorsProvider.class)
 public class DefaultExecutorsProviderFactory implements ExecutorsProviderFactory {
 
     protected static final Logger logger = Logger.getLogger(DefaultExecutorsProviderFactory.class);

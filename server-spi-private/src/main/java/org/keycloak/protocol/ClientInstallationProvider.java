@@ -46,4 +46,8 @@ public interface ClientInstallationProvider extends Provider, ProviderFactory<Cl
     String getMediaType();
 
     boolean isDownloadOnly();
+
+    @Override
+    default void close() {
+    }
 }

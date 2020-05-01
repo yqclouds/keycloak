@@ -31,7 +31,7 @@ import org.keycloak.provider.EnvironmentDependentProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.truststore.TruststoreProvider;
 
-@ProviderFactory(id = "webauthn-register")
+@ProviderFactory(id = "webauthn-register", providerClasses = RequiredActionProvider.class)
 public class WebAuthnRegisterFactory implements RequiredActionFactory, DisplayTypeRequiredActionFactory, EnvironmentDependentProviderFactory {
 
     public static final String PROVIDER_ID = "webauthn-register";

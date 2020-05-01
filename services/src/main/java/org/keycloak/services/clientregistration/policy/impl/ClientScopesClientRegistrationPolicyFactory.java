@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "allowed-client-templates")
+@ProviderFactory(id = "allowed-client-templates", providerClasses = ClientRegistrationPolicy.class)
 public class ClientScopesClientRegistrationPolicyFactory extends AbstractClientRegistrationPolicyFactory {
 
     // Keeping the name for backwards compatibility

@@ -62,7 +62,7 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @author <a href="mailto:thomas.darimont@gmail.com">Thomas Darimont</a>
  */
-@ProviderFactory(id = "passwordBlacklist")
+@ProviderFactory(id = "passwordBlacklist", providerClasses = PasswordPolicyProvider.class)
 public class BlacklistPasswordPolicyProviderFactory implements PasswordPolicyProviderFactory {
 
     public static final String ID = "passwordBlacklist";

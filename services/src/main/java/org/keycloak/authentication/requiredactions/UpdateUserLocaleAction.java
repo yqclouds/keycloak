@@ -9,7 +9,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserModel;
 import org.keycloak.stereotype.ProviderFactory;
 
-@ProviderFactory(id = "update_user_locale")
+@ProviderFactory(id = "update_user_locale", providerClasses = RequiredActionProvider.class)
 public class UpdateUserLocaleAction implements RequiredActionProvider, RequiredActionFactory {
 
     @Override

@@ -3,6 +3,7 @@ package org.keycloak.authentication.authenticators.client;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.ClientAuthenticationFlowContext;
+import org.keycloak.authentication.ClientAuthenticator;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
@@ -19,7 +20,7 @@ import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-@ProviderFactory(id = "client-x509")
+@ProviderFactory(id = "client-x509", providerClasses = ClientAuthenticator.class)
 public class X509ClientAuthenticator extends AbstractClientAuthenticator {
 
     public static final String PROVIDER_ID = "client-x509";

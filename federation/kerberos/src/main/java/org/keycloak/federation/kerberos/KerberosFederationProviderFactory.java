@@ -44,7 +44,7 @@ import java.util.List;
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory
+@ProviderFactory(id = "kerberos", providerClasses = UserStorageProvider.class)
 public class KerberosFederationProviderFactory implements UserStorageProviderFactory<KerberosFederationProvider> {
 
     public static final String PROVIDER_NAME = "kerberos";

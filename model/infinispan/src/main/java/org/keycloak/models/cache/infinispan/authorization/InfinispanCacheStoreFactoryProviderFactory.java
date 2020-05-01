@@ -19,12 +19,10 @@ package org.keycloak.models.cache.infinispan.authorization;
 
 import org.infinispan.Cache;
 import org.jboss.logging.Logger;
-import org.keycloak.Config;
 import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.cache.authorization.CachedStoreFactoryProvider;
 import org.keycloak.models.cache.authorization.CachedStoreProviderFactory;
 import org.keycloak.models.cache.infinispan.entities.Revisioned;
@@ -37,7 +35,7 @@ import static org.keycloak.models.cache.infinispan.InfinispanCacheRealmProviderF
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = "default")
+@ProviderFactory(id = "default", providerClasses = CachedStoreFactoryProvider.class)
 public class InfinispanCacheStoreFactoryProviderFactory implements CachedStoreProviderFactory {
 
     public static final String AUTHORIZATION_CLEAR_CACHE_EVENTS = "AUTHORIZATION_CLEAR_CACHE_EVENTS";

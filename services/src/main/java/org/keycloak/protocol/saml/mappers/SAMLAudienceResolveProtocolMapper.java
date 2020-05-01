@@ -20,8 +20,10 @@ import org.jboss.logging.Logger;
 import org.keycloak.dom.saml.v2.assertion.AudienceRestrictionType;
 import org.keycloak.dom.saml.v2.protocol.ResponseType;
 import org.keycloak.models.*;
+import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.saml.SamlProtocol;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -36,6 +38,7 @@ import java.util.Set;
  *
  * @author rmartinc
  */
+@ProviderFactory(id = "saml-audience-resolve-mapper", providerClasses = ProtocolMapper.class)
 public class SAMLAudienceResolveProtocolMapper extends AbstractSAMLProtocolMapper implements SAMLLoginResponseMapper {
 
     public static final String PROVIDER_ID = "saml-audience-resolve-mapper";

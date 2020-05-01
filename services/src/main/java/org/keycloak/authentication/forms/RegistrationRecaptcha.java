@@ -50,7 +50,7 @@ import java.util.*;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "registration-recaptcha-action")
+@ProviderFactory(id = "registration-recaptcha-action", providerClasses = FormAction.class)
 public class RegistrationRecaptcha implements FormAction, FormActionFactory, ConfiguredProvider {
     public static final String G_RECAPTCHA_RESPONSE = "g-recaptcha-response";
     public static final String RECAPTCHA_REFERENCE_CATEGORY = "recaptcha";

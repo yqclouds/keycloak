@@ -33,7 +33,7 @@ import java.util.Arrays;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "terms_and_conditions")
+@ProviderFactory(id = "terms_and_conditions", providerClasses = RequiredActionProvider.class)
 public class TermsAndConditions implements RequiredActionProvider, RequiredActionFactory, DisplayTypeRequiredActionFactory {
     public static final String PROVIDER_ID = "terms_and_conditions";
     public static final String USER_ATTRIBUTE = PROVIDER_ID;

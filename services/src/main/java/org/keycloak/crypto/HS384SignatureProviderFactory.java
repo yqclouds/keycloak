@@ -19,7 +19,7 @@ package org.keycloak.crypto;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 
-@ProviderFactory(id = Algorithm.HS384)
+@ProviderFactory(id = Algorithm.HS384, providerClasses = SignatureProvider.class)
 public class HS384SignatureProviderFactory implements SignatureProviderFactory {
 
     public static final String ID = Algorithm.HS384;

@@ -23,7 +23,7 @@ import org.keycloak.stereotype.ProviderFactory;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = JavaAlgorithm.SHA512)
+@ProviderFactory(id = JavaAlgorithm.SHA512, providerClasses = HashProvider.class)
 public class SHA512HashProviderFactory implements HashProviderFactory {
 
     public static final String ID = JavaAlgorithm.SHA512;

@@ -1,5 +1,6 @@
 package org.keycloak.authentication.authenticators.conditional;
 
+import org.keycloak.authentication.Authenticator;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticationExecutionModel.Requirement;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -9,7 +10,7 @@ import org.keycloak.stereotype.ProviderFactory;
 import java.util.Collections;
 import java.util.List;
 
-@ProviderFactory(id = "conditional-user-role")
+@ProviderFactory(id = "conditional-user-role", providerClasses = Authenticator.class)
 public class ConditionalRoleAuthenticatorFactory implements ConditionalAuthenticatorFactory {
     public static final String PROVIDER_ID = "conditional-user-role";
     protected static final String CONDITIONAL_USER_ROLE = "condUserRole";

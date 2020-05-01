@@ -11,7 +11,7 @@ import java.util.List;
 
 import static org.keycloak.models.AuthenticationExecutionModel.Requirement;
 
-@ProviderFactory(id = "docker-http-basic-authenticator")
+@ProviderFactory(id = "docker-http-basic-authenticator", providerClasses = Authenticator.class)
 public class DockerAuthenticatorFactory implements AuthenticatorFactory {
     private static final Requirement[] REQUIREMENT_CHOICES = {
             Requirement.REQUIRED,

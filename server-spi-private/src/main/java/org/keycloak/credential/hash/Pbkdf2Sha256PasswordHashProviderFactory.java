@@ -8,7 +8,7 @@ import org.keycloak.stereotype.ProviderFactory;
  *
  * @author <a href"mailto:abkaplan07@gmail.com">Adam Kaplan</a>
  */
-@ProviderFactory(id = "pbkdf2-sha256")
+@ProviderFactory(id = "pbkdf2-sha256", providerClasses = PasswordHashProvider.class)
 public class Pbkdf2Sha256PasswordHashProviderFactory implements PasswordHashProviderFactory {
 
     public static final String ID = "pbkdf2-sha256";

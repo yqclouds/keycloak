@@ -25,7 +25,7 @@ import javax.persistence.PersistenceException;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "jpa")
+@ProviderFactory(id = "jpa", providerClasses = ExceptionConverter.class)
 public class JpaExceptionConverter implements ExceptionConverter {
     @Override
     public Throwable convert(Throwable e) {

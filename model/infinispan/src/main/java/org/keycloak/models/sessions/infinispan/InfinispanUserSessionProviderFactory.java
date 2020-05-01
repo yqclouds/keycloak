@@ -53,7 +53,7 @@ import java.io.Serializable;
 import java.util.Set;
 import java.util.UUID;
 
-@ProviderFactory(id = "infinispan")
+@ProviderFactory(id = "infinispan", providerClasses = UserSessionProvider.class)
 public class InfinispanUserSessionProviderFactory implements UserSessionProviderFactory {
 
     public static final String PROVIDER_ID = "infinispan";

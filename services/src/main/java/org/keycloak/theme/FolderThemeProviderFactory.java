@@ -27,7 +27,7 @@ import java.io.File;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = "folder")
+@ProviderFactory(id = "folder", providerClasses = ThemeProvider.class)
 public class FolderThemeProviderFactory implements ThemeProviderFactory {
 
     private FolderThemeProvider themeProvider;

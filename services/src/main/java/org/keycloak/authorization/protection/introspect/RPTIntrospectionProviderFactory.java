@@ -25,7 +25,7 @@ import org.keycloak.stereotype.ProviderFactory;
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
-@ProviderFactory(id = "requesting_party_token")
+@ProviderFactory(id = "requesting_party_token", providerClasses = TokenIntrospectionProvider.class)
 public class RPTIntrospectionProviderFactory implements TokenIntrospectionProviderFactory {
     @Override
     public TokenIntrospectionProvider create(KeycloakSession session) {

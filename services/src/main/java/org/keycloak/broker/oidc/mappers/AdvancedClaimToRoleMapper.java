@@ -22,9 +22,11 @@ import org.keycloak.broker.oidc.OIDCIdentityProviderFactory;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.ConfigConstants;
 import org.keycloak.broker.provider.IdentityBrokerException;
+import org.keycloak.broker.provider.IdentityProviderMapper;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +36,7 @@ import java.util.Map;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke, Benjamin Weimer</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "oidc-advanced-role-idp-mapper", providerClasses = IdentityProviderMapper.class)
 public class AdvancedClaimToRoleMapper extends AbstractClaimMapper {
 
     public static final String CLAIM_PROPERTY_NAME = "claims";

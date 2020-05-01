@@ -26,7 +26,7 @@ import org.springframework.beans.factory.annotation.Value;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "infinispan")
+@ProviderFactory(id = "infinispan", providerClasses = StickySessionEncoderProvider.class)
 public class InfinispanStickySessionEncoderProviderFactory implements StickySessionEncoderProviderFactory {
     @Value("${shouldAttachRoute}")
     private boolean shouldAttachRoute;

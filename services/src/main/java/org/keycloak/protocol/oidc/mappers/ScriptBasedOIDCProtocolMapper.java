@@ -20,6 +20,7 @@ package org.keycloak.protocol.oidc.mappers;
 import org.jboss.logging.Logger;
 import org.keycloak.common.Profile;
 import org.keycloak.models.*;
+import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.ProtocolMapperConfigException;
 import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
@@ -38,7 +39,7 @@ import java.util.List;
  *
  * @author <a href="mailto:thomas.darimont@gmail.com">Thomas Darimont</a>
  */
-@ProviderFactory(id = "oidc-script-based-protocol-mapper")
+@ProviderFactory(id = "oidc-script-based-protocol-mapper", providerClasses = ProtocolMapper.class)
 public class ScriptBasedOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper,
         EnvironmentDependentProviderFactory {
 

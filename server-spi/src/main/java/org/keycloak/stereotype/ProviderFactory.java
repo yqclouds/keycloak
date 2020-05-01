@@ -1,5 +1,6 @@
 package org.keycloak.stereotype;
 
+import org.keycloak.provider.Provider;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.*;
@@ -13,4 +14,6 @@ import java.lang.annotation.*;
 @Component
 public @interface ProviderFactory {
     String id() default "";
+
+    Class<? extends Provider>[] providerClasses();
 }

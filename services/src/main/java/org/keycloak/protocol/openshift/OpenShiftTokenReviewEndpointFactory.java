@@ -27,7 +27,7 @@ import org.keycloak.stereotype.ProviderFactory;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "openshift-token-review")
+@ProviderFactory(id = "openshift-token-review", providerClasses = OIDCExtProvider.class)
 public class OpenShiftTokenReviewEndpointFactory implements OIDCExtProviderFactory, EnvironmentDependentProviderFactory {
 
     @Override

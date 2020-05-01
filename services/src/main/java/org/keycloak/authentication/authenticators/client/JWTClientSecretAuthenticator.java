@@ -20,6 +20,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.ClientAuthenticationFlowContext;
+import org.keycloak.authentication.ClientAuthenticator;
 import org.keycloak.common.util.Time;
 import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.models.AuthenticationExecutionModel.Requirement;
@@ -47,7 +48,7 @@ import java.util.*;
  * <p>
  * TODO: Try to create abstract superclass to be shared with {@link JWTClientAuthenticator}. Most of the code can be reused
  */
-@ProviderFactory(id = "client-secret-jwt")
+@ProviderFactory(id = "client-secret-jwt", providerClasses = ClientAuthenticator.class)
 public class JWTClientSecretAuthenticator extends AbstractClientAuthenticator {
 
     public static final String PROVIDER_ID = "client-secret-jwt";

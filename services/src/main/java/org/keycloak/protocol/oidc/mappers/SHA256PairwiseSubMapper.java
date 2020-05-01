@@ -6,6 +6,7 @@ import org.keycloak.models.ProtocolMapperContainerModel;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.ProtocolMapperConfigException;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -16,7 +17,7 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-@ProviderFactory(id = "sha256")
+@ProviderFactory(id = "sha256", providerClasses = ProtocolMapper.class)
 public class SHA256PairwiseSubMapper extends AbstractPairwiseSubMapper {
     public static final String PROVIDER_ID = "sha256";
     private static final String HASH_ALGORITHM = "SHA-256";

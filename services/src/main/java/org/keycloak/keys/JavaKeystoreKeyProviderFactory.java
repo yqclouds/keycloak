@@ -33,7 +33,7 @@ import static org.keycloak.provider.ProviderConfigProperty.STRING_TYPE;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = "java-keystore")
+@ProviderFactory(id = "java-keystore", providerClasses = KeyProvider.class)
 public class JavaKeystoreKeyProviderFactory extends AbstractRsaKeyProviderFactory {
     public static final String ID = "java-keystore";
     private static final Logger logger = Logger.getLogger(JavaKeystoreKeyProviderFactory.class);

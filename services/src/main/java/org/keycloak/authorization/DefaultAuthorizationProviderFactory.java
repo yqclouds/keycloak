@@ -27,7 +27,7 @@ import org.keycloak.stereotype.ProviderFactory;
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
-@ProviderFactory
+@ProviderFactory(id = "authorization", providerClasses = AuthorizationProvider.class)
 public class DefaultAuthorizationProviderFactory implements AuthorizationProviderFactory {
 
     private PolicyEvaluator policyEvaluator = new DefaultPolicyEvaluator();

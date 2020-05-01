@@ -24,6 +24,7 @@ import org.infinispan.commons.api.BasicCache;
 import org.jboss.logging.Logger;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.SingleUseTokenStoreProvider;
 import org.keycloak.models.SingleUseTokenStoreProviderFactory;
 import org.keycloak.models.sessions.infinispan.entities.ActionTokenValueEntity;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
@@ -34,7 +35,7 @@ import java.util.function.Supplier;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "infinispan")
+@ProviderFactory(id = "infinispan", providerClasses = SingleUseTokenStoreProvider.class)
 public class InfinispanSingleUseTokenStoreProviderFactory implements SingleUseTokenStoreProviderFactory {
 
     private static final Logger LOG = Logger.getLogger(InfinispanSingleUseTokenStoreProviderFactory.class);

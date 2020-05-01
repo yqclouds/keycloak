@@ -28,7 +28,7 @@ import javax.persistence.EntityManager;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "jpa")
+@ProviderFactory(id = "jpa", providerClasses = UserFederatedStorageProvider.class)
 public class JpaUserFederatedStorageProviderFactory implements UserFederatedStorageProviderFactory {
     @Override
     public UserFederatedStorageProvider create(KeycloakSession session) {

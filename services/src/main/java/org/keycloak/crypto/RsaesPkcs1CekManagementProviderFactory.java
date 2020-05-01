@@ -21,7 +21,7 @@ import org.keycloak.jose.jwe.JWEConstants;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 
-@ProviderFactory(id = JWEConstants.RSA1_5)
+@ProviderFactory(id = JWEConstants.RSA1_5, providerClasses = CekManagementProvider.class)
 public class RsaesPkcs1CekManagementProviderFactory implements CekManagementProviderFactory {
 
     public static final String ID = JWEConstants.RSA1_5;

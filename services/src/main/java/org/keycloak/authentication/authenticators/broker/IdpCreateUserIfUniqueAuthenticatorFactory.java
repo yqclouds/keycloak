@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "idp-create-user-if-unique")
+@ProviderFactory(id = "idp-create-user-if-unique", providerClasses = Authenticator.class)
 public class IdpCreateUserIfUniqueAuthenticatorFactory implements AuthenticatorFactory {
 
     public static final String PROVIDER_ID = "idp-create-user-if-unique";

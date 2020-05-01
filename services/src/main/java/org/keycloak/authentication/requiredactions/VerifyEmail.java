@@ -53,7 +53,7 @@ import java.util.concurrent.TimeUnit;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "VERIFY_EMAIL")
+@ProviderFactory(id = "VERIFY_EMAIL", providerClasses = RequiredActionProvider.class)
 public class VerifyEmail implements RequiredActionProvider, RequiredActionFactory, DisplayTypeRequiredActionFactory {
     private static final Logger logger = Logger.getLogger(VerifyEmail.class);
 

@@ -29,7 +29,7 @@ import javax.annotation.PostConstruct;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = "jboss-logging")
+@ProviderFactory(id = "jboss-logging", providerClasses = EventListenerProvider.class)
 public class JBossLoggingEventListenerProviderFactory implements EventListenerProviderFactory {
 
     public static final String ID = "jboss-logging";

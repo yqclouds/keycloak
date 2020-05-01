@@ -4,11 +4,13 @@ import org.jboss.logging.Logger;
 import org.keycloak.dom.saml.v2.assertion.AttributeStatementType;
 import org.keycloak.dom.saml.v2.assertion.AttributeType;
 import org.keycloak.models.*;
+import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.ProtocolMapperConfigException;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.scripting.EvaluatableScriptAdapter;
 import org.keycloak.scripting.ScriptCompilationException;
 import org.keycloak.scripting.ScriptingProvider;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,6 +25,7 @@ import java.util.Map;
  *
  * @author Alistair Doswald
  */
+@ProviderFactory(id = "saml-javascript-mapper", providerClasses = ProtocolMapper.class)
 public class ScriptBasedMapper extends AbstractSAMLProtocolMapper implements SAMLAttributeStatementMapper {
 
     public static final String PROVIDER_ID = "saml-javascript-mapper";

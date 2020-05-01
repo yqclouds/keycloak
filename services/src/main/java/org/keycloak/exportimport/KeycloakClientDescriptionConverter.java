@@ -27,7 +27,7 @@ import java.io.IOException;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = "keycloak")
+@ProviderFactory(id = "keycloak", providerClasses = ClientDescriptionConverter.class)
 public class KeycloakClientDescriptionConverter implements ClientDescriptionConverterFactory, ClientDescriptionConverter {
 
     public static final String ID = "keycloak";

@@ -26,7 +26,7 @@ import org.keycloak.stereotype.ProviderFactory;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = PasswordPolicy.FORCE_EXPIRED_ID)
+@ProviderFactory(id = PasswordPolicy.FORCE_EXPIRED_ID, providerClasses = PasswordPolicyProvider.class)
 public class ForceExpiredPasswordPolicyProviderFactory implements PasswordPolicyProviderFactory, PasswordPolicyProvider {
 
     public static final int DEFAULT_VALUE = 365;

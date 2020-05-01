@@ -31,7 +31,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "cli-username-password")
+@ProviderFactory(id = "cli-username-password", providerClasses = Authenticator.class)
 public class CliUsernamePasswordAuthenticatorFactory implements AuthenticatorFactory {
     public static final String PROVIDER_ID = "cli-username-password";
     public static final CliUsernamePasswordAuthenticator SINGLETON = new CliUsernamePasswordAuthenticator();

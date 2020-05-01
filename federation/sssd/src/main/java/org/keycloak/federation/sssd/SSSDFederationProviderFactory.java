@@ -24,6 +24,7 @@ import org.keycloak.federation.sssd.impl.PAMAuthenticator;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
+import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.UserStorageProviderFactory;
 import org.keycloak.storage.UserStorageProviderModel;
 
@@ -31,7 +32,7 @@ import org.keycloak.storage.UserStorageProviderModel;
  * @author <a href="mailto:bruno@abstractj.org">Bruno Oliveira</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "sssd")
+@ProviderFactory(id = "sssd", providerClasses = UserStorageProvider.class)
 public class SSSDFederationProviderFactory implements UserStorageProviderFactory<SSSDFederationProvider>, EnvironmentDependentProviderFactory {
 
     private static final String PROVIDER_NAME = "sssd";

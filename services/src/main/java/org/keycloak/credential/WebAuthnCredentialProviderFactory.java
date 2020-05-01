@@ -22,7 +22,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
 
-@ProviderFactory(id = "keycloak-webauthn")
+@ProviderFactory(id = "keycloak-webauthn", providerClasses = CredentialProvider.class)
 public class WebAuthnCredentialProviderFactory implements CredentialProviderFactory<WebAuthnCredentialProvider>, EnvironmentDependentProviderFactory {
 
     public static final String PROVIDER_ID = "keycloak-webauthn";

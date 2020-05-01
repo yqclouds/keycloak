@@ -55,7 +55,7 @@ import java.util.stream.Collectors;
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "infinispan")
+@ProviderFactory(id = "infinispan", providerClasses = ClusterProvider.class)
 public class InfinispanClusterProviderFactory implements ClusterProviderFactory {
 
     public static final String PROVIDER_ID = "infinispan";

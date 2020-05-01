@@ -16,12 +16,14 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.RealmModel.ClientRemovedEvent;
 import org.keycloak.representations.idm.authorization.ClientPolicyRepresentation;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
+import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.util.JsonSerialization;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@ProviderFactory(id = "client", providerClasses = PolicyProvider.class)
 public class ClientPolicyProviderFactory implements PolicyProviderFactory<ClientPolicyRepresentation> {
 
     private ClientPolicyProvider provider = new ClientPolicyProvider(this::toRepresentation);

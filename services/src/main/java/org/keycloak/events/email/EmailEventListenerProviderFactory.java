@@ -33,7 +33,7 @@ import java.util.Set;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory
+@ProviderFactory(id = "email", providerClasses = EventListenerProvider.class)
 public class EmailEventListenerProviderFactory implements EventListenerProviderFactory {
     private static final Set<EventType> SUPPORTED_EVENTS = new HashSet<>();
 

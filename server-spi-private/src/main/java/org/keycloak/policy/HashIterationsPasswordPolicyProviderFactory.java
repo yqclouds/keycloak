@@ -26,7 +26,7 @@ import org.keycloak.stereotype.ProviderFactory;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = PasswordPolicy.HASH_ITERATIONS_ID)
+@ProviderFactory(id = PasswordPolicy.HASH_ITERATIONS_ID, providerClasses = PasswordPolicyProvider.class)
 public class HashIterationsPasswordPolicyProviderFactory implements PasswordPolicyProvider, PasswordPolicyProviderFactory {
     @Override
     public PasswordPolicyProvider create(KeycloakSession session) {

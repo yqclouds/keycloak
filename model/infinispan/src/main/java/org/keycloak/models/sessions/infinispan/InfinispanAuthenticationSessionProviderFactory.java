@@ -47,7 +47,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "infinispan")
+@ProviderFactory(id = "infinispan", providerClasses = AuthenticationSessionProvider.class)
 @ConditionalOnBean(value = {KeycloakSessionFactory.class})
 public class InfinispanAuthenticationSessionProviderFactory implements AuthenticationSessionProviderFactory {
     public static final String PROVIDER_ID = "infinispan";

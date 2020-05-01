@@ -16,7 +16,7 @@ import java.nio.file.Paths;
  *
  * @author Sebastian Łaskawiec
  */
-@ProviderFactory(id = "files-plaintext")
+@ProviderFactory(id = "files-plaintext", providerClasses = VaultProvider.class)
 public class FilesPlainTextVaultProviderFactory extends AbstractVaultProviderFactory {
 
     public static final String PROVIDER_ID = "files-plaintext";

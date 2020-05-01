@@ -43,7 +43,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "CONFIGURE_TOTP")
+@ProviderFactory(id = "CONFIGURE_TOTP", providerClasses = RequiredActionProvider.class)
 public class UpdateTotp implements RequiredActionProvider, RequiredActionFactory, DisplayTypeRequiredActionFactory, CredentialRegistrator {
     @Override
     public InitiatedActionSupport initiatedActionSupport() {

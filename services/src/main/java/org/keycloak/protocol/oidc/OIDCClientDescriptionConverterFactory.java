@@ -25,7 +25,7 @@ import org.keycloak.stereotype.ProviderFactory;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "openid-connect")
+@ProviderFactory(id = "openid-connect", providerClasses = ClientDescriptionConverter.class)
 public class OIDCClientDescriptionConverterFactory implements ClientDescriptionConverterFactory {
 
     public static final String ID = "openid-connect";

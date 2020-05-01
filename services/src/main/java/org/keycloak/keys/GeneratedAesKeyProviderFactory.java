@@ -34,7 +34,7 @@ import static org.keycloak.provider.ProviderConfigProperty.LIST_TYPE;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "aes-generated")
+@ProviderFactory(id = "aes-generated", providerClasses = KeyProvider.class)
 public class GeneratedAesKeyProviderFactory extends AbstractGeneratedSecretKeyProviderFactory<AbstractGeneratedSecretKeyProvider> {
 
     public static final String ID = "aes-generated";

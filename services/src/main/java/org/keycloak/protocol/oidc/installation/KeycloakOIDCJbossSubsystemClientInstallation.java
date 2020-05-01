@@ -33,7 +33,7 @@ import java.util.Map;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "keycloak-oidc-jboss-subsystem")
+@ProviderFactory(id = "keycloak-oidc-jboss-subsystem", providerClasses = ClientInstallationProvider.class)
 public class KeycloakOIDCJbossSubsystemClientInstallation implements ClientInstallationProvider {
     @Override
     public Response generateInstallation(KeycloakSession session, RealmModel realm, ClientModel client, URI baseUri) {

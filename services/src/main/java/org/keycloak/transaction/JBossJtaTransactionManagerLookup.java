@@ -28,7 +28,7 @@ import javax.transaction.TransactionManager;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "jboss")
+@ProviderFactory(id = "jboss", providerClasses = JtaTransactionManagerLookup.class)
 public class JBossJtaTransactionManagerLookup implements JtaTransactionManagerLookup {
     private static final Logger logger = Logger.getLogger(JBossJtaTransactionManagerLookup.class);
     private TransactionManager tm;

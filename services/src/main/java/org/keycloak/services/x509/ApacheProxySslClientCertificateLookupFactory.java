@@ -26,7 +26,7 @@ import org.keycloak.stereotype.ProviderFactory;
  * @version $Revision: 1 $
  * @since 4/4/2017
  */
-@ProviderFactory(id = "apache")
+@ProviderFactory(id = "apache", providerClasses = X509ClientCertificateLookup.class)
 public class ApacheProxySslClientCertificateLookupFactory extends AbstractClientCertificateFromHttpHeadersLookupFactory {
 
     private final static String PROVIDER = "apache";

@@ -28,7 +28,7 @@ import java.io.File;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "singleFile")
+@ProviderFactory(id = "singleFile", providerClasses = ImportProvider.class)
 public class SingleFileImportProviderFactory implements ImportProviderFactory {
 
     @Override

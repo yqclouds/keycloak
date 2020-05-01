@@ -23,7 +23,7 @@ import org.keycloak.stereotype.ProviderFactory;
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
-@ProviderFactory(id = "access_token")
+@ProviderFactory(id = "access_token", providerClasses = TokenIntrospectionProvider.class)
 public class AccessTokenIntrospectionProviderFactory implements TokenIntrospectionProviderFactory {
     public static final String ACCESS_TOKEN_TYPE = "access_token";
 

@@ -29,7 +29,7 @@ import javax.annotation.PostConstruct;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = "freemarker")
+@ProviderFactory(id = "freemarker", providerClasses = EmailTemplateProvider.class)
 public class FreeMarkerEmailTemplateProviderFactory implements EmailTemplateProviderFactory {
     @Autowired
     private FreeMarkerUtil freeMarker;

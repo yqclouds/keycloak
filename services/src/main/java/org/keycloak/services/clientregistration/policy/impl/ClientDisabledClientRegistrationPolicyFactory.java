@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "client-disabled")
+@ProviderFactory(id = "client-disabled", providerClasses = ClientRegistrationPolicy.class)
 public class ClientDisabledClientRegistrationPolicyFactory extends AbstractClientRegistrationPolicyFactory {
 
     public static final String PROVIDER_ID = "client-disabled";

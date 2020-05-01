@@ -26,7 +26,7 @@ import org.keycloak.stereotype.ProviderFactory;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "webauthn-authenticator-passwordless")
+@ProviderFactory(id = "webauthn-authenticator-passwordless", providerClasses = Authenticator.class)
 public class WebAuthnPasswordlessAuthenticatorFactory extends WebAuthnAuthenticatorFactory {
 
     public static final String PROVIDER_ID = "webauthn-authenticator-passwordless";

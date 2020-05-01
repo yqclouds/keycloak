@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = "basic")
+@ProviderFactory(id = "basic", providerClasses = TimerProvider.class)
 public class BasicTimerProviderFactory implements TimerProviderFactory {
 
     private Timer timer;

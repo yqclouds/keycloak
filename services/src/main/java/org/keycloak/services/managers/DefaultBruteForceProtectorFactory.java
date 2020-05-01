@@ -29,7 +29,7 @@ import javax.annotation.PreDestroy;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "default-brute-force-detector")
+@ProviderFactory(id = "default-brute-force-detector", providerClasses = BruteForceProtector.class)
 public class DefaultBruteForceProtectorFactory implements BruteForceProtectorFactory {
     DefaultBruteForceProtector protector;
 

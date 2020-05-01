@@ -35,7 +35,7 @@ import java.net.URI;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "keycloak-saml")
+@ProviderFactory(id = "keycloak-saml", providerClasses = ClientInstallationProvider.class)
 public class KeycloakSamlClientInstallation implements ClientInstallationProvider {
 
     public static void baseXml(KeycloakSession session, RealmModel realm, ClientModel client, URI baseUri, SamlClient samlClient, StringBuilder buffer) {

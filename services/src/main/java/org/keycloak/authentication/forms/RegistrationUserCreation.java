@@ -45,7 +45,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "registration-user-creation")
+@ProviderFactory(id = "registration-user-creation", providerClasses = FormAction.class)
 public class RegistrationUserCreation implements FormAction, FormActionFactory {
 
     public static final String PROVIDER_ID = "registration-user-creation";

@@ -84,4 +84,7 @@ public interface SamlAuthenticationPreprocessor extends Provider, ProviderFactor
         return statusResponse;
     }
 
+    @Override
+    default void close() {
+    }
 }

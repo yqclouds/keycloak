@@ -39,7 +39,7 @@ import java.util.Map;
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
  */
-@ProviderFactory
+@ProviderFactory(id = "file", providerClasses = TruststoreProvider.class)
 public class FileTruststoreProviderFactory implements TruststoreProviderFactory {
 
     private static final Logger log = Logger.getLogger(FileTruststoreProviderFactory.class);

@@ -17,10 +17,7 @@
 
 package org.keycloak.broker.saml.mappers;
 
-import org.keycloak.broker.provider.AbstractIdentityProviderMapper;
-import org.keycloak.broker.provider.BrokeredIdentityContext;
-import org.keycloak.broker.provider.ConfigConstants;
-import org.keycloak.broker.provider.IdentityBrokerException;
+import org.keycloak.broker.provider.*;
 import org.keycloak.broker.saml.SAMLEndpoint;
 import org.keycloak.broker.saml.SAMLIdentityProviderFactory;
 import org.keycloak.dom.saml.v2.assertion.AssertionType;
@@ -29,6 +26,7 @@ import org.keycloak.dom.saml.v2.assertion.AttributeType;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +36,7 @@ import java.util.Optional;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "saml-role-idp-mapper", providerClasses = IdentityProviderMapper.class)
 public class AttributeToRoleMapper extends AbstractIdentityProviderMapper {
 
     public static final String[] COMPATIBLE_PROVIDERS = {SAMLIdentityProviderFactory.PROVIDER_ID};

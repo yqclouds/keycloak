@@ -31,7 +31,7 @@ import java.util.Map;
 
 import static org.keycloak.protocol.util.ClientCliInstallationUtil.quote;
 
-@ProviderFactory(id = "keycloak-oidc-jboss-subsystem-cli")
+@ProviderFactory(id = "keycloak-oidc-jboss-subsystem-cli", providerClasses = ClientInstallationProvider.class)
 public class KeycloakOIDCJbossSubsystemClientCliInstallation implements ClientInstallationProvider {
 
     @Override

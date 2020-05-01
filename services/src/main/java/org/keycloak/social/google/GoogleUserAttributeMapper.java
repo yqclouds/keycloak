@@ -17,12 +17,15 @@
 package org.keycloak.social.google;
 
 import org.keycloak.broker.oidc.mappers.AbstractJsonUserAttributeMapper;
+import org.keycloak.broker.provider.IdentityProviderMapper;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * User attribute mapper.
  *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
+@ProviderFactory(id = "google-user-attribute-mapper", providerClasses = IdentityProviderMapper.class)
 public class GoogleUserAttributeMapper extends AbstractJsonUserAttributeMapper {
 
     private static final String[] cp = new String[]{GoogleIdentityProviderFactory.PROVIDER_ID};

@@ -36,7 +36,7 @@ import java.net.URI;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory
+@ProviderFactory(id = "saml-sp-descriptor", providerClasses = ClientInstallationProvider.class)
 public class SamlSPDescriptorClientInstallation implements ClientInstallationProvider {
 
     public static final String SAML_CLIENT_INSTALATION_SP_DESCRIPTOR = "saml-sp-descriptor";

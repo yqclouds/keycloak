@@ -18,6 +18,7 @@ package org.keycloak.social.twitter;
 
 import org.keycloak.broker.oidc.OAuth2IdentityProviderConfig;
 import org.keycloak.broker.provider.AbstractIdentityProviderFactory;
+import org.keycloak.broker.social.SocialIdentityProvider;
 import org.keycloak.broker.social.SocialIdentityProviderFactory;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
@@ -26,7 +27,7 @@ import org.keycloak.stereotype.ProviderFactory;
 /**
  * @author Pedro Igor
  */
-@ProviderFactory(id = "twitter")
+@ProviderFactory(id = "twitter", providerClasses = SocialIdentityProvider.class)
 public class TwitterIdentityProviderFactory extends AbstractIdentityProviderFactory<TwitterIdentityProvider> implements SocialIdentityProviderFactory<TwitterIdentityProvider> {
 
     public static final String PROVIDER_ID = "twitter";

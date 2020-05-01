@@ -5,6 +5,7 @@ package org.keycloak.broker.saml.mappers;
 
 import org.keycloak.broker.provider.AbstractIdentityProviderMapper;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
+import org.keycloak.broker.provider.IdentityProviderMapper;
 import org.keycloak.broker.saml.SAMLEndpoint;
 import org.keycloak.broker.saml.SAMLIdentityProviderFactory;
 import org.keycloak.common.util.CollectionUtil;
@@ -26,7 +27,7 @@ import java.util.stream.Collectors;
 /**
  * @author <a href="mailto:frelibert@yahoo.com">Frederik Libert</a>
  */
-@ProviderFactory(id = "saml-user-attributestatement-idp-mapper")
+@ProviderFactory(id = "saml-user-attributestatement-idp-mapper", providerClasses = IdentityProviderMapper.class)
 public class UserAttributeStatementMapper extends AbstractIdentityProviderMapper {
 
     public static final String ATTRIBUTE_NAME_PATTERN = "attribute.name.pattern";

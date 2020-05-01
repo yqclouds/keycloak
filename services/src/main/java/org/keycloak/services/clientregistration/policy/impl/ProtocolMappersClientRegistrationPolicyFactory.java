@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@org.keycloak.stereotype.ProviderFactory(id = "allowed-protocol-mappers")
+@org.keycloak.stereotype.ProviderFactory(id = "allowed-protocol-mappers", providerClasses = ClientRegistrationPolicy.class)
 public class ProtocolMappersClientRegistrationPolicyFactory extends AbstractClientRegistrationPolicyFactory {
 
     public static final String PROVIDER_ID = "allowed-protocol-mappers";

@@ -32,6 +32,7 @@ import org.keycloak.events.EventBuilder;
 import org.keycloak.models.*;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.services.messages.Messages;
+import org.keycloak.stereotype.ProviderFactory;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -41,6 +42,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "reset-credentials-choose-user", providerClasses = Authenticator.class)
 public class ResetCredentialChooseUser implements Authenticator, AuthenticatorFactory {
 
     public static final String PROVIDER_ID = "reset-credentials-choose-user";

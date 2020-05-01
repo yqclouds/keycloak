@@ -1,14 +1,13 @@
 package org.keycloak.protocol.docker.installation;
 
 import org.jboss.logging.Logger;
-import org.keycloak.Config;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.ClientInstallationProvider;
 import org.keycloak.protocol.docker.DockerAuthV2Protocol;
 import org.keycloak.protocol.docker.installation.compose.DockerComposeZipContent;
+import org.keycloak.stereotype.ProviderFactory;
 
 import javax.ws.rs.core.Response;
 import java.io.BufferedReader;
@@ -22,6 +21,7 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+@ProviderFactory(id = "docker-v2-compose-yaml", providerClasses = ClientInstallationProvider.class)
 public class DockerComposeYamlInstallationProvider implements ClientInstallationProvider {
     public static final String ROOT_DIR = "keycloak-docker-compose-yaml/";
     private static Logger log = Logger.getLogger(DockerComposeYamlInstallationProvider.class);
@@ -29,21 +29,6 @@ public class DockerComposeYamlInstallationProvider implements ClientInstallation
     @Override
     public ClientInstallationProvider create(final KeycloakSession session) {
         return this;
-    }
-
-    @Override
-    public void init(final Config.Scope config) {
-        // no-op
-    }
-
-    @Override
-    public void postInit(final KeycloakSessionFactory factory) {
-        // no-op
-    }
-
-    @Override
-    public void close() {
-        // no-op
     }
 
     @Override

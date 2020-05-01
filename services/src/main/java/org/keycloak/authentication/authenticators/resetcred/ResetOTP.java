@@ -18,6 +18,7 @@
 package org.keycloak.authentication.authenticators.resetcred;
 
 import org.keycloak.authentication.AuthenticationFlowContext;
+import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.CredentialValidator;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.credential.OTPCredentialProvider;
@@ -30,7 +31,7 @@ import org.keycloak.stereotype.ProviderFactory;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "reset-otp")
+@ProviderFactory(id = "reset-otp", providerClasses = Authenticator.class)
 public class ResetOTP extends AbstractSetRequiredActionAuthenticator implements CredentialValidator<OTPCredentialProvider> {
 
     public static final String PROVIDER_ID = "reset-otp";

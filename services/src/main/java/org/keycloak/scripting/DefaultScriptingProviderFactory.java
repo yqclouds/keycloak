@@ -24,7 +24,7 @@ import javax.script.ScriptEngineManager;
 /**
  * @author <a href="mailto:thomas.darimont@gmail.com">Thomas Darimont</a>
  */
-@ProviderFactory(id = "script-based-auth")
+@ProviderFactory(id = "script-based-auth", providerClasses = ScriptingProvider.class)
 public class DefaultScriptingProviderFactory implements ScriptingProviderFactory {
 
     static final String ID = "script-based-auth";

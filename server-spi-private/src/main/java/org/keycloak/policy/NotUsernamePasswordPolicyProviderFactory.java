@@ -23,7 +23,7 @@ import org.keycloak.stereotype.ProviderFactory;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = "notUsername")
+@ProviderFactory(id = "notUsername", providerClasses = PasswordPolicyProvider.class)
 public class NotUsernamePasswordPolicyProviderFactory implements PasswordPolicyProviderFactory {
 
     public static final String ID = "notUsername";

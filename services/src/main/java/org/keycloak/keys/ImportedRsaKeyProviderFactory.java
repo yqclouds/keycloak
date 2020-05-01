@@ -37,7 +37,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = "rsa")
+@ProviderFactory(id = "rsa", providerClasses = KeyProvider.class)
 public class ImportedRsaKeyProviderFactory extends AbstractRsaKeyProviderFactory {
 
     public static final String ID = "rsa";

@@ -18,6 +18,7 @@
 package org.keycloak.social.paypal;
 
 import org.keycloak.broker.oidc.mappers.AbstractJsonUserAttributeMapper;
+import org.keycloak.broker.provider.IdentityProviderMapper;
 import org.keycloak.stereotype.ProviderFactory;
 
 /**
@@ -25,7 +26,7 @@ import org.keycloak.stereotype.ProviderFactory;
  *
  * @author Petter Lysne (petterlysne at hotmail dot com)
  */
-@ProviderFactory(id = "paypal-user-attribute-mapper")
+@ProviderFactory(id = "paypal-user-attribute-mapper", providerClasses = IdentityProviderMapper.class)
 public class PayPalUserAttributeMapper extends AbstractJsonUserAttributeMapper {
 
     private static final String[] cp = new String[]{PayPalIdentityProviderFactory.PROVIDER_ID};

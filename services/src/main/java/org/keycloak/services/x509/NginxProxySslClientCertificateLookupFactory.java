@@ -11,7 +11,7 @@ import org.keycloak.stereotype.ProviderFactory;
  * @version $Revision: 1 $
  * @since 10/09/2018
  */
-@ProviderFactory(id = "nginx")
+@ProviderFactory(id = "nginx", providerClasses = X509ClientCertificateLookup.class)
 public class NginxProxySslClientCertificateLookupFactory extends AbstractClientCertificateFromHttpHeadersLookupFactory {
 
     private final static String PROVIDER = "nginx";

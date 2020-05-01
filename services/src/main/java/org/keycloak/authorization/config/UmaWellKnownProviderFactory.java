@@ -25,7 +25,7 @@ import org.keycloak.wellknown.WellKnownProviderFactory;
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
-@ProviderFactory(id = "uma2-configuration")
+@ProviderFactory(id = "uma2-configuration", providerClasses = WellKnownProvider.class)
 public class UmaWellKnownProviderFactory implements WellKnownProviderFactory {
 
     public static final String PROVIDER_ID = "uma2-configuration";

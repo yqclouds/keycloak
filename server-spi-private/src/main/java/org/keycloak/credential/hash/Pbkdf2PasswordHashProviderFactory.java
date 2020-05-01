@@ -23,7 +23,7 @@ import org.keycloak.stereotype.ProviderFactory;
 /**
  * @author <a href="mailto:me@tsudot.com">Kunal Kerkar</a>
  */
-@ProviderFactory(id = "pbkdf2")
+@ProviderFactory(id = "pbkdf2", providerClasses = PasswordHashProvider.class)
 public class Pbkdf2PasswordHashProviderFactory implements PasswordHashProviderFactory {
 
     public static final String ID = "pbkdf2";

@@ -23,7 +23,7 @@ import org.keycloak.stereotype.ProviderFactory;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = "regexPattern")
+@ProviderFactory(id = "regexPattern", providerClasses = PasswordPolicyProvider.class)
 public class RegexPatternsPasswordPolicyProviderFactory implements PasswordPolicyProviderFactory {
 
     public static final String ID = "regexPattern";

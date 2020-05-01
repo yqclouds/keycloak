@@ -3,7 +3,7 @@ package org.keycloak.theme;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 
-@ProviderFactory(id = "default")
+@ProviderFactory(id = "default", providerClasses = ThemeSelectorProvider.class)
 public class DefaultThemeSelectorProviderFactory implements ThemeSelectorProviderFactory {
     @Override
     public ThemeSelectorProvider create(KeycloakSession session) {

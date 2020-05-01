@@ -33,7 +33,7 @@ import org.keycloak.stereotype.ProviderFactory;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = "default")
+@ProviderFactory(id = "default", providerClasses = CacheRealmProvider.class)
 public class InfinispanCacheRealmProviderFactory implements CacheRealmProviderFactory {
 
     public static final String REALM_CLEAR_CACHE_EVENTS = "REALM_CLEAR_CACHE_EVENTS";

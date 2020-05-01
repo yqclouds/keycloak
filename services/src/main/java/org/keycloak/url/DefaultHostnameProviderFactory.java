@@ -11,7 +11,7 @@ import javax.annotation.PostConstruct;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-@ProviderFactory(id = "default")
+@ProviderFactory(id = "default", providerClasses = HostnameProvider.class)
 public class DefaultHostnameProviderFactory implements HostnameProviderFactory {
     private static final Logger LOGGER = Logger.getLogger(DefaultHostnameProviderFactory.class);
 

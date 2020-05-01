@@ -23,7 +23,7 @@ import org.keycloak.stereotype.ProviderFactory;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "keycloak-otp")
+@ProviderFactory(id = "keycloak-otp", providerClasses = CredentialProvider.class)
 public class OTPCredentialProviderFactory implements CredentialProviderFactory<OTPCredentialProvider> {
     public static final String PROVIDER_ID = "keycloak-otp";
 

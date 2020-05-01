@@ -24,7 +24,7 @@ import org.keycloak.stereotype.ProviderFactory;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = PasswordPolicy.PASSWORD_HISTORY_ID)
+@ProviderFactory(id = PasswordPolicy.PASSWORD_HISTORY_ID, providerClasses = PasswordPolicyProvider.class)
 public class HistoryPasswordPolicyProviderFactory implements PasswordPolicyProviderFactory {
 
     public static final Integer DEFAULT_VALUE = 3;

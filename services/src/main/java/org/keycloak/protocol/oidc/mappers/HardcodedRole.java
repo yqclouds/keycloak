@@ -22,6 +22,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.UserSessionModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -40,7 +41,7 @@ import java.util.Map;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "oidc-hardcoded-role-mapper")
+@ProviderFactory(id = "oidc-hardcoded-role-mapper", providerClasses = ProtocolMapper.class)
 public class HardcodedRole extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper {
 
     public static final String ROLE_CONFIG = "role";

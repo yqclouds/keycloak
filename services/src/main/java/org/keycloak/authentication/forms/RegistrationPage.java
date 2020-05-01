@@ -33,7 +33,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "registration-page-form")
+@ProviderFactory(id = "registration-page-form", providerClasses = FormAuthenticator.class)
 public class RegistrationPage implements FormAuthenticator, FormAuthenticatorFactory {
 
     public static final String FIELD_PASSWORD_CONFIRM = "password-confirm";

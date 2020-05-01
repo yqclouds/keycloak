@@ -30,6 +30,7 @@ import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.authorization.*;
 import org.keycloak.representations.idm.authorization.GroupPolicyRepresentation.GroupDefinition;
 import org.keycloak.representations.idm.authorization.RolePolicyRepresentation.RoleDefinition;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -38,6 +39,7 @@ import java.util.stream.Collectors;
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
+@ProviderFactory(id = "uma", providerClasses = PolicyProvider.class)
 public class UMAPolicyProviderFactory implements PolicyProviderFactory<UmaPermissionRepresentation> {
 
     private UMAPolicyProvider provider = new UMAPolicyProvider();

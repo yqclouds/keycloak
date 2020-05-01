@@ -29,7 +29,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "oidc-hardcoded-role-idp-mapper")
+@ProviderFactory(id = "oidc-hardcoded-role-idp-mapper", providerClasses = IdentityProviderMapper.class)
 public class HardcodedRoleMapper extends AbstractIdentityProviderMapper {
     public static final String[] COMPATIBLE_PROVIDERS = {ANY_PROVIDER};
     public static final String PROVIDER_ID = "oidc-hardcoded-role-idp-mapper";

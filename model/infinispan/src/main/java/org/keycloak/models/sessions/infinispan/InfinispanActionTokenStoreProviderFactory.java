@@ -32,7 +32,7 @@ import javax.annotation.PostConstruct;
 /**
  * @author hmlnarik
  */
-@ProviderFactory(id = "infinispan")
+@ProviderFactory(id = "infinispan", providerClasses = ActionTokenStoreProvider.class)
 public class InfinispanActionTokenStoreProviderFactory implements ActionTokenStoreProviderFactory {
     public static final String ACTION_TOKEN_EVENTS = "ACTION_TOKEN_EVENTS";
     private volatile Cache<ActionTokenReducedKey, ActionTokenValueEntity> actionTokenCache;

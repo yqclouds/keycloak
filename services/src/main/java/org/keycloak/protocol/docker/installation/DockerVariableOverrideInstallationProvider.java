@@ -1,37 +1,22 @@
 package org.keycloak.protocol.docker.installation;
 
-import org.keycloak.Config;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.ClientInstallationProvider;
 import org.keycloak.protocol.docker.DockerAuthV2Protocol;
+import org.keycloak.stereotype.ProviderFactory;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 
+@ProviderFactory(id = "docker-v2-variable-override", providerClasses = ClientInstallationProvider.class)
 public class DockerVariableOverrideInstallationProvider implements ClientInstallationProvider {
 
     @Override
     public ClientInstallationProvider create(final KeycloakSession session) {
         return this;
-    }
-
-    @Override
-    public void init(final Config.Scope config) {
-        // no-op
-    }
-
-    @Override
-    public void postInit(final KeycloakSessionFactory factory) {
-        // no-op
-    }
-
-    @Override
-    public void close() {
-        // no-op
     }
 
     @Override

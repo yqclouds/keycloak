@@ -31,7 +31,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "console-username-password")
+@ProviderFactory(id = "console-username-password", providerClasses = Authenticator.class)
 public class ConsoleUsernamePasswordAuthenticatorFactory implements AuthenticatorFactory {
 
     public static final String PROVIDER_ID = "console-username-password";

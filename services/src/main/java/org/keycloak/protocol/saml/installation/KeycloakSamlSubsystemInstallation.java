@@ -33,7 +33,7 @@ import java.net.URI;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@ProviderFactory(id = "keycloak-saml-subsystem")
+@ProviderFactory(id = "keycloak-saml-subsystem", providerClasses = ClientInstallationProvider.class)
 public class KeycloakSamlSubsystemInstallation implements ClientInstallationProvider {
 
     @Override

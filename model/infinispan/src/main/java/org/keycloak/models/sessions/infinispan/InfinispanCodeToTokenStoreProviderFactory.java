@@ -36,7 +36,7 @@ import java.util.function.Supplier;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "infinispan")
+@ProviderFactory(id = "infinispan", providerClasses = CodeToTokenStoreProvider.class)
 public class InfinispanCodeToTokenStoreProviderFactory implements CodeToTokenStoreProviderFactory {
 
     private static final Logger LOG = Logger.getLogger(InfinispanCodeToTokenStoreProviderFactory.class);

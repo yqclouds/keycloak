@@ -27,7 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-@ProviderFactory(id = "jpa")
+@ProviderFactory(id = "jpa", providerClasses = EventStoreProvider.class)
 public class JpaEventStoreProviderFactory implements EventStoreProviderFactory {
 
     public static final String ID = "jpa";

@@ -17,15 +17,14 @@
  */
 package org.keycloak.authorization.policy.provider.aggregated;
 
-import org.keycloak.Config;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.model.Policy;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.representations.idm.authorization.AggregatePolicyRepresentation;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +32,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
+@ProviderFactory(id = "aggregate", providerClasses = PolicyProvider.class)
 public class AggregatePolicyProviderFactory implements PolicyProviderFactory<AggregatePolicyRepresentation> {
 
     private AggregatePolicyProvider provider = new AggregatePolicyProvider();
@@ -100,16 +100,6 @@ public class AggregatePolicyProviderFactory implements PolicyProviderFactory<Agg
 
     @Override
     public void onRemove(Policy policy, AuthorizationProvider authorization) {
-
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
 
     }
 

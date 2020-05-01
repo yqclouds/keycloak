@@ -25,7 +25,7 @@ import org.keycloak.stereotype.ProviderFactory;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@ProviderFactory(id = "default")
+@ProviderFactory(id = "default", providerClasses = MigrationProvider.class)
 public class DefaultMigrationProviderFactory implements MigrationProviderFactory {
     @Override
     public MigrationProvider create(KeycloakSession session) {

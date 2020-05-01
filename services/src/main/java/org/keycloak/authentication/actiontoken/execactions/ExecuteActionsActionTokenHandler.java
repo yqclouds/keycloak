@@ -21,6 +21,7 @@ import org.keycloak.authentication.RequiredActionFactory;
 import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.authentication.actiontoken.AbstractActionTokenHandler;
 import org.keycloak.authentication.actiontoken.ActionTokenContext;
+import org.keycloak.authentication.actiontoken.ActionTokenHandler;
 import org.keycloak.authentication.actiontoken.TokenUtils;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventType;
@@ -43,7 +44,7 @@ import java.util.Objects;
 /**
  * @author hmlnarik
  */
-@ProviderFactory
+@ProviderFactory(id = "execute-actions", providerClasses = ActionTokenHandler.class)
 public class ExecuteActionsActionTokenHandler extends AbstractActionTokenHandler<ExecuteActionsActionToken> {
 
     public ExecuteActionsActionTokenHandler() {

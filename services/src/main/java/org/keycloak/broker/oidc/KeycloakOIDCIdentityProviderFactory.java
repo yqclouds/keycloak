@@ -17,8 +17,10 @@
 package org.keycloak.broker.oidc;
 
 import org.keycloak.broker.provider.AbstractIdentityProviderFactory;
+import org.keycloak.broker.provider.IdentityProvider;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -26,6 +28,7 @@ import java.util.Map;
 /**
  * @author Pedro Igor
  */
+@ProviderFactory(id = "keycloak-oidc", providerClasses = IdentityProvider.class)
 public class KeycloakOIDCIdentityProviderFactory extends AbstractIdentityProviderFactory<KeycloakOIDCIdentityProvider> {
 
     public static final String PROVIDER_ID = "keycloak-oidc";
