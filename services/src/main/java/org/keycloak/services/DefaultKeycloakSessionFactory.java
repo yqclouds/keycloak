@@ -26,6 +26,7 @@ import org.keycloak.theme.DefaultThemeManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -40,6 +41,7 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
     private volatile Map<Class<? extends Provider>, Map<String, ProviderFactory>> providerFactories = new HashMap<>();
     private Map<Class<? extends Provider>, String> providers = new HashMap<>();
 
+    @Autowired
     private DefaultThemeManagerFactory themeManagerFactory;
 
     private ProviderManager providerManager;
@@ -48,7 +50,6 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
     public void afterPropertiesSet() {
         serverStartupTimestamp = System.currentTimeMillis();
 
-        // spis.addAll(providerManager.loadSpis());
         providerFactories = loadFactories(providerManager);
 
         synchronized (ProviderManagerRegistry.SINGLETON) {

@@ -18,23 +18,31 @@
 package org.keycloak.theme;
 
 import org.jboss.logging.Logger;
-import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ThemeManager;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component
 public class DefaultThemeManagerFactory {
-
     private static final Logger log = Logger.getLogger(DefaultThemeManagerFactory.class);
 
     private ConcurrentHashMap<ThemeKey, Theme> themeCache;
 
-    public DefaultThemeManagerFactory() {
-        if (Config.scope("theme").getBoolean("cacheThemes", true)) {
+    @Value("${cacheThemes}")
+    private boolean cacheThemes = true;
+
+    @PostConstruct
+    public void afterPropertiesSet() throws Exception {
+        if (cacheThemes) {
             themeCache = new ConcurrentHashMap<>();
         }
     }
@@ -69,6 +77,7 @@ public class DefaultThemeManagerFactory {
         return theme;
     }
 
+    @PreDestroy
     public void clearCache() {
         if (themeCache != null) {
             themeCache.clear();
@@ -113,10 +122,8 @@ public class DefaultThemeManagerFactory {
 
             ThemeKey themeKey = (ThemeKey) o;
 
-            if (name != null ? !name.equals(themeKey.name) : themeKey.name != null) return false;
-            if (type != themeKey.type) return false;
-
-            return true;
+            if (!Objects.equals(name, themeKey.name)) return false;
+            return type == themeKey.type;
         }
 
         @Override
@@ -125,7 +132,5 @@ public class DefaultThemeManagerFactory {
             result = 31 * result + (type != null ? type.hashCode() : 0);
             return result;
         }
-
     }
-
 }

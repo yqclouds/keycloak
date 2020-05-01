@@ -106,12 +106,7 @@ public class ServerInfoAdminResource {
         LinkedHashMap<String, SpiInfoRepresentation> spiReps = new LinkedHashMap<>();
 
         List<Spi> spis = new LinkedList<>(session.getKeycloakSessionFactory().getSpis());
-        Collections.sort(spis, new Comparator<Spi>() {
-            @Override
-            public int compare(Spi s1, Spi s2) {
-                return s1.getName().compareTo(s2.getName());
-            }
-        });
+        Collections.sort(spis, Comparator.comparing(Spi::getName));
 
         for (Spi spi : spis) {
             SpiInfoRepresentation spiRep = new SpiInfoRepresentation();
@@ -122,34 +117,28 @@ public class ServerInfoAdminResource {
 
             Map<String, ProviderRepresentation> providers = new HashMap<>();
 
-            if (providerIds != null) {
-                for (String name : providerIds) {
-                    ProviderRepresentation provider = new ProviderRepresentation();
-                    ProviderFactory<?> pi = session.getKeycloakSessionFactory().getProviderFactory(spi.getProviderClass(), name);
-                    provider.setOrder(pi.order());
-                    if (ServerInfoAwareProviderFactory.class.isAssignableFrom(pi.getClass())) {
-                        provider.setOperationalInfo(((ServerInfoAwareProviderFactory) pi).getOperationalInfo());
-                    }
-                    if (pi instanceof ConfiguredProvider) {
-                        ComponentTypeRepresentation rep = new ComponentTypeRepresentation();
-                        rep.setId(pi.getId());
-                        ConfiguredProvider configured = (ConfiguredProvider) pi;
-                        rep.setHelpText(configured.getHelpText());
-                        List<ProviderConfigProperty> configProperties = configured.getConfigProperties();
-                        if (configProperties == null) configProperties = Collections.EMPTY_LIST;
-                        rep.setProperties(ModelToRepresentation.toRepresentation(configProperties));
-                        if (pi instanceof ComponentFactory) {
-                            rep.setMetadata(((ComponentFactory) pi).getTypeMetadata());
-                        }
-                        List<ComponentTypeRepresentation> reps = info.getComponentTypes().get(spi.getProviderClass().getName());
-                        if (reps == null) {
-                            reps = new LinkedList<>();
-                            info.getComponentTypes().put(spi.getProviderClass().getName(), reps);
-                        }
-                        reps.add(rep);
-                    }
-                    providers.put(name, provider);
+            for (String name : providerIds) {
+                ProviderRepresentation provider = new ProviderRepresentation();
+                ProviderFactory<?> pi = session.getKeycloakSessionFactory().getProviderFactory(spi.getProviderClass(), name);
+                provider.setOrder(pi.order());
+                if (ServerInfoAwareProviderFactory.class.isAssignableFrom(pi.getClass())) {
+                    provider.setOperationalInfo(((ServerInfoAwareProviderFactory) pi).getOperationalInfo());
                 }
+                if (pi instanceof ConfiguredProvider) {
+                    ComponentTypeRepresentation rep = new ComponentTypeRepresentation();
+                    rep.setId(pi.getId());
+                    ConfiguredProvider configured = (ConfiguredProvider) pi;
+                    rep.setHelpText(configured.getHelpText());
+                    List<ProviderConfigProperty> configProperties = configured.getConfigProperties();
+                    if (configProperties == null) configProperties = Collections.EMPTY_LIST;
+                    rep.setProperties(ModelToRepresentation.toRepresentation(configProperties));
+                    if (pi instanceof ComponentFactory) {
+                        rep.setMetadata(((ComponentFactory) pi).getTypeMetadata());
+                    }
+                    List<ComponentTypeRepresentation> reps = info.getComponentTypes().computeIfAbsent(spi.getProviderClass().getName(), k -> new LinkedList<>());
+                    reps.add(rep);
+                }
+                providers.put(name, provider);
             }
             spiRep.setProviders(providers);
 
@@ -159,7 +148,7 @@ public class ServerInfoAdminResource {
     }
 
     private void setThemes(ServerInfoRepresentation info) {
-        info.setThemes(new HashMap<String, List<ThemeInfoRepresentation>>());
+        info.setThemes(new HashMap<>());
 
         for (Theme.Type type : Theme.Type.values()) {
             List<String> themeNames = new LinkedList<>(session.theme().nameSet(type));
@@ -193,13 +182,13 @@ public class ServerInfoAdminResource {
     }
 
     private void setSocialProviders(ServerInfoRepresentation info) {
-        info.setSocialProviders(new LinkedList<Map<String, String>>());
+        info.setSocialProviders(new LinkedList<>());
         List<ProviderFactory> providerFactories = session.getKeycloakSessionFactory().getProviderFactories(SocialIdentityProvider.class);
         setIdentityProviders(providerFactories, info.getSocialProviders(), "Social");
     }
 
     private void setIdentityProviders(ServerInfoRepresentation info) {
-        info.setIdentityProviders(new LinkedList<Map<String, String>>());
+        info.setIdentityProviders(new LinkedList<>());
         List<ProviderFactory> providerFactories = session.getKeycloakSessionFactory().getProviderFactories(IdentityProvider.class);
         setIdentityProviders(providerFactories, info.getIdentityProviders(), "User-defined");
 
@@ -220,7 +209,7 @@ public class ServerInfoAdminResource {
     }
 
     private void setClientInstallations(ServerInfoRepresentation info) {
-        info.setClientInstallations(new HashMap<String, List<ClientInstallationRepresentation>>());
+        info.setClientInstallations(new HashMap<>());
         for (ProviderFactory p : session.getKeycloakSessionFactory().getProviderFactories(ClientInstallationProvider.class)) {
             ClientInstallationProvider provider = (ClientInstallationProvider) p;
             List<ClientInstallationRepresentation> types = info.getClientInstallations().get(provider.getProtocol());
@@ -241,7 +230,7 @@ public class ServerInfoAdminResource {
     }
 
     private void setProtocolMapperTypes(ServerInfoRepresentation info) {
-        info.setProtocolMapperTypes(new HashMap<String, List<ProtocolMapperTypeRepresentation>>());
+        info.setProtocolMapperTypes(new HashMap<>());
         for (ProviderFactory p : session.getKeycloakSessionFactory().getProviderFactories(ProtocolMapper.class)) {
             ProtocolMapper mapper = (ProtocolMapper) p;
             List<ProtocolMapperTypeRepresentation> types = info.getProtocolMapperTypes().get(mapper.getProtocol());
@@ -263,7 +252,7 @@ public class ServerInfoAdminResource {
     }
 
     private void setBuiltinProtocolMappers(ServerInfoRepresentation info) {
-        info.setBuiltinProtocolMappers(new HashMap<String, List<ProtocolMapperRepresentation>>());
+        info.setBuiltinProtocolMappers(new HashMap<>());
         for (ProviderFactory p : session.getKeycloakSessionFactory().getProviderFactories(LoginProtocol.class)) {
             LoginProtocolFactory factory = (LoginProtocolFactory) p;
             List<ProtocolMapperRepresentation> mappers = new LinkedList<>();
@@ -287,5 +276,4 @@ public class ServerInfoAdminResource {
             info.getPasswordPolicies().add(rep);
         }
     }
-
 }
