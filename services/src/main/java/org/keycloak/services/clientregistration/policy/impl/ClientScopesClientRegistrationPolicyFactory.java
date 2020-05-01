@@ -24,6 +24,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.services.clientregistration.policy.AbstractClientRegistrationPolicyFactory;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@ProviderFactory(id = "allowed-client-templates")
 public class ClientScopesClientRegistrationPolicyFactory extends AbstractClientRegistrationPolicyFactory {
 
     // Keeping the name for backwards compatibility

@@ -1,19 +1,18 @@
 package org.keycloak.protocol.docker;
 
-import org.keycloak.Config;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.Collections;
 import java.util.List;
 
 import static org.keycloak.models.AuthenticationExecutionModel.Requirement;
 
+@ProviderFactory(id = "docker-http-basic-authenticator")
 public class DockerAuthenticatorFactory implements AuthenticatorFactory {
-
     private static final Requirement[] REQUIREMENT_CHOICES = {
             Requirement.REQUIRED,
     };
@@ -48,7 +47,6 @@ public class DockerAuthenticatorFactory implements AuthenticatorFactory {
         return REQUIREMENT_CHOICES;
     }
 
-
     @Override
     public boolean isUserSetupAllowed() {
         return false;
@@ -57,21 +55,6 @@ public class DockerAuthenticatorFactory implements AuthenticatorFactory {
     @Override
     public Authenticator create(KeycloakSession session) {
         return new DockerAuthenticator();
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-        // no-op
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-        // no-op
-    }
-
-    @Override
-    public void close() {
-        // no-op
     }
 
     @Override

@@ -17,7 +17,6 @@
 
 package org.keycloak.authentication.requiredactions;
 
-import org.keycloak.Config;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.authentication.DisplayTypeRequiredActionFactory;
 import org.keycloak.authentication.RequiredActionContext;
@@ -25,7 +24,7 @@ import org.keycloak.authentication.RequiredActionFactory;
 import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
 
 import javax.ws.rs.core.Response;
 import java.util.Arrays;
@@ -34,6 +33,7 @@ import java.util.Arrays;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "terms_and_conditions")
 public class TermsAndConditions implements RequiredActionProvider, RequiredActionFactory, DisplayTypeRequiredActionFactory {
     public static final String PROVIDER_ID = "terms_and_conditions";
     public static final String USER_ATTRIBUTE = PROVIDER_ID;
@@ -50,17 +50,6 @@ public class TermsAndConditions implements RequiredActionProvider, RequiredActio
         return ConsoleTermsAndConditions.SINGLETON;
     }
 
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
     @Override
     public String getId() {
         return PROVIDER_ID;
@@ -69,7 +58,6 @@ public class TermsAndConditions implements RequiredActionProvider, RequiredActio
 
     @Override
     public void evaluateTriggers(RequiredActionContext context) {
-
     }
 
 

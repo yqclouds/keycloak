@@ -11,9 +11,11 @@ import org.keycloak.protocol.LoginProtocol;
 import org.keycloak.protocol.docker.mapper.AllowAllDockerProtocolMapper;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
 import org.keycloak.representations.idm.ClientRepresentation;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.*;
 
+@ProviderFactory(id = DockerAuthV2Protocol.LOGIN_PROTOCOL)
 public class DockerAuthV2ProtocolFactory extends AbstractLoginProtocolFactory implements EnvironmentDependentProviderFactory {
 
     static Map<String, ProtocolMapperModel> builtins = new HashMap<>();

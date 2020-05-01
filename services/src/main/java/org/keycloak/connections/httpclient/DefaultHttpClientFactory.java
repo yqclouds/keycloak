@@ -26,13 +26,14 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.logging.Logger;
-import org.keycloak.Config;
 import org.keycloak.common.util.EnvUtil;
 import org.keycloak.common.util.KeystoreUtil;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.truststore.TruststoreProvider;
+import org.springframework.beans.factory.annotation.Value;
 
+import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyStore;
@@ -58,12 +59,37 @@ import java.util.concurrent.TimeUnit;
  *
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@ProviderFactory(id = "default")
 public class DefaultHttpClientFactory implements HttpClientFactory {
 
     private static final Logger logger = Logger.getLogger(DefaultHttpClientFactory.class);
 
+    @Value("${socket-timeout-millis}")
+    private long socketTimeout = -1L;
+    @Value("${establish-connection-timeout-millis}")
+    private long establishConnectionTimeout = -1L;
+    @Value("${max-pooled-per-route}")
+    private int maxPooledPerRoute = 64;
+    @Value("${connection-pool-size}")
+    private int connectionPoolSize = 128;
+    @Value("${connection-ttl-millis}")
+    private long connectionTTL = -1L;
+    @Value("${max-connection-idle-time-millis}")
+    private long maxConnectionIdleTime = 900000L;
+    @Value("${disable-cookies}")
+    private boolean disableCookies = true;
+    @Value("${client-keystore}")
+    private String clientKeystore;
+    @Value("${client-keystore-password}")
+    private String clientKeystorePassword;
+    @Value("${client-key-password}")
+    private String clientPrivateKeyPassword;
+    @Value("${proxy-mappings}")
+    private String[] proxyMappings;
+    @Value("${disable-trust-manager}")
+    private boolean disableTrustManager = false;
+
     private volatile CloseableHttpClient httpClient;
-    private Config.Scope config;
 
     @Override
     public HttpClientProvider create(KeycloakSession session) {
@@ -109,14 +135,13 @@ public class DefaultHttpClientFactory implements HttpClientFactory {
         };
     }
 
-    @Override
-    public void close() {
+    @PreDestroy
+    public void destroy() throws Exception {
         try {
             if (httpClient != null) {
                 httpClient.close();
             }
         } catch (IOException e) {
-
         }
     }
 
@@ -125,28 +150,10 @@ public class DefaultHttpClientFactory implements HttpClientFactory {
         return "default";
     }
 
-    @Override
-    public void init(Config.Scope config) {
-        this.config = config;
-    }
-
     private void lazyInit(KeycloakSession session) {
         if (httpClient == null) {
             synchronized (this) {
                 if (httpClient == null) {
-                    long socketTimeout = config.getLong("socket-timeout-millis", -1L);
-                    long establishConnectionTimeout = config.getLong("establish-connection-timeout-millis", -1L);
-                    int maxPooledPerRoute = config.getInt("max-pooled-per-route", 64);
-                    int connectionPoolSize = config.getInt("connection-pool-size", 128);
-                    long connectionTTL = config.getLong("connection-ttl-millis", -1L);
-                    long maxConnectionIdleTime = config.getLong("max-connection-idle-time-millis", 900000L);
-                    boolean disableCookies = config.getBoolean("disable-cookies", true);
-                    String clientKeystore = config.get("client-keystore");
-                    String clientKeystorePassword = config.get("client-keystore-password");
-                    String clientPrivateKeyPassword = config.get("client-key-password");
-                    String[] proxyMappings = config.getArray("proxy-mappings");
-                    boolean disableTrustManager = config.getBoolean("disable-trust-manager", false);
-
                     HttpClientBuilder builder = new HttpClientBuilder();
 
                     builder.socketTimeout(socketTimeout, TimeUnit.MILLISECONDS)
@@ -191,11 +198,4 @@ public class DefaultHttpClientFactory implements HttpClientFactory {
             }
         }
     }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
-
 }

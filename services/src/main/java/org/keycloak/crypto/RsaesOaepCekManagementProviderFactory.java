@@ -19,9 +19,10 @@ package org.keycloak.crypto;
 
 import org.keycloak.jose.jwe.JWEConstants;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.stereotype.ProviderFactory;
 
+@ProviderFactory(id = JWEConstants.RSA_OAEP)
 public class RsaesOaepCekManagementProviderFactory implements CekManagementProviderFactory {
-
     public static final String ID = JWEConstants.RSA_OAEP;
 
     @Override

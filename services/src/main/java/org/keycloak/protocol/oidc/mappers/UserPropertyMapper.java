@@ -23,6 +23,7 @@ import org.keycloak.models.UserSessionModel;
 import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.IDToken;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "oidc-usermodel-property-mapper")
 public class UserPropertyMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
     public static final String PROVIDER_ID = "oidc-usermodel-property-mapper";
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();

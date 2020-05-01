@@ -17,18 +17,18 @@
 
 package org.keycloak.exportimport.singlefile;
 
-import org.keycloak.Config;
 import org.keycloak.exportimport.ExportImportConfig;
 import org.keycloak.exportimport.ImportProvider;
 import org.keycloak.exportimport.ImportProviderFactory;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.io.File;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@ProviderFactory(id = "singleFile")
 public class SingleFileImportProviderFactory implements ImportProviderFactory {
 
     @Override
@@ -38,19 +38,6 @@ public class SingleFileImportProviderFactory implements ImportProviderFactory {
             throw new IllegalArgumentException("Property " + ExportImportConfig.FILE + " needs to be provided!");
         }
         return new SingleFileImportProvider(new File(fileName));
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
-    @Override
-    public void close() {
     }
 
     @Override

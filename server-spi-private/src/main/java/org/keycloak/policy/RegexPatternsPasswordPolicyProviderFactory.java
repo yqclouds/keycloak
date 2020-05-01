@@ -17,13 +17,13 @@
 
 package org.keycloak.policy;
 
-import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@ProviderFactory(id = "regexPattern")
 public class RegexPatternsPasswordPolicyProviderFactory implements PasswordPolicyProviderFactory {
 
     public static final String ID = "regexPattern";
@@ -36,14 +36,6 @@ public class RegexPatternsPasswordPolicyProviderFactory implements PasswordPolic
     @Override
     public PasswordPolicyProvider create(KeycloakSession session) {
         return new RegexPatternsPasswordPolicyProvider(session.getContext());
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
     }
 
     @Override
@@ -65,9 +57,4 @@ public class RegexPatternsPasswordPolicyProviderFactory implements PasswordPolic
     public boolean isMultiplSupported() {
         return true;
     }
-
-    @Override
-    public void close() {
-    }
-
 }

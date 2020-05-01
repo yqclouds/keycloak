@@ -17,13 +17,11 @@
 
 package org.keycloak.protocol.saml;
 
-import org.keycloak.Config;
 import org.keycloak.dom.saml.v2.metadata.*;
 import org.keycloak.dom.saml.v2.metadata.EntityDescriptorType.EDTDescriptorChoiceType;
 import org.keycloak.exportimport.ClientDescriptionConverter;
 import org.keycloak.exportimport.ClientDescriptionConverterFactory;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.saml.SignatureAlgorithm;
@@ -33,6 +31,7 @@ import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.exceptions.ProcessingException;
 import org.keycloak.saml.processing.core.parsers.saml.SAMLParser;
 import org.keycloak.saml.processing.core.saml.v2.util.SAMLMetadataUtil;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -43,6 +42,7 @@ import java.util.*;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "saml2-entity-descriptor")
 public class EntityDescriptorDescriptionConverter implements ClientDescriptionConverter, ClientDescriptionConverterFactory {
 
     public static final String ID = "saml2-entity-descriptor";
@@ -214,20 +214,7 @@ public class EntityDescriptorDescriptionConverter implements ClientDescriptionCo
     }
 
     @Override
-    public void init(Config.Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-    }
-
-    @Override
-    public void close() {
-    }
-
-    @Override
     public String getId() {
         return ID;
     }
-
 }

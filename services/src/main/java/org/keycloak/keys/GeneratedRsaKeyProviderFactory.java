@@ -30,6 +30,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ConfigurationValidationHelper;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.security.KeyPair;
 import java.security.PrivateKey;
@@ -40,6 +41,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@ProviderFactory(id = "rsa-generated")
 public class GeneratedRsaKeyProviderFactory extends AbstractRsaKeyProviderFactory {
 
     public static final String ID = "rsa-generated";

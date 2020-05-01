@@ -17,8 +17,6 @@
 package org.keycloak.models.sessions.infinispan;
 
 import org.infinispan.Cache;
-import org.keycloak.Config;
-import org.keycloak.Config.Scope;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.ActionTokenStoreProvider;
 import org.keycloak.models.ActionTokenStoreProviderFactory;
@@ -26,20 +24,25 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.sessions.infinispan.entities.ActionTokenReducedKey;
 import org.keycloak.models.sessions.infinispan.entities.ActionTokenValueEntity;
+import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.PostConstruct;
 
 /**
  * @author hmlnarik
  */
+@ProviderFactory(id = "infinispan")
 public class InfinispanActionTokenStoreProviderFactory implements ActionTokenStoreProviderFactory {
-
     public static final String ACTION_TOKEN_EVENTS = "ACTION_TOKEN_EVENTS";
     private volatile Cache<ActionTokenReducedKey, ActionTokenValueEntity> actionTokenCache;
-    private Config.Scope config;
+
+    @Autowired
+    private KeycloakSessionFactory sessionFactory;
 
     private static Cache<ActionTokenReducedKey, ActionTokenValueEntity> initActionTokenCache(KeycloakSession session) {
         InfinispanConnectionProvider connections = session.getProvider(InfinispanConnectionProvider.class);
-        Cache<ActionTokenReducedKey, ActionTokenValueEntity> cache = connections.getCache(InfinispanConnectionProvider.ACTION_TOKEN_CACHE);
-        return cache;
+        return connections.getCache(InfinispanConnectionProvider.ACTION_TOKEN_CACHE);
     }
 
     @Override
@@ -47,13 +50,8 @@ public class InfinispanActionTokenStoreProviderFactory implements ActionTokenSto
         return new InfinispanActionTokenStoreProvider(session, this.actionTokenCache);
     }
 
-    @Override
-    public void init(Scope config) {
-        this.config = config;
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
+    @PostConstruct
+    public void afterPropertiesSet() throws Exception {
         Cache<ActionTokenReducedKey, ActionTokenValueEntity> cache = this.actionTokenCache;
 
         // It is necessary to put the cache initialization here, otherwise the cache would be initialized lazily, that
@@ -62,19 +60,9 @@ public class InfinispanActionTokenStoreProviderFactory implements ActionTokenSto
             synchronized (this) {
                 cache = this.actionTokenCache;
                 if (cache == null) {
-                    this.actionTokenCache = initActionTokenCache(factory.create());
+                    this.actionTokenCache = initActionTokenCache(sessionFactory.create());
                 }
             }
         }
     }
-
-    @Override
-    public void close() {
-    }
-
-    @Override
-    public String getId() {
-        return "infinispan";
-    }
-
 }

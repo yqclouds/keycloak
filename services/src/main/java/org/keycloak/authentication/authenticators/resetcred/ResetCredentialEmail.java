@@ -18,7 +18,6 @@
 package org.keycloak.authentication.authenticators.resetcred;
 
 import org.jboss.logging.Logger;
-import org.keycloak.Config;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
@@ -37,13 +36,17 @@ import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
-import org.keycloak.models.*;
+import org.keycloak.models.AuthenticationExecutionModel;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.FormMessage;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
+import org.keycloak.stereotype.ProviderFactory;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -55,6 +58,7 @@ import java.util.concurrent.TimeUnit;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "reset-credential-email")
 public class ResetCredentialEmail implements Authenticator, AuthenticatorFactory {
 
     public static final String PROVIDER_ID = "reset-credential-email";
@@ -199,16 +203,6 @@ public class ResetCredentialEmail implements Authenticator, AuthenticatorFactory
     @Override
     public Authenticator create(KeycloakSession session) {
         return this;
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
     }
 
     @Override

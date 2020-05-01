@@ -30,6 +30,7 @@ import org.keycloak.protocol.oidc.mappers.*;
 import org.keycloak.representations.IDToken;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.services.ServicesLogger;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,6 +44,7 @@ import static org.keycloak.models.ImpersonationSessionNote.IMPERSONATOR_USERNAME
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory
 public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
     public static final String USERNAME = "username";
     public static final String EMAIL = "email";

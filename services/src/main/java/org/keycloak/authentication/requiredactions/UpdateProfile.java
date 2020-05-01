@@ -17,29 +17,30 @@
 
 package org.keycloak.authentication.requiredactions;
 
-import org.keycloak.Config;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.authentication.*;
 import org.keycloak.events.Details;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.FormMessage;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.AttributeFormDataProcessor;
 import org.keycloak.services.validation.Validation;
+import org.keycloak.stereotype.ProviderFactory;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory
 public class UpdateProfile implements RequiredActionProvider, RequiredActionFactory, DisplayTypeRequiredActionFactory {
     @Override
     public InitiatedActionSupport initiatedActionSupport() {
@@ -81,7 +82,7 @@ public class UpdateProfile implements RequiredActionProvider, RequiredActionFact
             String username = formData.getFirst("username");
             String oldUsername = user.getUsername();
 
-            boolean usernameChanged = oldUsername != null ? !oldUsername.equals(username) : username != null;
+            boolean usernameChanged = !Objects.equals(oldUsername, username);
 
             if (usernameChanged) {
 
@@ -105,7 +106,7 @@ public class UpdateProfile implements RequiredActionProvider, RequiredActionFact
         String email = formData.getFirst("email");
 
         String oldEmail = user.getEmail();
-        boolean emailChanged = oldEmail != null ? !oldEmail.equals(email) : email != null;
+        boolean emailChanged = !Objects.equals(oldEmail, email);
 
         if (emailChanged) {
             if (!realm.isDuplicateEmailsAllowed()) {
@@ -154,22 +155,10 @@ public class UpdateProfile implements RequiredActionProvider, RequiredActionFact
         return ConsoleUpdateProfile.SINGLETON;
     }
 
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
     @Override
     public String getDisplayText() {
         return "Update Profile";
     }
-
 
     @Override
     public String getId() {

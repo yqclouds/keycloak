@@ -1,34 +1,19 @@
 package org.keycloak.authentication.authenticators.conditional;
 
-import org.keycloak.Config.Scope;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticationExecutionModel.Requirement;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.List;
 
+@ProviderFactory(id = "conditional-user-configured")
 public class ConditionalUserConfiguredAuthenticatorFactory implements ConditionalAuthenticatorFactory {
     public static final String PROVIDER_ID = "conditional-user-configured";
     protected static final String CONDITIONAL_USER_ROLE = "condUserConfigured";
     private static final Requirement[] REQUIREMENT_CHOICES = {
             AuthenticationExecutionModel.Requirement.REQUIRED, AuthenticationExecutionModel.Requirement.DISABLED
     };
-
-    @Override
-    public void init(Scope config) {
-        // no-op
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-        // no-op
-    }
-
-    @Override
-    public void close() {
-        // no-op
-    }
 
     @Override
     public String getId() {

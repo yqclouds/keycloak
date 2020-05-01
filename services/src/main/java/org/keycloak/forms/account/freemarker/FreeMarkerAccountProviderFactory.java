@@ -17,43 +17,35 @@
 
 package org.keycloak.forms.account.freemarker;
 
-import org.keycloak.Config;
 import org.keycloak.forms.account.AccountProvider;
 import org.keycloak.forms.account.AccountProviderFactory;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.theme.FreeMarkerUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.PreDestroy;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@ProviderFactory(id = "freemarker")
 public class FreeMarkerAccountProviderFactory implements AccountProviderFactory {
-
+    @Autowired
     private FreeMarkerUtil freeMarker;
-
-    @Override
-    public AccountProvider create(KeycloakSession session) {
-        return new FreeMarkerAccountProvider(session, freeMarker);
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-        freeMarker = new FreeMarkerUtil();
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
-    @Override
-    public void close() {
-        freeMarker = null;
-    }
 
     @Override
     public String getId() {
         return "freemarker";
     }
 
+    @Override
+    public AccountProvider create(KeycloakSession session) {
+        return new FreeMarkerAccountProvider(session, freeMarker);
+    }
+
+    @PreDestroy
+    public void destroy() throws Exception {
+        freeMarker = null;
+    }
 }

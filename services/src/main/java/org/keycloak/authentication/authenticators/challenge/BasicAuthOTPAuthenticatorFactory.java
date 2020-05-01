@@ -16,14 +16,13 @@
  */
 package org.keycloak.authentication.authenticators.challenge;
 
-import org.keycloak.Config;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -32,34 +31,14 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "basic-auth-otp")
 public class BasicAuthOTPAuthenticatorFactory implements AuthenticatorFactory {
-
     public static final String PROVIDER_ID = "basic-auth-otp";
     public static final BasicAuthOTPAuthenticator SINGLETON = new BasicAuthOTPAuthenticator();
 
     @Override
     public Authenticator create(KeycloakSession session) {
         return SINGLETON;
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
-    @Override
-    public void close() {
-
-    }
-
-    @Override
-    public String getId() {
-        return PROVIDER_ID;
     }
 
     @Override
@@ -97,5 +76,10 @@ public class BasicAuthOTPAuthenticatorFactory implements AuthenticatorFactory {
         return false;
     }
 
+    @Override
+    @Deprecated
+    public String getId() {
+        return PROVIDER_ID;
+    }
 }
 

@@ -17,19 +17,19 @@
 
 package org.keycloak.authentication.authenticators.broker;
 
-import org.keycloak.Config;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.List;
 
 /**
  * @author <a href="mailto:Ryan.Slominski@gmail.com">Ryan Slominski</a>
  */
+@ProviderFactory(id = "idp-auto-link")
 public class IdpAutoLinkAuthenticatorFactory implements AuthenticatorFactory {
     public static final String PROVIDER_ID = "idp-auto-link";
     static IdpAutoLinkAuthenticator SINGLETON = new IdpAutoLinkAuthenticator();
@@ -37,21 +37,6 @@ public class IdpAutoLinkAuthenticatorFactory implements AuthenticatorFactory {
     @Override
     public Authenticator create(KeycloakSession session) {
         return SINGLETON;
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
-    @Override
-    public void close() {
-
     }
 
     @Override

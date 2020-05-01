@@ -19,7 +19,7 @@ package org.keycloak.authentication.actiontoken.execactions;
 import org.keycloak.TokenVerifier.Predicate;
 import org.keycloak.authentication.RequiredActionFactory;
 import org.keycloak.authentication.RequiredActionProvider;
-import org.keycloak.authentication.actiontoken.AbstractActionTokenHander;
+import org.keycloak.authentication.actiontoken.AbstractActionTokenHandler;
 import org.keycloak.authentication.actiontoken.ActionTokenContext;
 import org.keycloak.authentication.actiontoken.TokenUtils;
 import org.keycloak.events.Errors;
@@ -33,6 +33,7 @@ import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
+import org.keycloak.stereotype.ProviderFactory;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -42,7 +43,8 @@ import java.util.Objects;
 /**
  * @author hmlnarik
  */
-public class ExecuteActionsActionTokenHandler extends AbstractActionTokenHander<ExecuteActionsActionToken> {
+@ProviderFactory
+public class ExecuteActionsActionTokenHandler extends AbstractActionTokenHandler<ExecuteActionsActionToken> {
 
     public ExecuteActionsActionTokenHandler() {
         super(

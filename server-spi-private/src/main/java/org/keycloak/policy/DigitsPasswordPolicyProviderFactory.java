@@ -17,15 +17,14 @@
 
 package org.keycloak.policy;
 
-import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@ProviderFactory(id = "digits")
 public class DigitsPasswordPolicyProviderFactory implements PasswordPolicyProviderFactory {
-
     public static final String ID = "digits";
 
     @Override
@@ -36,14 +35,6 @@ public class DigitsPasswordPolicyProviderFactory implements PasswordPolicyProvid
     @Override
     public PasswordPolicyProvider create(KeycloakSession session) {
         return new DigitsPasswordPolicyProvider(session.getContext());
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
     }
 
     @Override
@@ -65,9 +56,4 @@ public class DigitsPasswordPolicyProviderFactory implements PasswordPolicyProvid
     public boolean isMultiplSupported() {
         return false;
     }
-
-    @Override
-    public void close() {
-    }
-
 }

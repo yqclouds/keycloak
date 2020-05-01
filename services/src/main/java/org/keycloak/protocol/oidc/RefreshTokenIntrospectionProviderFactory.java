@@ -18,10 +18,12 @@
 package org.keycloak.protocol.oidc;
 
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
+@ProviderFactory(id = "refresh_token")
 public class RefreshTokenIntrospectionProviderFactory extends AccessTokenIntrospectionProviderFactory {
 
     private static final String REFRESH_TOKEN_TYPE = "refresh_token";

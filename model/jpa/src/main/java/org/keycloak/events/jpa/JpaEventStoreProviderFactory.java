@@ -17,39 +17,28 @@
 
 package org.keycloak.events.jpa;
 
-import org.keycloak.Config;
 import org.keycloak.connections.jpa.JpaConnectionProvider;
 import org.keycloak.events.EventStoreProvider;
 import org.keycloak.events.EventStoreProviderFactory;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@ProviderFactory(id = "jpa")
 public class JpaEventStoreProviderFactory implements EventStoreProviderFactory {
 
     public static final String ID = "jpa";
+
+    @Value("${max-detail-length}")
     private int maxDetailLength;
 
     @Override
     public EventStoreProvider create(KeycloakSession session) {
         JpaConnectionProvider connection = session.getProvider(JpaConnectionProvider.class);
         return new JpaEventStoreProvider(connection.getEntityManager(), maxDetailLength);
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-        maxDetailLength = config.getInt("max-detail-length", 0);
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
-    @Override
-    public void close() {
     }
 
     @Override

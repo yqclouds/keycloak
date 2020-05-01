@@ -17,15 +17,15 @@
 
 package org.keycloak.protocol.oidc;
 
-import org.keycloak.Config;
 import org.keycloak.exportimport.ClientDescriptionConverter;
 import org.keycloak.exportimport.ClientDescriptionConverterFactory;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@ProviderFactory(id = "openid-connect")
 public class OIDCClientDescriptionConverterFactory implements ClientDescriptionConverterFactory {
 
     public static final String ID = "openid-connect";
@@ -39,18 +39,6 @@ public class OIDCClientDescriptionConverterFactory implements ClientDescriptionC
     @Override
     public ClientDescriptionConverter create(KeycloakSession session) {
         return new OIDCClientDescriptionConverter(session);
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-    }
-
-    @Override
-    public void close() {
     }
 
     @Override

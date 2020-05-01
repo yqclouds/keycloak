@@ -35,6 +35,7 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.JsonWebToken;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.Urls;
+import org.keycloak.stereotype.ProviderFactory;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -50,6 +51,7 @@ import java.util.*;
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@ProviderFactory(id = "client-jwt")
 public class JWTClientAuthenticator extends AbstractClientAuthenticator {
 
     public static final String PROVIDER_ID = "client-jwt";

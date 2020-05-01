@@ -17,13 +17,13 @@
 
 package org.keycloak.policy;
 
-import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@ProviderFactory(id = "lowerCase")
 public class LowerCasePasswordPolicyProviderFactory implements PasswordPolicyProviderFactory {
 
     public static final String ID = "lowerCase";
@@ -31,14 +31,6 @@ public class LowerCasePasswordPolicyProviderFactory implements PasswordPolicyPro
     @Override
     public PasswordPolicyProvider create(KeycloakSession session) {
         return new LowerCasePasswordPolicyProvider(session.getContext());
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
     }
 
     @Override
@@ -54,10 +46,6 @@ public class LowerCasePasswordPolicyProviderFactory implements PasswordPolicyPro
     @Override
     public String getDefaultConfigValue() {
         return "1";
-    }
-
-    @Override
-    public void close() {
     }
 
     @Override

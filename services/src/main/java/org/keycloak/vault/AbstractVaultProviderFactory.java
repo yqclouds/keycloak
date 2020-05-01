@@ -20,7 +20,9 @@ package org.keycloak.vault;
 import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
+import org.springframework.beans.factory.annotation.Value;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.lang.invoke.MethodHandles;
 import java.util.LinkedList;
@@ -68,9 +70,11 @@ public abstract class AbstractVaultProviderFactory implements VaultProviderFacto
     private static final Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass());
     protected List<VaultKeyResolver> keyResolvers = new LinkedList<>();
 
-    @Override
-    public void init(Config.Scope config) {
-        String resolverNames = config.get(KEY_RESOLVERS);
+    @Value("${keyResolvers}")
+    private String resolverNames;
+
+    @PostConstruct
+    public void afterPropertiesSet() throws Exception {
         if (resolverNames != null) {
             for (String resolverName : resolverNames.split(",")) {
                 VaultKeyResolver resolver = this.getVaultKeyResolver(resolverName);

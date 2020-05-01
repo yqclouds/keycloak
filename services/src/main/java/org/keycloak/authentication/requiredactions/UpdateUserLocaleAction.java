@@ -1,15 +1,15 @@
 package org.keycloak.authentication.requiredactions;
 
-import org.keycloak.Config;
 import org.keycloak.authentication.RequiredActionContext;
 import org.keycloak.authentication.RequiredActionFactory;
 import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.locale.LocaleSelectorProvider;
 import org.keycloak.locale.LocaleUpdaterProvider;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.UserModel;
+import org.keycloak.stereotype.ProviderFactory;
 
+@ProviderFactory(id = "update_user_locale")
 public class UpdateUserLocaleAction implements RequiredActionProvider, RequiredActionFactory {
 
     @Override
@@ -47,14 +47,6 @@ public class UpdateUserLocaleAction implements RequiredActionProvider, RequiredA
     @Override
     public RequiredActionProvider create(KeycloakSession session) {
         return this;
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
     }
 
     @Override

@@ -19,20 +19,20 @@ package org.keycloak.models.cache.infinispan;
 
 import org.infinispan.Cache;
 import org.jboss.logging.Logger;
-import org.keycloak.Config;
 import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.cache.UserCache;
 import org.keycloak.models.cache.UserCacheProviderFactory;
 import org.keycloak.models.cache.infinispan.entities.Revisioned;
 import org.keycloak.models.cache.infinispan.events.InvalidationEvent;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@ProviderFactory(id = "default")
 public class InfinispanUserCacheProviderFactory implements UserCacheProviderFactory {
 
     public static final String USER_CLEAR_CACHE_EVENTS = "USER_CLEAR_CACHE_EVENTS";
@@ -74,19 +74,6 @@ public class InfinispanUserCacheProviderFactory implements UserCacheProviderFact
                 }
             }
         }
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
-    @Override
-    public void close() {
     }
 
     @Override

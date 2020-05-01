@@ -17,7 +17,6 @@
 
 package org.keycloak.protocol.saml;
 
-import org.keycloak.Config;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
@@ -32,7 +31,10 @@ import org.keycloak.saml.SignatureAlgorithm;
 import org.keycloak.saml.common.constants.JBossSAMLURIConstants;
 import org.keycloak.saml.processing.core.saml.v2.constants.X500SAMLProfileConstants;
 import org.keycloak.saml.validators.DestinationValidator;
+import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Value;
 
+import javax.annotation.PostConstruct;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,12 +45,16 @@ import java.util.Map;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory
 public class SamlProtocolFactory extends AbstractLoginProtocolFactory {
 
     public static final String SCOPE_ROLE_LIST = "role_list";
     private static final String ROLE_LIST_CONSENT_TEXT = "${samlRoleListScopeConsentText}";
     static Map<String, ProtocolMapperModel> builtins = new HashMap<>();
     static List<ProtocolMapperModel> defaultBuiltins = new ArrayList<>();
+
+    @Value("${knownProtocols}")
+    private String[] knownProtocols;
 
     static {
         ProtocolMapperModel model;
@@ -91,12 +97,9 @@ public class SamlProtocolFactory extends AbstractLoginProtocolFactory {
         return new SamlProtocol().setSession(session);
     }
 
-    @Override
-    public void init(Config.Scope config) {
-        //PicketLinkCoreSTS sts = PicketLinkCoreSTS.instance();
-        //sts.installDefaultConfiguration();
-
-        this.destinationValidator = DestinationValidator.forProtocolMap(config.getArray("knownProtocols"));
+    @PostConstruct
+    public void afterPropertiesSet() {
+        this.destinationValidator = DestinationValidator.forProtocolMap(knownProtocols);
     }
 
     @Override

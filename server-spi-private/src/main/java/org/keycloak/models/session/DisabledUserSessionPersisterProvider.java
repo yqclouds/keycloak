@@ -17,8 +17,8 @@
 
 package org.keycloak.models.session;
 
-import org.keycloak.Config;
 import org.keycloak.models.*;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -30,6 +30,7 @@ import java.util.List;
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@ProviderFactory(id = "disabled")
 public class DisabledUserSessionPersisterProvider implements UserSessionPersisterProviderFactory, UserSessionPersisterProvider {
 
     public static final String ID = "disabled";
@@ -40,18 +41,7 @@ public class DisabledUserSessionPersisterProvider implements UserSessionPersiste
     }
 
     @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
-    @Override
     public void close() {
-
     }
 
     @Override
@@ -61,42 +51,34 @@ public class DisabledUserSessionPersisterProvider implements UserSessionPersiste
 
     @Override
     public void createUserSession(UserSessionModel userSession, boolean offline) {
-
     }
 
     @Override
     public void createClientSession(AuthenticatedClientSessionModel clientSession, boolean offline) {
-
     }
 
     @Override
     public void removeUserSession(String userSessionId, boolean offline) {
-
     }
 
     @Override
     public void removeClientSession(String userSessionId, String clientUUID, boolean offline) {
-
     }
 
     @Override
     public void onRealmRemoved(RealmModel realm) {
-
     }
 
     @Override
     public void onClientRemoved(RealmModel realm, ClientModel client) {
-
     }
 
     @Override
     public void onUserRemoved(RealmModel realm, UserModel user) {
-
     }
 
     @Override
     public void updateLastSessionRefreshes(RealmModel realm, int lastSessionRefresh, Collection<String> userSessionIds, boolean offline) {
-
     }
 
     @Override

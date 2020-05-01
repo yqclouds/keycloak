@@ -21,10 +21,12 @@ package org.keycloak.authentication.authenticators.browser;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.credential.WebAuthnCredentialModel;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@ProviderFactory(id = "webauthn-authenticator-passwordless")
 public class WebAuthnPasswordlessAuthenticatorFactory extends WebAuthnAuthenticatorFactory {
 
     public static final String PROVIDER_ID = "webauthn-authenticator-passwordless";

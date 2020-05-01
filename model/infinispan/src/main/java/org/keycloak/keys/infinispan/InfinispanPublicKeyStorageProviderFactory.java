@@ -31,8 +31,11 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderEvent;
-import org.keycloak.provider.ProviderEventListener;
+import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,6 +44,7 @@ import java.util.concurrent.FutureTask;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@ProviderFactory(id = "infinispan")
 public class InfinispanPublicKeyStorageProviderFactory implements PublicKeyStorageProviderFactory {
 
     public static final String PROVIDER_ID = "infinispan";
@@ -49,7 +53,12 @@ public class InfinispanPublicKeyStorageProviderFactory implements PublicKeyStora
     private static final Logger log = Logger.getLogger(InfinispanPublicKeyStorageProviderFactory.class);
     private final Map<String, FutureTask<PublicKeysEntry>> tasksInProgress = new ConcurrentHashMap<>();
     private volatile Cache<String, PublicKeysEntry> keysCache;
-    private int minTimeBetweenRequests;
+
+    @Value("${minTimeBetweenRequests}")
+    private int minTimeBetweenRequests = 10;
+
+    @Autowired
+    private KeycloakSessionFactory sessionFactory;
 
     @Override
     public PublicKeyStorageProvider create(KeycloakSession session) {
@@ -83,28 +92,21 @@ public class InfinispanPublicKeyStorageProviderFactory implements PublicKeyStora
 
     @Override
     public void init(Config.Scope config) {
-        minTimeBetweenRequests = config.getInt("minTimeBetweenRequests", 10);
-        log.debugf("minTimeBetweenRequests is %d", minTimeBetweenRequests);
     }
 
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-        factory.register(new ProviderEventListener() {
-
-            @Override
-            public void onEvent(ProviderEvent event) {
-                if (keysCache == null) {
-                    return;
-                }
-
-                SessionAndKeyHolder cacheKey = getCacheKeyToInvalidate(event);
-                if (cacheKey != null) {
-                    log.debugf("Invalidating %s from keysCache", cacheKey);
-                    InfinispanPublicKeyStorageProvider provider = (InfinispanPublicKeyStorageProvider) cacheKey.session.getProvider(PublicKeyStorageProvider.class, getId());
-                    for (String ck : cacheKey.cacheKeys) provider.addInvalidation(ck);
-                }
+    @PostConstruct
+    public void afterPropertiesSet() throws Exception {
+        sessionFactory.register(event -> {
+            if (keysCache == null) {
+                return;
             }
 
+            SessionAndKeyHolder cacheKey = getCacheKeyToInvalidate(event);
+            if (cacheKey != null) {
+                log.debugf("Invalidating %s from keysCache", cacheKey);
+                InfinispanPublicKeyStorageProvider provider = (InfinispanPublicKeyStorageProvider) cacheKey.session.getProvider(PublicKeyStorageProvider.class, getId());
+                for (String ck : cacheKey.cacheKeys) provider.addInvalidation(ck);
+            }
         });
     }
 
@@ -138,11 +140,6 @@ public class InfinispanPublicKeyStorageProviderFactory implements PublicKeyStora
         } else {
             return null;
         }
-    }
-
-    @Override
-    public void close() {
-
     }
 
     @Override

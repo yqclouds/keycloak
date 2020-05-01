@@ -21,8 +21,11 @@ import freemarker.cache.URLTemplateLoader;
 import freemarker.core.HTMLOutputFormat;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
-import org.keycloak.Config;
+import lombok.Setter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -33,13 +36,18 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component
 public class FreeMarkerUtil {
-
     private final KeycloakSanitizerMethod kcSanitizeMethod = new KeycloakSanitizerMethod();
     private ConcurrentHashMap<String, Template> cache;
 
-    public FreeMarkerUtil() {
-        if (Config.scope("theme").getBoolean("cacheTemplates", true)) {
+    @Setter
+    @Value("${theme.cacheTemplates}")
+    private boolean cacheTemplates = true;
+
+    @PostConstruct
+    public void afterPropertiesSet() throws Exception {
+        if (cacheTemplates) {
             cache = new ConcurrentHashMap<>();
         }
     }
@@ -85,9 +93,8 @@ public class FreeMarkerUtil {
         return cfg.getTemplate(templateName, "UTF-8");
     }
 
-    class ThemeTemplateLoader extends URLTemplateLoader {
-
-        private Theme theme;
+    static class ThemeTemplateLoader extends URLTemplateLoader {
+        private final Theme theme;
 
         public ThemeTemplateLoader(Theme theme) {
             this.theme = theme;
@@ -101,7 +108,5 @@ public class FreeMarkerUtil {
                 return null;
             }
         }
-
     }
-
 }

@@ -20,10 +20,12 @@ import org.keycloak.broker.provider.AbstractIdentityProviderFactory;
 import org.keycloak.broker.social.SocialIdentityProviderFactory;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author Vlastimil Elias (velias at redhat dot com)
  */
+@ProviderFactory(id = "stackoverflow")
 public class StackoverflowIdentityProviderFactory extends
         AbstractIdentityProviderFactory<StackoverflowIdentityProvider> implements
         SocialIdentityProviderFactory<StackoverflowIdentityProvider> {

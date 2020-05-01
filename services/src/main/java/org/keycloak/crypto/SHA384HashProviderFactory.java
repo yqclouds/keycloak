@@ -18,10 +18,12 @@
 package org.keycloak.crypto;
 
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@ProviderFactory(id = JavaAlgorithm.SHA384)
 public class SHA384HashProviderFactory implements HashProviderFactory {
 
     public static final String ID = JavaAlgorithm.SHA384;

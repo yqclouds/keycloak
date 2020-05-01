@@ -17,42 +17,36 @@
 
 package org.keycloak.theme;
 
-import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Value;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@ProviderFactory(id = "folder")
 public class FolderThemeProviderFactory implements ThemeProviderFactory {
 
     private FolderThemeProvider themeProvider;
+
+    @Value("${dir}")
+    private String dir;
 
     @Override
     public ThemeProvider create(KeycloakSession sessions) {
         return themeProvider;
     }
 
-    @Override
-    public void init(Config.Scope config) {
-        String d = config.get("dir");
+    @PostConstruct
+    public void afterPropertiesSet() throws Exception {
         File rootDir = null;
-        if (d != null) {
-            rootDir = new File(d);
+        if (dir != null) {
+            rootDir = new File(dir);
         }
         themeProvider = new FolderThemeProvider(rootDir);
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
-    @Override
-    public void close() {
-
     }
 
     @Override

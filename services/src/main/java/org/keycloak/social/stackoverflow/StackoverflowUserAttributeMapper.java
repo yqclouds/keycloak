@@ -17,12 +17,14 @@
 package org.keycloak.social.stackoverflow;
 
 import org.keycloak.broker.oidc.mappers.AbstractJsonUserAttributeMapper;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * User attribute mapper.
  *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
+@ProviderFactory(id = "stackoverflow-user-attribute-mapper")
 public class StackoverflowUserAttributeMapper extends AbstractJsonUserAttributeMapper {
 
     private static final String[] cp = new String[]{StackoverflowIdentityProviderFactory.PROVIDER_ID};

@@ -17,17 +17,16 @@
 
 package org.keycloak.protocol.saml.clientregistration;
 
-import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.services.clientregistration.ClientRegistrationProvider;
 import org.keycloak.services.clientregistration.ClientRegistrationProviderFactory;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@ProviderFactory(id = "saml2-entity-descriptor")
 public class EntityDescriptorClientRegistrationProviderFactory implements ClientRegistrationProviderFactory {
-
     public static final String ID = "saml2-entity-descriptor";
 
     @Override
@@ -36,20 +35,7 @@ public class EntityDescriptorClientRegistrationProviderFactory implements Client
     }
 
     @Override
-    public void init(Config.Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-    }
-
-    @Override
-    public void close() {
-    }
-
-    @Override
     public String getId() {
         return ID;
     }
-
 }

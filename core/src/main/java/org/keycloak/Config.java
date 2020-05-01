@@ -62,9 +62,9 @@ public class Config {
 
         String get(String key, String defaultValue);
 
-        String[] getArray(String key);
-
         Integer getInt(String key);
+
+        String[] getArray(String key);
 
         Integer getInt(String key, Integer defaultValue);
 

@@ -17,18 +17,21 @@
 
 package org.keycloak.forms.login.freemarker;
 
-import org.keycloak.Config;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.forms.login.LoginFormsProviderFactory;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.theme.FreeMarkerUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.PreDestroy;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@ProviderFactory
 public class FreeMarkerLoginFormsProviderFactory implements LoginFormsProviderFactory {
-
+    @Autowired
     private FreeMarkerUtil freeMarker;
 
     @Override
@@ -36,18 +39,8 @@ public class FreeMarkerLoginFormsProviderFactory implements LoginFormsProviderFa
         return new FreeMarkerLoginFormsProvider(session, freeMarker);
     }
 
-    @Override
-    public void init(Config.Scope config) {
-        freeMarker = new FreeMarkerUtil();
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
-    @Override
-    public void close() {
+    @PreDestroy
+    public void destroy() {
         freeMarker = null;
     }
 
@@ -55,6 +48,4 @@ public class FreeMarkerLoginFormsProviderFactory implements LoginFormsProviderFa
     public String getId() {
         return "freemarker";
     }
-
-
 }

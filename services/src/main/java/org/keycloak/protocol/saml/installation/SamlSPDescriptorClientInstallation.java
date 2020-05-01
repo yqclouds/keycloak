@@ -17,17 +17,16 @@
 
 package org.keycloak.protocol.saml.installation;
 
-import org.keycloak.Config;
 import org.keycloak.dom.saml.v2.metadata.KeyTypes;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.ClientInstallationProvider;
 import org.keycloak.protocol.saml.SamlClient;
 import org.keycloak.protocol.saml.SamlProtocol;
 import org.keycloak.saml.SPMetadataDescriptor;
 import org.keycloak.saml.common.constants.JBossSAMLURIConstants;
+import org.keycloak.stereotype.ProviderFactory;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -37,6 +36,7 @@ import java.net.URI;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory
 public class SamlSPDescriptorClientInstallation implements ClientInstallationProvider {
 
     public static final String SAML_CLIENT_INSTALATION_SP_DESCRIPTOR = "saml-sp-descriptor";
@@ -105,23 +105,8 @@ public class SamlSPDescriptorClientInstallation implements ClientInstallationPro
     }
 
     @Override
-    public void close() {
-
-    }
-
-    @Override
     public ClientInstallationProvider create(KeycloakSession session) {
         return this;
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
     }
 
     @Override

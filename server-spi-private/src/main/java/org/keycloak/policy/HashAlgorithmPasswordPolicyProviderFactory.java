@@ -17,13 +17,17 @@
 
 package org.keycloak.policy;
 
-import org.keycloak.Config;
 import org.keycloak.credential.hash.PasswordHashProvider;
-import org.keycloak.models.*;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.PasswordPolicy;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@ProviderFactory(id = PasswordPolicy.HASH_ALGORITHM_ID)
 public class HashAlgorithmPasswordPolicyProviderFactory implements PasswordPolicyProviderFactory, PasswordPolicyProvider {
 
     private KeycloakSession session;
@@ -32,14 +36,6 @@ public class HashAlgorithmPasswordPolicyProviderFactory implements PasswordPolic
     public PasswordPolicyProvider create(KeycloakSession session) {
         this.session = session;
         return this;
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
     }
 
     @Override

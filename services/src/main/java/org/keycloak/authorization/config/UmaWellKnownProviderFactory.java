@@ -17,15 +17,15 @@
  */
 package org.keycloak.authorization.config;
 
-import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.wellknown.WellKnownProvider;
 import org.keycloak.wellknown.WellKnownProviderFactory;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
+@ProviderFactory(id = "uma2-configuration")
 public class UmaWellKnownProviderFactory implements WellKnownProviderFactory {
 
     public static final String PROVIDER_ID = "uma2-configuration";
@@ -33,21 +33,6 @@ public class UmaWellKnownProviderFactory implements WellKnownProviderFactory {
     @Override
     public WellKnownProvider create(KeycloakSession session) {
         return new UmaWellKnownProvider(session);
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
-    @Override
-    public void close() {
-
     }
 
     @Override

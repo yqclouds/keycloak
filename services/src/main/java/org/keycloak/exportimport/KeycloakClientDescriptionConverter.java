@@ -17,10 +17,9 @@
 
 package org.keycloak.exportimport;
 
-import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.representations.idm.ClientRepresentation;
+import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.util.JsonSerialization;
 
 import java.io.IOException;
@@ -28,6 +27,7 @@ import java.io.IOException;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@ProviderFactory(id = "keycloak")
 public class KeycloakClientDescriptionConverter implements ClientDescriptionConverterFactory, ClientDescriptionConverter {
 
     public static final String ID = "keycloak";
@@ -50,14 +50,6 @@ public class KeycloakClientDescriptionConverter implements ClientDescriptionConv
     @Override
     public ClientDescriptionConverter create(KeycloakSession session) {
         return this;
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
     }
 
     @Override

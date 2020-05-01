@@ -17,7 +17,9 @@
 package org.keycloak.crypto;
 
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.stereotype.ProviderFactory;
 
+@ProviderFactory(id = Algorithm.PS256)
 public class PS256ClientSignatureVerifierProviderFactory implements ClientSignatureVerifierProviderFactory {
 
     public static final String ID = Algorithm.PS256;

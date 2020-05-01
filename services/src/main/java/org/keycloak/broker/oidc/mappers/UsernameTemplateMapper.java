@@ -39,6 +39,7 @@ import org.keycloak.social.openshift.OpenshiftV4IdentityProviderFactory;
 import org.keycloak.social.paypal.PayPalIdentityProviderFactory;
 import org.keycloak.social.stackoverflow.StackoverflowIdentityProviderFactory;
 import org.keycloak.social.twitter.TwitterIdentityProviderFactory;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,7 @@ import java.util.regex.Pattern;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "oidc-username-idp-mapper")
 public class UsernameTemplateMapper extends AbstractClaimMapper {
 
     public static final String[] COMPATIBLE_PROVIDERS = {

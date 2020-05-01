@@ -27,10 +27,11 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ConfigurationValidationHelper;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.security.KeyPair;
 import java.util.List;
-
+@ProviderFactory(id = "ecdsa-generated")
 public class GeneratedEcdsaKeyProviderFactory extends AbstractEcdsaKeyProviderFactory {
 
     public static final String ID = "ecdsa-generated";

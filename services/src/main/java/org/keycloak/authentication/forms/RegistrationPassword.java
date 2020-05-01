@@ -17,7 +17,6 @@
 
 package org.keycloak.authentication.forms;
 
-import org.keycloak.Config;
 import org.keycloak.authentication.FormAction;
 import org.keycloak.authentication.FormActionFactory;
 import org.keycloak.authentication.FormContext;
@@ -33,6 +32,7 @@ import org.keycloak.policy.PolicyError;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.validation.Validation;
+import org.keycloak.stereotype.ProviderFactory;
 
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.ArrayList;
@@ -42,6 +42,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "registration-password-action")
 public class RegistrationPassword implements FormAction, FormActionFactory {
     public static final String PROVIDER_ID = "registration-password-action";
     private static AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
@@ -126,7 +127,6 @@ public class RegistrationPassword implements FormAction, FormActionFactory {
 
     @Override
     public void close() {
-
     }
 
     @Override
@@ -152,16 +152,6 @@ public class RegistrationPassword implements FormAction, FormActionFactory {
     @Override
     public FormAction create(KeycloakSession session) {
         return this;
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
     }
 
     @Override

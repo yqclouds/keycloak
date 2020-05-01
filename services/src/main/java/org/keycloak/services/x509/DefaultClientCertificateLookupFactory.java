@@ -18,9 +18,8 @@
 
 package org.keycloak.services.x509;
 
-import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * The factory and the corresponding providers extract a client certificate
@@ -32,9 +31,8 @@ import org.keycloak.models.KeycloakSessionFactory;
  * @version $Revision: 1 $
  * @since 4/4/2017
  */
-
+@ProviderFactory(id = "default")
 public class DefaultClientCertificateLookupFactory implements X509ClientCertificateLookupFactory {
-
     private final static String PROVIDER = "default";
     private final static X509ClientCertificateLookup SINGLETON =
             new DefaultClientCertificateLookup();
@@ -42,21 +40,6 @@ public class DefaultClientCertificateLookupFactory implements X509ClientCertific
     @Override
     public X509ClientCertificateLookup create(KeycloakSession session) {
         return SINGLETON;
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
-    @Override
-    public void close() {
-
     }
 
     @Override

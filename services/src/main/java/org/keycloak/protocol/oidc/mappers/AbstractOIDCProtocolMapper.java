@@ -17,8 +17,10 @@
 
 package org.keycloak.protocol.oidc.mappers;
 
-import org.keycloak.Config;
-import org.keycloak.models.*;
+import org.keycloak.models.ClientSessionContext;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.ProtocolMapperModel;
+import org.keycloak.models.UserSessionModel;
 import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.representations.AccessToken;
@@ -38,22 +40,8 @@ public abstract class AbstractOIDCProtocolMapper implements ProtocolMapper {
     }
 
     @Override
-    public void close() {
-
-    }
-
-    @Override
     public final ProtocolMapper create(KeycloakSession session) {
         throw new RuntimeException("UNSUPPORTED METHOD");
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
     }
 
     public AccessToken transformUserInfoToken(AccessToken token, ProtocolMapperModel mappingModel, KeycloakSession session,

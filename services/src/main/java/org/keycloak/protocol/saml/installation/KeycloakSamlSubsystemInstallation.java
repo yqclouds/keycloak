@@ -17,14 +17,13 @@
 
 package org.keycloak.protocol.saml.installation;
 
-import org.keycloak.Config;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.ClientInstallationProvider;
 import org.keycloak.protocol.saml.SamlClient;
 import org.keycloak.protocol.saml.SamlProtocol;
+import org.keycloak.stereotype.ProviderFactory;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -34,6 +33,7 @@ import java.net.URI;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "keycloak-saml-subsystem")
 public class KeycloakSamlSubsystemInstallation implements ClientInstallationProvider {
 
     @Override
@@ -77,23 +77,8 @@ public class KeycloakSamlSubsystemInstallation implements ClientInstallationProv
     }
 
     @Override
-    public void close() {
-
-    }
-
-    @Override
     public ClientInstallationProvider create(KeycloakSession session) {
         return this;
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
     }
 
     @Override

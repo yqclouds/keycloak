@@ -19,7 +19,9 @@ package org.keycloak.crypto;
 
 import org.keycloak.jose.jwe.JWEConstants;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.stereotype.ProviderFactory;
 
+@ProviderFactory(id = JWEConstants.A128CBC_HS256)
 public class Aes128CbcHmacSha256ContentEncryptionProviderFactory implements ContentEncryptionProviderFactory {
     public static final String ID = JWEConstants.A128CBC_HS256;
 
@@ -32,5 +34,4 @@ public class Aes128CbcHmacSha256ContentEncryptionProviderFactory implements Cont
     public ContentEncryptionProvider create(KeycloakSession session) {
         return new AesCbcHmacShaContentEncryptionProvider(session, ID);
     }
-
 }

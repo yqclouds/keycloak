@@ -16,10 +16,8 @@
  */
 package org.keycloak.authentication.actiontoken;
 
-import org.keycloak.Config.Scope;
 import org.keycloak.events.EventType;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.representations.JsonWebToken;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.sessions.AuthenticationSessionModel;
@@ -27,7 +25,7 @@ import org.keycloak.sessions.AuthenticationSessionModel;
 /**
  * @author hmlnarik
  */
-public abstract class AbstractActionTokenHander<T extends JsonWebToken> implements ActionTokenHandler<T>, ActionTokenHandlerFactory<T> {
+public abstract class AbstractActionTokenHandler<T extends JsonWebToken> implements ActionTokenHandler<T>, ActionTokenHandlerFactory<T> {
 
     private final String id;
     private final Class<T> tokenClass;
@@ -35,7 +33,7 @@ public abstract class AbstractActionTokenHander<T extends JsonWebToken> implemen
     private final EventType defaultEventType;
     private final String defaultEventError;
 
-    public AbstractActionTokenHander(String id, Class<T> tokenClass, String defaultErrorMessage, EventType defaultEventType, String defaultEventError) {
+    public AbstractActionTokenHandler(String id, Class<T> tokenClass, String defaultErrorMessage, EventType defaultEventType, String defaultEventError) {
         this.id = id;
         this.tokenClass = tokenClass;
         this.defaultErrorMessage = defaultErrorMessage;
@@ -44,24 +42,17 @@ public abstract class AbstractActionTokenHander<T extends JsonWebToken> implemen
     }
 
     @Override
-    public ActionTokenHandler<T> create(KeycloakSession session) {
-        return this;
-    }
-
-    @Override
-    public void init(Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-    }
-
-    @Override
     public String getId() {
         return this.id;
     }
 
     @Override
+    public ActionTokenHandler<T> create(KeycloakSession session) {
+        return this;
+    }
+
+    @Override
+    @Deprecated
     public void close() {
     }
 

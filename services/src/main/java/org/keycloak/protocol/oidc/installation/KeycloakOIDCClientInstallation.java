@@ -17,7 +17,6 @@
 
 package org.keycloak.protocol.oidc.installation;
 
-import org.keycloak.Config;
 import org.keycloak.authentication.ClientAuthenticator;
 import org.keycloak.authentication.ClientAuthenticatorFactory;
 import org.keycloak.authorization.admin.AuthorizationService;
@@ -27,6 +26,7 @@ import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.mappers.AudienceProtocolMapper;
 import org.keycloak.representations.adapters.config.PolicyEnforcerConfig;
 import org.keycloak.services.managers.ClientManager;
+import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.util.JsonSerialization;
 
 import javax.ws.rs.core.MediaType;
@@ -40,6 +40,7 @@ import java.util.Set;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "keycloak-oidc-keycloak-json")
 public class KeycloakOIDCClientInstallation implements ClientInstallationProvider {
 
     public static Map<String, Object> getClientCredentialsAdapterConfig(KeycloakSession session, ClientModel client) {
@@ -129,23 +130,8 @@ public class KeycloakOIDCClientInstallation implements ClientInstallationProvide
     }
 
     @Override
-    public void close() {
-
-    }
-
-    @Override
     public ClientInstallationProvider create(KeycloakSession session) {
         return this;
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
     }
 
     @Override

@@ -17,13 +17,12 @@
 
 package org.keycloak.protocol.oidc.installation;
 
-import org.keycloak.Config;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.ClientInstallationProvider;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
+import org.keycloak.stereotype.ProviderFactory;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -32,6 +31,7 @@ import java.util.Map;
 
 import static org.keycloak.protocol.util.ClientCliInstallationUtil.quote;
 
+@ProviderFactory(id = "keycloak-oidc-jboss-subsystem-cli")
 public class KeycloakOIDCJbossSubsystemClientCliInstallation implements ClientInstallationProvider {
 
     @Override
@@ -87,23 +87,8 @@ public class KeycloakOIDCJbossSubsystemClientCliInstallation implements ClientIn
     }
 
     @Override
-    public void close() {
-
-    }
-
-    @Override
     public ClientInstallationProvider create(KeycloakSession session) {
         return this;
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
     }
 
     @Override

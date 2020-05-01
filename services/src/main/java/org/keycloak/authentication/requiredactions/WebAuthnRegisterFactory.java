@@ -21,17 +21,17 @@ import com.webauthn4j.anchor.TrustAnchorsResolverImpl;
 import com.webauthn4j.validator.attestation.trustworthiness.certpath.CertPathTrustworthinessValidator;
 import com.webauthn4j.validator.attestation.trustworthiness.certpath.NullCertPathTrustworthinessValidator;
 import com.webauthn4j.validator.attestation.trustworthiness.certpath.TrustAnchorCertPathTrustworthinessValidator;
-import org.keycloak.Config.Scope;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.authentication.DisplayTypeRequiredActionFactory;
 import org.keycloak.authentication.RequiredActionFactory;
 import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.common.Profile;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
+import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.truststore.TruststoreProvider;
 
+@ProviderFactory(id = "webauthn-register")
 public class WebAuthnRegisterFactory implements RequiredActionFactory, DisplayTypeRequiredActionFactory, EnvironmentDependentProviderFactory {
 
     public static final String PROVIDER_ID = "webauthn-register";
@@ -54,21 +54,6 @@ public class WebAuthnRegisterFactory implements RequiredActionFactory, DisplayTy
 
     protected WebAuthnRegister createProvider(KeycloakSession session, CertPathTrustworthinessValidator trustValidator) {
         return new WebAuthnRegister(session, trustValidator);
-    }
-
-    @Override
-    public void init(Scope config) {
-        // NOP
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-        // NOP
-    }
-
-    @Override
-    public void close() {
-        // NOP
     }
 
     @Override

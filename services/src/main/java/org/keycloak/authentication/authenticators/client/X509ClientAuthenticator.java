@@ -9,6 +9,7 @@ import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.x509.X509ClientCertificateLookup;
+import org.keycloak.stereotype.ProviderFactory;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -18,7 +19,7 @@ import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
+@ProviderFactory(id = "client-x509")
 public class X509ClientAuthenticator extends AbstractClientAuthenticator {
 
     public static final String PROVIDER_ID = "client-x509";
@@ -26,7 +27,6 @@ public class X509ClientAuthenticator extends AbstractClientAuthenticator {
     public static final String ATTR_SUBJECT_DN = ATTR_PREFIX + ".subjectdn";
 
     protected static ServicesLogger logger = ServicesLogger.LOGGER;
-
 
     @Override
     public void authenticateClient(ClientAuthenticationFlowContext context) {

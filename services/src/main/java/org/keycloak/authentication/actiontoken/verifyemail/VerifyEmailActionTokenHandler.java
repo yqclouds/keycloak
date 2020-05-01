@@ -17,7 +17,7 @@
 package org.keycloak.authentication.actiontoken.verifyemail;
 
 import org.keycloak.TokenVerifier.Predicate;
-import org.keycloak.authentication.actiontoken.AbstractActionTokenHander;
+import org.keycloak.authentication.actiontoken.AbstractActionTokenHandler;
 import org.keycloak.authentication.actiontoken.ActionTokenContext;
 import org.keycloak.authentication.actiontoken.TokenUtils;
 import org.keycloak.events.Details;
@@ -36,6 +36,7 @@ import org.keycloak.services.managers.AuthenticationSessionManager;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
+import org.keycloak.stereotype.ProviderFactory;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -47,8 +48,8 @@ import java.util.Objects;
  *
  * @author hmlnarik
  */
-public class VerifyEmailActionTokenHandler extends AbstractActionTokenHander<VerifyEmailActionToken> {
-
+@ProviderFactory
+public class VerifyEmailActionTokenHandler extends AbstractActionTokenHandler<VerifyEmailActionToken> {
     public VerifyEmailActionTokenHandler() {
         super(
                 VerifyEmailActionToken.TOKEN_TYPE,

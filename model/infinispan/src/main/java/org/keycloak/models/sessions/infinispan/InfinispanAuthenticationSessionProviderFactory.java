@@ -19,7 +19,6 @@ package org.keycloak.models.sessions.infinispan;
 
 import org.infinispan.Cache;
 import org.jboss.logging.Logger;
-import org.keycloak.Config;
 import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
@@ -34,11 +33,13 @@ import org.keycloak.models.sessions.infinispan.events.RealmRemovedSessionEvent;
 import org.keycloak.models.sessions.infinispan.util.InfinispanKeyGenerator;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.PostMigrationEvent;
-import org.keycloak.provider.ProviderEvent;
-import org.keycloak.provider.ProviderEventListener;
 import org.keycloak.sessions.AuthenticationSessionProvider;
 import org.keycloak.sessions.AuthenticationSessionProviderFactory;
+import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 
+import javax.annotation.PostConstruct;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,8 +47,9 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@ProviderFactory(id = "infinispan")
+@ConditionalOnBean(value = {KeycloakSessionFactory.class})
 public class InfinispanAuthenticationSessionProviderFactory implements AuthenticationSessionProviderFactory {
-
     public static final String PROVIDER_ID = "infinispan";
     public static final String AUTHENTICATION_SESSION_EVENTS = "AUTHENTICATION_SESSION_EVENTS";
     public static final String REALM_REMOVED_AUTHSESSION_EVENT = "REALM_REMOVED_EVENT_AUTHSESSIONS";
@@ -55,6 +57,15 @@ public class InfinispanAuthenticationSessionProviderFactory implements Authentic
     private static final Logger log = Logger.getLogger(InfinispanAuthenticationSessionProviderFactory.class);
     private InfinispanKeyGenerator keyGenerator;
     private volatile Cache<String, RootAuthenticationSessionEntity> authSessionsCache;
+
+    @Autowired
+    private KeycloakSessionFactory sessionFactory;
+
+    @Override
+    public AuthenticationSessionProvider create(KeycloakSession session) {
+        lazyInit(session);
+        return new InfinispanAuthenticationSessionProvider(session, keyGenerator, authSessionsCache);
+    }
 
     private static void updateAuthSession(RootAuthenticationSessionEntity rootAuthSession, String tabId, Map<String, String> authNotesFragment) {
         if (rootAuthSession == null) {
@@ -79,25 +90,11 @@ public class InfinispanAuthenticationSessionProviderFactory implements Authentic
         }
     }
 
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-        factory.register(new ProviderEventListener() {
-
-            @Override
-            public void onEvent(ProviderEvent event) {
-                if (event instanceof PostMigrationEvent) {
-
-                    KeycloakModelUtils.runJobInTransaction(factory, (KeycloakSession session) -> {
-
-                        registerClusterListeners(session);
-
-                    });
-                }
+    @PostConstruct
+    public void afterPropertiesSet() throws Exception {
+        sessionFactory.register(event -> {
+            if (event instanceof PostMigrationEvent) {
+                KeycloakModelUtils.runJobInTransaction(sessionFactory, this::registerClusterListeners);
             }
         });
     }
@@ -124,12 +121,6 @@ public class InfinispanAuthenticationSessionProviderFactory implements Authentic
         });
 
         log.debug("Registered cluster listeners");
-    }
-
-    @Override
-    public AuthenticationSessionProvider create(KeycloakSession session) {
-        lazyInit(session);
-        return new InfinispanAuthenticationSessionProvider(session, keyGenerator, authSessionsCache);
     }
 
     private void updateAuthNotes(ClusterEvent clEvent) {
@@ -161,10 +152,7 @@ public class InfinispanAuthenticationSessionProviderFactory implements Authentic
     }
 
     @Override
-    public void close() {
-    }
-
-    @Override
+    @Deprecated
     public String getId() {
         return PROVIDER_ID;
     }

@@ -17,6 +17,7 @@
 package org.keycloak.connections.jpa;
 
 import org.keycloak.provider.ExceptionConverter;
+import org.keycloak.stereotype.ProviderFactory;
 
 import javax.persistence.PersistenceException;
 
@@ -24,6 +25,7 @@ import javax.persistence.PersistenceException;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "jpa")
 public class JpaExceptionConverter implements ExceptionConverter {
     @Override
     public Throwable convert(Throwable e) {

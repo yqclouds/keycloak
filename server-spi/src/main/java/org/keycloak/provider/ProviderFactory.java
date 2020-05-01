@@ -30,7 +30,6 @@ import org.keycloak.models.KeycloakSessionFactory;
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public interface ProviderFactory<T extends Provider> {
-
     T create(KeycloakSession session);
 
     /**
@@ -38,22 +37,30 @@ public interface ProviderFactory<T extends Provider> {
      *
      * @param config
      */
-    void init(Config.Scope config);
+    @Deprecated
+    default void init(Config.Scope config) {
+    }
 
     /**
      * Called after all provider factories have been initialized
      */
-    void postInit(KeycloakSessionFactory factory);
+    @Deprecated
+    default void postInit(KeycloakSessionFactory factory) {
+    }
 
     /**
      * This is called when the server shuts down.
      */
-    void close();
+    @Deprecated
+    default void close() {
+    }
 
-    String getId();
+    @Deprecated
+    default String getId() {
+        return "";
+    }
 
     default int order() {
         return 0;
     }
-
 }

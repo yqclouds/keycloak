@@ -22,10 +22,12 @@ import com.webauthn4j.converter.util.ObjectConverter;
 import org.keycloak.common.Profile;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@ProviderFactory(id = "keycloak-webauthn-passwordless")
 public class WebAuthnPasswordlessCredentialProviderFactory implements CredentialProviderFactory<WebAuthnPasswordlessCredentialProvider>, EnvironmentDependentProviderFactory {
 
     public static final String PROVIDER_ID = "keycloak-webauthn-passwordless";

@@ -17,14 +17,15 @@
 
 package org.keycloak.events.email;
 
-import org.keycloak.Config;
 import org.keycloak.email.EmailTemplateProvider;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.EventListenerProviderFactory;
 import org.keycloak.events.EventType;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Value;
 
+import javax.annotation.PostConstruct;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -32,9 +33,14 @@ import java.util.Set;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@ProviderFactory
 public class EmailEventListenerProviderFactory implements EventListenerProviderFactory {
-
     private static final Set<EventType> SUPPORTED_EVENTS = new HashSet<>();
+
+    @Value("${include-events}")
+    private String[] include;
+    @Value("${exclude-events}")
+    private String[] exclude;
 
     static {
         Collections.addAll(SUPPORTED_EVENTS, EventType.LOGIN_ERROR, EventType.UPDATE_PASSWORD, EventType.REMOVE_TOTP, EventType.UPDATE_TOTP);
@@ -48,9 +54,8 @@ public class EmailEventListenerProviderFactory implements EventListenerProviderF
         return new EmailEventListenerProvider(session, emailTemplateProvider, includedEvents);
     }
 
-    @Override
-    public void init(Config.Scope config) {
-        String[] include = config.getArray("include-events");
+    @PostConstruct
+    public void afterPropertiesSet() throws Exception {
         if (include != null) {
             for (String i : include) {
                 includedEvents.add(EventType.valueOf(i.toUpperCase()));
@@ -59,7 +64,6 @@ public class EmailEventListenerProviderFactory implements EventListenerProviderF
             includedEvents.addAll(SUPPORTED_EVENTS);
         }
 
-        String[] exclude = config.getArray("exclude-events");
         if (exclude != null) {
             for (String e : exclude) {
                 includedEvents.remove(EventType.valueOf(e.toUpperCase()));
@@ -68,17 +72,7 @@ public class EmailEventListenerProviderFactory implements EventListenerProviderF
     }
 
     @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
-    @Override
-    public void close() {
-    }
-
-    @Override
     public String getId() {
         return "email";
     }
-
 }

@@ -24,6 +24,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ConfigurationValidationHelper;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.List;
 
@@ -32,6 +33,7 @@ import static org.keycloak.provider.ProviderConfigProperty.STRING_TYPE;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@ProviderFactory(id = "java-keystore")
 public class JavaKeystoreKeyProviderFactory extends AbstractRsaKeyProviderFactory {
     public static final String ID = "java-keystore";
     private static final Logger logger = Logger.getLogger(JavaKeystoreKeyProviderFactory.class);

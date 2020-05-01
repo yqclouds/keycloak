@@ -21,11 +21,13 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.protocol.oidc.ext.OIDCExtProvider;
 import org.keycloak.protocol.oidc.ext.OIDCExtProviderFactory;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "openshift-token-review")
 public class OpenShiftTokenReviewEndpointFactory implements OIDCExtProviderFactory, EnvironmentDependentProviderFactory {
 
     @Override

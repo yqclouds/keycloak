@@ -21,12 +21,13 @@ import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.authenticators.browser.UsernamePasswordForm;
 import org.keycloak.authentication.authenticators.browser.UsernamePasswordFormFactory;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@ProviderFactory(id = "idp-username-password-form")
 public class IdpUsernamePasswordFormFactory extends UsernamePasswordFormFactory {
-
     public static final String PROVIDER_ID = "idp-username-password-form";
     public static final UsernamePasswordForm IDP_SINGLETON = new IdpUsernamePasswordForm();
 

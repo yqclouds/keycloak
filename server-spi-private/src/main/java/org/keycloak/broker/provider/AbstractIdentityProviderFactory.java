@@ -16,9 +16,7 @@
  */
 package org.keycloak.broker.provider;
 
-import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -28,22 +26,6 @@ import java.util.Map;
  * @author Pedro Igor
  */
 public abstract class AbstractIdentityProviderFactory<T extends IdentityProvider> implements IdentityProviderFactory<T> {
-
-    @Override
-    public void close() {
-
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
     @Override
     public T create(KeycloakSession session) {
         return null;

@@ -25,6 +25,7 @@ import org.keycloak.models.ClientModel;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.util.BasicAuthHelper;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -40,6 +41,7 @@ import java.util.*;
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@ProviderFactory(id = "client-secret")
 public class ClientIdAndSecretAuthenticator extends AbstractClientAuthenticator {
 
     public static final String PROVIDER_ID = "client-secret";

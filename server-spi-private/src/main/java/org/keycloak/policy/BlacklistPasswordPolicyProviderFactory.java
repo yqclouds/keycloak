@@ -22,7 +22,7 @@ import com.google.common.hash.Funnels;
 import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -62,6 +62,7 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @author <a href="mailto:thomas.darimont@gmail.com">Thomas Darimont</a>
  */
+@ProviderFactory(id = "passwordBlacklist")
 public class BlacklistPasswordPolicyProviderFactory implements PasswordPolicyProviderFactory {
 
     public static final String ID = "passwordBlacklist";
@@ -86,19 +87,6 @@ public class BlacklistPasswordPolicyProviderFactory implements PasswordPolicyPro
             }
         }
         return new BlacklistPasswordPolicyProvider(session.getContext(), this);
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-        this.config = config;
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-    }
-
-    @Override
-    public void close() {
     }
 
     @Override

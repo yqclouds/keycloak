@@ -17,13 +17,13 @@
 
 package org.keycloak.email;
 
-import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@ProviderFactory(id = "default")
 public class DefaultEmailSenderProviderFactory implements EmailSenderProviderFactory {
 
     @Override
@@ -32,20 +32,7 @@ public class DefaultEmailSenderProviderFactory implements EmailSenderProviderFac
     }
 
     @Override
-    public void init(Config.Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-    }
-
-    @Override
-    public void close() {
-    }
-
-    @Override
     public String getId() {
         return "default";
     }
-
 }

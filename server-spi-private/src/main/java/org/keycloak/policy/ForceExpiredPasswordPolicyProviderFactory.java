@@ -17,12 +17,16 @@
 
 package org.keycloak.policy;
 
-import org.keycloak.Config;
-import org.keycloak.models.*;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.PasswordPolicy;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@ProviderFactory(id = PasswordPolicy.FORCE_EXPIRED_ID)
 public class ForceExpiredPasswordPolicyProviderFactory implements PasswordPolicyProviderFactory, PasswordPolicyProvider {
 
     public static final int DEFAULT_VALUE = 365;
@@ -30,14 +34,6 @@ public class ForceExpiredPasswordPolicyProviderFactory implements PasswordPolicy
     @Override
     public PasswordPolicyProvider create(KeycloakSession session) {
         return this;
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
     }
 
     @Override

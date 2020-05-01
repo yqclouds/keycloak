@@ -17,12 +17,14 @@
 package org.keycloak.social.linkedin;
 
 import org.keycloak.broker.oidc.mappers.AbstractJsonUserAttributeMapper;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * User attribute mapper.
  *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
+@ProviderFactory(id = "linkedin-user-attribute-mapper")
 public class LinkedInUserAttributeMapper extends AbstractJsonUserAttributeMapper {
 
     private static final String[] cp = new String[]{LinkedInIdentityProviderFactory.PROVIDER_ID};

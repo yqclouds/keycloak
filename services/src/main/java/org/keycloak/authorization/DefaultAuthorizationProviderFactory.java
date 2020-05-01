@@ -18,16 +18,16 @@
 
 package org.keycloak.authorization;
 
-import org.keycloak.Config;
 import org.keycloak.authorization.policy.evaluation.DefaultPolicyEvaluator;
 import org.keycloak.authorization.policy.evaluation.PolicyEvaluator;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
+@ProviderFactory
 public class DefaultAuthorizationProviderFactory implements AuthorizationProviderFactory {
 
     private PolicyEvaluator policyEvaluator = new DefaultPolicyEvaluator();
@@ -35,19 +35,6 @@ public class DefaultAuthorizationProviderFactory implements AuthorizationProvide
     @Override
     public AuthorizationProvider create(KeycloakSession session) {
         return create(session, session.getContext().getRealm());
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-    }
-
-    @Override
-    public void close() {
-
     }
 
     @Override

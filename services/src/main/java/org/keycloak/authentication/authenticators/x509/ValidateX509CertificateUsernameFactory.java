@@ -21,13 +21,14 @@ package org.keycloak.authentication.authenticators.x509;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:pnalyvayko@agi.com">Peter Nalyvayko</a>
  * @version $Revision: 1 $
  * @date 7/31/2016
  */
-
+@ProviderFactory(id = "direct-grant-auth-x509-username")
 public class ValidateX509CertificateUsernameFactory extends AbstractX509ClientCertificateAuthenticatorFactory {
 
     public static final String PROVIDER_ID = "direct-grant-auth-x509-username";

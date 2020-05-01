@@ -20,8 +20,9 @@ package org.keycloak.executors;
 import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
 
+import javax.annotation.PreDestroy;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
@@ -33,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@ProviderFactory(id = "default")
 public class DefaultExecutorsProviderFactory implements ExecutorsProviderFactory {
 
     protected static final Logger logger = Logger.getLogger(DefaultExecutorsProviderFactory.class);
@@ -64,18 +66,8 @@ public class DefaultExecutorsProviderFactory implements ExecutorsProviderFactory
         };
     }
 
-    @Override
-    public void init(Config.Scope config) {
-        this.config = config;
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
-    @Override
-    public void close() {
+    @PreDestroy
+    public void destroy() throws Exception {
         if (managed != null && !managed) {
             for (Map.Entry<String, ExecutorService> executor : executors.entrySet()) {
                 logger.debugf("Shutting down executor for task '%s'", executor.getKey());
@@ -88,8 +80,6 @@ public class DefaultExecutorsProviderFactory implements ExecutorsProviderFactory
     public String getId() {
         return "default";
     }
-
-
     // IMPL
 
     protected ExecutorService getExecutor(String taskType, KeycloakSession session) {

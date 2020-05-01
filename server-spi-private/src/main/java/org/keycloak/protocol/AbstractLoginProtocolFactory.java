@@ -17,38 +17,32 @@
 
 package org.keycloak.protocol;
 
-import org.keycloak.Config;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
-import org.keycloak.provider.ProviderEvent;
-import org.keycloak.provider.ProviderEventListener;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.PostConstruct;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public abstract class AbstractLoginProtocolFactory implements LoginProtocolFactory {
+    @Autowired
+    private KeycloakSessionFactory sessionFactory;
 
-    @Override
-    public void init(Config.Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-        factory.register(new ProviderEventListener() {
-            @Override
-            public void onEvent(ProviderEvent event) {
-                if (event instanceof RealmModel.ClientCreationEvent) {
-                    ClientModel client = ((RealmModel.ClientCreationEvent) event).getCreatedClient();
-                    addDefaultClientScopes(client.getRealm(), client);
-                    addDefaults(client);
-                }
+    @PostConstruct
+    public void afterPropertiesSet() throws Exception {
+        sessionFactory.register(event -> {
+            if (event instanceof RealmModel.ClientCreationEvent) {
+                ClientModel client = ((RealmModel.ClientCreationEvent) event).getCreatedClient();
+                addDefaultClientScopes(client.getRealm(), client);
+                addDefaults(client);
             }
         });
     }
-
 
     @Override
     public void createDefaultClientScopes(RealmModel newRealm, boolean addScopesToExistingClients) {
@@ -67,7 +61,6 @@ public abstract class AbstractLoginProtocolFactory implements LoginProtocolFacto
      */
     protected abstract void createDefaultClientScopesImpl(RealmModel newRealm);
 
-
     protected void addDefaultClientScopes(RealmModel realm, ClientModel newClient) {
         for (ClientScopeModel clientScope : realm.getDefaultClientScopes(true)) {
             if (getId().equals(clientScope.getProtocol())) {
@@ -82,9 +75,4 @@ public abstract class AbstractLoginProtocolFactory implements LoginProtocolFacto
     }
 
     protected abstract void addDefaults(ClientModel realm);
-
-    @Override
-    public void close() {
-
-    }
 }

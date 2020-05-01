@@ -17,20 +17,20 @@
 
 package org.keycloak.protocol.saml.profile.ecp.authenticator;
 
-import org.keycloak.Config;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticationExecutionModel.Requirement;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.List;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
+@ProviderFactory(id = "http-basic-authenticator")
 public class HttpBasicAuthenticatorFactory implements AuthenticatorFactory {
 
     public static final String PROVIDER_ID = "http-basic-authenticator";
@@ -79,21 +79,6 @@ public class HttpBasicAuthenticatorFactory implements AuthenticatorFactory {
     @Override
     public Authenticator create(final KeycloakSession session) {
         return new HttpBasicAuthenticator();
-    }
-
-    @Override
-    public void init(final Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(final KeycloakSessionFactory factory) {
-
-    }
-
-    @Override
-    public void close() {
-
     }
 
     @Override

@@ -17,15 +17,14 @@
 
 package org.keycloak.authentication.forms;
 
-import org.keycloak.Config;
 import org.keycloak.authentication.FormAuthenticator;
 import org.keycloak.authentication.FormAuthenticatorFactory;
 import org.keycloak.authentication.FormContext;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.stereotype.ProviderFactory;
 
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -34,6 +33,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "registration-page-form")
 public class RegistrationPage implements FormAuthenticator, FormAuthenticatorFactory {
 
     public static final String FIELD_PASSWORD_CONFIRM = "password-confirm";
@@ -94,18 +94,8 @@ public class RegistrationPage implements FormAuthenticator, FormAuthenticatorFac
     }
 
     @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
     public boolean isUserSetupAllowed() {
         return false;
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
     }
 
     @Override

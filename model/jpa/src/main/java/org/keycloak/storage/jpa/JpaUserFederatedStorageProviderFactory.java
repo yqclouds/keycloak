@@ -16,10 +16,9 @@
  */
 package org.keycloak.storage.jpa;
 
-import org.keycloak.Config;
 import org.keycloak.connections.jpa.JpaConnectionProvider;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.storage.federated.UserFederatedStorageProvider;
 import org.keycloak.storage.federated.UserFederatedStorageProviderFactory;
 
@@ -29,26 +28,12 @@ import javax.persistence.EntityManager;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "jpa")
 public class JpaUserFederatedStorageProviderFactory implements UserFederatedStorageProviderFactory {
     @Override
     public UserFederatedStorageProvider create(KeycloakSession session) {
         EntityManager em = session.getProvider(JpaConnectionProvider.class).getEntityManager();
         return new JpaUserFederatedStorageProvider(session, em);
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
-    @Override
-    public void close() {
-
     }
 
     @Override

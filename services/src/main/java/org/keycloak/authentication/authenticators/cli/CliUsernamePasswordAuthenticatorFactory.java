@@ -17,14 +17,13 @@
 
 package org.keycloak.authentication.authenticators.cli;
 
-import org.keycloak.Config;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.List;
 
@@ -32,8 +31,8 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "cli-username-password")
 public class CliUsernamePasswordAuthenticatorFactory implements AuthenticatorFactory {
-
     public static final String PROVIDER_ID = "cli-username-password";
     public static final CliUsernamePasswordAuthenticator SINGLETON = new CliUsernamePasswordAuthenticator();
     public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
@@ -43,26 +42,6 @@ public class CliUsernamePasswordAuthenticatorFactory implements AuthenticatorFac
     @Override
     public Authenticator create(KeycloakSession session) {
         return SINGLETON;
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
-    @Override
-    public void close() {
-
-    }
-
-    @Override
-    public String getId() {
-        return PROVIDER_ID;
     }
 
     @Override
@@ -100,4 +79,9 @@ public class CliUsernamePasswordAuthenticatorFactory implements AuthenticatorFac
         return false;
     }
 
+    @Override
+    @Deprecated
+    public String getId() {
+        return PROVIDER_ID;
+    }
 }

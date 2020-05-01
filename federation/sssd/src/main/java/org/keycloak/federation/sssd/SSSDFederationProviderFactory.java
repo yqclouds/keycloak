@@ -18,13 +18,12 @@
 package org.keycloak.federation.sssd;
 
 import org.jboss.logging.Logger;
-import org.keycloak.Config;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.federation.sssd.api.Sssd;
 import org.keycloak.federation.sssd.impl.PAMAuthenticator;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
+import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.storage.UserStorageProviderFactory;
 import org.keycloak.storage.UserStorageProviderModel;
 
@@ -32,6 +31,7 @@ import org.keycloak.storage.UserStorageProviderModel;
  * @author <a href="mailto:bruno@abstractj.org">Bruno Oliveira</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "sssd")
 public class SSSDFederationProviderFactory implements UserStorageProviderFactory<SSSDFederationProvider>, EnvironmentDependentProviderFactory {
 
     private static final String PROVIDER_NAME = "sssd";
@@ -46,21 +46,6 @@ public class SSSDFederationProviderFactory implements UserStorageProviderFactory
     @Override
     public SSSDFederationProvider create(KeycloakSession session, ComponentModel model) {
         return new SSSDFederationProvider(session, new UserStorageProviderModel(model), this);
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
-    @Override
-    public void close() {
-
     }
 
     protected PAMAuthenticator createPAMAuthenticator(String username, String... factors) {

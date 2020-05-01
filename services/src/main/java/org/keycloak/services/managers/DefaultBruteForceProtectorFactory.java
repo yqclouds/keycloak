@@ -17,38 +17,39 @@
 
 package org.keycloak.services.managers;
 
-import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "default-brute-force-detector")
 public class DefaultBruteForceProtectorFactory implements BruteForceProtectorFactory {
     DefaultBruteForceProtector protector;
+
+    @Autowired
+    private KeycloakSessionFactory sessionFactory;
 
     @Override
     public BruteForceProtector create(KeycloakSession session) {
         return protector;
     }
 
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-        protector = new DefaultBruteForceProtector(factory);
+    @PostConstruct
+    public void afterPropertiesSet() throws Exception {
+        protector = new DefaultBruteForceProtector(sessionFactory);
         protector.start();
-
     }
 
-    @Override
-    public void close() {
+    @PreDestroy
+    public void destroy() throws Exception {
         protector.shutdown();
-
     }
 
     @Override

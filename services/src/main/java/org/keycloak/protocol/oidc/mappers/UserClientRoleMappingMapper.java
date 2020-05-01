@@ -25,6 +25,7 @@ import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.IDToken;
+import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.utils.RoleResolveUtil;
 
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ import java.util.Map;
  *
  * @author <a href="mailto:thomas.darimont@gmail.com">Thomas Darimont</a>
  */
+@ProviderFactory(id = "oidc-usermodel-client-role-mapper")
 public class UserClientRoleMappingMapper extends AbstractUserRoleMappingMapper {
 
     public static final String PROVIDER_ID = "oidc-usermodel-client-role-mapper";

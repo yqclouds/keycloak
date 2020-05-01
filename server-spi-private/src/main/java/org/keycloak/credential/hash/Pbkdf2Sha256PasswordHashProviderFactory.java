@@ -1,14 +1,14 @@
 package org.keycloak.credential.hash;
 
-import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * PBKDF2 Password Hash provider with HMAC using SHA256
  *
  * @author <a href"mailto:abkaplan07@gmail.com">Adam Kaplan</a>
  */
+@ProviderFactory(id = "pbkdf2-sha256")
 public class Pbkdf2Sha256PasswordHashProviderFactory implements PasswordHashProviderFactory {
 
     public static final String ID = "pbkdf2-sha256";
@@ -23,19 +23,7 @@ public class Pbkdf2Sha256PasswordHashProviderFactory implements PasswordHashProv
     }
 
     @Override
-    public void init(Config.Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-    }
-
-    @Override
     public String getId() {
         return ID;
-    }
-
-    @Override
-    public void close() {
     }
 }

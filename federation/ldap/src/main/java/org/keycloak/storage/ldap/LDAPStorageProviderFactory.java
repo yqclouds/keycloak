@@ -18,7 +18,6 @@
 package org.keycloak.storage.ldap;
 
 import org.jboss.logging.Logger;
-import org.keycloak.Config;
 import org.keycloak.common.constants.KerberosConstants;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
@@ -32,6 +31,7 @@ import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
 import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.UserStorageProviderFactory;
 import org.keycloak.storage.UserStorageProviderModel;
@@ -46,6 +46,8 @@ import org.keycloak.storage.user.ImportSynchronization;
 import org.keycloak.storage.user.SynchronizationResult;
 import org.keycloak.utils.CredentialHelper;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +58,7 @@ import java.util.Map;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = LDAPConstants.LDAP_PROVIDER)
 public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LDAPStorageProvider>, ImportSynchronization {
 
 
@@ -265,13 +268,13 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
         }
     }
 
-    @Override
-    public void init(Config.Scope config) {
+    @PostConstruct
+    public void afterPropertiesSet() {
         this.ldapStoreRegistry = new LDAPIdentityStoreRegistry();
     }
 
-    @Override
-    public void close() {
+    @PreDestroy
+    public void destroy() {
         this.ldapStoreRegistry = null;
     }
 

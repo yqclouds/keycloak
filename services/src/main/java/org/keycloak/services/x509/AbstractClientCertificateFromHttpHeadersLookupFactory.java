@@ -19,8 +19,7 @@
 package org.keycloak.services.x509;
 
 import org.jboss.logging.Logger;
-import org.keycloak.Config;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * @author <a href="mailto:brat000012001@gmail.com">Peter Nalyvayko</a>
@@ -29,45 +28,15 @@ import org.keycloak.models.KeycloakSessionFactory;
  */
 
 public abstract class AbstractClientCertificateFromHttpHeadersLookupFactory implements X509ClientCertificateLookupFactory {
-
     protected final static String CERTIFICATE_CHAIN_LENGTH = "certificateChainLength";
     protected final static String HTTP_HEADER_CLIENT_CERT = "sslClientCert";
     protected final static String HTTP_HEADER_CERT_CHAIN_PREFIX = "sslCertChainPrefix";
     private final static Logger logger = Logger.getLogger(AbstractClientCertificateFromHttpHeadersLookupFactory.class);
-    protected String sslClientCertHttpHeader;
-    protected String sslChainHttpHeaderPrefix;
-    protected int certificateChainLength = 1;
 
-    @Override
-    public void init(Config.Scope config) {
-        if (config != null) {
-            certificateChainLength = config.getInt(CERTIFICATE_CHAIN_LENGTH, 1);
-            logger.tracev("{0}: ''{1}''", CERTIFICATE_CHAIN_LENGTH, certificateChainLength);
-
-            sslClientCertHttpHeader = config.get(HTTP_HEADER_CLIENT_CERT, "");
-            logger.tracev("{0}:   ''{1}''", HTTP_HEADER_CLIENT_CERT, sslClientCertHttpHeader);
-
-            sslChainHttpHeaderPrefix = config.get(HTTP_HEADER_CERT_CHAIN_PREFIX, null);
-            if (sslChainHttpHeaderPrefix != null) {
-                logger.tracev("{0}:  ''{1}''", HTTP_HEADER_CERT_CHAIN_PREFIX, sslChainHttpHeaderPrefix);
-            } else {
-                logger.tracev("{0} was not configured", HTTP_HEADER_CERT_CHAIN_PREFIX);
-            }
-        } else {
-            logger.tracev("No configuration for ''{0}'' reverse proxy was found", this.getId());
-            sslClientCertHttpHeader = "";
-            sslChainHttpHeaderPrefix = "";
-            certificateChainLength = 0;
-        }
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-    }
-
-    @Override
-    public void close() {
-
-    }
-
+    @Value("${sslClientCert}")
+    public String sslClientCertHttpHeader = "";
+    @Value("${sslCertChainPrefix}")
+    public String sslChainHttpHeaderPrefix = "";
+    @Value("${certificateChainLength}")
+    public int certificateChainLength = 1;
 }

@@ -32,6 +32,7 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.JsonWebToken;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.Urls;
+import org.keycloak.stereotype.ProviderFactory;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -46,6 +47,7 @@ import java.util.*;
  * <p>
  * TODO: Try to create abstract superclass to be shared with {@link JWTClientAuthenticator}. Most of the code can be reused
  */
+@ProviderFactory(id = "client-secret-jwt")
 public class JWTClientSecretAuthenticator extends AbstractClientAuthenticator {
 
     public static final String PROVIDER_ID = "client-secret-jwt";
@@ -218,12 +220,10 @@ public class JWTClientSecretAuthenticator extends AbstractClientAuthenticator {
     @Override
     public String getHelpText() {
         return "Validates client based on signed JWT issued by client and signed with the Client Secret";
-
     }
 
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {
         return new LinkedList<>();
     }
-
 }

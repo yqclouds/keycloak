@@ -17,21 +17,18 @@
 
 package org.keycloak.models.sessions.infinispan;
 
-import org.jboss.logging.Logger;
-import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.sessions.StickySessionEncoderProvider;
 import org.keycloak.sessions.StickySessionEncoderProviderFactory;
+import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@ProviderFactory(id = "infinispan")
 public class InfinispanStickySessionEncoderProviderFactory implements StickySessionEncoderProviderFactory {
-
-    private static final Logger log = Logger.getLogger(InfinispanStickySessionEncoderProviderFactory.class);
-
-
+    @Value("${shouldAttachRoute}")
     private boolean shouldAttachRoute;
 
     @Override
@@ -39,26 +36,9 @@ public class InfinispanStickySessionEncoderProviderFactory implements StickySess
         return new InfinispanStickySessionEncoderProvider(session, shouldAttachRoute);
     }
 
-    @Override
-    public void init(Config.Scope config) {
-        this.shouldAttachRoute = config.getBoolean("shouldAttachRoute", true);
-        log.debugf("Should attach route to the sticky session cookie: %b", shouldAttachRoute);
-
-    }
-
     // Used for testing
     public void setShouldAttachRoute(boolean shouldAttachRoute) {
         this.shouldAttachRoute = shouldAttachRoute;
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
-    @Override
-    public void close() {
-
     }
 
     @Override

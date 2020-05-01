@@ -17,16 +17,15 @@
 package org.keycloak.authentication.authenticators.browser;
 
 import org.jboss.logging.Logger;
-import org.keycloak.Config;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.common.Profile;
 import org.keycloak.common.util.StreamUtil;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.io.IOException;
 import java.util.List;
@@ -41,6 +40,7 @@ import static org.keycloak.provider.ProviderConfigProperty.STRING_TYPE;
  *
  * @author <a href="mailto:thomas.darimont@gmail.com">Thomas Darimont</a>
  */
+@ProviderFactory(id = "auth-script-based")
 public class ScriptBasedAuthenticatorFactory implements AuthenticatorFactory, EnvironmentDependentProviderFactory {
 
     public static final String PROVIDER_ID = "auth-script-based";
@@ -61,21 +61,6 @@ public class ScriptBasedAuthenticatorFactory implements AuthenticatorFactory, En
          This would help to avoid potentially re-evaluating the provide script multiple times per authenticator execution.
         */
         return SINGLETON;
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-        //NOOP
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-        //NOOP
-    }
-
-    @Override
-    public void close() {
-        //NOOP
     }
 
     @Override

@@ -19,13 +19,13 @@ package org.keycloak.services.clientregistration.policy.impl;
 
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.services.clientregistration.policy.AbstractClientRegistrationPolicyFactory;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy;
 
+import javax.annotation.PostConstruct;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@org.keycloak.stereotype.ProviderFactory(id = "allowed-protocol-mappers")
 public class ProtocolMappersClientRegistrationPolicyFactory extends AbstractClientRegistrationPolicyFactory {
 
     public static final String PROVIDER_ID = "allowed-protocol-mappers";
@@ -44,10 +45,8 @@ public class ProtocolMappersClientRegistrationPolicyFactory extends AbstractClie
         return new ProtocolMappersClientRegistrationPolicy(session, model);
     }
 
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-        super.postInit(factory);
-
+    @PostConstruct
+    public void afterPropertiesSet() {
         ProviderConfigProperty property;
         property = new ProviderConfigProperty();
         property.setName(ALLOWED_PROTOCOL_MAPPER_TYPES);

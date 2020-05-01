@@ -27,7 +27,6 @@ import org.infinispan.persistence.remote.RemoteStore;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.Transport;
 import org.jboss.logging.Logger;
-import org.keycloak.Config;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.cluster.ClusterProviderFactory;
 import org.keycloak.common.util.Retry;
@@ -35,8 +34,8 @@ import org.keycloak.common.util.Time;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.connections.infinispan.TopologyInfo;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -56,6 +55,7 @@ import java.util.stream.Collectors;
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@ProviderFactory(id = "infinispan")
 public class InfinispanClusterProviderFactory implements ClusterProviderFactory {
 
     public static final String PROVIDER_ID = "infinispan";
@@ -156,24 +156,9 @@ public class InfinispanClusterProviderFactory implements ClusterProviderFactory 
     }
 
     @Override
-    public void init(Config.Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-    }
-
-
-    @Override
-    public void close() {
-
-    }
-
-    @Override
     public String getId() {
         return PROVIDER_ID;
     }
-
 
     @Listener
     public class ViewChangeListener {

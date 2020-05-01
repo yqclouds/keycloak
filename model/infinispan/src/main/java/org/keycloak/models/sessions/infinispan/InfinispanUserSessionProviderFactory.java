@@ -21,7 +21,6 @@ import org.infinispan.Cache;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.persistence.remote.RemoteStore;
 import org.jboss.logging.Logger;
-import org.keycloak.Config;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.common.util.Environment;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
@@ -45,13 +44,16 @@ import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.PostMigrationEvent;
 import org.keycloak.models.utils.ResetTimeOffsetEvent;
-import org.keycloak.provider.ProviderEvent;
-import org.keycloak.provider.ProviderEventListener;
+import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
+import javax.annotation.PostConstruct;
 import java.io.Serializable;
 import java.util.Set;
 import java.util.UUID;
 
+@ProviderFactory(id = "infinispan")
 public class InfinispanUserSessionProviderFactory implements UserSessionProviderFactory {
 
     public static final String PROVIDER_ID = "infinispan";
@@ -60,13 +62,22 @@ public class InfinispanUserSessionProviderFactory implements UserSessionProvider
     public static final String REMOVE_USER_SESSIONS_EVENT = "REMOVE_USER_SESSIONS_EVENT";
     public static final String REMOVE_ALL_LOGIN_FAILURES_EVENT = "REMOVE_ALL_LOGIN_FAILURES_EVENT";
     private static final Logger log = Logger.getLogger(InfinispanUserSessionProviderFactory.class);
-    private Config.Scope config;
 
     private RemoteCacheInvoker remoteCacheInvoker;
     private CrossDCLastSessionRefreshStore lastSessionRefreshStore;
     private CrossDCLastSessionRefreshStore offlineLastSessionRefreshStore;
     private PersisterLastSessionRefreshStore persisterLastSessionRefreshStore;
     private InfinispanKeyGenerator keyGenerator;
+
+    @Value("${maxErrors}")
+    private int maxErrors = 20;
+    @Value("${sessionsPerSegment}")
+    private int sessionsPerSegment = 64;
+    @Value("${sessionsPreloadTimeoutInSeconds}")
+    private Integer sessionsPreloadTimeoutInSeconds = null;
+
+    @Autowired
+    private KeycloakSessionFactory sessionFactory;
 
     @Override
     public InfinispanUserSessionProvider create(KeycloakSession session) {
@@ -82,48 +93,38 @@ public class InfinispanUserSessionProviderFactory implements UserSessionProvider
                 cache, offlineSessionsCache, clientSessionCache, offlineClientSessionsCache, loginFailures);
     }
 
-    @Override
-    public void init(Config.Scope config) {
-        this.config = config;
-    }
+    @PostConstruct
+    public void afterPropertiesSet() {
+        sessionFactory.register(event -> {
+            if (event instanceof PostMigrationEvent) {
 
-    @Override
-    public void postInit(final KeycloakSessionFactory factory) {
+                int preloadTransactionTimeout = getTimeoutForPreloadingSessionsSeconds();
+                log.debugf("Will preload sessions with transaction timeout %d seconds", preloadTransactionTimeout);
 
-        factory.register(new ProviderEventListener() {
+                KeycloakModelUtils.runJobInTransactionWithTimeout(sessionFactory, (KeycloakSession session) -> {
 
-            @Override
-            public void onEvent(ProviderEvent event) {
-                if (event instanceof PostMigrationEvent) {
+                    keyGenerator = new InfinispanKeyGenerator();
+                    checkRemoteCaches(session);
+                    loadPersistentSessions(sessionFactory, getMaxErrors(), getSessionsPerSegment());
+                    registerClusterListeners(session);
+                    loadSessionsFromRemoteCaches(session);
 
-                    int preloadTransactionTimeout = getTimeoutForPreloadingSessionsSeconds();
-                    log.debugf("Will preload sessions with transaction timeout %d seconds", preloadTransactionTimeout);
+                }, preloadTransactionTimeout);
 
-                    KeycloakModelUtils.runJobInTransactionWithTimeout(factory, (KeycloakSession session) -> {
+            } else if (event instanceof UserModel.UserRemovedEvent) {
+                UserModel.UserRemovedEvent userRemovedEvent = (UserModel.UserRemovedEvent) event;
 
-                        keyGenerator = new InfinispanKeyGenerator();
-                        checkRemoteCaches(session);
-                        loadPersistentSessions(factory, getMaxErrors(), getSessionsPerSegment());
-                        registerClusterListeners(session);
-                        loadSessionsFromRemoteCaches(session);
-
-                    }, preloadTransactionTimeout);
-
-                } else if (event instanceof UserModel.UserRemovedEvent) {
-                    UserModel.UserRemovedEvent userRemovedEvent = (UserModel.UserRemovedEvent) event;
-
-                    InfinispanUserSessionProvider provider = (InfinispanUserSessionProvider) userRemovedEvent.getKeycloakSession().getProvider(UserSessionProvider.class, getId());
-                    provider.onUserRemoved(userRemovedEvent.getRealm(), userRemovedEvent.getUser());
-                } else if (event instanceof ResetTimeOffsetEvent) {
-                    if (persisterLastSessionRefreshStore != null) {
-                        persisterLastSessionRefreshStore.reset();
-                    }
-                    if (lastSessionRefreshStore != null) {
-                        lastSessionRefreshStore.reset();
-                    }
-                    if (offlineLastSessionRefreshStore != null) {
-                        offlineLastSessionRefreshStore.reset();
-                    }
+                InfinispanUserSessionProvider provider = (InfinispanUserSessionProvider) userRemovedEvent.getKeycloakSession().getProvider(UserSessionProvider.class, getId());
+                provider.onUserRemoved(userRemovedEvent.getRealm(), userRemovedEvent.getUser());
+            } else if (event instanceof ResetTimeOffsetEvent) {
+                if (persisterLastSessionRefreshStore != null) {
+                    persisterLastSessionRefreshStore.reset();
+                }
+                if (lastSessionRefreshStore != null) {
+                    lastSessionRefreshStore.reset();
+                }
+                if (offlineLastSessionRefreshStore != null) {
+                    offlineLastSessionRefreshStore.reset();
                 }
             }
         });
@@ -131,16 +132,16 @@ public class InfinispanUserSessionProviderFactory implements UserSessionProvider
 
     // Max count of worker errors. Initialization will end with exception when this number is reached
     private int getMaxErrors() {
-        return config.getInt("maxErrors", 20);
+        return this.maxErrors;
     }
 
     // Count of sessions to be computed in each segment
     private int getSessionsPerSegment() {
-        return config.getInt("sessionsPerSegment", 64);
+        return this.sessionsPerSegment;
     }
 
     private int getTimeoutForPreloadingSessionsSeconds() {
-        Integer timeout = config.getInt("sessionsPreloadTimeoutInSeconds", null);
+        Integer timeout = this.sessionsPreloadTimeoutInSeconds;
         return timeout != null ? timeout : Environment.getServerStartupTimeout();
     }
 
@@ -311,11 +312,6 @@ public class InfinispanUserSessionProviderFactory implements UserSessionProvider
         });
 
         log.debugf("Pre-loading sessions from remote cache '%s' finished", cacheName);
-    }
-
-
-    @Override
-    public void close() {
     }
 
     @Override

@@ -20,7 +20,9 @@ import com.webauthn4j.converter.util.ObjectConverter;
 import org.keycloak.common.Profile;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
+import org.keycloak.stereotype.ProviderFactory;
 
+@ProviderFactory(id = "keycloak-webauthn")
 public class WebAuthnCredentialProviderFactory implements CredentialProviderFactory<WebAuthnCredentialProvider>, EnvironmentDependentProviderFactory {
 
     public static final String PROVIDER_ID = "keycloak-webauthn";

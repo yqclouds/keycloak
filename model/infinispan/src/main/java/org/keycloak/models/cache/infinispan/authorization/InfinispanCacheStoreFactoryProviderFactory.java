@@ -29,6 +29,7 @@ import org.keycloak.models.cache.authorization.CachedStoreFactoryProvider;
 import org.keycloak.models.cache.authorization.CachedStoreProviderFactory;
 import org.keycloak.models.cache.infinispan.entities.Revisioned;
 import org.keycloak.models.cache.infinispan.events.InvalidationEvent;
+import org.keycloak.stereotype.ProviderFactory;
 
 import static org.keycloak.models.cache.infinispan.InfinispanCacheRealmProviderFactory.REALM_CLEAR_CACHE_EVENTS;
 
@@ -36,6 +37,7 @@ import static org.keycloak.models.cache.infinispan.InfinispanCacheRealmProviderF
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@ProviderFactory(id = "default")
 public class InfinispanCacheStoreFactoryProviderFactory implements CachedStoreProviderFactory {
 
     public static final String AUTHORIZATION_CLEAR_CACHE_EVENTS = "AUTHORIZATION_CLEAR_CACHE_EVENTS";
@@ -72,19 +74,6 @@ public class InfinispanCacheStoreFactoryProviderFactory implements CachedStorePr
                 }
             }
         }
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
-    @Override
-    public void close() {
     }
 
     @Override

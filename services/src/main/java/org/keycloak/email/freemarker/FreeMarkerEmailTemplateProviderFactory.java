@@ -17,18 +17,21 @@
 
 package org.keycloak.email.freemarker;
 
-import org.keycloak.Config;
 import org.keycloak.email.EmailTemplateProvider;
 import org.keycloak.email.EmailTemplateProviderFactory;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.theme.FreeMarkerUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.PostConstruct;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@ProviderFactory(id = "freemarker")
 public class FreeMarkerEmailTemplateProviderFactory implements EmailTemplateProviderFactory {
-
+    @Autowired
     private FreeMarkerUtil freeMarker;
 
     @Override
@@ -36,17 +39,8 @@ public class FreeMarkerEmailTemplateProviderFactory implements EmailTemplateProv
         return new FreeMarkerEmailTemplateProvider(session, freeMarker);
     }
 
-    @Override
-    public void init(Config.Scope config) {
-        freeMarker = new FreeMarkerUtil();
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-    }
-
-    @Override
-    public void close() {
+    @PostConstruct
+    public void destroy() {
         freeMarker = null;
     }
 
@@ -54,5 +48,4 @@ public class FreeMarkerEmailTemplateProviderFactory implements EmailTemplateProv
     public String getId() {
         return "freemarker";
     }
-
 }

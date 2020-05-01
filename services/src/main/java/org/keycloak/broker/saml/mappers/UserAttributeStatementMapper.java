@@ -16,6 +16,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 /**
  * @author <a href="mailto:frelibert@yahoo.com">Frederik Libert</a>
  */
+@ProviderFactory(id = "saml-user-attributestatement-idp-mapper")
 public class UserAttributeStatementMapper extends AbstractIdentityProviderMapper {
 
     public static final String ATTRIBUTE_NAME_PATTERN = "attribute.name.pattern";

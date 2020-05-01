@@ -17,11 +17,13 @@
 package org.keycloak.credential;
 
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "keycloak-otp")
 public class OTPCredentialProviderFactory implements CredentialProviderFactory<OTPCredentialProvider> {
     public static final String PROVIDER_ID = "keycloak-otp";
 

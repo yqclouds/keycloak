@@ -16,26 +16,14 @@
  */
 package org.keycloak.locale;
 
-import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
 
+@ProviderFactory(id = "default")
 public class DefaultLocaleSelectorProviderFactory implements LocaleSelectorProviderFactory {
     @Override
     public LocaleSelectorProvider create(KeycloakSession session) {
         return new DefaultLocaleSelectorProvider(session);
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-    }
-
-    @Override
-    public void close() {
     }
 
     @Override

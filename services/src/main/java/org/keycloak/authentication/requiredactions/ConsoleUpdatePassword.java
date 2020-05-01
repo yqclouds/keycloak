@@ -29,6 +29,7 @@ import org.keycloak.models.ModelException;
 import org.keycloak.models.UserCredentialModel;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.validation.Validation;
+import org.keycloak.stereotype.ProviderFactory;
 
 import javax.ws.rs.core.MultivaluedMap;
 
@@ -36,6 +37,7 @@ import javax.ws.rs.core.MultivaluedMap;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory
 public class ConsoleUpdatePassword extends UpdatePassword implements RequiredActionProvider {
     public static final ConsoleUpdatePassword SINGLETON = new ConsoleUpdatePassword();
     public static final String PASSWORD_NEW = "password-new";

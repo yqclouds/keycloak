@@ -29,6 +29,7 @@ import org.keycloak.representations.IDToken;
 import org.keycloak.scripting.EvaluatableScriptAdapter;
 import org.keycloak.scripting.ScriptCompilationException;
 import org.keycloak.scripting.ScriptingProvider;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.List;
 
@@ -37,6 +38,7 @@ import java.util.List;
  *
  * @author <a href="mailto:thomas.darimont@gmail.com">Thomas Darimont</a>
  */
+@ProviderFactory(id = "oidc-script-based-protocol-mapper")
 public class ScriptBasedOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper,
         EnvironmentDependentProviderFactory {
 

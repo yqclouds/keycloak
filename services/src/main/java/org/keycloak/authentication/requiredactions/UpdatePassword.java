@@ -18,7 +18,6 @@
 package org.keycloak.authentication.requiredactions;
 
 import org.jboss.logging.Logger;
-import org.keycloak.Config;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.authentication.*;
 import org.keycloak.common.util.Time;
@@ -30,9 +29,13 @@ import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
-import org.keycloak.models.*;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.ModelException;
+import org.keycloak.models.UserCredentialModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.validation.Validation;
+import org.keycloak.stereotype.ProviderFactory;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -42,6 +45,7 @@ import java.util.concurrent.TimeUnit;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "UPDATE_PASSWORD")
 public class UpdatePassword implements RequiredActionProvider, RequiredActionFactory, DisplayTypeRequiredActionFactory {
     private static final Logger logger = Logger.getLogger(UpdatePassword.class);
 
@@ -135,14 +139,12 @@ public class UpdatePassword implements RequiredActionProvider, RequiredActionFac
 
     @Override
     public void close() {
-
     }
 
     @Override
     public RequiredActionProvider create(KeycloakSession session) {
         return this;
     }
-
 
     @Override
     public RequiredActionProvider createDisplay(KeycloakSession session, String displayType) {
@@ -151,22 +153,10 @@ public class UpdatePassword implements RequiredActionProvider, RequiredActionFac
         return ConsoleUpdatePassword.SINGLETON;
     }
 
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
     @Override
     public String getDisplayText() {
         return "Update Password";
     }
-
 
     @Override
     public String getId() {

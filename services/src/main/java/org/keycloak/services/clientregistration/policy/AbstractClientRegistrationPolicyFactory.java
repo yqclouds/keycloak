@@ -17,7 +17,6 @@
 
 package org.keycloak.services.clientregistration.policy;
 
-import org.keycloak.Config;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
 import org.keycloak.models.KeycloakSession;
@@ -31,21 +30,7 @@ import java.util.List;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public abstract class AbstractClientRegistrationPolicyFactory implements ClientRegistrationPolicyFactory {
-
     protected KeycloakSessionFactory sessionFactory;
-
-    @Override
-    public void init(Config.Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-        this.sessionFactory = factory;
-    }
-
-    @Override
-    public void close() {
-    }
 
     @Override
     public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel config) throws ComponentValidationException {

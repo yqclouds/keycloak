@@ -21,11 +21,13 @@ package org.keycloak.authentication.authenticators.x509;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:pnalyvayko@agi.com">Peter Nalyvayko</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "auth-x509-client-username-form")
 public class X509ClientCertificateAuthenticatorFactory extends AbstractX509ClientCertificateAuthenticatorFactory {
 
     public static final String PROVIDER_ID = "auth-x509-client-username-form";

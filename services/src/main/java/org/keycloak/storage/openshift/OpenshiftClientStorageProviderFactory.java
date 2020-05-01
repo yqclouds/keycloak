@@ -26,6 +26,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
+import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.storage.CacheableStorageProviderModel;
 import org.keycloak.storage.client.ClientStorageProviderFactory;
 import org.keycloak.storage.client.ClientStorageProviderModel;
@@ -38,6 +39,7 @@ import static org.keycloak.storage.CacheableStorageProviderModel.CACHE_POLICY;
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
+@ProviderFactory(id = "openshift-oauth-client")
 public class OpenshiftClientStorageProviderFactory implements ClientStorageProviderFactory<OpenshiftClientStorageProvider>, EnvironmentDependentProviderFactory {
 
     public static final String PROVIDER_ID = "openshift-oauth-client";

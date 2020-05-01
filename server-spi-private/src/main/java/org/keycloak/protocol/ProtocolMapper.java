@@ -57,6 +57,7 @@ public interface ProtocolMapper extends Provider, ProviderFactory<ProtocolMapper
     default void validateConfig(KeycloakSession session, RealmModel realm, ProtocolMapperContainerModel client, ProtocolMapperModel mapperModel) throws ProtocolMapperConfigException {
     }
 
-    ;
-
+    @Override
+    default void close() {
+    }
 }

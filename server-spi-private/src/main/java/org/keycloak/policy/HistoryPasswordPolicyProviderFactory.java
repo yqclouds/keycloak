@@ -17,14 +17,14 @@
 
 package org.keycloak.policy;
 
-import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.PasswordPolicy;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@ProviderFactory(id = PasswordPolicy.PASSWORD_HISTORY_ID)
 public class HistoryPasswordPolicyProviderFactory implements PasswordPolicyProviderFactory {
 
     public static final Integer DEFAULT_VALUE = 3;
@@ -37,14 +37,6 @@ public class HistoryPasswordPolicyProviderFactory implements PasswordPolicyProvi
     @Override
     public PasswordPolicyProvider create(KeycloakSession session) {
         return new HistoryPasswordPolicyProvider(session);
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
     }
 
     @Override
@@ -66,9 +58,4 @@ public class HistoryPasswordPolicyProviderFactory implements PasswordPolicyProvi
     public boolean isMultiplSupported() {
         return false;
     }
-
-    @Override
-    public void close() {
-    }
-
 }

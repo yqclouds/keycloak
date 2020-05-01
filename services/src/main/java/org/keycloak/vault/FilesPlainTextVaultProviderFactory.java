@@ -1,10 +1,11 @@
 package org.keycloak.vault;
 
 import org.jboss.logging.Logger;
-import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Value;
 
+import javax.annotation.PostConstruct;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,10 +16,12 @@ import java.nio.file.Paths;
  *
  * @author Sebastian Łaskawiec
  */
+@ProviderFactory(id = "files-plaintext")
 public class FilesPlainTextVaultProviderFactory extends AbstractVaultProviderFactory {
 
     public static final String PROVIDER_ID = "files-plaintext";
     private static final Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass());
+    @Value("${dir}")
     private String vaultDirectory;
     private Path vaultPath;
 
@@ -31,11 +34,10 @@ public class FilesPlainTextVaultProviderFactory extends AbstractVaultProviderFac
         return new FilesPlainTextVaultProvider(vaultPath, getRealmName(session), super.keyResolvers);
     }
 
-    @Override
-    public void init(Config.Scope config) {
-        super.init(config);
+    @PostConstruct
+    public void afterPropertiesSet() throws Exception {
+        super.afterPropertiesSet();
 
-        vaultDirectory = config.get("dir");
         if (vaultDirectory == null) {
             logger.debug("PlainTextVaultProviderFactory not configured");
             return;
@@ -45,20 +47,12 @@ public class FilesPlainTextVaultProviderFactory extends AbstractVaultProviderFac
         if (!Files.exists(vaultPath)) {
             throw new VaultNotFoundException("The " + vaultPath.toAbsolutePath().toString() + " directory doesn't exist");
         }
+
         logger.debugf("Configured PlainTextVaultProviderFactory with directory %s", vaultPath.toString());
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-    }
-
-    @Override
-    public void close() {
     }
 
     @Override
     public String getId() {
         return PROVIDER_ID;
     }
-
 }

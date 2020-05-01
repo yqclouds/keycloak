@@ -22,6 +22,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "hardcoded-attribute-idp-mapper")
 public class HardcodedAttributeMapper extends AbstractIdentityProviderMapper {
     public static final String ATTRIBUTE = "attribute";
     public static final String ATTRIBUTE_VALUE = "attribute.value";

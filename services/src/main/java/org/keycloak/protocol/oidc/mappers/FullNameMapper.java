@@ -23,6 +23,7 @@ import org.keycloak.models.UserSessionModel;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.IDToken;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.*;
 
@@ -32,6 +33,7 @@ import java.util.*;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "oidc-full-name-mapper")
 public class FullNameMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
 
     public static final String PROVIDER_ID = "oidc-full-name-mapper";
@@ -39,7 +41,6 @@ public class FullNameMapper extends AbstractOIDCProtocolMapper implements OIDCAc
 
     static {
         OIDCAttributeMapperHelper.addIncludeInTokensConfig(configProperties, FullNameMapper.class);
-
     }
 
     public static ProtocolMapperModel create(String name, boolean accessToken, boolean idToken, boolean userInfo) {

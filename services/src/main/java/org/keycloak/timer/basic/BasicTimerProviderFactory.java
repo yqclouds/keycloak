@@ -17,12 +17,13 @@
 
 package org.keycloak.timer.basic;
 
-import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.timer.TimerProvider;
 import org.keycloak.timer.TimerProviderFactory;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -30,6 +31,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@ProviderFactory(id = "basic")
 public class BasicTimerProviderFactory implements TimerProviderFactory {
 
     private Timer timer;
@@ -41,18 +43,13 @@ public class BasicTimerProviderFactory implements TimerProviderFactory {
         return new BasicTimerProvider(session, timer, this);
     }
 
-    @Override
-    public void init(Config.Scope config) {
+    @PostConstruct
+    public void afterPropertiesSet() throws Exception {
         timer = new Timer();
     }
 
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
-    @Override
-    public void close() {
+    @PreDestroy
+    public void destroy() throws Exception {
         timer.cancel();
         timer = null;
     }
@@ -69,5 +66,4 @@ public class BasicTimerProviderFactory implements TimerProviderFactory {
     protected TimerTaskContextImpl removeTask(String taskName) {
         return scheduledTasks.remove(taskName);
     }
-
 }

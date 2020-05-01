@@ -18,10 +18,11 @@
 package org.keycloak.truststore;
 
 import org.jboss.logging.Logger;
-import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Value;
 
+import javax.annotation.PostConstruct;
 import javax.security.auth.x500.X500Principal;
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,43 +39,46 @@ import java.util.Map;
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
  */
+@ProviderFactory
 public class FileTruststoreProviderFactory implements TruststoreProviderFactory {
 
     private static final Logger log = Logger.getLogger(FileTruststoreProviderFactory.class);
 
     private TruststoreProvider provider;
 
+    @Value("${file}")
+    private String storePath;
+    @Value("${password}")
+    private String password;
+    @Value("${hostname-verification-policy}")
+    private String policy;
+
     @Override
     public TruststoreProvider create(KeycloakSession session) {
         return provider;
     }
 
-    @Override
-    public void init(Config.Scope config) {
-
-        String storepath = config.get("file");
-        String pass = config.get("password");
-        String policy = config.get("hostname-verification-policy");
-
+    @PostConstruct
+    public void afterPropertiesSet() throws Exception {
         // if "truststore" . "file" is not configured then it is disabled
-        if (storepath == null && pass == null && policy == null) {
+        if (storePath == null && password == null && policy == null) {
             return;
         }
 
         HostnameVerificationPolicy verificationPolicy = null;
         KeyStore truststore = null;
 
-        if (storepath == null) {
+        if (storePath == null) {
             throw new RuntimeException("Attribute 'file' missing in 'truststore':'file' configuration");
         }
-        if (pass == null) {
+        if (password == null) {
             throw new RuntimeException("Attribute 'password' missing in 'truststore':'file' configuration");
         }
 
         try {
-            truststore = loadStore(storepath, pass == null ? null : pass.toCharArray());
+            truststore = loadStore(storePath, password.toCharArray());
         } catch (Exception e) {
-            throw new RuntimeException("Failed to initialize TruststoreProviderFactory: " + new File(storepath).getAbsolutePath(), e);
+            throw new RuntimeException("Failed to initialize TruststoreProviderFactory: " + new File(storePath).getAbsolutePath(), e);
         }
         if (policy == null) {
             verificationPolicy = HostnameVerificationPolicy.WILDCARD;
@@ -89,7 +93,7 @@ public class FileTruststoreProviderFactory implements TruststoreProviderFactory 
         TruststoreCertificatesLoader certsLoader = new TruststoreCertificatesLoader(truststore);
         provider = new FileTruststoreProvider(truststore, verificationPolicy, certsLoader.trustedRootCerts, certsLoader.intermediateCerts);
         TruststoreProviderSingleton.set(provider);
-        log.debug("File trustore provider initialized: " + new File(storepath).getAbsolutePath());
+        log.debug("File trustore provider initialized: " + new File(storePath).getAbsolutePath());
     }
 
     private KeyStore loadStore(String path, char[] password) throws Exception {
@@ -107,18 +111,9 @@ public class FileTruststoreProviderFactory implements TruststoreProviderFactory 
     }
 
     @Override
-    public void postInit(KeycloakSessionFactory factory) {
-    }
-
-    @Override
-    public void close() {
-    }
-
-    @Override
     public String getId() {
         return "file";
     }
-
 
     private class TruststoreCertificatesLoader {
 

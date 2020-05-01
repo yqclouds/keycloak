@@ -18,7 +18,7 @@ package org.keycloak.authentication.actiontoken.resetcred;
 
 import org.keycloak.TokenVerifier.Predicate;
 import org.keycloak.authentication.AuthenticationProcessor;
-import org.keycloak.authentication.actiontoken.AbstractActionTokenHander;
+import org.keycloak.authentication.actiontoken.AbstractActionTokenHandler;
 import org.keycloak.authentication.actiontoken.ActionTokenContext;
 import org.keycloak.authentication.actiontoken.TokenUtils;
 import org.keycloak.authentication.authenticators.broker.AbstractIdpAuthenticator;
@@ -30,6 +30,7 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.LoginActionsService;
 import org.keycloak.services.resources.LoginActionsServiceChecks.IsActionRequired;
 import org.keycloak.sessions.CommonClientSessionModel.Action;
+import org.keycloak.stereotype.ProviderFactory;
 
 import javax.ws.rs.core.Response;
 
@@ -38,8 +39,8 @@ import static org.keycloak.services.resources.LoginActionsService.RESET_CREDENTI
 /**
  * @author hmlnarik
  */
-public class ResetCredentialsActionTokenHandler extends AbstractActionTokenHander<ResetCredentialsActionToken> {
-
+@ProviderFactory
+public class ResetCredentialsActionTokenHandler extends AbstractActionTokenHandler<ResetCredentialsActionToken> {
     public ResetCredentialsActionTokenHandler() {
         super(
                 ResetCredentialsActionToken.TOKEN_TYPE,
@@ -48,7 +49,6 @@ public class ResetCredentialsActionTokenHandler extends AbstractActionTokenHande
                 EventType.RESET_PASSWORD,
                 Errors.NOT_ALLOWED
         );
-
     }
 
     @Override
@@ -79,7 +79,6 @@ public class ResetCredentialsActionTokenHandler extends AbstractActionTokenHande
     }
 
     public static class ResetCredsAuthenticationProcessor extends AuthenticationProcessor {
-
         @Override
         protected Response authenticationComplete() {
             boolean firstBrokerLoginInProgress = (authenticationSession.getAuthNote(AbstractIdpAuthenticator.BROKERED_CONTEXT_NOTE) != null);
@@ -97,6 +96,5 @@ public class ResetCredentialsActionTokenHandler extends AbstractActionTokenHande
                 return super.authenticationComplete();
             }
         }
-
     }
 }

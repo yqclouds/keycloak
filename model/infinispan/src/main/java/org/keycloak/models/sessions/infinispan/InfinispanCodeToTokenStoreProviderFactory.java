@@ -22,14 +22,13 @@ import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.commons.api.BasicCache;
 import org.jboss.logging.Logger;
-import org.keycloak.Config;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.CodeToTokenStoreProvider;
 import org.keycloak.models.CodeToTokenStoreProviderFactory;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.sessions.infinispan.entities.ActionTokenValueEntity;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
+import org.keycloak.stereotype.ProviderFactory;
 
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -37,6 +36,7 @@ import java.util.function.Supplier;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@ProviderFactory(id = "infinispan")
 public class InfinispanCodeToTokenStoreProviderFactory implements CodeToTokenStoreProviderFactory {
 
     private static final Logger LOG = Logger.getLogger(InfinispanCodeToTokenStoreProviderFactory.class);
@@ -74,21 +74,6 @@ public class InfinispanCodeToTokenStoreProviderFactory implements CodeToTokenSto
                 }
             }
         }
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
-    @Override
-    public void close() {
-
     }
 
     @Override

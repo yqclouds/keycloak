@@ -18,7 +18,7 @@ package org.keycloak.authentication.actiontoken.idpverifyemail;
 
 import org.keycloak.TokenVerifier.Predicate;
 import org.keycloak.authentication.AuthenticationProcessor;
-import org.keycloak.authentication.actiontoken.AbstractActionTokenHander;
+import org.keycloak.authentication.actiontoken.AbstractActionTokenHandler;
 import org.keycloak.authentication.actiontoken.ActionTokenContext;
 import org.keycloak.authentication.actiontoken.TokenUtils;
 import org.keycloak.authentication.authenticators.broker.IdpEmailVerificationAuthenticator;
@@ -33,6 +33,7 @@ import org.keycloak.services.managers.AuthenticationSessionManager;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
+import org.keycloak.stereotype.ProviderFactory;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -44,7 +45,8 @@ import java.util.Collections;
  *
  * @author hmlnarik
  */
-public class IdpVerifyAccountLinkActionTokenHandler extends AbstractActionTokenHander<IdpVerifyAccountLinkActionToken> {
+@ProviderFactory
+public class IdpVerifyAccountLinkActionTokenHandler extends AbstractActionTokenHandler<IdpVerifyAccountLinkActionToken> {
 
     public IdpVerifyAccountLinkActionTokenHandler() {
         super(
@@ -58,8 +60,7 @@ public class IdpVerifyAccountLinkActionTokenHandler extends AbstractActionTokenH
 
     @Override
     public Predicate<? super IdpVerifyAccountLinkActionToken>[] getVerifiers(ActionTokenContext<IdpVerifyAccountLinkActionToken> tokenContext) {
-        return TokenUtils.predicates(
-        );
+        return TokenUtils.predicates();
     }
 
     @Override

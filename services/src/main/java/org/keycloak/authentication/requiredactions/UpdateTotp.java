@@ -17,7 +17,6 @@
 
 package org.keycloak.authentication.requiredactions;
 
-import org.keycloak.Config;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.authentication.*;
 import org.keycloak.credential.CredentialModel;
@@ -26,13 +25,13 @@ import org.keycloak.credential.OTPCredentialProvider;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.OTPPolicy;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.OTPCredentialModel;
 import org.keycloak.models.utils.CredentialValidation;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.validation.Validation;
+import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.utils.CredentialHelper;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -44,6 +43,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "CONFIGURE_TOTP")
 public class UpdateTotp implements RequiredActionProvider, RequiredActionFactory, DisplayTypeRequiredActionFactory, CredentialRegistrator {
     @Override
     public InitiatedActionSupport initiatedActionSupport() {
@@ -136,17 +136,6 @@ public class UpdateTotp implements RequiredActionProvider, RequiredActionFactory
         if (displayType == null) return this;
         if (!OAuth2Constants.DISPLAY_CONSOLE.equalsIgnoreCase(displayType)) return null;
         return ConsoleUpdateTotp.SINGLETON;
-    }
-
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
     }
 
     @Override

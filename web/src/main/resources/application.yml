@@ -1,1 +1,11 @@
 debug: true
+
+# used in FreeMarkerUtil
+frontendUrl:
+adminUrl:
+forceBackendUrlToFrontendUrl: false
+sslClientCert:
+sslCertChainPrefix:
+certificateChainLength: 1
+theme:
+  cacheTemplates: true

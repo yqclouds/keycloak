@@ -24,7 +24,6 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
 import org.jboss.logging.Logger;
-import org.keycloak.Config;
 import org.keycloak.authentication.FormAction;
 import org.keycloak.authentication.FormActionFactory;
 import org.keycloak.authentication.FormContext;
@@ -40,6 +39,7 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.validation.Validation;
+import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.util.JsonSerialization;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -50,6 +50,7 @@ import java.util.*;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@ProviderFactory(id = "registration-recaptcha-action")
 public class RegistrationRecaptcha implements FormAction, FormActionFactory, ConfiguredProvider {
     public static final String G_RECAPTCHA_RESPONSE = "g-recaptcha-response";
     public static final String RECAPTCHA_REFERENCE_CATEGORY = "recaptcha";
@@ -216,22 +217,11 @@ public class RegistrationRecaptcha implements FormAction, FormActionFactory, Con
 
     @Override
     public void close() {
-
     }
 
     @Override
     public FormAction create(KeycloakSession session) {
         return this;
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
     }
 
     @Override

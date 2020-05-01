@@ -17,35 +17,19 @@
  */
 package org.keycloak.protocol.oidc;
 
-import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.stereotype.ProviderFactory;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
+@ProviderFactory(id = "access_token")
 public class AccessTokenIntrospectionProviderFactory implements TokenIntrospectionProviderFactory {
-
     public static final String ACCESS_TOKEN_TYPE = "access_token";
 
     @Override
     public TokenIntrospectionProvider create(KeycloakSession session) {
         return new AccessTokenIntrospectionProvider(session);
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
-
-    @Override
-    public void close() {
-
     }
 
     @Override

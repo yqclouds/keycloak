@@ -17,16 +17,17 @@
 
 package org.keycloak.theme;
 
-import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.stereotype.ProviderFactory;
 
-import java.io.IOException;
+import javax.annotation.PostConstruct;
 import java.net.URL;
 import java.util.Enumeration;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@ProviderFactory
 public class JarThemeProviderFactory extends ClasspathThemeProviderFactory {
 
     public JarThemeProviderFactory() {
@@ -38,17 +39,12 @@ public class JarThemeProviderFactory extends ClasspathThemeProviderFactory {
         return new ClasspathThemeProvider(themes);
     }
 
-    @Override
-    public void init(Config.Scope config) {
-        try {
-            ClassLoader classLoader = getClass().getClassLoader();
-            Enumeration<URL> resources = classLoader.getResources(KEYCLOAK_THEMES_JSON);
-            while (resources.hasMoreElements()) {
-                loadThemes(classLoader, resources.nextElement().openStream());
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to load themes", e);
+    @PostConstruct
+    public void afterPropertiesSet() throws Exception {
+        ClassLoader classLoader = getClass().getClassLoader();
+        Enumeration<URL> resources = classLoader.getResources(KEYCLOAK_THEMES_JSON);
+        while (resources.hasMoreElements()) {
+            loadThemes(classLoader, resources.nextElement().openStream());
         }
     }
-
 }
