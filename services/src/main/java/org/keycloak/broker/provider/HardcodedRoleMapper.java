@@ -21,6 +21,7 @@ import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("HardcodedRoleMapper")
 @ProviderFactory(id = "oidc-hardcoded-role-idp-mapper", providerClasses = IdentityProviderMapper.class)
 public class HardcodedRoleMapper extends AbstractIdentityProviderMapper {
     public static final String[] COMPATIBLE_PROVIDERS = {ANY_PROVIDER};

@@ -22,12 +22,14 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.session.UserSessionPersisterProvider;
 import org.keycloak.models.session.UserSessionPersisterProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("JpaUserSessionPersisterProviderFactory")
 @ProviderFactory(id = "jpa", providerClasses = UserSessionPersisterProvider.class)
 public class JpaUserSessionPersisterProviderFactory implements UserSessionPersisterProviderFactory {
 

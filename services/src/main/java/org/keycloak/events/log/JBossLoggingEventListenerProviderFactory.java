@@ -23,12 +23,14 @@ import org.keycloak.events.EventListenerProviderFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component("JBossLoggingEventListenerProviderFactory")
 @ProviderFactory(id = "jboss-logging", providerClasses = EventListenerProvider.class)
 public class JBossLoggingEventListenerProviderFactory implements EventListenerProviderFactory {
 

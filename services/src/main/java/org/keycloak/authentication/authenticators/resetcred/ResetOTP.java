@@ -26,11 +26,13 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("ResetOTP")
 @ProviderFactory(id = "reset-otp", providerClasses = Authenticator.class)
 public class ResetOTP extends AbstractSetRequiredActionAuthenticator implements CredentialValidator<OTPCredentialProvider> {
 

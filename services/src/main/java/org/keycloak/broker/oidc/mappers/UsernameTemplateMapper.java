@@ -41,6 +41,7 @@ import org.keycloak.social.paypal.PayPalIdentityProviderFactory;
 import org.keycloak.social.stackoverflow.StackoverflowIdentityProviderFactory;
 import org.keycloak.social.twitter.TwitterIdentityProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +52,7 @@ import java.util.regex.Pattern;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("OIDCUsernameTemplateMapper")
 @ProviderFactory(id = "oidc-username-idp-mapper", providerClasses = IdentityProviderMapper.class)
 public class UsernameTemplateMapper extends AbstractClaimMapper {
 

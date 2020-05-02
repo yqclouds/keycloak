@@ -24,12 +24,14 @@ import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.connections.jpa.JpaConnectionProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
+@Component("JPAAuthorizationStoreFactory")
 @ProviderFactory(id = "jpa", providerClasses = StoreFactory.class)
 public class JPAAuthorizationStoreFactory implements AuthorizationStoreFactory {
     @Override

@@ -24,6 +24,7 @@ import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.saml.SamlProtocol;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ import java.util.Set;
  *
  * @author rmartinc
  */
+@Component("SAMLAudienceResolveProtocolMapper")
 @ProviderFactory(id = "saml-audience-resolve-mapper", providerClasses = ProtocolMapper.class)
 public class SAMLAudienceResolveProtocolMapper extends AbstractSAMLProtocolMapper implements SAMLLoginResponseMapper {
 

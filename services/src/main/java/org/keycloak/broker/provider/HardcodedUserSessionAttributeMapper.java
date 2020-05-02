@@ -23,6 +23,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("HardcodedUserSessionAttributeMapper")
 @ProviderFactory(id = "hardcoded-user-session-attribute-idp-mapper", providerClasses = IdentityProviderMapper.class)
 public class HardcodedUserSessionAttributeMapper extends AbstractIdentityProviderMapper {
     public static final String ATTRIBUTE = "attribute";

@@ -19,6 +19,7 @@ package org.keycloak.models.session;
 
 import org.keycloak.models.*;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -30,6 +31,7 @@ import java.util.List;
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("DisabledUserSessionPersisterProvider")
 @ProviderFactory(id = "disabled", providerClasses = UserSessionPersisterProvider.class)
 public class DisabledUserSessionPersisterProvider implements UserSessionPersisterProviderFactory, UserSessionPersisterProvider {
 

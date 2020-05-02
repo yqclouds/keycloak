@@ -18,7 +18,9 @@ package org.keycloak.crypto;
 
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
+@Component("RS384SignatureProviderFactory")
 @ProviderFactory(id = Algorithm.RS384, providerClasses = SignatureProvider.class)
 public class RS384SignatureProviderFactory implements SignatureProviderFactory {
 

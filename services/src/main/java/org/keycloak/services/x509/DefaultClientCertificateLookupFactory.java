@@ -20,6 +20,7 @@ package org.keycloak.services.x509;
 
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * The factory and the corresponding providers extract a client certificate
@@ -31,6 +32,7 @@ import org.keycloak.stereotype.ProviderFactory;
  * @version $Revision: 1 $
  * @since 4/4/2017
  */
+@Component("DefaultClientCertificateLookupFactory")
 @ProviderFactory(id = "default", providerClasses = X509ClientCertificateLookup.class)
 public class DefaultClientCertificateLookupFactory implements X509ClientCertificateLookupFactory {
     private final static String PROVIDER = "default";

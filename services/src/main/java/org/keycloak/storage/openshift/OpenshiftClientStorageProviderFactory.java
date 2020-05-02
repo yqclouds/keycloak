@@ -31,6 +31,7 @@ import org.keycloak.storage.CacheableStorageProviderModel;
 import org.keycloak.storage.client.ClientStorageProvider;
 import org.keycloak.storage.client.ClientStorageProviderFactory;
 import org.keycloak.storage.client.ClientStorageProviderModel;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -40,6 +41,7 @@ import static org.keycloak.storage.CacheableStorageProviderModel.CACHE_POLICY;
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
+@Component("OpenshiftClientStorageProviderFactory")
 @ProviderFactory(id = "openshift-oauth-client", providerClasses = ClientStorageProvider.class)
 public class OpenshiftClientStorageProviderFactory implements ClientStorageProviderFactory<OpenshiftClientStorageProvider>, EnvironmentDependentProviderFactory {
 

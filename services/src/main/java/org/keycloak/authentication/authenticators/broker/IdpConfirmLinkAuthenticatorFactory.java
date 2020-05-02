@@ -23,12 +23,14 @@ import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("IdpConfirmLinkAuthenticatorFactory")
 @ProviderFactory(id = "idp-confirm-link", providerClasses = IdpConfirmLinkAuthenticator.class)
 public class IdpConfirmLinkAuthenticatorFactory implements AuthenticatorFactory {
 

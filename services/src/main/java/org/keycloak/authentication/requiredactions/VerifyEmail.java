@@ -41,6 +41,7 @@ import org.keycloak.services.validation.Validation;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -53,6 +54,7 @@ import java.util.concurrent.TimeUnit;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("VerifyEmail")
 @ProviderFactory(id = "VERIFY_EMAIL", providerClasses = RequiredActionProvider.class)
 public class VerifyEmail implements RequiredActionProvider, RequiredActionFactory, DisplayTypeRequiredActionFactory {
     private static final Logger logger = Logger.getLogger(VerifyEmail.class);

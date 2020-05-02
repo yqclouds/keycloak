@@ -19,12 +19,14 @@ package org.keycloak.social.facebook;
 import org.keycloak.broker.oidc.mappers.AbstractJsonUserAttributeMapper;
 import org.keycloak.broker.provider.IdentityProvider;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * User attribute mapper.
  *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
+@Component("FacebookUserAttributeMapper")
 @ProviderFactory(id = "facebook-user-attribute-mapper", providerClasses = IdentityProvider.class)
 public class FacebookUserAttributeMapper extends AbstractJsonUserAttributeMapper {
 

@@ -5,12 +5,14 @@ import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
 
 import static org.keycloak.models.AuthenticationExecutionModel.Requirement;
 
+@Component("DockerAuthenticatorFactory")
 @ProviderFactory(id = "docker-http-basic-authenticator", providerClasses = Authenticator.class)
 public class DockerAuthenticatorFactory implements AuthenticatorFactory {
     private static final Requirement[] REQUIREMENT_CHOICES = {

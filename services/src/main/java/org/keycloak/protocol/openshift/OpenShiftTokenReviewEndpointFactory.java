@@ -22,11 +22,13 @@ import org.keycloak.protocol.oidc.ext.OIDCExtProvider;
 import org.keycloak.protocol.oidc.ext.OIDCExtProviderFactory;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("OpenShiftTokenReviewEndpointFactory")
 @ProviderFactory(id = "openshift-token-review", providerClasses = OIDCExtProvider.class)
 public class OpenShiftTokenReviewEndpointFactory implements OIDCExtProviderFactory, EnvironmentDependentProviderFactory {
 

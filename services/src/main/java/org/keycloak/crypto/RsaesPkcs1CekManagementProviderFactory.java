@@ -20,7 +20,9 @@ package org.keycloak.crypto;
 import org.keycloak.jose.jwe.JWEConstants;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
+@Component("RsaesPkcs1CekManagementProviderFactory")
 @ProviderFactory(id = JWEConstants.RSA1_5, providerClasses = CekManagementProvider.class)
 public class RsaesPkcs1CekManagementProviderFactory implements CekManagementProviderFactory {
 

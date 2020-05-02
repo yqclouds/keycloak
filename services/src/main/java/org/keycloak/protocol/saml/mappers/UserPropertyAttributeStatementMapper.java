@@ -23,6 +23,7 @@ import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("SAMLUserPropertyAttributeStatementMapper")
 @ProviderFactory(id = "saml-user-property-mapper", providerClasses = ProtocolMapper.class)
 public class UserPropertyAttributeStatementMapper extends AbstractSAMLProtocolMapper implements SAMLAttributeStatementMapper {
     public static final String PROVIDER_ID = "saml-user-property-mapper";

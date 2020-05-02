@@ -18,7 +18,9 @@ package org.keycloak.crypto;
 
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
+@Component("ES384ClientSignatureVerifierProviderFactory")
 @ProviderFactory(id = Algorithm.ES384, providerClasses = ClientSignatureVerifierProvider.class)
 public class ES384ClientSignatureVerifierProviderFactory implements ClientSignatureVerifierProviderFactory {
 

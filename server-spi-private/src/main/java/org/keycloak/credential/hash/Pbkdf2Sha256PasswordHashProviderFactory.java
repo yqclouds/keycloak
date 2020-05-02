@@ -2,12 +2,14 @@ package org.keycloak.credential.hash;
 
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * PBKDF2 Password Hash provider with HMAC using SHA256
  *
  * @author <a href"mailto:abkaplan07@gmail.com">Adam Kaplan</a>
  */
+@Component("Pbkdf2Sha256PasswordHashProviderFactory")
 @ProviderFactory(id = "pbkdf2-sha256", providerClasses = PasswordHashProvider.class)
 public class Pbkdf2Sha256PasswordHashProviderFactory implements PasswordHashProviderFactory {
 

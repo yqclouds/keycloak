@@ -25,6 +25,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ConfigurationValidationHelper;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -33,6 +34,7 @@ import static org.keycloak.provider.ProviderConfigProperty.STRING_TYPE;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component("JavaKeystoreKeyProviderFactory")
 @ProviderFactory(id = "java-keystore", providerClasses = KeyProvider.class)
 public class JavaKeystoreKeyProviderFactory extends AbstractRsaKeyProviderFactory {
     public static final String ID = "java-keystore";

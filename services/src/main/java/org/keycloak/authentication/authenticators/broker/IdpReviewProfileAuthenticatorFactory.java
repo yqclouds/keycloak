@@ -26,6 +26,7 @@ import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.idm.IdentityProviderRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +35,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("IdpReviewProfileAuthenticatorFactory")
 @ProviderFactory(id = "idp-review-profile", providerClasses = Authenticator.class)
 public class IdpReviewProfileAuthenticatorFactory implements AuthenticatorFactory {
 

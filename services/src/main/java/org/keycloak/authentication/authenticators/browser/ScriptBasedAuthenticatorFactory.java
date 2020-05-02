@@ -26,6 +26,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.List;
@@ -40,6 +41,7 @@ import static org.keycloak.provider.ProviderConfigProperty.STRING_TYPE;
  *
  * @author <a href="mailto:thomas.darimont@gmail.com">Thomas Darimont</a>
  */
+@Component("ScriptBasedAuthenticatorFactory")
 @ProviderFactory(id = "auth-script-based", providerClasses = Authenticator.class)
 public class ScriptBasedAuthenticatorFactory implements AuthenticatorFactory, EnvironmentDependentProviderFactory {
 

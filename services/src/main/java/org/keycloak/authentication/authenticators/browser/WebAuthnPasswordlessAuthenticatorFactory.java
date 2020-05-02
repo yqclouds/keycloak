@@ -22,10 +22,12 @@ import org.keycloak.authentication.Authenticator;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.credential.WebAuthnCredentialModel;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("WebAuthnPasswordlessAuthenticatorFactory")
 @ProviderFactory(id = "webauthn-authenticator-passwordless", providerClasses = Authenticator.class)
 public class WebAuthnPasswordlessAuthenticatorFactory extends WebAuthnAuthenticatorFactory {
 

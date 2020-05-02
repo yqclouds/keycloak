@@ -9,10 +9,12 @@ import org.keycloak.protocol.docker.DockerAuthV2Protocol;
 import org.keycloak.representations.docker.DockerAccess;
 import org.keycloak.representations.docker.DockerResponseToken;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * Populates token with requested scope.  If more scopes are present than what has been requested, they will be removed.
  */
+@Component("AllowAllDockerProtocolMapper")
 @ProviderFactory(id = "docker-v2-allow-all-mapper", providerClasses = ProtocolMapper.class)
 public class AllowAllDockerProtocolMapper extends DockerAuthV2ProtocolMapper implements DockerAuthV2AttributeMapper {
 

@@ -32,6 +32,7 @@ import org.keycloak.services.resources.LoginActionsService;
 import org.keycloak.services.resources.LoginActionsServiceChecks.IsActionRequired;
 import org.keycloak.sessions.CommonClientSessionModel.Action;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.Response;
 
@@ -40,6 +41,7 @@ import static org.keycloak.services.resources.LoginActionsService.RESET_CREDENTI
 /**
  * @author hmlnarik
  */
+@Component("ResetCredentialsActionTokenHandler")
 @ProviderFactory(id = "reset-credentials", providerClasses = ActionTokenHandler.class)
 public class ResetCredentialsActionTokenHandler extends AbstractActionTokenHandler<ResetCredentialsActionToken> {
     public ResetCredentialsActionTokenHandler() {

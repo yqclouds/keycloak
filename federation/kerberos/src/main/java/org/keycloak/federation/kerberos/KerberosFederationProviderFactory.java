@@ -35,6 +35,7 @@ import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.UserStorageProviderFactory;
 import org.keycloak.storage.UserStorageProviderModel;
 import org.keycloak.utils.CredentialHelper;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -44,6 +45,7 @@ import java.util.List;
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("KerberosFederationProviderFactory")
 @ProviderFactory(id = "kerberos", providerClasses = UserStorageProvider.class)
 public class KerberosFederationProviderFactory implements UserStorageProviderFactory<KerberosFederationProvider> {
 

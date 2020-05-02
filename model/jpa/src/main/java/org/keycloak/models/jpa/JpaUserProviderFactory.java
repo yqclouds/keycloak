@@ -22,6 +22,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserProvider;
 import org.keycloak.models.UserProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
 
@@ -29,6 +30,7 @@ import javax.persistence.EntityManager;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("JpaUserProviderFactory")
 @ProviderFactory(id = "jpa", providerClasses = UserProvider.class)
 public class JpaUserProviderFactory implements UserProviderFactory {
     @Override

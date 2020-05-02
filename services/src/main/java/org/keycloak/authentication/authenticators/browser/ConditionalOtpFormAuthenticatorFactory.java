@@ -26,6 +26,7 @@ import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.credential.OTPCredentialModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -38,6 +39,7 @@ import static org.keycloak.provider.ProviderConfigProperty.*;
  *
  * @author <a href="mailto:thomas.darimont@gmail.com">Thomas Darimont</a>
  */
+@Component("ConditionalOtpFormAuthenticatorFactory")
 @ProviderFactory(id = "auth-conditional-otp-form", providerClasses = Authenticator.class)
 public class ConditionalOtpFormAuthenticatorFactory implements AuthenticatorFactory {
 

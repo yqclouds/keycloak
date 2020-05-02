@@ -23,6 +23,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +32,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("BasicAuthAuthenticatorFactory")
 @ProviderFactory(id = "basic-auth", providerClasses = Authenticator.class)
 public class BasicAuthAuthenticatorFactory implements AuthenticatorFactory {
     public static final String PROVIDER_ID = "basic-auth";

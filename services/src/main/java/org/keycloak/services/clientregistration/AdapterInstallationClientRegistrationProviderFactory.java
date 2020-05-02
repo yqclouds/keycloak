@@ -19,10 +19,12 @@ package org.keycloak.services.clientregistration;
 
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component("AdapterInstallationClientRegistrationProviderFactory")
 @ProviderFactory(id = "install", providerClasses = ClientRegistrationProvider.class)
 public class AdapterInstallationClientRegistrationProviderFactory implements ClientRegistrationProviderFactory {
     @Override

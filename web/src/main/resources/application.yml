@@ -1,5 +1,13 @@
 debug: true
 
+minTimeBetweenRequests: 10
+shouldAttachRoute: true
+maxErrors: 20
+sessionsPerSegment: 64
+sessionsPreloadTimeoutInSeconds: 0
+cacheThemes: true
+lockWaitTimeout: 60
+max-detail-length: 50
 # used in FreeMarkerUtil
 frontendUrl:
 adminUrl:
@@ -9,3 +17,25 @@ sslCertChainPrefix:
 certificateChainLength: 1
 theme:
   cacheTemplates: true
+socket-timeout-millis: -1
+establish-connection-timeout-millis: 1
+max-pooled-per-route: 64
+connection-pool-size: 128
+connection-ttl-millis: -1
+max-connection-idle-time-millis: 900000
+disable-cookies: true
+client-keystore:
+client-keystore-password:
+client-key-password:
+proxy-mappings:
+disable-trust-manager:
+include-events:
+exclude-events:
+success-level: debug
+error-level: warn
+knownProtocols:
+dir:
+file:
+password:
+hostname-verification-policy:
+keyResolvers:

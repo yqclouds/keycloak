@@ -23,6 +23,7 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.services.clientregistration.policy.AbstractClientRegistrationPolicyFactory;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +31,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("ConsentRequiredClientRegistrationPolicyFactory")
 @ProviderFactory(id = "consent-required", providerClasses = ClientRegistrationPolicy.class)
 public class ConsentRequiredClientRegistrationPolicyFactory extends AbstractClientRegistrationPolicyFactory {
 

@@ -19,12 +19,14 @@ package org.keycloak.social.github;
 import org.keycloak.broker.oidc.mappers.AbstractJsonUserAttributeMapper;
 import org.keycloak.broker.provider.IdentityProviderMapper;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * User attribute mapper.
  *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
+@Component("GitHubUserAttributeMapper")
 @ProviderFactory(id = "github-user-attribute-mapper", providerClasses = IdentityProviderMapper.class)
 public class GitHubUserAttributeMapper extends AbstractJsonUserAttributeMapper {
 

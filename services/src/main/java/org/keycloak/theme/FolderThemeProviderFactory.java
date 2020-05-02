@@ -20,6 +20,7 @@ package org.keycloak.theme;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
@@ -27,6 +28,7 @@ import java.io.File;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component("FolderThemeProviderFactory")
 @ProviderFactory(id = "folder", providerClasses = ThemeProvider.class)
 public class FolderThemeProviderFactory implements ThemeProviderFactory {
 

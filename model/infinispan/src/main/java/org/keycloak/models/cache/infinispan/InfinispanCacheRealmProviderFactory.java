@@ -28,11 +28,13 @@ import org.keycloak.models.cache.CacheRealmProviderFactory;
 import org.keycloak.models.cache.infinispan.entities.Revisioned;
 import org.keycloak.models.cache.infinispan.events.InvalidationEvent;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component("InfinispanCacheRealmProviderFactory")
 @ProviderFactory(id = "default", providerClasses = CacheRealmProvider.class)
 public class InfinispanCacheRealmProviderFactory implements CacheRealmProviderFactory {
 

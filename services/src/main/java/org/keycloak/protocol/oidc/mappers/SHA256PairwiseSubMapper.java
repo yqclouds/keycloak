@@ -12,11 +12,14 @@ import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+
+@Component("OIDCSHA256PairwiseSubMapper")
 @ProviderFactory(id = "sha256", providerClasses = ProtocolMapper.class)
 public class SHA256PairwiseSubMapper extends AbstractPairwiseSubMapper {
     public static final String PROVIDER_ID = "sha256";

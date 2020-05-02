@@ -5,9 +5,11 @@ import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticationExecutionModel.Requirement;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component("ConditionalUserConfiguredAuthenticatorFactory")
 @ProviderFactory(id = "conditional-user-configured", providerClasses = Authenticator.class)
 public class ConditionalUserConfiguredAuthenticatorFactory implements ConditionalAuthenticatorFactory {
     public static final String PROVIDER_ID = "conditional-user-configured";

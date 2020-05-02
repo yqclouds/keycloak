@@ -26,12 +26,14 @@ import org.keycloak.models.sessions.infinispan.entities.ActionTokenReducedKey;
 import org.keycloak.models.sessions.infinispan.entities.ActionTokenValueEntity;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 
 /**
  * @author hmlnarik
  */
+@Component("InfinispanActionTokenStoreProviderFactory")
 @ProviderFactory(id = "infinispan", providerClasses = ActionTokenStoreProvider.class)
 public class InfinispanActionTokenStoreProviderFactory implements ActionTokenStoreProviderFactory {
     public static final String ACTION_TOKEN_EVENTS = "ACTION_TOKEN_EVENTS";

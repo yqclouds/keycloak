@@ -14,10 +14,12 @@ import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.scripting.EvaluatableScriptAdapter;
 import org.keycloak.scripting.ScriptingProvider;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
+@Component("JSPolicyProviderFactory")
 @ProviderFactory(id = "js", providerClasses = PolicyProvider.class)
 public class JSPolicyProviderFactory implements PolicyProviderFactory<JSPolicyRepresentation> {
 

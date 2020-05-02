@@ -18,6 +18,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 /**
  * @author <a href="mailto:frelibert@yahoo.com">Frederik Libert</a>
  */
+@Component("SAMLUserAttributeStatementMapper")
 @ProviderFactory(id = "saml-user-attributestatement-idp-mapper", providerClasses = IdentityProviderMapper.class)
 public class UserAttributeStatementMapper extends AbstractIdentityProviderMapper {
 

@@ -45,6 +45,7 @@ import org.keycloak.storage.ldap.mappers.msad.MSADUserAccountControlStorageMappe
 import org.keycloak.storage.user.ImportSynchronization;
 import org.keycloak.storage.user.SynchronizationResult;
 import org.keycloak.utils.CredentialHelper;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -58,6 +59,7 @@ import java.util.Map;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("LDAPStorageProviderFactory")
 @ProviderFactory(id = LDAPConstants.LDAP_PROVIDER, providerClasses = UserStorageProvider.class)
 public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LDAPStorageProvider>, ImportSynchronization {
 

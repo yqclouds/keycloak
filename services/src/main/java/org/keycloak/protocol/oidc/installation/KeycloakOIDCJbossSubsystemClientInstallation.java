@@ -23,6 +23,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.ClientInstallationProvider;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -33,6 +34,7 @@ import java.util.Map;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("KeycloakOIDCJbossSubsystemClientInstallation")
 @ProviderFactory(id = "keycloak-oidc-jboss-subsystem", providerClasses = ClientInstallationProvider.class)
 public class KeycloakOIDCJbossSubsystemClientInstallation implements ClientInstallationProvider {
     @Override

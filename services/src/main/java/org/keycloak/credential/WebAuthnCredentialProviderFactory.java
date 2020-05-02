@@ -21,7 +21,9 @@ import org.keycloak.common.Profile;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
+@Component("WebAuthnCredentialProviderFactory")
 @ProviderFactory(id = "keycloak-webauthn", providerClasses = CredentialProvider.class)
 public class WebAuthnCredentialProviderFactory implements CredentialProviderFactory<WebAuthnCredentialProvider>, EnvironmentDependentProviderFactory {
 

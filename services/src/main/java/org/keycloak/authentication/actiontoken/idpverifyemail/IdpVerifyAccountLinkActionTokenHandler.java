@@ -35,6 +35,7 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -46,6 +47,7 @@ import java.util.Collections;
  *
  * @author hmlnarik
  */
+@Component("IdpVerifyAccountLinkActionTokenHandler")
 @ProviderFactory(id = "idp-verify-account-via-email", providerClasses = ActionTokenHandler.class)
 public class IdpVerifyAccountLinkActionTokenHandler extends AbstractActionTokenHandler<IdpVerifyAccountLinkActionToken> {
 

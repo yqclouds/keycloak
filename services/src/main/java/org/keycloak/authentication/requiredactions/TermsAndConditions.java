@@ -25,6 +25,7 @@ import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.Response;
 import java.util.Arrays;
@@ -33,6 +34,7 @@ import java.util.Arrays;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("TermsAndConditions")
 @ProviderFactory(id = "terms_and_conditions", providerClasses = RequiredActionProvider.class)
 public class TermsAndConditions implements RequiredActionProvider, RequiredActionFactory, DisplayTypeRequiredActionFactory {
     public static final String PROVIDER_ID = "terms_and_conditions";

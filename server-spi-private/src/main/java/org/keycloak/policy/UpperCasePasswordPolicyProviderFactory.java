@@ -19,10 +19,12 @@ package org.keycloak.policy;
 
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component("UpperCasePasswordPolicyProviderFactory")
 @ProviderFactory(id = "upperCase", providerClasses = PasswordPolicyProvider.class)
 public class UpperCasePasswordPolicyProviderFactory implements PasswordPolicyProviderFactory {
 

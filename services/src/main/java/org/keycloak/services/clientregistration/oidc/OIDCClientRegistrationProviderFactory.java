@@ -21,10 +21,12 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.services.clientregistration.ClientRegistrationProvider;
 import org.keycloak.services.clientregistration.ClientRegistrationProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component("OIDCClientRegistrationProviderFactory")
 @ProviderFactory(id = "openid-connect", providerClasses = ClientRegistrationProvider.class)
 public class OIDCClientRegistrationProviderFactory implements ClientRegistrationProviderFactory {
 

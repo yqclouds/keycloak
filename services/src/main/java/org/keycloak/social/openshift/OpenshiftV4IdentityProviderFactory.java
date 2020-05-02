@@ -6,12 +6,14 @@ import org.keycloak.broker.social.SocialIdentityProviderFactory;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * OpenShift 4 Identity Provider factory class.
  *
  * @author David Festal and Sebastian Łaskawiec
  */
+@Component("OpenshiftV4IdentityProviderFactory")
 @ProviderFactory(id = "openshift-v4", providerClasses = IdentityProvider.class)
 public class OpenshiftV4IdentityProviderFactory extends AbstractIdentityProviderFactory<OpenshiftV4IdentityProvider> implements SocialIdentityProviderFactory<OpenshiftV4IdentityProvider> {
 

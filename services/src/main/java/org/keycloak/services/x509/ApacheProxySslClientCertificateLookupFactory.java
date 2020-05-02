@@ -20,12 +20,14 @@ package org.keycloak.services.x509;
 
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:brat000012001@gmail.com">Peter Nalyvayko</a>
  * @version $Revision: 1 $
  * @since 4/4/2017
  */
+@Component("ApacheProxySslClientCertificateLookupFactory")
 @ProviderFactory(id = "apache", providerClasses = X509ClientCertificateLookup.class)
 public class ApacheProxySslClientCertificateLookupFactory extends AbstractClientCertificateFromHttpHeadersLookupFactory {
 

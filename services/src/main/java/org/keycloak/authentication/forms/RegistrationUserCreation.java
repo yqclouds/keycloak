@@ -36,6 +36,7 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.AttributeFormDataProcessor;
 import org.keycloak.services.validation.Validation;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.ArrayList;
@@ -45,6 +46,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("RegistrationUserCreation")
 @ProviderFactory(id = "registration-user-creation", providerClasses = FormAction.class)
 public class RegistrationUserCreation implements FormAction, FormActionFactory {
 

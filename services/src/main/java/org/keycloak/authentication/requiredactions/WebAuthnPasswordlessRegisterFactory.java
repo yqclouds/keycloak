@@ -22,10 +22,12 @@ import com.webauthn4j.validator.attestation.trustworthiness.certpath.CertPathTru
 import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("WebAuthnPasswordlessRegisterFactory")
 @ProviderFactory(id = "webauthn-register-passwordless", providerClasses = RequiredActionProvider.class)
 public class WebAuthnPasswordlessRegisterFactory extends WebAuthnRegisterFactory {
 

@@ -41,6 +41,7 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.services.validation.Validation;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.util.JsonSerialization;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.InputStream;
@@ -50,6 +51,7 @@ import java.util.*;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("RegistrationRecaptcha")
 @ProviderFactory(id = "registration-recaptcha-action", providerClasses = FormAction.class)
 public class RegistrationRecaptcha implements FormAction, FormActionFactory, ConfiguredProvider {
     public static final String G_RECAPTCHA_RESPONSE = "g-recaptcha-response";

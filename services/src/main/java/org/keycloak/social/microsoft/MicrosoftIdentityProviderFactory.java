@@ -24,10 +24,12 @@ import org.keycloak.broker.social.SocialIdentityProviderFactory;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author Vlastimil Elias (velias at redhat dot com)
  */
+@Component("MicrosoftIdentityProviderFactory")
 @ProviderFactory(id = "microsoft", providerClasses = SocialIdentityProvider.class)
 public class MicrosoftIdentityProviderFactory extends AbstractIdentityProviderFactory<MicrosoftIdentityProvider> implements SocialIdentityProviderFactory<MicrosoftIdentityProvider> {
 

@@ -38,6 +38,7 @@ import org.keycloak.sessions.AuthenticationSessionProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.Map;
@@ -47,6 +48,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("InfinispanAuthenticationSessionProviderFactory")
 @ProviderFactory(id = "infinispan", providerClasses = AuthenticationSessionProvider.class)
 @ConditionalOnBean(value = {KeycloakSessionFactory.class})
 public class InfinispanAuthenticationSessionProviderFactory implements AuthenticationSessionProviderFactory {

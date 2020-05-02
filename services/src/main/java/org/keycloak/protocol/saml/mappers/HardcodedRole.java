@@ -22,6 +22,7 @@ import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.saml.SamlProtocol;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,6 +35,7 @@ import java.util.Map;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("SAMLHardcodedRole")
 @ProviderFactory(id = "saml-hardcode-role-mapper", providerClasses = ProtocolMapper.class)
 public class HardcodedRole extends AbstractSAMLProtocolMapper {
     public static final String PROVIDER_ID = "saml-hardcode-role-mapper";

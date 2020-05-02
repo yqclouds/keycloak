@@ -34,6 +34,7 @@ import org.keycloak.provider.ProviderEvent;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
@@ -44,6 +45,7 @@ import java.util.concurrent.FutureTask;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("InfinispanPublicKeyStorageProviderFactory")
 @ProviderFactory(id = "infinispan", providerClasses = PublicKeyStorageProvider.class)
 public class InfinispanPublicKeyStorageProviderFactory implements PublicKeyStorageProviderFactory {
 

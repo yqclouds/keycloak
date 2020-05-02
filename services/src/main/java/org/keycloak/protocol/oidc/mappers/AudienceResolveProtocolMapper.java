@@ -28,6 +28,7 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.utils.RoleResolveUtil;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +41,7 @@ import java.util.Map;
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("OIDCAudienceResolveProtocolMapper")
 @ProviderFactory(id = "oidc-audience-resolve-mapper", providerClasses = ProtocolMapper.class)
 public class AudienceResolveProtocolMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper {
 

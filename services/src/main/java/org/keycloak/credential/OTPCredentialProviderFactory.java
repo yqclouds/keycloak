@@ -18,11 +18,13 @@ package org.keycloak.credential;
 
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("OTPCredentialProviderFactory")
 @ProviderFactory(id = "keycloak-otp", providerClasses = CredentialProvider.class)
 public class OTPCredentialProviderFactory implements CredentialProviderFactory<OTPCredentialProvider> {
     public static final String PROVIDER_ID = "keycloak-otp";

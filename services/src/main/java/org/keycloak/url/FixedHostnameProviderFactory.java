@@ -6,8 +6,10 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.urls.HostnameProvider;
 import org.keycloak.urls.HostnameProviderFactory;
+import org.springframework.stereotype.Component;
 
 @Deprecated
+@Component("FixedHostnameProviderFactory")
 @ProviderFactory(id = "fixed", providerClasses = HostnameProvider.class)
 public class FixedHostnameProviderFactory implements HostnameProviderFactory {
 

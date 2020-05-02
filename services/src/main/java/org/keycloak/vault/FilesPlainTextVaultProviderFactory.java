@@ -4,6 +4,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.lang.invoke.MethodHandles;
@@ -16,6 +17,7 @@ import java.nio.file.Paths;
  *
  * @author Sebastian Łaskawiec
  */
+@Component("FilesPlainTextVaultProviderFactory")
 @ProviderFactory(id = "files-plaintext", providerClasses = VaultProvider.class)
 public class FilesPlainTextVaultProviderFactory extends AbstractVaultProviderFactory {
 

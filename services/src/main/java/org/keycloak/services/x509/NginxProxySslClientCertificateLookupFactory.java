@@ -2,6 +2,7 @@ package org.keycloak.services.x509;
 
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * The factory and the corresponding providers extract a client certificate
@@ -11,6 +12,7 @@ import org.keycloak.stereotype.ProviderFactory;
  * @version $Revision: 1 $
  * @since 10/09/2018
  */
+@Component("NginxProxySslClientCertificateLookupFactory")
 @ProviderFactory(id = "nginx", providerClasses = X509ClientCertificateLookup.class)
 public class NginxProxySslClientCertificateLookupFactory extends AbstractClientCertificateFromHttpHeadersLookupFactory {
 

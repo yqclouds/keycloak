@@ -19,10 +19,12 @@ package org.keycloak.services.clientregistration;
 
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component("DefaultClientRegistrationProviderFactory")
 @ProviderFactory(id = "default", providerClasses = ClientRegistrationProvider.class)
 public class DefaultClientRegistrationProviderFactory implements ClientRegistrationProviderFactory {
 

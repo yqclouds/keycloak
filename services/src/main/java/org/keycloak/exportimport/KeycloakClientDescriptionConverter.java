@@ -21,12 +21,14 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.util.JsonSerialization;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component("KeycloakClientDescriptionConverter")
 @ProviderFactory(id = "keycloak", providerClasses = ClientDescriptionConverter.class)
 public class KeycloakClientDescriptionConverter implements ClientDescriptionConverterFactory, ClientDescriptionConverter {
 

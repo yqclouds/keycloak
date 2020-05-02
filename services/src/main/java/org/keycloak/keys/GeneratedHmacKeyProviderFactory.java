@@ -26,12 +26,14 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component("GeneratedHmacKeyProviderFactory")
 @ProviderFactory(id = "hmac-generated", providerClasses = KeyProvider.class)
 public class GeneratedHmacKeyProviderFactory extends AbstractGeneratedSecretKeyProviderFactory<GeneratedHmacKeyProvider> {
 

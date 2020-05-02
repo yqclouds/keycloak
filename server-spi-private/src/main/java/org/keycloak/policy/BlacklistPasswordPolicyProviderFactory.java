@@ -23,6 +23,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -62,6 +63,7 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @author <a href="mailto:thomas.darimont@gmail.com">Thomas Darimont</a>
  */
+@Component("BlacklistPasswordPolicyProviderFactory")
 @ProviderFactory(id = "passwordBlacklist", providerClasses = PasswordPolicyProvider.class)
 public class BlacklistPasswordPolicyProviderFactory implements PasswordPolicyProviderFactory {
 

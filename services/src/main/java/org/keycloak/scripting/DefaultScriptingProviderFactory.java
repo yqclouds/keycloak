@@ -18,12 +18,14 @@ package org.keycloak.scripting;
 
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.script.ScriptEngineManager;
 
 /**
  * @author <a href="mailto:thomas.darimont@gmail.com">Thomas Darimont</a>
  */
+@Component("DefaultScriptingProviderFactory")
 @ProviderFactory(id = "script-based-auth", providerClasses = ScriptingProvider.class)
 public class DefaultScriptingProviderFactory implements ScriptingProviderFactory {
 

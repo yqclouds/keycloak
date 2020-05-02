@@ -26,6 +26,7 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.AddressClaimSet;
 import org.keycloak.representations.IDToken;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,6 +37,7 @@ import java.util.Map;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("OIDCAddressMapper")
 @ProviderFactory(id = "oidc-address-mapper", providerClasses = ProtocolMapper.class)
 public class AddressMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
 

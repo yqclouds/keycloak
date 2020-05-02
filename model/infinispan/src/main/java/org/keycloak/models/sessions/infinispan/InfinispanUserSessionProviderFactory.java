@@ -47,12 +47,14 @@ import org.keycloak.models.utils.ResetTimeOffsetEvent;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.Serializable;
 import java.util.Set;
 import java.util.UUID;
 
+@Component("InfinispanUserSessionProviderFactory")
 @ProviderFactory(id = "infinispan", providerClasses = UserSessionProvider.class)
 public class InfinispanUserSessionProviderFactory implements UserSessionProviderFactory {
 

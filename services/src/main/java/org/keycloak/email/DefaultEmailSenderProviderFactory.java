@@ -19,10 +19,12 @@ package org.keycloak.email;
 
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component("DefaultEmailSenderProviderFactory")
 @ProviderFactory(id = "default", providerClasses = EmailSenderProvider.class)
 public class DefaultEmailSenderProviderFactory implements EmailSenderProviderFactory {
 

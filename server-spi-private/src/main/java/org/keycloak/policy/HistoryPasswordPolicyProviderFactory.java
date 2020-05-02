@@ -20,10 +20,12 @@ package org.keycloak.policy;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.PasswordPolicy;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component("HistoryPasswordPolicyProviderFactory")
 @ProviderFactory(id = PasswordPolicy.PASSWORD_HISTORY_ID, providerClasses = PasswordPolicyProvider.class)
 public class HistoryPasswordPolicyProviderFactory implements PasswordPolicyProviderFactory {
 

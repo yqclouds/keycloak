@@ -30,7 +30,9 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.truststore.TruststoreProvider;
+import org.springframework.stereotype.Component;
 
+@Component("WebAuthnRegisterFactory")
 @ProviderFactory(id = "webauthn-register", providerClasses = RequiredActionProvider.class)
 public class WebAuthnRegisterFactory implements RequiredActionFactory, DisplayTypeRequiredActionFactory, EnvironmentDependentProviderFactory {
 

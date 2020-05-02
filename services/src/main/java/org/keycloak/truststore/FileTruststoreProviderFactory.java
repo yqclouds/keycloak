@@ -21,6 +21,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.security.auth.x500.X500Principal;
@@ -39,6 +40,7 @@ import java.util.Map;
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
  */
+@Component("FileTruststoreProviderFactory")
 @ProviderFactory(id = "file", providerClasses = TruststoreProvider.class)
 public class FileTruststoreProviderFactory implements TruststoreProviderFactory {
 

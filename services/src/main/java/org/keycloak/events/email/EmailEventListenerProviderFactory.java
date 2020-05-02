@@ -24,6 +24,7 @@ import org.keycloak.events.EventType;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.Collections;
@@ -33,6 +34,7 @@ import java.util.Set;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component("EmailEventListenerProviderFactory")
 @ProviderFactory(id = "email", providerClasses = EventListenerProvider.class)
 public class EmailEventListenerProviderFactory implements EventListenerProviderFactory {
     private static final Set<EventType> SUPPORTED_EVENTS = new HashSet<>();

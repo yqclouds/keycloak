@@ -22,12 +22,14 @@ import org.keycloak.exportimport.ExportProvider;
 import org.keycloak.exportimport.ExportProviderFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("DirExportProviderFactory")
 @ProviderFactory(id = "dir", providerClasses = ExportProvider.class)
 public class DirExportProviderFactory implements ExportProviderFactory {
     public static final String PROVIDER_ID = "dir";

@@ -21,6 +21,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
 import javax.naming.InitialContext;
@@ -34,6 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("DefaultExecutorsProviderFactory")
 @ProviderFactory(id = "default", providerClasses = ExecutorsProvider.class)
 public class DefaultExecutorsProviderFactory implements ExecutorsProviderFactory {
 

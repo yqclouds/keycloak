@@ -6,10 +6,12 @@ import org.keycloak.models.AuthenticationExecutionModel.Requirement;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
 
+@Component("ConditionalRoleAuthenticatorFactory")
 @ProviderFactory(id = "conditional-user-role", providerClasses = Authenticator.class)
 public class ConditionalRoleAuthenticatorFactory implements ConditionalAuthenticatorFactory {
     public static final String PROVIDER_ID = "conditional-user-role";

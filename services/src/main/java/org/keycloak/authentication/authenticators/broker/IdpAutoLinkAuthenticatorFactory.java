@@ -23,12 +23,14 @@ import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
  * @author <a href="mailto:Ryan.Slominski@gmail.com">Ryan Slominski</a>
  */
+@Component("IdpAutoLinkAuthenticatorFactory")
 @ProviderFactory(id = "idp-auto-link", providerClasses = Authenticator.class)
 public class IdpAutoLinkAuthenticatorFactory implements AuthenticatorFactory {
     public static final String PROVIDER_ID = "idp-auto-link";

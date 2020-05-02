@@ -20,7 +20,9 @@ package org.keycloak.crypto;
 import org.keycloak.jose.jwe.JWEConstants;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
+@Component("Aes128CbcHmacSha256ContentEncryptionProviderFactory")
 @ProviderFactory(id = JWEConstants.A128CBC_HS256, providerClasses = ContentEncryptionProvider.class)
 public class Aes128CbcHmacSha256ContentEncryptionProviderFactory implements ContentEncryptionProviderFactory {
     public static final String ID = JWEConstants.A128CBC_HS256;

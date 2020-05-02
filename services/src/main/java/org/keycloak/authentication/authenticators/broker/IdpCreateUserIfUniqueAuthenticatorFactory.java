@@ -23,6 +23,7 @@ import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("IdpCreateUserIfUniqueAuthenticatorFactory")
 @ProviderFactory(id = "idp-create-user-if-unique", providerClasses = Authenticator.class)
 public class IdpCreateUserIfUniqueAuthenticatorFactory implements AuthenticatorFactory {
 

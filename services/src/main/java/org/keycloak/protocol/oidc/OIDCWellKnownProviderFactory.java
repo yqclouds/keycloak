@@ -21,10 +21,12 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.wellknown.WellKnownProvider;
 import org.keycloak.wellknown.WellKnownProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component("OIDCWellKnownProviderFactory")
 @ProviderFactory(id = "openid-configuration", providerClasses = WellKnownProvider.class)
 public class OIDCWellKnownProviderFactory implements WellKnownProviderFactory {
 

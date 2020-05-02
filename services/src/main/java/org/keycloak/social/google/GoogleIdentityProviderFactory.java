@@ -23,10 +23,12 @@ import org.keycloak.broker.social.SocialIdentityProviderFactory;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author Pedro Igor
  */
+@Component("GoogleIdentityProviderFactory")
 @ProviderFactory(id = "google", providerClasses = {IdentityProvider.class, SocialIdentityProvider.class})
 public class GoogleIdentityProviderFactory extends AbstractIdentityProviderFactory<GoogleIdentityProvider> implements SocialIdentityProviderFactory<GoogleIdentityProvider> {
 

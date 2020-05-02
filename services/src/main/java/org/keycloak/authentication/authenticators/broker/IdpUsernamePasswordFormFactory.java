@@ -22,10 +22,12 @@ import org.keycloak.authentication.authenticators.browser.UsernamePasswordForm;
 import org.keycloak.authentication.authenticators.browser.UsernamePasswordFormFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("IdpUsernamePasswordFormFactory")
 @ProviderFactory(id = "idp-username-password-form", providerClasses = Authenticator.class)
 public class IdpUsernamePasswordFormFactory extends UsernamePasswordFormFactory {
     public static final String PROVIDER_ID = "idp-username-password-form";

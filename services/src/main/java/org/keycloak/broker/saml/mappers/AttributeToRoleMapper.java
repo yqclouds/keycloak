@@ -27,6 +27,7 @@ import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +37,7 @@ import java.util.Optional;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("SAMLAttributeToRoleMapper")
 @ProviderFactory(id = "saml-role-idp-mapper", providerClasses = IdentityProviderMapper.class)
 public class AttributeToRoleMapper extends AbstractIdentityProviderMapper {
 

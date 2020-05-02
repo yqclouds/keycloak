@@ -21,6 +21,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -29,6 +30,7 @@ import javax.annotation.PreDestroy;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("DefaultBruteForceProtectorFactory")
 @ProviderFactory(id = "default-brute-force-detector", providerClasses = BruteForceProtector.class)
 public class DefaultBruteForceProtectorFactory implements BruteForceProtectorFactory {
     DefaultBruteForceProtector protector;

@@ -23,6 +23,7 @@ import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.idm.authorization.ResourcePermissionRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +31,7 @@ import java.util.Map;
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
+@Component("ResourcePolicyProviderFactory")
 @ProviderFactory(id = "resource", providerClasses = PolicyProvider.class)
 public class ResourcePolicyProviderFactory implements PolicyProviderFactory<ResourcePermissionRepresentation> {
 

@@ -24,12 +24,14 @@ import org.keycloak.models.AuthenticationExecutionModel.Requirement;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
+@Component("HttpBasicAuthenticatorFactory")
 @ProviderFactory(id = "http-basic-authenticator", providerClasses = Authenticator.class)
 public class HttpBasicAuthenticatorFactory implements AuthenticatorFactory {
 

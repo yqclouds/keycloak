@@ -33,6 +33,7 @@ import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.representations.idm.authorization.UserPolicyRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.util.JsonSerialization;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.*;
@@ -41,6 +42,7 @@ import java.util.stream.Collectors;
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
+@Component("UserPolicyProviderFactory")
 @ProviderFactory(id = "user", providerClasses = PolicyProvider.class)
 public class UserPolicyProviderFactory implements PolicyProviderFactory<UserPolicyRepresentation> {
 

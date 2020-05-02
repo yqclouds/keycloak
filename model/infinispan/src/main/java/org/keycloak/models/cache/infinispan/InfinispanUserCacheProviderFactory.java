@@ -28,10 +28,12 @@ import org.keycloak.models.cache.UserCacheProviderFactory;
 import org.keycloak.models.cache.infinispan.entities.Revisioned;
 import org.keycloak.models.cache.infinispan.events.InvalidationEvent;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component("InfinispanUserCacheProviderFactory")
 @ProviderFactory(id = "default", providerClasses = UserCache.class)
 public class InfinispanUserCacheProviderFactory implements UserCacheProviderFactory {
 

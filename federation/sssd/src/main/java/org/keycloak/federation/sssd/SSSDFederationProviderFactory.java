@@ -27,11 +27,13 @@ import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.UserStorageProviderFactory;
 import org.keycloak.storage.UserStorageProviderModel;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:bruno@abstractj.org">Bruno Oliveira</a>
  * @version $Revision: 1 $
  */
+@Component("SSSDFederationProviderFactory")
 @ProviderFactory(id = "sssd", providerClasses = UserStorageProvider.class)
 public class SSSDFederationProviderFactory implements UserStorageProviderFactory<SSSDFederationProvider>, EnvironmentDependentProviderFactory {
 

@@ -18,11 +18,13 @@ import org.keycloak.representations.idm.authorization.ClientPolicyRepresentation
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.util.JsonSerialization;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Component("ClientPolicyProviderFactory")
 @ProviderFactory(id = "client", providerClasses = PolicyProvider.class)
 public class ClientPolicyProviderFactory implements PolicyProviderFactory<ClientPolicyRepresentation> {
 

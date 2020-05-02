@@ -8,6 +8,7 @@ import org.keycloak.protocol.ClientInstallationProvider;
 import org.keycloak.protocol.docker.DockerAuthV2Protocol;
 import org.keycloak.protocol.docker.installation.compose.DockerComposeZipContent;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.Response;
 import java.io.BufferedReader;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+@Component("DockerComposeYamlInstallationProvider")
 @ProviderFactory(id = "docker-v2-compose-yaml", providerClasses = ClientInstallationProvider.class)
 public class DockerComposeYamlInstallationProvider implements ClientInstallationProvider {
     public static final String ROOT_DIR = "keycloak-docker-compose-yaml/";

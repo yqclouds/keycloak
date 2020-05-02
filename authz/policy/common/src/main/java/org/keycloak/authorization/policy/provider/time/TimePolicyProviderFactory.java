@@ -10,6 +10,7 @@ import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.representations.idm.authorization.TimePolicyRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import java.util.Map;
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
+@Component("TimePolicyProviderFactory")
 @ProviderFactory(id = "time", providerClasses = PolicyProvider.class)
 public class TimePolicyProviderFactory implements PolicyProviderFactory<TimePolicyRepresentation> {
 

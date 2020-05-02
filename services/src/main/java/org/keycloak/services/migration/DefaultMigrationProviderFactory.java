@@ -21,10 +21,12 @@ import org.keycloak.migration.MigrationProvider;
 import org.keycloak.migration.MigrationProviderFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("DefaultMigrationProviderFactory")
 @ProviderFactory(id = "default", providerClasses = MigrationProvider.class)
 public class DefaultMigrationProviderFactory implements MigrationProviderFactory {
     @Override

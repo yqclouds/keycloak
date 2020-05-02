@@ -33,6 +33,7 @@ import org.keycloak.saml.processing.core.saml.v2.constants.X500SAMLProfileConsta
 import org.keycloak.saml.validators.DestinationValidator;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
@@ -45,6 +46,7 @@ import java.util.Map;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("SamlProtocolFactory")
 @ProviderFactory(id = "saml", providerClasses = LoginProtocol.class)
 public class SamlProtocolFactory extends AbstractLoginProtocolFactory {
 

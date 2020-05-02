@@ -18,6 +18,7 @@ package org.keycloak.transaction;
 
 import org.jboss.logging.Logger;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.naming.InitialContext;
@@ -28,6 +29,7 @@ import javax.transaction.TransactionManager;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("JBossJtaTransactionManagerLookup")
 @ProviderFactory(id = "jboss", providerClasses = JtaTransactionManagerLookup.class)
 public class JBossJtaTransactionManagerLookup implements JtaTransactionManagerLookup {
     private static final Logger logger = Logger.getLogger(JBossJtaTransactionManagerLookup.class);

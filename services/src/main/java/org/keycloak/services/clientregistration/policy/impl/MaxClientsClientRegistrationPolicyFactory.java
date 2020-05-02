@@ -26,6 +26,7 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.services.clientregistration.policy.AbstractClientRegistrationPolicyFactory;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -33,6 +34,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("MaxClientsClientRegistrationPolicyFactory")
 @ProviderFactory(id = "max-clients", providerClasses = ClientRegistrationPolicy.class)
 public class MaxClientsClientRegistrationPolicyFactory extends AbstractClientRegistrationPolicyFactory {
 

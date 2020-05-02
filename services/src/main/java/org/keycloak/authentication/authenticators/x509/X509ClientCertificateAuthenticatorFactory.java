@@ -22,11 +22,13 @@ import org.keycloak.authentication.Authenticator;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:pnalyvayko@agi.com">Peter Nalyvayko</a>
  * @version $Revision: 1 $
  */
+@Component("X509ClientCertificateAuthenticatorFactory")
 @ProviderFactory(id = "auth-x509-client-username-form", providerClasses = Authenticator.class)
 public class X509ClientCertificateAuthenticatorFactory extends AbstractX509ClientCertificateAuthenticatorFactory {
 

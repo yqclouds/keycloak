@@ -28,6 +28,7 @@ import org.keycloak.models.cache.authorization.CachedStoreProviderFactory;
 import org.keycloak.models.cache.infinispan.entities.Revisioned;
 import org.keycloak.models.cache.infinispan.events.InvalidationEvent;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import static org.keycloak.models.cache.infinispan.InfinispanCacheRealmProviderFactory.REALM_CLEAR_CACHE_EVENTS;
 
@@ -35,6 +36,7 @@ import static org.keycloak.models.cache.infinispan.InfinispanCacheRealmProviderF
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component("InfinispanCacheStoreFactoryProviderFactory")
 @ProviderFactory(id = "default", providerClasses = CachedStoreFactoryProvider.class)
 public class InfinispanCacheStoreFactoryProviderFactory implements CachedStoreProviderFactory {
 

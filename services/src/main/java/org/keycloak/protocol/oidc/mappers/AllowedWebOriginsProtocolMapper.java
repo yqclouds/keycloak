@@ -24,6 +24,7 @@ import org.keycloak.protocol.oidc.utils.WebOriginsUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +36,7 @@ import java.util.Set;
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("OIDCAllowedWebOriginsProtocolMapper")
 @ProviderFactory(id = "oidc-allowed-origins-mapper", providerClasses = ProtocolMapper.class)
 public class AllowedWebOriginsProtocolMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper {
 

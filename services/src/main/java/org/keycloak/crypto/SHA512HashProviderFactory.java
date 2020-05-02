@@ -19,10 +19,12 @@ package org.keycloak.crypto;
 
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("SHA512HashProviderFactory")
 @ProviderFactory(id = JavaAlgorithm.SHA512, providerClasses = HashProvider.class)
 public class SHA512HashProviderFactory implements HashProviderFactory {
 

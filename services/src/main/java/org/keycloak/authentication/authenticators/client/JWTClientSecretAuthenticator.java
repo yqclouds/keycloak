@@ -34,6 +34,7 @@ import org.keycloak.representations.JsonWebToken;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.Urls;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -48,6 +49,7 @@ import java.util.*;
  * <p>
  * TODO: Try to create abstract superclass to be shared with {@link JWTClientAuthenticator}. Most of the code can be reused
  */
+@Component("JWTClientSecretAuthenticator")
 @ProviderFactory(id = "client-secret-jwt", providerClasses = ClientAuthenticator.class)
 public class JWTClientSecretAuthenticator extends AbstractClientAuthenticator {
 

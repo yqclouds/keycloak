@@ -29,6 +29,7 @@ import org.keycloak.models.UserModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.saml.common.util.StringUtil;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,6 +42,7 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("OIDCUserAttributeMapper")
 @ProviderFactory(id = "oidc-user-attribute-idp-mapper", providerClasses = IdentityProviderMapper.class)
 public class UserAttributeMapper extends AbstractClaimMapper {
 

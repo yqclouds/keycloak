@@ -19,10 +19,12 @@ package org.keycloak.credential.hash;
 
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:me@tsudot.com">Kunal Kerkar</a>
  */
+@Component("Pbkdf2PasswordHashProviderFactory")
 @ProviderFactory(id = "pbkdf2", providerClasses = PasswordHashProvider.class)
 public class Pbkdf2PasswordHashProviderFactory implements PasswordHashProviderFactory {
 

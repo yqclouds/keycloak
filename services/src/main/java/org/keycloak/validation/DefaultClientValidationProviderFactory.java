@@ -18,7 +18,9 @@ package org.keycloak.validation;
 
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
+@Component("DefaultClientValidationProviderFactory")
 @ProviderFactory(id = "default", providerClasses = ClientValidationProvider.class)
 public class DefaultClientValidationProviderFactory implements ClientValidationProviderFactory {
 

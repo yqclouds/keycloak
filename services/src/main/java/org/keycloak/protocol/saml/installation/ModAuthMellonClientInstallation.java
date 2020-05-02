@@ -25,6 +25,7 @@ import org.keycloak.protocol.saml.SamlClient;
 import org.keycloak.protocol.saml.SamlProtocol;
 import org.keycloak.protocol.saml.SamlService;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
@@ -37,6 +38,7 @@ import java.util.zip.ZipOutputStream;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("ModAuthMellonClientInstallation")
 @ProviderFactory(id = "mod-auth-mellon", providerClasses = ClientInstallationProvider.class)
 public class ModAuthMellonClientInstallation implements ClientInstallationProvider {
     @Override

@@ -26,6 +26,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -34,6 +35,7 @@ import static org.keycloak.provider.ProviderConfigProperty.LIST_TYPE;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("GeneratedAesKeyProviderFactory")
 @ProviderFactory(id = "aes-generated", providerClasses = KeyProvider.class)
 public class GeneratedAesKeyProviderFactory extends AbstractGeneratedSecretKeyProviderFactory<AbstractGeneratedSecretKeyProvider> {
 

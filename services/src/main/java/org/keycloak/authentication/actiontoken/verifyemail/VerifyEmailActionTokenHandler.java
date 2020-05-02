@@ -38,6 +38,7 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -49,6 +50,7 @@ import java.util.Objects;
  *
  * @author hmlnarik
  */
+@Component("VerifyEmailActionTokenHandler")
 @ProviderFactory(id = "verify-email", providerClasses = ActionTokenHandler.class)
 public class VerifyEmailActionTokenHandler extends AbstractActionTokenHandler<VerifyEmailActionToken> {
     public VerifyEmailActionTokenHandler() {

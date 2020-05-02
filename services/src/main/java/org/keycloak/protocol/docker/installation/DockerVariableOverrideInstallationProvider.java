@@ -6,11 +6,13 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.ClientInstallationProvider;
 import org.keycloak.protocol.docker.DockerAuthV2Protocol;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 
+@Component("DockerVariableOverrideInstallationProvider")
 @ProviderFactory(id = "docker-v2-variable-override", providerClasses = ClientInstallationProvider.class)
 public class DockerVariableOverrideInstallationProvider implements ClientInstallationProvider {
 

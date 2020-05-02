@@ -23,10 +23,12 @@ import org.keycloak.models.PasswordPolicy;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component("HashAlgorithmPasswordPolicyProviderFactory")
 @ProviderFactory(id = PasswordPolicy.HASH_ALGORITHM_ID, providerClasses = PasswordPolicyProvider.class)
 public class HashAlgorithmPasswordPolicyProviderFactory implements PasswordPolicyProviderFactory, PasswordPolicyProvider {
 

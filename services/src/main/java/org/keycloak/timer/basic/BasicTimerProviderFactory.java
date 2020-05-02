@@ -21,6 +21,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.timer.TimerProvider;
 import org.keycloak.timer.TimerProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -31,6 +32,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component("BasicTimerProviderFactory")
 @ProviderFactory(id = "basic", providerClasses = TimerProvider.class)
 public class BasicTimerProviderFactory implements TimerProviderFactory {
 

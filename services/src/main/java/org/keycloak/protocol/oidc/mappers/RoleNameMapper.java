@@ -29,6 +29,7 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.utils.RoleResolveUtil;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,6 +42,7 @@ import java.util.Map;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("OIDCRoleNameMapper")
 @ProviderFactory(id = "oidc-role-name-mapper", providerClasses = ProtocolMapper.class)
 public class RoleNameMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper {
 

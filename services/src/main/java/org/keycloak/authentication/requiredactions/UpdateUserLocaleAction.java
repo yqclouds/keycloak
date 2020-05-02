@@ -8,7 +8,9 @@ import org.keycloak.locale.LocaleUpdaterProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserModel;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
+@Component("UpdateUserLocaleAction")
 @ProviderFactory(id = "update_user_locale", providerClasses = RequiredActionProvider.class)
 public class UpdateUserLocaleAction implements RequiredActionProvider, RequiredActionFactory {
 

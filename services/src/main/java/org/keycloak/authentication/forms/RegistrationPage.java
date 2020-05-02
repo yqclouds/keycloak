@@ -25,6 +25,7 @@ import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -33,6 +34,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("RegistrationPage")
 @ProviderFactory(id = "registration-page-form", providerClasses = FormAuthenticator.class)
 public class RegistrationPage implements FormAuthenticator, FormAuthenticatorFactory {
 

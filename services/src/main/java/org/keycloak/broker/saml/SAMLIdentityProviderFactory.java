@@ -28,6 +28,7 @@ import org.keycloak.saml.common.util.DocumentUtil;
 import org.keycloak.saml.processing.core.parsers.saml.SAMLParser;
 import org.keycloak.saml.validators.DestinationValidator;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 import org.w3c.dom.Element;
 
 import javax.xml.namespace.QName;
@@ -39,6 +40,7 @@ import java.util.Map;
 /**
  * @author Pedro Igor
  */
+@Component("SAMLIdentityProviderFactory")
 @ProviderFactory(id = "saml", providerClasses = IdentityProvider.class)
 public class SAMLIdentityProviderFactory extends AbstractIdentityProviderFactory<SAMLIdentityProvider> {
 

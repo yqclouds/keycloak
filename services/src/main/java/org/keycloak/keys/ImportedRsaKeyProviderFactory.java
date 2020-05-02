@@ -27,6 +27,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ConfigurationValidationHelper;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.security.KeyPair;
 import java.security.PrivateKey;
@@ -37,6 +38,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component("ImportedRsaKeyProviderFactory")
 @ProviderFactory(id = "rsa", providerClasses = KeyProvider.class)
 public class ImportedRsaKeyProviderFactory extends AbstractRsaKeyProviderFactory {
 

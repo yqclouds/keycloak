@@ -18,7 +18,9 @@ package org.keycloak.locale;
 
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
+@Component("DefaultLocaleSelectorProviderFactory")
 @ProviderFactory(id = "default", providerClasses = LocaleSelectorProvider.class)
 public class DefaultLocaleSelectorProviderFactory implements LocaleSelectorProviderFactory {
     @Override

@@ -28,6 +28,7 @@ import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.IDToken;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.utils.RoleResolveUtil;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,7 @@ import java.util.List;
  *
  * @author <a href="mailto:thomas.darimont@gmail.com">Thomas Darimont</a>
  */
+@Component("OIDCUserRealmRoleMappingMapper")
 @ProviderFactory(id = "oidc-usermodel-realm-role-mapper", providerClasses = ProtocolMapper.class)
 public class UserRealmRoleMappingMapper extends AbstractUserRoleMappingMapper {
 

@@ -28,6 +28,7 @@ import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.JsonWebToken;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +37,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("OIDCExternalKeycloakRoleToRoleMapper")
 @ProviderFactory(id = "keycloak-oidc-role-to-role-idp-mapper", providerClasses = IdentityProviderMapper.class)
 public class ExternalKeycloakRoleToRoleMapper extends AbstractClaimMapper {
 

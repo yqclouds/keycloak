@@ -36,6 +36,7 @@ import org.keycloak.connections.infinispan.TopologyInfo;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -55,6 +56,7 @@ import java.util.stream.Collectors;
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("InfinispanClusterProviderFactory")
 @ProviderFactory(id = "infinispan", providerClasses = ClusterProvider.class)
 public class InfinispanClusterProviderFactory implements ClusterProviderFactory {
 

@@ -21,10 +21,12 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.wellknown.WellKnownProvider;
 import org.keycloak.wellknown.WellKnownProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
+@Component("UmaWellKnownProviderFactory")
 @ProviderFactory(id = "uma2-configuration", providerClasses = WellKnownProvider.class)
 public class UmaWellKnownProviderFactory implements WellKnownProviderFactory {
 

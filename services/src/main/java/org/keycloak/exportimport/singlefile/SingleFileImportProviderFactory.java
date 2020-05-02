@@ -22,12 +22,14 @@ import org.keycloak.exportimport.ImportProvider;
 import org.keycloak.exportimport.ImportProviderFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("SingleFileImportProviderFactory")
 @ProviderFactory(id = "singleFile", providerClasses = ImportProvider.class)
 public class SingleFileImportProviderFactory implements ImportProviderFactory {
 

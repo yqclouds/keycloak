@@ -32,6 +32,7 @@ import org.keycloak.saml.common.exceptions.ProcessingException;
 import org.keycloak.saml.processing.core.parsers.saml.SAMLParser;
 import org.keycloak.saml.processing.core.saml.v2.util.SAMLMetadataUtil;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -42,6 +43,7 @@ import java.util.*;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("EntityDescriptorDescriptionConverter")
 @ProviderFactory(id = "saml2-entity-descriptor", providerClasses = ClientDescriptionConverter.class)
 public class EntityDescriptorDescriptionConverter implements ClientDescriptionConverter, ClientDescriptionConverterFactory {
 

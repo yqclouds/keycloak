@@ -23,10 +23,12 @@ import org.keycloak.events.EventStoreProviderFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component("JpaEventStoreProviderFactory")
 @ProviderFactory(id = "jpa", providerClasses = EventStoreProvider.class)
 public class JpaEventStoreProviderFactory implements EventStoreProviderFactory {
 

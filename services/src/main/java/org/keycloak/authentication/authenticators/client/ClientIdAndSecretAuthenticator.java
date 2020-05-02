@@ -28,6 +28,7 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.util.BasicAuthHelper;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -42,6 +43,7 @@ import java.util.*;
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("ClientIdAndSecretAuthenticator")
 @ProviderFactory(id = "client-secret", providerClasses = ClientAuthenticator.class)
 public class ClientIdAndSecretAuthenticator extends AbstractClientAuthenticator {
 

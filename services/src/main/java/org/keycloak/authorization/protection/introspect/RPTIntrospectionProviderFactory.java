@@ -21,10 +21,12 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.protocol.oidc.TokenIntrospectionProvider;
 import org.keycloak.protocol.oidc.TokenIntrospectionProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
+@Component("RPTIntrospectionProviderFactory")
 @ProviderFactory(id = "requesting_party_token", providerClasses = TokenIntrospectionProvider.class)
 public class RPTIntrospectionProviderFactory implements TokenIntrospectionProviderFactory {
     @Override

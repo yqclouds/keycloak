@@ -25,6 +25,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.idm.authorization.AggregatePolicyRepresentation;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
+@Component("AggregatePolicyProviderFactory")
 @ProviderFactory(id = "aggregate", providerClasses = PolicyProvider.class)
 public class AggregatePolicyProviderFactory implements PolicyProviderFactory<AggregatePolicyRepresentation> {
 

@@ -11,6 +11,7 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.x509.X509ClientCertificateLookup;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -20,6 +21,8 @@ import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+@Component("X509ClientAuthenticator")
 @ProviderFactory(id = "client-x509", providerClasses = ClientAuthenticator.class)
 public class X509ClientAuthenticator extends AbstractClientAuthenticator {
 

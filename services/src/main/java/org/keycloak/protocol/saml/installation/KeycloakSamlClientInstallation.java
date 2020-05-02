@@ -25,6 +25,7 @@ import org.keycloak.protocol.saml.SamlClient;
 import org.keycloak.protocol.saml.SamlProtocol;
 import org.keycloak.services.resources.RealmsResource;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -35,6 +36,7 @@ import java.net.URI;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("KeycloakSamlClientInstallation")
 @ProviderFactory(id = "keycloak-saml", providerClasses = ClientInstallationProvider.class)
 public class KeycloakSamlClientInstallation implements ClientInstallationProvider {
 

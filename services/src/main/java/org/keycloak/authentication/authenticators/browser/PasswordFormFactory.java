@@ -29,6 +29,7 @@ import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -36,6 +37,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("PasswordFormFactory")
 @ProviderFactory(id = "auth-password-form", providerClasses = Authenticator.class)
 public class PasswordFormFactory implements AuthenticatorFactory, DisplayTypeAuthenticatorFactory {
 

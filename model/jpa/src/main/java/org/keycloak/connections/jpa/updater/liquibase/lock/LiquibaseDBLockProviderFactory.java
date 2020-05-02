@@ -24,12 +24,14 @@ import org.keycloak.models.dblock.DBLockProvider;
 import org.keycloak.models.dblock.DBLockProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("LiquibaseDBLockProviderFactory")
 @ProviderFactory(id = "jpa", providerClasses = DBLockProvider.class)
 public class LiquibaseDBLockProviderFactory implements DBLockProviderFactory {
 

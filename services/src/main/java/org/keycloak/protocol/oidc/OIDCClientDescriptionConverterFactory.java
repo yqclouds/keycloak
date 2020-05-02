@@ -21,10 +21,12 @@ import org.keycloak.exportimport.ClientDescriptionConverter;
 import org.keycloak.exportimport.ClientDescriptionConverterFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("OIDCClientDescriptionConverterFactory")
 @ProviderFactory(id = "openid-connect", providerClasses = ClientDescriptionConverter.class)
 public class OIDCClientDescriptionConverterFactory implements ClientDescriptionConverterFactory {
 

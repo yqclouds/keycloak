@@ -29,6 +29,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.sessions.infinispan.entities.ActionTokenValueEntity;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -36,6 +37,7 @@ import java.util.function.Supplier;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("InfinispanCodeToTokenStoreProviderFactory")
 @ProviderFactory(id = "infinispan", providerClasses = CodeToTokenStoreProvider.class)
 public class InfinispanCodeToTokenStoreProviderFactory implements CodeToTokenStoreProviderFactory {
 

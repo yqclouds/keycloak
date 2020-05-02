@@ -12,9 +12,11 @@ import org.keycloak.protocol.docker.mapper.AllowAllDockerProtocolMapper;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
+@Component("DockerAuthV2ProtocolFactory")
 @ProviderFactory(id = DockerAuthV2Protocol.LOGIN_PROTOCOL, providerClasses = LoginProtocol.class)
 public class DockerAuthV2ProtocolFactory extends AbstractLoginProtocolFactory implements EnvironmentDependentProviderFactory {
 

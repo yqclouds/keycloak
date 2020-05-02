@@ -11,6 +11,7 @@ import org.keycloak.scripting.EvaluatableScriptAdapter;
 import org.keycloak.scripting.ScriptCompilationException;
 import org.keycloak.scripting.ScriptingProvider;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +26,7 @@ import java.util.Map;
  *
  * @author Alistair Doswald
  */
+@Component("SAMLScriptBasedMapper")
 @ProviderFactory(id = "saml-javascript-mapper", providerClasses = ProtocolMapper.class)
 public class ScriptBasedMapper extends AbstractSAMLProtocolMapper implements SAMLAttributeStatementMapper {
 

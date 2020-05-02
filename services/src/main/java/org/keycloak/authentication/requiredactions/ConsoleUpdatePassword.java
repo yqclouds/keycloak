@@ -30,6 +30,7 @@ import org.keycloak.models.UserCredentialModel;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.validation.Validation;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MultivaluedMap;
 
@@ -37,6 +38,7 @@ import javax.ws.rs.core.MultivaluedMap;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("ConsoleUpdatePassword")
 @ProviderFactory(id = "UPDATE_PASSWORD", providerClasses = RequiredActionProvider.class)
 public class ConsoleUpdatePassword extends UpdatePassword implements RequiredActionProvider {
     public static final ConsoleUpdatePassword SINGLETON = new ConsoleUpdatePassword();

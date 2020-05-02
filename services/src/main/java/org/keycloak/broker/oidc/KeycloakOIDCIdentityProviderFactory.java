@@ -21,6 +21,7 @@ import org.keycloak.broker.provider.IdentityProvider;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -28,6 +29,7 @@ import java.util.Map;
 /**
  * @author Pedro Igor
  */
+@Component("KeycloakOIDCIdentityProviderFactory")
 @ProviderFactory(id = "keycloak-oidc", providerClasses = IdentityProvider.class)
 public class KeycloakOIDCIdentityProviderFactory extends AbstractIdentityProviderFactory<KeycloakOIDCIdentityProvider> {
 

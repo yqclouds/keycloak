@@ -6,11 +6,13 @@ import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.urls.HostnameProvider;
 import org.keycloak.urls.HostnameProviderFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+@Component("DefaultHostnameProviderFactory")
 @ProviderFactory(id = "default", providerClasses = HostnameProvider.class)
 public class DefaultHostnameProviderFactory implements HostnameProviderFactory {
     private static final Logger LOGGER = Logger.getLogger(DefaultHostnameProviderFactory.class);

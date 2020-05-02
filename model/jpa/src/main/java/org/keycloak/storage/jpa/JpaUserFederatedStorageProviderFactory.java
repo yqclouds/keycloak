@@ -21,6 +21,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.storage.federated.UserFederatedStorageProvider;
 import org.keycloak.storage.federated.UserFederatedStorageProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
 
@@ -28,6 +29,7 @@ import javax.persistence.EntityManager;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("JpaUserFederatedStorageProviderFactory")
 @ProviderFactory(id = "jpa", providerClasses = UserFederatedStorageProvider.class)
 public class JpaUserFederatedStorageProviderFactory implements UserFederatedStorageProviderFactory {
     @Override

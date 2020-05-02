@@ -28,6 +28,7 @@ import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.UserCredentialModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -35,6 +36,7 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("SpnegoAuthenticatorFactory")
 @ProviderFactory(id = "auth-spnego", providerClasses = Authenticator.class)
 public class SpnegoAuthenticatorFactory implements AuthenticatorFactory, DisplayTypeAuthenticatorFactory {
 

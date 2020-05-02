@@ -28,9 +28,12 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ConfigurationValidationHelper;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import java.security.KeyPair;
 import java.util.List;
+
+@Component("GeneratedEcdsaKeyProviderFactory")
 @ProviderFactory(id = "ecdsa-generated", providerClasses = KeyProvider.class)
 public class GeneratedEcdsaKeyProviderFactory extends AbstractEcdsaKeyProviderFactory {
 

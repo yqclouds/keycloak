@@ -22,10 +22,12 @@ import org.keycloak.sessions.StickySessionEncoderProvider;
 import org.keycloak.sessions.StickySessionEncoderProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component("InfinispanStickySessionEncoderProviderFactory")
 @ProviderFactory(id = "infinispan", providerClasses = StickySessionEncoderProvider.class)
 public class InfinispanStickySessionEncoderProviderFactory implements StickySessionEncoderProviderFactory {
     @Value("${shouldAttachRoute}")

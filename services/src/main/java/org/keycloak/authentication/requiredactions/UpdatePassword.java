@@ -36,6 +36,7 @@ import org.keycloak.models.UserModel;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.validation.Validation;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -45,6 +46,7 @@ import java.util.concurrent.TimeUnit;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component("UpdatePassword")
 @ProviderFactory(id = "UPDATE_PASSWORD", providerClasses = RequiredActionProvider.class)
 public class UpdatePassword implements RequiredActionProvider, RequiredActionFactory, DisplayTypeRequiredActionFactory {
     private static final Logger logger = Logger.getLogger(UpdatePassword.class);
