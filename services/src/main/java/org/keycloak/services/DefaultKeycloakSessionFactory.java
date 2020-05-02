@@ -49,13 +49,13 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, In
     public void afterPropertiesSet() {
         serverStartupTimestamp = System.currentTimeMillis();
 
-        providerFactories = loadFactories(providerManager);
+ /*       providerFactories = loadFactories(providerManager);
 
         for (Map<String, ProviderFactory> factories : providerFactories.values()) {
             for (ProviderFactory factory : factories.values()) {
                 factory.postInit(this);
             }
-        }
+        }*/
 
         AdminPermissions.registerListener(this);
     }

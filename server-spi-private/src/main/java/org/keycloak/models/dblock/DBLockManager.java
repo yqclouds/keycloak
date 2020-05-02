@@ -17,30 +17,30 @@
 
 package org.keycloak.models.dblock;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmProvider;
-import org.keycloak.models.RealmProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class DBLockManager {
-
-    protected static final Logger logger = Logger.getLogger(DBLockManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DBLockManager.class);
 
     private final KeycloakSession session;
+
+    private boolean forceUnlock;
+    private DBLockProviderFactory dbLockProviderFactory;
 
     public DBLockManager(KeycloakSession session) {
         this.session = session;
     }
 
-
     public void checkForcedUnlock() {
-        if (Boolean.getBoolean("keycloak.dblock.forceUnlock")) {
+        if (forceUnlock) {
             DBLockProvider lock = getDBLock();
             if (lock.supportsForcedUnlock()) {
-                logger.warn("Forced release of DB lock at startup requested by System property. Make sure to not use this in production environment! And especially when more cluster nodes are started concurrently.");
+                LOG.warn("Forced release of DB lock at startup requested by System property. Make sure to not use this in production environment! And especially when more cluster nodes are started concurrently.");
                 lock.releaseLock();
             } else {
                 throw new IllegalStateException("Forced unlock requested, but provider " + lock + " doesn't support it");
@@ -48,21 +48,15 @@ public class DBLockManager {
         }
     }
 
-
-    // Try to detect ID from realmProvider
     public DBLockProvider getDBLock() {
-        String realmProviderId = getRealmProviderId();
-        return session.getProvider(DBLockProvider.class, realmProviderId);
+        return dbLockProviderFactory.create(this.session);
     }
 
-    public DBLockProviderFactory getDBLockFactory() {
-        String realmProviderId = getRealmProviderId();
-        return (DBLockProviderFactory) session.getKeycloakSessionFactory().getProviderFactory(DBLockProvider.class, realmProviderId);
+    public void setForceUnlock(boolean forceUnlock) {
+        this.forceUnlock = forceUnlock;
     }
 
-    private String getRealmProviderId() {
-        RealmProviderFactory realmProviderFactory = (RealmProviderFactory) session.getKeycloakSessionFactory().getProviderFactory(RealmProvider.class);
-        return realmProviderFactory.getId();
+    public void setDbLockProviderFactory(DBLockProviderFactory dbLockProviderFactory) {
+        this.dbLockProviderFactory = dbLockProviderFactory;
     }
-
 }

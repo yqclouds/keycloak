@@ -1,5 +1,8 @@
 debug: true
 
+keycloak:
+  dblock:
+    forceUnlock: false
 minTimeBetweenRequests: 10
 shouldAttachRoute: true
 maxErrors: 20

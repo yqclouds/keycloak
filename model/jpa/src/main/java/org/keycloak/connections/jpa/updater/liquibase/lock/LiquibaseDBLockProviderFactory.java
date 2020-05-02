@@ -17,12 +17,13 @@
 
 package org.keycloak.connections.jpa.updater.liquibase.lock;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.dblock.DBLockProvider;
 import org.keycloak.models.dblock.DBLockProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -34,35 +35,29 @@ import javax.annotation.PostConstruct;
 @Component("LiquibaseDBLockProviderFactory")
 @ProviderFactory(id = "jpa", providerClasses = DBLockProvider.class)
 public class LiquibaseDBLockProviderFactory implements DBLockProviderFactory {
-
-    private static final Logger logger = Logger.getLogger(LiquibaseDBLockProviderFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LiquibaseDBLockProviderFactory.class);
 
     @Value("${lockWaitTimeout}")
     private int lockWaitTimeout;
     private long lockWaitTimeoutMillis;
-
-    protected long getLockWaitTimeoutMillis() {
-        return lockWaitTimeoutMillis;
-    }
-
-    @PostConstruct
-    public void afterPropertiesSet() {
-        this.lockWaitTimeoutMillis = Time.toMillis(lockWaitTimeout);
-        logger.debugf("Liquibase lock provider configured with lockWaitTime: %d seconds", lockWaitTimeout);
-    }
 
     @Override
     public LiquibaseDBLockProvider create(KeycloakSession session) {
         return new LiquibaseDBLockProvider(this, session);
     }
 
-    @Override
-    public void setTimeouts(long lockRecheckTimeMillis, long lockWaitTimeoutMillis) {
-        this.lockWaitTimeoutMillis = lockWaitTimeoutMillis;
+    @PostConstruct
+    public void afterPropertiesSet() {
+        this.lockWaitTimeoutMillis = Time.toMillis(lockWaitTimeout);
+        LOG.debug("Liquibase lock provider configured with lockWaitTime: {} seconds", lockWaitTimeout);
+    }
+
+    protected long getLockWaitTimeoutMillis() {
+        return lockWaitTimeoutMillis;
     }
 
     @Override
-    public String getId() {
-        return "jpa";
+    public void setTimeouts(long lockRecheckTimeMillis, long lockWaitTimeoutMillis) {
+        this.lockWaitTimeoutMillis = lockWaitTimeoutMillis;
     }
 }

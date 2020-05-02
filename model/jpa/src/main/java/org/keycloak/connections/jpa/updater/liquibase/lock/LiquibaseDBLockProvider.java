@@ -52,7 +52,6 @@ public class LiquibaseDBLockProvider implements DBLockProvider {
         this.session = session;
     }
 
-
     private void lazyInit() {
         if (!initialized) {
             LiquibaseConnectionProvider liquibaseProvider = session.getProvider(LiquibaseConnectionProvider.class);
