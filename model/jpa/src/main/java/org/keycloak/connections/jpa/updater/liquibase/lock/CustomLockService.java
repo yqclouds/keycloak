@@ -205,7 +205,7 @@ public class CustomLockService extends StandardLockService {
             database.rollback();
 
             // Ensure table created and lock record inserted
-            this.init();
+            // this.init();
         } catch (DatabaseException de) {
             throw new IllegalStateException("Failed to retrieve lock", de);
         }

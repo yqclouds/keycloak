@@ -113,7 +113,7 @@ public class DefaultLiquibaseConnectionProvider implements LiquibaseConnectionPr
     @Override
     public Liquibase getLiquibase(Connection connection, String defaultSchema) throws LiquibaseException {
         Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
-        if (defaultSchema != null) {
+        if (defaultSchema != null || !"".equals(defaultSchema)) {
             database.setDefaultSchemaName(defaultSchema);
         }
 

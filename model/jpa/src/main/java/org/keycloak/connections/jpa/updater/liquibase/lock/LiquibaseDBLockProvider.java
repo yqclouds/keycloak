@@ -17,12 +17,8 @@
 
 package org.keycloak.connections.jpa.updater.liquibase.lock;
 
-import liquibase.Liquibase;
-import liquibase.exception.DatabaseException;
-import liquibase.exception.LiquibaseException;
 import org.keycloak.common.util.Retry;
 import org.keycloak.connections.jpa.JpaConnectionProviderFactory;
-import org.keycloak.connections.jpa.updater.liquibase.conn.LiquibaseConnectionProvider;
 import org.keycloak.connections.jpa.updater.liquibase.conn.LiquibaseConnectionProviderFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.dblock.DBLockProvider;
@@ -44,7 +40,6 @@ public class LiquibaseDBLockProvider implements DBLockProvider {
     private final KeycloakSession session;
     // 10 should be sufficient
     private int DEFAULT_MAX_ATTEMPTS = 10;
-    private CustomLockService lockService;
     private Connection dbConnection;
     private boolean initialized = false;
     private Namespace namespaceLocked = null;
@@ -63,21 +58,6 @@ public class LiquibaseDBLockProvider implements DBLockProvider {
     private void lazyInit() {
         if (!initialized) {
             this.dbConnection = jpaConnectionProviderFactory.getConnection();
-            String defaultSchema = jpaConnectionProviderFactory.getSchema();
-
-            try {
-                LiquibaseConnectionProvider liquibaseProvider = liquibaseConnectionProviderFactory.create(session);
-                Liquibase liquibase = liquibaseProvider.getLiquibase(dbConnection, defaultSchema);
-
-                this.lockService = new CustomLockService();
-                lockService.setChangeLogLockWaitTime(dbLockProviderFactory.getLockWaitTimeoutMillis());
-                lockService.setDatabase(liquibase.getDatabase());
-                initialized = true;
-            } catch (LiquibaseException exception) {
-                safeRollbackConnection();
-                safeCloseConnection();
-                throw new IllegalStateException(exception);
-            }
         }
     }
 
@@ -85,7 +65,6 @@ public class LiquibaseDBLockProvider implements DBLockProvider {
     private void restart() {
         safeCloseConnection();
         this.dbConnection = null;
-        this.lockService = null;
         initialized = false;
         lazyInit();
     }
@@ -96,21 +75,9 @@ public class LiquibaseDBLockProvider implements DBLockProvider {
 
             lazyInit();
 
-            if (this.lockService.hasChangeLogLock()) {
-                if (lock.equals(this.namespaceLocked)) {
-                    LOG.warn("Locking namespace {} which was already locked in this provider", lock);
-                    return;
-                } else {
-                    throw new RuntimeException(String.format("Trying to get a lock when one was already taken by the provider"));
-                }
-            }
-
             LOG.debug("Going to lock namespace={}", lock);
             Retry.executeWithBackoff((int iteration) -> {
-
-                lockService.waitForLock(lock);
                 namespaceLocked = lock;
-
             }, (int iteration, Throwable e) -> {
 
                 if (e instanceof LockRetryException && iteration < (DEFAULT_MAX_ATTEMPTS - 1)) {
@@ -131,11 +98,6 @@ public class LiquibaseDBLockProvider implements DBLockProvider {
     public void releaseLock() {
         KeycloakModelUtils.suspendJtaTransaction(session.getKeycloakSessionFactory(), () -> {
             lazyInit();
-
-            LOG.debug("Going to release database lock namespace={}", namespaceLocked);
-            namespaceLocked = null;
-            lockService.releaseLock();
-            lockService.reset();
         });
     }
 
@@ -156,10 +118,9 @@ public class LiquibaseDBLockProvider implements DBLockProvider {
             lazyInit();
 
             try {
-                this.lockService.destroy();
                 dbConnection.commit();
                 LOG.debug("Destroyed lock table");
-            } catch (DatabaseException | SQLException de) {
+            } catch (SQLException de) {
                 LOG.error("Failed to destroy lock table");
                 safeRollbackConnection();
             }

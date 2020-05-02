@@ -11,12 +11,15 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: update
+      hbm2ddl:
+        import_files_sql_extractor: org.hibernate.tool.hbm2ddl.MultipleLinesSqlCommandExtractor
   h2:
     console:
       enabled: true
       path: /h2-console
   liquibase:
     changeLog: classpath:/db/changelog/db.changelog-master.xml
+    default-schema:
 keycloak:
   dblock:
     forceUnlock: false
@@ -26,7 +29,7 @@ maxErrors: 20
 sessionsPerSegment: 64
 sessionsPreloadTimeoutInSeconds: 0
 cacheThemes: true
-lockWaitTimeout: 60
+lockWaitTimeout: 60000
 max-detail-length: 50
 # used in FreeMarkerUtil
 frontendUrl:

@@ -43,7 +43,6 @@
         <cxf.jaxrs.version>3.3.3</cxf.jaxrs.version>
         <dom4j.version>2.1.1</dom4j.version>
         <github.relaxng.version>2.3.1</github.relaxng.version>
-        <h2.version>1.4.193</h2.version>
         <jakarta.persistence.version>2.2.3</jakarta.persistence.version>
         <hibernate.core.version>5.3.14.Final</hibernate.core.version>
         <hibernate.c3p0.version>5.3.14.Final</hibernate.c3p0.version>
@@ -518,7 +517,6 @@
                 <groupId>org.dom4j</groupId>
                 <artifactId>dom4j</artifactId>
                 <version>${dom4j.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>xml-apis</groupId>

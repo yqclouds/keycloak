@@ -6,9 +6,6 @@ import org.keycloak.common.util.Resteasy;
 import org.keycloak.exportimport.ExportImportManager;
 import org.keycloak.migration.MigrationModelManager;
 import org.keycloak.models.*;
-import org.keycloak.models.dblock.DBLockManager;
-import org.keycloak.models.dblock.DBLockProvider;
-import org.keycloak.models.dblock.DBLockProviderFactory;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.PostMigrationEvent;
 import org.keycloak.models.utils.RepresentationToModel;
@@ -26,7 +23,6 @@ import org.keycloak.util.JsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
@@ -47,11 +43,6 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
     private static final Logger LOG = LoggerFactory.getLogger(KeycloakApplicationListener.class);
 
     private KeycloakSessionFactory sessionFactory;
-
-    @Value("${keycloak.dblock.forceUnlock}")
-    private boolean forceUnlock;
-    @Autowired
-    private DBLockProviderFactory dbLockProviderFactory;
 
     @Autowired
     public KeycloakApplicationListener(KeycloakSessionFactory sessionFactory) {
@@ -74,17 +65,7 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
     protected void startup() {
         ExportImportManager[] exportImportManager = new ExportImportManager[1];
         KeycloakModelUtils.runJobInTransaction(sessionFactory, lockSession -> {
-            DBLockManager dbLockManager = new DBLockManager(lockSession);
-            dbLockManager.setForceUnlock(forceUnlock);
-            dbLockManager.setDbLockProviderFactory(dbLockProviderFactory);
-            dbLockManager.checkForcedUnlock();
-            DBLockProvider dbLock = dbLockManager.getDBLock();
-            dbLock.waitForLock(DBLockProvider.Namespace.KEYCLOAK_BOOT);
-            try {
-                exportImportManager[0] = migrateAndBootstrap();
-            } finally {
-                dbLock.releaseLock();
-            }
+            exportImportManager[0] = migrateAndBootstrap();
         });
 
         if (exportImportManager[0].isRunExport()) {
