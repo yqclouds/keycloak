@@ -18,12 +18,15 @@
 package org.keycloak.connections.jpa.updater.liquibase.lock;
 
 import org.keycloak.common.util.Time;
+import org.keycloak.connections.jpa.JpaConnectionProviderFactory;
+import org.keycloak.connections.jpa.updater.liquibase.conn.LiquibaseConnectionProviderFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.dblock.DBLockProvider;
 import org.keycloak.models.dblock.DBLockProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -41,9 +44,18 @@ public class LiquibaseDBLockProviderFactory implements DBLockProviderFactory {
     private int lockWaitTimeout;
     private long lockWaitTimeoutMillis;
 
+    @Autowired
+    private JpaConnectionProviderFactory jpaConnectionProviderFactory;
+    @Autowired
+    private LiquibaseConnectionProviderFactory liquibaseConnectionProviderFactory;
+
     @Override
     public LiquibaseDBLockProvider create(KeycloakSession session) {
-        return new LiquibaseDBLockProvider(this, session);
+        LiquibaseDBLockProvider provider = new LiquibaseDBLockProvider(session);
+        provider.setDbLockProviderFactory(this);
+        provider.setJpaConnectionProviderFactory(jpaConnectionProviderFactory);
+        provider.setLiquibaseConnectionProviderFactory(liquibaseConnectionProviderFactory);
+        return provider;
     }
 
     @PostConstruct
@@ -52,7 +64,8 @@ public class LiquibaseDBLockProviderFactory implements DBLockProviderFactory {
         LOG.debug("Liquibase lock provider configured with lockWaitTime: {} seconds", lockWaitTimeout);
     }
 
-    protected long getLockWaitTimeoutMillis() {
+    @Override
+    public long getLockWaitTimeoutMillis() {
         return lockWaitTimeoutMillis;
     }
 

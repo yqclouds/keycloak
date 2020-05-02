@@ -88,7 +88,6 @@
         <apacheds.codec.version>1.0.0-M33</apacheds.codec.version>
         <google.zxing.version>3.4.0</google.zxing.version>
 
-        <liquibase.version>3.5.5</liquibase.version>
         <mysql.version>8.0.18</mysql.version>
         <osgi.version>4.2.0</osgi.version>
         <pax.web.version>7.1.0</pax.web.version>

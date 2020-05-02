@@ -19,7 +19,6 @@ package org.keycloak.connections.jpa;
 
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.engine.transaction.jta.platform.internal.AbstractJtaPlatform;
-import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.ServerStartupError;
 import org.keycloak.common.util.StringPropertyReplacer;
@@ -32,9 +31,15 @@ import org.keycloak.models.dblock.DBLockManager;
 import org.keycloak.models.dblock.DBLockProvider;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ServerInfoAwareProviderFactory;
+import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.timer.TimerProvider;
 import org.keycloak.transaction.JtaTransactionManagerLookup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PreDestroy;
 import javax.naming.InitialContext;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -52,27 +57,30 @@ import java.util.*;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component("DefaultJpaConnectionProviderFactory")
+@ProviderFactory(id = "default", providerClasses = JpaConnectionProvider.class)
 public class DefaultJpaConnectionProviderFactory implements JpaConnectionProviderFactory, ServerInfoAwareProviderFactory {
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultJpaConnectionProviderFactory.class);
 
-    private static final Logger logger = Logger.getLogger(DefaultJpaConnectionProviderFactory.class);
     private volatile EntityManagerFactory emf;
     private Config.Scope config;
     private Map<String, String> operationalInfo;
     private boolean jtaEnabled;
     private JtaTransactionManagerLookup jtaLookup;
-    private KeycloakSessionFactory factory;
+
+    @Autowired
+    private KeycloakSessionFactory sessionFactory;
 
     @Override
     public JpaConnectionProvider create(KeycloakSession session) {
-        logger.trace("Create JpaConnectionProvider");
+        LOG.trace("Create JpaConnectionProvider");
         lazyInit(session);
 
         EntityManager em;
         if (!jtaEnabled) {
-            logger.trace("enlisting EntityManager in JpaKeycloakTransaction");
+            LOG.trace("enlisting EntityManager in JpaKeycloakTransaction");
             em = emf.createEntityManager();
         } else {
-
             em = emf.createEntityManager(SynchronizationType.SYNCHRONIZED);
         }
         em = PersistenceExceptionConverter.create(em);
@@ -80,36 +88,10 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
         return new DefaultJpaConnectionProvider(em);
     }
 
-    @Override
-    public void close() {
+    @PreDestroy
+    public void destroy() throws Exception {
         if (emf != null) {
             emf.close();
-        }
-    }
-
-    @Override
-    public String getId() {
-        return "default";
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-        this.config = config;
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-        this.factory = factory;
-        checkJtaEnabled(factory);
-
-    }
-
-    protected void checkJtaEnabled(KeycloakSessionFactory factory) {
-        jtaLookup = (JtaTransactionManagerLookup) factory.getProviderFactory(JtaTransactionManagerLookup.class);
-        if (jtaLookup != null) {
-            if (jtaLookup.getTransactionManager() != null) {
-                jtaEnabled = true;
-            }
         }
     }
 
@@ -118,7 +100,7 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
             synchronized (this) {
                 if (emf == null) {
                     KeycloakModelUtils.suspendJtaTransaction(session.getKeycloakSessionFactory(), () -> {
-                        logger.debug("Initializing JPA connections");
+                        LOG.debug("Initializing JPA connections");
 
                         Map<String, Object> properties = new HashMap<>();
 
@@ -173,8 +155,8 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
                                 properties.put("hibernate.generate_statistics", true);
                             }
 
-                            logger.trace("Creating EntityManagerFactory");
-                            logger.tracev("***** create EMF jtaEnabled {0} ", jtaEnabled);
+                            LOG.trace("Creating EntityManagerFactory");
+                            LOG.trace("***** create EMF jtaEnabled {} ", jtaEnabled);
                             if (jtaEnabled) {
                                 properties.put(AvailableSettings.JTA_PLATFORM, new AbstractJtaPlatform() {
                                     @Override
@@ -195,7 +177,7 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
                             classLoaders.add(getClass().getClassLoader());
                             properties.put(AvailableSettings.CLASSLOADERS, classLoaders);
                             emf = JpaUtils.createEntityManagerFactory(session, unitName, properties, jtaEnabled);
-                            logger.trace("EntityManagerFactory created");
+                            LOG.trace("EntityManagerFactory created");
 
                             if (globalStatsInterval != -1) {
                                 startGlobalStats(session, globalStatsInterval);
@@ -206,7 +188,7 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
                                 try {
                                     connection.close();
                                 } catch (SQLException e) {
-                                    logger.warn("Can't close connection", e);
+                                    LOG.warn("Can't close connection", e);
                                 }
                             }
                         }
@@ -230,9 +212,9 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
             operationalInfo.put("databaseProduct", md.getDatabaseProductName() + " " + md.getDatabaseProductVersion());
             operationalInfo.put("databaseDriver", md.getDriverName() + " " + md.getDriverVersion());
 
-            logger.debugf("Database info: %s", operationalInfo.toString());
+            LOG.debug("Database info: {}", operationalInfo.toString());
         } catch (SQLException e) {
-            logger.warn("Unable to prepare operational info due database exception: " + e.getMessage());
+            LOG.warn("Unable to prepare operational info due database exception: " + e.getMessage());
         }
     }
 
@@ -258,17 +240,17 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
                     }
                     if (shouldSet2012Dialect) {
                         String sql2012Dialect = "org.hibernate.dialect.SQLServer2012Dialect";
-                        logger.debugf("Manually override hibernate dialect to %s", sql2012Dialect);
+                        LOG.debug("Manually override hibernate dialect to {}", sql2012Dialect);
                         return sql2012Dialect;
                     }
                 }
                 // For Oracle19c, we may need to set dialect explicitly to workaround https://hibernate.atlassian.net/browse/HHH-13184
                 if (dbProductName.equals("Oracle") && connection.getMetaData().getDatabaseMajorVersion() > 12) {
-                    logger.debugf("Manually specify dialect for Oracle to org.hibernate.dialect.Oracle12cDialect");
+                    LOG.debug("Manually specify dialect for Oracle to org.hibernate.dialect.Oracle12cDialect");
                     return "org.hibernate.dialect.Oracle12cDialect";
                 }
             } catch (SQLException e) {
-                logger.warnf("Unable to detect hibernate dialect due database exception : %s", e.getMessage());
+                LOG.warn("Unable to detect hibernate dialect due database exception : {}", e.getMessage());
             }
 
             return null;
@@ -276,7 +258,7 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
     }
 
     protected void startGlobalStats(KeycloakSession session, int globalStatsIntervalSecs) {
-        logger.debugf("Started Hibernate statistics with the interval %s seconds", globalStatsIntervalSecs);
+        LOG.debug("Started Hibernate statistics with the interval {} seconds", globalStatsIntervalSecs);
         TimerProvider timer = session.getProvider(TimerProvider.class);
         timer.scheduleTask(new HibernateStatsReporter(emf), globalStatsIntervalSecs * 1000, "ReportHibernateGlobalStats");
     }
@@ -286,7 +268,7 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
 
         JpaUpdaterProvider.Status status = updater.validate(connection, schema);
         if (status == JpaUpdaterProvider.Status.VALID) {
-            logger.debug("Database is up-to-date");
+            LOG.debug("Database is up-to-date");
         } else if (status == JpaUpdaterProvider.Status.EMPTY) {
             if (initializeEmpty) {
                 update(connection, schema, session, updater);

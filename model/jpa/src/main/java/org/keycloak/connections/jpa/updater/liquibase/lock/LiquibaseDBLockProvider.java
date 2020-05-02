@@ -20,14 +20,17 @@ package org.keycloak.connections.jpa.updater.liquibase.lock;
 import liquibase.Liquibase;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.Retry;
-import org.keycloak.connections.jpa.JpaConnectionProvider;
 import org.keycloak.connections.jpa.JpaConnectionProviderFactory;
 import org.keycloak.connections.jpa.updater.liquibase.conn.LiquibaseConnectionProvider;
+import org.keycloak.connections.jpa.updater.liquibase.conn.LiquibaseConnectionProviderFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.dblock.DBLockProvider;
+import org.keycloak.models.dblock.DBLockProviderFactory;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -36,9 +39,8 @@ import java.sql.SQLException;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class LiquibaseDBLockProvider implements DBLockProvider {
+    private static final Logger LOG = LoggerFactory.getLogger(LiquibaseDBLockProvider.class);
 
-    private static final Logger logger = Logger.getLogger(LiquibaseDBLockProvider.class);
-    private final LiquibaseDBLockProviderFactory factory;
     private final KeycloakSession session;
     // 10 should be sufficient
     private int DEFAULT_MAX_ATTEMPTS = 10;
@@ -47,24 +49,28 @@ public class LiquibaseDBLockProvider implements DBLockProvider {
     private boolean initialized = false;
     private Namespace namespaceLocked = null;
 
-    public LiquibaseDBLockProvider(LiquibaseDBLockProviderFactory factory, KeycloakSession session) {
-        this.factory = factory;
+    @Autowired
+    private JpaConnectionProviderFactory jpaConnectionProviderFactory;
+    @Autowired
+    private LiquibaseConnectionProviderFactory liquibaseConnectionProviderFactory;
+    @Autowired
+    private DBLockProviderFactory dbLockProviderFactory;
+
+    public LiquibaseDBLockProvider(KeycloakSession session) {
         this.session = session;
     }
 
     private void lazyInit() {
         if (!initialized) {
-            LiquibaseConnectionProvider liquibaseProvider = session.getProvider(LiquibaseConnectionProvider.class);
-            JpaConnectionProviderFactory jpaProviderFactory = (JpaConnectionProviderFactory) session.getKeycloakSessionFactory().getProviderFactory(JpaConnectionProvider.class);
-
-            this.dbConnection = jpaProviderFactory.getConnection();
-            String defaultSchema = jpaProviderFactory.getSchema();
+            this.dbConnection = jpaConnectionProviderFactory.getConnection();
+            String defaultSchema = jpaConnectionProviderFactory.getSchema();
 
             try {
+                LiquibaseConnectionProvider liquibaseProvider = liquibaseConnectionProviderFactory.create(session);
                 Liquibase liquibase = liquibaseProvider.getLiquibase(dbConnection, defaultSchema);
 
                 this.lockService = new CustomLockService();
-                lockService.setChangeLogLockWaitTime(factory.getLockWaitTimeoutMillis());
+                lockService.setChangeLogLockWaitTime(dbLockProviderFactory.getLockWaitTimeoutMillis());
                 lockService.setDatabase(liquibase.getDatabase());
                 initialized = true;
             } catch (LiquibaseException exception) {
@@ -92,14 +98,14 @@ public class LiquibaseDBLockProvider implements DBLockProvider {
 
             if (this.lockService.hasChangeLogLock()) {
                 if (lock.equals(this.namespaceLocked)) {
-                    logger.warnf("Locking namespace %s which was already locked in this provider", lock);
+                    LOG.warn("Locking namespace {} which was already locked in this provider", lock);
                     return;
                 } else {
                     throw new RuntimeException(String.format("Trying to get a lock when one was already taken by the provider"));
                 }
             }
 
-            logger.debugf("Going to lock namespace=%s", lock);
+            LOG.debug("Going to lock namespace={}", lock);
             Retry.executeWithBackoff((int iteration) -> {
 
                 lockService.waitForLock(lock);
@@ -126,7 +132,7 @@ public class LiquibaseDBLockProvider implements DBLockProvider {
         KeycloakModelUtils.suspendJtaTransaction(session.getKeycloakSessionFactory(), () -> {
             lazyInit();
 
-            logger.debugf("Going to release database lock namespace=%s", namespaceLocked);
+            LOG.debug("Going to release database lock namespace={}", namespaceLocked);
             namespaceLocked = null;
             lockService.releaseLock();
             lockService.reset();
@@ -152,9 +158,9 @@ public class LiquibaseDBLockProvider implements DBLockProvider {
             try {
                 this.lockService.destroy();
                 dbConnection.commit();
-                logger.debug("Destroyed lock table");
+                LOG.debug("Destroyed lock table");
             } catch (DatabaseException | SQLException de) {
-                logger.error("Failed to destroy lock table");
+                LOG.error("Failed to destroy lock table");
                 safeRollbackConnection();
             }
         });
@@ -162,9 +168,7 @@ public class LiquibaseDBLockProvider implements DBLockProvider {
 
     @Override
     public void close() {
-        KeycloakModelUtils.suspendJtaTransaction(session.getKeycloakSessionFactory(), () -> {
-            safeCloseConnection();
-        });
+        KeycloakModelUtils.suspendJtaTransaction(session.getKeycloakSessionFactory(), this::safeCloseConnection);
     }
 
     private void safeRollbackConnection() {
@@ -172,7 +176,7 @@ public class LiquibaseDBLockProvider implements DBLockProvider {
             try {
                 this.dbConnection.rollback();
             } catch (SQLException se) {
-                logger.warn("Failed to rollback connection after error", se);
+                LOG.warn("Failed to rollback connection after error", se);
             }
         }
     }
@@ -183,8 +187,20 @@ public class LiquibaseDBLockProvider implements DBLockProvider {
             try {
                 dbConnection.close();
             } catch (SQLException e) {
-                logger.warn("Failed to close connection", e);
+                LOG.warn("Failed to close connection", e);
             }
         }
+    }
+
+    public void setJpaConnectionProviderFactory(JpaConnectionProviderFactory jpaConnectionProviderFactory) {
+        this.jpaConnectionProviderFactory = jpaConnectionProviderFactory;
+    }
+
+    public void setLiquibaseConnectionProviderFactory(LiquibaseConnectionProviderFactory liquibaseConnectionProviderFactory) {
+        this.liquibaseConnectionProviderFactory = liquibaseConnectionProviderFactory;
+    }
+
+    public void setDbLockProviderFactory(DBLockProviderFactory dbLockProviderFactory) {
+        this.dbLockProviderFactory = dbLockProviderFactory;
     }
 }
