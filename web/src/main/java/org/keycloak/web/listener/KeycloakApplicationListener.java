@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.keycloak.Config;
 import org.keycloak.common.util.Resteasy;
 import org.keycloak.exportimport.ExportImportManager;
-import org.keycloak.migration.MigrationModelManager;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.PostMigrationEvent;
@@ -85,8 +84,6 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
     // Migrate model, bootstrap master realm, import realms and create admin user. This is done with acquired dbLock
     protected ExportImportManager migrateAndBootstrap() {
         ExportImportManager exportImportManager;
-        LOG.debug("Calling migrateModel");
-        migrateModel();
 
         LOG.debug("bootstrap");
         KeycloakSession session = sessionFactory.create();
@@ -143,20 +140,6 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
     protected void shutdown() {
         if (sessionFactory != null) {
             sessionFactory.close();
-        }
-    }
-
-    protected void migrateModel() {
-        KeycloakSession session = sessionFactory.create();
-        try {
-            session.getTransactionManager().begin();
-            MigrationModelManager.migrate(session);
-            session.getTransactionManager().commit();
-        } catch (Exception e) {
-            session.getTransactionManager().rollback();
-            throw e;
-        } finally {
-            session.close();
         }
     }
 

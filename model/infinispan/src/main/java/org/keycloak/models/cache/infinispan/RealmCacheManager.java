@@ -26,12 +26,14 @@ import org.keycloak.models.cache.infinispan.stream.GroupListPredicate;
 import org.keycloak.models.cache.infinispan.stream.HasRolePredicate;
 import org.keycloak.models.cache.infinispan.stream.InClientPredicate;
 import org.keycloak.models.cache.infinispan.stream.InRealmPredicate;
+import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component
 public class RealmCacheManager extends CacheManager {
 
     private static final Logger logger = Logger.getLogger(RealmCacheManager.class);

@@ -77,7 +77,7 @@ public class DefaultKeycloakSession implements KeycloakSession {
         if (cache != null) {
             return cache;
         } else {
-            return getProvider(RealmProvider.class);
+            return factory.getBeanFactory().getBean(RealmProvider.class);
         }
     }
 

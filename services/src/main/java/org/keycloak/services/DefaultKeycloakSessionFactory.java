@@ -24,13 +24,16 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import org.keycloak.theme.DefaultThemeManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, InitializingBean {
+public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, InitializingBean, BeanFactoryAware {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultKeycloakSessionFactory.class);
 
     protected CopyOnWriteArrayList<ProviderEventListener> listeners = new CopyOnWriteArrayList<>();
@@ -44,6 +47,8 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, In
     private DefaultThemeManagerFactory themeManagerFactory;
 
     private ProviderManager providerManager;
+
+    private BeanFactory beanFactory;
 
     @Override
     public void afterPropertiesSet() {
@@ -223,5 +228,14 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, In
 
     public void setSpis(Set<Spi> spis) {
         this.spis = spis;
+    }
+
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        this.beanFactory = beanFactory;
+    }
+
+    public BeanFactory getBeanFactory() {
+        return beanFactory;
     }
 }
