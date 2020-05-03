@@ -21,6 +21,7 @@ import org.keycloak.provider.Provider;
 import org.keycloak.provider.ProviderEventManager;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.provider.Spi;
+import org.springframework.beans.factory.BeanFactory;
 
 import java.util.List;
 import java.util.Set;
@@ -43,4 +44,6 @@ public interface KeycloakSessionFactory extends ProviderEventManager {
     long getServerStartupTimestamp();
 
     void close();
+
+    BeanFactory getBeanFactory();
 }

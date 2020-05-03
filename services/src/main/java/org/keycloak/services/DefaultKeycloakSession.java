@@ -33,6 +33,8 @@ import org.keycloak.storage.federated.UserFederatedStorageProvider;
 import org.keycloak.vault.DefaultVaultTranscriber;
 import org.keycloak.vault.VaultProvider;
 import org.keycloak.vault.VaultTranscriber;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -77,7 +79,8 @@ public class DefaultKeycloakSession implements KeycloakSession {
         if (cache != null) {
             return cache;
         } else {
-            return factory.getBeanFactory().getBean(RealmProvider.class);
+            RealmProviderFactory factory = getBeanFactory().getBean(RealmProviderFactory.class);
+            return factory.create(this);
         }
     }
 
@@ -117,6 +120,11 @@ public class DefaultKeycloakSession implements KeycloakSession {
     @Override
     public KeycloakTransactionManager getTransactionManager() {
         return transactionManager;
+    }
+
+    @Override
+    public PlatformTransactionManager getPlatformTransactionManager() {
+        return getBeanFactory().getBean(PlatformTransactionManager.class);
     }
 
     @Override
@@ -304,6 +312,11 @@ public class DefaultKeycloakSession implements KeycloakSession {
             this.vaultTranscriber = new DefaultVaultTranscriber(this.getProvider(VaultProvider.class));
         }
         return this.vaultTranscriber;
+    }
+
+    @Override
+    public BeanFactory getBeanFactory() {
+        return factory.getBeanFactory();
     }
 
     public void close() {
