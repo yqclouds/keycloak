@@ -205,9 +205,6 @@ public class LiquibaseJpaUpdaterProvider implements JpaUpdaterProvider {
         executor.comment("*********************************************************************" + StreamUtil.getLineSeparator());
 
         executor.execute(new CreateDatabaseChangeLogTableStatement());
-        // DatabaseChangeLogLockTable is created before this code is executed and recreated if it does not exist automatically
-        // in org.keycloak.connections.jpa.updater.liquibase.lock.CustomLockService.init() called indirectly from
-        // KeycloakApplication constructor (search for waitForLock() call). Hence it is not included in the creation script.
 
         executor.comment("*********************************************************************" + StreamUtil.getLineSeparator());
 
