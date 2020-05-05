@@ -27,19 +27,6 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ProviderConfigProperty;
-import org.keycloak.social.bitbucket.BitbucketIdentityProviderFactory;
-import org.keycloak.social.facebook.FacebookIdentityProviderFactory;
-import org.keycloak.social.github.GitHubIdentityProviderFactory;
-import org.keycloak.social.gitlab.GitLabIdentityProviderFactory;
-import org.keycloak.social.google.GoogleIdentityProviderFactory;
-import org.keycloak.social.instagram.InstagramIdentityProviderFactory;
-import org.keycloak.social.linkedin.LinkedInIdentityProviderFactory;
-import org.keycloak.social.microsoft.MicrosoftIdentityProviderFactory;
-import org.keycloak.social.openshift.OpenshiftV3IdentityProviderFactory;
-import org.keycloak.social.openshift.OpenshiftV4IdentityProviderFactory;
-import org.keycloak.social.paypal.PayPalIdentityProviderFactory;
-import org.keycloak.social.stackoverflow.StackoverflowIdentityProviderFactory;
-import org.keycloak.social.twitter.TwitterIdentityProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 
@@ -58,20 +45,7 @@ public class UsernameTemplateMapper extends AbstractClaimMapper {
 
     public static final String[] COMPATIBLE_PROVIDERS = {
             KeycloakOIDCIdentityProviderFactory.PROVIDER_ID,
-            OIDCIdentityProviderFactory.PROVIDER_ID,
-            BitbucketIdentityProviderFactory.PROVIDER_ID,
-            FacebookIdentityProviderFactory.PROVIDER_ID,
-            GitHubIdentityProviderFactory.PROVIDER_ID,
-            GitLabIdentityProviderFactory.PROVIDER_ID,
-            GoogleIdentityProviderFactory.PROVIDER_ID,
-            InstagramIdentityProviderFactory.PROVIDER_ID,
-            LinkedInIdentityProviderFactory.PROVIDER_ID,
-            MicrosoftIdentityProviderFactory.PROVIDER_ID,
-            OpenshiftV3IdentityProviderFactory.PROVIDER_ID,
-            OpenshiftV4IdentityProviderFactory.PROVIDER_ID,
-            PayPalIdentityProviderFactory.PROVIDER_ID,
-            StackoverflowIdentityProviderFactory.PROVIDER_ID,
-            TwitterIdentityProviderFactory.PROVIDER_ID
+            OIDCIdentityProviderFactory.PROVIDER_ID
     };
     public static final String TEMPLATE = "template";
     public static final String PROVIDER_ID = "oidc-username-idp-mapper";

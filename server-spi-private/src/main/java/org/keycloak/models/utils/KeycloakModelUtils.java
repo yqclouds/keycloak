@@ -17,8 +17,6 @@
 
 package org.keycloak.models.utils;
 
-import org.keycloak.broker.social.SocialIdentityProvider;
-import org.keycloak.broker.social.SocialIdentityProviderFactory;
 import org.keycloak.common.util.CertificateUtils;
 import org.keycloak.common.util.KeyUtils;
 import org.keycloak.common.util.PemUtils;
@@ -676,13 +674,7 @@ public final class KeycloakModelUtils {
             return displayName;
         }
 
-        SocialIdentityProviderFactory providerFactory = (SocialIdentityProviderFactory) session.getKeycloakSessionFactory()
-                .getProviderFactory(SocialIdentityProvider.class, provider.getProviderId());
-        if (providerFactory != null) {
-            return providerFactory.getName();
-        } else {
-            return provider.getAlias();
-        }
+        return provider.getAlias();
     }
 
 }

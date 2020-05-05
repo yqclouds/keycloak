@@ -21,7 +21,6 @@ import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.broker.provider.IdentityProvider;
 import org.keycloak.broker.provider.IdentityProviderFactory;
 import org.keycloak.broker.provider.IdentityProviderMapper;
-import org.keycloak.broker.social.SocialIdentityProvider;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.*;
@@ -217,7 +216,6 @@ public class IdentityProviderResource {
         List<ProviderFactory> allProviders = new ArrayList<ProviderFactory>();
 
         allProviders.addAll(this.session.getKeycloakSessionFactory().getProviderFactories(IdentityProvider.class));
-        allProviders.addAll(this.session.getKeycloakSessionFactory().getProviderFactories(SocialIdentityProvider.class));
 
         for (ProviderFactory providerFactory : allProviders) {
             if (providerFactory.getId().equals(identityProviderModel.getProviderId()))

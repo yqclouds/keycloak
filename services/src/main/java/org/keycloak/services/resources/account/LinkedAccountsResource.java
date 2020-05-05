@@ -18,7 +18,6 @@ package org.keycloak.services.resources.account;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
-import org.keycloak.broker.social.SocialIdentityProvider;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.events.Details;
 import org.keycloak.events.EventBuilder;
@@ -26,7 +25,6 @@ import org.keycloak.events.EventType;
 import org.keycloak.models.*;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
-import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.account.AccountLinkUriRepresentation;
 import org.keycloak.representations.account.LinkedAccountRepresentation;
 import org.keycloak.services.ErrorResponse;
@@ -87,23 +85,12 @@ public class LinkedAccountsResource {
         return Cors.add(request, Response.ok(linkedAccounts)).auth().allowedOrigins(auth.getToken()).build();
     }
 
-    private Set<String> findSocialIds() {
-        Set<String> socialIds = new HashSet();
-        List<ProviderFactory> providerFactories = session.getKeycloakSessionFactory().getProviderFactories(SocialIdentityProvider.class);
-        for (ProviderFactory factory : providerFactories) {
-            socialIds.add(factory.getId());
-        }
-
-        return socialIds;
-    }
-
     public SortedSet<LinkedAccountRepresentation> getLinkedAccounts(KeycloakSession session, RealmModel realm, UserModel user) {
         List<IdentityProviderModel> identityProviders = realm.getIdentityProviders();
         SortedSet<LinkedAccountRepresentation> linkedAccounts = new TreeSet<>();
 
         if (identityProviders == null || identityProviders.isEmpty()) return linkedAccounts;
 
-        Set<String> socialIds = findSocialIds();
         Set<FederatedIdentityModel> identities = session.users().getFederatedIdentities(user, realm);
         for (IdentityProviderModel provider : identityProviders) {
             if (!provider.isEnabled()) {
@@ -118,7 +105,7 @@ public class LinkedAccountsResource {
 
             LinkedAccountRepresentation rep = new LinkedAccountRepresentation();
             rep.setConnected(identity != null);
-            rep.setSocial(socialIds.contains(provider.getProviderId()));
+            rep.setSocial(false);
             rep.setProviderAlias(providerId);
             rep.setDisplayName(displayName);
             rep.setGuiOrder(guiOrder);

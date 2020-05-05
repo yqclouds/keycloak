@@ -20,7 +20,6 @@ package org.keycloak.services.resources.admin.info;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.broker.provider.IdentityProvider;
 import org.keycloak.broker.provider.IdentityProviderFactory;
-import org.keycloak.broker.social.SocialIdentityProvider;
 import org.keycloak.common.Profile;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.events.EventType;
@@ -89,7 +88,6 @@ public class ServerInfoAdminResource {
         info.setMemoryInfo(MemoryInfoRepresentation.create());
         info.setProfileInfo(ProfileInfoRepresentation.create());
 
-        setSocialProviders(info);
         setIdentityProviders(info);
         setThemes(info);
         setProviders(info);
@@ -181,19 +179,10 @@ public class ServerInfoAdminResource {
         }
     }
 
-    private void setSocialProviders(ServerInfoRepresentation info) {
-        info.setSocialProviders(new LinkedList<>());
-        List<ProviderFactory> providerFactories = session.getKeycloakSessionFactory().getProviderFactories(SocialIdentityProvider.class);
-        setIdentityProviders(providerFactories, info.getSocialProviders(), "Social");
-    }
-
     private void setIdentityProviders(ServerInfoRepresentation info) {
         info.setIdentityProviders(new LinkedList<>());
         List<ProviderFactory> providerFactories = session.getKeycloakSessionFactory().getProviderFactories(IdentityProvider.class);
         setIdentityProviders(providerFactories, info.getIdentityProviders(), "User-defined");
-
-        providerFactories = session.getKeycloakSessionFactory().getProviderFactories(SocialIdentityProvider.class);
-        setIdentityProviders(providerFactories, info.getIdentityProviders(), "Social");
     }
 
     public void setIdentityProviders(List<ProviderFactory> factories, List<Map<String, String>> providers, String groupName) {

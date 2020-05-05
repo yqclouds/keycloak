@@ -8,7 +8,6 @@ import org.keycloak.authorization.policy.provider.PolicySpi;
 import org.keycloak.authorization.store.StoreFactorySpi;
 import org.keycloak.broker.provider.IdentityProviderMapperSpi;
 import org.keycloak.broker.provider.IdentityProviderSpi;
-import org.keycloak.broker.social.SocialProviderSpi;
 import org.keycloak.cluster.ClusterSpi;
 import org.keycloak.connections.httpclient.HttpClientSpi;
 import org.keycloak.credential.CredentialSpi;
@@ -174,7 +173,6 @@ public class KeycloakWebConfiguration {
         results.add(new ScriptingSpi());
         results.add(new SignatureSpi());
         results.add(new SingleUseTokenStoreSpi());
-        results.add(new SocialProviderSpi());
         results.add(new StickySessionEncoderSpi());
         results.add(new StoreFactorySpi());
         results.add(new ThemeResourceSpi());

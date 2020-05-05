@@ -28,7 +28,6 @@ import org.keycloak.authentication.authenticators.broker.util.SerializedBrokered
 import org.keycloak.broker.provider.*;
 import org.keycloak.broker.provider.util.IdentityBrokerState;
 import org.keycloak.broker.saml.SAMLEndpoint;
-import org.keycloak.broker.social.SocialIdentityProvider;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.common.util.ObjectUtil;
@@ -135,7 +134,6 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
         List<ProviderFactory> allProviders = new ArrayList<ProviderFactory>();
 
         allProviders.addAll(session.getKeycloakSessionFactory().getProviderFactories(IdentityProvider.class));
-        allProviders.addAll(session.getKeycloakSessionFactory().getProviderFactories(SocialIdentityProvider.class));
 
         for (ProviderFactory providerFactory : allProviders) {
             availableProviders.put(providerFactory.getId(), (IdentityProviderFactory) providerFactory);
