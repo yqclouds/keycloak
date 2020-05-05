@@ -27,7 +27,6 @@ import org.keycloak.keys.KeySpi;
 import org.keycloak.keys.PublicKeyStorageSpi;
 import org.keycloak.locale.LocaleSelectorSPI;
 import org.keycloak.locale.LocaleUpdaterSPI;
-import org.keycloak.migration.MigrationSpi;
 import org.keycloak.models.*;
 import org.keycloak.models.cache.CacheRealmProviderSpi;
 import org.keycloak.models.cache.CacheUserProviderSpi;
@@ -158,7 +157,6 @@ public class KeycloakWebConfiguration {
         results.add(new LocaleUpdaterSPI());
         results.add(new LoginFormsSpi());
         results.add(new LoginProtocolSpi());
-        results.add(new MigrationSpi());
         results.add(new OIDCExtSPI());
         results.add(new PasswordHashSpi());
         results.add(new PasswordPolicyManagerSpi());

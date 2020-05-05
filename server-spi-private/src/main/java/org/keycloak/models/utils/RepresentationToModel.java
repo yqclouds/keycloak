@@ -33,15 +33,7 @@ import org.keycloak.common.util.UriUtils;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.keys.KeyProvider;
-import org.keycloak.migration.MigrationProvider;
-import org.keycloak.migration.migrators.MigrateTo8_0_0;
-import org.keycloak.migration.migrators.MigrationUtils;
 import org.keycloak.models.*;
-import org.keycloak.models.credential.OTPCredentialModel;
-import org.keycloak.models.credential.PasswordCredentialModel;
-import org.keycloak.models.credential.dto.OTPCredentialData;
-import org.keycloak.models.credential.dto.OTPSecretData;
-import org.keycloak.models.credential.dto.PasswordCredentialData;
 import org.keycloak.policy.PasswordPolicyNotMetException;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.idm.*;
@@ -76,10 +68,6 @@ public class RepresentationToModel {
     }
 
     public static void importRealm(KeycloakSession session, RealmRepresentation rep, RealmModel newRealm, boolean skipUserDependent) {
-        convertDeprecatedSocialProviders(rep);
-        convertDeprecatedApplications(session, rep);
-        convertDeprecatedClientTemplates(rep);
-
         newRealm.setName(rep.getRealm());
         if (rep.getDisplayName() != null) newRealm.setDisplayName(rep.getDisplayName());
         if (rep.getDisplayNameHtml() != null) newRealm.setDisplayNameHtml(rep.getDisplayNameHtml());
@@ -201,17 +189,7 @@ public class RepresentationToModel {
         newRealm.setWebAuthnPolicyPasswordless(webAuthnPolicy);
 
         Map<String, String> mappedFlows = importAuthenticationFlows(newRealm, rep);
-        if (rep.getRequiredActions() != null) {
-            for (RequiredActionProviderRepresentation action : rep.getRequiredActions()) {
-                RequiredActionProviderModel model = toModel(action);
-
-                MigrationUtils.updateOTPRequiredAction(model);
-
-                newRealm.addRequiredActionProvider(model);
-            }
-        } else {
-            DefaultRequiredActions.addActions(newRealm);
-        }
+        DefaultRequiredActions.addActions(newRealm);
 
         importIdentityProviders(rep, newRealm, session);
         importIdentityProviderMappers(rep, newRealm);
@@ -785,126 +763,6 @@ public class RepresentationToModel {
         user.setSocialLinks(null);
     }
 
-    private static void convertDeprecatedApplications(KeycloakSession session, RealmRepresentation realm) {
-        if (realm.getApplications() != null || realm.getOauthClients() != null) {
-            if (realm.getClients() == null) {
-                realm.setClients(new LinkedList<ClientRepresentation>());
-            }
-
-            List<ApplicationRepresentation> clients = new LinkedList<>();
-            if (realm.getApplications() != null) {
-                clients.addAll(realm.getApplications());
-            }
-            if (realm.getOauthClients() != null) {
-                clients.addAll(realm.getOauthClients());
-            }
-
-            for (ApplicationRepresentation app : clients) {
-                app.setClientId(app.getName());
-                app.setName(null);
-
-                if (app instanceof OAuthClientRepresentation) {
-                    app.setConsentRequired(true);
-                    app.setFullScopeAllowed(false);
-                }
-
-                if (app.getProtocolMappers() == null && app.getClaims() != null) {
-                    long mask = getClaimsMask(app.getClaims());
-                    List<ProtocolMapperRepresentation> convertedProtocolMappers = session.getProvider(MigrationProvider.class).getMappersForClaimMask(mask);
-                    app.setProtocolMappers(convertedProtocolMappers);
-                    app.setClaims(null);
-                }
-
-                realm.getClients().add(app);
-            }
-        }
-
-        if (realm.getApplicationScopeMappings() != null && realm.getClientScopeMappings() == null) {
-            realm.setClientScopeMappings(realm.getApplicationScopeMappings());
-        }
-
-        if (realm.getRoles() != null && realm.getRoles().getApplication() != null && realm.getRoles().getClient() == null) {
-            realm.getRoles().setClient(realm.getRoles().getApplication());
-        }
-
-        if (realm.getUsers() != null) {
-            for (UserRepresentation user : realm.getUsers()) {
-                if (user.getApplicationRoles() != null && user.getClientRoles() == null) {
-                    user.setClientRoles(user.getApplicationRoles());
-                }
-            }
-        }
-
-        if (realm.getRoles() != null && realm.getRoles().getRealm() != null) {
-            for (RoleRepresentation role : realm.getRoles().getRealm()) {
-                if (role.getComposites() != null && role.getComposites().getApplication() != null && role.getComposites().getClient() == null) {
-                    role.getComposites().setClient(role.getComposites().getApplication());
-                }
-            }
-        }
-
-        if (realm.getRoles() != null && realm.getRoles().getClient() != null) {
-            for (Map.Entry<String, List<RoleRepresentation>> clientRoles : realm.getRoles().getClient().entrySet()) {
-                for (RoleRepresentation role : clientRoles.getValue()) {
-                    if (role.getComposites() != null && role.getComposites().getApplication() != null && role.getComposites().getClient() == null) {
-                        role.getComposites().setClient(role.getComposites().getApplication());
-                    }
-                }
-            }
-        }
-    }
-
-    private static void convertDeprecatedClientTemplates(RealmRepresentation realm) {
-        if (realm.getClientTemplates() != null) {
-
-            logger.warnf("Using deprecated 'clientTemplates' configuration in JSON representation for realm '%s'. It will be removed in future versions", realm.getRealm());
-
-            List<ClientScopeRepresentation> clientScopes = new LinkedList<>();
-            for (ClientTemplateRepresentation template : realm.getClientTemplates()) {
-                ClientScopeRepresentation scopeRep = new ClientScopeRepresentation();
-                scopeRep.setId(template.getId());
-                scopeRep.setName(template.getName());
-                scopeRep.setProtocol(template.getProtocol());
-                scopeRep.setDescription(template.getDescription());
-                scopeRep.setAttributes(template.getAttributes());
-                scopeRep.setProtocolMappers(template.getProtocolMappers());
-
-                clientScopes.add(scopeRep);
-            }
-
-            realm.setClientScopes(clientScopes);
-        }
-    }
-
-    private static void convertDeprecatedCredentialsFormat(UserRepresentation user) {
-        if (user.getCredentials() != null) {
-            for (CredentialRepresentation cred : user.getCredentials()) {
-                try {
-                    if ((cred.getCredentialData() == null || cred.getSecretData() == null) && cred.getValue() == null) {
-                        logger.warnf("Using deprecated 'credentials' format in JSON representation for user '%s'. It will be removed in future versions", user.getUsername());
-
-                        if (PasswordCredentialModel.TYPE.equals(cred.getType()) || PasswordCredentialModel.PASSWORD_HISTORY.equals(cred.getType())) {
-                            PasswordCredentialData credentialData = new PasswordCredentialData(cred.getHashIterations(), cred.getAlgorithm());
-                            cred.setCredentialData(JsonSerialization.writeValueAsString(credentialData));
-                            // Created this manually to avoid conversion from Base64 and back
-                            cred.setSecretData("{\"value\":\"" + cred.getHashedSaltedValue() + "\",\"salt\":\"" + cred.getSalt() + "\"}");
-                            cred.setPriority(10);
-                        } else if (OTPCredentialModel.TOTP.equals(cred.getType()) || OTPCredentialModel.HOTP.equals(cred.getType())) {
-                            OTPCredentialData credentialData = new OTPCredentialData(cred.getType(), cred.getDigits(), cred.getCounter(), cred.getPeriod(), cred.getAlgorithm());
-                            OTPSecretData secretData = new OTPSecretData(cred.getHashedSaltedValue());
-                            cred.setCredentialData(JsonSerialization.writeValueAsString(credentialData));
-                            cred.setSecretData(JsonSerialization.writeValueAsString(secretData));
-                            cred.setPriority(20);
-                            cred.setType(OTPCredentialModel.TYPE);
-                        }
-                    }
-                } catch (IOException ioe) {
-                    throw new RuntimeException(ioe);
-                }
-            }
-        }
-    }
-
     public static void renameRealm(RealmModel realm, String name) {
         if (name.equals(realm.getName())) return;
 
@@ -1331,9 +1189,6 @@ public class RepresentationToModel {
             for (ProtocolMapperRepresentation mapper : resourceRep.getProtocolMappers()) {
                 client.addProtocolMapper(toModel(mapper));
             }
-
-            MigrationUtils.updateProtocolMappers(client);
-
         }
 
         if (resourceRep.getClientTemplate() != null) {
@@ -1523,7 +1378,6 @@ public class RepresentationToModel {
             for (ProtocolMapperRepresentation mapper : resourceRep.getProtocolMappers()) {
                 clientScope.addProtocolMapper(toModel(mapper));
             }
-            MigrationUtils.updateProtocolMappers(clientScope);
         }
 
         if (resourceRep.getAttributes() != null) {
@@ -1728,7 +1582,6 @@ public class RepresentationToModel {
     }
 
     public static void createCredentials(UserRepresentation userRep, KeycloakSession session, RealmModel realm, UserModel user, boolean adminRequest) {
-        convertDeprecatedCredentialsFormat(userRep);
         if (userRep.getCredentials() != null) {
             for (CredentialRepresentation cred : userRep.getCredentials()) {
                 if (cred.getId() != null && session.userCredentialManager().getStoredCredentialById(realm, user, cred.getId()) != null) {
@@ -1948,10 +1801,6 @@ public class RepresentationToModel {
             model.setRequirement(AuthenticationExecutionModel.Requirement.valueOf(rep.getRequirement()));
             model.setParentFlow(parentFlow.getId());
         } catch (IllegalArgumentException iae) {
-            //retro-compatible for previous OPTIONAL being changed to CONDITIONAL
-            if ("OPTIONAL".equals(rep.getRequirement())) {
-                MigrateTo8_0_0.migrateOptionalAuthenticationExecution(realm, parentFlow, model, false);
-            }
         }
         return model;
     }

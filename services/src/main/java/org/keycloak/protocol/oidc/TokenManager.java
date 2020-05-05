@@ -34,7 +34,6 @@ import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.jose.jws.JWSInputException;
 import org.keycloak.jose.jws.crypto.HashUtils;
-import org.keycloak.migration.migrators.MigrationUtils;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.RoleUtils;
@@ -273,7 +272,6 @@ public class TokenManager {
         // Case when offline token is migrated from previous version
         if (oldTokenScope == null && userSession.isOffline()) {
             logger.debugf("Migrating offline token of user '%s' for client '%s' of realm '%s'", user.getUsername(), client.getClientId(), realm.getName());
-            MigrationUtils.migrateOldOfflineToken(session, realm, client, user);
             oldTokenScope = OAuth2Constants.OFFLINE_ACCESS;
         }
 
