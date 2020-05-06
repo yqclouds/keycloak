@@ -32,6 +32,6 @@ public class InfinispanActionTokenStoreProviderFactory implements ActionTokenSto
 
     @Override
     public ActionTokenStoreProvider create(KeycloakSession session) {
-        return new InfinispanActionTokenStoreProvider(session);
+        return new InfinispanActionTokenStoreProvider();
     }
 }

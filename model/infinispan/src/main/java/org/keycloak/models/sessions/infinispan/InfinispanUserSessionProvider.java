@@ -180,7 +180,7 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
 
     @Override
     public UserSessionModel createUserSession(RealmModel realm, UserModel user, String loginUsername, String ipAddress, String authMethod, boolean rememberMe, String brokerSessionId, String brokerUserId) {
-        final String userSessionId = keyGenerator.generateKeyString(session, sessionCache);
+        final String userSessionId = keyGenerator.generateKeyString(sessionCache);
         return createUserSession(userSessionId, realm, user, loginUsername, ipAddress, authMethod, rememberMe, brokerSessionId, brokerUserId);
     }
 

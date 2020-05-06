@@ -22,6 +22,9 @@ import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.models.KeycloakTransaction;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -30,6 +33,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class InfinispanKeycloakTransaction implements KeycloakTransaction {
 
     private final static Logger log = Logger.getLogger(InfinispanKeycloakTransaction.class);

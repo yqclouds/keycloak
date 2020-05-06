@@ -19,7 +19,8 @@ package org.keycloak.models.sessions.infinispan.events;
 
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.models.AbstractKeycloakTransaction;
-import org.keycloak.models.KeycloakSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -29,37 +30,28 @@ import java.util.List;
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component
 public class SessionEventsSenderTransaction extends AbstractKeycloakTransaction {
-
-    private final KeycloakSession session;
-
     private final List<DCEventContext> sessionEvents = new LinkedList<>();
 
-    public SessionEventsSenderTransaction(KeycloakSession session) {
-        this.session = session;
-    }
+    @Autowired
+    private ClusterProvider clusterProvider;
 
     public void addEvent(SessionClusterEvent event, ClusterProvider.DCNotify dcNotify) {
         sessionEvents.add(new DCEventContext(dcNotify, event));
     }
 
-
     @Override
     protected void commitImpl() {
-        ClusterProvider cluster = session.getBeanFactory().getBean(ClusterProvider.class);
-
         // TODO bulk notify (send whole list instead of separate events?)
         for (DCEventContext entry : sessionEvents) {
-            cluster.notify(entry.event.getEventKey(), entry.event, false, entry.dcNotify);
+            clusterProvider.notify(entry.event.getEventKey(), entry.event, false, entry.dcNotify);
         }
     }
 
-
     @Override
     protected void rollbackImpl() {
-
     }
-
 
     private class DCEventContext {
         private final ClusterProvider.DCNotify dcNotify;

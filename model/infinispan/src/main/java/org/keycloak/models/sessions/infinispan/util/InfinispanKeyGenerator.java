@@ -25,6 +25,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.sessions.StickySessionEncoderProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -37,30 +38,28 @@ import java.util.concurrent.Executors;
  */
 @Component
 public class InfinispanKeyGenerator {
-
-    private static final Logger log = Logger.getLogger(InfinispanKeyGenerator.class);
-
+    private static final Logger LOG = Logger.getLogger(InfinispanKeyGenerator.class);
 
     private final Map<String, KeyAffinityService> keyAffinityServices = new ConcurrentHashMap<>();
 
+    @Autowired
+    private StickySessionEncoderProvider stickySessionEncoderProvider;
 
-    public String generateKeyString(KeycloakSession session, Cache<String, ?> cache) {
-        return generateKey(session, cache, new StringKeyGenerator());
+    public String generateKeyString(Cache<String, ?> cache) {
+        return generateKey(cache, new StringKeyGenerator());
     }
 
-
-    public UUID generateKeyUUID(KeycloakSession session, Cache<UUID, ?> cache) {
-        return generateKey(session, cache, new UUIDKeyGenerator());
+    public UUID generateKeyUUID(Cache<UUID, ?> cache) {
+        return generateKey(cache, new UUIDKeyGenerator());
     }
 
-
-    private <K> K generateKey(KeycloakSession session, Cache<K, ?> cache, KeyGenerator<K> keyGenerator) {
+    private <K> K generateKey(Cache<K, ?> cache, KeyGenerator<K> keyGenerator) {
         String cacheName = cache.getName();
 
         // "wantsLocalKey" is true if route is not attached to the sticky session cookie. Without attached route, We want the key, which will be "owned" by this node.
         // This is needed due the fact that external loadbalancer will attach route corresponding to our node, which will be the owner of the particular key, hence we
         // will be able to lookup key locally.
-        boolean wantsLocalKey = !session.getBeanFactory().getBean(StickySessionEncoderProvider.class).shouldAttachRoute();
+        boolean wantsLocalKey = !stickySessionEncoderProvider.shouldAttachRoute();
 
         if (wantsLocalKey && cache.getCacheConfiguration().clustering().cacheMode().isClustered()) {
             KeyAffinityService<K> keyAffinityService = keyAffinityServices.get(cacheName);
@@ -68,16 +67,14 @@ public class InfinispanKeyGenerator {
                 keyAffinityService = createKeyAffinityService(cache, keyGenerator);
                 keyAffinityServices.put(cacheName, keyAffinityService);
 
-                log.debugf("Registered key affinity service for cache '%s'", cacheName);
+                LOG.debugf("Registered key affinity service for cache '%s'", cacheName);
             }
 
             return keyAffinityService.getKeyForAddress(cache.getCacheManager().getAddress());
         } else {
             return keyGenerator.getKey();
         }
-
     }
-
 
     private <K> KeyAffinityService<K> createKeyAffinityService(Cache<K, ?> cache, KeyGenerator<K> keyGenerator) {
         // SingleThreadExecutor is recommended due it needs the single thread and leave it in the WAITING state
@@ -88,18 +85,14 @@ public class InfinispanKeyGenerator {
                 16);
     }
 
-
     private static class UUIDKeyGenerator implements KeyGenerator<UUID> {
-
         @Override
         public UUID getKey() {
             return UUID.randomUUID();
         }
     }
 
-
     private static class StringKeyGenerator implements KeyGenerator<String> {
-
         @Override
         public String getKey() {
             return KeycloakModelUtils.generateId();

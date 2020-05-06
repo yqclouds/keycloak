@@ -53,7 +53,7 @@ public class InfinispanAuthenticationSessionProviderFactory implements Authentic
 
     @Override
     public AuthenticationSessionProvider create(KeycloakSession session) {
-        return new InfinispanAuthenticationSessionProvider(session);
+        return new InfinispanAuthenticationSessionProvider();
     }
 
     @PostConstruct

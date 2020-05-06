@@ -20,12 +20,10 @@ import org.infinispan.Cache;
 import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
-import org.keycloak.models.ActionTokenKeyModel;
-import org.keycloak.models.ActionTokenStoreProvider;
-import org.keycloak.models.ActionTokenValueModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.*;
 import org.keycloak.models.sessions.infinispan.entities.ActionTokenReducedKey;
 import org.keycloak.models.sessions.infinispan.entities.ActionTokenValueEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import java.util.Map;
@@ -38,29 +36,24 @@ public class InfinispanActionTokenStoreProvider implements ActionTokenStoreProvi
     private static final Logger LOG = Logger.getLogger(InfinispanActionTokenStoreProvider.class);
 
     private final Cache<ActionTokenReducedKey, ActionTokenValueEntity> actionKeyCache;
+
+    private final InfinispanKeycloakTransaction tx = new InfinispanKeycloakTransaction();
+
+    @Autowired
+    private KeycloakSessionFactory sessionFactory;
     private final KeycloakSession session;
 
-    private InfinispanKeycloakTransaction tx;
+    @Autowired
+    private InfinispanConnectionProvider connectionProvider;
 
-    public InfinispanActionTokenStoreProvider(KeycloakSession session) {
-        this.session = session;
-        this.actionKeyCache = initActionTokenCache(session);
+    public InfinispanActionTokenStoreProvider() {
+        this.session = sessionFactory.create();
+        this.actionKeyCache = connectionProvider.getCache(InfinispanConnectionProvider.ACTION_TOKEN_CACHE);
     }
 
     @PostConstruct
     public void afterPropertiesSet() {
-        this.tx = new InfinispanKeycloakTransaction();
-
         session.getTransactionManager().enlistAfterCompletion(tx);
-    }
-
-    private Cache<ActionTokenReducedKey, ActionTokenValueEntity> initActionTokenCache(KeycloakSession session) {
-        InfinispanConnectionProvider connections = session.getBeanFactory().getBean(InfinispanConnectionProvider.class);
-        return connections.getCache(InfinispanConnectionProvider.ACTION_TOKEN_CACHE);
-    }
-
-    @Override
-    public void close() {
     }
 
     @Override
