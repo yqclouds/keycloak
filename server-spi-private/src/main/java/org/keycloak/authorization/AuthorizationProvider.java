@@ -72,10 +72,10 @@ public final class AuthorizationProvider implements Provider {
     private StoreFactory storeFactory;
     private StoreFactory storeFactoryDelegate;
 
-    public AuthorizationProvider(KeycloakSession session, RealmModel realm, PolicyEvaluator policyEvaluator) {
+    public AuthorizationProvider(KeycloakSession session, RealmModel realm) {
         this.keycloakSession = session;
         this.realm = realm;
-        this.policyEvaluator = policyEvaluator;
+        this.policyEvaluator = session.getBeanFactory().getBean(PolicyEvaluator.class);
     }
 
     /**

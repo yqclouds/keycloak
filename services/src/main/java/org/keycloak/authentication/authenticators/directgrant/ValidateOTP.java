@@ -101,14 +101,12 @@ public class ValidateOTP extends AbstractDirectGrantAuthenticator implements Cre
 
     @Override
     public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
-
     }
 
     @Override
     public boolean isUserSetupAllowed() {
         return false;
     }
-
 
     @Override
     public String getDisplayType() {
@@ -148,5 +146,4 @@ public class ValidateOTP extends AbstractDirectGrantAuthenticator implements Cre
     public OTPCredentialProvider getCredentialProvider(KeycloakSession session) {
         return (OTPCredentialProvider) session.getProvider(CredentialProvider.class, "keycloak-otp");
     }
-
 }

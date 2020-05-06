@@ -18,8 +18,6 @@
 
 package org.keycloak.authorization;
 
-import org.keycloak.authorization.policy.evaluation.DefaultPolicyEvaluator;
-import org.keycloak.authorization.policy.evaluation.PolicyEvaluator;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.stereotype.ProviderFactory;
@@ -31,8 +29,10 @@ import org.springframework.stereotype.Component;
 @Component("DefaultAuthorizationProviderFactory")
 @ProviderFactory(id = "authorization", providerClasses = AuthorizationProvider.class)
 public class DefaultAuthorizationProviderFactory implements AuthorizationProviderFactory {
-
-    private PolicyEvaluator policyEvaluator = new DefaultPolicyEvaluator();
+    @Override
+    public String getId() {
+        return "authorization";
+    }
 
     @Override
     public AuthorizationProvider create(KeycloakSession session) {
@@ -40,12 +40,7 @@ public class DefaultAuthorizationProviderFactory implements AuthorizationProvide
     }
 
     @Override
-    public String getId() {
-        return "authorization";
-    }
-
-    @Override
     public AuthorizationProvider create(KeycloakSession session, RealmModel realm) {
-        return new AuthorizationProvider(session, realm, policyEvaluator);
+        return new AuthorizationProvider(session, realm);
     }
 }

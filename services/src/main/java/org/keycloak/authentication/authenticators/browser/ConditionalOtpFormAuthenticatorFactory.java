@@ -53,21 +53,6 @@ public class ConditionalOtpFormAuthenticatorFactory implements AuthenticatorFact
     }
 
     @Override
-    public void init(Config.Scope config) {
-        //NOOP
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-        //NOOP
-    }
-
-    @Override
-    public void close() {
-        //NOOP
-    }
-
-    @Override
     public String getId() {
         return PROVIDER_ID;
     }
@@ -86,7 +71,6 @@ public class ConditionalOtpFormAuthenticatorFactory implements AuthenticatorFact
     public boolean isUserSetupAllowed() {
         return true;
     }
-
 
     @Override
     public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {

@@ -17,12 +17,10 @@
 
 package org.keycloak.authentication.authenticators.directgrant;
 
-import org.keycloak.Config;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.representations.idm.OAuth2ErrorRepresentation;
 
 import javax.ws.rs.core.MediaType;
@@ -40,26 +38,14 @@ public abstract class AbstractDirectGrantAuthenticator implements Authenticator,
 
     @Override
     public void action(AuthenticationFlowContext context) {
-
     }
 
     @Override
     public void close() {
-
     }
 
     @Override
     public Authenticator create(KeycloakSession session) {
         return this;
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
     }
 }

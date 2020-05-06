@@ -69,14 +69,12 @@ public class ValidatePassword extends AbstractDirectGrantAuthenticator {
 
     @Override
     public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
-
     }
 
     @Override
     public boolean isUserSetupAllowed() {
         return false;
     }
-
 
     @Override
     public String getDisplayType() {
