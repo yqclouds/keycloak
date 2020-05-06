@@ -16,10 +16,14 @@
  */
 package org.keycloak.models.cache.infinispan.authorization;
 
+import org.infinispan.Cache;
 import org.jboss.logging.Logger;
 import org.keycloak.authorization.UserManagedPermissionUtil;
 import org.keycloak.authorization.model.*;
 import org.keycloak.authorization.store.*;
+import org.keycloak.cluster.ClusterEvent;
+import org.keycloak.cluster.ClusterProvider;
+import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakTransaction;
 import org.keycloak.models.ModelException;
@@ -27,15 +31,19 @@ import org.keycloak.models.cache.authorization.CachedStoreFactoryProvider;
 import org.keycloak.models.cache.infinispan.authorization.entities.*;
 import org.keycloak.models.cache.infinispan.authorization.events.*;
 import org.keycloak.models.cache.infinispan.entities.NonExistentItem;
+import org.keycloak.models.cache.infinispan.entities.Revisioned;
 import org.keycloak.models.cache.infinispan.events.InvalidationEvent;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
 import org.keycloak.storage.StorageId;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import static org.keycloak.models.cache.infinispan.InfinispanCacheRealmProviderFactory.REALM_CLEAR_CACHE_EVENTS;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -43,8 +51,12 @@ import java.util.stream.Collectors;
  */
 public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
     protected static final Logger logger = Logger.getLogger(StoreFactoryCacheSession.class);
-    protected final long startupRevision;
-    protected StoreFactoryCacheManager cache;
+
+    public static final String AUTHORIZATION_CLEAR_CACHE_EVENTS = "AUTHORIZATION_CLEAR_CACHE_EVENTS";
+    public static final String AUTHORIZATION_INVALIDATION_EVENTS = "AUTHORIZATION_INVALIDATION_EVENTS";
+
+    protected long startupRevision;
+    private StoreFactoryCacheManager storeCache;
     protected boolean transactionActive;
     protected boolean setRollbackOnly;
     protected Map<String, ResourceServerAdapter> managedResourceServers = new HashMap<>();
@@ -63,10 +75,28 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
     protected PolicyCache policyCache;
     protected PermissionTicketCache permissionTicketCache;
 
-    public StoreFactoryCacheSession(StoreFactoryCacheManager cache, KeycloakSession session) {
-        this.cache = cache;
-        this.startupRevision = cache.getCurrentCounter();
+    public StoreFactoryCacheSession(KeycloakSession session) {
         this.session = session;
+    }
+
+    @PostConstruct
+    public void afterPropertiesSet() {
+        Cache<String, Revisioned> cache = session.getProvider(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.AUTHORIZATION_CACHE_NAME);
+        Cache<String, Long> revisions = session.getProvider(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.AUTHORIZATION_REVISIONS_CACHE_NAME);
+        this.storeCache = new StoreFactoryCacheManager(cache, revisions);
+        ClusterProvider cluster = session.getProvider(ClusterProvider.class);
+
+        cluster.registerListener(AUTHORIZATION_INVALIDATION_EVENTS, (ClusterEvent event) -> {
+            InvalidationEvent invalidationEvent = (InvalidationEvent) event;
+            this.storeCache.invalidationEventReceived(invalidationEvent);
+        });
+
+        cluster.registerListener(AUTHORIZATION_CLEAR_CACHE_EVENTS, (ClusterEvent event) -> cache.clear());
+        cluster.registerListener(REALM_CLEAR_CACHE_EVENTS, (ClusterEvent event) -> cache.clear());
+
+        logger.debug("Registered cluster listeners");
+
+        this.startupRevision = storeCache.getCurrentCounter();
         this.resourceServerCache = new ResourceServerCache();
         this.scopeCache = new ScopeCache();
         this.resourceCache = new ResourceCache();
@@ -240,7 +270,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
                     runInvalidations();
                     transactionActive = false;
                 } finally {
-                    cache.endRevisionBatch();
+                    storeCache.endRevisionBatch();
                 }
             }
 
@@ -251,7 +281,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
                     runInvalidations();
                     transactionActive = false;
                 } finally {
-                    cache.endRevisionBatch();
+                    storeCache.endRevisionBatch();
                 }
             }
 
@@ -274,10 +304,10 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
 
     protected void runInvalidations() {
         for (String id : invalidations) {
-            cache.invalidateObject(id);
+            storeCache.invalidateObject(id);
         }
 
-        cache.sendInvalidationEvents(session, invalidationEvents, InfinispanCacheStoreFactoryProviderFactory.AUTHORIZATION_INVALIDATION_EVENTS);
+        storeCache.sendInvalidationEvents(session, invalidationEvents, AUTHORIZATION_INVALIDATION_EVENTS);
     }
 
     public long getStartupRevision() {
@@ -289,7 +319,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
     }
 
     public void registerResourceServerInvalidation(String id) {
-        cache.resourceServerUpdated(id, invalidations);
+        storeCache.resourceServerUpdated(id, invalidations);
         ResourceServerAdapter adapter = managedResourceServers.get(id);
         if (adapter != null) adapter.invalidateFlag();
 
@@ -297,7 +327,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
     }
 
     public void registerScopeInvalidation(String id, String name, String serverId) {
-        cache.scopeUpdated(id, name, serverId, invalidations);
+        storeCache.scopeUpdated(id, name, serverId, invalidations);
         ScopeAdapter adapter = managedScopes.get(id);
         if (adapter != null) adapter.invalidateFlag();
 
@@ -305,7 +335,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
     }
 
     public void registerResourceInvalidation(String id, String name, String type, Set<String> uris, Set<String> scopes, String serverId, String owner) {
-        cache.resourceUpdated(id, name, type, uris, scopes, serverId, owner, invalidations);
+        storeCache.resourceUpdated(id, name, type, uris, scopes, serverId, owner, invalidations);
         ResourceAdapter adapter = managedResources.get(id);
         if (adapter != null) adapter.invalidateFlag();
 
@@ -317,7 +347,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
         if (Objects.nonNull(defaultResourceType)) {
             resourceTypes.add(defaultResourceType);
         }
-        cache.policyUpdated(id, name, resources, resourceTypes, scopes, serverId, invalidations);
+        storeCache.policyUpdated(id, name, resources, resourceTypes, scopes, serverId, invalidations);
         PolicyAdapter adapter = managedPolicies.get(id);
         if (adapter != null) adapter.invalidateFlag();
 
@@ -325,7 +355,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
     }
 
     public void registerPermissionTicketInvalidation(String id, String owner, String requester, String resource, String resourceName, String scope, String serverId) {
-        cache.permissionTicketUpdated(id, owner, requester, resource, resourceName, scope, serverId, invalidations);
+        storeCache.permissionTicketUpdated(id, owner, requester, resource, resourceName, scope, serverId, invalidations);
         PermissionTicketAdapter adapter = managedPermissionTickets.get(id);
         if (adapter != null) adapter.invalidateFlag();
 
@@ -377,55 +407,55 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
 
     private void setModelDoesNotExists(String id, Long loaded) {
         if (!invalidations.contains(id)) {
-            cache.addRevisioned(new NonExistentItem(id, loaded), startupRevision);
+            storeCache.addRevisioned(new NonExistentItem(id, loaded), startupRevision);
         }
     }
 
     boolean modelMightExist(String id) {
-        return invalidations.contains(id) || cache.get(id, NonExistentItem.class) == null;
+        return invalidations.contains(id) || storeCache.get(id, NonExistentItem.class) == null;
     }
 
     void cachePolicy(Policy model) {
         String id = model.getId();
-        if (cache.getCache().containsKey(id)) {
+        if (storeCache.getCache().containsKey(id)) {
             return;
         }
         if (!modelMightExist(id)) {
             return;
         }
         if (invalidations.contains(id)) return;
-        cache.addRevisioned(createCachedPolicy(model, id), startupRevision);
+        storeCache.addRevisioned(createCachedPolicy(model, id), startupRevision);
     }
 
     CachedPolicy createCachedPolicy(Policy model, String id) {
-        Long loaded = cache.getCurrentRevision(id);
+        Long loaded = storeCache.getCurrentRevision(id);
         return new CachedPolicy(loaded, model);
     }
 
     void cacheResource(Resource model) {
         String id = model.getId();
-        if (cache.getCache().containsKey(id)) {
+        if (storeCache.getCache().containsKey(id)) {
             return;
         }
-        Long loaded = cache.getCurrentRevision(id);
+        Long loaded = storeCache.getCurrentRevision(id);
         if (!modelMightExist(id)) {
             return;
         }
         if (invalidations.contains(id)) return;
-        cache.addRevisioned(new CachedResource(loaded, model), startupRevision);
+        storeCache.addRevisioned(new CachedResource(loaded, model), startupRevision);
     }
 
     void cacheScope(Scope model) {
         String id = model.getId();
-        if (cache.getCache().containsKey(id)) {
+        if (storeCache.getCache().containsKey(id)) {
             return;
         }
-        Long loaded = cache.getCurrentRevision(id);
+        Long loaded = storeCache.getCurrentRevision(id);
         if (!modelMightExist(id)) {
             return;
         }
         if (invalidations.contains(id)) return;
-        cache.addRevisioned(new CachedScope(loaded, model), startupRevision);
+        storeCache.addRevisioned(new CachedScope(loaded, model), startupRevision);
     }
 
     protected class ResourceServerCache implements ResourceServerStore {
@@ -445,9 +475,9 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
             ResourceServer server = findById(id);
             if (server == null) return;
 
-            cache.invalidateObject(id);
+            storeCache.invalidateObject(id);
             invalidationEvents.add(ResourceServerRemovedEvent.create(id, server.getId()));
-            cache.resourceServerRemoval(id, invalidations);
+            storeCache.resourceServerRemoval(id, invalidations);
             getResourceServerStoreDelegate().delete(id);
 
         }
@@ -455,13 +485,13 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
         @Override
         public ResourceServer findById(String id) {
             if (id == null) return null;
-            CachedResourceServer cached = cache.get(id, CachedResourceServer.class);
+            CachedResourceServer cached = storeCache.get(id, CachedResourceServer.class);
             if (cached != null) {
                 logger.tracev("by id cache hit: {0}", cached.getId());
             }
 
             if (cached == null) {
-                Long loaded = cache.getCurrentRevision(id);
+                Long loaded = storeCache.getCurrentRevision(id);
                 if (!modelMightExist(id)) return null;
                 ResourceServer model = getResourceServerStoreDelegate().findById(id);
                 if (model == null) {
@@ -470,7 +500,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
                 }
                 if (invalidations.contains(id)) return model;
                 cached = new CachedResourceServer(loaded, model);
-                cache.addRevisioned(cached, startupRevision);
+                storeCache.addRevisioned(cached, startupRevision);
             } else if (invalidations.contains(id)) {
                 return getResourceServerStoreDelegate().findById(id);
             } else if (managedResourceServers.containsKey(id)) {
@@ -501,21 +531,21 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
             Scope scope = findById(id, null);
             if (scope == null) return;
 
-            cache.invalidateObject(id);
+            storeCache.invalidateObject(id);
             invalidationEvents.add(ScopeRemovedEvent.create(id, scope.getName(), scope.getResourceServer().getId()));
-            cache.scopeRemoval(id, scope.getName(), scope.getResourceServer().getId(), invalidations);
+            storeCache.scopeRemoval(id, scope.getName(), scope.getResourceServer().getId(), invalidations);
             getScopeStoreDelegate().delete(id);
         }
 
         @Override
         public Scope findById(String id, String resourceServerId) {
             if (id == null) return null;
-            CachedScope cached = cache.get(id, CachedScope.class);
+            CachedScope cached = storeCache.get(id, CachedScope.class);
             if (cached != null) {
                 logger.tracev("by id cache hit: {0}", cached.getId());
             }
             if (cached == null) {
-                Long loaded = cache.getCurrentRevision(id);
+                Long loaded = storeCache.getCurrentRevision(id);
                 if (!modelMightExist(id)) return null;
                 Scope model = getScopeStoreDelegate().findById(id, resourceServerId);
                 if (model == null) {
@@ -524,7 +554,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
                 }
                 if (invalidations.contains(id)) return model;
                 cached = new CachedScope(loaded, model);
-                cache.addRevisioned(cached, startupRevision);
+                storeCache.addRevisioned(cached, startupRevision);
             } else if (invalidations.contains(id)) {
                 return getScopeStoreDelegate().findById(id, resourceServerId);
             } else if (managedScopes.containsKey(id)) {
@@ -539,17 +569,17 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
         public Scope findByName(String name, String resourceServerId) {
             if (name == null) return null;
             String cacheKey = getScopeByNameCacheKey(name, resourceServerId);
-            ScopeListQuery query = cache.get(cacheKey, ScopeListQuery.class);
+            ScopeListQuery query = storeCache.get(cacheKey, ScopeListQuery.class);
             if (query != null) {
                 logger.tracev("scope by name cache hit: {0}", name);
             }
             if (query == null) {
-                Long loaded = cache.getCurrentRevision(cacheKey);
+                Long loaded = storeCache.getCurrentRevision(cacheKey);
                 Scope model = getScopeStoreDelegate().findByName(name, resourceServerId);
                 if (model == null) return null;
                 if (invalidations.contains(model.getId())) return model;
                 query = new ScopeListQuery(loaded, cacheKey, model.getId(), resourceServerId);
-                cache.addRevisioned(query, startupRevision);
+                storeCache.addRevisioned(query, startupRevision);
                 return model;
             } else if (invalidations.contains(cacheKey)) {
                 return getScopeStoreDelegate().findByName(name, resourceServerId);
@@ -596,9 +626,9 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
             Resource resource = findById(id, null);
             if (resource == null) return;
 
-            cache.invalidateObject(id);
+            storeCache.invalidateObject(id);
             invalidationEvents.add(ResourceRemovedEvent.create(id, resource.getName(), resource.getType(), resource.getUris(), resource.getOwner(), resource.getScopes().stream().map(scope -> scope.getId()).collect(Collectors.toSet()), resource.getResourceServer().getId()));
-            cache.resourceRemoval(id, resource.getName(), resource.getType(), resource.getUris(), resource.getOwner(), resource.getScopes().stream().map(scope -> scope.getId()).collect(Collectors.toSet()), resource.getResourceServer().getId(), invalidations);
+            storeCache.resourceRemoval(id, resource.getName(), resource.getType(), resource.getUris(), resource.getOwner(), resource.getScopes().stream().map(scope -> scope.getId()).collect(Collectors.toSet()), resource.getResourceServer().getId(), invalidations);
             getResourceStoreDelegate().delete(id);
 
         }
@@ -606,12 +636,12 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
         @Override
         public Resource findById(String id, String resourceServerId) {
             if (id == null) return null;
-            CachedResource cached = cache.get(id, CachedResource.class);
+            CachedResource cached = storeCache.get(id, CachedResource.class);
             if (cached != null) {
                 logger.tracev("by id cache hit: {0}", cached.getId());
             }
             if (cached == null) {
-                Long loaded = cache.getCurrentRevision(id);
+                Long loaded = storeCache.getCurrentRevision(id);
                 if (!modelMightExist(id)) return null;
                 Resource model = getResourceStoreDelegate().findById(id, resourceServerId);
                 if (model == null) {
@@ -620,7 +650,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
                 }
                 if (invalidations.contains(id)) return model;
                 cached = new CachedResource(loaded, model);
-                cache.addRevisioned(cached, startupRevision);
+                storeCache.addRevisioned(cached, startupRevision);
             } else if (invalidations.contains(id)) {
                 return getResourceStoreDelegate().findById(id, resourceServerId);
             } else if (managedResources.containsKey(id)) {
@@ -775,12 +805,12 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
         }
 
         private <R extends Resource, Q extends ResourceQuery> List<R> cacheQuery(String cacheKey, Class<Q> queryType, Supplier<List<R>> resultSupplier, BiFunction<Long, List<R>, Q> querySupplier, String resourceServerId, Consumer<R> consumer) {
-            Q query = cache.get(cacheKey, queryType);
+            Q query = storeCache.get(cacheKey, queryType);
             if (query != null) {
                 logger.tracev("cache hit for key: {0}", cacheKey);
             }
             if (query == null) {
-                Long loaded = cache.getCurrentRevision(cacheKey);
+                Long loaded = storeCache.getCurrentRevision(cacheKey);
                 List<R> model = resultSupplier.get();
                 if (model == null) return null;
                 if (invalidations.contains(cacheKey)) {
@@ -793,7 +823,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
                 }
                 ;
                 query = querySupplier.apply(loaded, model);
-                cache.addRevisioned(query, startupRevision);
+                storeCache.addRevisioned(query, startupRevision);
                 if (consumer != null) {
                     for (R resource : model) {
                         consumer.andThen(r -> cacheResource(resource)).accept(resource);
@@ -841,7 +871,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
             Policy policy = findById(id, null);
             if (policy == null) return;
 
-            cache.invalidateObject(id);
+            storeCache.invalidateObject(id);
             Set<String> resources = policy.getResources().stream().map(resource -> resource.getId()).collect(Collectors.toSet());
             ResourceServer resourceServer = policy.getResourceServer();
             Set<String> resourceTypes = getResourceTypes(resources, resourceServer.getId());
@@ -851,7 +881,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
             }
             Set<String> scopes = policy.getScopes().stream().map(scope -> scope.getId()).collect(Collectors.toSet());
             invalidationEvents.add(PolicyRemovedEvent.create(id, policy.getName(), resources, resourceTypes, scopes, resourceServer.getId()));
-            cache.policyRemoval(id, policy.getName(), resources, resourceTypes, scopes, resourceServer.getId(), invalidations);
+            storeCache.policyRemoval(id, policy.getName(), resources, resourceTypes, scopes, resourceServer.getId(), invalidations);
             getPolicyStoreDelegate().delete(id);
 
         }
@@ -860,21 +890,21 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
         public Policy findById(String id, String resourceServerId) {
             if (id == null) return null;
 
-            CachedPolicy cached = cache.get(id, CachedPolicy.class);
+            CachedPolicy cached = storeCache.get(id, CachedPolicy.class);
             if (cached != null) {
                 logger.tracev("by id cache hit: {0}", cached.getId());
             }
             if (cached == null) {
                 if (!modelMightExist(id)) return null;
                 Policy model = getPolicyStoreDelegate().findById(id, resourceServerId);
-                Long loaded = cache.getCurrentRevision(id);
+                Long loaded = storeCache.getCurrentRevision(id);
                 if (model == null) {
                     setModelDoesNotExists(id, loaded);
                     return null;
                 }
                 if (invalidations.contains(id)) return model;
                 cached = new CachedPolicy(loaded, model);
-                cache.addRevisioned(cached, startupRevision);
+                storeCache.addRevisioned(cached, startupRevision);
             } else if (invalidations.contains(id)) {
                 return getPolicyStoreDelegate().findById(id, resourceServerId);
             } else if (managedPolicies.containsKey(id)) {
@@ -989,12 +1019,12 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
         }
 
         private <R extends Policy, Q extends PolicyQuery> List<R> cacheQuery(String cacheKey, Class<Q> queryType, Supplier<List<R>> resultSupplier, BiFunction<Long, List<R>, Q> querySupplier, String resourceServerId, Consumer<R> consumer) {
-            Q query = cache.get(cacheKey, queryType);
+            Q query = storeCache.get(cacheKey, queryType);
             if (query != null) {
                 logger.tracev("cache hit for key: {0}", cacheKey);
             }
             if (query == null) {
-                Long loaded = cache.getCurrentRevision(cacheKey);
+                Long loaded = storeCache.getCurrentRevision(cacheKey);
                 List<R> model = resultSupplier.get();
                 if (model == null) return null;
                 if (invalidations.contains(cacheKey)) {
@@ -1007,7 +1037,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
                 }
                 ;
                 query = querySupplier.apply(loaded, model);
-                cache.addRevisioned(query, startupRevision);
+                storeCache.addRevisioned(query, startupRevision);
                 if (consumer != null) {
                     for (R policy : model) {
                         consumer.andThen(r -> cachePolicy(policy)).accept(policy);
@@ -1054,13 +1084,13 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
             PermissionTicket permission = findById(id, null);
             if (permission == null) return;
 
-            cache.invalidateObject(id);
+            storeCache.invalidateObject(id);
             String scopeId = null;
             if (permission.getScope() != null) {
                 scopeId = permission.getScope().getId();
             }
             invalidationEvents.add(PermissionTicketRemovedEvent.create(id, permission.getOwner(), permission.getRequester(), permission.getResource().getId(), permission.getResource().getName(), scopeId, permission.getResourceServer().getId()));
-            cache.permissionTicketRemoval(id, permission.getOwner(), permission.getRequester(), permission.getResource().getId(), permission.getResource().getName(), scopeId, permission.getResourceServer().getId(), invalidations);
+            storeCache.permissionTicketRemoval(id, permission.getOwner(), permission.getRequester(), permission.getResource().getId(), permission.getResource().getName(), scopeId, permission.getResourceServer().getId(), invalidations);
             getPermissionTicketStoreDelegate().delete(id);
             UserManagedPermissionUtil.removePolicy(permission, StoreFactoryCacheSession.this);
 
@@ -1070,12 +1100,12 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
         public PermissionTicket findById(String id, String resourceServerId) {
             if (id == null) return null;
 
-            CachedPermissionTicket cached = cache.get(id, CachedPermissionTicket.class);
+            CachedPermissionTicket cached = storeCache.get(id, CachedPermissionTicket.class);
             if (cached != null) {
                 logger.tracev("by id cache hit: {0}", cached.getId());
             }
             if (cached == null) {
-                Long loaded = cache.getCurrentRevision(id);
+                Long loaded = storeCache.getCurrentRevision(id);
                 if (!modelMightExist(id)) return null;
                 PermissionTicket model = getPermissionTicketStoreDelegate().findById(id, resourceServerId);
                 if (model == null) {
@@ -1084,7 +1114,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
                 }
                 if (invalidations.contains(id)) return model;
                 cached = new CachedPermissionTicket(loaded, model);
-                cache.addRevisioned(cached, startupRevision);
+                storeCache.addRevisioned(cached, startupRevision);
             } else if (invalidations.contains(id)) {
                 return getPermissionTicketStoreDelegate().findById(id, resourceServerId);
             } else if (managedPermissionTickets.containsKey(id)) {
@@ -1151,17 +1181,17 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
         }
 
         private <R, Q extends PermissionTicketQuery> List<R> cacheQuery(String cacheKey, Class<Q> queryType, Supplier<List<R>> resultSupplier, BiFunction<Long, List<R>, Q> querySupplier, String resourceServerId) {
-            Q query = cache.get(cacheKey, queryType);
+            Q query = storeCache.get(cacheKey, queryType);
             if (query != null) {
                 logger.tracev("cache hit for key: {0}", cacheKey);
             }
             if (query == null) {
-                Long loaded = cache.getCurrentRevision(cacheKey);
+                Long loaded = storeCache.getCurrentRevision(cacheKey);
                 List<R> model = resultSupplier.get();
                 if (model == null) return null;
                 if (invalidations.contains(cacheKey)) return model;
                 query = querySupplier.apply(loaded, model);
-                cache.addRevisioned(query, startupRevision);
+                storeCache.addRevisioned(query, startupRevision);
                 return model;
             } else if (query.isInvalid(invalidations)) {
                 return resultSupplier.get();
