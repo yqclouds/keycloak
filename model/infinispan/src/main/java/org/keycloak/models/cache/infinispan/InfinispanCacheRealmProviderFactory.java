@@ -17,16 +17,9 @@
 
 package org.keycloak.models.cache.infinispan;
 
-import org.infinispan.Cache;
-import org.jboss.logging.Logger;
-import org.keycloak.cluster.ClusterEvent;
-import org.keycloak.cluster.ClusterProvider;
-import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.cache.CacheRealmProvider;
 import org.keycloak.models.cache.CacheRealmProviderFactory;
-import org.keycloak.models.cache.infinispan.entities.Revisioned;
-import org.keycloak.models.cache.infinispan.events.InvalidationEvent;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 
@@ -37,44 +30,9 @@ import org.springframework.stereotype.Component;
 @Component("InfinispanCacheRealmProviderFactory")
 @ProviderFactory(id = "default", providerClasses = CacheRealmProvider.class)
 public class InfinispanCacheRealmProviderFactory implements CacheRealmProviderFactory {
-
-    public static final String REALM_CLEAR_CACHE_EVENTS = "REALM_CLEAR_CACHE_EVENTS";
-    public static final String REALM_INVALIDATION_EVENTS = "REALM_INVALIDATION_EVENTS";
-    private static final Logger log = Logger.getLogger(InfinispanCacheRealmProviderFactory.class);
-    protected volatile RealmCacheManager realmCache;
-
     @Override
     public CacheRealmProvider create(KeycloakSession session) {
-        lazyInit(session);
-        return new RealmCacheSession(realmCache, session);
-    }
-
-    private void lazyInit(KeycloakSession session) {
-        if (realmCache == null) {
-            synchronized (this) {
-                if (realmCache == null) {
-                    Cache<String, Revisioned> cache = session.getProvider(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.REALM_CACHE_NAME);
-                    Cache<String, Long> revisions = session.getProvider(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.REALM_REVISIONS_CACHE_NAME);
-                    realmCache = new RealmCacheManager(cache, revisions);
-
-                    ClusterProvider cluster = session.getProvider(ClusterProvider.class);
-                    cluster.registerListener(REALM_INVALIDATION_EVENTS, (ClusterEvent event) -> {
-
-                        InvalidationEvent invalidationEvent = (InvalidationEvent) event;
-                        realmCache.invalidationEventReceived(invalidationEvent);
-
-                    });
-
-                    cluster.registerListener(REALM_CLEAR_CACHE_EVENTS, (ClusterEvent event) -> {
-
-                        realmCache.clear();
-
-                    });
-
-                    log.debug("Registered cluster listeners");
-                }
-            }
-        }
+        return new RealmCacheSession(session);
     }
 
     @Override
