@@ -21,11 +21,7 @@ import org.keycloak.forms.account.AccountProvider;
 import org.keycloak.forms.account.AccountProviderFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
-import org.keycloak.theme.FreeMarkerUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PreDestroy;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -33,9 +29,6 @@ import javax.annotation.PreDestroy;
 @Component("FreeMarkerAccountProviderFactory")
 @ProviderFactory(id = "freemarker", providerClasses = AccountProvider.class)
 public class FreeMarkerAccountProviderFactory implements AccountProviderFactory {
-    @Autowired
-    private FreeMarkerUtil freeMarker;
-
     @Override
     public String getId() {
         return "freemarker";
@@ -43,11 +36,6 @@ public class FreeMarkerAccountProviderFactory implements AccountProviderFactory 
 
     @Override
     public AccountProvider create(KeycloakSession session) {
-        return new FreeMarkerAccountProvider(session, freeMarker);
-    }
-
-    @PreDestroy
-    public void destroy() throws Exception {
-        freeMarker = null;
+        return new FreeMarkerAccountProvider(session);
     }
 }

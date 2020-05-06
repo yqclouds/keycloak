@@ -16,7 +16,6 @@
  */
 package org.keycloak.forms.account.freemarker;
 
-import org.jboss.logging.Logger;
 import org.keycloak.events.Event;
 import org.keycloak.forms.account.AccountPages;
 import org.keycloak.forms.account.AccountProvider;
@@ -33,6 +32,8 @@ import org.keycloak.theme.FreeMarkerUtil;
 import org.keycloak.theme.Theme;
 import org.keycloak.theme.beans.*;
 import org.keycloak.utils.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.Status;
@@ -45,8 +46,7 @@ import java.util.*;
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class FreeMarkerAccountProvider implements AccountProvider {
-
-    private static final Logger logger = Logger.getLogger(FreeMarkerAccountProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FreeMarkerAccountProvider.class);
 
     protected UserModel user;
     protected MultivaluedMap<String, String> profileFormData;
@@ -71,9 +71,9 @@ public class FreeMarkerAccountProvider implements AccountProvider {
     protected MessageType messageType = MessageType.ERROR;
     private boolean authorizationSupported;
 
-    public FreeMarkerAccountProvider(KeycloakSession session, FreeMarkerUtil freeMarker) {
+    public FreeMarkerAccountProvider(KeycloakSession session) {
         this.session = session;
-        this.freeMarker = freeMarker;
+        this.freeMarker = session.getBeanFactory().getBean(FreeMarkerUtil.class);
     }
 
     public AccountProvider setUriInfo(UriInfo uriInfo) {
@@ -99,7 +99,7 @@ public class FreeMarkerAccountProvider implements AccountProvider {
         try {
             theme = getTheme();
         } catch (IOException e) {
-            logger.error("Failed to create theme", e);
+            LOG.error("Failed to create theme", e);
             return Response.serverError().build();
         }
 
@@ -196,13 +196,13 @@ public class FreeMarkerAccountProvider implements AccountProvider {
             messagesBundle = theme.getMessages(locale);
             attributes.put("msg", new MessageFormatterMethod(locale, messagesBundle));
         } catch (IOException e) {
-            logger.warn("Failed to load messages", e);
+            LOG.warn("Failed to load messages", e);
             messagesBundle = new Properties();
         }
         try {
             attributes.put("properties", theme.getProperties());
         } catch (IOException e) {
-            logger.warn("Failed to load properties", e);
+            LOG.warn("Failed to load properties", e);
         }
         return messagesBundle;
     }
@@ -249,7 +249,7 @@ public class FreeMarkerAccountProvider implements AccountProvider {
             builder.cacheControl(CacheControlUtil.noCache());
             return builder.build();
         } catch (FreeMarkerException e) {
-            logger.error("Failed to process template", e);
+            LOG.error("Failed to process template", e);
             return Response.serverError().build();
         }
     }
