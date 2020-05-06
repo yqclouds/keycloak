@@ -55,12 +55,16 @@ import java.util.Objects;
 public class VerifyEmailActionTokenHandler extends AbstractActionTokenHandler<VerifyEmailActionToken> {
     public VerifyEmailActionTokenHandler() {
         super(
-                VerifyEmailActionToken.TOKEN_TYPE,
                 VerifyEmailActionToken.class,
                 Messages.STALE_VERIFY_EMAIL_LINK,
                 EventType.VERIFY_EMAIL,
                 Errors.INVALID_TOKEN
         );
+    }
+
+    @Override
+    public String getId() {
+        return VerifyEmailActionToken.TOKEN_TYPE;
     }
 
     @Override

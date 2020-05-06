@@ -53,12 +53,16 @@ public class IdpVerifyAccountLinkActionTokenHandler extends AbstractActionTokenH
 
     public IdpVerifyAccountLinkActionTokenHandler() {
         super(
-                IdpVerifyAccountLinkActionToken.TOKEN_TYPE,
                 IdpVerifyAccountLinkActionToken.class,
                 Messages.STALE_CODE,
                 EventType.IDENTITY_PROVIDER_LINK_ACCOUNT,
                 Errors.INVALID_TOKEN
         );
+    }
+
+    @Override
+    public String getId() {
+        return IdpVerifyAccountLinkActionToken.TOKEN_TYPE;
     }
 
     @Override

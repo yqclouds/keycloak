@@ -26,24 +26,16 @@ import org.keycloak.sessions.AuthenticationSessionModel;
  * @author hmlnarik
  */
 public abstract class AbstractActionTokenHandler<T extends JsonWebToken> implements ActionTokenHandler<T>, ActionTokenHandlerFactory<T> {
-
-    private final String id;
     private final Class<T> tokenClass;
     private final String defaultErrorMessage;
     private final EventType defaultEventType;
     private final String defaultEventError;
 
-    public AbstractActionTokenHandler(String id, Class<T> tokenClass, String defaultErrorMessage, EventType defaultEventType, String defaultEventError) {
-        this.id = id;
+    public AbstractActionTokenHandler(Class<T> tokenClass, String defaultErrorMessage, EventType defaultEventType, String defaultEventError) {
         this.tokenClass = tokenClass;
         this.defaultErrorMessage = defaultErrorMessage;
         this.defaultEventType = defaultEventType;
         this.defaultEventError = defaultEventError;
-    }
-
-    @Override
-    public String getId() {
-        return this.id;
     }
 
     @Override

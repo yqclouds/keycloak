@@ -51,7 +51,6 @@ public class ExecuteActionsActionTokenHandler extends AbstractActionTokenHandler
 
     public ExecuteActionsActionTokenHandler() {
         super(
-                ExecuteActionsActionToken.TOKEN_TYPE,
                 ExecuteActionsActionToken.class,
                 Messages.INVALID_CODE,
                 EventType.EXECUTE_ACTIONS,
@@ -132,5 +131,8 @@ public class ExecuteActionsActionTokenHandler extends AbstractActionTokenHandler
                 .noneMatch(RequiredActionFactory::isOneTimeAction);
     }
 
-
+    @Override
+    public String getId() {
+        return ExecuteActionsActionToken.TOKEN_TYPE;
+    }
 }

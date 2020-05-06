@@ -46,12 +46,16 @@ import static org.keycloak.services.resources.LoginActionsService.RESET_CREDENTI
 public class ResetCredentialsActionTokenHandler extends AbstractActionTokenHandler<ResetCredentialsActionToken> {
     public ResetCredentialsActionTokenHandler() {
         super(
-                ResetCredentialsActionToken.TOKEN_TYPE,
                 ResetCredentialsActionToken.class,
                 Messages.RESET_CREDENTIAL_NOT_ALLOWED,
                 EventType.RESET_PASSWORD,
                 Errors.NOT_ALLOWED
         );
+    }
+
+    @Override
+    public String getId() {
+        return ResetCredentialsActionToken.TOKEN_TYPE;
     }
 
     @Override
