@@ -17,10 +17,13 @@
 
 package org.keycloak.models.cache.infinispan;
 
+import org.infinispan.Cache;
 import org.jboss.logging.Logger;
+import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.common.constants.ServiceAccountConstants;
 import org.keycloak.component.ComponentModel;
+import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.*;
 import org.keycloak.models.cache.CachedUserModel;
 import org.keycloak.models.cache.OnUserCache;
@@ -35,6 +38,7 @@ import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.UserStorageProviderModel;
 import org.keycloak.storage.client.ClientStorageProvider;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 
 /**
@@ -43,8 +47,12 @@ import java.util.*;
  */
 public class UserCacheSession implements UserCache {
     protected static final Logger logger = Logger.getLogger(UserCacheSession.class);
+
+    public static final String USER_CLEAR_CACHE_EVENTS = "USER_CLEAR_CACHE_EVENTS";
+    public static final String USER_INVALIDATION_EVENTS = "USER_INVALIDATION_EVENTS";
+
     protected final long startupRevision;
-    protected UserCacheManager cache;
+    protected UserCacheManager userCache;
     protected KeycloakSession session;
     protected UserProvider delegate;
     protected boolean transactionActive;
@@ -54,11 +62,35 @@ public class UserCacheSession implements UserCache {
     protected Set<InvalidationEvent> invalidationEvents = new HashSet<>(); // Events to be sent across cluster
     protected Map<String, UserModel> managedUsers = new HashMap<>();
 
-    public UserCacheSession(UserCacheManager cache, KeycloakSession session) {
-        this.cache = cache;
+    public UserCacheSession(KeycloakSession session) {
+        this.userCache = userCache;
         this.session = session;
-        this.startupRevision = cache.getCurrentCounter();
+        this.startupRevision = userCache.getCurrentCounter();
         session.getTransactionManager().enlistAfterCompletion(getTransaction());
+    }
+
+    @PostConstruct
+    public void afterPropertiesSet() {
+        Cache<String, Revisioned> cache = session.getProvider(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.USER_CACHE_NAME);
+        Cache<String, Long> revisions = session.getProvider(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.USER_REVISIONS_CACHE_NAME);
+        userCache = new UserCacheManager(cache, revisions);
+
+        ClusterProvider cluster = session.getProvider(ClusterProvider.class);
+
+        cluster.registerListener(USER_INVALIDATION_EVENTS, (ClusterEvent event) -> {
+
+            InvalidationEvent invalidationEvent = (InvalidationEvent) event;
+            userCache.invalidationEventReceived(invalidationEvent);
+
+        });
+
+        cluster.registerListener(USER_CLEAR_CACHE_EVENTS, (ClusterEvent event) -> {
+
+            userCache.clear();
+
+        });
+
+        logger.debug("Registered cluster listeners");
     }
 
     static String getUserByUsernameCacheKey(String realmId, String username) {
@@ -87,9 +119,9 @@ public class UserCacheSession implements UserCache {
 
     @Override
     public void clear() {
-        cache.clear();
+        userCache.clear();
         ClusterProvider cluster = session.getProvider(ClusterProvider.class);
-        cluster.notify(InfinispanUserCacheProviderFactory.USER_CLEAR_CACHE_EVENTS, new ClearCacheEvent(), true, ClusterProvider.DCNotify.ALL_DCS);
+        cluster.notify(USER_CLEAR_CACHE_EVENTS, new ClearCacheEvent(), true, ClusterProvider.DCNotify.ALL_DCS);
     }
 
     public UserProvider getDelegate() {
@@ -101,7 +133,7 @@ public class UserCacheSession implements UserCache {
     }
 
     public void registerUserInvalidation(RealmModel realm, CachedUser user) {
-        cache.userUpdatedInvalidations(user.getId(), user.getUsername(), user.getEmail(), user.getRealm(), invalidations);
+        userCache.userUpdatedInvalidations(user.getId(), user.getUsername(), user.getEmail(), user.getRealm(), invalidations);
         invalidationEvents.add(UserUpdatedEvent.create(user.getId(), user.getUsername(), user.getEmail(), user.getRealm()));
     }
 
@@ -112,7 +144,7 @@ public class UserCacheSession implements UserCache {
         if (user instanceof CachedUserModel) {
             ((CachedUserModel) user).invalidate();
         } else {
-            cache.userUpdatedInvalidations(user.getId(), user.getUsername(), user.getEmail(), realm.getId(), invalidations);
+            userCache.userUpdatedInvalidations(user.getId(), user.getUsername(), user.getEmail(), realm.getId(), invalidations);
             invalidationEvents.add(UserUpdatedEvent.create(user.getId(), user.getUsername(), user.getEmail(), realm.getId()));
         }
     }
@@ -124,13 +156,13 @@ public class UserCacheSession implements UserCache {
 
     protected void runInvalidations() {
         for (String realmId : realmInvalidations) {
-            cache.invalidateRealmUsers(realmId, invalidations);
+            userCache.invalidateRealmUsers(realmId, invalidations);
         }
         for (String invalidation : invalidations) {
-            cache.invalidateObject(invalidation);
+            userCache.invalidateObject(invalidation);
         }
 
-        cache.sendInvalidationEvents(session, invalidationEvents, InfinispanUserCacheProviderFactory.USER_INVALIDATION_EVENTS);
+        userCache.sendInvalidationEvents(session, invalidationEvents, USER_INVALIDATION_EVENTS);
     }
 
     private KeycloakTransaction getTransaction() {
@@ -186,7 +218,7 @@ public class UserCacheSession implements UserCache {
             return managedUsers.get(id);
         }
 
-        CachedUser cached = cache.get(id, CachedUser.class);
+        CachedUser cached = userCache.get(id, CachedUser.class);
 
         if (cached != null && !cached.getRealm().equals(realm.getId())) {
             cached = null;
@@ -195,7 +227,7 @@ public class UserCacheSession implements UserCache {
         UserModel adapter = null;
         if (cached == null) {
             logger.trace("not cached");
-            Long loaded = cache.getCurrentRevision(id);
+            Long loaded = userCache.getCurrentRevision(id);
             UserModel delegate = getDelegate().getUserById(id, realm);
             if (delegate == null) {
                 logger.trace("delegate returning null");
@@ -222,12 +254,12 @@ public class UserCacheSession implements UserCache {
             logger.tracev("invalidations");
             return getDelegate().getUserByUsername(username, realm);
         }
-        UserListQuery query = cache.get(cacheKey, UserListQuery.class);
+        UserListQuery query = userCache.get(cacheKey, UserListQuery.class);
 
         String userId = null;
         if (query == null) {
             logger.tracev("query null");
-            Long loaded = cache.getCurrentRevision(cacheKey);
+            Long loaded = userCache.getCurrentRevision(cacheKey);
             UserModel model = getDelegate().getUserByUsername(username, realm);
             if (model == null) {
                 logger.tracev("model from delegate null");
@@ -243,7 +275,7 @@ public class UserCacheSession implements UserCache {
             UserModel adapter = getUserAdapter(realm, userId, loaded, model);
             if (adapter instanceof UserAdapter) { // this was cached, so we can cache query too
                 query = new UserListQuery(loaded, cacheKey, realm, model.getId());
-                cache.addRevisioned(query, startupRevision);
+                userCache.addRevisioned(query, startupRevision);
             }
             managedUsers.put(userId, adapter);
             return adapter;
@@ -260,7 +292,7 @@ public class UserCacheSession implements UserCache {
     }
 
     protected UserModel getUserAdapter(RealmModel realm, String userId, Long loaded, UserModel delegate) {
-        CachedUser cached = cache.get(userId, CachedUser.class);
+        CachedUser cached = userCache.get(userId, CachedUser.class);
         if (cached == null) {
             return cacheUser(realm, delegate, loaded);
         } else {
@@ -320,15 +352,15 @@ public class UserCacheSession implements UserCache {
 
             long lifespan = model.getLifespan();
             if (lifespan > 0) {
-                cache.addRevisioned(cached, startupRevision, lifespan);
+                userCache.addRevisioned(cached, startupRevision, lifespan);
             } else {
-                cache.addRevisioned(cached, startupRevision);
+                userCache.addRevisioned(cached, startupRevision);
             }
         } else {
             cached = new CachedUser(revision, realm, delegate, notBefore);
             adapter = new UserAdapter(cached, this, session, realm);
             onCache(realm, adapter, delegate);
-            cache.addRevisioned(cached, startupRevision);
+            userCache.addRevisioned(cached, startupRevision);
         }
 
         return adapter;
@@ -350,11 +382,11 @@ public class UserCacheSession implements UserCache {
         if (invalidations.contains(cacheKey)) {
             return getDelegate().getUserByEmail(email, realm);
         }
-        UserListQuery query = cache.get(cacheKey, UserListQuery.class);
+        UserListQuery query = userCache.get(cacheKey, UserListQuery.class);
 
         String userId = null;
         if (query == null) {
-            Long loaded = cache.getCurrentRevision(cacheKey);
+            Long loaded = userCache.getCurrentRevision(cacheKey);
             UserModel model = getDelegate().getUserByEmail(email, realm);
             if (model == null) return null;
             userId = model.getId();
@@ -364,7 +396,7 @@ public class UserCacheSession implements UserCache {
             UserModel adapter = getUserAdapter(realm, userId, loaded, model);
             if (adapter instanceof UserAdapter) {
                 query = new UserListQuery(loaded, cacheKey, realm, model.getId());
-                cache.addRevisioned(query, startupRevision);
+                userCache.addRevisioned(query, startupRevision);
             }
             managedUsers.put(userId, adapter);
             return adapter;
@@ -395,11 +427,11 @@ public class UserCacheSession implements UserCache {
         if (invalidations.contains(cacheKey)) {
             return getDelegate().getUserByFederatedIdentity(socialLink, realm);
         }
-        UserListQuery query = cache.get(cacheKey, UserListQuery.class);
+        UserListQuery query = userCache.get(cacheKey, UserListQuery.class);
 
         String userId = null;
         if (query == null) {
-            Long loaded = cache.getCurrentRevision(cacheKey);
+            Long loaded = userCache.getCurrentRevision(cacheKey);
             UserModel model = getDelegate().getUserByFederatedIdentity(socialLink, realm);
             if (model == null) return null;
             userId = model.getId();
@@ -409,7 +441,7 @@ public class UserCacheSession implements UserCache {
             UserModel adapter = getUserAdapter(realm, userId, loaded, model);
             if (adapter instanceof UserAdapter) {
                 query = new UserListQuery(loaded, cacheKey, realm, model.getId());
-                cache.addRevisioned(query, startupRevision);
+                userCache.addRevisioned(query, startupRevision);
             }
 
             managedUsers.put(userId, adapter);
@@ -470,12 +502,12 @@ public class UserCacheSession implements UserCache {
             logger.tracev("invalidations");
             return getDelegate().getServiceAccount(client);
         }
-        UserListQuery query = cache.get(cacheKey, UserListQuery.class);
+        UserListQuery query = userCache.get(cacheKey, UserListQuery.class);
 
         String userId = null;
         if (query == null) {
             logger.tracev("query null");
-            Long loaded = cache.getCurrentRevision(cacheKey);
+            Long loaded = userCache.getCurrentRevision(cacheKey);
             UserModel model = getDelegate().getServiceAccount(client);
             if (model == null) {
                 logger.tracev("model from delegate null");
@@ -491,7 +523,7 @@ public class UserCacheSession implements UserCache {
             UserModel adapter = getUserAdapter(realm, userId, loaded, model);
             if (adapter instanceof UserAdapter) { // this was cached, so we can cache query too
                 query = new UserListQuery(loaded, cacheKey, realm, model.getId());
-                cache.addRevisioned(query, startupRevision);
+                userCache.addRevisioned(query, startupRevision);
             }
             managedUsers.put(userId, adapter);
             return adapter;
@@ -596,13 +628,13 @@ public class UserCacheSession implements UserCache {
             return getDelegate().getFederatedIdentities(user, realm);
         }
 
-        CachedFederatedIdentityLinks cachedLinks = cache.get(cacheKey, CachedFederatedIdentityLinks.class);
+        CachedFederatedIdentityLinks cachedLinks = userCache.get(cacheKey, CachedFederatedIdentityLinks.class);
 
         if (cachedLinks == null) {
-            Long loaded = cache.getCurrentRevision(cacheKey);
+            Long loaded = userCache.getCurrentRevision(cacheKey);
             Set<FederatedIdentityModel> federatedIdentities = getDelegate().getFederatedIdentities(user, realm);
             cachedLinks = new CachedFederatedIdentityLinks(loaded, cacheKey, realm, federatedIdentities);
-            cache.addRevisioned(cachedLinks, startupRevision);
+            userCache.addRevisioned(cachedLinks, startupRevision);
             return federatedIdentities;
         } else {
             return new HashSet<>(cachedLinks.getFederatedIdentities());
@@ -646,7 +678,7 @@ public class UserCacheSession implements UserCache {
     }
 
     private void invalidateConsent(String userId) {
-        cache.consentInvalidation(userId, invalidations);
+        userCache.consentInvalidation(userId, invalidations);
         invalidationEvents.add(UserConsentsUpdatedEvent.create(userId));
     }
 
@@ -659,13 +691,13 @@ public class UserCacheSession implements UserCache {
             return getDelegate().getConsentByClient(realm, userId, clientId);
         }
 
-        CachedUserConsents cached = cache.get(cacheKey, CachedUserConsents.class);
+        CachedUserConsents cached = userCache.get(cacheKey, CachedUserConsents.class);
 
         if (cached == null) {
-            Long loaded = cache.getCurrentRevision(cacheKey);
+            Long loaded = userCache.getCurrentRevision(cacheKey);
             List<UserConsentModel> consents = getDelegate().getConsents(realm, userId);
             cached = new CachedUserConsents(loaded, cacheKey, realm, consents);
-            cache.addRevisioned(cached, startupRevision);
+            userCache.addRevisioned(cached, startupRevision);
         }
         CachedUserConsent cachedConsent = cached.getConsents().get(clientId);
         if (cachedConsent == null) return null;
@@ -681,13 +713,13 @@ public class UserCacheSession implements UserCache {
             return getDelegate().getConsents(realm, userId);
         }
 
-        CachedUserConsents cached = cache.get(cacheKey, CachedUserConsents.class);
+        CachedUserConsents cached = userCache.get(cacheKey, CachedUserConsents.class);
 
         if (cached == null) {
-            Long loaded = cache.getCurrentRevision(cacheKey);
+            Long loaded = userCache.getCurrentRevision(cacheKey);
             List<UserConsentModel> consents = getDelegate().getConsents(realm, userId);
             cached = new CachedUserConsents(loaded, cacheKey, realm, consents);
-            cache.addRevisioned(cached, startupRevision);
+            userCache.addRevisioned(cached, startupRevision);
             return consents;
         } else {
             List<UserConsentModel> result = new LinkedList<>();
@@ -772,7 +804,7 @@ public class UserCacheSession implements UserCache {
 
         UserFullInvalidationEvent event = UserFullInvalidationEvent.create(user.getId(), user.getUsername(), user.getEmail(), realm.getId(), realm.isIdentityFederationEnabled(), federatedIdentities);
 
-        cache.fullUserInvalidation(user.getId(), user.getUsername(), user.getEmail(), realm.getId(), realm.isIdentityFederationEnabled(), event.getFederatedIdentities(), invalidations);
+        userCache.fullUserInvalidation(user.getId(), user.getUsername(), user.getEmail(), realm.getId(), realm.isIdentityFederationEnabled(), event.getFederatedIdentities(), invalidations);
         invalidationEvents.add(event);
     }
 
@@ -795,7 +827,7 @@ public class UserCacheSession implements UserCache {
     }
 
     private void invalidateFederationLink(String userId) {
-        cache.federatedIdentityLinkUpdatedInvalidation(userId, invalidations);
+        userCache.federatedIdentityLinkUpdatedInvalidation(userId, invalidations);
         invalidationEvents.add(UserFederationLinkUpdatedEvent.create(userId));
     }
 
@@ -805,7 +837,7 @@ public class UserCacheSession implements UserCache {
         FederatedIdentityModel socialLink = getFederatedIdentity(user, socialProvider, realm);
 
         UserFederationLinkRemovedEvent event = UserFederationLinkRemovedEvent.create(user.getId(), realm.getId(), socialLink);
-        cache.federatedIdentityLinkRemovedInvalidation(user.getId(), realm.getId(), event.getIdentityProviderId(), event.getSocialUserId(), invalidations);
+        userCache.federatedIdentityLinkRemovedInvalidation(user.getId(), realm.getId(), event.getIdentityProviderId(), event.getSocialUserId(), invalidations);
         invalidationEvents.add(event);
 
         return getDelegate().removeFederatedIdentity(realm, user, socialProvider);

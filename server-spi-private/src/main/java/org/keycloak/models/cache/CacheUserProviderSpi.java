@@ -26,7 +26,6 @@ import org.keycloak.provider.Spi;
  * @version $Revision: 1 $
  */
 public class CacheUserProviderSpi implements Spi {
-
     @Override
     public boolean isInternal() {
         return true;
