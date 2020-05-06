@@ -19,6 +19,7 @@ package org.keycloak.models.sessions.infinispan;
 import org.infinispan.Cache;
 import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
+import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.ActionTokenKeyModel;
 import org.keycloak.models.ActionTokenStoreProvider;
 import org.keycloak.models.ActionTokenValueModel;
@@ -26,6 +27,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.sessions.infinispan.entities.ActionTokenReducedKey;
 import org.keycloak.models.sessions.infinispan.entities.ActionTokenValueEntity;
 
+import javax.annotation.PostConstruct;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -33,19 +35,28 @@ import java.util.concurrent.TimeUnit;
  * @author hmlnarik
  */
 public class InfinispanActionTokenStoreProvider implements ActionTokenStoreProvider {
-
     private static final Logger LOG = Logger.getLogger(InfinispanActionTokenStoreProvider.class);
 
     private final Cache<ActionTokenReducedKey, ActionTokenValueEntity> actionKeyCache;
-    private final InfinispanKeycloakTransaction tx;
     private final KeycloakSession session;
 
-    public InfinispanActionTokenStoreProvider(KeycloakSession session, Cache<ActionTokenReducedKey, ActionTokenValueEntity> actionKeyCache) {
+    private InfinispanKeycloakTransaction tx;
+
+    public InfinispanActionTokenStoreProvider(KeycloakSession session) {
         this.session = session;
-        this.actionKeyCache = actionKeyCache;
+        this.actionKeyCache = initActionTokenCache(session);
+    }
+
+    @PostConstruct
+    public void afterPropertiesSet() {
         this.tx = new InfinispanKeycloakTransaction();
 
         session.getTransactionManager().enlistAfterCompletion(tx);
+    }
+
+    private Cache<ActionTokenReducedKey, ActionTokenValueEntity> initActionTokenCache(KeycloakSession session) {
+        InfinispanConnectionProvider connections = session.getProvider(InfinispanConnectionProvider.class);
+        return connections.getCache(InfinispanConnectionProvider.ACTION_TOKEN_CACHE);
     }
 
     @Override

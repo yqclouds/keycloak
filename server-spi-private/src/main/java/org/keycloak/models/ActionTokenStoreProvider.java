@@ -49,8 +49,7 @@ public interface ActionTokenStoreProvider extends Provider {
     /**
      * Removes token corresponding to the given key from the internal action token store, and returns the stored value
      *
-     * @param key   key
-     * @param nonce nonce that must match a given key
+     * @param key key
      * @return {@code null} if no token is found for given key and nonce, value otherwise
      */
     ActionTokenValueModel remove(ActionTokenKeyModel key);
