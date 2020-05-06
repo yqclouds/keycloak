@@ -17,22 +17,11 @@
 
 package org.keycloak.models.sessions.infinispan;
 
-import org.infinispan.Cache;
-import org.infinispan.client.hotrod.Flag;
-import org.infinispan.client.hotrod.RemoteCache;
-import org.infinispan.commons.api.BasicCache;
-import org.jboss.logging.Logger;
-import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.CodeToTokenStoreProvider;
 import org.keycloak.models.CodeToTokenStoreProviderFactory;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.sessions.infinispan.entities.ActionTokenValueEntity;
-import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
-
-import java.util.UUID;
-import java.util.function.Supplier;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -40,42 +29,9 @@ import java.util.function.Supplier;
 @Component("InfinispanCodeToTokenStoreProviderFactory")
 @ProviderFactory(id = "infinispan", providerClasses = CodeToTokenStoreProvider.class)
 public class InfinispanCodeToTokenStoreProviderFactory implements CodeToTokenStoreProviderFactory {
-
-    private static final Logger LOG = Logger.getLogger(InfinispanCodeToTokenStoreProviderFactory.class);
-
-    // Reuse "actionTokens" infinispan cache for now
-    private volatile Supplier<BasicCache<UUID, ActionTokenValueEntity>> codeCache;
-
     @Override
     public CodeToTokenStoreProvider create(KeycloakSession session) {
-        lazyInit(session);
-        return new InfinispanCodeToTokenStoreProvider(session, codeCache);
-    }
-
-    private void lazyInit(KeycloakSession session) {
-        if (codeCache == null) {
-            synchronized (this) {
-                if (codeCache == null) {
-                    InfinispanConnectionProvider connections = session.getProvider(InfinispanConnectionProvider.class);
-                    Cache cache = connections.getCache(InfinispanConnectionProvider.ACTION_TOKEN_CACHE);
-
-                    RemoteCache remoteCache = InfinispanUtil.getRemoteCache(cache);
-
-                    if (remoteCache != null) {
-                        LOG.debugf("Having remote stores. Using remote cache '%s' for single-use cache of code", remoteCache.getName());
-                        this.codeCache = () -> {
-                            // Doing this way as flag is per invocation
-                            return remoteCache.withFlags(Flag.FORCE_RETURN_VALUE);
-                        };
-                    } else {
-                        LOG.debugf("Not having remote stores. Using normal cache '%s' for single-use cache of code", cache.getName());
-                        this.codeCache = () -> {
-                            return cache;
-                        };
-                    }
-                }
-            }
-        }
+        return new InfinispanCodeToTokenStoreProvider(session);
     }
 
     @Override

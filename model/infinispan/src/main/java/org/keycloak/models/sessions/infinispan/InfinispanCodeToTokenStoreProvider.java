@@ -17,13 +17,19 @@
 
 package org.keycloak.models.sessions.infinispan;
 
+import org.infinispan.Cache;
+import org.infinispan.client.hotrod.Flag;
+import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.commons.api.BasicCache;
 import org.jboss.logging.Logger;
+import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.CodeToTokenStoreProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.sessions.infinispan.entities.ActionTokenValueEntity;
+import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
 
+import javax.annotation.PostConstruct;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -33,17 +39,33 @@ import java.util.function.Supplier;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class InfinispanCodeToTokenStoreProvider implements CodeToTokenStoreProvider {
+    public static final Logger LOG = Logger.getLogger(InfinispanCodeToTokenStoreProvider.class);
 
-    public static final Logger logger = Logger.getLogger(InfinispanCodeToTokenStoreProvider.class);
-
-    private final Supplier<BasicCache<UUID, ActionTokenValueEntity>> codeCache;
+    private Supplier<BasicCache<UUID, ActionTokenValueEntity>> codeCache;
     private final KeycloakSession session;
 
-    public InfinispanCodeToTokenStoreProvider(KeycloakSession session, Supplier<BasicCache<UUID, ActionTokenValueEntity>> actionKeyCache) {
+    public InfinispanCodeToTokenStoreProvider(KeycloakSession session) {
         this.session = session;
-        this.codeCache = actionKeyCache;
     }
 
+    @PostConstruct
+    public void afterPropertiesSet() {
+        InfinispanConnectionProvider connections = session.getProvider(InfinispanConnectionProvider.class);
+        Cache cache = connections.getCache(InfinispanConnectionProvider.ACTION_TOKEN_CACHE);
+
+        RemoteCache remoteCache = InfinispanUtil.getRemoteCache(cache);
+
+        if (remoteCache != null) {
+            LOG.debugf("Having remote stores. Using remote cache '%s' for single-use cache of code", remoteCache.getName());
+            this.codeCache = () -> {
+                // Doing this way as flag is per invocation
+                return remoteCache.withFlags(Flag.FORCE_RETURN_VALUE);
+            };
+        } else {
+            LOG.debugf("Not having remote stores. Using normal cache '%s' for single-use cache of code", cache.getName());
+            this.codeCache = () -> cache;
+        }
+    }
 
     @Override
     public void put(UUID codeId, int lifespanSeconds, Map<String, String> codeData) {
@@ -54,8 +76,8 @@ public class InfinispanCodeToTokenStoreProvider implements CodeToTokenStoreProvi
             cache.put(codeId, tokenValue, lifespanSeconds, TimeUnit.SECONDS);
         } catch (HotRodClientException re) {
             // No need to retry. The hotrod (remoteCache) has some retries in itself in case of some random network error happened.
-            if (logger.isDebugEnabled()) {
-                logger.debugf(re, "Failed when adding code %s", codeId);
+            if (LOG.isDebugEnabled()) {
+                LOG.debugf(re, "Failed when adding code %s", codeId);
             }
 
             throw re;
@@ -72,17 +94,15 @@ public class InfinispanCodeToTokenStoreProvider implements CodeToTokenStoreProvi
         } catch (HotRodClientException re) {
             // No need to retry. The hotrod (remoteCache) has some retries in itself in case of some random network error happened.
             // In case of lock conflict, we don't want to retry anyway as there was likely an attempt to remove the code from different place.
-            if (logger.isDebugEnabled()) {
-                logger.debugf(re, "Failed when removing code %s", codeId);
+            if (LOG.isDebugEnabled()) {
+                LOG.debugf(re, "Failed when removing code %s", codeId);
             }
 
             return null;
         }
     }
 
-
     @Override
     public void close() {
-
     }
 }

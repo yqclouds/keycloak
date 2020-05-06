@@ -27,8 +27,6 @@ import org.keycloak.provider.Provider;
  * to add the client credentials to the request, which will ClientAuthenticator verify on server side
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
- * @see org.keycloak.authentication.authenticators.client.ClientIdAndSecretAuthenticator
- * @see org.keycloak.authentication.authenticators.client.JWTClientAuthenticator
  */
 public interface ClientAuthenticator extends Provider {
 

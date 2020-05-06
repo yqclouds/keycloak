@@ -18,12 +18,14 @@ package org.keycloak.validation;
 
 import org.keycloak.models.ClientModel;
 import org.keycloak.services.util.ResolveRelative;
+import org.springframework.stereotype.Component;
 
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+@Component
 public class DefaultClientValidationProvider implements ClientValidationProvider {
 
     private ClientValidationContext context;

@@ -36,8 +36,6 @@ import java.util.Map;
  * @version $Revision: 1 $
  */
 public interface ClientStorageProviderFactory<T extends ClientStorageProvider> extends ComponentFactory<T, ClientStorageProvider> {
-
-
     /**
      * called per Keycloak transaction.
      *

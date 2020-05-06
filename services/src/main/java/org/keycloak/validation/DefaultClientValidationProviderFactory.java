@@ -18,13 +18,14 @@ package org.keycloak.validation;
 
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component("DefaultClientValidationProviderFactory")
 @ProviderFactory(id = "default", providerClasses = ClientValidationProvider.class)
 public class DefaultClientValidationProviderFactory implements ClientValidationProviderFactory {
-
-    private final DefaultClientValidationProvider provider = new DefaultClientValidationProvider();
+    @Autowired
+    private DefaultClientValidationProvider provider;
 
     @Override
     public ClientValidationProvider create(KeycloakSession session) {
