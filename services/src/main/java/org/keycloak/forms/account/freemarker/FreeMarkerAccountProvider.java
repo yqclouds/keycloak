@@ -20,10 +20,7 @@ import org.keycloak.events.Event;
 import org.keycloak.forms.account.AccountPages;
 import org.keycloak.forms.account.AccountProvider;
 import org.keycloak.forms.account.freemarker.model.*;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.FormMessage;
 import org.keycloak.services.util.CacheControlUtil;
 import org.keycloak.theme.BrowserSecurityHeaderSetup;
@@ -34,6 +31,10 @@ import org.keycloak.theme.beans.*;
 import org.keycloak.utils.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.Status;
@@ -45,6 +46,8 @@ import java.util.*;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class FreeMarkerAccountProvider implements AccountProvider {
     private static final Logger LOG = LoggerFactory.getLogger(FreeMarkerAccountProvider.class);
 
@@ -60,7 +63,6 @@ public class FreeMarkerAccountProvider implements AccountProvider {
     protected boolean eventsEnabled;
     protected boolean passwordUpdateSupported;
     protected boolean passwordSet;
-    protected KeycloakSession session;
     protected FreeMarkerUtil freeMarker;
     protected HttpHeaders headers;
     protected Map<String, Object> attributes;
@@ -71,8 +73,12 @@ public class FreeMarkerAccountProvider implements AccountProvider {
     protected MessageType messageType = MessageType.ERROR;
     private boolean authorizationSupported;
 
-    public FreeMarkerAccountProvider(KeycloakSession session) {
-        this.session = session;
+    @Autowired
+    private KeycloakSessionFactory sessionFactory;
+    protected KeycloakSession session;
+
+    public FreeMarkerAccountProvider() {
+        this.session = this.sessionFactory.create();
         this.freeMarker = session.getBeanFactory().getBean(FreeMarkerUtil.class);
     }
 

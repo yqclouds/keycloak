@@ -16,6 +16,7 @@
  */
 package org.keycloak.authentication.actiontoken.verifyemail;
 
+import lombok.Getter;
 import org.keycloak.TokenVerifier.Predicate;
 import org.keycloak.authentication.actiontoken.AbstractActionTokenHandler;
 import org.keycloak.authentication.actiontoken.ActionTokenContext;
@@ -38,6 +39,7 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.Response;
@@ -53,6 +55,10 @@ import java.util.Objects;
 @Component("VerifyEmailActionTokenHandler")
 @ProviderFactory(id = "verify-email", providerClasses = ActionTokenHandler.class)
 public class VerifyEmailActionTokenHandler extends AbstractActionTokenHandler<VerifyEmailActionToken> {
+    @Value("${keycloak.provider.action-token-handler.verify-email.id}")
+    @Getter
+    private String id;
+
     public VerifyEmailActionTokenHandler() {
         super(
                 VerifyEmailActionToken.class,
@@ -60,11 +66,6 @@ public class VerifyEmailActionTokenHandler extends AbstractActionTokenHandler<Ve
                 EventType.VERIFY_EMAIL,
                 Errors.INVALID_TOKEN
         );
-    }
-
-    @Override
-    public String getId() {
-        return VerifyEmailActionToken.TOKEN_TYPE;
     }
 
     @Override

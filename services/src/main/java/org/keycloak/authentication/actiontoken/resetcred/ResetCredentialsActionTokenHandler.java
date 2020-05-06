@@ -16,6 +16,7 @@
  */
 package org.keycloak.authentication.actiontoken.resetcred;
 
+import lombok.Getter;
 import org.keycloak.TokenVerifier.Predicate;
 import org.keycloak.authentication.AuthenticationProcessor;
 import org.keycloak.authentication.actiontoken.AbstractActionTokenHandler;
@@ -32,6 +33,7 @@ import org.keycloak.services.resources.LoginActionsService;
 import org.keycloak.services.resources.LoginActionsServiceChecks.IsActionRequired;
 import org.keycloak.sessions.CommonClientSessionModel.Action;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.Response;
@@ -44,6 +46,10 @@ import static org.keycloak.services.resources.LoginActionsService.RESET_CREDENTI
 @Component("ResetCredentialsActionTokenHandler")
 @ProviderFactory(id = "reset-credentials", providerClasses = ActionTokenHandler.class)
 public class ResetCredentialsActionTokenHandler extends AbstractActionTokenHandler<ResetCredentialsActionToken> {
+    @Value("${keycloak.provider.action-token-handler.reset-credentials.id}")
+    @Getter
+    private String id;
+
     public ResetCredentialsActionTokenHandler() {
         super(
                 ResetCredentialsActionToken.class,
@@ -51,11 +57,6 @@ public class ResetCredentialsActionTokenHandler extends AbstractActionTokenHandl
                 EventType.RESET_PASSWORD,
                 Errors.NOT_ALLOWED
         );
-    }
-
-    @Override
-    public String getId() {
-        return ResetCredentialsActionToken.TOKEN_TYPE;
     }
 
     @Override

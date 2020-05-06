@@ -16,6 +16,7 @@
  */
 package org.keycloak.authentication.actiontoken.execactions;
 
+import lombok.Getter;
 import org.keycloak.TokenVerifier.Predicate;
 import org.keycloak.authentication.RequiredActionFactory;
 import org.keycloak.authentication.RequiredActionProvider;
@@ -35,6 +36,7 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.Response;
@@ -48,6 +50,9 @@ import java.util.Objects;
 @Component("ExecuteActionsActionTokenHandler")
 @ProviderFactory(id = "execute-actions", providerClasses = ActionTokenHandler.class)
 public class ExecuteActionsActionTokenHandler extends AbstractActionTokenHandler<ExecuteActionsActionToken> {
+    @Value("${keycloak.provider.action-token-handler.execute-actions.id}")
+    @Getter
+    private String id;
 
     public ExecuteActionsActionTokenHandler() {
         super(
@@ -129,10 +134,5 @@ public class ExecuteActionsActionTokenHandler extends AbstractActionTokenHandler
                 .filter(Objects::nonNull)
 
                 .noneMatch(RequiredActionFactory::isOneTimeAction);
-    }
-
-    @Override
-    public String getId() {
-        return ExecuteActionsActionToken.TOKEN_TYPE;
     }
 }

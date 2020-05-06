@@ -17,7 +17,6 @@
 package org.keycloak.authentication.actiontoken;
 
 import org.keycloak.events.EventType;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.JsonWebToken;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.sessions.AuthenticationSessionModel;
@@ -25,7 +24,7 @@ import org.keycloak.sessions.AuthenticationSessionModel;
 /**
  * @author hmlnarik
  */
-public abstract class AbstractActionTokenHandler<T extends JsonWebToken> implements ActionTokenHandler<T>, ActionTokenHandlerFactory<T> {
+public abstract class AbstractActionTokenHandler<T extends JsonWebToken> implements ActionTokenHandler<T> {
     private final Class<T> tokenClass;
     private final String defaultErrorMessage;
     private final EventType defaultEventType;
@@ -36,16 +35,6 @@ public abstract class AbstractActionTokenHandler<T extends JsonWebToken> impleme
         this.defaultErrorMessage = defaultErrorMessage;
         this.defaultEventType = defaultEventType;
         this.defaultEventError = defaultEventError;
-    }
-
-    @Override
-    public ActionTokenHandler<T> create(KeycloakSession session) {
-        return this;
-    }
-
-    @Override
-    @Deprecated
-    public void close() {
     }
 
     @Override

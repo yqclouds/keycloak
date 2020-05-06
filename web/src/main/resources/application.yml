@@ -23,6 +23,12 @@ spring:
 keycloak:
   dblock:
     forceUnlock: false
+  provider:
+    action-token-handler:
+      execute-actions:
+        id: execute-actions
+      idp-verify-account-via-email:
+        id: idp-verify-account-via-email
 minTimeBetweenRequests: 10
 shouldAttachRoute: true
 maxErrors: 20

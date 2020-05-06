@@ -16,6 +16,7 @@
  */
 package org.keycloak.authentication.actiontoken.idpverifyemail;
 
+import lombok.Getter;
 import org.keycloak.TokenVerifier.Predicate;
 import org.keycloak.authentication.AuthenticationProcessor;
 import org.keycloak.authentication.actiontoken.AbstractActionTokenHandler;
@@ -35,6 +36,7 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.Response;
@@ -50,6 +52,9 @@ import java.util.Collections;
 @Component("IdpVerifyAccountLinkActionTokenHandler")
 @ProviderFactory(id = "idp-verify-account-via-email", providerClasses = ActionTokenHandler.class)
 public class IdpVerifyAccountLinkActionTokenHandler extends AbstractActionTokenHandler<IdpVerifyAccountLinkActionToken> {
+    @Value("${keycloak.provider.action-token-handler.idp-verify-account-via-email.id}")
+    @Getter
+    private String id;
 
     public IdpVerifyAccountLinkActionTokenHandler() {
         super(
@@ -58,11 +63,6 @@ public class IdpVerifyAccountLinkActionTokenHandler extends AbstractActionTokenH
                 EventType.IDENTITY_PROVIDER_LINK_ACCOUNT,
                 Errors.INVALID_TOKEN
         );
-    }
-
-    @Override
-    public String getId() {
-        return IdpVerifyAccountLinkActionToken.TOKEN_TYPE;
     }
 
     @Override
@@ -133,5 +133,4 @@ public class IdpVerifyAccountLinkActionTokenHandler extends AbstractActionTokenH
 
         return tokenContext.brokerFlow(null, null, authSession.getAuthNote(AuthenticationProcessor.CURRENT_FLOW_PATH));
     }
-
 }
