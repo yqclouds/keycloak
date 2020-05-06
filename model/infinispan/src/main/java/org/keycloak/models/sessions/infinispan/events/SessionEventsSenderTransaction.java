@@ -46,7 +46,7 @@ public class SessionEventsSenderTransaction extends AbstractKeycloakTransaction 
 
     @Override
     protected void commitImpl() {
-        ClusterProvider cluster = session.getProvider(ClusterProvider.class);
+        ClusterProvider cluster = session.getBeanFactory().getBean(ClusterProvider.class);
 
         // TODO bulk notify (send whole list instead of separate events?)
         for (DCEventContext entry : sessionEvents) {

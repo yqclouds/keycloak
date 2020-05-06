@@ -45,7 +45,7 @@ public class EventBuilder {
         event = new Event();
 
         if (realm.isEventsEnabled()) {
-            EventStoreProvider store = session.getProvider(EventStoreProvider.class);
+            EventStoreProvider store = session.getBeanFactory().getBean(EventStoreProvider.class);
             if (store != null) {
                 this.store = store;
             } else {

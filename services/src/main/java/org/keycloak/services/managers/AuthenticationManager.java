@@ -838,13 +838,13 @@ public class AuthenticationManager {
             ActionTokenKeyModel actionTokenKey = DefaultActionTokenKey.from(actionTokenKeyToInvalidate);
 
             if (actionTokenKey != null) {
-                ActionTokenStoreProvider actionTokenStore = session.getProvider(ActionTokenStoreProvider.class);
+                ActionTokenStoreProvider actionTokenStore = session.getBeanFactory().getBean(ActionTokenStoreProvider.class);
                 actionTokenStore.put(actionTokenKey, null); // Token is invalidated
             }
         }
 
         if (authSession.getAuthNote(END_AFTER_REQUIRED_ACTIONS) != null) {
-            LoginFormsProvider infoPage = session.getProvider(LoginFormsProvider.class).setAuthenticationSession(authSession)
+            LoginFormsProvider infoPage = session.getBeanFactory().getBean(LoginFormsProvider.class).setAuthenticationSession(authSession)
                     .setSuccess(Messages.ACCOUNT_UPDATED);
             if (authSession.getAuthNote(SET_REDIRECT_URI_AFTER_REQUIRED_ACTIONS) != null) {
                 if (authSession.getRedirectUri() != null) {
@@ -964,7 +964,7 @@ public class AuthenticationManager {
                 accessCode.setAction(AuthenticatedClientSessionModel.Action.REQUIRED_ACTIONS.name());
                 authSession.setAuthNote(AuthenticationProcessor.CURRENT_AUTHENTICATION_EXECUTION, execution);
 
-                return session.getProvider(LoginFormsProvider.class)
+                return session.getBeanFactory().getBean(LoginFormsProvider.class)
                         .setAuthenticationSession(authSession)
                         .setExecution(execution)
                         .setClientSessionCode(accessCode.getOrGenerateCode())
@@ -1257,7 +1257,7 @@ public class AuthenticationManager {
 
             UserModel user = KeycloakModelUtils.findUserByNameOrEmail(session, realm, username);
             if (user != null) {
-                BruteForceProtector bruteForceProtector = session.getProvider(BruteForceProtector.class);
+                BruteForceProtector bruteForceProtector = session.getBeanFactory().getBean(BruteForceProtector.class);
                 bruteForceProtector.successfulLogin(realm, user, session.getContext().getConnection());
             }
         }

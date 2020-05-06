@@ -125,11 +125,11 @@ public class RealmCacheSession implements CacheRealmProvider {
 
     @PostConstruct
     public void afterPropertiesSet() {
-        Cache<String, Revisioned> cache = session.getProvider(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.REALM_CACHE_NAME);
-        Cache<String, Long> revisions = session.getProvider(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.REALM_REVISIONS_CACHE_NAME);
+        Cache<String, Revisioned> cache = session.getBeanFactory().getBean(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.REALM_CACHE_NAME);
+        Cache<String, Long> revisions = session.getBeanFactory().getBean(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.REALM_REVISIONS_CACHE_NAME);
         realmCache = new RealmCacheManager(cache, revisions);
 
-        ClusterProvider cluster = session.getProvider(ClusterProvider.class);
+        ClusterProvider cluster = session.getBeanFactory().getBean(ClusterProvider.class);
         cluster.registerListener(REALM_INVALIDATION_EVENTS, (ClusterEvent event) -> {
 
             InvalidationEvent invalidationEvent = (InvalidationEvent) event;
@@ -186,7 +186,7 @@ public class RealmCacheSession implements CacheRealmProvider {
 
     @Override
     public void clear() {
-        ClusterProvider cluster = session.getProvider(ClusterProvider.class);
+        ClusterProvider cluster = session.getBeanFactory().getBean(ClusterProvider.class);
         cluster.notify(REALM_CLEAR_CACHE_EVENTS, new ClearCacheEvent(), false, ClusterProvider.DCNotify.ALL_DCS);
     }
 

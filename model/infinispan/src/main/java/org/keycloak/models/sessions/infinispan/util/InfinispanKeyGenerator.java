@@ -60,7 +60,7 @@ public class InfinispanKeyGenerator {
         // "wantsLocalKey" is true if route is not attached to the sticky session cookie. Without attached route, We want the key, which will be "owned" by this node.
         // This is needed due the fact that external loadbalancer will attach route corresponding to our node, which will be the owner of the particular key, hence we
         // will be able to lookup key locally.
-        boolean wantsLocalKey = !session.getProvider(StickySessionEncoderProvider.class).shouldAttachRoute();
+        boolean wantsLocalKey = !session.getBeanFactory().getBean(StickySessionEncoderProvider.class).shouldAttachRoute();
 
         if (wantsLocalKey && cache.getCacheConfiguration().clustering().cacheMode().isClustered()) {
             KeyAffinityService<K> keyAffinityService = keyAffinityServices.get(cacheName);

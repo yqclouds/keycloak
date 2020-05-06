@@ -41,7 +41,7 @@ public class AuthorizationService {
 
     public AuthorizationService(KeycloakSession session, ClientModel client, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.client = client;
-        this.authorization = session.getProvider(AuthorizationProvider.class);
+        this.authorization = session.getBeanFactory().getBean(AuthorizationProvider.class);
         this.adminEvent = adminEvent;
         this.resourceServer = this.authorization.getStoreFactory().getResourceServerStore().findById(this.client.getId());
         this.auth = auth;

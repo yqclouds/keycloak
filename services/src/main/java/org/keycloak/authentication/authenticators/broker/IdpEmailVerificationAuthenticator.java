@@ -140,7 +140,7 @@ public class IdpEmailVerificationAuthenticator extends AbstractIdpAuthenticator 
         long expirationInMinutes = TimeUnit.SECONDS.toMinutes(validityInSecs);
 
         try {
-            context.getSession().getProvider(EmailTemplateProvider.class)
+            context.getSession().getBeanFactory().getBean(EmailTemplateProvider.class)
                     .setRealm(realm)
                     .setAuthenticationSession(authSession)
                     .setUser(existingUser)

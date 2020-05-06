@@ -236,7 +236,7 @@ public class ResourceAdminManager {
             logger.debugv("logout resource {0} url: {1} sessionIds: " + adapterSessionIds, resource.getClientId(), managementUrl);
         URI target = UriBuilder.fromUri(managementUrl).path(AdapterConstants.K_LOGOUT).build();
         try {
-            int status = session.getProvider(HttpClientProvider.class).postText(target.toString(), token);
+            int status = session.getBeanFactory().getBean(HttpClientProvider.class).postText(target.toString(), token);
             boolean success = status == 204 || status == 200;
             logger.debugf("logout success for %s: %s", managementUrl, success);
             return success;
@@ -320,7 +320,7 @@ public class ResourceAdminManager {
         logger.debugv("testNodes availability resource: {0} url: {1}", client.getClientId(), managementUrl);
         URI target = UriBuilder.fromUri(managementUrl).path(AdapterConstants.K_TEST_AVAILABLE).build();
         try {
-            int status = session.getProvider(HttpClientProvider.class).postText(target.toString(), token);
+            int status = session.getBeanFactory().getBean(HttpClientProvider.class).postText(target.toString(), token);
             boolean success = status == 204 || status == 200;
             logger.debugf("testAvailability success for %s: %s", managementUrl, success);
             return success;

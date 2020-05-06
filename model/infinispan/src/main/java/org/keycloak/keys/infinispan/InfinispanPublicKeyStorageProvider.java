@@ -67,7 +67,7 @@ public class InfinispanPublicKeyStorageProvider implements PublicKeyStorageProvi
     @Override
     public void clearCache() {
         keys.clear();
-        ClusterProvider cluster = session.getProvider(ClusterProvider.class);
+        ClusterProvider cluster = session.getBeanFactory().getBean(ClusterProvider.class);
         cluster.notify(InfinispanPublicKeyStorageProviderFactory.KEYS_CLEAR_CACHE_EVENTS, new ClearCacheEvent(), true, ClusterProvider.DCNotify.ALL_DCS);
     }
 
@@ -117,7 +117,7 @@ public class InfinispanPublicKeyStorageProvider implements PublicKeyStorageProvi
 
 
     protected void runInvalidations() {
-        ClusterProvider cluster = session.getProvider(ClusterProvider.class);
+        ClusterProvider cluster = session.getBeanFactory().getBean(ClusterProvider.class);
 
         for (String cacheKey : invalidations) {
             keys.remove(cacheKey);

@@ -94,7 +94,7 @@ public class DefaultKeycloakTransactionManager implements KeycloakTransactionMan
         completed = false;
 
         if (jtaPolicy == JTAPolicy.REQUIRES_NEW) {
-            JtaTransactionManagerLookup jtaLookup = session.getProvider(JtaTransactionManagerLookup.class);
+            JtaTransactionManagerLookup jtaLookup = session.getBeanFactory().getBean(JtaTransactionManagerLookup.class);
             if (jtaLookup != null) {
                 TransactionManager tm = jtaLookup.getTransactionManager();
                 if (tm != null) {

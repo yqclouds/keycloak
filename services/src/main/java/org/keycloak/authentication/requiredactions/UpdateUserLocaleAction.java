@@ -23,16 +23,16 @@ public class UpdateUserLocaleAction implements RequiredActionProvider, RequiredA
     public void evaluateTriggers(RequiredActionContext context) {
         String userRequestedLocale = context.getAuthenticationSession().getAuthNote(LocaleSelectorProvider.USER_REQUEST_LOCALE);
         if (userRequestedLocale != null) {
-            LocaleUpdaterProvider updater = context.getSession().getProvider(LocaleUpdaterProvider.class);
+            LocaleUpdaterProvider updater = context.getSession().getBeanFactory().getBean(LocaleUpdaterProvider.class);
             updater.updateUsersLocale(context.getUser(), userRequestedLocale);
         } else {
             String userLocale = context.getUser().getFirstAttribute(UserModel.LOCALE);
 
             if (userLocale != null) {
-                LocaleUpdaterProvider updater = context.getSession().getProvider(LocaleUpdaterProvider.class);
+                LocaleUpdaterProvider updater = context.getSession().getBeanFactory().getBean(LocaleUpdaterProvider.class);
                 updater.updateLocaleCookie(userLocale);
             } else {
-                LocaleUpdaterProvider updater = context.getSession().getProvider(LocaleUpdaterProvider.class);
+                LocaleUpdaterProvider updater = context.getSession().getBeanFactory().getBean(LocaleUpdaterProvider.class);
                 updater.expireLocaleCookie();
             }
         }

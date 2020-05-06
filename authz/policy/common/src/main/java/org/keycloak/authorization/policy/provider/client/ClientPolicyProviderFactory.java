@@ -102,7 +102,7 @@ public class ClientPolicyProviderFactory implements PolicyProviderFactory<Client
         factory.register(event -> {
             if (event instanceof ClientRemovedEvent) {
                 KeycloakSession keycloakSession = ((ClientRemovedEvent) event).getKeycloakSession();
-                AuthorizationProvider provider = keycloakSession.getProvider(AuthorizationProvider.class);
+                AuthorizationProvider provider = keycloakSession.getBeanFactory().getBean(AuthorizationProvider.class);
                 StoreFactory storeFactory = provider.getStoreFactory();
                 PolicyStore policyStore = storeFactory.getPolicyStore();
                 ClientModel removedClient = ((ClientRemovedEvent) event).getClient();

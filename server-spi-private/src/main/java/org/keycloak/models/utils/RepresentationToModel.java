@@ -2543,7 +2543,7 @@ public class RepresentationToModel {
                 && !(client.getClientId().equals(Config.getAdminRealm() + "-realm") || client.getClientId().equals(Constants.REALM_MANAGEMENT_CLIENT_ID))) {
             throw new RuntimeException("Only confidential clients are allowed to set authorization settings");
         }
-        AuthorizationProvider authorization = session.getProvider(AuthorizationProvider.class);
+        AuthorizationProvider authorization = session.getBeanFactory().getBean(AuthorizationProvider.class);
         UserModel serviceAccount = session.users().getServiceAccount(client);
 
         if (serviceAccount == null) {

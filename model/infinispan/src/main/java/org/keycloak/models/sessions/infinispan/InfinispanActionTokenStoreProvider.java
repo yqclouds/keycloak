@@ -55,7 +55,7 @@ public class InfinispanActionTokenStoreProvider implements ActionTokenStoreProvi
     }
 
     private Cache<ActionTokenReducedKey, ActionTokenValueEntity> initActionTokenCache(KeycloakSession session) {
-        InfinispanConnectionProvider connections = session.getProvider(InfinispanConnectionProvider.class);
+        InfinispanConnectionProvider connections = session.getBeanFactory().getBean(InfinispanConnectionProvider.class);
         return connections.getCache(InfinispanConnectionProvider.ACTION_TOKEN_CACHE);
     }
 

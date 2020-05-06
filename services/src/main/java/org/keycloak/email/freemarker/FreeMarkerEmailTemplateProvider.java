@@ -247,7 +247,7 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
     }
 
     protected void send(Map<String, String> config, String subject, String textBody, String htmlBody) throws EmailException {
-        EmailSenderProvider emailSender = session.getProvider(EmailSenderProvider.class);
+        EmailSenderProvider emailSender = session.getBeanFactory().getBean(EmailSenderProvider.class);
         emailSender.send(config, user, subject, textBody, htmlBody);
     }
 

@@ -139,7 +139,7 @@ public final class CRLUtils {
 
 
     private static X509Certificate findCRLSignatureCertificateInTruststore(KeycloakSession session, X509Certificate[] certs, X500Principal crlIssuerPrincipal) throws GeneralSecurityException {
-        TruststoreProvider truststoreProvider = session.getProvider(TruststoreProvider.class);
+        TruststoreProvider truststoreProvider = session.getBeanFactory().getBean(TruststoreProvider.class);
         if (truststoreProvider == null || truststoreProvider.getTruststore() == null) {
             throw new GeneralSecurityException("Truststore not available");
         }

@@ -34,7 +34,7 @@ import javax.persistence.EntityManager;
 public class JpaUserFederatedStorageProviderFactory implements UserFederatedStorageProviderFactory {
     @Override
     public UserFederatedStorageProvider create(KeycloakSession session) {
-        EntityManager em = session.getProvider(JpaConnectionProvider.class).getEntityManager();
+        EntityManager em = session.getBeanFactory().getBean(JpaConnectionProvider.class).getEntityManager();
         return new JpaUserFederatedStorageProvider(session, em);
     }
 

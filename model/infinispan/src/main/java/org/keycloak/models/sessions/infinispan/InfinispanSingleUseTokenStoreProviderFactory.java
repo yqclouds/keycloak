@@ -55,7 +55,7 @@ public class InfinispanSingleUseTokenStoreProviderFactory implements SingleUseTo
         if (tokenCache == null) {
             synchronized (this) {
                 if (tokenCache == null) {
-                    InfinispanConnectionProvider connections = session.getProvider(InfinispanConnectionProvider.class);
+                    InfinispanConnectionProvider connections = session.getBeanFactory().getBean(InfinispanConnectionProvider.class);
                     Cache cache = connections.getCache(InfinispanConnectionProvider.ACTION_TOKEN_CACHE);
 
                     RemoteCache remoteCache = InfinispanUtil.getRemoteCache(cache);

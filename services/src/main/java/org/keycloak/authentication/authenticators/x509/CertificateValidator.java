@@ -220,7 +220,7 @@ public class CertificateValidator {
     }
 
     private X509Certificate findCAInTruststore(X500Principal issuer) throws GeneralSecurityException {
-        TruststoreProvider truststoreProvider = session.getProvider(TruststoreProvider.class);
+        TruststoreProvider truststoreProvider = session.getBeanFactory().getBean(TruststoreProvider.class);
         if (truststoreProvider == null || truststoreProvider.getTruststore() == null) {
             return null;
         }

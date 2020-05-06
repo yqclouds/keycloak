@@ -52,7 +52,7 @@ public class EmailEventListenerProviderFactory implements EventListenerProviderF
 
     @Override
     public EventListenerProvider create(KeycloakSession session) {
-        EmailTemplateProvider emailTemplateProvider = session.getProvider(EmailTemplateProvider.class);
+        EmailTemplateProvider emailTemplateProvider = session.getBeanFactory().getBean(EmailTemplateProvider.class);
         return new EmailEventListenerProvider(session, emailTemplateProvider, includedEvents);
     }
 

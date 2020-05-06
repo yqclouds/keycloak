@@ -167,7 +167,7 @@ public class DefaultHttpClientFactory implements HttpClientFactory {
                             .disableCookies(disableCookies)
                             .proxyMappings(ProxyMappings.valueOf(proxyMappings));
 
-                    TruststoreProvider truststoreProvider = session.getProvider(TruststoreProvider.class);
+                    TruststoreProvider truststoreProvider = session.getBeanFactory().getBean(TruststoreProvider.class);
                     boolean disableTruststoreProvider = truststoreProvider == null || truststoreProvider.getTruststore() == null;
 
                     if (disableTruststoreProvider) {

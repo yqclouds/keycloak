@@ -44,7 +44,7 @@ public class CrossDCLastSessionRefreshStoreFactory extends AbstractLastSessionRe
         CrossDCLastSessionRefreshStore store = createStoreInstance(maxIntervalBetweenMessagesSeconds, maxCount, eventKey);
 
         // Register listener
-        ClusterProvider cluster = kcSession.getProvider(ClusterProvider.class);
+        ClusterProvider cluster = kcSession.getBeanFactory().getBean(ClusterProvider.class);
         cluster.registerListener(eventKey, new CrossDCLastSessionRefreshListener(kcSession, cache, offline));
 
         // Setup periodic timer check

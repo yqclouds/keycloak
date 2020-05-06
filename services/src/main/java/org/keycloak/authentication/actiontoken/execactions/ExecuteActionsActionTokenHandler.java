@@ -86,7 +86,7 @@ public class ExecuteActionsActionTokenHandler extends AbstractActionTokenHandler
                     authSession.getClient().getClientId(), authSession.getTabId());
             String confirmUri = builder.build(realm.getName()).toString();
 
-            return session.getProvider(LoginFormsProvider.class)
+            return session.getBeanFactory().getBean(LoginFormsProvider.class)
                     .setAuthenticationSession(authSession)
                     .setSuccess(Messages.CONFIRM_EXECUTION_OF_ACTIONS)
                     .setAttribute(Constants.TEMPLATE_ATTR_ACTION_URI, confirmUri)

@@ -236,7 +236,7 @@ public class RealmManager {
                 sessions.onRealmRemoved(realm);
             }
 
-            UserSessionPersisterProvider sessionsPersister = session.getProvider(UserSessionPersisterProvider.class);
+            UserSessionPersisterProvider sessionsPersister = session.getBeanFactory().getBean(UserSessionPersisterProvider.class);
             if (sessionsPersister != null) {
                 sessionsPersister.onRealmRemoved(realm);
             }

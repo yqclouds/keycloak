@@ -42,7 +42,7 @@ public class KeycloakUriInfo implements UriInfo {
     public KeycloakUriInfo(KeycloakSession session, UrlType type, UriInfo delegate) {
         this.delegate = delegate;
 
-        HostnameProvider hostnameProvider = session.getProvider(HostnameProvider.class);
+        HostnameProvider hostnameProvider = session.getBeanFactory().getBean(HostnameProvider.class);
         this.scheme = hostnameProvider.getScheme(delegate, type);
         this.hostname = hostnameProvider.getHostname(delegate, type);
         this.port = hostnameProvider.getPort(delegate, type);

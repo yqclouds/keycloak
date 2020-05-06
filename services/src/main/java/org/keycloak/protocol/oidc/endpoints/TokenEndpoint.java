@@ -1013,7 +1013,7 @@ public class TokenEndpoint {
                 throw new CorsErrorResponseException(cors, Errors.INVALID_TOKEN, "Invalid Token", Response.Status.BAD_REQUEST);
             }
             if (realm.isBruteForceProtected()) {
-                if (session.getProvider(BruteForceProtector.class).isTemporarilyDisabled(session, realm, user)) {
+                if (session.getBeanFactory().getBean(BruteForceProtector.class).isTemporarilyDisabled(session, realm, user)) {
                     event.error(Errors.USER_TEMPORARILY_DISABLED);
                     throw new CorsErrorResponseException(cors, Errors.INVALID_TOKEN, "Invalid Token", Response.Status.BAD_REQUEST);
                 }
@@ -1088,7 +1088,7 @@ public class TokenEndpoint {
             }
         }
 
-        AuthorizationTokenService.KeycloakAuthorizationRequest authorizationRequest = new AuthorizationTokenService.KeycloakAuthorizationRequest(session.getProvider(AuthorizationProvider.class), tokenManager, event, this.request, cors);
+        AuthorizationTokenService.KeycloakAuthorizationRequest authorizationRequest = new AuthorizationTokenService.KeycloakAuthorizationRequest(session.getBeanFactory().getBean(AuthorizationProvider.class), tokenManager, event, this.request, cors);
 
         authorizationRequest.setTicket(formParams.getFirst("ticket"));
         authorizationRequest.setClaimToken(claimToken);

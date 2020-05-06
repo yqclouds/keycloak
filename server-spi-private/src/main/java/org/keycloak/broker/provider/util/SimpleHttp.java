@@ -72,7 +72,7 @@ public class SimpleHttp {
     }
 
     public static SimpleHttp doDelete(String url, KeycloakSession session) {
-        return doDelete(url, session.getProvider(HttpClientProvider.class).getHttpClient());
+        return doDelete(url, session.getBeanFactory().getBean(HttpClientProvider.class).getHttpClient());
     }
 
     public static SimpleHttp doDelete(String url, HttpClient client) {
@@ -80,7 +80,7 @@ public class SimpleHttp {
     }
 
     public static SimpleHttp doGet(String url, KeycloakSession session) {
-        return doGet(url, session.getProvider(HttpClientProvider.class).getHttpClient());
+        return doGet(url, session.getBeanFactory().getBean(HttpClientProvider.class).getHttpClient());
     }
 
     public static SimpleHttp doGet(String url, HttpClient client) {
@@ -88,7 +88,7 @@ public class SimpleHttp {
     }
 
     public static SimpleHttp doPost(String url, KeycloakSession session) {
-        return doPost(url, session.getProvider(HttpClientProvider.class).getHttpClient());
+        return doPost(url, session.getBeanFactory().getBean(HttpClientProvider.class).getHttpClient());
     }
 
     public static SimpleHttp doPost(String url, HttpClient client) {

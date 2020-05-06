@@ -121,9 +121,9 @@ public class AccountFormService extends AbstractSecuredLocalService {
     }
 
     public void init() {
-        eventStore = session.getProvider(EventStoreProvider.class);
+        eventStore = session.getBeanFactory().getBean(EventStoreProvider.class);
 
-        account = session.getProvider(AccountProvider.class).setRealm(realm).setUriInfo(session.getContext().getUri()).setHttpHeaders(headers);
+        account = session.getBeanFactory().getBean(AccountProvider.class).setRealm(realm).setUriInfo(session.getContext().getUri()).setHttpHeaders(headers);
 
         AuthenticationManager.AuthResult authResult = authManager.authenticateIdentityCookie(session, realm);
         if (authResult != null) {
@@ -171,7 +171,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
             try {
                 auth.require(AccountRoles.MANAGE_ACCOUNT);
             } catch (ForbiddenException e) {
-                return session.getProvider(LoginFormsProvider.class).setError(Messages.NO_ACCESS).createErrorPage(Response.Status.FORBIDDEN);
+                return session.getBeanFactory().getBean(LoginFormsProvider.class).setError(Messages.NO_ACCESS).createErrorPage(Response.Status.FORBIDDEN);
             }
 
             setReferrerOnPage();
@@ -197,7 +197,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
 
             String locale = session.getContext().getUri().getQueryParameters().getFirst(LocaleSelectorProvider.KC_LOCALE_PARAM);
             if (locale != null) {
-                LocaleUpdaterProvider updater = session.getProvider(LocaleUpdaterProvider.class);
+                LocaleUpdaterProvider updater = session.getBeanFactory().getBean(LocaleUpdaterProvider.class);
                 updater.updateUsersLocale(auth.getUser(), locale);
             }
 
@@ -713,7 +713,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
 
         csrfCheck(formData);
 
-        AuthorizationProvider authorization = session.getProvider(AuthorizationProvider.class);
+        AuthorizationProvider authorization = session.getBeanFactory().getBean(AuthorizationProvider.class);
         PermissionTicketStore ticketStore = authorization.getStoreFactory().getPermissionTicketStore();
         Resource resource = authorization.getStoreFactory().getResourceStore().findById(resourceId, null);
 
@@ -835,7 +835,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
 
         csrfCheck(formData);
 
-        AuthorizationProvider authorization = session.getProvider(AuthorizationProvider.class);
+        AuthorizationProvider authorization = session.getBeanFactory().getBean(AuthorizationProvider.class);
         PermissionTicketStore ticketStore = authorization.getStoreFactory().getPermissionTicketStore();
         Resource resource = authorization.getStoreFactory().getResourceStore().findById(resourceId, null);
 
@@ -920,7 +920,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
         auth.require(AccountRoles.MANAGE_ACCOUNT);
         csrfCheck(formData);
 
-        AuthorizationProvider authorization = session.getProvider(AuthorizationProvider.class);
+        AuthorizationProvider authorization = session.getBeanFactory().getBean(AuthorizationProvider.class);
         PermissionTicketStore ticketStore = authorization.getStoreFactory().getPermissionTicketStore();
 
         if (action == null) {

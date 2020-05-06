@@ -117,7 +117,7 @@ public class SpnegoAuthenticator extends AbstractUsernameFormAuthenticator imple
             logger.trace("Sending back " + HttpHeaders.WWW_AUTHENTICATE + ": " + negotiateHeader);
         }
         if (context.getExecution().isRequired()) {
-            return context.getSession().getProvider(LoginFormsProvider.class)
+            return context.getSession().getBeanFactory().getBean(LoginFormsProvider.class)
                     .setAuthenticationSession(context.getAuthenticationSession())
                     .setResponseHeader(HttpHeaders.WWW_AUTHENTICATE, negotiateHeader)
                     .setError(Messages.KERBEROS_NOT_ENABLED).createErrorPage(Response.Status.UNAUTHORIZED);

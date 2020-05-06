@@ -148,7 +148,7 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
 
         KeycloakSession session = sessionFactory.create();
         try {
-            TimerProvider timer = session.getProvider(TimerProvider.class);
+            TimerProvider timer = session.getBeanFactory().getBean(TimerProvider.class);
             timer.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new ClearExpiredEvents(), interval), interval, "ClearExpiredEvents");
             timer.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new ClearExpiredClientInitialAccessTokens(), interval), interval, "ClearExpiredClientInitialAccessTokens");
             timer.schedule(new ScheduledTaskRunner(sessionFactory, new ClearExpiredUserSessions()), interval, ClearExpiredUserSessions.TASK_NAME);

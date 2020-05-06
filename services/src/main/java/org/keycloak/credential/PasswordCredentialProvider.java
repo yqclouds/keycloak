@@ -69,7 +69,7 @@ public class PasswordCredentialProvider implements CredentialProvider<PasswordCr
     public boolean createCredential(RealmModel realm, UserModel user, String password) {
         PasswordPolicy policy = realm.getPasswordPolicy();
 
-        PolicyError error = session.getProvider(PasswordPolicyManagerProvider.class).validate(realm, user, password);
+        PolicyError error = session.getBeanFactory().getBean(PasswordPolicyManagerProvider.class).validate(realm, user, password);
         if (error != null) throw new ModelException(error.getMessage(), error.getParameters());
 
         PasswordHashProvider hash = getHashProvider(policy);

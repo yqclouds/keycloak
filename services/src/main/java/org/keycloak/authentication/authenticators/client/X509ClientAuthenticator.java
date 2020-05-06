@@ -35,7 +35,7 @@ public class X509ClientAuthenticator extends AbstractClientAuthenticator {
     @Override
     public void authenticateClient(ClientAuthenticationFlowContext context) {
 
-        X509ClientCertificateLookup provider = context.getSession().getProvider(X509ClientCertificateLookup.class);
+        X509ClientCertificateLookup provider = context.getSession().getBeanFactory().getBean(X509ClientCertificateLookup.class);
         if (provider == null) {
             logger.errorv("\"{0}\" Spi is not available, did you forget to update the configuration?",
                     X509ClientCertificateLookup.class);

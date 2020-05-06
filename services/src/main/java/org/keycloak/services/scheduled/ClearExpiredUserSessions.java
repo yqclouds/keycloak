@@ -36,7 +36,7 @@ public class ClearExpiredUserSessions implements ScheduledTask {
         for (RealmModel realm : session.realms().getRealms()) {
             sessions.removeExpired(realm);
             session.authenticationSessions().removeExpired(realm);
-            session.getProvider(UserSessionPersisterProvider.class).removeExpired(realm);
+            session.getBeanFactory().getBean(UserSessionPersisterProvider.class).removeExpired(realm);
         }
     }
 

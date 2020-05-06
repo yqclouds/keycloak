@@ -215,12 +215,12 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
 
     protected void startGlobalStats(KeycloakSession session, int globalStatsIntervalSecs) {
         LOG.debug("Started Hibernate statistics with the interval {} seconds", globalStatsIntervalSecs);
-        TimerProvider timer = session.getProvider(TimerProvider.class);
+        TimerProvider timer = session.getBeanFactory().getBean(TimerProvider.class);
         timer.scheduleTask(new HibernateStatsReporter(entityManagerFactory), globalStatsIntervalSecs * 1000, "ReportHibernateGlobalStats");
     }
 
     void migration(MigrationStrategy strategy, boolean initializeEmpty, String schema, File databaseUpdateFile, Connection connection, KeycloakSession session) {
-        JpaUpdaterProvider updater = session.getProvider(JpaUpdaterProvider.class);
+        JpaUpdaterProvider updater = session.getBeanFactory().getBean(JpaUpdaterProvider.class);
 
         JpaUpdaterProvider.Status status = updater.validate(connection, schema);
         if (status == JpaUpdaterProvider.Status.VALID) {

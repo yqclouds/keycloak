@@ -72,9 +72,9 @@ public class InfinispanPublicKeyStorageProviderFactory implements PublicKeyStora
         if (keysCache == null) {
             synchronized (this) {
                 if (keysCache == null) {
-                    this.keysCache = session.getProvider(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.KEYS_CACHE_NAME);
+                    this.keysCache = session.getBeanFactory().getBean(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.KEYS_CACHE_NAME);
 
-                    ClusterProvider cluster = session.getProvider(ClusterProvider.class);
+                    ClusterProvider cluster = session.getBeanFactory().getBean(ClusterProvider.class);
                     cluster.registerListener(PUBLIC_KEY_STORAGE_INVALIDATION_EVENT, (ClusterEvent event) -> {
 
                         PublicKeyStorageInvalidationEvent invalidationEvent = (PublicKeyStorageInvalidationEvent) event;

@@ -41,7 +41,7 @@ public class WebAuthnRegisterFactory implements RequiredActionFactory, DisplayTy
     @Override
     public RequiredActionProvider create(KeycloakSession session) {
         WebAuthnRegister webAuthnRegister = null;
-        TruststoreProvider truststoreProvider = session.getProvider(TruststoreProvider.class);
+        TruststoreProvider truststoreProvider = session.getBeanFactory().getBean(TruststoreProvider.class);
         if (truststoreProvider == null || truststoreProvider.getTruststore() == null) {
             webAuthnRegister = createProvider(session, new NullCertPathTrustworthinessValidator());
         } else {

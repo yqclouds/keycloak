@@ -156,12 +156,12 @@ public class SessionCodeChecks {
         }
 
         if (authSession != null) {
-            session.getProvider(LoginFormsProvider.class).setAuthenticationSession(authSession);
+            session.getBeanFactory().getBean(LoginFormsProvider.class).setAuthenticationSession(authSession);
             return authSession;
         }
 
         if (authSessionCookie != null) {
-            session.getProvider(LoginFormsProvider.class).setAuthenticationSession(authSessionCookie);
+            session.getBeanFactory().getBean(LoginFormsProvider.class).setAuthenticationSession(authSessionCookie);
             return authSessionCookie;
 
         }
@@ -170,7 +170,7 @@ public class SessionCodeChecks {
         UserSessionModel userSession = authSessionManager.getUserSessionFromAuthCookie(realm);
 
         if (userSession != null) {
-            LoginFormsProvider loginForm = session.getProvider(LoginFormsProvider.class).setAuthenticationSession(authSession)
+            LoginFormsProvider loginForm = session.getBeanFactory().getBean(LoginFormsProvider.class).setAuthenticationSession(authSession)
                     .setSuccess(Messages.ALREADY_LOGGED_IN);
 
             if (client == null) {

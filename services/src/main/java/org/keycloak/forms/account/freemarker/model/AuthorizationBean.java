@@ -55,7 +55,7 @@ public class AuthorizationBean {
         this.session = session;
         this.user = user;
         this.uriInfo = uriInfo;
-        authorization = session.getProvider(AuthorizationProvider.class);
+        authorization = session.getBeanFactory().getBean(AuthorizationProvider.class);
         List<String> pathParameters = uriInfo.getPathParameters().get("resource_id");
 
         if (pathParameters != null && !pathParameters.isEmpty()) {

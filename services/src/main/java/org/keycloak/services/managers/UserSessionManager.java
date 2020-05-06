@@ -39,7 +39,7 @@ public class UserSessionManager {
 
     public UserSessionManager(KeycloakSession session) {
         this.kcSession = session;
-        this.persister = session.getProvider(UserSessionPersisterProvider.class);
+        this.persister = session.getBeanFactory().getBean(UserSessionPersisterProvider.class);
     }
 
     public void createOrUpdateOfflineSession(AuthenticatedClientSessionModel clientSession, UserSessionModel userSession) {

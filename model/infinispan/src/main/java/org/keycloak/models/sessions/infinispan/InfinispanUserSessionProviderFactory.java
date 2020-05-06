@@ -83,7 +83,7 @@ public class InfinispanUserSessionProviderFactory implements UserSessionProvider
 
     @Override
     public InfinispanUserSessionProvider create(KeycloakSession session) {
-        InfinispanConnectionProvider connections = session.getProvider(InfinispanConnectionProvider.class);
+        InfinispanConnectionProvider connections = session.getBeanFactory().getBean(InfinispanConnectionProvider.class);
         Cache<String, SessionEntityWrapper<UserSessionEntity>> cache = connections.getCache(InfinispanConnectionProvider.USER_SESSION_CACHE_NAME);
         Cache<String, SessionEntityWrapper<UserSessionEntity>> offlineSessionsCache = connections.getCache(InfinispanConnectionProvider.OFFLINE_USER_SESSION_CACHE_NAME);
         Cache<UUID, SessionEntityWrapper<AuthenticatedClientSessionEntity>> clientSessionCache = connections.getCache(InfinispanConnectionProvider.CLIENT_SESSION_CACHE_NAME);
@@ -156,7 +156,7 @@ public class InfinispanUserSessionProviderFactory implements UserSessionProvider
 
             @Override
             public void run(KeycloakSession session) {
-                InfinispanConnectionProvider connections = session.getProvider(InfinispanConnectionProvider.class);
+                InfinispanConnectionProvider connections = session.getBeanFactory().getBean(InfinispanConnectionProvider.class);
                 Cache<String, Serializable> workCache = connections.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);
 
                 InfinispanCacheInitializer ispnInitializer = new InfinispanCacheInitializer(sessionFactory, workCache,
@@ -180,7 +180,7 @@ public class InfinispanUserSessionProviderFactory implements UserSessionProvider
 
     protected void registerClusterListeners(KeycloakSession session) {
         KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
-        ClusterProvider cluster = session.getProvider(ClusterProvider.class);
+        ClusterProvider cluster = session.getBeanFactory().getBean(ClusterProvider.class);
 
         cluster.registerListener(REALM_REMOVED_SESSION_EVENT, new AbstractUserSessionClusterListener<RealmRemovedSessionEvent>(sessionFactory) {
 
@@ -225,7 +225,7 @@ public class InfinispanUserSessionProviderFactory implements UserSessionProvider
     protected void checkRemoteCaches(KeycloakSession session) {
         this.remoteCacheInvoker = new RemoteCacheInvoker();
 
-        InfinispanConnectionProvider ispn = session.getProvider(InfinispanConnectionProvider.class);
+        InfinispanConnectionProvider ispn = session.getBeanFactory().getBean(InfinispanConnectionProvider.class);
 
         Cache<String, SessionEntityWrapper<UserSessionEntity>> sessionsCache = ispn.getCache(InfinispanConnectionProvider.USER_SESSION_CACHE_NAME);
         boolean sessionsRemoteCache = checkRemoteCache(session, sessionsCache, (RealmModel realm) -> {
@@ -301,7 +301,7 @@ public class InfinispanUserSessionProviderFactory implements UserSessionProvider
 
             @Override
             public void run(KeycloakSession session) {
-                InfinispanConnectionProvider connections = session.getProvider(InfinispanConnectionProvider.class);
+                InfinispanConnectionProvider connections = session.getBeanFactory().getBean(InfinispanConnectionProvider.class);
                 Cache<String, Serializable> workCache = connections.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);
 
                 InfinispanCacheInitializer initializer = new InfinispanCacheInitializer(sessionFactory, workCache,

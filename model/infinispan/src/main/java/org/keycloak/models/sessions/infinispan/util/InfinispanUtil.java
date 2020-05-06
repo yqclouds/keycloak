@@ -52,7 +52,7 @@ public class InfinispanUtil {
 
 
     public static TopologyInfo getTopologyInfo(KeycloakSession session) {
-        return session.getProvider(InfinispanConnectionProvider.class).getTopologyInfo();
+        return session.getBeanFactory().getBean(InfinispanConnectionProvider.class).getTopologyInfo();
     }
 
 

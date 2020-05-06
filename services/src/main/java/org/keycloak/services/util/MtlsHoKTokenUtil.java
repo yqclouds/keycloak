@@ -89,7 +89,7 @@ public class MtlsHoKTokenUtil {
     private static X509Certificate[] getCertificateChain(HttpRequest request, KeycloakSession session) {
         try {
             // Get a x509 client certificate
-            X509ClientCertificateLookup provider = session.getProvider(X509ClientCertificateLookup.class);
+            X509ClientCertificateLookup provider = session.getBeanFactory().getBean(X509ClientCertificateLookup.class);
             if (provider == null) {
                 logger.errorv("\"{0}\" Spi is not available, did you forget to update the configuration?", X509ClientCertificateLookup.class);
                 return null;

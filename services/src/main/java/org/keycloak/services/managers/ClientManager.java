@@ -89,7 +89,7 @@ public class ClientManager {
                 sessions.onClientRemoved(realm, client);
             }
 
-            UserSessionPersisterProvider sessionsPersister = realmManager.getSession().getProvider(UserSessionPersisterProvider.class);
+            UserSessionPersisterProvider sessionsPersister = realmManager.getSession().getBeanFactory().getBean(UserSessionPersisterProvider.class);
             if (sessionsPersister != null) {
                 sessionsPersister.onClientRemoved(realm, client);
             }

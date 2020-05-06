@@ -155,7 +155,7 @@ public class VerifyEmail implements RequiredActionProvider, RequiredActionFactor
 
         try {
             session
-                    .getProvider(EmailTemplateProvider.class)
+                    .getBeanFactory().getBean(EmailTemplateProvider.class)
                     .setAuthenticationSession(authSession)
                     .setRealm(realm)
                     .setUser(user)

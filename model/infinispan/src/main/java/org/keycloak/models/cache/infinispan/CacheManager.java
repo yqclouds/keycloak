@@ -195,7 +195,7 @@ public abstract class CacheManager {
 
 
     public void sendInvalidationEvents(KeycloakSession session, Collection<InvalidationEvent> invalidationEvents, String eventKey) {
-        ClusterProvider clusterProvider = session.getProvider(ClusterProvider.class);
+        ClusterProvider clusterProvider = session.getBeanFactory().getBean(ClusterProvider.class);
 
         // Maybe add InvalidationEvent, which will be collection of all invalidationEvents? That will reduce cluster traffic even more.
         for (InvalidationEvent event : invalidationEvents) {

@@ -191,14 +191,14 @@ public class RemoteCacheSessionsLoader implements SessionLoader<RemoteCacheSessi
 
 
     protected Cache getCache(KeycloakSession session) {
-        InfinispanConnectionProvider ispn = session.getProvider(InfinispanConnectionProvider.class);
+        InfinispanConnectionProvider ispn = session.getBeanFactory().getBean(InfinispanConnectionProvider.class);
         return ispn.getCache(cacheName);
     }
 
 
     // Get remoteCache, which may be secured
     protected RemoteCache getRemoteCache(KeycloakSession session) {
-        InfinispanConnectionProvider ispn = session.getProvider(InfinispanConnectionProvider.class);
+        InfinispanConnectionProvider ispn = session.getBeanFactory().getBean(InfinispanConnectionProvider.class);
         return ispn.getRemoteCache(cacheName);
     }
 

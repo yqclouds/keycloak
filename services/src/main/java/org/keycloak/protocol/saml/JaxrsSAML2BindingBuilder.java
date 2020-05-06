@@ -101,7 +101,7 @@ public class JaxrsSAML2BindingBuilder extends BaseSAML2BindingBuilder<JaxrsSAML2
                 formData.add(GeneralConstants.RELAY_STATE, this.getRelayState());
             }
 
-            return session.getProvider(LoginFormsProvider.class).setFormData(formData).createSamlPostForm();
+            return session.getBeanFactory().getBean(LoginFormsProvider.class).setFormData(formData).createSamlPostForm();
         }
     }
 

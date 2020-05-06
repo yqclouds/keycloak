@@ -102,7 +102,7 @@ public abstract class AbstractX509ClientCertificateAuthenticator implements Auth
     protected X509Certificate[] getCertificateChain(AuthenticationFlowContext context) {
         try {
             // Get a x509 client certificate
-            X509ClientCertificateLookup provider = context.getSession().getProvider(X509ClientCertificateLookup.class);
+            X509ClientCertificateLookup provider = context.getSession().getBeanFactory().getBean(X509ClientCertificateLookup.class);
             if (provider == null) {
                 logger.errorv("\"{0}\" Spi is not available, did you forget to update the configuration?",
                         X509ClientCertificateLookup.class);

@@ -85,7 +85,7 @@ public class RemoteCacheSessionListener<K, V extends SessionEntity> {
 
         this.topologyInfo = InfinispanUtil.getTopologyInfo(session);
 
-        ExecutorService executor = session.getProvider(ExecutorsProvider.class).getExecutor("client-listener-" + cache.getName());
+        ExecutorService executor = session.getBeanFactory().getBean(ExecutorsProvider.class).getExecutor("client-listener-" + cache.getName());
         this.executor = new ClientListenerExecutorDecorator<>(executor);
     }
 

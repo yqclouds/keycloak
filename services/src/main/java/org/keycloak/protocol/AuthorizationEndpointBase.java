@@ -194,7 +194,7 @@ public abstract class AuthorizationEndpointBase {
             }
         }
 
-        session.getProvider(LoginFormsProvider.class).setAuthenticationSession(authSession);
+        session.getBeanFactory().getBean(LoginFormsProvider.class).setAuthenticationSession(authSession);
 
         return authSession;
 

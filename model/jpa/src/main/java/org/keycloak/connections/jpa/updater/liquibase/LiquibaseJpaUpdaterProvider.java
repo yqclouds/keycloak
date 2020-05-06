@@ -283,12 +283,12 @@ public class LiquibaseJpaUpdaterProvider implements JpaUpdaterProvider {
     }
 
     private Liquibase getLiquibaseForKeycloakUpdate(Connection connection, String defaultSchema) throws LiquibaseException {
-        LiquibaseConnectionProvider liquibaseProvider = session.getProvider(LiquibaseConnectionProvider.class);
+        LiquibaseConnectionProvider liquibaseProvider = session.getBeanFactory().getBean(LiquibaseConnectionProvider.class);
         return liquibaseProvider.getLiquibase(connection, defaultSchema);
     }
 
     private Liquibase getLiquibaseForCustomProviderUpdate(Connection connection, String defaultSchema, String changelogLocation, ClassLoader classloader, String changelogTableName) throws LiquibaseException {
-        LiquibaseConnectionProvider liquibaseProvider = session.getProvider(LiquibaseConnectionProvider.class);
+        LiquibaseConnectionProvider liquibaseProvider = session.getBeanFactory().getBean(LiquibaseConnectionProvider.class);
         return liquibaseProvider.getLiquibaseForCustomUpdate(connection, defaultSchema, changelogLocation, classloader, changelogTableName);
     }
 

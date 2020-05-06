@@ -97,7 +97,7 @@ public class InfinispanNotificationsManager {
             }
         }
 
-        ExecutorService listenersExecutor = workRemoteCache == null ? null : session.getProvider(ExecutorsProvider.class).getExecutor("work-cache-event-listener");
+        ExecutorService listenersExecutor = workRemoteCache == null ? null : session.getBeanFactory().getBean(ExecutorsProvider.class).getExecutor("work-cache-event-listener");
         InfinispanNotificationsManager manager = new InfinispanNotificationsManager(workCache, workRemoteCache, myAddress, mySite, listenersExecutor);
 
         // We need CacheEntryListener for communication within current DC

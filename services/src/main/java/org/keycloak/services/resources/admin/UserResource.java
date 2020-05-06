@@ -218,7 +218,7 @@ public class UserResource {
             rep.setFederatedIdentities(reps);
         }
 
-        if (session.getProvider(BruteForceProtector.class).isTemporarilyDisabled(session, realm, user)) {
+        if (session.getBeanFactory().getBean(BruteForceProtector.class).isTemporarilyDisabled(session, realm, user)) {
             rep.setEnabled(false);
         }
         rep.setAccess(auth.users().getAccess(user));
@@ -759,7 +759,7 @@ public class UserResource {
 
             String link = builder.build(realm.getName()).toString();
 
-            this.session.getProvider(EmailTemplateProvider.class)
+            this.session.getBeanFactory().getBean(EmailTemplateProvider.class)
                     .setAttribute(Constants.TEMPLATE_ATTR_REQUIRED_ACTIONS, token.getRequiredActions())
                     .setRealm(realm)
                     .setUser(user)

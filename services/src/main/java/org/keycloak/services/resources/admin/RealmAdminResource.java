@@ -396,7 +396,7 @@ public class RealmAdminResource {
             adminEvent.operation(OperationType.UPDATE).representation(StripSecretsUtils.strip(rep)).success();
 
             if (rep.isDuplicateEmailsAllowed() != null && rep.isDuplicateEmailsAllowed() != wasDuplicateEmailsAllowed) {
-                UserCache cache = session.getProvider(UserCache.class);
+                UserCache cache = session.getBeanFactory().getBean(UserCache.class);
                 if (cache != null) cache.clear();
             }
 
@@ -671,7 +671,7 @@ public class RealmAdminResource {
                                                @QueryParam("max") Integer maxResults) {
         auth.realm().requireViewEvents();
 
-        EventStoreProvider eventStore = session.getProvider(EventStoreProvider.class);
+        EventStoreProvider eventStore = session.getBeanFactory().getBean(EventStoreProvider.class);
 
         EventQuery query = eventStore.createQuery().realm(realm.getId());
         if (client != null) {
@@ -764,7 +764,7 @@ public class RealmAdminResource {
                                                     @QueryParam("resourceTypes") List<String> resourceTypes) {
         auth.realm().requireViewEvents();
 
-        EventStoreProvider eventStore = session.getProvider(EventStoreProvider.class);
+        EventStoreProvider eventStore = session.getBeanFactory().getBean(EventStoreProvider.class);
         AdminEventQuery query = eventStore.createAdminQuery().realm(realm.getId());
         ;
 
@@ -856,7 +856,7 @@ public class RealmAdminResource {
     public void clearEvents() {
         auth.realm().requireManageEvents();
 
-        EventStoreProvider eventStore = session.getProvider(EventStoreProvider.class);
+        EventStoreProvider eventStore = session.getBeanFactory().getBean(EventStoreProvider.class);
         eventStore.clear(realm.getId());
     }
 
@@ -868,7 +868,7 @@ public class RealmAdminResource {
     public void clearAdminEvents() {
         auth.realm().requireManageEvents();
 
-        EventStoreProvider eventStore = session.getProvider(EventStoreProvider.class);
+        EventStoreProvider eventStore = session.getBeanFactory().getBean(EventStoreProvider.class);
         eventStore.clearAdmin(realm.getId());
     }
 
@@ -952,7 +952,7 @@ public class RealmAdminResource {
             if (ComponentRepresentation.SECRET_VALUE.equals(settings.get("password"))) {
                 settings.put("password", realm.getSmtpConfig().get("password"));
             }
-            session.getProvider(EmailTemplateProvider.class).sendSmtpTestEmail(settings, user);
+            session.getBeanFactory().getBean(EmailTemplateProvider.class).sendSmtpTestEmail(settings, user);
         } catch (Exception e) {
             e.printStackTrace();
             logger.errorf("Failed to send email \n %s", e.getCause());
@@ -1095,7 +1095,7 @@ public class RealmAdminResource {
     public void clearRealmCache() {
         auth.realm().requireManageRealm();
 
-        CacheRealmProvider cache = session.getProvider(CacheRealmProvider.class);
+        CacheRealmProvider cache = session.getBeanFactory().getBean(CacheRealmProvider.class);
         if (cache != null) {
             cache.clear();
         }
@@ -1111,7 +1111,7 @@ public class RealmAdminResource {
     public void clearUserCache() {
         auth.realm().requireManageRealm();
 
-        UserCache cache = session.getProvider(UserCache.class);
+        UserCache cache = session.getBeanFactory().getBean(UserCache.class);
         if (cache != null) {
             cache.clear();
         }
@@ -1127,7 +1127,7 @@ public class RealmAdminResource {
     public void clearKeysCache() {
         auth.realm().requireManageRealm();
 
-        PublicKeyStorageProvider cache = session.getProvider(PublicKeyStorageProvider.class);
+        PublicKeyStorageProvider cache = session.getBeanFactory().getBean(PublicKeyStorageProvider.class);
         if (cache != null) {
             cache.clearCache();
         }

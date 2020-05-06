@@ -168,7 +168,7 @@ public class RegistrationRecaptcha implements FormAction, FormActionFactory, Con
     }
 
     protected boolean validateRecaptcha(ValidationContext context, boolean success, String captcha, String secret) {
-        HttpClient httpClient = context.getSession().getProvider(HttpClientProvider.class).getHttpClient();
+        HttpClient httpClient = context.getSession().getBeanFactory().getBean(HttpClientProvider.class).getHttpClient();
         HttpPost post = new HttpPost("https://www." + getRecaptchaDomain(context.getAuthenticatorConfig()) + "/recaptcha/api/siteverify");
         List<NameValuePair> formparams = new LinkedList<>();
         formparams.add(new BasicNameValuePair("secret", secret));

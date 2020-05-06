@@ -100,7 +100,7 @@ public class AccountConsole {
             map.put("supportedLocales", supportedLocales(messages));
             map.put("properties", theme.getProperties());
 
-            EventStoreProvider eventStore = session.getProvider(EventStoreProvider.class);
+            EventStoreProvider eventStore = session.getBeanFactory().getBean(EventStoreProvider.class);
             map.put("isEventsEnabled", eventStore != null && realm.isEventsEnabled());
             map.put("isAuthorizationEnabled", true);
 

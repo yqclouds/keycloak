@@ -145,7 +145,7 @@ public class AuthenticationSessionManager {
 
         boolean sslRequired = realm.getSslRequired().isRequired(session.getContext().getConnection());
 
-        StickySessionEncoderProvider encoder = session.getProvider(StickySessionEncoderProvider.class);
+        StickySessionEncoderProvider encoder = session.getBeanFactory().getBean(StickySessionEncoderProvider.class);
         String encodedAuthSessionId = encoder.encodeSessionId(authSessionId);
 
         CookieHelper.addCookie(AUTH_SESSION_ID, encodedAuthSessionId, cookiePath, null, null, -1, sslRequired, true);
@@ -160,7 +160,7 @@ public class AuthenticationSessionManager {
      */
     AuthSessionId decodeAuthSessionId(String encodedAuthSessionId) {
         log.debugf("Found AUTH_SESSION_ID cookie with value %s", encodedAuthSessionId);
-        StickySessionEncoderProvider encoder = session.getProvider(StickySessionEncoderProvider.class);
+        StickySessionEncoderProvider encoder = session.getBeanFactory().getBean(StickySessionEncoderProvider.class);
         String decodedAuthSessionId = encoder.decodeSessionId(encodedAuthSessionId);
         String reencoded = encoder.encodeSessionId(decodedAuthSessionId);
 

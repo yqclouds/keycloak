@@ -94,7 +94,7 @@ public class IdpVerifyAccountLinkActionTokenHandler extends AbstractActionTokenH
                     authSession.getClient().getClientId(), authSession.getTabId());
             String confirmUri = builder.build(realm.getName()).toString();
 
-            return session.getProvider(LoginFormsProvider.class)
+            return session.getBeanFactory().getBean(LoginFormsProvider.class)
                     .setAuthenticationSession(authSession)
                     .setSuccess(Messages.CONFIRM_ACCOUNT_LINKING, token.getIdentityProviderUsername(), token.getIdentityProviderAlias())
                     .setAttribute(Constants.TEMPLATE_ATTR_ACTION_URI, confirmUri)
@@ -122,7 +122,7 @@ public class IdpVerifyAccountLinkActionTokenHandler extends AbstractActionTokenH
                 );
             }
 
-            return session.getProvider(LoginFormsProvider.class)
+            return session.getBeanFactory().getBean(LoginFormsProvider.class)
                     .setAuthenticationSession(authSession)
                     .setSuccess(Messages.IDENTITY_PROVIDER_LINK_SUCCESS, token.getIdentityProviderAlias(), token.getIdentityProviderUsername())
                     .setAttribute(Constants.SKIP_LINK, true)

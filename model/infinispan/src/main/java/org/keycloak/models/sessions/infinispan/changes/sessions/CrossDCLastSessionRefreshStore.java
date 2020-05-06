@@ -51,7 +51,7 @@ public class CrossDCLastSessionRefreshStore extends AbstractLastSessionRefreshSt
         }
 
         // Don't notify local DC about the lastSessionRefreshes. They were processed here already
-        ClusterProvider cluster = kcSession.getProvider(ClusterProvider.class);
+        ClusterProvider cluster = kcSession.getBeanFactory().getBean(ClusterProvider.class);
         cluster.notify(eventKey, event, true, ClusterProvider.DCNotify.ALL_BUT_LOCAL_DC);
     }
 

@@ -376,7 +376,7 @@ public class OIDCLoginProtocol implements LoginProtocol {
         logger.debugv("pushRevocation resource: {0} url: {1}", resource.getClientId(), managementUrl);
         URI target = UriBuilder.fromUri(managementUrl).path(AdapterConstants.K_PUSH_NOT_BEFORE).build();
         try {
-            int status = session.getProvider(HttpClientProvider.class).postText(target.toString(), token);
+            int status = session.getBeanFactory().getBean(HttpClientProvider.class).postText(target.toString(), token);
             boolean success = status == 204 || status == 200;
             logger.debugf("pushRevocation success for %s: %s", managementUrl, success);
             return success;

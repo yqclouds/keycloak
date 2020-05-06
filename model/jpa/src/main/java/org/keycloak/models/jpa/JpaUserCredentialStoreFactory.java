@@ -48,7 +48,7 @@ public class JpaUserCredentialStoreFactory implements ProviderFactory<UserCreden
 
     @Override
     public UserCredentialStore create(KeycloakSession session) {
-        EntityManager em = session.getProvider(JpaConnectionProvider.class).getEntityManager();
+        EntityManager em = session.getBeanFactory().getBean(JpaConnectionProvider.class).getEntityManager();
         return new JpaUserCredentialStore(session, em);
     }
 

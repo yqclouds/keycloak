@@ -414,7 +414,7 @@ public class TokenManager {
         if (realm.isRevokeRefreshToken()) {
             AuthenticatedClientSessionModel clientSession = validation.clientSessionCtx.getClientSession();
 
-            int clusterStartupTime = session.getProvider(ClusterProvider.class).getClusterStartupTime();
+            int clusterStartupTime = session.getBeanFactory().getBean(ClusterProvider.class).getClusterStartupTime();
 
             if (clientSession.getCurrentRefreshToken() != null &&
                     !refreshToken.getId().equals(clientSession.getCurrentRefreshToken()) &&

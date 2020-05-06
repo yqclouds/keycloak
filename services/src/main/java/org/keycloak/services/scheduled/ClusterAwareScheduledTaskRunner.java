@@ -46,7 +46,7 @@ public class ClusterAwareScheduledTaskRunner extends ScheduledTaskRunner {
     protected void runTask(final KeycloakSession session) {
         session.getTransactionManager().begin();
 
-        ClusterProvider clusterProvider = session.getProvider(ClusterProvider.class);
+        ClusterProvider clusterProvider = session.getBeanFactory().getBean(ClusterProvider.class);
         String taskKey = task.getClass().getSimpleName();
 
         ExecutionResult<Void> result = clusterProvider.executeIfNotExecuted(taskKey, intervalSecs, new Callable<Void>() {

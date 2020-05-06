@@ -71,11 +71,11 @@ public class UserCacheSession implements UserCache {
 
     @PostConstruct
     public void afterPropertiesSet() {
-        Cache<String, Revisioned> cache = session.getProvider(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.USER_CACHE_NAME);
-        Cache<String, Long> revisions = session.getProvider(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.USER_REVISIONS_CACHE_NAME);
+        Cache<String, Revisioned> cache = session.getBeanFactory().getBean(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.USER_CACHE_NAME);
+        Cache<String, Long> revisions = session.getBeanFactory().getBean(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.USER_REVISIONS_CACHE_NAME);
         userCache = new UserCacheManager(cache, revisions);
 
-        ClusterProvider cluster = session.getProvider(ClusterProvider.class);
+        ClusterProvider cluster = session.getBeanFactory().getBean(ClusterProvider.class);
 
         cluster.registerListener(USER_INVALIDATION_EVENTS, (ClusterEvent event) -> {
 
@@ -120,7 +120,7 @@ public class UserCacheSession implements UserCache {
     @Override
     public void clear() {
         userCache.clear();
-        ClusterProvider cluster = session.getProvider(ClusterProvider.class);
+        ClusterProvider cluster = session.getBeanFactory().getBean(ClusterProvider.class);
         cluster.notify(USER_CLEAR_CACHE_EVENTS, new ClearCacheEvent(), true, ClusterProvider.DCNotify.ALL_DCS);
     }
 

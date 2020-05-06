@@ -47,7 +47,7 @@ public class OAuth2CodeParser {
      * @return code parameter to be used in OAuth2 handshake
      */
     public static String persistCode(KeycloakSession session, AuthenticatedClientSessionModel clientSession, OAuth2Code codeData) {
-        CodeToTokenStoreProvider codeStore = session.getProvider(CodeToTokenStoreProvider.class);
+        CodeToTokenStoreProvider codeStore = session.getBeanFactory().getBean(CodeToTokenStoreProvider.class);
 
         UUID key = codeData.getId();
         if (key == null) {
@@ -107,7 +107,7 @@ public class OAuth2CodeParser {
 
         result.clientSession = userSession.getAuthenticatedClientSessionByClient(clientUUID);
 
-        CodeToTokenStoreProvider codeStore = session.getProvider(CodeToTokenStoreProvider.class);
+        CodeToTokenStoreProvider codeStore = session.getBeanFactory().getBean(CodeToTokenStoreProvider.class);
         Map<String, String> codeData = codeStore.remove(codeUUID);
 
         // Either code not available or was already used

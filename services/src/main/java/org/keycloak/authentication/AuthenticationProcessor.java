@@ -188,7 +188,7 @@ public class AuthenticationProcessor {
 
     public BruteForceProtector getBruteForceProtector() {
         if (protector == null) {
-            protector = session.getProvider(BruteForceProtector.class);
+            protector = session.getBeanFactory().getBean(BruteForceProtector.class);
         }
         return protector;
     }
@@ -370,7 +370,7 @@ public class AuthenticationProcessor {
     }
 
     public Response handleBrowserExceptionList(AuthenticationFlowException e) {
-        LoginFormsProvider forms = session.getProvider(LoginFormsProvider.class).setAuthenticationSession(authenticationSession);
+        LoginFormsProvider forms = session.getBeanFactory().getBean(LoginFormsProvider.class).setAuthenticationSession(authenticationSession);
         ServicesLogger.LOGGER.failedAuthentication(e);
         forms.addError(new FormMessage(Messages.UNEXPECTED_ERROR_HANDLING_REQUEST));
         for (AuthenticationFlowException afe : e.getAfeList()) {
@@ -451,7 +451,7 @@ public class AuthenticationProcessor {
 
                 clone.setAction(AuthenticationSessionModel.Action.AUTHENTICATE.name());
                 setAuthenticationSession(clone);
-                session.getProvider(LoginFormsProvider.class).setAuthenticationSession(clone);
+                session.getBeanFactory().getBean(LoginFormsProvider.class).setAuthenticationSession(clone);
 
                 AuthenticationProcessor processor = new AuthenticationProcessor();
                 processor.setAuthenticationSession(clone)
@@ -942,7 +942,7 @@ public class AuthenticationProcessor {
         public LoginFormsProvider form() {
             String accessCode = generateAccessCode();
             URI action = getActionUrl(accessCode);
-            LoginFormsProvider provider = getSession().getProvider(LoginFormsProvider.class)
+            LoginFormsProvider provider = getSession().getBeanFactory().getBean(LoginFormsProvider.class)
                     .setAuthContext(this)
                     .setAuthenticationSession(getAuthenticationSession())
                     .setUser(getUser())

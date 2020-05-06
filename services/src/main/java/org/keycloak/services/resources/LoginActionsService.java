@@ -242,7 +242,7 @@ public class LoginActionsService {
             if (locale != null) {
                 authSession.setAuthNote(LocaleSelectorProvider.USER_REQUEST_LOCALE, locale);
 
-                LocaleUpdaterProvider localeUpdater = session.getProvider(LocaleUpdaterProvider.class);
+                LocaleUpdaterProvider localeUpdater = session.getBeanFactory().getBean(LocaleUpdaterProvider.class);
                 localeUpdater.updateLocaleCookie(locale);
             }
         }

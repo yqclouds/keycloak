@@ -58,7 +58,7 @@ public class ConsoleDisplayMode {
         return Response.status(Response.Status.UNAUTHORIZED)
                 .header("WWW-Authenticate", "X-Text-Form-Challenge browserRequired")
                 .type(MediaType.TEXT_PLAIN)
-                .entity("\n" + session.getProvider(LoginFormsProvider.class).getMessage("browserRequired") + "\n").build();
+                .entity("\n" + session.getBeanFactory().getBean(LoginFormsProvider.class).getMessage("browserRequired") + "\n").build();
     }
 
     /**
@@ -69,9 +69,9 @@ public class ConsoleDisplayMode {
      * @return
      */
     public static Response browserContinue(KeycloakSession session, String callback) {
-        String browserContinueMsg = session.getProvider(LoginFormsProvider.class).getMessage("browserContinue");
-        String browserPrompt = session.getProvider(LoginFormsProvider.class).getMessage("browserContinuePrompt");
-        String answer = session.getProvider(LoginFormsProvider.class).getMessage("browserContinueAnswer");
+        String browserContinueMsg = session.getBeanFactory().getBean(LoginFormsProvider.class).getMessage("browserContinue");
+        String browserPrompt = session.getBeanFactory().getBean(LoginFormsProvider.class).getMessage("browserContinuePrompt");
+        String answer = session.getBeanFactory().getBean(LoginFormsProvider.class).getMessage("browserContinueAnswer");
 
         String header = "X-Text-Form-Challenge callback=\"" + callback + "\"";
         header += " browserContinue=\"" + browserPrompt + "\" answer=\"" + answer + "\"";

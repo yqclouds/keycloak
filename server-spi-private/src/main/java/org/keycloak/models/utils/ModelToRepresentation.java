@@ -670,7 +670,7 @@ public class ModelToRepresentation {
             rep.setProtocolMappers(mappings);
         }
 
-        AuthorizationProvider authorization = session.getProvider(AuthorizationProvider.class);
+        AuthorizationProvider authorization = session.getBeanFactory().getBean(AuthorizationProvider.class);
         ResourceServer resourceServer = authorization.getStoreFactory().getResourceServerStore().findById(clientModel.getId());
 
         if (resourceServer != null) {

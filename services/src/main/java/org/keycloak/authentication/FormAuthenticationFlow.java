@@ -164,7 +164,7 @@ public class FormAuthenticationFlow implements AuthenticationFlow {
         processor.getAuthenticationSession().setAuthNote(AuthenticationProcessor.CURRENT_AUTHENTICATION_EXECUTION, executionId);
         String code = processor.generateCode();
         URI actionUrl = getActionUrl(executionId, code);
-        LoginFormsProvider form = processor.getSession().getProvider(LoginFormsProvider.class)
+        LoginFormsProvider form = processor.getSession().getBeanFactory().getBean(LoginFormsProvider.class)
                 .setAuthenticationSession(processor.getAuthenticationSession())
                 .setActionUri(actionUrl)
                 .setExecution(executionId)

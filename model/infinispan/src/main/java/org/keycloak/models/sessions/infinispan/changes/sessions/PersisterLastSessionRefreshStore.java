@@ -59,7 +59,7 @@ public class PersisterLastSessionRefreshStore extends AbstractLastSessionRefresh
             logger.debugf("Updating %d userSessions with lastSessionRefresh: %d", refreshesToSend.size(), lastSessionRefresh);
         }
 
-        UserSessionPersisterProvider persister = kcSession.getProvider(UserSessionPersisterProvider.class);
+        UserSessionPersisterProvider persister = kcSession.getBeanFactory().getBean(UserSessionPersisterProvider.class);
 
         for (Map.Entry<String, Set<String>> entry : sessionIdsByRealm.entrySet()) {
             RealmModel realm = kcSession.realms().getRealm(entry.getKey());

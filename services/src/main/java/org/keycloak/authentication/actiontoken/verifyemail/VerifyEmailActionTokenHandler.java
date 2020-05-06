@@ -99,7 +99,7 @@ public class VerifyEmailActionTokenHandler extends AbstractActionTokenHandler<Ve
                     authSession.getClient().getClientId(), authSession.getTabId());
             String confirmUri = builder.build(realm.getName()).toString();
 
-            return session.getProvider(LoginFormsProvider.class)
+            return session.getBeanFactory().getBean(LoginFormsProvider.class)
                     .setAuthenticationSession(authSession)
                     .setSuccess(Messages.CONFIRM_EMAIL_ADDRESS_VERIFICATION, user.getEmail())
                     .setAttribute(Constants.TEMPLATE_ATTR_ACTION_URI, confirmUri)
@@ -117,7 +117,7 @@ public class VerifyEmailActionTokenHandler extends AbstractActionTokenHandler<Ve
             AuthenticationSessionManager asm = new AuthenticationSessionManager(tokenContext.getSession());
             asm.removeAuthenticationSession(tokenContext.getRealm(), authSession, true);
 
-            return tokenContext.getSession().getProvider(LoginFormsProvider.class)
+            return tokenContext.getSession().getBeanFactory().getBean(LoginFormsProvider.class)
                     .setAuthenticationSession(authSession)
                     .setSuccess(Messages.EMAIL_VERIFIED)
                     .createInfoPage();

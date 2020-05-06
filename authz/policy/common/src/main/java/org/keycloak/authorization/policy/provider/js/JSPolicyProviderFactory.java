@@ -102,7 +102,7 @@ public class JSPolicyProviderFactory implements PolicyProviderFactory<JSPolicyRe
 
     private EvaluatableScriptAdapter getEvaluatableScript(final AuthorizationProvider authz, final Policy policy) {
         return scriptCache.computeIfAbsent(policy.getId(), id -> {
-            final ScriptingProvider scripting = authz.getKeycloakSession().getProvider(ScriptingProvider.class);
+            final ScriptingProvider scripting = authz.getKeycloakSession().getBeanFactory().getBean(ScriptingProvider.class);
             ScriptModel script = getScriptModel(policy, authz.getRealm(), scripting);
             return scripting.prepareEvaluatableScript(script);
         });

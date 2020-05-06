@@ -175,7 +175,7 @@ public class RequiredActionContextResult implements RequiredActionContext {
     public LoginFormsProvider form() {
         String accessCode = generateCode();
         URI action = getActionUrl(accessCode);
-        LoginFormsProvider provider = getSession().getProvider(LoginFormsProvider.class)
+        LoginFormsProvider provider = getSession().getBeanFactory().getBean(LoginFormsProvider.class)
                 .setAuthenticationSession(getAuthenticationSession())
                 .setUser(getUser())
                 .setActionUri(action)

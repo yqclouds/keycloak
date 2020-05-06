@@ -43,7 +43,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static org.keycloak.models.cache.infinispan.InfinispanCacheRealmProviderFactory.REALM_CLEAR_CACHE_EVENTS;
+import static org.keycloak.models.cache.infinispan.RealmCacheSession.REALM_CLEAR_CACHE_EVENTS;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -81,10 +81,10 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
 
     @PostConstruct
     public void afterPropertiesSet() {
-        Cache<String, Revisioned> cache = session.getProvider(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.AUTHORIZATION_CACHE_NAME);
-        Cache<String, Long> revisions = session.getProvider(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.AUTHORIZATION_REVISIONS_CACHE_NAME);
+        Cache<String, Revisioned> cache = session.getBeanFactory().getBean(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.AUTHORIZATION_CACHE_NAME);
+        Cache<String, Long> revisions = session.getBeanFactory().getBean(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.AUTHORIZATION_REVISIONS_CACHE_NAME);
         this.storeCache = new StoreFactoryCacheManager(cache, revisions);
-        ClusterProvider cluster = session.getProvider(ClusterProvider.class);
+        ClusterProvider cluster = session.getBeanFactory().getBean(ClusterProvider.class);
 
         cluster.registerListener(AUTHORIZATION_INVALIDATION_EVENTS, (ClusterEvent event) -> {
             InvalidationEvent invalidationEvent = (InvalidationEvent) event;
@@ -401,7 +401,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
 
     public StoreFactory getDelegate() {
         if (delegate != null) return delegate;
-        delegate = session.getProvider(StoreFactory.class);
+        delegate = session.getBeanFactory().getBean(StoreFactory.class);
         return delegate;
     }
 

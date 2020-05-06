@@ -67,7 +67,7 @@ public class DefaultThemeManager implements ThemeManager {
 
     @Override
     public Theme getTheme(Theme.Type type) {
-        String name = session.getProvider(ThemeSelectorProvider.class).getThemeName(type);
+        String name = session.getBeanFactory().getBean(ThemeSelectorProvider.class).getThemeName(type);
         return getTheme(name, type);
     }
 

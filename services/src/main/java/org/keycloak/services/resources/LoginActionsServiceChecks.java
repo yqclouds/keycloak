@@ -60,7 +60,7 @@ public class LoginActionsServiceChecks {
                         (authSessionFromCookie == null || authSessionFromCookie.getRequiredActions() == null || authSessionFromCookie.getRequiredActions().isEmpty());
 
         if (userSession != null && hasNoRequiredActions) {
-            LoginFormsProvider loginForm = context.getSession().getProvider(LoginFormsProvider.class).setAuthenticationSession(context.getAuthenticationSession())
+            LoginFormsProvider loginForm = context.getSession().getBeanFactory().getBean(LoginFormsProvider.class).setAuthenticationSession(context.getAuthenticationSession())
                     .setSuccess(Messages.ALREADY_LOGGED_IN);
 
             if (context.getSession().getContext().getClient() == null) {
@@ -200,7 +200,7 @@ public class LoginActionsServiceChecks {
     }
 
     public static <T extends JsonWebToken & ActionTokenKeyModel> void checkTokenWasNotUsedYet(T token, ActionTokenContext<T> context) throws VerificationException {
-        ActionTokenStoreProvider actionTokenStore = context.getSession().getProvider(ActionTokenStoreProvider.class);
+        ActionTokenStoreProvider actionTokenStore = context.getSession().getBeanFactory().getBean(ActionTokenStoreProvider.class);
 
         if (actionTokenStore.get(token) != null) {
             throw new ExplainedTokenVerificationException(token, Errors.EXPIRED_CODE, Messages.EXPIRED_ACTION);

@@ -603,7 +603,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
             return ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.ACCOUNT_DISABLED);
         }
         if (realm.isBruteForceProtected()) {
-            if (session.getProvider(BruteForceProtector.class).isTemporarilyDisabled(session, realm, user)) {
+            if (session.getBeanFactory().getBean(BruteForceProtector.class).isTemporarilyDisabled(session, realm, user)) {
                 event.error(Errors.USER_TEMPORARILY_DISABLED);
                 return ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.ACCOUNT_DISABLED);
             }

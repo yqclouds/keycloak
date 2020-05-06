@@ -94,7 +94,7 @@ public class AttackDetectionResource {
         if (user == null) {
             disabled = Time.currentTime() < model.getFailedLoginNotBefore();
         } else {
-            disabled = session.getProvider(BruteForceProtector.class).isTemporarilyDisabled(session, realm, user);
+            disabled = session.getBeanFactory().getBean(BruteForceProtector.class).isTemporarilyDisabled(session, realm, user);
         }
         if (disabled) {
             data.put("disabled", true);

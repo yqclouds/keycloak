@@ -50,7 +50,7 @@ public class InfinispanCodeToTokenStoreProvider implements CodeToTokenStoreProvi
 
     @PostConstruct
     public void afterPropertiesSet() {
-        InfinispanConnectionProvider connections = session.getProvider(InfinispanConnectionProvider.class);
+        InfinispanConnectionProvider connections = session.getBeanFactory().getBean(InfinispanConnectionProvider.class);
         Cache cache = connections.getCache(InfinispanConnectionProvider.ACTION_TOKEN_CACHE);
 
         RemoteCache remoteCache = InfinispanUtil.getRemoteCache(cache);

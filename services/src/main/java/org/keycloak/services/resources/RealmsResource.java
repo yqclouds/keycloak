@@ -246,7 +246,7 @@ public class RealmsResource {
     @Path("{realm}/authz")
     public Object getAuthorizationService(@PathParam("realm") String name) {
         init(name);
-        AuthorizationProvider authorization = this.session.getProvider(AuthorizationProvider.class);
+        AuthorizationProvider authorization = this.session.getBeanFactory().getBean(AuthorizationProvider.class);
         AuthorizationService service = new AuthorizationService(authorization);
 
         ResteasyProviderFactory.getInstance().injectProperties(service);

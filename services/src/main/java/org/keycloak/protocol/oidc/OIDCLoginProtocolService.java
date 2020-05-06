@@ -221,7 +221,7 @@ public class OIDCLoginProtocolService {
     @Path("oauth/oob")
     @GET
     public Response installedAppUrnCallback(final @QueryParam("code") String code, final @QueryParam("error") String error, final @QueryParam("error_description") String errorDescription) {
-        LoginFormsProvider forms = session.getProvider(LoginFormsProvider.class);
+        LoginFormsProvider forms = session.getBeanFactory().getBean(LoginFormsProvider.class);
         if (code != null) {
             return forms.setClientSessionCode(code).createCode();
         } else {
@@ -242,13 +242,13 @@ public class OIDCLoginProtocolService {
         AuthenticationManager.expireIdentityCookie(realm, session.getContext().getUri(), clientConnection);
         AuthenticationManager.expireRememberMeCookie(realm, session.getContext().getUri(), clientConnection);
         if (error) {
-            LoginFormsProvider forms = session.getProvider(LoginFormsProvider.class);
+            LoginFormsProvider forms = session.getBeanFactory().getBean(LoginFormsProvider.class);
             return forms
                     .setAttribute("messageHeader", forms.getMessage(Messages.DELEGATION_FAILED_HEADER))
                     .setAttribute(Constants.SKIP_LINK, true).setError(Messages.DELEGATION_FAILED).createInfoPage();
 
         } else {
-            LoginFormsProvider forms = session.getProvider(LoginFormsProvider.class);
+            LoginFormsProvider forms = session.getBeanFactory().getBean(LoginFormsProvider.class);
             return forms
                     .setAttribute("messageHeader", forms.getMessage(Messages.DELEGATION_COMPLETE_HEADER))
                     .setAttribute(Constants.SKIP_LINK, true)

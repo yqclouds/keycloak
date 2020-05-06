@@ -29,7 +29,7 @@ public class ClearExpiredEvents implements ScheduledTask {
 
     @Override
     public void run(KeycloakSession session) {
-        EventStoreProvider eventStore = session.getProvider(EventStoreProvider.class);
+        EventStoreProvider eventStore = session.getBeanFactory().getBean(EventStoreProvider.class);
         if (eventStore != null) {
             for (RealmModel realm : session.realms().getRealms()) {
                 if (realm.isEventsEnabled() && realm.getEventsExpiration() > 0) {

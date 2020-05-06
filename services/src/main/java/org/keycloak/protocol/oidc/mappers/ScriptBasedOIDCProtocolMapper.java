@@ -147,7 +147,7 @@ public class ScriptBasedOIDCProtocolMapper extends AbstractOIDCProtocolMapper im
         String scriptSource = getScriptCode(mappingModel);
         RealmModel realm = userSession.getRealm();
 
-        ScriptingProvider scripting = keycloakSession.getProvider(ScriptingProvider.class);
+        ScriptingProvider scripting = keycloakSession.getBeanFactory().getBean(ScriptingProvider.class);
         ScriptModel scriptModel = scripting.createScript(realm.getId(), ScriptModel.TEXT_JAVASCRIPT, "token-mapper-script_" + mappingModel.getName(), scriptSource, null);
 
         EvaluatableScriptAdapter script = scripting.prepareEvaluatableScript(scriptModel);
@@ -177,7 +177,7 @@ public class ScriptBasedOIDCProtocolMapper extends AbstractOIDCProtocolMapper im
             return;
         }
 
-        ScriptingProvider scripting = session.getProvider(ScriptingProvider.class);
+        ScriptingProvider scripting = session.getBeanFactory().getBean(ScriptingProvider.class);
         ScriptModel scriptModel = scripting.createScript(realm.getId(), ScriptModel.TEXT_JAVASCRIPT, mapperModel.getName() + "-script", scriptCode, "");
 
         try {

@@ -146,7 +146,7 @@ public class ScriptBasedMapper extends AbstractSAMLProtocolMapper implements SAM
         String single = mappingModel.getConfig().get(SINGLE_VALUE_ATTRIBUTE);
         boolean singleAttribute = Boolean.parseBoolean(single);
 
-        ScriptingProvider scripting = session.getProvider(ScriptingProvider.class);
+        ScriptingProvider scripting = session.getBeanFactory().getBean(ScriptingProvider.class);
         ScriptModel scriptModel = scripting.createScript(realm.getId(), ScriptModel.TEXT_JAVASCRIPT, "attribute-mapper-script_" + mappingModel.getName(), scriptSource, null);
 
         EvaluatableScriptAdapter script = scripting.prepareEvaluatableScript(scriptModel);
@@ -193,7 +193,7 @@ public class ScriptBasedMapper extends AbstractSAMLProtocolMapper implements SAM
             return;
         }
 
-        ScriptingProvider scripting = session.getProvider(ScriptingProvider.class);
+        ScriptingProvider scripting = session.getBeanFactory().getBean(ScriptingProvider.class);
         ScriptModel scriptModel = scripting.createScript(realm.getId(), ScriptModel.TEXT_JAVASCRIPT, mapperModel.getName() + "-script", scriptCode, "");
 
         try {

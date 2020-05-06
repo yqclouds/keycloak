@@ -49,14 +49,14 @@ public class PublicKeyStorageManager {
 
     public static KeyWrapper getClientPublicKeyWrapper(KeycloakSession session, ClientModel client, JWSInput input) {
         String kid = input.getHeader().getKeyId();
-        PublicKeyStorageProvider keyStorage = session.getProvider(PublicKeyStorageProvider.class);
+        PublicKeyStorageProvider keyStorage = session.getBeanFactory().getBean(PublicKeyStorageProvider.class);
         String modelKey = PublicKeyStorageUtils.getClientModelCacheKey(client.getRealm().getId(), client.getId());
         ClientPublicKeyLoader loader = new ClientPublicKeyLoader(session, client);
         return keyStorage.getPublicKey(modelKey, kid, loader);
     }
 
     public static KeyWrapper getClientPublicKeyWrapper(KeycloakSession session, ClientModel client, JWK.Use keyUse, String algAlgorithm) {
-        PublicKeyStorageProvider keyStorage = session.getProvider(PublicKeyStorageProvider.class);
+        PublicKeyStorageProvider keyStorage = session.getBeanFactory().getBean(PublicKeyStorageProvider.class);
         String modelKey = PublicKeyStorageUtils.getClientModelCacheKey(client.getRealm().getId(), client.getId(), keyUse);
         ClientPublicKeyLoader loader = new ClientPublicKeyLoader(session, client, keyUse);
         return keyStorage.getFirstPublicKey(modelKey, algAlgorithm, loader);
@@ -68,7 +68,7 @@ public class PublicKeyStorageManager {
 
         String kid = input.getHeader().getKeyId();
 
-        PublicKeyStorageProvider keyStorage = session.getProvider(PublicKeyStorageProvider.class);
+        PublicKeyStorageProvider keyStorage = session.getBeanFactory().getBean(PublicKeyStorageProvider.class);
 
         String modelKey = PublicKeyStorageUtils.getIdpModelCacheKey(realm.getId(), idpConfig.getInternalId());
         PublicKeyLoader loader;

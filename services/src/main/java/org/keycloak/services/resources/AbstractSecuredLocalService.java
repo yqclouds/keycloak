@@ -82,7 +82,7 @@ public abstract class AbstractSecuredLocalService {
                 if (OAuthErrorException.ACCESS_DENIED.equals(error)) {
                     // cased by CANCELLED_BY_USER or CONSENT_DENIED
                     session.getContext().setClient(client);
-                    return session.getProvider(LoginFormsProvider.class).setError(Messages.NO_ACCESS).createErrorPage(Response.Status.FORBIDDEN);
+                    return session.getBeanFactory().getBean(LoginFormsProvider.class).setError(Messages.NO_ACCESS).createErrorPage(Response.Status.FORBIDDEN);
                 } else {
                     logger.debug("error from oauth");
                     throw new ForbiddenException("error");

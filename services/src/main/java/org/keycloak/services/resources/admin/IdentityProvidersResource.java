@@ -132,7 +132,7 @@ public class IdentityProvidersResource {
 
         String providerId = data.get("providerId").toString();
         String from = data.get("fromUrl").toString();
-        InputStream inputStream = session.getProvider(HttpClientProvider.class).get(from);
+        InputStream inputStream = session.getBeanFactory().getBean(HttpClientProvider.class).get(from);
         try {
             IdentityProviderFactory providerFactory = getProviderFactorytById(providerId);
             Map<String, String> config;

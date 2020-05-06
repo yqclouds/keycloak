@@ -69,7 +69,7 @@ public class InfinispanStickySessionEncoderProvider implements StickySessionEnco
 
 
     private String getRoute(String sessionId) {
-        InfinispanConnectionProvider ispnProvider = session.getProvider(InfinispanConnectionProvider.class);
+        InfinispanConnectionProvider ispnProvider = session.getBeanFactory().getBean(InfinispanConnectionProvider.class);
         Cache cache = ispnProvider.getCache(InfinispanConnectionProvider.AUTHENTICATION_SESSIONS_CACHE_NAME);
         return InfinispanUtil.getTopologyInfo(session).getRouteName(cache, sessionId);
     }

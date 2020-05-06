@@ -614,7 +614,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
             String password = input.getChallengeResponse();
             LDAPObject ldapUser = loadAndValidateUser(realm, user);
             if (ldapIdentityStore.getConfig().isValidatePasswordPolicy()) {
-                PolicyError error = session.getProvider(PasswordPolicyManagerProvider.class).validate(realm, user, password);
+                PolicyError error = session.getBeanFactory().getBean(PasswordPolicyManagerProvider.class).validate(realm, user, password);
                 if (error != null) throw new ModelException(error.getMessage(), error.getParameters());
             }
             try {

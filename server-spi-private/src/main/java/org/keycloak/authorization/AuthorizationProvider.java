@@ -97,7 +97,7 @@ public final class AuthorizationProvider implements Provider {
      */
     public StoreFactory getStoreFactory() {
         if (storeFactory != null) return storeFactory;
-        storeFactory = keycloakSession.getProvider(CachedStoreFactoryProvider.class);
+        storeFactory = keycloakSession.getBeanFactory().getBean(CachedStoreFactoryProvider.class);
         if (storeFactory == null) storeFactory = getLocalStoreFactory();
         storeFactory = createStoreFactory(storeFactory);
         return storeFactory;
@@ -110,7 +110,7 @@ public final class AuthorizationProvider implements Provider {
      */
     public StoreFactory getLocalStoreFactory() {
         if (storeFactoryDelegate != null) return storeFactoryDelegate;
-        storeFactoryDelegate = keycloakSession.getProvider(StoreFactory.class);
+        storeFactoryDelegate = keycloakSession.getBeanFactory().getBean(StoreFactory.class);
         return storeFactoryDelegate;
     }
 

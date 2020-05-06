@@ -116,7 +116,7 @@ public class InfinispanClusterProviderFactory implements ClusterProviderFactory 
         if (workCache == null) {
             synchronized (this) {
                 if (workCache == null) {
-                    InfinispanConnectionProvider ispnConnections = session.getProvider(InfinispanConnectionProvider.class);
+                    InfinispanConnectionProvider ispnConnections = session.getBeanFactory().getBean(InfinispanConnectionProvider.class);
                     workCache = ispnConnections.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);
 
                     workCache.getCacheManager().addListener(new ViewChangeListener());

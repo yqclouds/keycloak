@@ -199,7 +199,7 @@ public class RolePolicyProviderFactory implements PolicyProviderFactory<RolePoli
         factory.register(event -> {
             if (event instanceof RoleRemovedEvent) {
                 KeycloakSession keycloakSession = ((RoleRemovedEvent) event).getKeycloakSession();
-                AuthorizationProvider provider = keycloakSession.getProvider(AuthorizationProvider.class);
+                AuthorizationProvider provider = keycloakSession.getBeanFactory().getBean(AuthorizationProvider.class);
                 StoreFactory storeFactory = provider.getStoreFactory();
                 PolicyStore policyStore = storeFactory.getPolicyStore();
                 RoleModel removedRole = ((RoleRemovedEvent) event).getRole();

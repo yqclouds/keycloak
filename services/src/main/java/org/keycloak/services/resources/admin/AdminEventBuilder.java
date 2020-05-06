@@ -86,7 +86,7 @@ public class AdminEventBuilder {
 
     private AdminEventBuilder updateStore(KeycloakSession session) {
         if (realm.isAdminEventsEnabled() && store == null) {
-            this.store = session.getProvider(EventStoreProvider.class);
+            this.store = session.getBeanFactory().getBean(EventStoreProvider.class);
             if (store == null) {
                 ServicesLogger.LOGGER.noEventStoreProvider();
             }

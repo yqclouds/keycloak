@@ -54,7 +54,7 @@ public abstract class AbstractResourceService {
         this.user = user;
         this.auth = auth;
         this.request = request;
-        provider = session.getProvider(AuthorizationProvider.class);
+        provider = session.getBeanFactory().getBean(AuthorizationProvider.class);
         ticketStore = provider.getStoreFactory().getPermissionTicketStore();
         resourceStore = provider.getStoreFactory().getResourceStore();
         scopeStore = provider.getStoreFactory().getScopeStore();

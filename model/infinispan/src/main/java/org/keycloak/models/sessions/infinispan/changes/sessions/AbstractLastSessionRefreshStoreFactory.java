@@ -38,7 +38,7 @@ public abstract class AbstractLastSessionRefreshStoreFactory {
 
 
     protected void setupPeriodicTimer(KeycloakSession kcSession, AbstractLastSessionRefreshStore store, long timerIntervalMs, String eventKey) {
-        TimerProvider timer = kcSession.getProvider(TimerProvider.class);
+        TimerProvider timer = kcSession.getBeanFactory().getBean(TimerProvider.class);
         timer.scheduleTask((KeycloakSession keycloakSession) -> {
 
             store.checkSendingMessage(keycloakSession, Time.currentTime());

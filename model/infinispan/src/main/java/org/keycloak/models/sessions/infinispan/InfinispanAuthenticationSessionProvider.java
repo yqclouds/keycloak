@@ -67,10 +67,10 @@ public class InfinispanAuthenticationSessionProvider implements AuthenticationSe
     public void afterPropertiesSet() {
         this.keyGenerator = session.getBeanFactory().getBean(InfinispanKeyGenerator.class);
 
-        InfinispanConnectionProvider connections = session.getProvider(InfinispanConnectionProvider.class);
+        InfinispanConnectionProvider connections = session.getBeanFactory().getBean(InfinispanConnectionProvider.class);
         this.cache = connections.getCache(InfinispanConnectionProvider.AUTHENTICATION_SESSIONS_CACHE_NAME);
 
-        ClusterProvider cluster = session.getProvider(ClusterProvider.class);
+        ClusterProvider cluster = session.getBeanFactory().getBean(ClusterProvider.class);
         cluster.registerListener(AUTHENTICATION_SESSION_EVENTS, this::updateAuthNotes);
 
         log.debugf("[%s] Registered cluster listeners", cache.getCacheManager().getAddress());
@@ -186,7 +186,7 @@ public class InfinispanAuthenticationSessionProvider implements AuthenticationSe
             return;
         }
 
-        ClusterProvider cluster = session.getProvider(ClusterProvider.class);
+        ClusterProvider cluster = session.getBeanFactory().getBean(ClusterProvider.class);
         cluster.notify(
                 AUTHENTICATION_SESSION_EVENTS,
                 AuthenticationSessionAuthNoteUpdateEvent.create(compoundId.getRootSessionId(), compoundId.getTabId(), compoundId.getClientUUID(), authNotesFragment),

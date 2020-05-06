@@ -660,7 +660,7 @@ public class SamlProtocol implements LoginProtocol {
             return;
         }
 
-        HttpClient httpClient = session.getProvider(HttpClientProvider.class).getHttpClient();
+        HttpClient httpClient = session.getBeanFactory().getBean(HttpClientProvider.class).getHttpClient();
         for (int i = 0; i < 2; i++) { // follow redirects once
             try {
                 List<NameValuePair> formparams = new ArrayList<NameValuePair>();

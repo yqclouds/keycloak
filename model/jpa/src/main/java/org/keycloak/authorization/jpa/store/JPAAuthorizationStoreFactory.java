@@ -36,7 +36,7 @@ import javax.persistence.EntityManager;
 public class JPAAuthorizationStoreFactory implements AuthorizationStoreFactory {
     @Override
     public StoreFactory create(KeycloakSession session) {
-        AuthorizationProvider provider = session.getProvider(AuthorizationProvider.class);
+        AuthorizationProvider provider = session.getBeanFactory().getBean(AuthorizationProvider.class);
         return new JPAStoreFactory(getEntityManager(session), provider);
     }
 
@@ -46,6 +46,6 @@ public class JPAAuthorizationStoreFactory implements AuthorizationStoreFactory {
     }
 
     private EntityManager getEntityManager(KeycloakSession session) {
-        return session.getProvider(JpaConnectionProvider.class).getEntityManager();
+        return session.getBeanFactory().getBean(JpaConnectionProvider.class).getEntityManager();
     }
 }

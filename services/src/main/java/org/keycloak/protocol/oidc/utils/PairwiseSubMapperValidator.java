@@ -92,7 +92,7 @@ public class PairwiseSubMapperValidator {
     private static Set<String> getSectorRedirects(KeycloakSession session, String sectorIdentifierUri) throws ProtocolMapperConfigException {
         InputStream is = null;
         try {
-            is = session.getProvider(HttpClientProvider.class).get(sectorIdentifierUri);
+            is = session.getBeanFactory().getBean(HttpClientProvider.class).get(sectorIdentifierUri);
             List<String> sectorRedirects = JsonSerialization.readValue(is, TypedList.class);
             return new HashSet<>(sectorRedirects);
         } catch (IOException e) {

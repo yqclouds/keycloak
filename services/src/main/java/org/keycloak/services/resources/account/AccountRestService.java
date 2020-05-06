@@ -85,7 +85,7 @@ public class AccountRestService {
     }
 
     public void init() {
-        eventStore = session.getProvider(EventStoreProvider.class);
+        eventStore = session.getBeanFactory().getBean(EventStoreProvider.class);
     }
 
     /**

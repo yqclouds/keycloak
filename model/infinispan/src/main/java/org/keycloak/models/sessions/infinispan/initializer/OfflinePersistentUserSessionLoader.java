@@ -57,7 +57,7 @@ public class OfflinePersistentUserSessionLoader implements SessionLoader<Offline
 
     @Override
     public OfflinePersistentLoaderContext computeLoaderContext(KeycloakSession session) {
-        UserSessionPersisterProvider persister = session.getProvider(UserSessionPersisterProvider.class);
+        UserSessionPersisterProvider persister = session.getBeanFactory().getBean(UserSessionPersisterProvider.class);
         int sessionsCount = persister.getUserSessionsCount(true);
 
         return new OfflinePersistentLoaderContext(sessionsCount, sessionsPerSegment);
@@ -93,7 +93,7 @@ public class OfflinePersistentUserSessionLoader implements SessionLoader<Offline
 
         log.tracef("Loading sessions for segment=%d createdOn=%d lastSessionId=%s", ctx.getSegment(), ctx.getLastCreatedOn(), ctx.getLastSessionId());
 
-        UserSessionPersisterProvider persister = session.getProvider(UserSessionPersisterProvider.class);
+        UserSessionPersisterProvider persister = session.getBeanFactory().getBean(UserSessionPersisterProvider.class);
         List<UserSessionModel> sessions = persister.loadUserSessions(first, sessionsPerSegment, true, ctx.getLastCreatedOn(), ctx.getLastSessionId());
 
         log.tracef("Sessions loaded from DB - segment=%d createdOn=%d lastSessionId=%s", ctx.getSegment(), ctx.getLastCreatedOn(), ctx.getLastSessionId());

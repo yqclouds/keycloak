@@ -37,7 +37,7 @@ public class JpaUserSessionPersisterProviderFactory implements UserSessionPersis
 
     @Override
     public UserSessionPersisterProvider create(KeycloakSession session) {
-        EntityManager em = session.getProvider(JpaConnectionProvider.class).getEntityManager();
+        EntityManager em = session.getBeanFactory().getBean(JpaConnectionProvider.class).getEntityManager();
         return new JpaUserSessionPersisterProvider(session, em);
     }
 

@@ -69,7 +69,7 @@ public class UserStorageSyncManager {
                     }
                 }
 
-                ClusterProvider clusterProvider = session.getProvider(ClusterProvider.class);
+                ClusterProvider clusterProvider = session.getBeanFactory().getBean(ClusterProvider.class);
                 clusterProvider.registerListener(USER_STORAGE_TASK_KEY, new UserStorageClusterListener(sessionFactory));
             }
         });
@@ -89,7 +89,7 @@ public class UserStorageSyncManager {
 
             @Override
             public void run(KeycloakSession session) {
-                ClusterProvider clusterProvider = session.getProvider(ClusterProvider.class);
+                ClusterProvider clusterProvider = session.getBeanFactory().getBean(ClusterProvider.class);
                 // shared key for "full" and "changed" . Improve if needed
                 String taskKey = provider.getId() + "::sync";
 
@@ -129,7 +129,7 @@ public class UserStorageSyncManager {
 
             @Override
             public void run(KeycloakSession session) {
-                ClusterProvider clusterProvider = session.getProvider(ClusterProvider.class);
+                ClusterProvider clusterProvider = session.getBeanFactory().getBean(ClusterProvider.class);
                 // shared key for "full" and "changed" . Improve if needed
                 String taskKey = provider.getId() + "::sync";
 
@@ -166,7 +166,7 @@ public class UserStorageSyncManager {
 
         }
         UserStorageProviderClusterEvent event = UserStorageProviderClusterEvent.createEvent(removed, realm.getId(), provider);
-        session.getProvider(ClusterProvider.class).notify(USER_STORAGE_TASK_KEY, event, false, ClusterProvider.DCNotify.ALL_DCS);
+        session.getBeanFactory().getBean(ClusterProvider.class).notify(USER_STORAGE_TASK_KEY, event, false, ClusterProvider.DCNotify.ALL_DCS);
     }
 
     // Executed once it receives notification that some UserFederationProvider was created or updated
@@ -324,7 +324,7 @@ public class UserStorageSyncManager {
 
                 @Override
                 public void run(KeycloakSession session) {
-                    TimerProvider timer = session.getProvider(TimerProvider.class);
+                    TimerProvider timer = session.getBeanFactory().getBean(TimerProvider.class);
                     if (fedEvent.isRemoved()) {
                         removePeriodicSyncForProvider(timer, fedEvent.getStorageProvider());
                     } else {
