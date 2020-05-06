@@ -29,7 +29,6 @@ import org.jgroups.Event;
 import org.jgroups.JChannel;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.util.NameCache;
-import org.keycloak.Config;
 
 import java.net.InetSocketAddress;
 import java.security.SecureRandom;
@@ -53,7 +52,7 @@ public class TopologyInfo {
     private final boolean isGeneratedNodeName;
 
 
-    public TopologyInfo(EmbeddedCacheManager cacheManager, Config.Scope config, boolean embedded) {
+    public TopologyInfo(EmbeddedCacheManager cacheManager, boolean clustered, String theNodeName, String theSiteName, boolean embedded) {
         String siteName;
         String nodeName;
         boolean isGeneratedNodeName = false;
@@ -75,14 +74,12 @@ public class TopologyInfo {
                 nodeName = generateNodeName();
             }
         } else {
-            boolean clustered = config.getBoolean("clustered", false);
-
-            nodeName = config.get("nodeName", System.getProperty(InfinispanConnectionProvider.JBOSS_NODE_NAME));
+            nodeName = theNodeName;
             if (nodeName != null && nodeName.isEmpty()) {
                 nodeName = null;
             }
 
-            siteName = config.get("siteName", System.getProperty(InfinispanConnectionProvider.JBOSS_SITE_NAME));
+            siteName = theSiteName;
             if (siteName != null && siteName.isEmpty()) {
                 siteName = null;
             }

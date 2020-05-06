@@ -24,7 +24,6 @@ import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.logging.Logger;
-import org.keycloak.Config;
 import org.keycloak.common.util.reflections.Reflections;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
 
@@ -52,7 +51,6 @@ public class RemoteCacheProvider {
 
     protected static final Logger logger = Logger.getLogger(RemoteCacheProvider.class);
 
-    private final Config.Scope config;
     private final EmbeddedCacheManager cacheManager;
 
     private final Map<String, RemoteCache> availableCaches = new HashMap<>();
@@ -60,8 +58,13 @@ public class RemoteCacheProvider {
     // Enlist secured managers, which are managed by us and should be shutdown on stop
     private final Map<String, RemoteCacheManager> managedManagers = new HashMap<>();
 
-    public RemoteCacheProvider(Config.Scope config, EmbeddedCacheManager cacheManager) {
-        this.config = config;
+    private Boolean remoteStoreSecurityEnabled = null;
+    private String remoteStoreSecurityServerName = "keycloak-jdg-server";
+    private String remoteStoreSecurityRealm = "AllowScriptManager";
+    private String remoteStoreSecurityUsername = "___script_manager";
+    private String remoteStoreSecurityPassword = "not-so-secret-password";
+
+    public RemoteCacheProvider(EmbeddedCacheManager cacheManager) {
         this.cacheManager = cacheManager;
     }
 
@@ -90,7 +93,7 @@ public class RemoteCacheProvider {
     protected synchronized RemoteCache loadRemoteCache(String cacheName) {
         RemoteCache remoteCache = InfinispanUtil.getRemoteCache(cacheManager.getCache(cacheName));
 
-        Boolean remoteStoreSecurity = config.getBoolean("remoteStoreSecurityEnabled");
+        Boolean remoteStoreSecurity = this.remoteStoreSecurityEnabled;
         if (remoteStoreSecurity == null) {
             try {
                 logger.debugf("Detecting remote security settings of HotRod server, cache %s. Disable by explicitly setting \"remoteStoreSecurityEnabled\" property in spi=connectionsInfinispan/provider=default", cacheName);
@@ -109,7 +112,7 @@ public class RemoteCacheProvider {
 
         if (remoteStoreSecurity) {
             logger.infof("Remote store security for cache %s is enabled. Disable by setting \"remoteStoreSecurityEnabled\" property to \"false\" in spi=connectionsInfinispan/provider=default", cacheName);
-            RemoteCacheManager securedMgr = getOrCreateSecuredRemoteCacheManager(config, cacheName, remoteCache.getRemoteCacheManager());
+            RemoteCacheManager securedMgr = getOrCreateSecuredRemoteCacheManager(cacheName, remoteCache.getRemoteCacheManager());
             return securedMgr.getCache(remoteCache.getName());
         } else {
             logger.infof("Remote store security for cache %s is disabled. If server fails to connect to remote JDG server, enable it.", cacheName);
@@ -118,12 +121,12 @@ public class RemoteCacheProvider {
     }
 
 
-    protected RemoteCacheManager getOrCreateSecuredRemoteCacheManager(Config.Scope config, String cacheName, RemoteCacheManager origManager) {
-        String serverName = config.get("remoteStoreSecurityServerName", "keycloak-jdg-server");
-        String realm = config.get("remoteStoreSecurityRealm", "AllowScriptManager");
+    protected RemoteCacheManager getOrCreateSecuredRemoteCacheManager(String cacheName, RemoteCacheManager origManager) {
+        String serverName = this.remoteStoreSecurityServerName;
+        String realm = this.remoteStoreSecurityRealm;
 
-        String username = config.get("remoteStoreSecurityUsername", "___script_manager");
-        String password = config.get("remoteStoreSecurityPassword", "not-so-secret-password");
+        String username = this.remoteStoreSecurityUsername;
+        String password = this.remoteStoreSecurityPassword;
 
         // Create configuration template from the original configuration provided at remoteStore level
         Configuration origConfig = origManager.getConfiguration();
