@@ -19,13 +19,16 @@ package org.keycloak.models.sessions.infinispan;
 
 import org.infinispan.Cache;
 import org.jboss.logging.Logger;
+import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.common.util.Time;
+import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.cache.infinispan.events.AuthenticationSessionAuthNoteUpdateEvent;
+import org.keycloak.models.sessions.infinispan.entities.AuthenticationSessionEntity;
 import org.keycloak.models.sessions.infinispan.entities.RootAuthenticationSessionEntity;
 import org.keycloak.models.sessions.infinispan.events.RealmRemovedSessionEvent;
 import org.keycloak.models.sessions.infinispan.events.SessionEventsSenderTransaction;
@@ -37,8 +40,12 @@ import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionProvider;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
 
+import javax.annotation.PostConstruct;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static org.keycloak.models.sessions.infinispan.InfinispanAuthenticationSessionProviderFactory.AUTHENTICATION_SESSION_EVENTS;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -46,16 +53,27 @@ import java.util.Map;
 public class InfinispanAuthenticationSessionProvider implements AuthenticationSessionProvider {
 
     private static final Logger log = Logger.getLogger(InfinispanAuthenticationSessionProvider.class);
-    protected final InfinispanKeycloakTransaction tx;
-    protected final SessionEventsSenderTransaction clusterEventsSenderTx;
+    protected InfinispanKeycloakTransaction tx;
+    protected SessionEventsSenderTransaction clusterEventsSenderTx;
     private final KeycloakSession session;
-    private final Cache<String, RootAuthenticationSessionEntity> cache;
-    private final InfinispanKeyGenerator keyGenerator;
+    private Cache<String, RootAuthenticationSessionEntity> cache;
+    private InfinispanKeyGenerator keyGenerator;
 
-    public InfinispanAuthenticationSessionProvider(KeycloakSession session, InfinispanKeyGenerator keyGenerator, Cache<String, RootAuthenticationSessionEntity> cache) {
+    public InfinispanAuthenticationSessionProvider(KeycloakSession session) {
         this.session = session;
-        this.cache = cache;
-        this.keyGenerator = keyGenerator;
+    }
+
+    @PostConstruct
+    public void afterPropertiesSet() {
+        this.keyGenerator = session.getBeanFactory().getBean(InfinispanKeyGenerator.class);
+
+        InfinispanConnectionProvider connections = session.getProvider(InfinispanConnectionProvider.class);
+        this.cache = connections.getCache(InfinispanConnectionProvider.AUTHENTICATION_SESSIONS_CACHE_NAME);
+
+        ClusterProvider cluster = session.getProvider(ClusterProvider.class);
+        cluster.registerListener(AUTHENTICATION_SESSION_EVENTS, this::updateAuthNotes);
+
+        log.debugf("[%s] Registered cluster listeners", cache.getCacheManager().getAddress());
 
         this.tx = new InfinispanKeycloakTransaction();
         this.clusterEventsSenderTx = new SessionEventsSenderTransaction(session);
@@ -170,7 +188,7 @@ public class InfinispanAuthenticationSessionProvider implements AuthenticationSe
 
         ClusterProvider cluster = session.getProvider(ClusterProvider.class);
         cluster.notify(
-                InfinispanAuthenticationSessionProviderFactory.AUTHENTICATION_SESSION_EVENTS,
+                AUTHENTICATION_SESSION_EVENTS,
                 AuthenticationSessionAuthNoteUpdateEvent.create(compoundId.getRootSessionId(), compoundId.getTabId(), compoundId.getClientUUID(), authNotesFragment),
                 true,
                 ClusterProvider.DCNotify.ALL_BUT_LOCAL_DC
@@ -195,10 +213,42 @@ public class InfinispanAuthenticationSessionProvider implements AuthenticationSe
 
     }
 
+    private void updateAuthNotes(ClusterEvent clEvent) {
+        if (!(clEvent instanceof AuthenticationSessionAuthNoteUpdateEvent)) {
+            return;
+        }
+
+        AuthenticationSessionAuthNoteUpdateEvent event = (AuthenticationSessionAuthNoteUpdateEvent) clEvent;
+        RootAuthenticationSessionEntity authSession = this.cache.get(event.getAuthSessionId());
+        updateAuthSession(authSession, event.getTabId(), event.getAuthNotesFragment());
+    }
+
+    private static void updateAuthSession(RootAuthenticationSessionEntity rootAuthSession, String tabId, Map<String, String> authNotesFragment) {
+        if (rootAuthSession == null) {
+            return;
+        }
+
+        AuthenticationSessionEntity authSession = rootAuthSession.getAuthenticationSessions().get(tabId);
+
+        if (authSession != null) {
+            if (authSession.getAuthNotes() == null) {
+                authSession.setAuthNotes(new ConcurrentHashMap<>());
+            }
+
+            for (Map.Entry<String, String> me : authNotesFragment.entrySet()) {
+                String value = me.getValue();
+                if (value == null) {
+                    authSession.getAuthNotes().remove(me.getKey());
+                } else {
+                    authSession.getAuthNotes().put(me.getKey(), value);
+                }
+            }
+        }
+    }
+
     public Cache<String, RootAuthenticationSessionEntity> getCache() {
         return cache;
     }
-
 
     protected String generateTabId() {
         return Base64Url.encode(KeycloakModelUtils.generateSecret(8));

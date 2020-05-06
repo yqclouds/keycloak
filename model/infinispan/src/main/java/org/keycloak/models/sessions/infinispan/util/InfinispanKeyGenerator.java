@@ -25,6 +25,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.sessions.StickySessionEncoderProvider;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.UUID;
@@ -34,6 +35,7 @@ import java.util.concurrent.Executors;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
+@Component
 public class InfinispanKeyGenerator {
 
     private static final Logger log = Logger.getLogger(InfinispanKeyGenerator.class);

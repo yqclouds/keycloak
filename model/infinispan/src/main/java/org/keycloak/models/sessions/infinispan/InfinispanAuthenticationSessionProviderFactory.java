@@ -17,20 +17,13 @@
 
 package org.keycloak.models.sessions.infinispan;
 
-import org.infinispan.Cache;
 import org.jboss.logging.Logger;
-import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterProvider;
-import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.cache.infinispan.events.AuthenticationSessionAuthNoteUpdateEvent;
-import org.keycloak.models.sessions.infinispan.entities.AuthenticationSessionEntity;
-import org.keycloak.models.sessions.infinispan.entities.RootAuthenticationSessionEntity;
 import org.keycloak.models.sessions.infinispan.events.AbstractAuthSessionClusterListener;
 import org.keycloak.models.sessions.infinispan.events.ClientRemovedSessionEvent;
 import org.keycloak.models.sessions.infinispan.events.RealmRemovedSessionEvent;
-import org.keycloak.models.sessions.infinispan.util.InfinispanKeyGenerator;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.PostMigrationEvent;
 import org.keycloak.sessions.AuthenticationSessionProvider;
@@ -41,9 +34,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -57,39 +47,13 @@ public class InfinispanAuthenticationSessionProviderFactory implements Authentic
     public static final String REALM_REMOVED_AUTHSESSION_EVENT = "REALM_REMOVED_EVENT_AUTHSESSIONS";
     public static final String CLIENT_REMOVED_AUTHSESSION_EVENT = "CLIENT_REMOVED_SESSION_AUTHSESSIONS";
     private static final Logger log = Logger.getLogger(InfinispanAuthenticationSessionProviderFactory.class);
-    private InfinispanKeyGenerator keyGenerator;
-    private volatile Cache<String, RootAuthenticationSessionEntity> authSessionsCache;
 
     @Autowired
     private KeycloakSessionFactory sessionFactory;
 
     @Override
     public AuthenticationSessionProvider create(KeycloakSession session) {
-        lazyInit(session);
-        return new InfinispanAuthenticationSessionProvider(session, keyGenerator, authSessionsCache);
-    }
-
-    private static void updateAuthSession(RootAuthenticationSessionEntity rootAuthSession, String tabId, Map<String, String> authNotesFragment) {
-        if (rootAuthSession == null) {
-            return;
-        }
-
-        AuthenticationSessionEntity authSession = rootAuthSession.getAuthenticationSessions().get(tabId);
-
-        if (authSession != null) {
-            if (authSession.getAuthNotes() == null) {
-                authSession.setAuthNotes(new ConcurrentHashMap<>());
-            }
-
-            for (Entry<String, String> me : authNotesFragment.entrySet()) {
-                String value = me.getValue();
-                if (value == null) {
-                    authSession.getAuthNotes().remove(me.getKey());
-                } else {
-                    authSession.getAuthNotes().put(me.getKey(), value);
-                }
-            }
-        }
+        return new InfinispanAuthenticationSessionProvider(session);
     }
 
     @PostConstruct
@@ -106,16 +70,13 @@ public class InfinispanAuthenticationSessionProviderFactory implements Authentic
         ClusterProvider cluster = session.getProvider(ClusterProvider.class);
 
         cluster.registerListener(REALM_REMOVED_AUTHSESSION_EVENT, new AbstractAuthSessionClusterListener<RealmRemovedSessionEvent>(sessionFactory) {
-
             @Override
             protected void eventReceived(KeycloakSession session, InfinispanAuthenticationSessionProvider provider, RealmRemovedSessionEvent sessionEvent) {
                 provider.onRealmRemovedEvent(sessionEvent.getRealmId());
             }
-
         });
 
         cluster.registerListener(CLIENT_REMOVED_AUTHSESSION_EVENT, new AbstractAuthSessionClusterListener<ClientRemovedSessionEvent>(sessionFactory) {
-
             @Override
             protected void eventReceived(KeycloakSession session, InfinispanAuthenticationSessionProvider provider, ClientRemovedSessionEvent sessionEvent) {
                 provider.onClientRemovedEvent(sessionEvent.getRealmId(), sessionEvent.getClientUuid());
@@ -123,34 +84,6 @@ public class InfinispanAuthenticationSessionProviderFactory implements Authentic
         });
 
         log.debug("Registered cluster listeners");
-    }
-
-    private void updateAuthNotes(ClusterEvent clEvent) {
-        if (!(clEvent instanceof AuthenticationSessionAuthNoteUpdateEvent)) {
-            return;
-        }
-
-        AuthenticationSessionAuthNoteUpdateEvent event = (AuthenticationSessionAuthNoteUpdateEvent) clEvent;
-        RootAuthenticationSessionEntity authSession = this.authSessionsCache.get(event.getAuthSessionId());
-        updateAuthSession(authSession, event.getTabId(), event.getAuthNotesFragment());
-    }
-
-    private void lazyInit(KeycloakSession session) {
-        if (authSessionsCache == null) {
-            synchronized (this) {
-                if (authSessionsCache == null) {
-                    InfinispanConnectionProvider connections = session.getProvider(InfinispanConnectionProvider.class);
-                    authSessionsCache = connections.getCache(InfinispanConnectionProvider.AUTHENTICATION_SESSIONS_CACHE_NAME);
-
-                    keyGenerator = new InfinispanKeyGenerator();
-
-                    ClusterProvider cluster = session.getProvider(ClusterProvider.class);
-                    cluster.registerListener(AUTHENTICATION_SESSION_EVENTS, this::updateAuthNotes);
-
-                    log.debugf("[%s] Registered cluster listeners", authSessionsCache.getCacheManager().getAddress());
-                }
-            }
-        }
     }
 
     @Override
