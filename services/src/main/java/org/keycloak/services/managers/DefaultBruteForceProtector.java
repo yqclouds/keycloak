@@ -22,7 +22,11 @@ import org.keycloak.common.ClientConnection;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.*;
 import org.keycloak.services.ServicesLogger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
@@ -35,6 +39,7 @@ import java.util.concurrent.TimeUnit;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Component
 public class DefaultBruteForceProtector implements Runnable, BruteForceProtector {
     public static final int TRANSACTION_SIZE = 20;
     private static final Logger logger = Logger.getLogger(DefaultBruteForceProtector.class);
@@ -47,8 +52,18 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
     protected volatile long totalTime;
     protected LinkedBlockingQueue<LoginEvent> queue = new LinkedBlockingQueue<LoginEvent>();
 
-    public DefaultBruteForceProtector(KeycloakSessionFactory factory) {
+    public DefaultBruteForceProtector(@Autowired KeycloakSessionFactory factory) {
         this.factory = factory;
+    }
+
+    @PostConstruct
+    public void afterPropertiesSet() throws Exception {
+        this.start();
+    }
+
+    @PreDestroy
+    public void destroy() throws Exception {
+        this.shutdown();
     }
 
     public void failure(KeycloakSession session, LoginEvent event) {

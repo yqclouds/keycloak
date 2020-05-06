@@ -33,25 +33,12 @@ import javax.annotation.PreDestroy;
 @Component("DefaultBruteForceProtectorFactory")
 @ProviderFactory(id = "default-brute-force-detector", providerClasses = BruteForceProtector.class)
 public class DefaultBruteForceProtectorFactory implements BruteForceProtectorFactory {
-    DefaultBruteForceProtector protector;
-
     @Autowired
-    private KeycloakSessionFactory sessionFactory;
+    private DefaultBruteForceProtector protector;
 
     @Override
     public BruteForceProtector create(KeycloakSession session) {
         return protector;
-    }
-
-    @PostConstruct
-    public void afterPropertiesSet() throws Exception {
-        protector = new DefaultBruteForceProtector(sessionFactory);
-        protector.start();
-    }
-
-    @PreDestroy
-    public void destroy() throws Exception {
-        protector.shutdown();
     }
 
     @Override
