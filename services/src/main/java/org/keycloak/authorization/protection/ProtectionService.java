@@ -73,7 +73,7 @@ public class ProtectionService {
     private AdminEventBuilder createAdminEventBuilder(KeycloakIdentity identity, ResourceServer resourceServer) {
         RealmModel realm = authorization.getRealm();
         ClientModel client = realm.getClientById(resourceServer.getId());
-        KeycloakSession keycloakSession = authorization.getKeycloakSession();
+        KeycloakSession keycloakSession = authorization.getSession();
         UserModel serviceAccount = keycloakSession.users().getServiceAccount(client);
         AdminEventBuilder adminEvent = new AdminEventBuilder(realm, new AdminAuth(realm, identity.getAccessToken(), serviceAccount, client), keycloakSession, clientConnection);
         return adminEvent.realm(realm).authClient(client).authUser(serviceAccount);
@@ -113,9 +113,9 @@ public class ProtectionService {
     }
 
     private KeycloakIdentity createIdentity(boolean checkProtectionScope) {
-        KeycloakIdentity identity = new KeycloakIdentity(this.authorization.getKeycloakSession());
+        KeycloakIdentity identity = new KeycloakIdentity(this.authorization.getSession());
         ResourceServer resourceServer = getResourceServer(identity);
-        KeycloakSession keycloakSession = authorization.getKeycloakSession();
+        KeycloakSession keycloakSession = authorization.getSession();
         RealmModel realm = keycloakSession.getContext().getRealm();
         ClientModel client = realm.getClientById(resourceServer.getId());
 
@@ -130,7 +130,7 @@ public class ProtectionService {
 
     private ResourceServer getResourceServer(KeycloakIdentity identity) {
         String clientId = identity.getAccessToken().getIssuedFor();
-        RealmModel realm = authorization.getKeycloakSession().getContext().getRealm();
+        RealmModel realm = authorization.getSession().getContext().getRealm();
         ClientModel clientModel = realm.getClientByClientId(clientId);
 
         if (clientModel == null) {

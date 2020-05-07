@@ -84,9 +84,9 @@ public class PermissionTicketService {
 
         UserModel user = null;
         if (representation.getRequester() != null)
-            user = this.authorization.getKeycloakSession().userStorageManager().getUserById(representation.getRequester(), this.authorization.getRealm());
+            user = this.authorization.getSession().userStorageManager().getUserById(representation.getRequester(), this.authorization.getRealm());
         else
-            user = this.authorization.getKeycloakSession().userStorageManager().getUserByUsername(representation.getRequesterName(), this.authorization.getRealm());
+            user = this.authorization.getSession().userStorageManager().getUserByUsername(representation.getRequesterName(), this.authorization.getRealm());
 
         if (user == null)
             throw new ErrorResponseException("invalid_permission", "Requester does not exists in this server as user.", Response.Status.BAD_REQUEST);
@@ -220,7 +220,7 @@ public class PermissionTicketService {
     }
 
     private String getUserId(String userIdOrName) {
-        UserProvider userProvider = authorization.getKeycloakSession().users();
+        UserProvider userProvider = authorization.getSession().users();
         RealmModel realm = authorization.getRealm();
         UserModel userModel = userProvider.getUserById(userIdOrName, realm);
 

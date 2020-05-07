@@ -148,7 +148,7 @@ public abstract class AbstractResourceService {
         }
 
         Permission(String userId, AuthorizationProvider provider) {
-            UserModel user = provider.getKeycloakSession().users().getUserById(userId, provider.getRealm());
+            UserModel user = provider.getSession().users().getUserById(userId, provider.getRealm());
 
             setUsername(user.getUsername());
             setFirstName(user.getFirstName());

@@ -939,7 +939,7 @@ public class ModelToRepresentation {
 
         owner.setId(model.getOwner());
 
-        KeycloakSession keycloakSession = authorization.getKeycloakSession();
+        KeycloakSession keycloakSession = authorization.getSession();
         RealmModel realm = authorization.getRealm();
 
         if (owner.getId().equals(resourceServer.getId())) {
@@ -993,7 +993,7 @@ public class ModelToRepresentation {
 
         if (returnNames) {
             representation.setResourceName(resource.getName());
-            KeycloakSession keycloakSession = authorization.getKeycloakSession();
+            KeycloakSession keycloakSession = authorization.getSession();
             RealmModel realm = authorization.getRealm();
             UserModel owner = keycloakSession.users().getUserById(ticket.getOwner(), realm);
             UserModel requester = keycloakSession.users().getUserById(ticket.getRequester(), realm);

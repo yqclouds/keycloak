@@ -41,6 +41,6 @@ public class DefaultAuthorizationProviderFactory implements AuthorizationProvide
 
     @Override
     public AuthorizationProvider create(KeycloakSession session, RealmModel realm) {
-        return new AuthorizationProvider(session, realm);
+        return new AuthorizationProvider(realm);
     }
 }

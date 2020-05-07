@@ -25,11 +25,13 @@ import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.*;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.cache.authorization.CachedStoreFactoryProvider;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.provider.Provider;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collection;
 import java.util.List;
@@ -66,16 +68,20 @@ import java.util.stream.Collectors;
  */
 public final class AuthorizationProvider implements Provider {
 
-    private final PolicyEvaluator policyEvaluator;
-    private final KeycloakSession keycloakSession;
     private final RealmModel realm;
     private StoreFactory storeFactory;
     private StoreFactory storeFactoryDelegate;
 
-    public AuthorizationProvider(KeycloakSession session, RealmModel realm) {
-        this.keycloakSession = session;
+    @Autowired
+    private PolicyEvaluator policyEvaluator;
+
+    @Autowired
+    private KeycloakSessionFactory sessionFactory;
+    private KeycloakSession session;
+
+    public AuthorizationProvider(RealmModel realm) {
+        this.session = sessionFactory.create();
         this.realm = realm;
-        this.policyEvaluator = session.getBeanFactory().getBean(PolicyEvaluator.class);
     }
 
     /**
@@ -97,7 +103,7 @@ public final class AuthorizationProvider implements Provider {
      */
     public StoreFactory getStoreFactory() {
         if (storeFactory != null) return storeFactory;
-        storeFactory = keycloakSession.getBeanFactory().getBean(CachedStoreFactoryProvider.class);
+        storeFactory = session.getBeanFactory().getBean(CachedStoreFactoryProvider.class);
         if (storeFactory == null) storeFactory = getLocalStoreFactory();
         storeFactory = createStoreFactory(storeFactory);
         return storeFactory;
@@ -110,7 +116,7 @@ public final class AuthorizationProvider implements Provider {
      */
     public StoreFactory getLocalStoreFactory() {
         if (storeFactoryDelegate != null) return storeFactoryDelegate;
-        storeFactoryDelegate = keycloakSession.getBeanFactory().getBean(StoreFactory.class);
+        storeFactoryDelegate = session.getBeanFactory().getBean(StoreFactory.class);
         return storeFactoryDelegate;
     }
 
@@ -120,7 +126,7 @@ public final class AuthorizationProvider implements Provider {
      * @return a {@link List} containing all registered {@link PolicyProviderFactory}
      */
     public Collection<PolicyProviderFactory> getProviderFactories() {
-        return keycloakSession.getKeycloakSessionFactory().getProviderFactories(PolicyProvider.class).stream().map(
+        return session.getKeycloakSessionFactory().getProviderFactories(PolicyProvider.class).stream().map(
                 PolicyProviderFactory.class::cast).collect(Collectors.toList());
     }
 
@@ -128,11 +134,10 @@ public final class AuthorizationProvider implements Provider {
      * Returns a {@link PolicyProviderFactory} given a <code>type</code>.
      *
      * @param type the type of the policy provider
-     * @param <F>  the expected type of the provider
      * @return a {@link PolicyProviderFactory} with the given <code>type</code>
      */
     public PolicyProviderFactory getProviderFactory(String type) {
-        return (PolicyProviderFactory) keycloakSession.getKeycloakSessionFactory().getProviderFactory(PolicyProvider.class, type);
+        return (PolicyProviderFactory) session.getKeycloakSessionFactory().getProviderFactory(PolicyProvider.class, type);
     }
 
     /**
@@ -152,8 +157,8 @@ public final class AuthorizationProvider implements Provider {
         return (P) policyProviderFactory.create(this);
     }
 
-    public KeycloakSession getKeycloakSession() {
-        return this.keycloakSession;
+    public KeycloakSession getSession() {
+        return this.session;
     }
 
     public RealmModel getRealm() {
@@ -162,11 +167,6 @@ public final class AuthorizationProvider implements Provider {
 
     public PolicyEvaluator getPolicyEvaluator() {
         return policyEvaluator;
-    }
-
-    @Override
-    public void close() {
-
     }
 
     private StoreFactory createStoreFactory(StoreFactory storeFactory) {

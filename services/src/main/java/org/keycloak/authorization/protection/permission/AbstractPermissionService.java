@@ -142,7 +142,7 @@ public class AbstractPermissionService {
     private String createPermissionTicket(List<PermissionRequest> request) {
         List<Permission> permissions = verifyRequestedResource(request);
 
-        String audience = Urls.realmIssuer(this.authorization.getKeycloakSession().getContext().getUri().getBaseUri(), this.authorization.getRealm().getName());
+        String audience = Urls.realmIssuer(this.authorization.getSession().getContext().getUri().getBaseUri(), this.authorization.getRealm().getName());
         PermissionTicketToken token = new PermissionTicketToken(permissions, audience, this.identity.getAccessToken());
         Map<String, List<String>> claims = new HashMap<>();
 
@@ -158,6 +158,6 @@ public class AbstractPermissionService {
             token.setClaims(claims);
         }
 
-        return this.authorization.getKeycloakSession().tokens().encode(token);
+        return this.authorization.getSession().tokens().encode(token);
     }
 }

@@ -361,13 +361,13 @@ public class ResourceSetService {
         }
 
         if (owner != null && !"".equals(owner.trim())) {
-            RealmModel realm = authorization.getKeycloakSession().getContext().getRealm();
+            RealmModel realm = authorization.getSession().getContext().getRealm();
             ClientModel clientModel = realm.getClientByClientId(owner);
 
             if (clientModel != null) {
                 owner = clientModel.getId();
             } else {
-                UserModel user = authorization.getKeycloakSession().users().getUserByUsername(owner, realm);
+                UserModel user = authorization.getSession().users().getUserByUsername(owner, realm);
 
                 if (user != null) {
                     owner = user.getId();

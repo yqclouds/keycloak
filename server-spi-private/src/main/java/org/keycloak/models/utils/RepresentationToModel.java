@@ -1986,7 +1986,7 @@ public class RepresentationToModel {
             toModel(scope, resourceServer, authorization);
         }
 
-        KeycloakSession session = authorization.getKeycloakSession();
+        KeycloakSession session = authorization.getSession();
         RealmModel realm = authorization.getRealm();
 
         for (ResourceRepresentation resource : rep.getResources()) {
@@ -2310,7 +2310,7 @@ public class RepresentationToModel {
 
         if (!resourceServer.getId().equals(ownerId)) {
             RealmModel realm = authorization.getRealm();
-            KeycloakSession keycloakSession = authorization.getKeycloakSession();
+            KeycloakSession keycloakSession = authorization.getSession();
             UserProvider users = keycloakSession.users();
             UserModel ownerModel = users.getUserById(ownerId, realm);
 

@@ -190,7 +190,7 @@ public class ResourceService extends AbstractResourceService {
     }
 
     private UserModel getUser(String requester) {
-        UserProvider users = provider.getKeycloakSession().users();
+        UserProvider users = provider.getSession().users();
         UserModel user = users.getUserByUsername(requester, provider.getRealm());
 
         if (user == null) {

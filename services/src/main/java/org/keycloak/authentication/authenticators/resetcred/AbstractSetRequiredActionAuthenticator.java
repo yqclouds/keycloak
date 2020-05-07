@@ -17,11 +17,13 @@
 
 package org.keycloak.authentication.authenticators.resetcred;
 
-import org.keycloak.Config;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
-import org.keycloak.models.*;
+import org.keycloak.models.AuthenticationExecutionModel;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.provider.ProviderConfigProperty;
 
 import java.util.List;
@@ -34,7 +36,6 @@ public abstract class AbstractSetRequiredActionAuthenticator implements Authenti
 
     @Override
     public void action(AuthenticationFlowContext context) {
-
     }
 
     @Override
@@ -44,7 +45,6 @@ public abstract class AbstractSetRequiredActionAuthenticator implements Authenti
 
     @Override
     public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
-
     }
 
     @Override
@@ -74,22 +74,11 @@ public abstract class AbstractSetRequiredActionAuthenticator implements Authenti
 
     @Override
     public void close() {
-
     }
 
     @Override
     public Authenticator create(KeycloakSession session) {
         return this;
-    }
-
-    @Override
-    public void init(Config.Scope config) {
-
-    }
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
     }
 
     @Override

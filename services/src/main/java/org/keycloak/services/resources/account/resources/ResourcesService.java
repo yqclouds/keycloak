@@ -113,7 +113,7 @@ public class ResourcesService extends AbstractResourceService {
             throw new BadRequestException("invalid_resource");
         }
 
-        return new ResourceService(resource, provider.getKeycloakSession(), user, auth, request);
+        return new ResourceService(resource, provider.getSession(), user, auth, request);
     }
 
     private Collection<ResourcePermission> toPermissions(List<org.keycloak.authorization.model.Resource> resources, boolean withRequesters) {

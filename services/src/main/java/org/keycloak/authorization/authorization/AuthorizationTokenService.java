@@ -105,19 +105,19 @@ public class AuthorizationTokenService {
                 KeycloakIdentity identity;
 
                 try {
-                    identity = new KeycloakIdentity(authorization.getKeycloakSession(),
-                            Tokens.getAccessToken(request.getSubjectToken(), authorization.getKeycloakSession()));
+                    identity = new KeycloakIdentity(authorization.getSession(),
+                            Tokens.getAccessToken(request.getSubjectToken(), authorization.getSession()));
                 } catch (Exception cause) {
                     throw new CorsErrorResponseException(request.getCors(), "unauthorized_client", "Invalid identity", Status.BAD_REQUEST);
                 }
 
-                return new DefaultEvaluationContext(identity, claims, authorization.getKeycloakSession());
+                return new DefaultEvaluationContext(identity, claims, authorization.getSession());
             }
 
             throw new CorsErrorResponseException(request.getCors(), "invalid_request", "Claim token can not be null", Status.BAD_REQUEST);
         });
         SUPPORTED_CLAIM_TOKEN_FORMATS.put(CLAIM_TOKEN_FORMAT_ID_TOKEN, (request, authorization) -> {
-            KeycloakSession keycloakSession = authorization.getKeycloakSession();
+            KeycloakSession keycloakSession = authorization.getSession();
             String subjectToken = request.getSubjectToken();
 
             if (subjectToken == null) {
@@ -653,7 +653,7 @@ public class AuthorizationTokenService {
         }
 
         KeycloakSession getKeycloakSession() {
-            return getAuthorization().getKeycloakSession();
+            return getAuthorization().getSession();
         }
 
         RealmModel getRealm() {

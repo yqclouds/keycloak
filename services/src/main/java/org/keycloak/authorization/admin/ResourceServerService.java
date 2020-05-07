@@ -55,7 +55,7 @@ public class ResourceServerService {
 
     public ResourceServerService(AuthorizationProvider authorization, ResourceServer resourceServer, ClientModel client, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.authorization = authorization;
-        this.session = authorization.getKeycloakSession();
+        this.session = authorization.getSession();
         this.client = client;
         this.resourceServer = resourceServer;
         this.auth = auth;

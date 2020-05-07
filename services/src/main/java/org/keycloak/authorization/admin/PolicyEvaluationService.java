@@ -111,7 +111,7 @@ public class PolicyEvaluationService {
     }
 
     private EvaluationContext createEvaluationContext(PolicyEvaluationRequest representation, KeycloakIdentity identity) {
-        return new DefaultEvaluationContext(identity, this.authorization.getKeycloakSession()) {
+        return new DefaultEvaluationContext(identity, this.authorization.getSession()) {
             @Override
             public Attributes getAttributes() {
                 Map<String, Collection<String>> attributes = new HashMap<>(super.getAttributes().toMap());
@@ -173,7 +173,7 @@ public class PolicyEvaluationService {
     }
 
     private CloseableKeycloakIdentity createIdentity(PolicyEvaluationRequest representation) {
-        KeycloakSession keycloakSession = this.authorization.getKeycloakSession();
+        KeycloakSession keycloakSession = this.authorization.getSession();
         RealmModel realm = keycloakSession.getContext().getRealm();
         AccessToken accessToken = null;
 

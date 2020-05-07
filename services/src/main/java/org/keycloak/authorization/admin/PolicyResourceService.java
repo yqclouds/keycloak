@@ -252,6 +252,6 @@ public class PolicyResourceService {
     }
 
     private void audit(AbstractPolicyRepresentation policy, OperationType operation) {
-        adminEvent.operation(operation).resourcePath(authorization.getKeycloakSession().getContext().getUri()).representation(policy).success();
+        adminEvent.operation(operation).resourcePath(authorization.getSession().getContext().getUri()).representation(policy).success();
     }
 }
