@@ -696,72 +696,9 @@ public class RepresentationToModel {
             }
         }
 
-        // Added in 3.2
-        if (rep.getDockerAuthenticationFlow() == null) {
-            AuthenticationFlowModel dockerAuthenticationFlow = newRealm.getFlowByAlias(DefaultAuthenticationFlows.DOCKER_AUTH);
-            if (dockerAuthenticationFlow == null) {
-                DefaultAuthenticationFlows.dockerAuthenticationFlow(newRealm);
-            } else {
-                newRealm.setDockerAuthenticationFlow(dockerAuthenticationFlow);
-            }
-        } else {
-            newRealm.setDockerAuthenticationFlow(newRealm.getFlowByAlias(rep.getDockerAuthenticationFlow()));
-        }
-
         DefaultAuthenticationFlows.addIdentityProviderAuthenticator(newRealm, defaultProvider);
 
         return mappedFlows;
-    }
-
-    private static void convertDeprecatedSocialProviders(RealmRepresentation rep) {
-        if (rep.isSocial() != null && rep.isSocial() && rep.getSocialProviders() != null && !rep.getSocialProviders().isEmpty() && rep.getIdentityProviders() == null) {
-            Boolean updateProfileFirstLogin = rep.isUpdateProfileOnInitialSocialLogin() != null && rep.isUpdateProfileOnInitialSocialLogin();
-            if (rep.getSocialProviders() != null) {
-
-                logger.warn("Using deprecated 'social' configuration in JSON representation. It will be removed in future versions");
-                List<IdentityProviderRepresentation> identityProviders = new LinkedList<>();
-                for (String k : rep.getSocialProviders().keySet()) {
-                    if (k.endsWith(".key")) {
-                        String providerId = k.split("\\.")[0];
-                        String key = rep.getSocialProviders().get(k);
-                        String secret = rep.getSocialProviders().get(k.replace(".key", ".secret"));
-
-                        IdentityProviderRepresentation identityProvider = new IdentityProviderRepresentation();
-                        identityProvider.setAlias(providerId);
-                        identityProvider.setProviderId(providerId);
-                        identityProvider.setEnabled(true);
-                        identityProvider.setLinkOnly(false);
-                        identityProvider.setUpdateProfileFirstLogin(updateProfileFirstLogin);
-
-                        Map<String, String> config = new HashMap<>();
-                        config.put("clientId", key);
-                        config.put("clientSecret", secret);
-                        identityProvider.setConfig(config);
-
-                        identityProviders.add(identityProvider);
-                    }
-                }
-                rep.setIdentityProviders(identityProviders);
-            }
-        }
-    }
-
-    private static void convertDeprecatedSocialProviders(UserRepresentation user) {
-        if (user.getSocialLinks() != null && !user.getSocialLinks().isEmpty() && user.getFederatedIdentities() == null) {
-
-            logger.warnf("Using deprecated 'socialLinks' configuration in JSON representation for user '%s'. It will be removed in future versions", user.getUsername());
-            List<FederatedIdentityRepresentation> federatedIdentities = new LinkedList<>();
-            for (SocialLinkRepresentation social : user.getSocialLinks()) {
-                FederatedIdentityRepresentation federatedIdentity = new FederatedIdentityRepresentation();
-                federatedIdentity.setIdentityProvider(social.getSocialProvider());
-                federatedIdentity.setUserId(social.getSocialUserId());
-                federatedIdentity.setUserName(social.getSocialUsername());
-                federatedIdentities.add(federatedIdentity);
-            }
-            user.setFederatedIdentities(federatedIdentities);
-        }
-
-        user.setSocialLinks(null);
     }
 
     public static void renameRealm(RealmModel realm, String name) {
@@ -1509,8 +1446,6 @@ public class RepresentationToModel {
     // Users
 
     public static UserModel createUser(KeycloakSession session, RealmModel newRealm, UserRepresentation userRep) {
-        convertDeprecatedSocialProviders(userRep);
-
         // Import users just to user storage. Don't federate
         UserModel user = session.userLocalStorage().addUser(newRealm, userRep.getId(), userRep.getUsername(), false, false);
         user.setEnabled(userRep.isEnabled() != null && userRep.isEnabled());

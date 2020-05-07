@@ -67,7 +67,6 @@ public class ProfileTest {
         Assert.assertFalse(Profile.isFeatureEnabled(Profile.Feature.UPLOAD_SCRIPTS));
 
         System.setProperty("keycloak.profile", "preview");
-        System.setProperty("keycloak.profile.feature.docker", "enabled");
         System.setProperty("keycloak.profile.feature.impersonation", "disabled");
         System.setProperty("keycloak.profile.feature.upload_scripts", "enabled");
 
@@ -99,7 +98,6 @@ public class ProfileTest {
 
         Properties p = new Properties();
         p.setProperty("profile", "preview");
-        p.setProperty("feature.docker", "enabled");
         p.setProperty("feature.impersonation", "disabled");
         p.setProperty("feature.upload_scripts", "enabled");
         PrintWriter pw = new PrintWriter(f);

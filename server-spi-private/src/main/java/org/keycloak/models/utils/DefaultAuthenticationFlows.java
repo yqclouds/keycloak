@@ -38,7 +38,6 @@ public class DefaultAuthenticationFlows {
     public static final String RESET_CREDENTIALS_FLOW = "reset credentials";
     public static final String LOGIN_FORMS_FLOW = "forms";
     public static final String SAML_ECP_FLOW = "saml ecp";
-    public static final String DOCKER_AUTH = "docker auth";
     public static final String HTTP_CHALLENGE_FLOW = "http challenge";
 
     public static final String CLIENT_AUTHENTICATION_FLOW = "clients";
@@ -56,7 +55,6 @@ public class DefaultAuthenticationFlows {
         if (realm.getFlowByAlias(CLIENT_AUTHENTICATION_FLOW) == null) clientAuthFlow(realm);
         if (realm.getFlowByAlias(FIRST_BROKER_LOGIN_FLOW) == null) firstBrokerLoginFlow(realm, false);
         if (realm.getFlowByAlias(SAML_ECP_FLOW) == null) samlEcpProfile(realm);
-        if (realm.getFlowByAlias(DOCKER_AUTH) == null) dockerAuthenticationFlow(realm);
         if (realm.getFlowByAlias(HTTP_CHALLENGE_FLOW) == null) httpChallengeFlow(realm);
     }
 
@@ -68,7 +66,6 @@ public class DefaultAuthenticationFlows {
         if (realm.getFlowByAlias(CLIENT_AUTHENTICATION_FLOW) == null) clientAuthFlow(realm);
         if (realm.getFlowByAlias(FIRST_BROKER_LOGIN_FLOW) == null) firstBrokerLoginFlow(realm, true);
         if (realm.getFlowByAlias(SAML_ECP_FLOW) == null) samlEcpProfile(realm);
-        if (realm.getFlowByAlias(DOCKER_AUTH) == null) dockerAuthenticationFlow(realm);
         if (realm.getFlowByAlias(HTTP_CHALLENGE_FLOW) == null) httpChallengeFlow(realm);
     }
 
@@ -658,28 +655,6 @@ public class DefaultAuthenticationFlows {
         execution.setParentFlow(ecpFlow.getId());
         execution.setRequirement(AuthenticationExecutionModel.Requirement.REQUIRED);
         execution.setAuthenticator("http-basic-authenticator");
-        execution.setPriority(10);
-        execution.setAuthenticatorFlow(false);
-
-        realm.addAuthenticatorExecution(execution);
-    }
-
-    public static void dockerAuthenticationFlow(final RealmModel realm) {
-        AuthenticationFlowModel dockerAuthFlow = new AuthenticationFlowModel();
-
-        dockerAuthFlow.setAlias(DOCKER_AUTH);
-        dockerAuthFlow.setDescription("Used by Docker clients to authenticate against the IDP");
-        dockerAuthFlow.setProviderId("basic-flow");
-        dockerAuthFlow.setTopLevel(true);
-        dockerAuthFlow.setBuiltIn(true);
-        dockerAuthFlow = realm.addAuthenticationFlow(dockerAuthFlow);
-        realm.setDockerAuthenticationFlow(dockerAuthFlow);
-
-        AuthenticationExecutionModel execution = new AuthenticationExecutionModel();
-
-        execution.setParentFlow(dockerAuthFlow.getId());
-        execution.setRequirement(AuthenticationExecutionModel.Requirement.REQUIRED);
-        execution.setAuthenticator("docker-http-basic-authenticator");
         execution.setPriority(10);
         execution.setAuthenticatorFlow(false);
 
