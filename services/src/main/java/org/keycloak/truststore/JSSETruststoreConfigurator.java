@@ -34,7 +34,7 @@ public class JSSETruststoreConfigurator {
     private volatile TrustManager[] tm;
 
     public JSSETruststoreConfigurator(KeycloakSession session) {
-        KeycloakSessionFactory factory = session.getKeycloakSessionFactory();
+        KeycloakSessionFactory factory = session.getSessionFactory();
         TruststoreProviderFactory truststoreFactory = (TruststoreProviderFactory) factory.getProviderFactory(TruststoreProvider.class, "file");
 
         provider = truststoreFactory.create(session);

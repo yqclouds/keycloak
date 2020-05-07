@@ -26,6 +26,7 @@ import org.keycloak.models.Constants;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.sessions.AuthenticationSessionModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -66,6 +67,9 @@ public class DefaultAuthenticationFlow implements AuthenticationFlow {
         return isProcessed(processor, model);
     }
 
+    @Autowired
+    private ConsoleDisplayMode consoleDisplayMode;
+
     protected Authenticator createAuthenticator(AuthenticatorFactory factory) {
         String display = processor.getAuthenticationSession().getAuthNote(OAuth2Constants.DISPLAY);
         if (display == null) return factory.create(processor.getSession());
@@ -78,7 +82,7 @@ public class DefaultAuthenticationFlow implements AuthenticationFlow {
         if (OAuth2Constants.DISPLAY_CONSOLE.equalsIgnoreCase(display)) {
             processor.getAuthenticationSession().removeAuthNote(OAuth2Constants.DISPLAY);
             throw new AuthenticationFlowException(AuthenticationFlowError.DISPLAY_NOT_SUPPORTED,
-                    ConsoleDisplayMode.browserContinue(processor.getSession(), processor.getRefreshUrl(true).toString()));
+                    consoleDisplayMode.browserContinue(processor.getRefreshUrl(true).toString()));
         } else {
             return factory.create(processor.getSession());
         }
@@ -336,7 +340,7 @@ public class DefaultAuthenticationFlow implements AuthenticationFlow {
     }
 
     private AuthenticatorFactory getAuthenticatorFactory(AuthenticationExecutionModel model) {
-        AuthenticatorFactory factory = (AuthenticatorFactory) processor.getSession().getKeycloakSessionFactory().getProviderFactory(Authenticator.class, model.getAuthenticator());
+        AuthenticatorFactory factory = (AuthenticatorFactory) processor.getSession().getSessionFactory().getProviderFactory(Authenticator.class, model.getAuthenticator());
         if (factory == null) {
             throw new RuntimeException("Unable to find factory for AuthenticatorFactory: " + model.getAuthenticator() + " did you forget to declare it in a META-INF/services file?");
         }
@@ -410,7 +414,7 @@ public class DefaultAuthenticationFlow implements AuthenticationFlow {
                 return null;
             }
             model = finalSelectionOptions.get(0).getAuthenticationExecution();
-            factory = (AuthenticatorFactory) processor.getSession().getKeycloakSessionFactory().getProviderFactory(Authenticator.class, model.getAuthenticator());
+            factory = (AuthenticatorFactory) processor.getSession().getSessionFactory().getProviderFactory(Authenticator.class, model.getAuthenticator());
             if (factory == null) {
                 throw new RuntimeException("Unable to find factory for AuthenticatorFactory: " + model.getAuthenticator() + " did you forget to declare it in a META-INF/services file?");
             }

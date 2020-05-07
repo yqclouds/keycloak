@@ -47,6 +47,7 @@ import org.keycloak.connections.jpa.updater.JpaUpdaterProvider;
 import org.keycloak.connections.jpa.updater.liquibase.conn.LiquibaseConnectionProvider;
 import org.keycloak.connections.jpa.util.JpaUtils;
 import org.keycloak.models.KeycloakSession;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -68,6 +69,9 @@ public class LiquibaseJpaUpdaterProvider implements JpaUpdaterProvider {
     public static final String DEPLOYMENT_ID_COLUMN = "DEPLOYMENT_ID";
     private static final Logger logger = Logger.getLogger(LiquibaseJpaUpdaterProvider.class);
     private final KeycloakSession session;
+
+    @Autowired
+    private LiquibaseConnectionProvider connectionProvider;
 
     public LiquibaseJpaUpdaterProvider(KeycloakSession session) {
         this.session = session;
@@ -283,17 +287,14 @@ public class LiquibaseJpaUpdaterProvider implements JpaUpdaterProvider {
     }
 
     private Liquibase getLiquibaseForKeycloakUpdate(Connection connection, String defaultSchema) throws LiquibaseException {
-        LiquibaseConnectionProvider liquibaseProvider = session.getBeanFactory().getBean(LiquibaseConnectionProvider.class);
-        return liquibaseProvider.getLiquibase(connection, defaultSchema);
+        return connectionProvider.getLiquibase(connection, defaultSchema);
     }
 
     private Liquibase getLiquibaseForCustomProviderUpdate(Connection connection, String defaultSchema, String changelogLocation, ClassLoader classloader, String changelogTableName) throws LiquibaseException {
-        LiquibaseConnectionProvider liquibaseProvider = session.getBeanFactory().getBean(LiquibaseConnectionProvider.class);
-        return liquibaseProvider.getLiquibaseForCustomUpdate(connection, defaultSchema, changelogLocation, classloader, changelogTableName);
+        return connectionProvider.getLiquibaseForCustomUpdate(connection, defaultSchema, changelogLocation, classloader, changelogTableName);
     }
 
     @Override
     public void close() {
     }
-
 }

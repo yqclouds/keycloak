@@ -44,6 +44,7 @@ import org.keycloak.common.util.ConcurrentMultivaluedHashMap;
 import org.keycloak.common.util.Retry;
 import org.keycloak.executors.ExecutorsProvider;
 import org.keycloak.models.KeycloakSession;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.Serializable;
 import java.util.List;
@@ -74,6 +75,9 @@ public class InfinispanNotificationsManager {
 
     private final ExecutorService listenersExecutor;
 
+    @Autowired
+    private ExecutorsProvider executorsProvider;
+
 
     protected InfinispanNotificationsManager(Cache<String, Serializable> workCache, RemoteCache workRemoteCache, String myAddress, String mySite, ExecutorService listenersExecutor) {
         this.workCache = workCache;
@@ -85,7 +89,7 @@ public class InfinispanNotificationsManager {
 
 
     // Create and init manager including all listeners etc
-    public static InfinispanNotificationsManager create(KeycloakSession session, Cache<String, Serializable> workCache, String myAddress, String mySite, Set<RemoteStore> remoteStores) {
+    public InfinispanNotificationsManager create(Cache<String, Serializable> workCache, String myAddress, String mySite, Set<RemoteStore> remoteStores) {
         RemoteCache workRemoteCache = null;
 
         if (!remoteStores.isEmpty()) {
@@ -97,7 +101,7 @@ public class InfinispanNotificationsManager {
             }
         }
 
-        ExecutorService listenersExecutor = workRemoteCache == null ? null : session.getBeanFactory().getBean(ExecutorsProvider.class).getExecutor("work-cache-event-listener");
+        ExecutorService listenersExecutor = workRemoteCache == null ? null : executorsProvider.getExecutor("work-cache-event-listener");
         InfinispanNotificationsManager manager = new InfinispanNotificationsManager(workCache, workRemoteCache, myAddress, mySite, listenersExecutor);
 
         // We need CacheEntryListener for communication within current DC

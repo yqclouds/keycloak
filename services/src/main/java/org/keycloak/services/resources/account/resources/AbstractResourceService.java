@@ -32,7 +32,9 @@ import org.keycloak.representations.idm.authorization.ResourceRepresentation;
 import org.keycloak.representations.idm.authorization.ScopeRepresentation;
 import org.keycloak.services.managers.Auth;
 import org.keycloak.services.resources.Cors;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.PostConstruct;
 import javax.ws.rs.core.Response;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -43,10 +45,11 @@ import java.util.stream.Collectors;
 public abstract class AbstractResourceService {
 
     protected final UserModel user;
-    protected final AuthorizationProvider provider;
-    protected final PermissionTicketStore ticketStore;
-    protected final ResourceStore resourceStore;
-    protected final ScopeStore scopeStore;
+    @Autowired
+    protected AuthorizationProvider authorizationProvider;
+    protected PermissionTicketStore ticketStore;
+    protected ResourceStore resourceStore;
+    protected ScopeStore scopeStore;
     protected HttpRequest request;
     protected Auth auth;
 
@@ -54,10 +57,13 @@ public abstract class AbstractResourceService {
         this.user = user;
         this.auth = auth;
         this.request = request;
-        provider = session.getBeanFactory().getBean(AuthorizationProvider.class);
-        ticketStore = provider.getStoreFactory().getPermissionTicketStore();
-        resourceStore = provider.getStoreFactory().getResourceStore();
-        scopeStore = provider.getStoreFactory().getScopeStore();
+    }
+
+    @PostConstruct
+    public void afterPropertiesSet() {
+        ticketStore = authorizationProvider.getStoreFactory().getPermissionTicketStore();
+        resourceStore = authorizationProvider.getStoreFactory().getResourceStore();
+        scopeStore = authorizationProvider.getStoreFactory().getScopeStore();
     }
 
     protected Response cors(Response.ResponseBuilder response) {

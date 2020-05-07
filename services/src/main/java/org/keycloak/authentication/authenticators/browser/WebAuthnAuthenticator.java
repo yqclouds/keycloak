@@ -234,7 +234,7 @@ public class WebAuthnAuthenticator implements Authenticator, CredentialValidator
     }
 
     public List<RequiredActionFactory> getRequiredActions(KeycloakSession session) {
-        return Collections.singletonList((WebAuthnRegisterFactory) session.getKeycloakSessionFactory().getProviderFactory(RequiredActionProvider.class, WebAuthnRegisterFactory.PROVIDER_ID));
+        return Collections.singletonList((WebAuthnRegisterFactory) session.getSessionFactory().getProviderFactory(RequiredActionProvider.class, WebAuthnRegisterFactory.PROVIDER_ID));
     }
 
     public void close() {

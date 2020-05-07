@@ -56,7 +56,7 @@ public class DefaultKeyManager implements KeyManager {
 
         logger.debugv("Failed to find active key for realm, trying fallback: realm={0} algorithm={1} use={2}", realm.getName(), algorithm, use.name());
 
-        for (ProviderFactory f : session.getKeycloakSessionFactory().getProviderFactories(KeyProvider.class)) {
+        for (ProviderFactory f : session.getSessionFactory().getProviderFactories(KeyProvider.class)) {
             KeyProviderFactory kf = (KeyProviderFactory) f;
             if (kf.createFallbackKeys(session, use, algorithm)) {
                 providersMap.remove(realm.getId());
@@ -249,7 +249,7 @@ public class DefaultKeyManager implements KeyManager {
 
             for (ComponentModel c : components) {
                 try {
-                    ProviderFactory<KeyProvider> f = session.getKeycloakSessionFactory().getProviderFactory(KeyProvider.class, c.getProviderId());
+                    ProviderFactory<KeyProvider> f = session.getSessionFactory().getProviderFactory(KeyProvider.class, c.getProviderId());
                     KeyProviderFactory factory = (KeyProviderFactory) f;
                     KeyProvider provider = factory.create(session, c);
                     session.enlistForClose(provider);

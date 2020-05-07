@@ -21,6 +21,7 @@ import org.keycloak.theme.Theme;
 import org.keycloak.theme.beans.MessageFormatterMethod;
 import org.keycloak.urls.UrlType;
 import org.keycloak.utils.MediaType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
@@ -67,6 +68,9 @@ public class AccountConsole {
         }
     }
 
+    @Autowired(required = false)
+    private EventStoreProvider eventStoreProvider;
+
     @GET
     @NoCache
     public Response getMainPage() throws IOException, FreeMarkerException {
@@ -100,8 +104,7 @@ public class AccountConsole {
             map.put("supportedLocales", supportedLocales(messages));
             map.put("properties", theme.getProperties());
 
-            EventStoreProvider eventStore = session.getBeanFactory().getBean(EventStoreProvider.class);
-            map.put("isEventsEnabled", eventStore != null && realm.isEventsEnabled());
+            map.put("isEventsEnabled", eventStoreProvider != null && realm.isEventsEnabled());
             map.put("isAuthorizationEnabled", true);
 
             boolean isTotpConfigured = false;

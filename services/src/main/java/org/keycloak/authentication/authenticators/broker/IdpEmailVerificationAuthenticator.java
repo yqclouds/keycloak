@@ -40,6 +40,7 @@ import org.keycloak.services.Urls;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -56,6 +57,9 @@ public class IdpEmailVerificationAuthenticator extends AbstractIdpAuthenticator 
 
     public static final String VERIFY_ACCOUNT_IDP_USERNAME = "VERIFY_ACCOUNT_IDP_USERNAME";
     private static Logger logger = Logger.getLogger(IdpEmailVerificationAuthenticator.class);
+
+    @Autowired
+    private EmailTemplateProvider emailTemplateProvider;
 
     @Override
     protected void authenticateImpl(AuthenticationFlowContext context, SerializedBrokeredIdentityContext serializedCtx, BrokeredIdentityContext brokerContext) {
@@ -140,8 +144,7 @@ public class IdpEmailVerificationAuthenticator extends AbstractIdpAuthenticator 
         long expirationInMinutes = TimeUnit.SECONDS.toMinutes(validityInSecs);
 
         try {
-            context.getSession().getBeanFactory().getBean(EmailTemplateProvider.class)
-                    .setRealm(realm)
+            emailTemplateProvider.setRealm(realm)
                     .setAuthenticationSession(authSession)
                     .setUser(existingUser)
                     .setAttribute(EmailTemplateProvider.IDENTITY_PROVIDER_BROKER_CONTEXT, brokerContext)

@@ -37,6 +37,7 @@ import org.keycloak.services.managers.AuthenticationSessionManager;
 import org.keycloak.services.managers.ResourceAdminManager;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.util.TokenUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
@@ -168,6 +169,8 @@ public class OIDCLoginProtocol implements LoginProtocol {
         return this;
     }
 
+    @Autowired
+    private OAuth2CodeParser oAuth2CodeParser;
 
     @Override
     public Response authenticated(AuthenticationSessionModel authSession, UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
@@ -208,7 +211,7 @@ public class OIDCLoginProtocol implements LoginProtocol {
                     authSession.getClientNote(OIDCLoginProtocol.CODE_CHALLENGE_PARAM),
                     authSession.getClientNote(OIDCLoginProtocol.CODE_CHALLENGE_METHOD_PARAM));
 
-            code = OAuth2CodeParser.persistCode(session, clientSession, codeData);
+            code = oAuth2CodeParser.persistCode(session, clientSession, codeData);
             redirectUri.addParam(OAuth2Constants.CODE, code);
         }
 
@@ -369,6 +372,9 @@ public class OIDCLoginProtocol implements LoginProtocol {
         }
     }
 
+    @Autowired
+    private HttpClientProvider httpClientProvider;
+
     @Override
     public boolean sendPushRevocationPolicyRequest(RealmModel realm, ClientModel resource, int notBefore, String managementUrl) {
         PushNotBeforeAction adminAction = new PushNotBeforeAction(TokenIdGenerator.generateId(), Time.currentTime() + 30, resource.getClientId(), notBefore);
@@ -376,7 +382,7 @@ public class OIDCLoginProtocol implements LoginProtocol {
         logger.debugv("pushRevocation resource: {0} url: {1}", resource.getClientId(), managementUrl);
         URI target = UriBuilder.fromUri(managementUrl).path(AdapterConstants.K_PUSH_NOT_BEFORE).build();
         try {
-            int status = session.getBeanFactory().getBean(HttpClientProvider.class).postText(target.toString(), token);
+            int status = httpClientProvider.postText(target.toString(), token);
             boolean success = status == 204 || status == 200;
             logger.debugf("pushRevocation success for %s: %s", managementUrl, success);
             return success;

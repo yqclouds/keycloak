@@ -31,6 +31,7 @@ import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.authorization.*;
 import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -62,6 +63,9 @@ public class ResourceServerService {
         this.adminEvent = adminEvent;
     }
 
+    @Autowired
+    private RepresentationToModel representationToModel;
+
     public ResourceServer create(boolean newClient) {
         this.auth.realm().requireManageAuthorization();
 
@@ -72,7 +76,7 @@ public class ResourceServerService {
         }
 
         if (this.resourceServer == null) {
-            this.resourceServer = RepresentationToModel.createResourceServer(client, session, true);
+            this.resourceServer = representationToModel.createResourceServer(client, session, true);
             createDefaultPermission(createDefaultResource(), createDefaultPolicy());
             audit(OperationType.CREATE, session.getContext().getUri(), newClient);
         }

@@ -6,6 +6,7 @@ import org.keycloak.common.util.Base64Url;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.services.x509.X509ClientCertificateLookup;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
@@ -21,7 +22,7 @@ public class MtlsHoKTokenUtil {
     protected static final Logger logger = Logger.getLogger(MtlsHoKTokenUtil.class);
     private static final String DIGEST_ALG = "SHA-256";
 
-    public static AccessToken.CertConf bindTokenWithClientCertificate(HttpRequest request, KeycloakSession session) {
+    public AccessToken.CertConf bindTokenWithClientCertificate(HttpRequest request, KeycloakSession session) {
         X509Certificate[] certs = getCertificateChain(request, session);
 
         if (certs == null || certs.length < 1) {
@@ -45,7 +46,7 @@ public class MtlsHoKTokenUtil {
         return certConf;
     }
 
-    public static boolean verifyTokenBindingWithClientCertificate(AccessToken token, HttpRequest request, KeycloakSession session) {
+    public boolean verifyTokenBindingWithClientCertificate(AccessToken token, HttpRequest request, KeycloakSession session) {
         if (token == null) {
             logger.warnf("token is null");
             return false;
@@ -86,15 +87,17 @@ public class MtlsHoKTokenUtil {
         return true;
     }
 
-    private static X509Certificate[] getCertificateChain(HttpRequest request, KeycloakSession session) {
+    @Autowired(required = false)
+    private X509ClientCertificateLookup x509ClientCertificateLookup;
+
+    private X509Certificate[] getCertificateChain(HttpRequest request, KeycloakSession session) {
         try {
             // Get a x509 client certificate
-            X509ClientCertificateLookup provider = session.getBeanFactory().getBean(X509ClientCertificateLookup.class);
-            if (provider == null) {
+            if (x509ClientCertificateLookup == null) {
                 logger.errorv("\"{0}\" Spi is not available, did you forget to update the configuration?", X509ClientCertificateLookup.class);
                 return null;
             }
-            X509Certificate[] certs = provider.getCertificateChain(request);
+            X509Certificate[] certs = x509ClientCertificateLookup.getCertificateChain(request);
             return certs;
         } catch (GeneralSecurityException e) {
             logger.error(e.getMessage(), e);

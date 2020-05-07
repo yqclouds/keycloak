@@ -30,7 +30,7 @@ public class ConditionalUserConfiguredAuthenticator implements ConditionalAuthen
             //Check if the execution's authenticator is a conditional authenticator, as they must not be evaluated here.
             boolean isConditionalAuthenticator = false;
             try {
-                AuthenticatorFactory factory = (AuthenticatorFactory) context.getSession().getKeycloakSessionFactory().getProviderFactory(Authenticator.class, e.getAuthenticator());
+                AuthenticatorFactory factory = (AuthenticatorFactory) context.getSession().getSessionFactory().getProviderFactory(Authenticator.class, e.getAuthenticator());
                 if (factory != null) {
                     Authenticator auth = factory.create(context.getSession());
                     if (auth instanceof ConditionalAuthenticator) {
@@ -60,7 +60,7 @@ public class ConditionalUserConfiguredAuthenticator implements ConditionalAuthen
         if (model.isAuthenticatorFlow()) {
             return matchConditionInFlow(context, model.getId());
         }
-        AuthenticatorFactory factory = (AuthenticatorFactory) context.getSession().getKeycloakSessionFactory().getProviderFactory(Authenticator.class, model.getAuthenticator());
+        AuthenticatorFactory factory = (AuthenticatorFactory) context.getSession().getSessionFactory().getProviderFactory(Authenticator.class, model.getAuthenticator());
         Authenticator authenticator = factory.create(context.getSession());
         return authenticator.configuredFor(context.getSession(), context.getRealm(), context.getUser());
     }

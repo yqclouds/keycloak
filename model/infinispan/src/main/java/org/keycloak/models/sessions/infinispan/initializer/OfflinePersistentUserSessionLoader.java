@@ -26,6 +26,7 @@ import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserSessionModel;
 import org.keycloak.models.session.UserSessionPersisterProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.Serializable;
 import java.util.List;
@@ -57,8 +58,7 @@ public class OfflinePersistentUserSessionLoader implements SessionLoader<Offline
 
     @Override
     public OfflinePersistentLoaderContext computeLoaderContext(KeycloakSession session) {
-        UserSessionPersisterProvider persister = session.getBeanFactory().getBean(UserSessionPersisterProvider.class);
-        int sessionsCount = persister.getUserSessionsCount(true);
+        int sessionsCount = userSessionPersisterProvider.getUserSessionsCount(true);
 
         return new OfflinePersistentLoaderContext(sessionsCount, sessionsPerSegment);
     }
@@ -86,6 +86,8 @@ public class OfflinePersistentUserSessionLoader implements SessionLoader<Offline
         return new OfflinePersistentWorkerResult(false, workerContext.getSegment(), workerContext.getWorkerId(), -1, FIRST_SESSION_ID);
     }
 
+    @Autowired
+    private UserSessionPersisterProvider userSessionPersisterProvider;
 
     @Override
     public OfflinePersistentWorkerResult loadSessions(KeycloakSession session, OfflinePersistentLoaderContext loaderContext, OfflinePersistentWorkerContext ctx) {
@@ -93,8 +95,7 @@ public class OfflinePersistentUserSessionLoader implements SessionLoader<Offline
 
         log.tracef("Loading sessions for segment=%d createdOn=%d lastSessionId=%s", ctx.getSegment(), ctx.getLastCreatedOn(), ctx.getLastSessionId());
 
-        UserSessionPersisterProvider persister = session.getBeanFactory().getBean(UserSessionPersisterProvider.class);
-        List<UserSessionModel> sessions = persister.loadUserSessions(first, sessionsPerSegment, true, ctx.getLastCreatedOn(), ctx.getLastSessionId());
+        List<UserSessionModel> sessions = userSessionPersisterProvider.loadUserSessions(first, sessionsPerSegment, true, ctx.getLastCreatedOn(), ctx.getLastSessionId());
 
         log.tracef("Sessions loaded from DB - segment=%d createdOn=%d lastSessionId=%s", ctx.getSegment(), ctx.getLastCreatedOn(), ctx.getLastSessionId());
 

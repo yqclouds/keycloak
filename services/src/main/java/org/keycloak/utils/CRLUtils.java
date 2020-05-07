@@ -25,6 +25,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.common.util.BouncyIntegration;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.truststore.TruststoreProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.security.auth.x500.X500Principal;
 import java.io.ByteArrayInputStream;
@@ -100,7 +101,7 @@ public final class CRLUtils {
      * @param crl   Given CRL
      * @throws GeneralSecurityException if some error in validation happens. Typically certificate not valid, or CRL signature not valid
      */
-    public static void check(X509Certificate[] certs, X509CRL crl, KeycloakSession session) throws GeneralSecurityException {
+    public void check(X509Certificate[] certs, X509CRL crl, KeycloakSession session) throws GeneralSecurityException {
         if (certs.length < 2) {
             throw new GeneralSecurityException("Not possible to verify signature on CRL. X509 certificate doesn't have CA chain available on it");
         }
@@ -137,9 +138,10 @@ public final class CRLUtils {
         }
     }
 
+    @Autowired(required = false)
+    private TruststoreProvider truststoreProvider;
 
-    private static X509Certificate findCRLSignatureCertificateInTruststore(KeycloakSession session, X509Certificate[] certs, X500Principal crlIssuerPrincipal) throws GeneralSecurityException {
-        TruststoreProvider truststoreProvider = session.getBeanFactory().getBean(TruststoreProvider.class);
+    private X509Certificate findCRLSignatureCertificateInTruststore(KeycloakSession session, X509Certificate[] certs, X500Principal crlIssuerPrincipal) throws GeneralSecurityException {
         if (truststoreProvider == null || truststoreProvider.getTruststore() == null) {
             throw new GeneralSecurityException("Truststore not available");
         }

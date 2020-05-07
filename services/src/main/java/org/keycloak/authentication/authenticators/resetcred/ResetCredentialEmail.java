@@ -47,6 +47,7 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.Response;
@@ -68,6 +69,9 @@ public class ResetCredentialEmail implements Authenticator, AuthenticatorFactory
             AuthenticationExecutionModel.Requirement.REQUIRED
     };
     private static final Logger logger = Logger.getLogger(ResetCredentialEmail.class);
+
+    @Autowired
+    private EmailTemplateProvider emailTemplateProvider;
 
     public static Long getLastChangedTimestamp(KeycloakSession session, RealmModel realm, UserModel user) {
         // TODO(hmlnarik): Make this more generic to support non-password credential types
@@ -121,7 +125,7 @@ public class ResetCredentialEmail implements Authenticator, AuthenticatorFactory
                 .toString();
         long expirationInMinutes = TimeUnit.SECONDS.toMinutes(validityInSecs);
         try {
-            context.getSession().getBeanFactory().getBean(EmailTemplateProvider.class).setRealm(context.getRealm()).setUser(user).setAuthenticationSession(authenticationSession).sendPasswordReset(link, expirationInMinutes);
+            emailTemplateProvider.setRealm(context.getRealm()).setUser(user).setAuthenticationSession(authenticationSession).sendPasswordReset(link, expirationInMinutes);
 
             event.clone().event(EventType.SEND_RESET_PASSWORD)
                     .user(user)

@@ -37,6 +37,10 @@ import org.keycloak.theme.FreeMarkerUtil;
 import org.keycloak.theme.Theme;
 import org.keycloak.theme.beans.LinkExpirationFormatterMethod;
 import org.keycloak.theme.beans.MessageFormatterMethod;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.URI;
@@ -46,6 +50,8 @@ import java.util.*;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
 
     protected final Map<String, Object> attributes = new HashMap<>();
@@ -246,9 +252,11 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
         send(realm.getSmtpConfig(), subject, textBody, htmlBody);
     }
 
+    @Autowired
+    private EmailSenderProvider emailSenderProvider;
+
     protected void send(Map<String, String> config, String subject, String textBody, String htmlBody) throws EmailException {
-        EmailSenderProvider emailSender = session.getBeanFactory().getBean(EmailSenderProvider.class);
-        emailSender.send(config, user, subject, textBody, htmlBody);
+        emailSenderProvider.send(config, user, subject, textBody, htmlBody);
     }
 
     @Override

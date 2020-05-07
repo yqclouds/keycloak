@@ -22,6 +22,7 @@ import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
 import org.keycloak.sessions.StickySessionEncoderProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -64,15 +65,16 @@ public class InfinispanStickySessionEncoderProvider implements StickySessionEnco
 
     @Override
     public void close() {
-
     }
 
+    @Autowired
+    private InfinispanConnectionProvider connectionProvider;
+
+    @Autowired
+    private InfinispanUtil infinispanUtil;
 
     private String getRoute(String sessionId) {
-        InfinispanConnectionProvider ispnProvider = session.getBeanFactory().getBean(InfinispanConnectionProvider.class);
-        Cache cache = ispnProvider.getCache(InfinispanConnectionProvider.AUTHENTICATION_SESSIONS_CACHE_NAME);
-        return InfinispanUtil.getTopologyInfo(session).getRouteName(cache, sessionId);
+        Cache cache = connectionProvider.getCache(InfinispanConnectionProvider.AUTHENTICATION_SESSIONS_CACHE_NAME);
+        return infinispanUtil.getTopologyInfo(session).getRouteName(cache, sessionId);
     }
-
-
 }

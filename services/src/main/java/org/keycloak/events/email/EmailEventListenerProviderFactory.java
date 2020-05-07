@@ -23,6 +23,7 @@ import org.keycloak.events.EventListenerProviderFactory;
 import org.keycloak.events.EventType;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -43,6 +44,8 @@ public class EmailEventListenerProviderFactory implements EventListenerProviderF
     private String[] include;
     @Value("${exclude-events}")
     private String[] exclude;
+    @Autowired
+    private EmailTemplateProvider emailTemplateProvider;
 
     static {
         Collections.addAll(SUPPORTED_EVENTS, EventType.LOGIN_ERROR, EventType.UPDATE_PASSWORD, EventType.REMOVE_TOTP, EventType.UPDATE_TOTP);
@@ -52,7 +55,6 @@ public class EmailEventListenerProviderFactory implements EventListenerProviderF
 
     @Override
     public EventListenerProvider create(KeycloakSession session) {
-        EmailTemplateProvider emailTemplateProvider = session.getBeanFactory().getBean(EmailTemplateProvider.class);
         return new EmailEventListenerProvider(session, emailTemplateProvider, includedEvents);
     }
 

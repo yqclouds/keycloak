@@ -24,7 +24,6 @@ import org.keycloak.sessions.AuthenticationSessionProvider;
 import org.keycloak.storage.federated.UserFederatedStorageProvider;
 import org.keycloak.vault.VaultTranscriber;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import java.util.Set;
 
@@ -37,8 +36,6 @@ public interface KeycloakSession {
     KeycloakContext getContext();
 
     KeycloakTransactionManager getTransactionManager();
-
-    PlatformTransactionManager getPlatformTransactionManager();
 
     /**
      * Get dedicated provider instance of provider type clazz that was created for this session.  If one hasn't been created yet,
@@ -99,7 +96,7 @@ public interface KeycloakSession {
 
     void enlistForClose(Provider provider);
 
-    KeycloakSessionFactory getKeycloakSessionFactory();
+    KeycloakSessionFactory getSessionFactory();
 
     /**
      * Returns a managed provider instance.  Will start a provider transaction.  This transaction is managed by the KeycloakSession
@@ -205,6 +202,4 @@ public interface KeycloakSession {
      * Vault transcriber
      */
     VaultTranscriber vault();
-
-    BeanFactory getBeanFactory();
 }

@@ -341,7 +341,7 @@ public class UMAPolicyProviderFactory implements PolicyProviderFactory<UmaPermis
                 UserPolicyRepresentation rep = UserPolicyRepresentation.class.cast(associatedRep);
 
                 for (String user : rep.getUsers()) {
-                    representation.addUser(authorization.getKeycloakSession().users().getUserById(user, realm).getUsername());
+                    representation.addUser(authorization.getSession().users().getUserById(user, realm).getUsername());
                 }
             }
         }

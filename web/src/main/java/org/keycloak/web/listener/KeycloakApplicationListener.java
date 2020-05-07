@@ -143,16 +143,18 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
         }
     }
 
-    public static void setupScheduledTasks(final KeycloakSessionFactory sessionFactory) {
+    @Autowired
+    private TimerProvider timerProvider;
+
+    public void setupScheduledTasks(final KeycloakSessionFactory sessionFactory) {
         long interval = Config.scope("scheduled").getLong("interval", 60L) * 1000;
 
         KeycloakSession session = sessionFactory.create();
         try {
-            TimerProvider timer = session.getBeanFactory().getBean(TimerProvider.class);
-            timer.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new ClearExpiredEvents(), interval), interval, "ClearExpiredEvents");
-            timer.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new ClearExpiredClientInitialAccessTokens(), interval), interval, "ClearExpiredClientInitialAccessTokens");
-            timer.schedule(new ScheduledTaskRunner(sessionFactory, new ClearExpiredUserSessions()), interval, ClearExpiredUserSessions.TASK_NAME);
-            new UserStorageSyncManager().bootstrapPeriodic(sessionFactory, timer);
+            timerProvider.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new ClearExpiredEvents(), interval), interval, "ClearExpiredEvents");
+            timerProvider.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new ClearExpiredClientInitialAccessTokens(), interval), interval, "ClearExpiredClientInitialAccessTokens");
+            timerProvider.schedule(new ScheduledTaskRunner(sessionFactory, new ClearExpiredUserSessions()), interval, ClearExpiredUserSessions.TASK_NAME);
+            new UserStorageSyncManager().bootstrapPeriodic(sessionFactory, timerProvider);
         } finally {
             session.close();
         }

@@ -63,7 +63,7 @@ public class FreeMarkerAccountProvider implements AccountProvider {
     protected boolean eventsEnabled;
     protected boolean passwordUpdateSupported;
     protected boolean passwordSet;
-    protected FreeMarkerUtil freeMarker;
+
     protected HttpHeaders headers;
     protected Map<String, Object> attributes;
 
@@ -72,14 +72,14 @@ public class FreeMarkerAccountProvider implements AccountProvider {
     protected List<FormMessage> messages = null;
     protected MessageType messageType = MessageType.ERROR;
     private boolean authorizationSupported;
-
+    @Autowired
+    protected FreeMarkerUtil freeMarker;
     @Autowired
     private KeycloakSessionFactory sessionFactory;
     protected KeycloakSession session;
 
     public FreeMarkerAccountProvider() {
         this.session = this.sessionFactory.create();
-        this.freeMarker = session.getBeanFactory().getBean(FreeMarkerUtil.class);
     }
 
     public AccountProvider setUriInfo(UriInfo uriInfo) {

@@ -27,6 +27,7 @@ import org.keycloak.events.Errors;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.*;
 import org.keycloak.services.messages.Messages;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -110,6 +111,9 @@ public class SpnegoAuthenticator extends AbstractUsernameFormAuthenticator imple
         }
     }
 
+    @Autowired
+    private LoginFormsProvider loginFormsProvider;
+
     private Response challengeNegotiation(AuthenticationFlowContext context, final String negotiateToken) {
         String negotiateHeader = negotiateToken == null ? KerberosConstants.NEGOTIATE : KerberosConstants.NEGOTIATE + " " + negotiateToken;
 
@@ -117,8 +121,7 @@ public class SpnegoAuthenticator extends AbstractUsernameFormAuthenticator imple
             logger.trace("Sending back " + HttpHeaders.WWW_AUTHENTICATE + ": " + negotiateHeader);
         }
         if (context.getExecution().isRequired()) {
-            return context.getSession().getBeanFactory().getBean(LoginFormsProvider.class)
-                    .setAuthenticationSession(context.getAuthenticationSession())
+            return this.loginFormsProvider.setAuthenticationSession(context.getAuthenticationSession())
                     .setResponseHeader(HttpHeaders.WWW_AUTHENTICATE, negotiateHeader)
                     .setError(Messages.KERBEROS_NOT_ENABLED).createErrorPage(Response.Status.UNAUTHORIZED);
         } else {

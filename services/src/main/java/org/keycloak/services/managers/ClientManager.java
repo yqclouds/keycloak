@@ -34,6 +34,7 @@ import org.keycloak.representations.adapters.config.BaseRealmConfig;
 import org.keycloak.representations.adapters.config.PolicyEnforcerConfig;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.sessions.AuthenticationSessionProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.URI;
 import java.util.*;
@@ -67,7 +68,7 @@ public class ClientManager {
         ClientModel client = RepresentationToModel.createClient(session, realm, rep, addDefaultRoles);
 
         if (rep.getProtocol() != null) {
-            LoginProtocolFactory providerFactory = (LoginProtocolFactory) session.getKeycloakSessionFactory().getProviderFactory(LoginProtocol.class, rep.getProtocol());
+            LoginProtocolFactory providerFactory = (LoginProtocolFactory) session.getSessionFactory().getProviderFactory(LoginProtocol.class, rep.getProtocol());
             providerFactory.setupClientDefaults(rep, client);
         }
 
@@ -81,6 +82,8 @@ public class ClientManager {
 
     }
 
+    @Autowired(required = false)
+    private UserSessionPersisterProvider userSessionPersisterProvider;
 
     public boolean removeClient(RealmModel realm, ClientModel client) {
         if (realm.removeClient(client.getId())) {
@@ -89,9 +92,8 @@ public class ClientManager {
                 sessions.onClientRemoved(realm, client);
             }
 
-            UserSessionPersisterProvider sessionsPersister = realmManager.getSession().getBeanFactory().getBean(UserSessionPersisterProvider.class);
-            if (sessionsPersister != null) {
-                sessionsPersister.onClientRemoved(realm, client);
+            if (userSessionPersisterProvider != null) {
+                userSessionPersisterProvider.onClientRemoved(realm, client);
             }
 
             AuthenticationSessionProvider authSessions = realmManager.getSession().authenticationSessions();
@@ -269,7 +271,7 @@ public class ClientManager {
 
     private Map<String, Object> getClientCredentialsAdapterConfig(ClientModel client) {
         String clientAuthenticator = client.getClientAuthenticatorType();
-        ClientAuthenticatorFactory authenticator = (ClientAuthenticatorFactory) realmManager.getSession().getKeycloakSessionFactory().getProviderFactory(ClientAuthenticator.class, clientAuthenticator);
+        ClientAuthenticatorFactory authenticator = (ClientAuthenticatorFactory) realmManager.getSession().getSessionFactory().getProviderFactory(ClientAuthenticator.class, clientAuthenticator);
         return authenticator.getAdapterConfiguration(client);
     }
 

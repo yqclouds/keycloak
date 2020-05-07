@@ -30,11 +30,9 @@ import org.keycloak.sessions.AuthenticationSessionProvider;
 import org.keycloak.storage.ClientStorageManager;
 import org.keycloak.storage.UserStorageManager;
 import org.keycloak.storage.federated.UserFederatedStorageProvider;
-import org.keycloak.vault.DefaultVaultTranscriber;
 import org.keycloak.vault.VaultProvider;
 import org.keycloak.vault.VaultTranscriber;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -54,13 +52,19 @@ public class DefaultKeycloakSession implements KeycloakSession {
     private UserStorageManager userStorageManager;
     private ClientStorageManager clientStorageManager;
     private UserCredentialStoreManager userCredentialStorageManager;
+    @Autowired
     private UserSessionProvider sessionProvider;
+    @Autowired
     private AuthenticationSessionProvider authenticationSessionProvider;
+
+    @Autowired
     private UserFederatedStorageProvider userFederatedStorageProvider;
     private KeycloakContext context;
     private KeyManager keyManager;
     private ThemeManager themeManager;
     private TokenManager tokenManager;
+
+    @Autowired
     private VaultTranscriber vaultTranscriber;
 
     public DefaultKeycloakSession(DefaultKeycloakSessionFactory factory) {
@@ -74,20 +78,27 @@ public class DefaultKeycloakSession implements KeycloakSession {
         return context;
     }
 
+    @Autowired(required = false)
+    private CacheRealmProvider cacheRealmProvider;
+
+    @Autowired
+    private RealmProviderFactory realmProviderFactory;
+
     private RealmProvider getRealmProvider() {
-        CacheRealmProvider cache = getBeanFactory().getBean(CacheRealmProvider.class);
+        CacheRealmProvider cache = this.cacheRealmProvider;
         if (cache != null) {
             return cache;
         } else {
-            RealmProviderFactory factory = getBeanFactory().getBean(RealmProviderFactory.class);
-            return factory.create(this);
+            return realmProviderFactory.create(this);
         }
     }
 
+    @Autowired(required = false)
+    private UserCache userCache;
+
     @Override
     public UserCache userCache() {
-        return getBeanFactory().getBean(UserCache.class);
-
+        return this.userCache;
     }
 
     @Override
@@ -123,31 +134,29 @@ public class DefaultKeycloakSession implements KeycloakSession {
     }
 
     @Override
-    public PlatformTransactionManager getPlatformTransactionManager() {
-        return getBeanFactory().getBean(PlatformTransactionManager.class);
-    }
-
-    @Override
-    public KeycloakSessionFactory getKeycloakSessionFactory() {
+    public KeycloakSessionFactory getSessionFactory() {
         return factory;
     }
 
     @Override
     public UserFederatedStorageProvider userFederatedStorage() {
-        if (userFederatedStorageProvider == null) {
-            userFederatedStorageProvider = getBeanFactory().getBean(UserFederatedStorageProvider.class);
-        }
         return userFederatedStorageProvider;
     }
 
+    @Autowired
+    private UserProvider userProvider;
+
     @Override
     public UserProvider userLocalStorage() {
-        return getBeanFactory().getBean(UserProvider.class);
+        return this.userProvider;
     }
+
+    @Autowired
+    private RealmProvider realmProvider;
 
     @Override
     public RealmProvider realmLocalStorage() {
-        return getBeanFactory().getBean(RealmProvider.class);
+        return this.realmProvider;
     }
 
     @Override
@@ -170,7 +179,7 @@ public class DefaultKeycloakSession implements KeycloakSession {
 
     @Override
     public UserProvider users() {
-        UserCache cache = getBeanFactory().getBean(UserCache.class);
+        UserCache cache = this.userCache;
         if (cache != null) {
             return cache;
         } else {
@@ -265,21 +274,14 @@ public class DefaultKeycloakSession implements KeycloakSession {
         return model;
     }
 
-
     @Override
     public UserSessionProvider sessions() {
-        if (sessionProvider == null) {
-            sessionProvider = getBeanFactory().getBean(UserSessionProvider.class);
-        }
         return sessionProvider;
     }
 
     @Override
     public AuthenticationSessionProvider authenticationSessions() {
-        if (authenticationSessionProvider == null) {
-            authenticationSessionProvider = getBeanFactory().getBean(AuthenticationSessionProvider.class);
-        }
-        return authenticationSessionProvider;
+        return this.authenticationSessionProvider;
     }
 
     @Override
@@ -306,17 +308,12 @@ public class DefaultKeycloakSession implements KeycloakSession {
         return tokenManager;
     }
 
-    @Override
-    public VaultTranscriber vault() {
-        if (this.vaultTranscriber == null) {
-            this.vaultTranscriber = new DefaultVaultTranscriber(this.getBeanFactory().getBean(VaultProvider.class));
-        }
-        return this.vaultTranscriber;
-    }
+    @Autowired
+    private VaultProvider vaultProvider;
 
     @Override
-    public BeanFactory getBeanFactory() {
-        return factory.getBeanFactory();
+    public VaultTranscriber vault() {
+        return this.vaultTranscriber;
     }
 
     public void close() {

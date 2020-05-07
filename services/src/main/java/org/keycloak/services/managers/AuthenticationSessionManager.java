@@ -28,6 +28,7 @@ import org.keycloak.services.util.CookieHelper;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
 import org.keycloak.sessions.StickySessionEncoderProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
@@ -134,6 +135,8 @@ public class AuthenticationSessionManager {
         }).filter(authSession -> Objects.nonNull(authSession)).findFirst().orElse(null);
     }
 
+    @Autowired
+    private StickySessionEncoderProvider stickySessionEncoderProvider;
 
     /**
      * @param authSessionId decoded authSessionId (without route info attached)
@@ -145,8 +148,7 @@ public class AuthenticationSessionManager {
 
         boolean sslRequired = realm.getSslRequired().isRequired(session.getContext().getConnection());
 
-        StickySessionEncoderProvider encoder = session.getBeanFactory().getBean(StickySessionEncoderProvider.class);
-        String encodedAuthSessionId = encoder.encodeSessionId(authSessionId);
+        String encodedAuthSessionId = stickySessionEncoderProvider.encodeSessionId(authSessionId);
 
         CookieHelper.addCookie(AUTH_SESSION_ID, encodedAuthSessionId, cookiePath, null, null, -1, sslRequired, true);
 
@@ -160,9 +162,8 @@ public class AuthenticationSessionManager {
      */
     AuthSessionId decodeAuthSessionId(String encodedAuthSessionId) {
         log.debugf("Found AUTH_SESSION_ID cookie with value %s", encodedAuthSessionId);
-        StickySessionEncoderProvider encoder = session.getBeanFactory().getBean(StickySessionEncoderProvider.class);
-        String decodedAuthSessionId = encoder.decodeSessionId(encodedAuthSessionId);
-        String reencoded = encoder.encodeSessionId(decodedAuthSessionId);
+        String decodedAuthSessionId = stickySessionEncoderProvider.decodeSessionId(encodedAuthSessionId);
+        String reencoded = stickySessionEncoderProvider.encodeSessionId(decodedAuthSessionId);
 
         return new AuthSessionId(decodedAuthSessionId, reencoded);
     }

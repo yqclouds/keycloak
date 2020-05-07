@@ -26,6 +26,7 @@ import org.keycloak.models.*;
 import org.keycloak.services.managers.ClientSessionCode;
 import org.keycloak.services.resources.LoginActionsService;
 import org.keycloak.sessions.AuthenticationSessionModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -171,17 +172,20 @@ public class RequiredActionContextResult implements RequiredActionContext {
         return uri;
     }
 
+    @Autowired
+    private LoginFormsProvider loginFormsProvider;
+
     @Override
     public LoginFormsProvider form() {
         String accessCode = generateCode();
         URI action = getActionUrl(accessCode);
-        LoginFormsProvider provider = getSession().getBeanFactory().getBean(LoginFormsProvider.class)
+        LoginFormsProvider loginFormsProvider = this.loginFormsProvider
                 .setAuthenticationSession(getAuthenticationSession())
                 .setUser(getUser())
                 .setActionUri(action)
                 .setExecution(getExecution())
                 .setClientSessionCode(accessCode);
-        return provider;
+        return loginFormsProvider;
     }
 
 

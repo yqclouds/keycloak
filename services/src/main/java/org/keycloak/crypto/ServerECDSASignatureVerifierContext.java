@@ -3,13 +3,24 @@ package org.keycloak.crypto;
 import org.keycloak.common.VerificationException;
 import org.keycloak.models.KeycloakSession;
 
+import javax.annotation.PostConstruct;
+
 public class ServerECDSASignatureVerifierContext extends AsymmetricSignatureVerifierContext {
+    private final KeycloakSession session;
+    private final String kid;
+    private final String algorithm;
+
     public ServerECDSASignatureVerifierContext(KeycloakSession session, String kid, String algorithm) throws VerificationException {
-        super(ServerAsymmetricSignatureVerifierContext.getKey(session, kid, algorithm));
+        super();
+
+        this.session = session;
+        this.kid = kid;
+        this.algorithm = algorithm;
     }
 
-    public ServerECDSASignatureVerifierContext(KeyWrapper key) {
-        super(key);
+    @PostConstruct
+    public void afterPropertiesSet() throws VerificationException {
+        setKey(ServerAsymmetricSignatureVerifierContext.getKey(session, kid, algorithm));
     }
 
     @Override

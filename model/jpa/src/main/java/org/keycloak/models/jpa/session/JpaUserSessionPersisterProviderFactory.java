@@ -22,6 +22,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.session.UserSessionPersisterProvider;
 import org.keycloak.models.session.UserSessionPersisterProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
@@ -35,9 +36,12 @@ public class JpaUserSessionPersisterProviderFactory implements UserSessionPersis
 
     public static final String ID = "jpa";
 
+    @Autowired
+    private JpaConnectionProvider connectionProvider;
+
     @Override
     public UserSessionPersisterProvider create(KeycloakSession session) {
-        EntityManager em = session.getBeanFactory().getBean(JpaConnectionProvider.class).getEntityManager();
+        EntityManager em = connectionProvider.getEntityManager();
         return new JpaUserSessionPersisterProvider(session, em);
     }
 

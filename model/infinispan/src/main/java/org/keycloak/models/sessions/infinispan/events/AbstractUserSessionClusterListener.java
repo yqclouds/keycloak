@@ -29,6 +29,7 @@ import org.keycloak.models.sessions.infinispan.InfinispanUserSessionProvider;
 import org.keycloak.models.sessions.infinispan.InfinispanUserSessionProviderFactory;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -38,6 +39,9 @@ public abstract class AbstractUserSessionClusterListener<SE extends SessionClust
     private static final Logger log = Logger.getLogger(AbstractUserSessionClusterListener.class);
 
     private final KeycloakSessionFactory sessionFactory;
+
+    @Autowired
+    private ClusterProvider clusterProvider;
 
     public AbstractUserSessionClusterListener(KeycloakSessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
@@ -59,14 +63,15 @@ public abstract class AbstractUserSessionClusterListener<SE extends SessionClust
             eventReceived(session, provider, sessionEvent);
 
             if (shouldResendEvent) {
-                session.getBeanFactory().getBean(ClusterProvider.class).notify(sessionEvent.getEventKey(), event, true, ClusterProvider.DCNotify.ALL_BUT_LOCAL_DC);
+                clusterProvider.notify(sessionEvent.getEventKey(), event, true, ClusterProvider.DCNotify.ALL_BUT_LOCAL_DC);
             }
-
         });
     }
 
     protected abstract void eventReceived(KeycloakSession session, InfinispanUserSessionProvider provider, SE sessionEvent);
 
+    @Autowired
+    private InfinispanUtil infinispanUtil;
 
     private boolean shouldResendEvent(KeycloakSession session, SessionClusterEvent event) {
         if (!event.isResendingEvent()) {
@@ -74,7 +79,7 @@ public abstract class AbstractUserSessionClusterListener<SE extends SessionClust
         }
 
         // Just the initiator will re-send the event after receiving it
-        TopologyInfo topology = InfinispanUtil.getTopologyInfo(session);
+        TopologyInfo topology = infinispanUtil.getTopologyInfo(session);
         String myNode = topology.getMyNodeName();
         String mySite = topology.getMySiteName();
         return (event.getNodeId() != null && event.getNodeId().equals(myNode) && event.getSiteId() != null && event.getSiteId().equals(mySite));

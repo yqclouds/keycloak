@@ -65,18 +65,19 @@ public class InfinispanAuthenticationSessionProviderFactory implements Authentic
         });
     }
 
-    protected void registerClusterListeners(KeycloakSession session) {
-        KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
-        ClusterProvider cluster = session.getBeanFactory().getBean(ClusterProvider.class);
+    @Autowired
+    private ClusterProvider clusterProvider;
 
-        cluster.registerListener(REALM_REMOVED_AUTHSESSION_EVENT, new AbstractAuthSessionClusterListener<RealmRemovedSessionEvent>(sessionFactory) {
+    protected void registerClusterListeners(KeycloakSession session) {
+        KeycloakSessionFactory sessionFactory = session.getSessionFactory();
+        clusterProvider.registerListener(REALM_REMOVED_AUTHSESSION_EVENT, new AbstractAuthSessionClusterListener<RealmRemovedSessionEvent>(sessionFactory) {
             @Override
             protected void eventReceived(KeycloakSession session, InfinispanAuthenticationSessionProvider provider, RealmRemovedSessionEvent sessionEvent) {
                 provider.onRealmRemovedEvent(sessionEvent.getRealmId());
             }
         });
 
-        cluster.registerListener(CLIENT_REMOVED_AUTHSESSION_EVENT, new AbstractAuthSessionClusterListener<ClientRemovedSessionEvent>(sessionFactory) {
+        clusterProvider.registerListener(CLIENT_REMOVED_AUTHSESSION_EVENT, new AbstractAuthSessionClusterListener<ClientRemovedSessionEvent>(sessionFactory) {
             @Override
             protected void eventReceived(KeycloakSession session, InfinispanAuthenticationSessionProvider provider, ClientRemovedSessionEvent sessionEvent) {
                 provider.onClientRemovedEvent(sessionEvent.getRealmId(), sessionEvent.getClientUuid());

@@ -14,6 +14,7 @@ import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.scripting.EvaluatableScriptAdapter;
 import org.keycloak.scripting.ScriptingProvider;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -25,6 +26,9 @@ public class JSPolicyProviderFactory implements PolicyProviderFactory<JSPolicyRe
 
     private final JSPolicyProvider provider = new JSPolicyProvider(this::getEvaluatableScript);
     private ScriptCache scriptCache;
+
+    @Autowired
+    private ScriptingProvider scriptingProvider;
 
     @Override
     public String getName() {
@@ -102,9 +106,8 @@ public class JSPolicyProviderFactory implements PolicyProviderFactory<JSPolicyRe
 
     private EvaluatableScriptAdapter getEvaluatableScript(final AuthorizationProvider authz, final Policy policy) {
         return scriptCache.computeIfAbsent(policy.getId(), id -> {
-            final ScriptingProvider scripting = authz.getKeycloakSession().getBeanFactory().getBean(ScriptingProvider.class);
-            ScriptModel script = getScriptModel(policy, authz.getRealm(), scripting);
-            return scripting.prepareEvaluatableScript(script);
+            ScriptModel script = getScriptModel(policy, authz.getRealm(), scriptingProvider);
+            return scriptingProvider.prepareEvaluatableScript(script);
         });
     }
 
@@ -119,7 +122,7 @@ public class JSPolicyProviderFactory implements PolicyProviderFactory<JSPolicyRe
 
     private void updatePolicy(Policy policy, String code, AuthorizationProvider authorization) {
         scriptCache.remove(policy.getId());
-        if (!Profile.isFeatureEnabled(Profile.Feature.UPLOAD_SCRIPTS) && !authorization.getKeycloakSession().getAttributeOrDefault("ALLOW_CREATE_POLICY", false) && !isDeployed()) {
+        if (!Profile.isFeatureEnabled(Profile.Feature.UPLOAD_SCRIPTS) && !authorization.getSession().getAttributeOrDefault("ALLOW_CREATE_POLICY", false) && !isDeployed()) {
             throw new RuntimeException("Script upload is disabled");
         }
         policy.putConfig("code", code);

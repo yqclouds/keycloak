@@ -33,6 +33,7 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.CommonClientSessionModel.Action;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -44,11 +45,14 @@ public class LoginActionsServiceChecks {
 
     private static final Logger LOG = Logger.getLogger(LoginActionsServiceChecks.class.getName());
 
+    @Autowired
+    private LoginFormsProvider loginFormsProvider;
+
     /**
      * Verifies that the authentication session has not yet been converted to user session, in other words
      * that the user has not yet completed authentication and logged in.
      */
-    public static <T extends JsonWebToken> void checkNotLoggedInYet(ActionTokenContext<T> context, AuthenticationSessionModel authSessionFromCookie, String authSessionId) throws VerificationException {
+    public <T extends JsonWebToken> void checkNotLoggedInYet(ActionTokenContext<T> context, AuthenticationSessionModel authSessionFromCookie, String authSessionId) throws VerificationException {
         if (authSessionId == null) {
             return;
         }
@@ -60,7 +64,7 @@ public class LoginActionsServiceChecks {
                         (authSessionFromCookie == null || authSessionFromCookie.getRequiredActions() == null || authSessionFromCookie.getRequiredActions().isEmpty());
 
         if (userSession != null && hasNoRequiredActions) {
-            LoginFormsProvider loginForm = context.getSession().getBeanFactory().getBean(LoginFormsProvider.class).setAuthenticationSession(context.getAuthenticationSession())
+            LoginFormsProvider loginForm = this.loginFormsProvider.setAuthenticationSession(context.getAuthenticationSession())
                     .setSuccess(Messages.ALREADY_LOGGED_IN);
 
             if (context.getSession().getContext().getClient() == null) {
@@ -162,6 +166,7 @@ public class LoginActionsServiceChecks {
      * <p>
      * When the check passes, it also sets the authentication session in token context accordingly.
      * <p>
+     *
      * @param <T>
      */
     public static <T extends JsonWebToken> boolean doesAuthenticationSessionFromCookieMatchOneFromToken(
@@ -199,10 +204,11 @@ public class LoginActionsServiceChecks {
         return true;
     }
 
-    public static <T extends JsonWebToken & ActionTokenKeyModel> void checkTokenWasNotUsedYet(T token, ActionTokenContext<T> context) throws VerificationException {
-        ActionTokenStoreProvider actionTokenStore = context.getSession().getBeanFactory().getBean(ActionTokenStoreProvider.class);
+    @Autowired
+    private ActionTokenStoreProvider actionTokenStoreProvider;
 
-        if (actionTokenStore.get(token) != null) {
+    public <T extends JsonWebToken & ActionTokenKeyModel> void checkTokenWasNotUsedYet(T token, ActionTokenContext<T> context) throws VerificationException {
+        if (actionTokenStoreProvider.get(token) != null) {
             throw new ExplainedTokenVerificationException(token, Errors.EXPIRED_CODE, Messages.EXPIRED_ACTION);
         }
     }
@@ -212,7 +218,6 @@ public class LoginActionsServiceChecks {
      * the one from the authentication session.
      */
     public static class AuthenticationSessionUserIdMatchesOneFromToken implements Predicate<JsonWebToken> {
-
         private final ActionTokenContext<?> context;
 
         public AuthenticationSessionUserIdMatchesOneFromToken(ActionTokenContext<?> context) {
@@ -251,6 +256,9 @@ public class LoginActionsServiceChecks {
             this.expectedAction = expectedAction;
         }
 
+        @Autowired
+        private AuthenticationManager authenticationManager;
+
         @Override
         public boolean test(JsonWebToken t) throws VerificationException {
             AuthenticationSessionModel authSession = context.getAuthenticationSession();
@@ -258,7 +266,7 @@ public class LoginActionsServiceChecks {
             if (authSession != null && !Objects.equals(authSession.getAction(), this.expectedAction.name())) {
                 if (Objects.equals(AuthenticationSessionModel.Action.REQUIRED_ACTIONS.name(), authSession.getAction())) {
                     throw new LoginActionsServiceException(
-                            AuthenticationManager.nextActionAfterAuthentication(context.getSession(), authSession,
+                            authenticationManager.nextActionAfterAuthentication(context.getSession(), authSession,
                                     context.getClientConnection(), context.getRequest(), context.getUriInfo(), context.getEvent()));
                 }
                 throw new ExplainedTokenVerificationException(t, Errors.INVALID_TOKEN, Messages.INVALID_CODE);

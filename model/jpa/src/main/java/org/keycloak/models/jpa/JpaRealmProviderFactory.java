@@ -22,6 +22,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmProvider;
 import org.keycloak.models.RealmProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
@@ -33,6 +34,9 @@ import javax.persistence.EntityManager;
 @Component("JpaRealmProviderFactory")
 @ProviderFactory(id = "jpa", providerClasses = RealmProvider.class)
 public class JpaRealmProviderFactory implements RealmProviderFactory {
+    @Autowired
+    private JpaConnectionProvider connectionProvider;
+
     @Override
     public String getId() {
         return "jpa";
@@ -40,7 +44,7 @@ public class JpaRealmProviderFactory implements RealmProviderFactory {
 
     @Override
     public RealmProvider create(KeycloakSession session) {
-        EntityManager em = session.getBeanFactory().getBean(JpaConnectionProvider.class).getEntityManager();
+        EntityManager em = connectionProvider.getEntityManager();
         return new JpaRealmProvider(session, em);
     }
 }

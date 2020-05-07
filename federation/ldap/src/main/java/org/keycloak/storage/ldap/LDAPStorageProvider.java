@@ -54,6 +54,7 @@ import org.keycloak.storage.user.ImportedUserValidation;
 import org.keycloak.storage.user.UserLookupProvider;
 import org.keycloak.storage.user.UserQueryProvider;
 import org.keycloak.storage.user.UserRegistrationProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.naming.AuthenticationException;
 import java.util.*;
@@ -81,6 +82,9 @@ public class LDAPStorageProvider implements UserStorageProvider,
     protected LDAPProviderKerberosConfig kerberosConfig;
     protected PasswordUpdateCallback updater;
     protected LDAPStorageMapperManager mapperManager;
+
+    @Autowired
+    private PasswordPolicyManagerProvider passwordPolicyManagerProvider;
 
     // these exist to make sure that we only hit ldap once per transaction
     //protected Map<String, UserModel> noImportSessionCache = new HashMap<>();
@@ -614,7 +618,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
             String password = input.getChallengeResponse();
             LDAPObject ldapUser = loadAndValidateUser(realm, user);
             if (ldapIdentityStore.getConfig().isValidatePasswordPolicy()) {
-                PolicyError error = session.getBeanFactory().getBean(PasswordPolicyManagerProvider.class).validate(realm, user, password);
+                PolicyError error = passwordPolicyManagerProvider.validate(realm, user, password);
                 if (error != null) throw new ModelException(error.getMessage(), error.getParameters());
             }
             try {

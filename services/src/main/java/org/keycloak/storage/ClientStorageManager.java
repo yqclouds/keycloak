@@ -58,7 +58,7 @@ public class ClientStorageManager implements ClientProvider {
         ComponentModel model = realm.getComponent(componentId);
         if (model == null) return null;
         ClientStorageProviderModel storageModel = new ClientStorageProviderModel(model);
-        ClientStorageProviderFactory factory = (ClientStorageProviderFactory) session.getKeycloakSessionFactory().getProviderFactory(ClientStorageProvider.class, model.getProviderId());
+        ClientStorageProviderFactory factory = (ClientStorageProviderFactory) session.getSessionFactory().getProviderFactory(ClientStorageProvider.class, model.getProviderId());
         if (factory == null) {
             throw new ModelException("Could not find ClientStorageProviderFactory for: " + model.getProviderId());
         }
@@ -84,7 +84,7 @@ public class ClientStorageManager implements ClientProvider {
     public static <T> List<T> getStorageProviders(KeycloakSession session, RealmModel realm, Class<T> type) {
         List<T> list = new LinkedList<>();
         for (ClientStorageProviderModel model : getStorageProviders(realm)) {
-            ClientStorageProviderFactory factory = (ClientStorageProviderFactory) session.getKeycloakSessionFactory().getProviderFactory(ClientStorageProvider.class, model.getProviderId());
+            ClientStorageProviderFactory factory = (ClientStorageProviderFactory) session.getSessionFactory().getProviderFactory(ClientStorageProvider.class, model.getProviderId());
             if (factory == null) {
                 logger.warnv("Configured ClientStorageProvider {0} of provider id {1} does not exist in realm {2}", model.getName(), model.getProviderId(), realm.getName());
                 continue;
@@ -102,7 +102,7 @@ public class ClientStorageManager implements ClientProvider {
         List<T> list = new LinkedList<>();
         for (ClientStorageProviderModel model : getStorageProviders(realm)) {
             if (!model.isEnabled()) continue;
-            ClientStorageProviderFactory factory = (ClientStorageProviderFactory) session.getKeycloakSessionFactory().getProviderFactory(ClientStorageProvider.class, model.getProviderId());
+            ClientStorageProviderFactory factory = (ClientStorageProviderFactory) session.getSessionFactory().getProviderFactory(ClientStorageProvider.class, model.getProviderId());
             if (factory == null) {
                 logger.warnv("Configured ClientStorageProvider {0} of provider id {1} does not exist in realm {2}", model.getName(), model.getProviderId(), realm.getName());
                 continue;

@@ -84,7 +84,7 @@ public class ServerInfoAdminResource {
     @Produces(MediaType.APPLICATION_JSON)
     public ServerInfoRepresentation getInfo() {
         ServerInfoRepresentation info = new ServerInfoRepresentation();
-        info.setSystemInfo(SystemInfoRepresentation.create(session.getKeycloakSessionFactory().getServerStartupTimestamp()));
+        info.setSystemInfo(SystemInfoRepresentation.create(session.getSessionFactory().getServerStartupTimestamp()));
         info.setMemoryInfo(MemoryInfoRepresentation.create());
         info.setProfileInfo(ProfileInfoRepresentation.create());
 
@@ -103,7 +103,7 @@ public class ServerInfoAdminResource {
         info.setComponentTypes(new HashMap<>());
         LinkedHashMap<String, SpiInfoRepresentation> spiReps = new LinkedHashMap<>();
 
-        List<Spi> spis = new LinkedList<>(session.getKeycloakSessionFactory().getSpis());
+        List<Spi> spis = new LinkedList<>(session.getSessionFactory().getSpis());
         Collections.sort(spis, Comparator.comparing(Spi::getName));
 
         for (Spi spi : spis) {
@@ -117,7 +117,7 @@ public class ServerInfoAdminResource {
 
             for (String name : providerIds) {
                 ProviderRepresentation provider = new ProviderRepresentation();
-                ProviderFactory<?> pi = session.getKeycloakSessionFactory().getProviderFactory(spi.getProviderClass(), name);
+                ProviderFactory<?> pi = session.getSessionFactory().getProviderFactory(spi.getProviderClass(), name);
                 provider.setOrder(pi.order());
                 if (ServerInfoAwareProviderFactory.class.isAssignableFrom(pi.getClass())) {
                     provider.setOperationalInfo(((ServerInfoAwareProviderFactory) pi).getOperationalInfo());
@@ -181,7 +181,7 @@ public class ServerInfoAdminResource {
 
     private void setIdentityProviders(ServerInfoRepresentation info) {
         info.setIdentityProviders(new LinkedList<>());
-        List<ProviderFactory> providerFactories = session.getKeycloakSessionFactory().getProviderFactories(IdentityProvider.class);
+        List<ProviderFactory> providerFactories = session.getSessionFactory().getProviderFactories(IdentityProvider.class);
         setIdentityProviders(providerFactories, info.getIdentityProviders(), "User-defined");
     }
 
@@ -199,7 +199,7 @@ public class ServerInfoAdminResource {
 
     private void setClientInstallations(ServerInfoRepresentation info) {
         info.setClientInstallations(new HashMap<>());
-        for (ProviderFactory p : session.getKeycloakSessionFactory().getProviderFactories(ClientInstallationProvider.class)) {
+        for (ProviderFactory p : session.getSessionFactory().getProviderFactories(ClientInstallationProvider.class)) {
             ClientInstallationProvider provider = (ClientInstallationProvider) p;
             List<ClientInstallationRepresentation> types = info.getClientInstallations().get(provider.getProtocol());
             if (types == null) {
@@ -220,7 +220,7 @@ public class ServerInfoAdminResource {
 
     private void setProtocolMapperTypes(ServerInfoRepresentation info) {
         info.setProtocolMapperTypes(new HashMap<>());
-        for (ProviderFactory p : session.getKeycloakSessionFactory().getProviderFactories(ProtocolMapper.class)) {
+        for (ProviderFactory p : session.getSessionFactory().getProviderFactories(ProtocolMapper.class)) {
             ProtocolMapper mapper = (ProtocolMapper) p;
             List<ProtocolMapperTypeRepresentation> types = info.getProtocolMapperTypes().get(mapper.getProtocol());
             if (types == null) {
@@ -242,7 +242,7 @@ public class ServerInfoAdminResource {
 
     private void setBuiltinProtocolMappers(ServerInfoRepresentation info) {
         info.setBuiltinProtocolMappers(new HashMap<>());
-        for (ProviderFactory p : session.getKeycloakSessionFactory().getProviderFactories(LoginProtocol.class)) {
+        for (ProviderFactory p : session.getSessionFactory().getProviderFactories(LoginProtocol.class)) {
             LoginProtocolFactory factory = (LoginProtocolFactory) p;
             List<ProtocolMapperRepresentation> mappers = new LinkedList<>();
             for (ProtocolMapperModel mapper : factory.getBuiltinMappers().values()) {
@@ -254,7 +254,7 @@ public class ServerInfoAdminResource {
 
     private void setPasswordPolicies(ServerInfoRepresentation info) {
         info.setPasswordPolicies(new LinkedList<>());
-        for (ProviderFactory f : session.getKeycloakSessionFactory().getProviderFactories(PasswordPolicyProvider.class)) {
+        for (ProviderFactory f : session.getSessionFactory().getProviderFactories(PasswordPolicyProvider.class)) {
             PasswordPolicyProviderFactory factory = (PasswordPolicyProviderFactory) f;
             PasswordPolicyTypeRepresentation rep = new PasswordPolicyTypeRepresentation();
             rep.setId(factory.getId());

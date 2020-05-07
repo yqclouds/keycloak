@@ -58,6 +58,7 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.RealmsResource;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.CommonClientSessionModel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.w3c.dom.Document;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -132,7 +133,6 @@ public class SamlProtocol implements LoginProtocol {
         if (logoutServiceUrl == null || logoutServiceUrl.trim().equals(""))
             return null;
         return ResourceAdminManager.resolveUri(session, client.getRootUrl(), logoutServiceUrl);
-
     }
 
     @Override
@@ -180,7 +180,7 @@ public class SamlProtocol implements LoginProtocol {
                     URI redirect = builder.buildFromMap(params);
                     return Response.status(302).location(redirect).build();
                 } else {
-                    return ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, translateErrorToIdpInitiatedErrorMessage(error));
+                    return errorPage.error(session, authSession, Response.Status.BAD_REQUEST, translateErrorToIdpInitiatedErrorMessage(error));
                 }
             } else {
                 return samlErrorMessage(
@@ -216,7 +216,7 @@ public class SamlProtocol implements LoginProtocol {
             Document document = builder.buildDocument();
             return buildErrorResponse(isPostBinding, destination, binding, document);
         } catch (Exception e) {
-            return ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.FAILED_TO_PROCESS_RESPONSE);
+            return errorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.FAILED_TO_PROCESS_RESPONSE);
         }
     }
 
@@ -456,7 +456,7 @@ public class SamlProtocol implements LoginProtocol {
             samlDocument = builder.buildDocument(samlModel);
         } catch (Exception e) {
             logger.error("failed", e);
-            return ErrorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.FAILED_TO_PROCESS_RESPONSE);
+            return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.FAILED_TO_PROCESS_RESPONSE);
         }
 
         JaxrsSAML2BindingBuilder bindingBuilder = new JaxrsSAML2BindingBuilder(session);
@@ -482,7 +482,7 @@ public class SamlProtocol implements LoginProtocol {
                 publicKey = SamlProtocolUtils.getEncryptionKey(client);
             } catch (Exception e) {
                 logger.error("failed", e);
-                return ErrorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.FAILED_TO_PROCESS_RESPONSE);
+                return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.FAILED_TO_PROCESS_RESPONSE);
             }
             bindingBuilder.encrypt(publicKey);
         }
@@ -490,7 +490,7 @@ public class SamlProtocol implements LoginProtocol {
             return buildAuthenticatedResponse(clientSession, redirectUri, samlDocument, bindingBuilder);
         } catch (Exception e) {
             logger.error("failed", e);
-            return ErrorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.FAILED_TO_PROCESS_RESPONSE);
+            return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.FAILED_TO_PROCESS_RESPONSE);
         }
     }
 
@@ -575,14 +575,16 @@ public class SamlProtocol implements LoginProtocol {
 
     }
 
+    @Autowired
+    private ErrorPage errorPage;
+
     @Override
     public Response finishLogout(UserSessionModel userSession) {
         logger.debug("finishLogout");
         String logoutBindingUri = userSession.getNote(SAML_LOGOUT_BINDING_URI);
         if (logoutBindingUri == null) {
             logger.error("Can't finish SAML logout as there is no logout binding set.  Please configure the logout service url in the admin console for your client applications.");
-            return ErrorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.FAILED_LOGOUT);
-
+            return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.FAILED_LOGOUT);
         }
         String logoutRelayState = userSession.getNote(SAML_LOGOUT_RELAY_STATE);
         SAML2LogoutResponseBuilder builder = new SAML2LogoutResponseBuilder();
@@ -639,6 +641,9 @@ public class SamlProtocol implements LoginProtocol {
         }
     }
 
+    @Autowired
+    private HttpClientProvider httpClientProvider;
+
     @Override
     public void backchannelLogout(UserSessionModel userSession, AuthenticatedClientSessionModel clientSession) {
         ClientModel client = clientSession.getClient();
@@ -660,7 +665,7 @@ public class SamlProtocol implements LoginProtocol {
             return;
         }
 
-        HttpClient httpClient = session.getBeanFactory().getBean(HttpClientProvider.class).getHttpClient();
+        HttpClient httpClient = httpClientProvider.getHttpClient();
         for (int i = 0; i < 2; i++) { // follow redirects once
             try {
                 List<NameValuePair> formparams = new ArrayList<NameValuePair>();

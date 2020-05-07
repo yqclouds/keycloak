@@ -225,7 +225,7 @@ public class ProtocolMappersResource {
 
     private void validateModel(ProtocolMapperModel model) {
         try {
-            ProtocolMapper mapper = (ProtocolMapper) session.getKeycloakSessionFactory().getProviderFactory(ProtocolMapper.class, model.getProtocolMapper());
+            ProtocolMapper mapper = (ProtocolMapper) session.getSessionFactory().getProviderFactory(ProtocolMapper.class, model.getProtocolMapper());
             if (mapper != null) {
                 mapper.validateConfig(session, realm, client, model);
             } else {

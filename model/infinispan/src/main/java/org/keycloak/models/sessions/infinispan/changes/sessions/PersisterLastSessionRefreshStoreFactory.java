@@ -17,8 +17,6 @@
 
 package org.keycloak.models.sessions.infinispan.changes.sessions;
 
-import org.keycloak.models.KeycloakSession;
-
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
@@ -27,17 +25,16 @@ public class PersisterLastSessionRefreshStoreFactory extends AbstractLastSession
     // Name of periodic task to update DB with lastSessionRefreshes
     public static final String DB_LSR_PERIODIC_TASK_NAME = "db-last-session-refresh";
 
-    public PersisterLastSessionRefreshStore createAndInit(KeycloakSession kcSession, boolean offline) {
-        return createAndInit(kcSession, DEFAULT_TIMER_INTERVAL_MS, DEFAULT_MAX_INTERVAL_BETWEEN_MESSAGES_SECONDS, DEFAULT_MAX_COUNT, offline);
+    public PersisterLastSessionRefreshStore createAndInit(boolean offline) {
+        return createAndInit(DEFAULT_TIMER_INTERVAL_MS, DEFAULT_MAX_INTERVAL_BETWEEN_MESSAGES_SECONDS, DEFAULT_MAX_COUNT, offline);
     }
 
 
-    private PersisterLastSessionRefreshStore createAndInit(KeycloakSession kcSession,
-                                                           long timerIntervalMs, int maxIntervalBetweenMessagesSeconds, int maxCount, boolean offline) {
+    private PersisterLastSessionRefreshStore createAndInit(long timerIntervalMs, int maxIntervalBetweenMessagesSeconds, int maxCount, boolean offline) {
         PersisterLastSessionRefreshStore store = createStoreInstance(maxIntervalBetweenMessagesSeconds, maxCount, offline);
 
         // Setup periodic timer check
-        setupPeriodicTimer(kcSession, store, timerIntervalMs, DB_LSR_PERIODIC_TASK_NAME);
+        setupPeriodicTimer(store, timerIntervalMs, DB_LSR_PERIODIC_TASK_NAME);
 
         return store;
     }

@@ -46,7 +46,7 @@ public class RolePolicyProvider implements PolicyProvider {
         Policy policy = evaluation.getPolicy();
         Set<RolePolicyRepresentation.RoleDefinition> roleIds = representationFunction.apply(policy, evaluation.getAuthorizationProvider()).getRoles();
         AuthorizationProvider authorizationProvider = evaluation.getAuthorizationProvider();
-        RealmModel realm = authorizationProvider.getKeycloakSession().getContext().getRealm();
+        RealmModel realm = authorizationProvider.getSession().getContext().getRealm();
         Identity identity = evaluation.getContext().getIdentity();
 
         for (RolePolicyRepresentation.RoleDefinition roleDefinition : roleIds) {

@@ -74,7 +74,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
     public static <T> List<T> getStorageProviders(KeycloakSession session, RealmModel realm, Class<T> type) {
         List<T> list = new LinkedList<>();
         for (UserStorageProviderModel model : getStorageProviders(realm)) {
-            UserStorageProviderFactory factory = (UserStorageProviderFactory) session.getKeycloakSessionFactory().getProviderFactory(UserStorageProvider.class, model.getProviderId());
+            UserStorageProviderFactory factory = (UserStorageProviderFactory) session.getSessionFactory().getProviderFactory(UserStorageProvider.class, model.getProviderId());
             if (factory == null) {
                 logger.warnv("Configured UserStorageProvider {0} of provider id {1} does not exist in realm {2}", model.getName(), model.getProviderId(), realm.getName());
                 continue;
@@ -92,7 +92,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
         List<T> list = new LinkedList<>();
         for (UserStorageProviderModel model : getStorageProviders(realm)) {
             if (!model.isEnabled()) continue;
-            UserStorageProviderFactory factory = (UserStorageProviderFactory) session.getKeycloakSessionFactory().getProviderFactory(UserStorageProvider.class, model.getProviderId());
+            UserStorageProviderFactory factory = (UserStorageProviderFactory) session.getSessionFactory().getProviderFactory(UserStorageProvider.class, model.getProviderId());
             if (factory == null) {
                 logger.warnv("Configured UserStorageProvider {0} of provider id {1} does not exist in realm {2}", model.getName(), model.getProviderId(), realm.getName());
                 continue;
@@ -116,7 +116,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
         ComponentModel model = realm.getComponent(componentId);
         if (model == null) return null;
         UserStorageProviderModel storageModel = new UserStorageProviderModel(model);
-        UserStorageProviderFactory factory = (UserStorageProviderFactory) session.getKeycloakSessionFactory().getProviderFactory(UserStorageProvider.class, model.getProviderId());
+        UserStorageProviderFactory factory = (UserStorageProviderFactory) session.getSessionFactory().getProviderFactory(UserStorageProvider.class, model.getProviderId());
         if (factory == null) {
             throw new ModelException("Could not find UserStorageProviderFactory for: " + model.getProviderId());
         }
@@ -311,7 +311,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
         if (userCache != null) {
             userCache.evict(realm, user);
         }
-        runJobInTransaction(session.getKeycloakSessionFactory(), new KeycloakSessionTask() {
+        runJobInTransaction(session.getSessionFactory(), new KeycloakSessionTask() {
 
             @Override
             public void run(KeycloakSession session) {

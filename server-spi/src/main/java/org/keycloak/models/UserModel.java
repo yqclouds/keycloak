@@ -158,6 +158,6 @@ public interface UserModel extends RoleMapperModel {
 
         UserModel getUser();
 
-        KeycloakSession getKeycloakSession();
+        KeycloakSession getSession();
     }
 }

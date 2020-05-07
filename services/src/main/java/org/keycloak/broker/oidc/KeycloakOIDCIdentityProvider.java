@@ -111,8 +111,8 @@ public class KeycloakOIDCIdentityProvider extends OIDCIdentityProvider {
                 throw new RuntimeException(e);
             }
             if (!validateAction(action)) return Response.status(400).build();
-            if (action.getKeycloakSessionIds() != null) {
-                for (String sessionId : action.getKeycloakSessionIds()) {
+            if (action.getSessionIds() != null) {
+                for (String sessionId : action.getSessionIds()) {
                     String brokerSessionId = getConfig().getAlias() + "." + sessionId;
                     UserSessionModel userSession = session.sessions().getUserSessionByBrokerSessionId(realm, brokerSessionId);
                     if (userSession != null

@@ -2,6 +2,7 @@ package org.keycloak.authentication;
 
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.KeycloakSession;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -48,30 +49,32 @@ public class ConsoleDisplayMode {
         this.flowContext = flowContext;
     }
 
+    @Autowired
+    private LoginFormsProvider loginFormsProvider;
+
     /**
      * Browser is required to login.  This will abort client from doing a console login.
      *
      * @param session
      * @return
      */
-    public static Response browserRequired(KeycloakSession session) {
+    public Response browserRequired(KeycloakSession session) {
         return Response.status(Response.Status.UNAUTHORIZED)
                 .header("WWW-Authenticate", "X-Text-Form-Challenge browserRequired")
                 .type(MediaType.TEXT_PLAIN)
-                .entity("\n" + session.getBeanFactory().getBean(LoginFormsProvider.class).getMessage("browserRequired") + "\n").build();
+                .entity("\n" + loginFormsProvider.getMessage("browserRequired") + "\n").build();
     }
 
     /**
      * Browser is required to continue login.  This will prompt client on whether to continue with a browser or abort.
      *
-     * @param session
      * @param callback
      * @return
      */
-    public static Response browserContinue(KeycloakSession session, String callback) {
-        String browserContinueMsg = session.getBeanFactory().getBean(LoginFormsProvider.class).getMessage("browserContinue");
-        String browserPrompt = session.getBeanFactory().getBean(LoginFormsProvider.class).getMessage("browserContinuePrompt");
-        String answer = session.getBeanFactory().getBean(LoginFormsProvider.class).getMessage("browserContinueAnswer");
+    public Response browserContinue(String callback) {
+        String browserContinueMsg = loginFormsProvider.getMessage("browserContinue");
+        String browserPrompt = loginFormsProvider.getMessage("browserContinuePrompt");
+        String answer = loginFormsProvider.getMessage("browserContinueAnswer");
 
         String header = "X-Text-Form-Challenge callback=\"" + callback + "\"";
         header += " browserContinue=\"" + browserPrompt + "\" answer=\"" + answer + "\"";

@@ -35,6 +35,7 @@ import org.keycloak.models.UserModel;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.validation.Validation;
 import org.keycloak.sessions.AuthenticationSessionModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -115,6 +116,9 @@ public class ConsoleVerifyEmail implements RequiredActionProvider {
                 .challenge();
     }
 
+    @Autowired
+    private EmailTemplateProvider emailTemplateProvider;
+
     private Response sendVerifyEmail(RequiredActionContext context) throws UriBuilderException, IllegalArgumentException {
         KeycloakSession session = context.getSession();
         UserModel user = context.getUser();
@@ -128,9 +132,7 @@ public class ConsoleVerifyEmail implements RequiredActionProvider {
         attributes.put("code", code);
 
         try {
-            session
-                    .getBeanFactory().getBean(EmailTemplateProvider.class)
-                    .setAuthenticationSession(authSession)
+            emailTemplateProvider.setAuthenticationSession(authSession)
                     .setRealm(realm)
                     .setUser(user)
                     .send("emailVerificationSubject", "email-verification-with-code.ftl", attributes);

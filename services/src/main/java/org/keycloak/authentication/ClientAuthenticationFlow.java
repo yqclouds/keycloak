@@ -59,7 +59,7 @@ public class ClientAuthenticationFlow implements AuthenticationFlow {
         List<AuthenticationExecutionModel> executions = findExecutionsToRun();
 
         for (AuthenticationExecutionModel model : executions) {
-            ClientAuthenticatorFactory factory = (ClientAuthenticatorFactory) processor.getSession().getKeycloakSessionFactory().getProviderFactory(ClientAuthenticator.class, model.getAuthenticator());
+            ClientAuthenticatorFactory factory = (ClientAuthenticatorFactory) processor.getSession().getSessionFactory().getProviderFactory(ClientAuthenticator.class, model.getAuthenticator());
             if (factory == null) {
                 throw new AuthenticationFlowException("Could not find ClientAuthenticatorFactory for: " + model.getAuthenticator(), AuthenticationFlowError.INTERNAL_ERROR);
             }

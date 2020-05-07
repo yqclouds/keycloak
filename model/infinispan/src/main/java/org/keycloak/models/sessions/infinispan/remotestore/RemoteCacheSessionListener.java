@@ -36,6 +36,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.entities.SessionEntity;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
@@ -79,13 +80,18 @@ public class RemoteCacheSessionListener<K, V extends SessionEntity> {
         return listener;
     }
 
+    @Autowired
+    private ExecutorsProvider executorsProvider;
+    @Autowired
+    private InfinispanUtil infinispanUtil;
+
     protected void init(KeycloakSession session, Cache<K, SessionEntityWrapper<V>> cache, RemoteCache<K, SessionEntityWrapper<V>> remoteCache) {
         this.cache = cache;
         this.remoteCache = remoteCache;
 
-        this.topologyInfo = InfinispanUtil.getTopologyInfo(session);
+        this.topologyInfo = infinispanUtil.getTopologyInfo(session);
 
-        ExecutorService executor = session.getBeanFactory().getBean(ExecutorsProvider.class).getExecutor("client-listener-" + cache.getName());
+        ExecutorService executor = executorsProvider.getExecutor("client-listener-" + cache.getName());
         this.executor = new ClientListenerExecutorDecorator<>(executor);
     }
 

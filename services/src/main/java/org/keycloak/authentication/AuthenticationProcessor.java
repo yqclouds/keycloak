@@ -46,6 +46,7 @@ import org.keycloak.services.util.AuthenticationFlowURLHelper;
 import org.keycloak.services.util.CacheControlUtil;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.CommonClientSessionModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -81,8 +82,13 @@ public class AuthenticationProcessor {
     protected String flowId;
     protected String flowPath;
     protected boolean browserFlow;
-    protected BruteForceProtector protector;
     protected Runnable afterResetListener;
+
+    @Autowired
+    private LoginFormsProvider loginFormsProvider;
+    @Autowired
+    protected BruteForceProtector bruteForceProtector;
+
     /**
      * This could be an error message forwarded from another authenticator
      */
@@ -187,10 +193,7 @@ public class AuthenticationProcessor {
     }
 
     public BruteForceProtector getBruteForceProtector() {
-        if (protector == null) {
-            protector = session.getBeanFactory().getBean(BruteForceProtector.class);
-        }
-        return protector;
+        return bruteForceProtector;
     }
 
     public RealmModel getRealm() {
@@ -370,44 +373,47 @@ public class AuthenticationProcessor {
     }
 
     public Response handleBrowserExceptionList(AuthenticationFlowException e) {
-        LoginFormsProvider forms = session.getBeanFactory().getBean(LoginFormsProvider.class).setAuthenticationSession(authenticationSession);
+        LoginFormsProvider loginFormsProvider = this.loginFormsProvider.setAuthenticationSession(authenticationSession);
         ServicesLogger.LOGGER.failedAuthentication(e);
-        forms.addError(new FormMessage(Messages.UNEXPECTED_ERROR_HANDLING_REQUEST));
+        loginFormsProvider.addError(new FormMessage(Messages.UNEXPECTED_ERROR_HANDLING_REQUEST));
         for (AuthenticationFlowException afe : e.getAfeList()) {
             ServicesLogger.LOGGER.failedAuthentication(afe);
             switch (afe.getError()) {
                 case INVALID_USER:
                     event.error(Errors.USER_NOT_FOUND);
-                    forms.addError(new FormMessage(Messages.INVALID_USER));
+                    loginFormsProvider.addError(new FormMessage(Messages.INVALID_USER));
                     break;
                 case USER_DISABLED:
                     event.error(Errors.USER_DISABLED);
-                    forms.addError(new FormMessage(Messages.ACCOUNT_DISABLED));
+                    loginFormsProvider.addError(new FormMessage(Messages.ACCOUNT_DISABLED));
                     break;
                 case USER_TEMPORARILY_DISABLED:
                     event.error(Errors.USER_TEMPORARILY_DISABLED);
-                    forms.addError(new FormMessage(Messages.INVALID_USER));
+                    loginFormsProvider.addError(new FormMessage(Messages.INVALID_USER));
                     break;
                 case INVALID_CLIENT_SESSION:
                     event.error(Errors.INVALID_CODE);
-                    forms.addError(new FormMessage(Messages.INVALID_CODE));
+                    loginFormsProvider.addError(new FormMessage(Messages.INVALID_CODE));
                     break;
                 case EXPIRED_CODE:
                     event.error(Errors.EXPIRED_CODE);
-                    forms.addError(new FormMessage(Messages.EXPIRED_CODE));
+                    loginFormsProvider.addError(new FormMessage(Messages.EXPIRED_CODE));
                     break;
                 case DISPLAY_NOT_SUPPORTED:
                     event.error(Errors.DISPLAY_UNSUPPORTED);
-                    forms.addError(new FormMessage(Messages.DISPLAY_UNSUPPORTED));
+                    loginFormsProvider.addError(new FormMessage(Messages.DISPLAY_UNSUPPORTED));
                     break;
                 case CREDENTIAL_SETUP_REQUIRED:
                     event.error(Errors.INVALID_USER_CREDENTIALS);
-                    forms.addError(new FormMessage(Messages.CREDENTIAL_SETUP_REQUIRED));
+                    loginFormsProvider.addError(new FormMessage(Messages.CREDENTIAL_SETUP_REQUIRED));
                     break;
             }
         }
-        return forms.createErrorPage(Response.Status.BAD_REQUEST);
+        return loginFormsProvider.createErrorPage(Response.Status.BAD_REQUEST);
     }
+
+    @Autowired
+    private ErrorPage errorPage;
 
     public Response handleBrowserException(Exception failure) {
         if (failure instanceof AuthenticationFlowException) {
@@ -420,29 +426,29 @@ public class AuthenticationProcessor {
                 ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.USER_NOT_FOUND);
                 if (e.getResponse() != null) return e.getResponse();
-                return ErrorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.INVALID_USER);
+                return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.INVALID_USER);
             } else if (e.getError() == AuthenticationFlowError.USER_DISABLED) {
                 ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.USER_DISABLED);
                 if (e.getResponse() != null) return e.getResponse();
-                return ErrorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.ACCOUNT_DISABLED);
+                return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.ACCOUNT_DISABLED);
             } else if (e.getError() == AuthenticationFlowError.USER_TEMPORARILY_DISABLED) {
                 ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.USER_TEMPORARILY_DISABLED);
                 if (e.getResponse() != null) return e.getResponse();
-                return ErrorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.INVALID_USER);
+                return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.INVALID_USER);
 
             } else if (e.getError() == AuthenticationFlowError.INVALID_CLIENT_SESSION) {
                 ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.INVALID_CODE);
                 if (e.getResponse() != null) return e.getResponse();
-                return ErrorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.INVALID_CODE);
+                return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.INVALID_CODE);
 
             } else if (e.getError() == AuthenticationFlowError.EXPIRED_CODE) {
                 ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.EXPIRED_CODE);
                 if (e.getResponse() != null) return e.getResponse();
-                return ErrorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.EXPIRED_CODE);
+                return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.EXPIRED_CODE);
 
             } else if (e.getError() == AuthenticationFlowError.FORK_FLOW) {
                 ForkFlowException reset = (ForkFlowException) e;
@@ -451,7 +457,7 @@ public class AuthenticationProcessor {
 
                 clone.setAction(AuthenticationSessionModel.Action.AUTHENTICATE.name());
                 setAuthenticationSession(clone);
-                session.getBeanFactory().getBean(LoginFormsProvider.class).setAuthenticationSession(clone);
+                loginFormsProvider.setAuthenticationSession(clone);
 
                 AuthenticationProcessor processor = new AuthenticationProcessor();
                 processor.setAuthenticationSession(clone)
@@ -473,23 +479,23 @@ public class AuthenticationProcessor {
                 ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.DISPLAY_UNSUPPORTED);
                 if (e.getResponse() != null) return e.getResponse();
-                return ErrorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.DISPLAY_UNSUPPORTED);
+                return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.DISPLAY_UNSUPPORTED);
             } else if (e.getError() == AuthenticationFlowError.CREDENTIAL_SETUP_REQUIRED) {
                 ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.INVALID_USER_CREDENTIALS);
                 if (e.getResponse() != null) return e.getResponse();
-                return ErrorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.CREDENTIAL_SETUP_REQUIRED);
+                return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.CREDENTIAL_SETUP_REQUIRED);
             } else {
                 ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.INVALID_USER_CREDENTIALS);
                 if (e.getResponse() != null) return e.getResponse();
-                return ErrorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.INVALID_USER);
+                return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.INVALID_USER);
             }
 
         } else {
             ServicesLogger.LOGGER.failedAuthentication(failure);
             event.error(Errors.INVALID_USER_CREDENTIALS);
-            return ErrorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.UNEXPECTED_ERROR_HANDLING_REQUEST);
+            return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.UNEXPECTED_ERROR_HANDLING_REQUEST);
         }
 
     }
@@ -669,12 +675,14 @@ public class AuthenticationProcessor {
         AuthenticationManager.evaluateRequiredActionTriggers(session, authenticationSession, connection, request, uriInfo, event, realm, authenticationSession.getAuthenticatedUser());
     }
 
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
     public Response finishAuthentication(LoginProtocol protocol) {
         event.success();
         RealmModel realm = authenticationSession.getRealm();
         ClientSessionContext clientSessionCtx = attachSession();
-        return AuthenticationManager.redirectAfterSuccessfulFlow(session, realm, userSession, clientSessionCtx, request, uriInfo, connection, event, authenticationSession, protocol);
-
+        return authenticationManager.redirectAfterSuccessfulFlow(session, realm, userSession, clientSessionCtx, request, uriInfo, connection, event, authenticationSession, protocol);
     }
 
     public void validateUser(UserModel authenticatedUser) {
@@ -694,7 +702,7 @@ public class AuthenticationProcessor {
             return AuthenticationManager.redirectToRequiredActions(session, realm, authenticationSession, uriInfo, nextRequiredAction);
         } else {
             event.detail(Details.CODE_ID, authenticationSession.getParentSession().getId());  // todo This should be set elsewhere.  find out why tests fail.  Don't know where this is supposed to be set
-            return AuthenticationManager.finishedRequiredActions(session, authenticationSession, userSession, connection, request, uriInfo, event);
+            return authenticationManager.finishedRequiredActions(session, authenticationSession, userSession, connection, request, uriInfo, event);
         }
     }
 
@@ -744,7 +752,7 @@ public class AuthenticationProcessor {
         public AuthenticationExecutionModel.Requirement getCategoryRequirementFromCurrentFlow(String authenticatorCategory) {
             List<AuthenticationExecutionModel> executions = realm.getAuthenticationExecutions(execution.getParentFlow());
             for (AuthenticationExecutionModel exe : executions) {
-                AuthenticatorFactory factory = (AuthenticatorFactory) getSession().getKeycloakSessionFactory().getProviderFactory(Authenticator.class, exe.getAuthenticator());
+                AuthenticatorFactory factory = (AuthenticatorFactory) getSession().getSessionFactory().getProviderFactory(Authenticator.class, exe.getAuthenticator());
                 if (factory != null && factory.getReferenceCategory().equals(authenticatorCategory)) {
                     return exe.getRequirement();
                 }
@@ -938,11 +946,14 @@ public class AuthenticationProcessor {
             return error;
         }
 
+        @Autowired
+        private LoginFormsProvider loginFormsProvider;
+
         @Override
         public LoginFormsProvider form() {
             String accessCode = generateAccessCode();
             URI action = getActionUrl(accessCode);
-            LoginFormsProvider provider = getSession().getBeanFactory().getBean(LoginFormsProvider.class)
+            LoginFormsProvider loginFormsProvider = this.loginFormsProvider
                     .setAuthContext(this)
                     .setAuthenticationSession(getAuthenticationSession())
                     .setUser(getUser())
@@ -951,11 +962,11 @@ public class AuthenticationProcessor {
                     .setFormData(request.getDecodedFormParameters())
                     .setClientSessionCode(accessCode);
             if (getForwardedErrorMessage() != null) {
-                provider.addError(getForwardedErrorMessage());
+                loginFormsProvider.addError(getForwardedErrorMessage());
             } else if (getForwardedSuccessMessage() != null) {
-                provider.addSuccess(getForwardedSuccessMessage());
+                loginFormsProvider.addSuccess(getForwardedSuccessMessage());
             }
-            return provider;
+            return loginFormsProvider;
         }
 
         @Override

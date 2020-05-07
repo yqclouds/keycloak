@@ -49,6 +49,7 @@ import org.keycloak.services.validation.PairwiseClientValidator;
 import org.keycloak.services.validation.ValidationMessages;
 import org.keycloak.utils.ReservedCharValidator;
 import org.keycloak.validation.ClientValidationUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -107,6 +108,11 @@ public class ClientResource {
         return mappers;
     }
 
+    @Autowired
+    private ClientValidationUtil clientValidationUtil;
+    @Autowired
+    private PairwiseClientValidator pairwiseClientValidator;
+
     /**
      * Update the client
      *
@@ -119,7 +125,7 @@ public class ClientResource {
         auth.clients().requireConfigure(client);
 
         ValidationMessages validationMessages = new ValidationMessages();
-        if (!ClientValidator.validate(rep, validationMessages) || !PairwiseClientValidator.validate(session, rep, validationMessages)) {
+        if (!ClientValidator.validate(rep, validationMessages) || !pairwiseClientValidator.validate(session, rep, validationMessages)) {
             Properties messages = AdminRoot.getMessages(session, realm, auth.adminAuth().getToken().getLocale());
             throw new ErrorResponseException(
                     validationMessages.getStringMessages(),
@@ -131,7 +137,7 @@ public class ClientResource {
         try {
             updateClientFromRep(rep, client, session);
 
-            ClientValidationUtil.validate(session, client, false, c -> {
+            clientValidationUtil.validate(session, client, false, c -> {
                 session.getTransactionManager().setRollbackOnly();
                 throw new ErrorResponseException(Errors.INVALID_INPUT, c.getError(), Response.Status.BAD_REQUEST);
             });
@@ -142,6 +148,9 @@ public class ClientResource {
             return ErrorResponse.exists("Client already exists");
         }
     }
+
+    @Autowired
+    private ModelToRepresentation modelToRepresentation;
 
     /**
      * Get representation of the client
@@ -154,7 +163,7 @@ public class ClientResource {
     public ClientRepresentation getClient() {
         auth.clients().requireView(client);
 
-        ClientRepresentation representation = ModelToRepresentation.toRepresentation(client, session);
+        ClientRepresentation representation = modelToRepresentation.toRepresentation(client, session);
 
         representation.setAccess(auth.clients().getAccess(client));
 
@@ -232,7 +241,7 @@ public class ClientResource {
 
         String token = ClientRegistrationTokenUtils.updateRegistrationAccessToken(session, realm, client, RegistrationAuth.AUTHENTICATED);
 
-        ClientRepresentation rep = ModelToRepresentation.toRepresentation(client, session);
+        ClientRepresentation rep = modelToRepresentation.toRepresentation(client, session);
         rep.setRegistrationAccessToken(token);
 
         adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).representation(rep).success();

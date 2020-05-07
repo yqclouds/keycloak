@@ -32,6 +32,7 @@ import org.keycloak.models.cache.infinispan.events.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.storage.StorageId;
 import org.keycloak.storage.client.ClientStorageProviderModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
@@ -101,7 +102,7 @@ public class RealmCacheSession implements CacheRealmProvider {
 
     public static final String REALM_CLIENTS_QUERY_SUFFIX = ".realm.clients";
     public static final String ROLES_QUERY_SUFFIX = ".roles";
-    protected static final Logger logger = Logger.getLogger(RealmCacheSession.class);
+    protected static final Logger LOG = Logger.getLogger(RealmCacheSession.class);
     protected long startupRevision;
     protected RealmCacheManager realmCache;
     protected KeycloakSession session;
@@ -119,29 +120,30 @@ public class RealmCacheSession implements CacheRealmProvider {
     protected Set<InvalidationEvent> invalidationEvents = new HashSet<>(); // Events to be sent across cluster
     protected boolean clearAll;
 
+    @Autowired
+    private InfinispanConnectionProvider connectionProvider;
+    @Autowired
+    private ClusterProvider clusterProvider;
+
     public RealmCacheSession(KeycloakSession session) {
         this.session = session;
     }
 
     @PostConstruct
     public void afterPropertiesSet() {
-        Cache<String, Revisioned> cache = session.getBeanFactory().getBean(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.REALM_CACHE_NAME);
-        Cache<String, Long> revisions = session.getBeanFactory().getBean(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.REALM_REVISIONS_CACHE_NAME);
+        Cache<String, Revisioned> cache = connectionProvider.getCache(InfinispanConnectionProvider.REALM_CACHE_NAME);
+        Cache<String, Long> revisions = connectionProvider.getCache(InfinispanConnectionProvider.REALM_REVISIONS_CACHE_NAME);
         realmCache = new RealmCacheManager(cache, revisions);
-
-        ClusterProvider cluster = session.getBeanFactory().getBean(ClusterProvider.class);
-        cluster.registerListener(REALM_INVALIDATION_EVENTS, (ClusterEvent event) -> {
-
+        clusterProvider.registerListener(REALM_INVALIDATION_EVENTS, (ClusterEvent event) -> {
             InvalidationEvent invalidationEvent = (InvalidationEvent) event;
             realmCache.invalidationEventReceived(invalidationEvent);
-
         });
 
-        cluster.registerListener(REALM_CLEAR_CACHE_EVENTS, (ClusterEvent event) -> {
+        clusterProvider.registerListener(REALM_CLEAR_CACHE_EVENTS, (ClusterEvent event) -> {
             realmCache.clear();
         });
 
-        logger.debug("Registered cluster listeners");
+        LOG.debug("Registered cluster listeners");
 
         this.startupRevision = realmCache.getCurrentCounter();
         session.getTransactionManager().enlistPrepare(getPrepareTransaction());
@@ -186,8 +188,7 @@ public class RealmCacheSession implements CacheRealmProvider {
 
     @Override
     public void clear() {
-        ClusterProvider cluster = session.getBeanFactory().getBean(ClusterProvider.class);
-        cluster.notify(REALM_CLEAR_CACHE_EVENTS, new ClearCacheEvent(), false, ClusterProvider.DCNotify.ALL_DCS);
+        clusterProvider.notify(REALM_CLEAR_CACHE_EVENTS, new ClearCacheEvent(), false, ClusterProvider.DCNotify.ALL_DCS);
     }
 
     @Override
@@ -279,8 +280,6 @@ public class RealmCacheSession implements CacheRealmProvider {
                 role.invalidate();
                 continue;
             }
-
-
         }
     }
 
@@ -437,7 +436,7 @@ public class RealmCacheSession implements CacheRealmProvider {
     public RealmModel getRealm(String id) {
         CachedRealm cached = realmCache.get(id, CachedRealm.class);
         if (cached != null) {
-            logger.tracev("by id cache hit: {0}", cached.getName());
+            LOG.tracev("by id cache hit: {0}", cached.getName());
         }
         boolean wasCached = false;
         if (cached == null) {
@@ -462,11 +461,11 @@ public class RealmCacheSession implements CacheRealmProvider {
                 }
 
                 @Override
-                public KeycloakSession getKeycloakSession() {
+                public KeycloakSession getSession() {
                     return session;
                 }
             };
-            session.getKeycloakSessionFactory().publish(event);
+            session.getSessionFactory().publish(event);
         }
         managedRealms.put(id, adapter);
         return adapter;
@@ -477,7 +476,7 @@ public class RealmCacheSession implements CacheRealmProvider {
         String cacheKey = getRealmByNameCacheKey(name);
         RealmListQuery query = realmCache.get(cacheKey, RealmListQuery.class);
         if (query != null) {
-            logger.tracev("realm by name cache hit: {0}", name);
+            LOG.tracev("realm by name cache hit: {0}", name);
         }
         if (query == null) {
             Long loaded = realmCache.getCurrentRevision(cacheKey);
@@ -550,7 +549,7 @@ public class RealmCacheSession implements CacheRealmProvider {
     }
 
     private ClientModel addedClient(RealmModel realm, ClientModel client) {
-        logger.trace("added Client.....");
+        LOG.trace("added Client.....");
 
         invalidateClient(client.getId());
         // this is needed so that a client that hasn't been committed isn't cached in a query
@@ -631,7 +630,7 @@ public class RealmCacheSession implements CacheRealmProvider {
 
         RoleListQuery query = realmCache.get(cacheKey, RoleListQuery.class);
         if (query != null) {
-            logger.tracev("getRealmRoles cache hit: {0}", realm.getName());
+            LOG.tracev("getRealmRoles cache hit: {0}", realm.getName());
         }
 
         if (query == null) {
@@ -641,7 +640,7 @@ public class RealmCacheSession implements CacheRealmProvider {
             Set<String> ids = new HashSet<>();
             for (RoleModel role : model) ids.add(role.getId());
             query = new RoleListQuery(loaded, cacheKey, realm, ids);
-            logger.tracev("adding realm roles cache miss: realm {0} key {1}", realm.getName(), cacheKey);
+            LOG.tracev("adding realm roles cache miss: realm {0} key {1}", realm.getName(), cacheKey);
             realmCache.addRevisioned(query, startupRevision);
             return model;
         }
@@ -667,7 +666,7 @@ public class RealmCacheSession implements CacheRealmProvider {
 
         RoleListQuery query = realmCache.get(cacheKey, RoleListQuery.class);
         if (query != null) {
-            logger.tracev("getClientRoles cache hit: {0}", client.getClientId());
+            LOG.tracev("getClientRoles cache hit: {0}", client.getClientId());
         }
 
         if (query == null) {
@@ -677,7 +676,7 @@ public class RealmCacheSession implements CacheRealmProvider {
             Set<String> ids = new HashSet<>();
             for (RoleModel role : model) ids.add(role.getId());
             query = new RoleListQuery(loaded, cacheKey, realm, ids, client.getClientId());
-            logger.tracev("adding client roles cache miss: client {0} key {1}", client.getClientId(), cacheKey);
+            LOG.tracev("adding client roles cache miss: client {0} key {1}", client.getClientId(), cacheKey);
             realmCache.addRevisioned(query, startupRevision);
             return model;
         }
@@ -736,7 +735,7 @@ public class RealmCacheSession implements CacheRealmProvider {
 
         RoleListQuery query = realmCache.get(cacheKey, RoleListQuery.class);
         if (query != null) {
-            logger.tracev("getRealmRole cache hit: {0}.{1}", realm.getName(), name);
+            LOG.tracev("getRealmRole cache hit: {0}.{1}", realm.getName(), name);
         }
 
         if (query == null) {
@@ -744,7 +743,7 @@ public class RealmCacheSession implements CacheRealmProvider {
             RoleModel model = getRealmDelegate().getRealmRole(realm, name);
             if (model == null) return null;
             query = new RoleListQuery(loaded, cacheKey, realm, model.getId());
-            logger.tracev("adding realm role cache miss: client {0} key {1}", realm.getName(), cacheKey);
+            LOG.tracev("adding realm role cache miss: client {0} key {1}", realm.getName(), cacheKey);
             realmCache.addRevisioned(query, startupRevision);
             return model;
         }
@@ -766,7 +765,7 @@ public class RealmCacheSession implements CacheRealmProvider {
 
         RoleListQuery query = realmCache.get(cacheKey, RoleListQuery.class);
         if (query != null) {
-            logger.tracev("getClientRole cache hit: {0}.{1}", client.getClientId(), name);
+            LOG.tracev("getClientRole cache hit: {0}.{1}", client.getClientId(), name);
         }
 
         if (query == null) {
@@ -774,7 +773,7 @@ public class RealmCacheSession implements CacheRealmProvider {
             RoleModel model = getRealmDelegate().getClientRole(realm, client, name);
             if (model == null) return null;
             query = new RoleListQuery(loaded, cacheKey, realm, model.getId(), client.getClientId());
-            logger.tracev("adding client role cache miss: client {0} key {1}", client.getClientId(), cacheKey);
+            LOG.tracev("adding client role cache miss: client {0} key {1}", client.getClientId(), cacheKey);
             realmCache.addRevisioned(query, startupRevision);
             return model;
         }
@@ -871,7 +870,7 @@ public class RealmCacheSession implements CacheRealmProvider {
 
         GroupListQuery query = realmCache.get(cacheKey, GroupListQuery.class);
         if (query != null) {
-            logger.tracev("getGroups cache hit: {0}", realm.getName());
+            LOG.tracev("getGroups cache hit: {0}", realm.getName());
         }
 
         if (query == null) {
@@ -881,7 +880,7 @@ public class RealmCacheSession implements CacheRealmProvider {
             Set<String> ids = new HashSet<>();
             for (GroupModel client : model) ids.add(client.getId());
             query = new GroupListQuery(loaded, cacheKey, realm, ids);
-            logger.tracev("adding realm getGroups cache miss: realm {0} key {1}", realm.getName(), cacheKey);
+            LOG.tracev("adding realm getGroups cache miss: realm {0} key {1}", realm.getName(), cacheKey);
             realmCache.addRevisioned(query, startupRevision);
             return model;
         }
@@ -930,7 +929,7 @@ public class RealmCacheSession implements CacheRealmProvider {
 
         GroupListQuery query = realmCache.get(cacheKey, GroupListQuery.class);
         if (query != null) {
-            logger.tracev("getTopLevelGroups cache hit: {0}", realm.getName());
+            LOG.tracev("getTopLevelGroups cache hit: {0}", realm.getName());
         }
 
         if (query == null) {
@@ -940,7 +939,7 @@ public class RealmCacheSession implements CacheRealmProvider {
             Set<String> ids = new HashSet<>();
             for (GroupModel client : model) ids.add(client.getId());
             query = new GroupListQuery(loaded, cacheKey, realm, ids);
-            logger.tracev("adding realm getTopLevelGroups cache miss: realm {0} key {1}", realm.getName(), cacheKey);
+            LOG.tracev("adding realm getTopLevelGroups cache miss: realm {0} key {1}", realm.getName(), cacheKey);
             realmCache.addRevisioned(query, startupRevision);
             return model;
         }
@@ -969,7 +968,7 @@ public class RealmCacheSession implements CacheRealmProvider {
 
         GroupListQuery query = realmCache.get(cacheKey, GroupListQuery.class);
         if (Objects.nonNull(query)) {
-            logger.tracev("getTopLevelGroups cache hit: {0}", realm.getName());
+            LOG.tracev("getTopLevelGroups cache hit: {0}", realm.getName());
         }
 
         if (Objects.isNull(query)) {
@@ -979,7 +978,7 @@ public class RealmCacheSession implements CacheRealmProvider {
             Set<String> ids = new HashSet<>();
             for (GroupModel client : model) ids.add(client.getId());
             query = new GroupListQuery(loaded, cacheKey, realm, ids);
-            logger.tracev("adding realm getTopLevelGroups cache miss: realm {0} key {1}", realm.getName(), cacheKey);
+            LOG.tracev("adding realm getTopLevelGroups cache miss: realm {0} key {1}", realm.getName(), cacheKey);
             realmCache.addRevisioned(query, startupRevision);
             return model;
         }
@@ -1064,7 +1063,7 @@ public class RealmCacheSession implements CacheRealmProvider {
             cached = null;
         }
         if (cached != null) {
-            logger.tracev("client by id cache hit: {0}", cached.getClientId());
+            LOG.tracev("client by id cache hit: {0}", cached.getClientId());
         }
 
         if (cached == null) {
@@ -1153,7 +1152,7 @@ public class RealmCacheSession implements CacheRealmProvider {
         String id = null;
 
         if (query != null) {
-            logger.tracev("client by name cache hit: {0}", clientId);
+            LOG.tracev("client by name cache hit: {0}", clientId);
         }
 
         if (query == null) {
@@ -1163,7 +1162,7 @@ public class RealmCacheSession implements CacheRealmProvider {
             if (invalidations.contains(model.getId())) return model;
             id = model.getId();
             query = new ClientListQuery(loaded, cacheKey, realm, id);
-            logger.tracev("adding client by name cache miss: {0}", clientId);
+            LOG.tracev("adding client by name cache miss: {0}", clientId);
             realmCache.addRevisioned(query, startupRevision);
         } else if (invalidations.contains(cacheKey)) {
             return getClientDelegate().getClientByClientId(clientId, realm);

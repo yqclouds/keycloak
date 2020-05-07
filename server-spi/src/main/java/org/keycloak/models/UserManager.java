@@ -34,7 +34,7 @@ public class UserManager {
 
     public boolean removeUser(RealmModel realm, UserModel user, UserProvider userProvider) {
         if (userProvider.removeUser(realm, user)) {
-            session.getKeycloakSessionFactory().publish(new UserModel.UserRemovedEvent() {
+            session.getSessionFactory().publish(new UserModel.UserRemovedEvent() {
 
                 @Override
                 public RealmModel getRealm() {
@@ -47,7 +47,7 @@ public class UserManager {
                 }
 
                 @Override
-                public KeycloakSession getKeycloakSession() {
+                public KeycloakSession getSession() {
                     return session;
                 }
 

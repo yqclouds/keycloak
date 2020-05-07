@@ -116,7 +116,7 @@ public class AuthenticationManagementResource {
     public List<Map<String, Object>> getFormProviders() {
         auth.realm().requireViewRealm();
 
-        List<ProviderFactory> factories = session.getKeycloakSessionFactory().getProviderFactories(FormAuthenticator.class);
+        List<ProviderFactory> factories = session.getSessionFactory().getProviderFactories(FormAuthenticator.class);
         return buildProviderMetadata(factories);
     }
 
@@ -132,7 +132,7 @@ public class AuthenticationManagementResource {
     public List<Map<String, Object>> getAuthenticatorProviders() {
         auth.realm().requireViewRealm();
 
-        List<ProviderFactory> factories = session.getKeycloakSessionFactory().getProviderFactories(Authenticator.class);
+        List<ProviderFactory> factories = session.getSessionFactory().getProviderFactories(Authenticator.class);
         return buildProviderMetadata(factories);
     }
 
@@ -148,7 +148,7 @@ public class AuthenticationManagementResource {
     public List<Map<String, Object>> getClientAuthenticatorProviders() {
         auth.realm().requireViewClientAuthenticatorProviders();
 
-        List<ProviderFactory> factories = session.getKeycloakSessionFactory().getProviderFactories(ClientAuthenticator.class);
+        List<ProviderFactory> factories = session.getSessionFactory().getProviderFactories(ClientAuthenticator.class);
         return buildProviderMetadata(factories);
     }
 
@@ -178,7 +178,7 @@ public class AuthenticationManagementResource {
     public List<Map<String, Object>> getFormActionProviders() {
         auth.realm().requireViewRealm();
 
-        List<ProviderFactory> factories = session.getKeycloakSessionFactory().getProviderFactories(FormAction.class);
+        List<ProviderFactory> factories = session.getSessionFactory().getProviderFactories(FormAction.class);
         return buildProviderMetadata(factories);
     }
 
@@ -428,11 +428,11 @@ public class AuthenticationManagementResource {
         // make sure provider is one of the registered providers
         ProviderFactory f;
         if (parentFlow.getProviderId().equals(AuthenticationFlow.CLIENT_FLOW)) {
-            f = session.getKeycloakSessionFactory().getProviderFactory(ClientAuthenticator.class, provider);
+            f = session.getSessionFactory().getProviderFactory(ClientAuthenticator.class, provider);
         } else if (parentFlow.getProviderId().equals(AuthenticationFlow.FORM_FLOW)) {
-            f = session.getKeycloakSessionFactory().getProviderFactory(FormAction.class, provider);
+            f = session.getSessionFactory().getProviderFactory(FormAction.class, provider);
         } else {
-            f = session.getKeycloakSessionFactory().getProviderFactory(Authenticator.class, provider);
+            f = session.getSessionFactory().getProviderFactory(Authenticator.class, provider);
         }
         if (f == null) {
             throw new BadRequestException("No authentication provider found for id: " + provider);
@@ -822,7 +822,7 @@ public class AuthenticationManagementResource {
     public List<Map<String, String>> getUnregisteredRequiredActions() {
         auth.realm().requireViewRealm();
 
-        List<ProviderFactory> factories = session.getKeycloakSessionFactory().getProviderFactories(RequiredActionProvider.class);
+        List<ProviderFactory> factories = session.getSessionFactory().getProviderFactories(RequiredActionProvider.class);
         List<Map<String, String>> unregisteredList = new LinkedList<>();
         for (ProviderFactory factory : factories) {
             RequiredActionFactory requiredActionFactory = (RequiredActionFactory) factory;
@@ -1074,7 +1074,7 @@ public class AuthenticationManagementResource {
     public Map<String, List<ConfigPropertyRepresentation>> getPerClientConfigDescription() {
         auth.realm().requireViewClientAuthenticatorProviders();
 
-        List<ProviderFactory> factories = session.getKeycloakSessionFactory().getProviderFactories(ClientAuthenticator.class);
+        List<ProviderFactory> factories = session.getSessionFactory().getProviderFactories(ClientAuthenticator.class);
 
         Map<String, List<ConfigPropertyRepresentation>> toReturn = new HashMap<>();
         for (ProviderFactory clientAuthenticatorFactory : factories) {

@@ -130,7 +130,7 @@ public class OTPFormAuthenticator extends AbstractUsernameFormAuthenticator impl
     }
 
     public List<RequiredActionFactory> getRequiredActions(KeycloakSession session) {
-        return Collections.singletonList((UpdateTotp) session.getKeycloakSessionFactory().getProviderFactory(RequiredActionProvider.class, UserModel.RequiredAction.CONFIGURE_TOTP.name()));
+        return Collections.singletonList((UpdateTotp) session.getSessionFactory().getProviderFactory(RequiredActionProvider.class, UserModel.RequiredAction.CONFIGURE_TOTP.name()));
     }
 
     @Override

@@ -23,6 +23,7 @@ import org.keycloak.credential.UserCredentialStore;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
 
@@ -46,9 +47,12 @@ public class JpaUserCredentialStoreFactory implements ProviderFactory<UserCreden
         return "jpa";
     }
 
+    @Autowired
+    private JpaConnectionProvider connectionProvider;
+
     @Override
     public UserCredentialStore create(KeycloakSession session) {
-        EntityManager em = session.getBeanFactory().getBean(JpaConnectionProvider.class).getEntityManager();
+        EntityManager em = connectionProvider.getEntityManager();
         return new JpaUserCredentialStore(session, em);
     }
 

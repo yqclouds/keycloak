@@ -180,7 +180,7 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
         try {
             // Update each existing group to be synced in its own inner transaction to prevent race condition when
             // the groups intended to be updated was already deleted via other channel in the meantime
-            KeycloakModelUtils.runJobInTransaction(ldapProvider.getSession().getKeycloakSessionFactory(), session -> {
+            KeycloakModelUtils.runJobInTransaction(ldapProvider.getSession().getSessionFactory(), session -> {
                 updateAttributesOfKCGroup(kcExistingGroup, groupEntry.getValue());
                 syncResult.increaseUpdated();
                 visitedGroupIds.add(kcExistingGroup.getId());
@@ -197,7 +197,7 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
         try {
             // Create each non-existing group to be synced in its own inner transaction to prevent race condition when
             // the roup intended to be created was already created via other channel in the meantime
-            KeycloakModelUtils.runJobInTransaction(ldapProvider.getSession().getKeycloakSessionFactory(), session -> {
+            KeycloakModelUtils.runJobInTransaction(ldapProvider.getSession().getSessionFactory(), session -> {
                 RealmModel innerTransactionRealm = session.realms().getRealm(realm.getId());
                 GroupModel kcGroup = innerTransactionRealm.createGroup(groupName);
                 updateAttributesOfKCGroup(kcGroup, groupEntry.getValue());
@@ -240,7 +240,7 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
         Set<Map.Entry<String, LDAPObject>> entries = ldapGroupsMap.entrySet();
         for (Iterator<Map.Entry<String, LDAPObject>> it = entries.iterator(); it.hasNext(); ) {
 
-            KeycloakModelUtils.runJobInTransaction(ldapProvider.getSession().getKeycloakSessionFactory(), session -> {
+            KeycloakModelUtils.runJobInTransaction(ldapProvider.getSession().getSessionFactory(), session -> {
 
                 // KEYCLOAK-8253 The retrieval of the current realm to operate at, was intentionally left
                 // outside the following for loop! This prevents the scenario, when LDAP group sync time

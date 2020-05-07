@@ -37,6 +37,7 @@ import org.keycloak.services.validation.ClientValidator;
 import org.keycloak.services.validation.PairwiseClientValidator;
 import org.keycloak.services.validation.ValidationMessages;
 import org.keycloak.validation.ClientValidationUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -71,6 +72,9 @@ public class ClientsResource {
 
     }
 
+    @Autowired
+    private ModelToRepresentation modelToRepresentation;
+
     /**
      * Get clients belonging to the realm
      * <p>
@@ -98,7 +102,7 @@ public class ClientsResource {
             boolean view = auth.clients().canView();
             for (ClientModel clientModel : clientModels) {
                 if (view || auth.clients().canView(clientModel)) {
-                    ClientRepresentation representation = ModelToRepresentation.toRepresentation(clientModel, session);
+                    ClientRepresentation representation = modelToRepresentation.toRepresentation(clientModel, session);
                     rep.add(representation);
                     representation.setAccess(auth.clients().getAccess(clientModel));
                 } else if (!viewableOnly && auth.clients().canView(clientModel)) {
@@ -122,7 +126,7 @@ public class ClientsResource {
             if (clientModels != null) {
                 for (ClientModel clientModel : clientModels) {
                     if (auth.clients().canView(clientModel)) {
-                        ClientRepresentation representation = ModelToRepresentation.toRepresentation(clientModel, session);
+                        ClientRepresentation representation = modelToRepresentation.toRepresentation(clientModel, session);
                         representation.setAccess(auth.clients().getAccess(clientModel));
                         rep.add(representation);
                     } else if (!viewableOnly && auth.clients().canView(clientModel)) {
@@ -142,6 +146,11 @@ public class ClientsResource {
         return new AuthorizationService(session, clientModel, auth, adminEvent);
     }
 
+    @Autowired
+    private ClientValidationUtil clientValidationUtil;
+    @Autowired
+    private PairwiseClientValidator pairwiseClientValidator;
+
     /**
      * Create a new client
      * <p>
@@ -156,7 +165,7 @@ public class ClientsResource {
         auth.clients().requireManage();
 
         ValidationMessages validationMessages = new ValidationMessages();
-        if (!ClientValidator.validate(rep, validationMessages) || !PairwiseClientValidator.validate(session, rep, validationMessages)) {
+        if (!ClientValidator.validate(rep, validationMessages) || !pairwiseClientValidator.validate(session, rep, validationMessages)) {
             Properties messages = AdminRoot.getMessages(session, realm, auth.adminAuth().getToken().getLocale());
             throw new ErrorResponseException(
                     validationMessages.getStringMessages(),
@@ -190,7 +199,7 @@ public class ClientsResource {
                 }
             }
 
-            ClientValidationUtil.validate(session, clientModel, true, c -> {
+            clientValidationUtil.validate(session, clientModel, true, c -> {
                 session.getTransactionManager().setRollbackOnly();
                 throw new ErrorResponseException(Errors.INVALID_INPUT, c.getError(), Response.Status.BAD_REQUEST);
             });

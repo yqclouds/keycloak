@@ -35,6 +35,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.x509.X509ClientCertificateLookup;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.security.auth.x500.X500Principal;
 import javax.ws.rs.core.Response;
@@ -84,6 +85,9 @@ public abstract class AbstractX509ClientCertificateAuthenticator implements Auth
     static final String DEFAULT_MATCH_ALL_EXPRESSION = "(.*?)(?:$)";
     protected static ServicesLogger logger = ServicesLogger.LOGGER;
 
+    @Autowired(required = false)
+    private X509ClientCertificateLookup x509ClientCertificateLookup;
+
     protected Response createInfoResponse(AuthenticationFlowContext context, String infoMessage, Object... parameters) {
         LoginFormsProvider form = context.form();
         return form.setInfo(infoMessage, parameters).createInfoPage();
@@ -102,14 +106,13 @@ public abstract class AbstractX509ClientCertificateAuthenticator implements Auth
     protected X509Certificate[] getCertificateChain(AuthenticationFlowContext context) {
         try {
             // Get a x509 client certificate
-            X509ClientCertificateLookup provider = context.getSession().getBeanFactory().getBean(X509ClientCertificateLookup.class);
-            if (provider == null) {
+            if (x509ClientCertificateLookup == null) {
                 logger.errorv("\"{0}\" Spi is not available, did you forget to update the configuration?",
                         X509ClientCertificateLookup.class);
                 return null;
             }
 
-            X509Certificate[] certs = provider.getCertificateChain(context.getHttpRequest());
+            X509Certificate[] certs = x509ClientCertificateLookup.getCertificateChain(context.getHttpRequest());
 
             if (certs != null) {
                 for (X509Certificate cert : certs) {

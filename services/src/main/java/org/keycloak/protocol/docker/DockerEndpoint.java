@@ -16,6 +16,7 @@ import org.keycloak.services.util.CacheControlUtil;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.CommonClientSessionModel;
 import org.keycloak.utils.ProfileHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.core.MultivaluedMap;
@@ -38,6 +39,9 @@ public class DockerEndpoint extends AuthorizationEndpointBase {
         super(realm, event);
         this.login = login;
     }
+
+    @Autowired
+    private AuthorizationEndpointRequestParserProcessor authorizationEndpointRequestParserProcessor;
 
     @GET
     public Response build() {
@@ -64,7 +68,7 @@ public class DockerEndpoint extends AuthorizationEndpointBase {
         checkSsl();
         checkRealm();
 
-        final AuthorizationEndpointRequest authRequest = AuthorizationEndpointRequestParserProcessor.parseRequest(event, session, client, params);
+        final AuthorizationEndpointRequest authRequest = authorizationEndpointRequestParserProcessor.parseRequest(event, session, client, params);
         authenticationSession = createAuthenticationSession(client, authRequest.getState());
 
         updateAuthenticationSession();

@@ -23,6 +23,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.session.UserSessionPersisterProvider;
 import org.keycloak.models.utils.SessionTimeoutHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
 import java.util.Set;
@@ -40,11 +41,13 @@ public class PersisterLastSessionRefreshStore extends AbstractLastSessionRefresh
 
     private final boolean offline;
 
+    @Autowired
+    private UserSessionPersisterProvider userSessionPersisterProvider;
+
     protected PersisterLastSessionRefreshStore(int maxIntervalBetweenMessagesSeconds, int maxCount, boolean offline) {
         super(maxIntervalBetweenMessagesSeconds, maxCount);
         this.offline = offline;
     }
-
 
     protected void sendMessage(KeycloakSession kcSession, Map<String, SessionData> refreshesToSend) {
         Map<String, Set<String>> sessionIdsByRealm =
@@ -59,8 +62,6 @@ public class PersisterLastSessionRefreshStore extends AbstractLastSessionRefresh
             logger.debugf("Updating %d userSessions with lastSessionRefresh: %d", refreshesToSend.size(), lastSessionRefresh);
         }
 
-        UserSessionPersisterProvider persister = kcSession.getBeanFactory().getBean(UserSessionPersisterProvider.class);
-
         for (Map.Entry<String, Set<String>> entry : sessionIdsByRealm.entrySet()) {
             RealmModel realm = kcSession.realms().getRealm(entry.getKey());
 
@@ -71,7 +72,7 @@ public class PersisterLastSessionRefreshStore extends AbstractLastSessionRefresh
 
             Set<String> userSessionIds = entry.getValue();
 
-            persister.updateLastSessionRefreshes(realm, lastSessionRefresh, userSessionIds, offline);
+            userSessionPersisterProvider.updateLastSessionRefreshes(realm, lastSessionRefresh, userSessionIds, offline);
         }
     }
 }

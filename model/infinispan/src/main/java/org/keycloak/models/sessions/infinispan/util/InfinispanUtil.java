@@ -25,6 +25,7 @@ import org.infinispan.remoting.transport.Transport;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.connections.infinispan.TopologyInfo;
 import org.keycloak.models.KeycloakSession;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Set;
 
@@ -50,11 +51,12 @@ public class InfinispanUtil {
         }
     }
 
+    @Autowired
+    private InfinispanConnectionProvider connectionProvider;
 
-    public static TopologyInfo getTopologyInfo(KeycloakSession session) {
-        return session.getBeanFactory().getBean(InfinispanConnectionProvider.class).getTopologyInfo();
+    public TopologyInfo getTopologyInfo(KeycloakSession session) {
+        return connectionProvider.getTopologyInfo();
     }
-
 
     /**
      * @param cache

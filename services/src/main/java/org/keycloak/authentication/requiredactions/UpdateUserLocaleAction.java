@@ -8,11 +8,15 @@ import org.keycloak.locale.LocaleUpdaterProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserModel;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component("UpdateUserLocaleAction")
 @ProviderFactory(id = "update_user_locale", providerClasses = RequiredActionProvider.class)
 public class UpdateUserLocaleAction implements RequiredActionProvider, RequiredActionFactory {
+
+    @Autowired
+    private LocaleUpdaterProvider localeUpdaterProvider;
 
     @Override
     public String getDisplayText() {
@@ -23,17 +27,14 @@ public class UpdateUserLocaleAction implements RequiredActionProvider, RequiredA
     public void evaluateTriggers(RequiredActionContext context) {
         String userRequestedLocale = context.getAuthenticationSession().getAuthNote(LocaleSelectorProvider.USER_REQUEST_LOCALE);
         if (userRequestedLocale != null) {
-            LocaleUpdaterProvider updater = context.getSession().getBeanFactory().getBean(LocaleUpdaterProvider.class);
-            updater.updateUsersLocale(context.getUser(), userRequestedLocale);
+            localeUpdaterProvider.updateUsersLocale(context.getUser(), userRequestedLocale);
         } else {
             String userLocale = context.getUser().getFirstAttribute(UserModel.LOCALE);
 
             if (userLocale != null) {
-                LocaleUpdaterProvider updater = context.getSession().getBeanFactory().getBean(LocaleUpdaterProvider.class);
-                updater.updateLocaleCookie(userLocale);
+                localeUpdaterProvider.updateLocaleCookie(userLocale);
             } else {
-                LocaleUpdaterProvider updater = context.getSession().getBeanFactory().getBean(LocaleUpdaterProvider.class);
-                updater.expireLocaleCookie();
+                localeUpdaterProvider.expireLocaleCookie();
             }
         }
     }

@@ -77,7 +77,6 @@ public class AccountLoader {
             Auth auth = new Auth(session.getContext().getRealm(), authResult.getToken(), authResult.getUser(), client, authResult.getSession(), false);
             AccountRestService accountRestService = new AccountRestService(session, auth, client, event);
             ResteasyProviderFactory.getInstance().injectProperties(accountRestService);
-            accountRestService.init();
             return accountRestService;
         } else {
             if (deprecatedAccount) {

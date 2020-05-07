@@ -68,6 +68,7 @@ import org.keycloak.services.util.CacheControlUtil;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
@@ -106,6 +107,11 @@ public class LoginActionsService {
     @Context
     private ClientConnection clientConnection;
     private EventBuilder event;
+
+    @Autowired
+    private LoginActionsServiceChecks loginActionsServiceChecks;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     public LoginActionsService(RealmModel realm, EventBuilder event) {
         this.realm = realm;
@@ -236,14 +242,16 @@ public class LoginActionsService {
         return processAuthentication(actionRequest, execution, authSession, null);
     }
 
+    @Autowired
+    private LocaleUpdaterProvider localeUpdaterProvider;
+
     protected void processLocaleParam(AuthenticationSessionModel authSession) {
         if (authSession != null && realm.isInternationalizationEnabled()) {
             String locale = session.getContext().getUri().getQueryParameters().getFirst(LocaleSelectorProvider.KC_LOCALE_PARAM);
             if (locale != null) {
                 authSession.setAuthNote(LocaleSelectorProvider.USER_REQUEST_LOCALE, locale);
 
-                LocaleUpdaterProvider localeUpdater = session.getBeanFactory().getBean(LocaleUpdaterProvider.class);
-                localeUpdater.updateLocaleCookie(locale);
+                localeUpdaterProvider.updateLocaleCookie(locale);
             }
         }
     }
@@ -326,6 +334,9 @@ public class LoginActionsService {
         return resetCredentials(authSessionId, code, execution, clientId, tabId);
     }
 
+    @Autowired
+    private ErrorPage errorPage;
+
     /**
      * Endpoint for executing reset credentials flow.  If token is null, a authentication session is created with the account
      * service as the client.  Successful reset sends you to the account page.  Note, account service must be enabled.
@@ -350,7 +361,7 @@ public class LoginActionsService {
             if (!realm.isResetPasswordAllowed()) {
                 event.event(EventType.RESET_PASSWORD);
                 event.error(Errors.NOT_ALLOWED);
-                return ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.RESET_CREDENTIAL_NOT_ALLOWED);
+                return errorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.RESET_CREDENTIAL_NOT_ALLOWED);
 
             }
             authSession = createAuthenticationSessionForClient();
@@ -397,7 +408,7 @@ public class LoginActionsService {
 
         if (!realm.isResetPasswordAllowed()) {
             event.error(Errors.NOT_ALLOWED);
-            return ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.RESET_CREDENTIAL_NOT_ALLOWED);
+            return errorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.RESET_CREDENTIAL_NOT_ALLOWED);
 
         }
 
@@ -517,14 +528,14 @@ public class LoginActionsService {
             if (tokenAuthSessionCompoundId != null) {
                 // This can happen if the token contains ID but user opens the link in a new browser
                 String sessionId = AuthenticationSessionCompoundId.encoded(tokenAuthSessionCompoundId).getRootSessionId();
-                LoginActionsServiceChecks.checkNotLoggedInYet(tokenContext, authSession, sessionId);
+                loginActionsServiceChecks.checkNotLoggedInYet(tokenContext, authSession, sessionId);
             }
 
             if (authSession == null) {
                 authSession = handler.startFreshAuthenticationSession(token, tokenContext);
                 tokenContext.setAuthenticationSession(authSession, true);
             } else if (tokenAuthSessionCompoundId == null ||
-                    !LoginActionsServiceChecks.doesAuthenticationSessionFromCookieMatchOneFromToken(tokenContext, authSession, tokenAuthSessionCompoundId)) {
+                    !loginActionsServiceChecks.doesAuthenticationSessionFromCookieMatchOneFromToken(tokenContext, authSession, tokenAuthSessionCompoundId)) {
                 // There exists an authentication session but no auth session ID was received in the action token
                 logger.debugf("Authentication session in progress but no authentication session ID was found in action token %s, restarting.", token.getId());
                 authenticationSessionManager.removeAuthenticationSession(realm, authSession, false);
@@ -552,7 +563,7 @@ public class LoginActionsService {
             event.event(handler.eventType());
 
             if (!handler.canUseTokenRepeatedly(token, tokenContext)) {
-                LoginActionsServiceChecks.checkTokenWasNotUsedYet(token, tokenContext);
+                loginActionsServiceChecks.checkTokenWasNotUsedYet(token, tokenContext);
                 authSession.setAuthNote(AuthenticationManager.INVALIDATE_ACTION_TOKEN, token.serializeKey());
             }
 
@@ -581,7 +592,7 @@ public class LoginActionsService {
         } else if (RESET_CREDENTIALS_PATH.equals(flowPath)) {
             return processResetCredentials(false, null, authSession, errorMessage);
         } else {
-            return ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, errorMessage == null ? Messages.INVALID_REQUEST : errorMessage);
+            return errorPage.error(session, authSession, Response.Status.BAD_REQUEST, errorMessage == null ? Messages.INVALID_REQUEST : errorMessage);
         }
     }
 
@@ -605,7 +616,7 @@ public class LoginActionsService {
         event
                 .detail(Details.REASON, ex == null ? "<unknown>" : ex.getMessage())
                 .error(eventError == null ? Errors.INVALID_CODE : eventError);
-        return ErrorPage.error(session, null, Response.Status.BAD_REQUEST, errorMessage == null ? Messages.INVALID_CODE : errorMessage);
+        return errorPage.error(session, null, Response.Status.BAD_REQUEST, errorMessage == null ? Messages.INVALID_CODE : errorMessage);
     }
 
     protected Response processResetCredentials(boolean actionRequest, String execution, AuthenticationSessionModel authSession, String errorMessage) {
@@ -654,7 +665,7 @@ public class LoginActionsService {
         event.event(EventType.REGISTER);
         if (!realm.isRegistrationAllowed()) {
             event.error(Errors.REGISTRATION_DISABLED);
-            return ErrorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.REGISTRATION_NOT_ALLOWED);
+            return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.REGISTRATION_NOT_ALLOWED);
         }
 
         SessionCodeChecks checks = checksForCode(authSessionId, code, execution, clientId, tabId, REGISTRATION_PATH);
@@ -730,7 +741,7 @@ public class LoginActionsService {
         SerializedBrokeredIdentityContext serializedCtx = SerializedBrokeredIdentityContext.readFromAuthenticationSession(authSession, noteKey);
         if (serializedCtx == null) {
             ServicesLogger.LOGGER.notFoundSerializedCtxInClientSession(noteKey);
-            throw new WebApplicationException(ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, "Not found serialized context in authenticationSession."));
+            throw new WebApplicationException(errorPage.error(session, authSession, Response.Status.BAD_REQUEST, "Not found serialized context in authenticationSession."));
         }
         BrokeredIdentityContext brokerContext = serializedCtx.deserialize(session, authSession);
         final String identityProviderAlias = brokerContext.getIdpConfig().getAlias();
@@ -738,12 +749,12 @@ public class LoginActionsService {
         String flowId = firstBrokerLogin ? brokerContext.getIdpConfig().getFirstBrokerLoginFlowId() : brokerContext.getIdpConfig().getPostBrokerLoginFlowId();
         if (flowId == null) {
             ServicesLogger.LOGGER.flowNotConfigForIDP(identityProviderAlias);
-            throw new WebApplicationException(ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, "Flow not configured for identity provider"));
+            throw new WebApplicationException(errorPage.error(session, authSession, Response.Status.BAD_REQUEST, "Flow not configured for identity provider"));
         }
         AuthenticationFlowModel brokerLoginFlow = realm.getAuthenticationFlowById(flowId);
         if (brokerLoginFlow == null) {
             ServicesLogger.LOGGER.flowNotFoundForIDP(flowId, identityProviderAlias);
-            throw new WebApplicationException(ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, "Flow not found for identity provider"));
+            throw new WebApplicationException(errorPage.error(session, authSession, Response.Status.BAD_REQUEST, "Flow not found for identity provider"));
         }
 
         event.detail(Details.IDENTITY_PROVIDER, identityProviderAlias)
@@ -857,7 +868,7 @@ public class LoginActionsService {
         event.success();
 
         ClientSessionContext clientSessionCtx = AuthenticationProcessor.attachSession(authSession, null, session, realm, clientConnection, event);
-        return AuthenticationManager.redirectAfterSuccessfulFlow(session, realm, clientSessionCtx.getClientSession().getUserSession(), clientSessionCtx, request, session.getContext().getUri(), clientConnection, event, authSession);
+        return authenticationManager.redirectAfterSuccessfulFlow(session, realm, clientSessionCtx.getClientSession().getUserSession(), clientSessionCtx, request, session.getContext().getUri(), clientConnection, event, authSession);
     }
 
     private void initLoginEvent(AuthenticationSessionModel authSession) {
@@ -935,18 +946,18 @@ public class LoginActionsService {
         if (!checks.isActionRequest()) {
             initLoginEvent(authSession);
             event.event(EventType.CUSTOM_REQUIRED_ACTION);
-            return AuthenticationManager.nextActionAfterAuthentication(session, authSession, clientConnection, request, session.getContext().getUri(), event);
+            return authenticationManager.nextActionAfterAuthentication(session, authSession, clientConnection, request, session.getContext().getUri(), event);
         }
 
         initLoginEvent(authSession);
         event.event(EventType.CUSTOM_REQUIRED_ACTION);
         event.detail(Details.CUSTOM_REQUIRED_ACTION, action);
 
-        RequiredActionFactory factory = (RequiredActionFactory) session.getKeycloakSessionFactory().getProviderFactory(RequiredActionProvider.class, action);
+        RequiredActionFactory factory = (RequiredActionFactory) session.getSessionFactory().getProviderFactory(RequiredActionProvider.class, action);
         if (factory == null) {
             ServicesLogger.LOGGER.actionProviderNull();
             event.error(Errors.INVALID_CODE);
-            throw new WebApplicationException(ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.INVALID_CODE));
+            throw new WebApplicationException(errorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.INVALID_CODE));
         }
         RequiredActionContextResult context = new RequiredActionContextResult(authSession, realm, event, session, request, authSession.getAuthenticatedUser(), factory) {
             @Override
@@ -956,12 +967,12 @@ public class LoginActionsService {
         };
         RequiredActionProvider provider = null;
         try {
-            provider = AuthenticationManager.createRequiredAction(context);
+            provider = authenticationManager.createRequiredAction(context);
         } catch (AuthenticationFlowException e) {
             if (e.getResponse() != null) {
                 return e.getResponse();
             }
-            throw new WebApplicationException(ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.DISPLAY_UNSUPPORTED));
+            throw new WebApplicationException(errorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.DISPLAY_UNSUPPORTED));
         }
 
 
@@ -969,7 +980,7 @@ public class LoginActionsService {
 
         if (isCancelAppInitiatedAction(factory.getId(), authSession, context)) {
             provider.initiatedActionCanceled(session, authSession);
-            AuthenticationManager.setKcActionStatus(factory.getId(), RequiredActionContext.KcActionStatus.CANCELLED, authSession);
+            authenticationManager.setKcActionStatus(factory.getId(), RequiredActionContext.KcActionStatus.CANCELLED, authSession);
             context.success();
         } else {
             provider.processAction(context);
@@ -986,9 +997,9 @@ public class LoginActionsService {
             authSession.removeRequiredAction(factory.getId());
             authSession.getAuthenticatedUser().removeRequiredAction(factory.getId());
             authSession.removeAuthNote(AuthenticationProcessor.CURRENT_AUTHENTICATION_EXECUTION);
-            AuthenticationManager.setKcActionStatus(factory.getId(), RequiredActionContext.KcActionStatus.SUCCESS, authSession);
+            authenticationManager.setKcActionStatus(factory.getId(), RequiredActionContext.KcActionStatus.SUCCESS, authSession);
 
-            response = AuthenticationManager.nextActionAfterAuthentication(session, authSession, clientConnection, request, session.getContext().getUri(), event);
+            response = authenticationManager.nextActionAfterAuthentication(session, authSession, clientConnection, request, session.getContext().getUri(), event);
         } else if (context.getStatus() == RequiredActionContext.Status.CHALLENGE) {
             response = context.getChallenge();
         } else if (context.getStatus() == RequiredActionContext.Status.FAILURE) {

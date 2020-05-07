@@ -11,6 +11,7 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.x509.X509ClientCertificateLookup;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MediaType;
@@ -32,11 +33,12 @@ public class X509ClientAuthenticator extends AbstractClientAuthenticator {
 
     protected static ServicesLogger logger = ServicesLogger.LOGGER;
 
+    @Autowired(required = false)
+    private X509ClientCertificateLookup x509ClientCertificateLookup;
+
     @Override
     public void authenticateClient(ClientAuthenticationFlowContext context) {
-
-        X509ClientCertificateLookup provider = context.getSession().getBeanFactory().getBean(X509ClientCertificateLookup.class);
-        if (provider == null) {
+        if (x509ClientCertificateLookup == null) {
             logger.errorv("\"{0}\" Spi is not available, did you forget to update the configuration?",
                     X509ClientCertificateLookup.class);
             return;
@@ -45,7 +47,7 @@ public class X509ClientAuthenticator extends AbstractClientAuthenticator {
         X509Certificate[] certs = null;
         ClientModel client = null;
         try {
-            certs = provider.getCertificateChain(context.getHttpRequest());
+            certs = x509ClientCertificateLookup.getCertificateChain(context.getHttpRequest());
             String client_id = null;
             MediaType mediaType = context.getHttpRequest().getHttpHeaders().getMediaType();
             boolean hasFormData = mediaType != null && mediaType.isCompatible(MediaType.APPLICATION_FORM_URLENCODED_TYPE);

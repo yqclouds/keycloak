@@ -33,6 +33,7 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.idm.*;
 import org.keycloak.representations.idm.authorization.*;
 import org.keycloak.storage.StorageId;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -610,8 +611,10 @@ public class ModelToRepresentation {
         return rep;
     }
 
+    @Autowired
+    private AuthorizationProvider authorizationProvider;
 
-    public static ClientRepresentation toRepresentation(ClientModel clientModel, KeycloakSession session) {
+    public ClientRepresentation toRepresentation(ClientModel clientModel, KeycloakSession session) {
         ClientRepresentation rep = new ClientRepresentation();
         rep.setId(clientModel.getId());
         String providerId = StorageId.resolveProviderId(clientModel);
@@ -670,9 +673,7 @@ public class ModelToRepresentation {
             rep.setProtocolMappers(mappings);
         }
 
-        AuthorizationProvider authorization = session.getBeanFactory().getBean(AuthorizationProvider.class);
-        ResourceServer resourceServer = authorization.getStoreFactory().getResourceServerStore().findById(clientModel.getId());
-
+        ResourceServer resourceServer = authorizationProvider.getStoreFactory().getResourceServerStore().findById(clientModel.getId());
         if (resourceServer != null) {
             rep.setAuthorizationServicesEnabled(true);
         }

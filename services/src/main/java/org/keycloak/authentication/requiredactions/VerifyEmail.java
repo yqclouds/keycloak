@@ -41,6 +41,7 @@ import org.keycloak.services.validation.Validation;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.Response;
@@ -133,6 +134,8 @@ public class VerifyEmail implements RequiredActionProvider, RequiredActionFactor
         return "Verify Email";
     }
 
+    @Autowired
+    private EmailTemplateProvider emailTemplateProvider;
 
     @Override
     public String getId() {
@@ -154,9 +157,7 @@ public class VerifyEmail implements RequiredActionProvider, RequiredActionFactor
         long expirationInMinutes = TimeUnit.SECONDS.toMinutes(validityInSecs);
 
         try {
-            session
-                    .getBeanFactory().getBean(EmailTemplateProvider.class)
-                    .setAuthenticationSession(authSession)
+            emailTemplateProvider.setAuthenticationSession(authSession)
                     .setRealm(realm)
                     .setUser(user)
                     .sendVerifyEmail(link, expirationInMinutes);

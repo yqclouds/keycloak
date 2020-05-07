@@ -30,6 +30,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.truststore.TruststoreProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component("WebAuthnRegisterFactory")
@@ -38,10 +39,12 @@ public class WebAuthnRegisterFactory implements RequiredActionFactory, DisplayTy
 
     public static final String PROVIDER_ID = "webauthn-register";
 
+    @Autowired(required = false)
+    private TruststoreProvider truststoreProvider;
+
     @Override
     public RequiredActionProvider create(KeycloakSession session) {
         WebAuthnRegister webAuthnRegister = null;
-        TruststoreProvider truststoreProvider = session.getBeanFactory().getBean(TruststoreProvider.class);
         if (truststoreProvider == null || truststoreProvider.getTruststore() == null) {
             webAuthnRegister = createProvider(session, new NullCertPathTrustworthinessValidator());
         } else {

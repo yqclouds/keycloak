@@ -48,6 +48,7 @@ import org.keycloak.services.resources.LoginActionsService;
 import org.keycloak.services.util.CacheControlUtil;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.util.TokenUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -99,6 +100,9 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
         return process(session.getContext().getUri().getQueryParameters());
     }
 
+    @Autowired
+    private AuthorizationEndpointRequestParserProcessor authorizationEndpointRequestParserProcessor;
+
     private Response process(MultivaluedMap<String, String> params) {
         String clientId = AuthorizationEndpointRequestParserProcessor.getClientId(event, session, params);
 
@@ -106,7 +110,7 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
         checkRealm();
         checkClient(clientId);
 
-        request = AuthorizationEndpointRequestParserProcessor.parseRequest(event, session, client, params);
+        request = authorizationEndpointRequestParserProcessor.parseRequest(event, session, client, params);
 
         checkRedirectUri();
         Response errorResponse = checkResponseType();

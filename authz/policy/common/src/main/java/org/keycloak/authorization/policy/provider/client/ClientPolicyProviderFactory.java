@@ -18,6 +18,7 @@ import org.keycloak.representations.idm.authorization.ClientPolicyRepresentation
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.util.JsonSerialization;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -97,13 +98,14 @@ public class ClientPolicyProviderFactory implements PolicyProviderFactory<Client
 
     }
 
+    @Autowired
+    private AuthorizationProvider authorizationProvider;
+
     @Override
     public void postInit(KeycloakSessionFactory factory) {
         factory.register(event -> {
             if (event instanceof ClientRemovedEvent) {
-                KeycloakSession keycloakSession = ((ClientRemovedEvent) event).getKeycloakSession();
-                AuthorizationProvider provider = keycloakSession.getBeanFactory().getBean(AuthorizationProvider.class);
-                StoreFactory storeFactory = provider.getStoreFactory();
+                StoreFactory storeFactory = authorizationProvider.getStoreFactory();
                 PolicyStore policyStore = storeFactory.getPolicyStore();
                 ClientModel removedClient = ((ClientRemovedEvent) event).getClient();
                 ResourceServerStore resourceServerStore = storeFactory.getResourceServerStore();

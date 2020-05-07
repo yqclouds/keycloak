@@ -38,6 +38,7 @@ import org.keycloak.services.util.AuthenticationFlowURLHelper;
 import org.keycloak.services.util.BrowserHistoryHelper;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -115,17 +116,21 @@ public class SessionCodeChecks {
         }
     }
 
+    @Autowired
+    private LoginFormsProvider loginFormsProvider;
+    @Autowired
+    private ErrorPage errorPage;
 
     public AuthenticationSessionModel initialVerifyAuthSession() {
         // Basic realm checks
         if (!checkSsl()) {
             event.error(Errors.SSL_REQUIRED);
-            response = ErrorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.HTTPS_REQUIRED);
+            response = errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.HTTPS_REQUIRED);
             return null;
         }
         if (!realm.isEnabled()) {
             event.error(Errors.REALM_DISABLED);
-            response = ErrorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.REALM_NOT_ENABLED);
+            response = errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.REALM_NOT_ENABLED);
             return null;
         }
 
@@ -150,27 +155,26 @@ public class SessionCodeChecks {
         if (authSession != null && authSessionCookie != null && !authSession.getParentSession().getId().equals(authSessionCookie.getParentSession().getId())) {
             event.detail(Details.REASON, "cookie does not match auth_session query parameter");
             event.error(Errors.INVALID_CODE);
-            response = ErrorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.INVALID_CODE);
+            response = errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.INVALID_CODE);
             return null;
 
         }
 
         if (authSession != null) {
-            session.getBeanFactory().getBean(LoginFormsProvider.class).setAuthenticationSession(authSession);
+            loginFormsProvider.setAuthenticationSession(authSession);
             return authSession;
         }
 
         if (authSessionCookie != null) {
-            session.getBeanFactory().getBean(LoginFormsProvider.class).setAuthenticationSession(authSessionCookie);
+            loginFormsProvider.setAuthenticationSession(authSessionCookie);
             return authSessionCookie;
-
         }
 
         // See if we are already authenticated and userSession with same ID exists.
         UserSessionModel userSession = authSessionManager.getUserSessionFromAuthCookie(realm);
 
         if (userSession != null) {
-            LoginFormsProvider loginForm = session.getBeanFactory().getBean(LoginFormsProvider.class).setAuthenticationSession(authSession)
+            LoginFormsProvider loginForm = this.loginFormsProvider.setAuthenticationSession(authSession)
                     .setSuccess(Messages.ALREADY_LOGGED_IN);
 
             if (client == null) {
@@ -206,7 +210,7 @@ public class SessionCodeChecks {
         ClientModel client = authSession.getClient();
         if (client == null) {
             event.error(Errors.CLIENT_NOT_FOUND);
-            response = ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.UNKNOWN_LOGIN_REQUESTER);
+            response = errorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.UNKNOWN_LOGIN_REQUESTER);
             clientCode.removeExpiredClientSession();
             return false;
         }
@@ -216,7 +220,7 @@ public class SessionCodeChecks {
 
         if (!client.isEnabled()) {
             event.error(Errors.CLIENT_DISABLED);
-            response = ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.LOGIN_REQUESTER_NOT_ENABLED);
+            response = errorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.LOGIN_REQUESTER_NOT_ENABLED);
             clientCode.removeExpiredClientSession();
             return false;
         }
@@ -301,7 +305,7 @@ public class SessionCodeChecks {
                 return false;
             } else {
                 logger.errorf("Bad action. Expected action '%s', current action '%s'", expectedAction, authSession.getAction());
-                response = ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.EXPIRED_CODE);
+                response = errorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.EXPIRED_CODE);
                 return false;
             }
         }
@@ -387,7 +391,7 @@ public class SessionCodeChecks {
         } else {
             // Finally need to show error as all the fallbacks failed
             event.error(Errors.INVALID_CODE);
-            return ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.INVALID_CODE);
+            return errorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.INVALID_CODE);
         }
     }
 

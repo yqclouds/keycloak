@@ -36,6 +36,7 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -77,6 +78,9 @@ public class ExecuteActionsActionTokenHandler extends AbstractActionTokenHandler
         );
     }
 
+    @Autowired
+    private LoginFormsProvider loginFormsProvider;
+
     @Override
     public Response handleToken(ExecuteActionsActionToken token, ActionTokenContext<ExecuteActionsActionToken> tokenContext) {
         AuthenticationSessionModel authSession = tokenContext.getAuthenticationSession();
@@ -91,7 +95,7 @@ public class ExecuteActionsActionTokenHandler extends AbstractActionTokenHandler
                     authSession.getClient().getClientId(), authSession.getTabId());
             String confirmUri = builder.build(realm.getName()).toString();
 
-            return session.getBeanFactory().getBean(LoginFormsProvider.class)
+            return this.loginFormsProvider
                     .setAuthenticationSession(authSession)
                     .setSuccess(Messages.CONFIRM_EXECUTION_OF_ACTIONS)
                     .setAttribute(Constants.TEMPLATE_ATTR_ACTION_URI, confirmUri)
@@ -121,7 +125,7 @@ public class ExecuteActionsActionTokenHandler extends AbstractActionTokenHandler
     @Override
     public boolean canUseTokenRepeatedly(ExecuteActionsActionToken token, ActionTokenContext<ExecuteActionsActionToken> tokenContext) {
         RealmModel realm = tokenContext.getRealm();
-        KeycloakSessionFactory sessionFactory = tokenContext.getSession().getKeycloakSessionFactory();
+        KeycloakSessionFactory sessionFactory = tokenContext.getSession().getSessionFactory();
 
         return token.getRequiredActions().stream()
                 .map(actionName -> realm.getRequiredActionProviderByAlias(actionName))    // get realm-specific model from action name and filter out irrelevant

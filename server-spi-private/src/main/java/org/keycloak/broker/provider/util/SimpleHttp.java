@@ -32,6 +32,7 @@ import org.keycloak.common.util.Base64;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.util.JsonSerialization;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -71,24 +72,27 @@ public class SimpleHttp {
         this.method = method;
     }
 
-    public static SimpleHttp doDelete(String url, KeycloakSession session) {
-        return doDelete(url, session.getBeanFactory().getBean(HttpClientProvider.class).getHttpClient());
+    @Autowired
+    private HttpClientProvider httpClientProvider;
+
+    public SimpleHttp doDelete(String url, KeycloakSession session) {
+        return doDelete(url, httpClientProvider.getHttpClient());
     }
 
     public static SimpleHttp doDelete(String url, HttpClient client) {
         return new SimpleHttp(url, "DELETE", client);
     }
 
-    public static SimpleHttp doGet(String url, KeycloakSession session) {
-        return doGet(url, session.getBeanFactory().getBean(HttpClientProvider.class).getHttpClient());
+    public SimpleHttp doGet(String url, KeycloakSession session) {
+        return doGet(url, httpClientProvider.getHttpClient());
     }
 
     public static SimpleHttp doGet(String url, HttpClient client) {
         return new SimpleHttp(url, "GET", client);
     }
 
-    public static SimpleHttp doPost(String url, KeycloakSession session) {
-        return doPost(url, session.getBeanFactory().getBean(HttpClientProvider.class).getHttpClient());
+    public SimpleHttp doPost(String url, KeycloakSession session) {
+        return doPost(url, httpClientProvider.getHttpClient());
     }
 
     public static SimpleHttp doPost(String url, HttpClient client) {

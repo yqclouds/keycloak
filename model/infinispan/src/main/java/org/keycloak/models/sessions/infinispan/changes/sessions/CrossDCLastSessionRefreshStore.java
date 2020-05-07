@@ -20,6 +20,7 @@ package org.keycloak.models.sessions.infinispan.changes.sessions;
 import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.models.KeycloakSession;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
 
@@ -37,6 +38,9 @@ public class CrossDCLastSessionRefreshStore extends AbstractLastSessionRefreshSt
 
     private final String eventKey;
 
+    @Autowired
+    private ClusterProvider clusterProvider;
+
     protected CrossDCLastSessionRefreshStore(int maxIntervalBetweenMessagesSeconds, int maxCount, String eventKey) {
         super(maxIntervalBetweenMessagesSeconds, maxCount);
         this.eventKey = eventKey;
@@ -51,8 +55,6 @@ public class CrossDCLastSessionRefreshStore extends AbstractLastSessionRefreshSt
         }
 
         // Don't notify local DC about the lastSessionRefreshes. They were processed here already
-        ClusterProvider cluster = kcSession.getBeanFactory().getBean(ClusterProvider.class);
-        cluster.notify(eventKey, event, true, ClusterProvider.DCNotify.ALL_BUT_LOCAL_DC);
+        clusterProvider.notify(eventKey, event, true, ClusterProvider.DCNotify.ALL_BUT_LOCAL_DC);
     }
-
 }

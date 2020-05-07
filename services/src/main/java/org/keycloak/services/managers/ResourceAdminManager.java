@@ -32,6 +32,7 @@ import org.keycloak.representations.adapters.action.LogoutAction;
 import org.keycloak.representations.adapters.action.TestAvailabilityAction;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.util.ResolveRelative;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
@@ -236,7 +237,7 @@ public class ResourceAdminManager {
             logger.debugv("logout resource {0} url: {1} sessionIds: " + adapterSessionIds, resource.getClientId(), managementUrl);
         URI target = UriBuilder.fromUri(managementUrl).path(AdapterConstants.K_LOGOUT).build();
         try {
-            int status = session.getBeanFactory().getBean(HttpClientProvider.class).postText(target.toString(), token);
+            int status = httpClientProvider.postText(target.toString(), token);
             boolean success = status == 204 || status == 200;
             logger.debugf("logout success for %s: %s", managementUrl, success);
             return success;
@@ -314,13 +315,16 @@ public class ResourceAdminManager {
         return result;
     }
 
+    @Autowired
+    private HttpClientProvider httpClientProvider;
+
     protected boolean sendTestNodeAvailabilityRequest(RealmModel realm, ClientModel client, String managementUrl) {
         TestAvailabilityAction adminAction = new TestAvailabilityAction(TokenIdGenerator.generateId(), Time.currentTime() + 30, client.getClientId());
         String token = session.tokens().encode(adminAction);
         logger.debugv("testNodes availability resource: {0} url: {1}", client.getClientId(), managementUrl);
         URI target = UriBuilder.fromUri(managementUrl).path(AdapterConstants.K_TEST_AVAILABLE).build();
         try {
-            int status = session.getBeanFactory().getBean(HttpClientProvider.class).postText(target.toString(), token);
+            int status = httpClientProvider.postText(target.toString(), token);
             boolean success = status == 204 || status == 200;
             logger.debugf("testAvailability success for %s: %s", managementUrl, success);
             return success;

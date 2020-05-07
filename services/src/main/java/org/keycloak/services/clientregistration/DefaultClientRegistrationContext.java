@@ -21,11 +21,15 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.services.validation.PairwiseClientValidator;
 import org.keycloak.services.validation.ValidationMessages;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class DefaultClientRegistrationContext extends AbstractClientRegistrationContext {
+
+    @Autowired
+    private PairwiseClientValidator pairwiseClientValidator;
 
     public DefaultClientRegistrationContext(KeycloakSession session, ClientRepresentation client, ClientRegistrationProvider provider) {
         super(session, client, provider);
@@ -33,6 +37,6 @@ public class DefaultClientRegistrationContext extends AbstractClientRegistration
 
     @Override
     public boolean validateClient(ValidationMessages validationMessages) {
-        return super.validateClient(validationMessages) && PairwiseClientValidator.validate(session, client, validationMessages);
+        return super.validateClient(validationMessages) && pairwiseClientValidator.validate(session, client, validationMessages);
     }
 }

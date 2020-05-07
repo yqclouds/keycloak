@@ -7,6 +7,7 @@ import org.keycloak.protocol.oidc.utils.PairwiseSubMapperUtils;
 import org.keycloak.protocol.oidc.utils.PairwiseSubMapperValidator;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashSet;
 import java.util.List;
@@ -17,8 +18,10 @@ import java.util.Set;
  * @author <a href="mailto:martin.hardselius@gmail.com">Martin Hardselius</a>
  */
 public class PairwiseClientValidator {
+    @Autowired
+    private PairwiseSubMapperValidator pairwiseSubMapperValidator;
 
-    public static boolean validate(KeycloakSession session, ClientRepresentation client, ValidationMessages messages) {
+    public boolean validate(KeycloakSession session, ClientRepresentation client, ValidationMessages messages) {
         String rootUrl = client.getRootUrl();
         Set<String> redirectUris = new HashSet<>();
         boolean valid = true;
@@ -34,9 +37,9 @@ public class PairwiseClientValidator {
         return true;
     }
 
-    public static boolean validate(KeycloakSession session, String rootUrl, Set<String> redirectUris, String sectorIdentifierUri, ValidationMessages messages) {
+    public boolean validate(KeycloakSession session, String rootUrl, Set<String> redirectUris, String sectorIdentifierUri, ValidationMessages messages) {
         try {
-            PairwiseSubMapperValidator.validate(session, rootUrl, redirectUris, sectorIdentifierUri);
+            pairwiseSubMapperValidator.validate(session, rootUrl, redirectUris, sectorIdentifierUri);
         } catch (ProtocolMapperConfigException e) {
             messages.add(e.getMessage(), e.getMessageKey());
             return false;

@@ -31,7 +31,9 @@ import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.authorization.ScopeRepresentation;
 import org.keycloak.services.util.ResolveRelative;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.PostConstruct;
 import javax.ws.rs.core.UriInfo;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -43,7 +45,8 @@ public class AuthorizationBean {
 
     private final KeycloakSession session;
     private final UserModel user;
-    private final AuthorizationProvider authorization;
+    @Autowired
+    private AuthorizationProvider authorizationProvider;
     private final UriInfo uriInfo;
     private ResourceBean resource;
     private List<ResourceBean> resources;
@@ -55,11 +58,14 @@ public class AuthorizationBean {
         this.session = session;
         this.user = user;
         this.uriInfo = uriInfo;
-        authorization = session.getBeanFactory().getBean(AuthorizationProvider.class);
+    }
+
+    @PostConstruct
+    public void afterPropertiesSet() {
         List<String> pathParameters = uriInfo.getPathParameters().get("resource_id");
 
         if (pathParameters != null && !pathParameters.isEmpty()) {
-            Resource resource = authorization.getStoreFactory().getResourceStore().findById(pathParameters.get(0), null);
+            Resource resource = authorizationProvider.getStoreFactory().getResourceStore().findById(pathParameters.get(0), null);
 
             if (resource != null && !resource.getOwner().equals(user.getId())) {
                 throw new RuntimeException("User [" + user.getUsername() + "] can not access resource [" + resource.getId() + "]");
@@ -95,7 +101,7 @@ public class AuthorizationBean {
 
     public List<ResourceBean> getResources() {
         if (resources == null) {
-            resources = authorization.getStoreFactory().getResourceStore().findByOwner(user.getId(), null).stream()
+            resources = authorizationProvider.getStoreFactory().getResourceStore().findByOwner(user.getId(), null).stream()
                     .filter(Resource::isOwnerManagedAccess)
                     .map(ResourceBean::new)
                     .collect(Collectors.toList());
@@ -110,7 +116,7 @@ public class AuthorizationBean {
             filters.put(PermissionTicket.REQUESTER, user.getId());
             filters.put(PermissionTicket.GRANTED, Boolean.TRUE.toString());
 
-            PermissionTicketStore ticketStore = authorization.getStoreFactory().getPermissionTicketStore();
+            PermissionTicketStore ticketStore = authorizationProvider.getStoreFactory().getPermissionTicketStore();
 
             userSharedResources = toResourceRepresentation(ticketStore.find(filters, null, -1, -1));
         }
@@ -130,7 +136,7 @@ public class AuthorizationBean {
     }
 
     private ResourceBean getResource(String id) {
-        return new ResourceBean(authorization.getStoreFactory().getResourceStore().findById(id, null));
+        return new ResourceBean(authorizationProvider.getStoreFactory().getResourceStore().findById(id, null));
     }
 
     private Collection<RequesterBean> toPermissionRepresentation(List<PermissionTicket> permissionRequests) {
@@ -143,7 +149,7 @@ public class AuthorizationBean {
                 continue;
             }
 
-            requests.computeIfAbsent(ticket.getRequester(), resourceId -> new RequesterBean(ticket, authorization)).addScope(ticket);
+            requests.computeIfAbsent(ticket.getRequester(), resourceId -> new RequesterBean(ticket, authorizationProvider)).addScope(ticket);
         }
 
         return requests.values();
@@ -159,14 +165,14 @@ public class AuthorizationBean {
                 continue;
             }
 
-            requests.computeIfAbsent(resource.getId(), resourceId -> getResource(resourceId)).addPermission(ticket, authorization);
+            requests.computeIfAbsent(resource.getId(), resourceId -> getResource(resourceId)).addPermission(ticket, authorizationProvider);
         }
 
         return requests.values();
     }
 
     private List<PermissionTicket> findPermissions(Map<String, String> filters) {
-        return authorization.getStoreFactory().getPermissionTicketStore().find(filters, null, -1, -1);
+        return authorizationProvider.getStoreFactory().getPermissionTicketStore().find(filters, null, -1, -1);
     }
 
     public static class RequesterBean {
@@ -259,10 +265,10 @@ public class AuthorizationBean {
         private Collection<RequesterBean> shares;
 
         public ResourceBean(Resource resource) {
-            RealmModel realm = authorization.getRealm();
+            RealmModel realm = authorizationProvider.getRealm();
             resourceServer = new ResourceServerBean(realm.getClientById(resource.getResourceServer().getId()));
             this.resource = resource;
-            owner = authorization.getSession().users().getUserById(resource.getOwner(), realm);
+            owner = authorizationProvider.getSession().users().getUserById(resource.getOwner(), realm);
         }
 
         public String getId() {
@@ -309,7 +315,7 @@ public class AuthorizationBean {
             filters.put("resource", new String[]{this.resource.getId()});
             filters.put("owner", new String[]{getOwner().getId()});
 
-            List<Policy> policies = authorization.getStoreFactory().getPolicyStore().findByResourceServer(filters, getResourceServer().getId(), -1, -1);
+            List<Policy> policies = authorizationProvider.getStoreFactory().getPolicyStore().findByResourceServer(filters, getResourceServer().getId(), -1, -1);
 
             if (policies.isEmpty()) {
                 return Collections.emptyList();
@@ -321,7 +327,7 @@ public class AuthorizationBean {
 
                         filters1.put(PermissionTicket.POLICY, policy.getId());
 
-                        return authorization.getStoreFactory().getPermissionTicketStore().find(filters1, resourceServer.getId(), -1, 1)
+                        return authorizationProvider.getStoreFactory().getPermissionTicketStore().find(filters1, resourceServer.getId(), -1, 1)
                                 .isEmpty();
                     })
                     .map(ManagedPermissionBean::new).collect(Collectors.toList());

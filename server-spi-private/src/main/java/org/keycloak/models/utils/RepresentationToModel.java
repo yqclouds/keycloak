@@ -43,6 +43,7 @@ import org.keycloak.storage.UserStorageProviderModel;
 import org.keycloak.storage.federated.UserFederatedStorageProvider;
 import org.keycloak.util.JsonSerialization;
 import org.keycloak.validation.ClientValidationUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.util.*;
@@ -67,7 +68,7 @@ public class RepresentationToModel {
 
     }
 
-    public static void importRealm(KeycloakSession session, RealmRepresentation rep, RealmModel newRealm, boolean skipUserDependent) {
+    public void importRealm(KeycloakSession session, RealmRepresentation rep, RealmModel newRealm, boolean skipUserDependent) {
         newRealm.setName(rep.getRealm());
         if (rep.getDisplayName() != null) newRealm.setDisplayName(rep.getDisplayName());
         if (rep.getDisplayNameHtml() != null) newRealm.setDisplayNameHtml(rep.getDisplayNameHtml());
@@ -1028,13 +1029,16 @@ public class RepresentationToModel {
 
     // CLIENTS
 
-    private static Map<String, ClientModel> createClients(KeycloakSession session, RealmRepresentation rep, RealmModel realm, Map<String, String> mappedFlows) {
+    @Autowired
+    private ClientValidationUtil clientValidationUtil;
+
+    private Map<String, ClientModel> createClients(KeycloakSession session, RealmRepresentation rep, RealmModel realm, Map<String, String> mappedFlows) {
         Map<String, ClientModel> appMap = new HashMap<String, ClientModel>();
         for (ClientRepresentation resourceRep : rep.getClients()) {
             ClientModel app = createClient(session, realm, resourceRep, false, mappedFlows);
             appMap.put(app.getClientId(), app);
 
-            ClientValidationUtil.validate(session, app, false, c -> {
+            clientValidationUtil.validate(session, app, false, c -> {
                 throw new RuntimeException("Invalid client " + app.getClientId() + ": " + c.getError());
             });
         }
@@ -1670,7 +1674,7 @@ public class RepresentationToModel {
     }
 
     public static IdentityProviderModel toModel(RealmModel realm, IdentityProviderRepresentation representation, KeycloakSession session) {
-        IdentityProviderFactory providerFactory = (IdentityProviderFactory) session.getKeycloakSessionFactory().getProviderFactory(
+        IdentityProviderFactory providerFactory = (IdentityProviderFactory) session.getSessionFactory().getProviderFactory(
                 IdentityProvider.class, representation.getProviderId());
 
         if (providerFactory == null) {
@@ -1939,7 +1943,7 @@ public class RepresentationToModel {
 
     public static void importAuthorizationSettings(ClientRepresentation clientRepresentation, ClientModel client, KeycloakSession session) {
         if (Boolean.TRUE.equals(clientRepresentation.getAuthorizationServicesEnabled())) {
-            AuthorizationProviderFactory authorizationFactory = (AuthorizationProviderFactory) session.getKeycloakSessionFactory().getProviderFactory(AuthorizationProvider.class);
+            AuthorizationProviderFactory authorizationFactory = (AuthorizationProviderFactory) session.getSessionFactory().getProviderFactory(AuthorizationProvider.class);
             AuthorizationProvider authorization = authorizationFactory.create(session, client.getRealm());
 
             client.setServiceAccountsEnabled(true);
@@ -2538,12 +2542,14 @@ public class RepresentationToModel {
         return m;
     }
 
-    public static ResourceServer createResourceServer(ClientModel client, KeycloakSession session, boolean addDefaultRoles) {
+    @Autowired
+    private AuthorizationProvider authorizationProvider;
+
+    public ResourceServer createResourceServer(ClientModel client, KeycloakSession session, boolean addDefaultRoles) {
         if ((client.isBearerOnly() || client.isPublicClient())
                 && !(client.getClientId().equals(Config.getAdminRealm() + "-realm") || client.getClientId().equals(Constants.REALM_MANAGEMENT_CLIENT_ID))) {
             throw new RuntimeException("Only confidential clients are allowed to set authorization settings");
         }
-        AuthorizationProvider authorization = session.getBeanFactory().getBean(AuthorizationProvider.class);
         UserModel serviceAccount = session.users().getServiceAccount(client);
 
         if (serviceAccount == null) {
@@ -2567,6 +2573,6 @@ public class RepresentationToModel {
         representation.setAllowRemoteResourceManagement(true);
         representation.setClientId(client.getId());
 
-        return toModel(representation, authorization);
+        return toModel(representation, authorizationProvider);
     }
 }

@@ -67,6 +67,7 @@ import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
 import org.keycloak.util.TokenUtil;
 import org.keycloak.utils.ProfileHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
@@ -232,6 +233,11 @@ public class TokenEndpoint {
         event.detail(Details.GRANT_TYPE, grantType);
     }
 
+    @Autowired
+    private OAuth2CodeParser oAuth2CodeParser;
+    @Autowired
+    private MtlsHoKTokenUtil mtlsHoKTokenUtil;
+
     public Response codeToToken() {
         String code = formParams.getFirst(OAuth2Constants.CODE);
         if (code == null) {
@@ -239,7 +245,7 @@ public class TokenEndpoint {
             throw new CorsErrorResponseException(cors, OAuthErrorException.INVALID_REQUEST, "Missing parameter: " + OAuth2Constants.CODE, Response.Status.BAD_REQUEST);
         }
 
-        OAuth2CodeParser.ParseResult parseResult = OAuth2CodeParser.parseCode(session, code, realm, event);
+        OAuth2CodeParser.ParseResult parseResult = oAuth2CodeParser.parseCode(session, code, realm, event);
         if (parseResult.isIllegalCode()) {
             AuthenticatedClientSessionModel clientSession = parseResult.getClientSession();
 
@@ -361,7 +367,7 @@ public class TokenEndpoint {
         // KEYCLOAK-6771 Certificate Bound Token
         // https://tools.ietf.org/html/draft-ietf-oauth-mtls-08#section-3
         if (OIDCAdvancedConfigWrapper.fromClientModel(client).isUseMtlsHokToken()) {
-            AccessToken.CertConf certConf = MtlsHoKTokenUtil.bindTokenWithClientCertificate(request, session);
+            AccessToken.CertConf certConf = mtlsHoKTokenUtil.bindTokenWithClientCertificate(request, session);
             if (certConf != null) {
                 responseBuilder.getAccessToken().setCertConf(certConf);
                 responseBuilder.getRefreshToken().setCertConf(certConf);
@@ -927,6 +933,9 @@ public class TokenEndpoint {
         return exchangeClientToClient(user, userSession);
     }
 
+    @Autowired
+    private BruteForceProtector bruteForceProtector;
+
     protected UserModel importUserFromExternalIdentity(BrokeredIdentityContext context) {
         IdentityProviderModel identityProviderConfig = context.getIdpConfig();
 
@@ -940,7 +949,7 @@ public class TokenEndpoint {
         context.getIdp().preprocessFederatedIdentity(session, realm, context);
         Set<IdentityProviderMapperModel> mappers = realm.getIdentityProviderMappersByAlias(context.getIdpConfig().getAlias());
         if (mappers != null) {
-            KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
+            KeycloakSessionFactory sessionFactory = session.getSessionFactory();
             for (IdentityProviderMapperModel mapper : mappers) {
                 IdentityProviderMapper target = (IdentityProviderMapper) sessionFactory.getProviderFactory(IdentityProviderMapper.class, mapper.getIdentityProviderMapper());
                 target.preprocessFederatedIdentity(session, realm, mapper, context);
@@ -996,7 +1005,7 @@ public class TokenEndpoint {
 
             context.getIdp().importNewUser(session, realm, user, context);
             if (mappers != null) {
-                KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
+                KeycloakSessionFactory sessionFactory = session.getSessionFactory();
                 for (IdentityProviderMapperModel mapper : mappers) {
                     IdentityProviderMapper target = (IdentityProviderMapper) sessionFactory.getProviderFactory(IdentityProviderMapper.class, mapper.getIdentityProviderMapper());
                     target.importNewUser(session, realm, user, mapper, context);
@@ -1013,7 +1022,7 @@ public class TokenEndpoint {
                 throw new CorsErrorResponseException(cors, Errors.INVALID_TOKEN, "Invalid Token", Response.Status.BAD_REQUEST);
             }
             if (realm.isBruteForceProtected()) {
-                if (session.getBeanFactory().getBean(BruteForceProtector.class).isTemporarilyDisabled(session, realm, user)) {
+                if (bruteForceProtector.isTemporarilyDisabled(session, realm, user)) {
                     event.error(Errors.USER_TEMPORARILY_DISABLED);
                     throw new CorsErrorResponseException(cors, Errors.INVALID_TOKEN, "Invalid Token", Response.Status.BAD_REQUEST);
                 }
@@ -1021,7 +1030,7 @@ public class TokenEndpoint {
 
             context.getIdp().updateBrokeredUser(session, realm, user, context);
             if (mappers != null) {
-                KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
+                KeycloakSessionFactory sessionFactory = session.getSessionFactory();
                 for (IdentityProviderMapperModel mapper : mappers) {
                     IdentityProviderMapper target = (IdentityProviderMapper) sessionFactory.getProviderFactory(IdentityProviderMapper.class, mapper.getIdentityProviderMapper());
                     target.updateBrokeredUser(session, realm, user, mapper, context);
@@ -1030,6 +1039,9 @@ public class TokenEndpoint {
         }
         return user;
     }
+
+    @Autowired
+    private AuthorizationProvider authorizationProvider;
 
     public Response permissionGrant() {
         event.detail(Details.AUTH_METHOD, "oauth_credentials");
@@ -1088,7 +1100,7 @@ public class TokenEndpoint {
             }
         }
 
-        AuthorizationTokenService.KeycloakAuthorizationRequest authorizationRequest = new AuthorizationTokenService.KeycloakAuthorizationRequest(session.getBeanFactory().getBean(AuthorizationProvider.class), tokenManager, event, this.request, cors);
+        AuthorizationTokenService.KeycloakAuthorizationRequest authorizationRequest = new AuthorizationTokenService.KeycloakAuthorizationRequest(authorizationProvider, tokenManager, event, this.request, cors);
 
         authorizationRequest.setTicket(formParams.getFirst("ticket"));
         authorizationRequest.setClaimToken(claimToken);

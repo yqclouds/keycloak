@@ -59,6 +59,6 @@ public interface CachedRealmModel extends RealmModel {
     interface RealmCachedEvent extends ProviderEvent {
         CachedRealmModel getRealm();
 
-        KeycloakSession getKeycloakSession();
+        KeycloakSession getSession();
     }
 }

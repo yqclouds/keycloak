@@ -63,6 +63,7 @@ import org.keycloak.services.validation.Validation;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
 import org.keycloak.util.JsonSerialization;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -133,7 +134,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
         Map<String, IdentityProviderFactory> availableProviders = new HashMap<String, IdentityProviderFactory>();
         List<ProviderFactory> allProviders = new ArrayList<ProviderFactory>();
 
-        allProviders.addAll(session.getKeycloakSessionFactory().getProviderFactories(IdentityProvider.class));
+        allProviders.addAll(session.getSessionFactory().getProviderFactories(IdentityProvider.class));
 
         for (ProviderFactory providerFactory : allProviders) {
             availableProviders.put(providerFactory.getId(), (IdentityProviderFactory) providerFactory);
@@ -513,7 +514,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
         context.getIdp().preprocessFederatedIdentity(session, realmModel, context);
         Set<IdentityProviderMapperModel> mappers = realmModel.getIdentityProviderMappersByAlias(context.getIdpConfig().getAlias());
         if (mappers != null) {
-            KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
+            KeycloakSessionFactory sessionFactory = session.getSessionFactory();
             for (IdentityProviderMapperModel mapper : mappers) {
                 IdentityProviderMapper target = (IdentityProviderMapper) sessionFactory.getProviderFactory(IdentityProviderMapper.class, mapper.getIdentityProviderMapper());
                 target.preprocessFederatedIdentity(session, realmModel, mapper, context);
@@ -597,15 +598,20 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
         }
     }
 
+    @Autowired
+    private BruteForceProtector bruteForceProtector;
+    @Autowired
+    private ErrorPage errorPage;
+
     public Response validateUser(AuthenticationSessionModel authSession, UserModel user, RealmModel realm) {
         if (!user.isEnabled()) {
             event.error(Errors.USER_DISABLED);
-            return ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.ACCOUNT_DISABLED);
+            return errorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.ACCOUNT_DISABLED);
         }
         if (realm.isBruteForceProtected()) {
-            if (session.getBeanFactory().getBean(BruteForceProtector.class).isTemporarilyDisabled(session, realm, user)) {
+            if (bruteForceProtector.isTemporarilyDisabled(session, realm, user)) {
                 event.error(Errors.USER_TEMPORARILY_DISABLED);
-                return ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.ACCOUNT_DISABLED);
+                return errorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.ACCOUNT_DISABLED);
             }
         }
         return null;
@@ -681,7 +687,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
                 context.getIdp().importNewUser(session, realmModel, federatedUser, context);
                 Set<IdentityProviderMapperModel> mappers = realmModel.getIdentityProviderMappersByAlias(providerId);
                 if (mappers != null) {
-                    KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
+                    KeycloakSessionFactory sessionFactory = session.getSessionFactory();
                     for (IdentityProviderMapperModel mapper : mappers) {
                         IdentityProviderMapper target = (IdentityProviderMapper) sessionFactory.getProviderFactory(IdentityProviderMapper.class, mapper.getIdentityProviderMapper());
                         target.importNewUser(session, realmModel, federatedUser, mapper, context);
@@ -801,6 +807,9 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
         }
     }
 
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
     private Response finishBrokerAuthentication(BrokeredIdentityContext context, UserModel federatedUser, AuthenticationSessionModel authSession, String providerId) {
         authSession.setAuthNote(AuthenticationProcessor.BROKER_SESSION_ID, context.getBrokerSessionId());
         authSession.setAuthNote(AuthenticationProcessor.BROKER_USER_ID, context.getBrokerUserId());
@@ -829,7 +838,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
             return AuthenticationManager.redirectToRequiredActions(session, realmModel, authSession, session.getContext().getUri(), nextRequiredAction);
         } else {
             event.detail(Details.CODE_ID, authSession.getParentSession().getId());  // todo This should be set elsewhere.  find out why tests fail.  Don't know where this is supposed to be set
-            return AuthenticationManager.finishedRequiredActions(session, authSession, null, clientConnection, request, session.getContext().getUri(), event);
+            return authenticationManager.finishedRequiredActions(session, authSession, null, clientConnection, request, session.getContext().getUri(), event);
         }
     }
 
@@ -969,7 +978,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
         context.getIdp().updateBrokeredUser(session, realmModel, federatedUser, context);
         Set<IdentityProviderMapperModel> mappers = realmModel.getIdentityProviderMappersByAlias(context.getIdpConfig().getAlias());
         if (mappers != null) {
-            KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
+            KeycloakSessionFactory sessionFactory = session.getSessionFactory();
             for (IdentityProviderMapperModel mapper : mappers) {
                 IdentityProviderMapper target = (IdentityProviderMapper) sessionFactory.getProviderFactory(IdentityProviderMapper.class, mapper.getIdentityProviderMapper());
                 target.updateBrokeredUser(session, realmModel, federatedUser, mapper, context);
@@ -1055,7 +1064,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
             return ParsedCodeContext.response(redirectToErrorPage(Response.Status.BAD_REQUEST, Messages.CLIENT_NOT_FOUND));
         }
 
-        LoginProtocolFactory factory = (LoginProtocolFactory) session.getKeycloakSessionFactory().getProviderFactory(LoginProtocol.class, SamlProtocol.LOGIN_PROTOCOL);
+        LoginProtocolFactory factory = (LoginProtocolFactory) session.getSessionFactory().getProviderFactory(LoginProtocol.class, SamlProtocol.LOGIN_PROTOCOL);
         SamlService samlService = (SamlService) factory.createProtocolEndpoint(realmModel, event);
         ResteasyProviderFactory.getInstance().injectProperties(samlService);
         AuthenticationSessionModel authSession = samlService.getOrCreateLoginSessionForIdpInitiatedSso(session, realmModel, oClient.get(), null);
@@ -1146,7 +1155,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
             return webEx.getResponse();
         }
 
-        return ErrorPage.error(this.session, authSession, status, message, parameters);
+        return errorPage.error(this.session, authSession, status, message, parameters);
     }
 
     private Response redirectToAccountErrorPage(AuthenticationSessionModel authSession, String message, Object... parameters) {

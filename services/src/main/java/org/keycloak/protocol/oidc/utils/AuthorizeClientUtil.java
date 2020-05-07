@@ -92,7 +92,7 @@ public class AuthorizeClientUtil {
     }
 
     public static ClientAuthenticatorFactory findClientAuthenticatorForOIDCAuthMethod(KeycloakSession session, String oidcAuthMethod) {
-        List<ProviderFactory> providerFactories = session.getKeycloakSessionFactory().getProviderFactories(ClientAuthenticator.class);
+        List<ProviderFactory> providerFactories = session.getSessionFactory().getProviderFactories(ClientAuthenticator.class);
         for (ProviderFactory factory : providerFactories) {
             ClientAuthenticatorFactory clientAuthFactory = (ClientAuthenticatorFactory) factory;
             if (clientAuthFactory.getProtocolAuthenticatorMethods(OIDCLoginProtocol.LOGIN_PROTOCOL).contains(oidcAuthMethod)) {

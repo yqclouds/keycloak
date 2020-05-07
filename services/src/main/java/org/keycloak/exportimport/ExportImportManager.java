@@ -37,7 +37,7 @@ public class ExportImportManager {
     private ImportProvider importProvider;
 
     public ExportImportManager(KeycloakSession session) {
-        this.sessionFactory = session.getKeycloakSessionFactory();
+        this.sessionFactory = session.getSessionFactory();
 
         realmName = ExportImportConfig.getRealmName();
 

@@ -7,6 +7,7 @@ import org.keycloak.protocol.oidc.utils.PairwiseSubMapperValidator;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.IDToken;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -18,6 +19,9 @@ import java.util.List;
  */
 public abstract class AbstractPairwiseSubMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
     public static final String PROVIDER_ID_SUFFIX = "-pairwise-sub-mapper";
+
+    @Autowired
+    private PairwiseSubMapperValidator pairwiseSubMapperValidator;
 
     public abstract String getIdPrefix();
 
@@ -108,7 +112,7 @@ public abstract class AbstractPairwiseSubMapper extends AbstractOIDCProtocolMapp
         ClientModel client = null;
         if (mapperContainer instanceof ClientModel) {
             client = (ClientModel) mapperContainer;
-            PairwiseSubMapperValidator.validate(session, client, mapperModel);
+            pairwiseSubMapperValidator.validate(session, client, mapperModel);
         }
         validateAdditionalConfig(session, realm, mapperContainer, mapperModel);
     }

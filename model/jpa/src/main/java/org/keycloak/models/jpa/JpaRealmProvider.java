@@ -64,14 +64,14 @@ public class JpaRealmProvider implements RealmProvider {
         em.persist(realm);
         em.flush();
         final RealmModel adapter = new RealmAdapter(session, em, realm);
-        session.getKeycloakSessionFactory().publish(new RealmModel.RealmCreationEvent() {
+        session.getSessionFactory().publish(new RealmModel.RealmCreationEvent() {
             @Override
             public RealmModel getCreatedRealm() {
                 return adapter;
             }
 
             @Override
-            public KeycloakSession getKeycloakSession() {
+            public KeycloakSession getSession() {
                 return session;
             }
         });
@@ -170,14 +170,14 @@ public class JpaRealmProvider implements RealmProvider {
         em.flush();
         em.clear();
 
-        session.getKeycloakSessionFactory().publish(new RealmModel.RealmRemovedEvent() {
+        session.getSessionFactory().publish(new RealmModel.RealmRemovedEvent() {
             @Override
             public RealmModel getRealm() {
                 return adapter;
             }
 
             @Override
-            public KeycloakSession getKeycloakSession() {
+            public KeycloakSession getSession() {
                 return session;
             }
         });
@@ -360,14 +360,14 @@ public class JpaRealmProvider implements RealmProvider {
         em.flush();
         em.remove(roleEntity);
 
-        session.getKeycloakSessionFactory().publish(new RoleContainerModel.RoleRemovedEvent() {
+        session.getSessionFactory().publish(new RoleContainerModel.RoleRemovedEvent() {
             @Override
             public RoleModel getRole() {
                 return role;
             }
 
             @Override
-            public KeycloakSession getKeycloakSession() {
+            public KeycloakSession getSession() {
                 return session;
             }
         });
@@ -513,11 +513,11 @@ public class JpaRealmProvider implements RealmProvider {
             }
 
             @Override
-            public KeycloakSession getKeycloakSession() {
+            public KeycloakSession getSession() {
                 return session;
             }
         };
-        session.getKeycloakSessionFactory().publish(event);
+        session.getSessionFactory().publish(event);
 
         session.users().preRemove(realm, group);
 
@@ -589,7 +589,7 @@ public class JpaRealmProvider implements RealmProvider {
         final ClientModel resource = new ClientAdapter(realm, em, session, entity);
 
         em.flush();
-        session.getKeycloakSessionFactory().publish(new RealmModel.ClientCreationEvent() {
+        session.getSessionFactory().publish(new RealmModel.ClientCreationEvent() {
             @Override
             public ClientModel getCreatedClient() {
                 return resource;
@@ -688,14 +688,14 @@ public class JpaRealmProvider implements RealmProvider {
 
         ClientEntity clientEntity = em.find(ClientEntity.class, id, LockModeType.PESSIMISTIC_WRITE);
 
-        session.getKeycloakSessionFactory().publish(new RealmModel.ClientRemovedEvent() {
+        session.getSessionFactory().publish(new RealmModel.ClientRemovedEvent() {
             @Override
             public ClientModel getClient() {
                 return client;
             }
 
             @Override
-            public KeycloakSession getKeycloakSession() {
+            public KeycloakSession getSession() {
                 return session;
             }
         });

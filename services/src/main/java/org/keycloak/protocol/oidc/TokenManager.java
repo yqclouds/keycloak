@@ -53,6 +53,7 @@ import org.keycloak.services.util.DefaultClientSessionContext;
 import org.keycloak.services.util.MtlsHoKTokenUtil;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.util.TokenUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
@@ -409,12 +410,18 @@ public class TokenManager {
         return new RefreshResult(res, TokenUtil.TOKEN_TYPE_OFFLINE.equals(refreshToken.getType()));
     }
 
+    @Autowired
+    private ClusterProvider clusterProvider;
+
+    @Autowired
+    private MtlsHoKTokenUtil mtlsHoKTokenUtil;
+
     private void validateTokenReuse(KeycloakSession session, RealmModel realm, RefreshToken refreshToken,
                                     TokenValidation validation) throws OAuthErrorException {
         if (realm.isRevokeRefreshToken()) {
             AuthenticatedClientSessionModel clientSession = validation.clientSessionCtx.getClientSession();
 
-            int clusterStartupTime = session.getBeanFactory().getBean(ClusterProvider.class).getClusterStartupTime();
+            int clusterStartupTime = clusterProvider.getClusterStartupTime();
 
             if (clientSession.getCurrentRefreshToken() != null &&
                     !refreshToken.getId().equals(clientSession.getCurrentRefreshToken()) &&
@@ -462,7 +469,7 @@ public class TokenManager {
 
             // KEYCLOAK-6771 Certificate Bound Token
             if (OIDCAdvancedConfigWrapper.fromClientModel(client).isUseMtlsHokToken()) {
-                if (!MtlsHoKTokenUtil.verifyTokenBindingWithClientCertificate(refreshToken, request, session)) {
+                if (!mtlsHoKTokenUtil.verifyTokenBindingWithClientCertificate(refreshToken, request, session)) {
                     throw new OAuthErrorException(OAuthErrorException.UNAUTHORIZED_CLIENT, MtlsHoKTokenUtil.CERT_VERIFY_ERROR_DESC);
                 }
             }

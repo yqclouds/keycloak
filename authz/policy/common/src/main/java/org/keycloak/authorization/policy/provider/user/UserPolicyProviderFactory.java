@@ -33,6 +33,7 @@ import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.representations.idm.authorization.UserPolicyRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.util.JsonSerialization;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -111,7 +112,7 @@ public class UserPolicyProviderFactory implements PolicyProviderFactory<UserPoli
         Map<String, String> config = new HashMap<>();
 
         try {
-            UserProvider userProvider = authorizationProvider.getKeycloakSession().users();
+            UserProvider userProvider = authorizationProvider.getSession().users();
             RealmModel realm = authorizationProvider.getRealm();
 
             config.put("users", JsonSerialization.writeValueAsString(userRep.getUsers().stream().map(id -> userProvider.getUserById(id, realm).getUsername()).collect(Collectors.toList())));
@@ -127,7 +128,7 @@ public class UserPolicyProviderFactory implements PolicyProviderFactory<UserPoli
     }
 
     private void updateUsers(Policy policy, AuthorizationProvider authorization, Set<String> users) {
-        KeycloakSession session = authorization.getKeycloakSession();
+        KeycloakSession session = authorization.getSession();
         RealmModel realm = authorization.getRealm();
         UserProvider userProvider = session.users();
         Set<String> updatedUsers = new HashSet<>();
@@ -166,13 +167,14 @@ public class UserPolicyProviderFactory implements PolicyProviderFactory<UserPoli
 
     }
 
+    @Autowired
+    private AuthorizationProvider authorizationProvider;
+
     @Override
     public void postInit(KeycloakSessionFactory factory) {
         factory.register(event -> {
             if (event instanceof UserRemovedEvent) {
-                KeycloakSession keycloakSession = ((UserRemovedEvent) event).getKeycloakSession();
-                AuthorizationProvider provider = keycloakSession.getBeanFactory().getBean(AuthorizationProvider.class);
-                StoreFactory storeFactory = provider.getStoreFactory();
+                StoreFactory storeFactory = authorizationProvider.getStoreFactory();
                 PolicyStore policyStore = storeFactory.getPolicyStore();
                 UserModel removedUser = ((UserRemovedEvent) event).getUser();
                 RealmModel realm = ((UserRemovedEvent) event).getRealm();

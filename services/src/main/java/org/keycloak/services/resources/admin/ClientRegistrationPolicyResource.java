@@ -68,7 +68,7 @@ public class ClientRegistrationPolicyResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public List<ComponentTypeRepresentation> getProviders() {
-        List<ProviderFactory> providerFactories = session.getKeycloakSessionFactory().getProviderFactories(ClientRegistrationPolicy.class);
+        List<ProviderFactory> providerFactories = session.getSessionFactory().getProviderFactories(ClientRegistrationPolicy.class);
 
         return providerFactories.stream().map((ProviderFactory factory) -> {
 

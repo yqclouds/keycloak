@@ -147,7 +147,7 @@ public class OIDCWellKnownProvider implements WellKnownProvider {
     private List<String> getClientAuthMethodsSupported() {
         List<String> result = new LinkedList<>();
 
-        List<ProviderFactory> providerFactories = session.getKeycloakSessionFactory().getProviderFactories(ClientAuthenticator.class);
+        List<ProviderFactory> providerFactories = session.getSessionFactory().getProviderFactories(ClientAuthenticator.class);
         for (ProviderFactory factory : providerFactories) {
             ClientAuthenticatorFactory clientAuthFactory = (ClientAuthenticatorFactory) factory;
             result.addAll(clientAuthFactory.getProtocolAuthenticatorMethods(OIDCLoginProtocol.LOGIN_PROTOCOL));
@@ -158,7 +158,7 @@ public class OIDCWellKnownProvider implements WellKnownProvider {
 
     private List<String> getSupportedSigningAlgorithms(boolean includeNone) {
         List<String> result = new LinkedList<>();
-        for (ProviderFactory s : session.getKeycloakSessionFactory().getProviderFactories(SignatureProvider.class)) {
+        for (ProviderFactory s : session.getSessionFactory().getProviderFactories(SignatureProvider.class)) {
             result.add(s.getId());
         }
         if (includeNone) {
@@ -169,7 +169,7 @@ public class OIDCWellKnownProvider implements WellKnownProvider {
 
     private List<String> getSupportedClientSigningAlgorithms(boolean includeNone) {
         List<String> result = new LinkedList<>();
-        for (ProviderFactory s : session.getKeycloakSessionFactory().getProviderFactories(ClientSignatureVerifierProvider.class)) {
+        for (ProviderFactory s : session.getSessionFactory().getProviderFactories(ClientSignatureVerifierProvider.class)) {
             result.add(s.getId());
         }
         if (includeNone) {
@@ -180,7 +180,7 @@ public class OIDCWellKnownProvider implements WellKnownProvider {
 
     private List<String> getSupportedIdTokenEncryptionAlg(boolean includeNone) {
         List<String> result = new LinkedList<>();
-        for (ProviderFactory s : session.getKeycloakSessionFactory().getProviderFactories(CekManagementProvider.class)) {
+        for (ProviderFactory s : session.getSessionFactory().getProviderFactories(CekManagementProvider.class)) {
             result.add(s.getId());
         }
         if (includeNone) {
@@ -191,7 +191,7 @@ public class OIDCWellKnownProvider implements WellKnownProvider {
 
     private List<String> getSupportedIdTokenEncryptionEnc(boolean includeNone) {
         List<String> result = new LinkedList<>();
-        for (ProviderFactory s : session.getKeycloakSessionFactory().getProviderFactories(ContentEncryptionProvider.class)) {
+        for (ProviderFactory s : session.getSessionFactory().getProviderFactories(ContentEncryptionProvider.class)) {
             result.add(s.getId());
         }
         if (includeNone) {

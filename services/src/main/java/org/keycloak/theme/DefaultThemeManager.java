@@ -24,6 +24,7 @@ import org.keycloak.common.util.StringPropertyReplacer;
 import org.keycloak.common.util.SystemEnvProperties;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ThemeManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -65,9 +66,12 @@ public class DefaultThemeManager implements ThemeManager {
         return Locale.ENGLISH;
     }
 
+    @Autowired
+    private ThemeSelectorProvider themeSelectorProvider;
+
     @Override
     public Theme getTheme(Theme.Type type) {
-        String name = session.getBeanFactory().getBean(ThemeSelectorProvider.class).getThemeName(type);
+        String name = themeSelectorProvider.getThemeName(type);
         return getTheme(name, type);
     }
 

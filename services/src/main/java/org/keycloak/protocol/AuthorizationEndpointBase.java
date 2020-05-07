@@ -36,6 +36,7 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.LoginActionsService;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
@@ -165,6 +166,9 @@ public abstract class AuthorizationEndpointBase {
         }
     }
 
+    @Autowired
+    private LoginFormsProvider loginFormsProvider;
+
     protected AuthenticationSessionModel createAuthenticationSession(ClientModel client, String requestState) {
         AuthenticationSessionManager manager = new AuthenticationSessionManager(session);
         RootAuthenticationSessionModel rootAuthSession = manager.getCurrentRootAuthenticationSession(realm);
@@ -194,7 +198,7 @@ public abstract class AuthorizationEndpointBase {
             }
         }
 
-        session.getBeanFactory().getBean(LoginFormsProvider.class).setAuthenticationSession(authSession);
+        loginFormsProvider.setAuthenticationSession(authSession);
 
         return authSession;
 

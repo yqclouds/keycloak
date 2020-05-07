@@ -17,6 +17,9 @@
 
 package org.keycloak.vault;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.PostConstruct;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -38,9 +41,11 @@ public class DefaultVaultTranscriber implements VaultTranscriber {
 
     private static final Pattern pattern = Pattern.compile("^\\$\\{vault\\.(.+?)}$");
 
-    private final VaultProvider provider;
+    @Autowired(required = false)
+    private VaultProvider provider;
 
-    public DefaultVaultTranscriber(final VaultProvider provider) {
+    @PostConstruct
+    public void afterPropertiesSet() {
         if (provider == null) {
             this.provider = new VaultProvider() {
                 @Override
@@ -52,8 +57,6 @@ public class DefaultVaultTranscriber implements VaultTranscriber {
                 public void close() {
                 }
             };
-        } else {
-            this.provider = provider;
         }
     }
 

@@ -31,6 +31,7 @@ import org.keycloak.services.clientregistration.policy.DefaultClientRegistration
 import org.keycloak.sessions.AuthenticationSessionProvider;
 import org.keycloak.storage.UserStorageProviderModel;
 import org.keycloak.utils.ReservedCharValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -46,6 +47,9 @@ public class RealmManager {
 
     protected KeycloakSession session;
     protected RealmProvider model;
+
+    @Autowired(required = false)
+    private UserSessionPersisterProvider userSessionPersisterProvider;
 
     public RealmManager(KeycloakSession session) {
         this.session = session;
@@ -236,9 +240,8 @@ public class RealmManager {
                 sessions.onRealmRemoved(realm);
             }
 
-            UserSessionPersisterProvider sessionsPersister = session.getBeanFactory().getBean(UserSessionPersisterProvider.class);
-            if (sessionsPersister != null) {
-                sessionsPersister.onRealmRemoved(realm);
+            if (userSessionPersisterProvider != null) {
+                userSessionPersisterProvider.onRealmRemoved(realm);
             }
 
             AuthenticationSessionProvider authSessions = session.authenticationSessions();
@@ -477,6 +480,8 @@ public class RealmManager {
         return importRealm(rep, false);
     }
 
+    @Autowired
+    private RepresentationToModel representationToModel;
 
     /**
      * if "skipUserDependent" is true, then import of any models, which needs users already imported in DB, will be skipped. For example authorization
@@ -530,7 +535,7 @@ public class RealmManager {
             createDefaultClientScopes(realm);
         }
 
-        RepresentationToModel.importRealm(session, rep, realm, skipUserDependent);
+        representationToModel.importRealm(session, rep, realm, skipUserDependent);
         List<ClientRepresentation> clients = rep.getClients();
 
         if (clients != null) {
@@ -544,7 +549,7 @@ public class RealmManager {
                 }
 
                 if (Boolean.TRUE.equals(client.getAuthorizationServicesEnabled())) {
-                    RepresentationToModel.createResourceServer(clientModel, session, true);
+                    representationToModel.createResourceServer(clientModel, session, true);
                     if (!skipUserDependent) {
                         RepresentationToModel.importAuthorizationSettings(client, clientModel, session);
                     }
@@ -705,14 +710,14 @@ public class RealmManager {
     }
 
     private void fireRealmPostCreate(RealmModel realm) {
-        session.getKeycloakSessionFactory().publish(new RealmModel.RealmPostCreateEvent() {
+        session.getSessionFactory().publish(new RealmModel.RealmPostCreateEvent() {
             @Override
             public RealmModel getCreatedRealm() {
                 return realm;
             }
 
             @Override
-            public KeycloakSession getKeycloakSession() {
+            public KeycloakSession getSession() {
                 return session;
             }
         });

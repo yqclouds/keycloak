@@ -30,6 +30,7 @@ import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.entities.UserSessionEntity;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
 
@@ -48,12 +49,15 @@ public class CrossDCLastSessionRefreshListener implements ClusterListener {
     private final Cache<String, SessionEntityWrapper<UserSessionEntity>> cache;
     private final TopologyInfo topologyInfo;
 
+    @Autowired
+    private InfinispanUtil infinispanUtil;
+
     public CrossDCLastSessionRefreshListener(KeycloakSession session, Cache<String, SessionEntityWrapper<UserSessionEntity>> cache, boolean offline) {
-        this.sessionFactory = session.getKeycloakSessionFactory();
+        this.sessionFactory = session.getSessionFactory();
         this.cache = cache;
         this.offline = offline;
 
-        this.topologyInfo = InfinispanUtil.getTopologyInfo(session);
+        this.topologyInfo = infinispanUtil.getTopologyInfo(session);
     }
 
     @Override

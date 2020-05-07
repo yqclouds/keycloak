@@ -25,6 +25,7 @@ import org.keycloak.models.*;
 import org.keycloak.models.utils.FormMessage;
 import org.keycloak.services.resources.LoginActionsService;
 import org.keycloak.sessions.AuthenticationSessionModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -64,7 +65,7 @@ public class FormAuthenticationFlow implements AuthenticationFlow {
                 executionStatus.put(formActionExecution.getId(), AuthenticationSessionModel.ExecutionStatus.SKIPPED);
                 continue;
             }
-            FormActionFactory factory = (FormActionFactory) processor.getSession().getKeycloakSessionFactory().getProviderFactory(FormAction.class, formActionExecution.getAuthenticator());
+            FormActionFactory factory = (FormActionFactory) processor.getSession().getSessionFactory().getProviderFactory(FormAction.class, formActionExecution.getAuthenticator());
             FormAction action = factory.create(processor.getSession());
 
             UserModel authUser = processor.getAuthenticationSession().getAuthenticatedUser();
@@ -159,12 +160,15 @@ public class FormAuthenticationFlow implements AuthenticationFlow {
         return renderForm(null, null);
     }
 
+    @Autowired
+    private LoginFormsProvider loginFormsProvider;
+
     public Response renderForm(MultivaluedMap<String, String> formData, List<FormMessage> errors) {
         String executionId = formExecution.getId();
         processor.getAuthenticationSession().setAuthNote(AuthenticationProcessor.CURRENT_AUTHENTICATION_EXECUTION, executionId);
         String code = processor.generateCode();
         URI actionUrl = getActionUrl(executionId, code);
-        LoginFormsProvider form = processor.getSession().getBeanFactory().getBean(LoginFormsProvider.class)
+        LoginFormsProvider form = this.loginFormsProvider
                 .setAuthenticationSession(processor.getAuthenticationSession())
                 .setActionUri(actionUrl)
                 .setExecution(executionId)
@@ -266,6 +270,7 @@ public class FormAuthenticationFlow implements AuthenticationFlow {
         boolean success;
         List<FormMessage> errors = null;
         MultivaluedMap<String, String> formData = null;
+
         private ValidationContextImpl(AuthenticationExecutionModel executionModel, FormAction action) {
             super(executionModel);
             this.action = action;

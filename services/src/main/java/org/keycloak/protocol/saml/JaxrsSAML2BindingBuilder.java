@@ -23,6 +23,7 @@ import org.keycloak.saml.BaseSAML2BindingBuilder;
 import org.keycloak.saml.common.constants.GeneralConstants;
 import org.keycloak.saml.common.exceptions.ConfigurationException;
 import org.keycloak.saml.common.exceptions.ProcessingException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.w3c.dom.Document;
 
 import javax.ws.rs.core.CacheControl;
@@ -79,6 +80,9 @@ public class JaxrsSAML2BindingBuilder extends BaseSAML2BindingBuilder<JaxrsSAML2
 
     }
 
+    @Autowired
+    private LoginFormsProvider loginFormsProvider;
+
     public class PostBindingBuilder extends BasePostBindingBuilder {
         public PostBindingBuilder(JaxrsSAML2BindingBuilder builder, Document document) throws ProcessingException {
             super(builder, document);
@@ -101,7 +105,7 @@ public class JaxrsSAML2BindingBuilder extends BaseSAML2BindingBuilder<JaxrsSAML2
                 formData.add(GeneralConstants.RELAY_STATE, this.getRelayState());
             }
 
-            return session.getBeanFactory().getBean(LoginFormsProvider.class).setFormData(formData).createSamlPostForm();
+            return loginFormsProvider.setFormData(formData).createSamlPostForm();
         }
     }
 

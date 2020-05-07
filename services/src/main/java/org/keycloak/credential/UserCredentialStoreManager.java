@@ -42,7 +42,7 @@ public class UserCredentialStoreManager implements UserCredentialManager, OnUser
 
     public static <T> List<T> getCredentialProviders(KeycloakSession session, RealmModel realm, Class<T> type) {
         List<T> list = new LinkedList<T>();
-        for (ProviderFactory f : session.getKeycloakSessionFactory().getProviderFactories(CredentialProvider.class)) {
+        for (ProviderFactory f : session.getSessionFactory().getProviderFactories(CredentialProvider.class)) {
             if (!Types.supports(type, f, CredentialProviderFactory.class)) continue;
             list.add((T) session.getProvider(CredentialProvider.class, f.getId()));
         }
@@ -112,7 +112,7 @@ public class UserCredentialStoreManager implements UserCredentialManager, OnUser
     @Override
     public CredentialModel createCredentialThroughProvider(RealmModel realm, UserModel user, CredentialModel model) {
         throwExceptionIfInvalidUser(user);
-        List<CredentialProvider> credentialProviders = session.getKeycloakSessionFactory().getProviderFactories(CredentialProvider.class)
+        List<CredentialProvider> credentialProviders = session.getSessionFactory().getProviderFactories(CredentialProvider.class)
                 .stream()
                 .map(f -> session.getProvider(CredentialProvider.class, f.getId()))
                 .filter(provider -> provider.getType().equals(model.getType()))

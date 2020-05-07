@@ -43,7 +43,7 @@ public class UserSynchronizer implements Synchronizer<UserRemovedEvent> {
     @Override
     public void synchronize(UserRemovedEvent event, KeycloakSessionFactory factory) {
         ProviderFactory<AuthorizationProvider> providerFactory = factory.getProviderFactory(AuthorizationProvider.class);
-        AuthorizationProvider authorizationProvider = providerFactory.create(event.getKeycloakSession());
+        AuthorizationProvider authorizationProvider = providerFactory.create(event.getSession());
 
         removeFromUserPermissionTickets(event, authorizationProvider);
         removeUserResources(event, authorizationProvider);

@@ -37,6 +37,7 @@ import org.keycloak.storage.StorageId;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.UserStorageProviderModel;
 import org.keycloak.storage.client.ClientStorageProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
@@ -62,6 +63,11 @@ public class UserCacheSession implements UserCache {
     protected Set<InvalidationEvent> invalidationEvents = new HashSet<>(); // Events to be sent across cluster
     protected Map<String, UserModel> managedUsers = new HashMap<>();
 
+    @Autowired
+    private InfinispanConnectionProvider connectionProvider;
+    @Autowired
+    private ClusterProvider clusterProvider;
+
     public UserCacheSession(KeycloakSession session) {
         this.userCache = userCache;
         this.session = session;
@@ -71,23 +77,16 @@ public class UserCacheSession implements UserCache {
 
     @PostConstruct
     public void afterPropertiesSet() {
-        Cache<String, Revisioned> cache = session.getBeanFactory().getBean(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.USER_CACHE_NAME);
-        Cache<String, Long> revisions = session.getBeanFactory().getBean(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.USER_REVISIONS_CACHE_NAME);
+        Cache<String, Revisioned> cache = connectionProvider.getCache(InfinispanConnectionProvider.USER_CACHE_NAME);
+        Cache<String, Long> revisions = connectionProvider.getCache(InfinispanConnectionProvider.USER_REVISIONS_CACHE_NAME);
         userCache = new UserCacheManager(cache, revisions);
-
-        ClusterProvider cluster = session.getBeanFactory().getBean(ClusterProvider.class);
-
-        cluster.registerListener(USER_INVALIDATION_EVENTS, (ClusterEvent event) -> {
-
+        clusterProvider.registerListener(USER_INVALIDATION_EVENTS, (ClusterEvent event) -> {
             InvalidationEvent invalidationEvent = (InvalidationEvent) event;
             userCache.invalidationEventReceived(invalidationEvent);
-
         });
 
-        cluster.registerListener(USER_CLEAR_CACHE_EVENTS, (ClusterEvent event) -> {
-
+        clusterProvider.registerListener(USER_CLEAR_CACHE_EVENTS, (ClusterEvent event) -> {
             userCache.clear();
-
         });
 
         logger.debug("Registered cluster listeners");
@@ -120,8 +119,7 @@ public class UserCacheSession implements UserCache {
     @Override
     public void clear() {
         userCache.clear();
-        ClusterProvider cluster = session.getBeanFactory().getBean(ClusterProvider.class);
-        cluster.notify(USER_CLEAR_CACHE_EVENTS, new ClearCacheEvent(), true, ClusterProvider.DCNotify.ALL_DCS);
+        clusterProvider.notify(USER_CLEAR_CACHE_EVENTS, new ClearCacheEvent(), true, ClusterProvider.DCNotify.ALL_DCS);
     }
 
     public UserProvider getDelegate() {

@@ -23,7 +23,7 @@ public class ClientPolicyProvider implements PolicyProvider {
     public void evaluate(Evaluation evaluation) {
         ClientPolicyRepresentation representation = representationFunction.apply(evaluation.getPolicy(), evaluation.getAuthorizationProvider());
         AuthorizationProvider authorizationProvider = evaluation.getAuthorizationProvider();
-        RealmModel realm = authorizationProvider.getKeycloakSession().getContext().getRealm();
+        RealmModel realm = authorizationProvider.getSession().getContext().getRealm();
         EvaluationContext context = evaluation.getContext();
 
         for (String client : representation.getClients()) {

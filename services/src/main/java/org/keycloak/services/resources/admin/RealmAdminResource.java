@@ -60,6 +60,7 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissionManageme
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import org.keycloak.storage.UserStorageProviderModel;
 import org.keycloak.utils.ReservedCharValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -128,7 +129,7 @@ public class RealmAdminResource {
             throw new NotFoundException("Realm not found.");
         }
 
-        for (ProviderFactory<ClientDescriptionConverter> factory : session.getKeycloakSessionFactory().getProviderFactories(ClientDescriptionConverter.class)) {
+        for (ProviderFactory<ClientDescriptionConverter> factory : session.getSessionFactory().getProviderFactories(ClientDescriptionConverter.class)) {
             if (((ClientDescriptionConverterFactory) factory).isSupported(description)) {
                 return factory.create(session).convertToInternal(description);
             }
@@ -341,6 +342,9 @@ public class RealmAdminResource {
         }
     }
 
+    @Autowired(required = false)
+    private UserCache userCache;
+
     /**
      * Update the top-level information of the realm
      * <p>
@@ -396,8 +400,7 @@ public class RealmAdminResource {
             adminEvent.operation(OperationType.UPDATE).representation(StripSecretsUtils.strip(rep)).success();
 
             if (rep.isDuplicateEmailsAllowed() != null && rep.isDuplicateEmailsAllowed() != wasDuplicateEmailsAllowed) {
-                UserCache cache = session.getBeanFactory().getBean(UserCache.class);
-                if (cache != null) cache.clear();
+                if (userCache != null) userCache.clear();
             }
 
             return Response.noContent().build();
@@ -646,6 +649,9 @@ public class RealmAdminResource {
                 .success();
     }
 
+    @Autowired
+    private EventStoreProvider eventStoreProvider;
+
     /**
      * Get events
      * <p>
@@ -671,9 +677,7 @@ public class RealmAdminResource {
                                                @QueryParam("max") Integer maxResults) {
         auth.realm().requireViewEvents();
 
-        EventStoreProvider eventStore = session.getBeanFactory().getBean(EventStoreProvider.class);
-
-        EventQuery query = eventStore.createQuery().realm(realm.getId());
+        EventQuery query = eventStoreProvider.createQuery().realm(realm.getId());
         if (client != null) {
             query.client(client);
         }
@@ -764,9 +768,7 @@ public class RealmAdminResource {
                                                     @QueryParam("resourceTypes") List<String> resourceTypes) {
         auth.realm().requireViewEvents();
 
-        EventStoreProvider eventStore = session.getBeanFactory().getBean(EventStoreProvider.class);
-        AdminEventQuery query = eventStore.createAdminQuery().realm(realm.getId());
-        ;
+        AdminEventQuery query = eventStoreProvider.createAdminQuery().realm(realm.getId());
 
         if (authRealm != null) {
             query.authRealm(authRealm);
@@ -856,8 +858,7 @@ public class RealmAdminResource {
     public void clearEvents() {
         auth.realm().requireManageEvents();
 
-        EventStoreProvider eventStore = session.getBeanFactory().getBean(EventStoreProvider.class);
-        eventStore.clear(realm.getId());
+        eventStoreProvider.clear(realm.getId());
     }
 
     /**
@@ -868,8 +869,7 @@ public class RealmAdminResource {
     public void clearAdminEvents() {
         auth.realm().requireManageEvents();
 
-        EventStoreProvider eventStore = session.getBeanFactory().getBean(EventStoreProvider.class);
-        eventStore.clearAdmin(realm.getId());
+        eventStoreProvider.clearAdmin(realm.getId());
     }
 
     /**
@@ -939,6 +939,9 @@ public class RealmAdminResource {
         return testSMTPConnection(settings);
     }
 
+    @Autowired
+    private EmailTemplateProvider emailTemplateProvider;
+
     @Path("testSMTPConnection")
     @POST
     @NoCache
@@ -952,7 +955,7 @@ public class RealmAdminResource {
             if (ComponentRepresentation.SECRET_VALUE.equals(settings.get("password"))) {
                 settings.put("password", realm.getSmtpConfig().get("password"));
             }
-            session.getBeanFactory().getBean(EmailTemplateProvider.class).sendSmtpTestEmail(settings, user);
+            emailTemplateProvider.sendSmtpTestEmail(settings, user);
         } catch (Exception e) {
             e.printStackTrace();
             logger.errorf("Failed to send email \n %s", e.getCause());
@@ -1055,6 +1058,9 @@ public class RealmAdminResource {
         return partialImport.saveResources();
     }
 
+    @Autowired
+    private ExportUtils exportUtils;
+
     /**
      * Partial export of existing realm into a JSON file.
      *
@@ -1083,9 +1089,12 @@ public class RealmAdminResource {
         // this means that if clients is true but groups/roles is false the service account is exported without roles
         // the other option is just include service accounts if clientsExported && groupsAndRolesExported
         ExportOptions options = new ExportOptions(false, clientsExported, groupsAndRolesExported, clientsExported);
-        RealmRepresentation rep = ExportUtils.exportRealm(session, realm, options, false);
+        RealmRepresentation rep = exportUtils.exportRealm(session, realm, options, false);
         return stripForExport(session, rep);
     }
+
+    @Autowired(required = false)
+    private CacheRealmProvider cacheRealmProvider;
 
     /**
      * Clear realm cache
@@ -1094,10 +1103,8 @@ public class RealmAdminResource {
     @POST
     public void clearRealmCache() {
         auth.realm().requireManageRealm();
-
-        CacheRealmProvider cache = session.getBeanFactory().getBean(CacheRealmProvider.class);
-        if (cache != null) {
-            cache.clear();
+        if (cacheRealmProvider != null) {
+            cacheRealmProvider.clear();
         }
 
         adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).success();
@@ -1111,13 +1118,15 @@ public class RealmAdminResource {
     public void clearUserCache() {
         auth.realm().requireManageRealm();
 
-        UserCache cache = session.getBeanFactory().getBean(UserCache.class);
-        if (cache != null) {
-            cache.clear();
+        if (userCache != null) {
+            userCache.clear();
         }
 
         adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).success();
     }
+
+    @Autowired(required = false)
+    private PublicKeyStorageProvider publicKeyStorageProvider;
 
     /**
      * Clear cache of external public keys (Public keys of clients or Identity providers)
@@ -1127,9 +1136,8 @@ public class RealmAdminResource {
     public void clearKeysCache() {
         auth.realm().requireManageRealm();
 
-        PublicKeyStorageProvider cache = session.getBeanFactory().getBean(PublicKeyStorageProvider.class);
-        if (cache != null) {
-            cache.clearCache();
+        if (publicKeyStorageProvider != null) {
+            publicKeyStorageProvider.clearCache();
         }
 
         adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).success();

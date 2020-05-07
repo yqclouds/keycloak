@@ -21,6 +21,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -32,25 +33,22 @@ import java.util.Objects;
  */
 public class EventBuilder {
 
-    private static final Logger log = Logger.getLogger(EventBuilder.class);
+    private static final Logger LOG = Logger.getLogger(EventBuilder.class);
 
-    private EventStoreProvider store;
     private List<EventListenerProvider> listeners;
     private RealmModel realm;
     private Event event;
+
+    @Autowired(required = false)
+    private EventStoreProvider eventStoreProvider;
 
     public EventBuilder(RealmModel realm, KeycloakSession session, ClientConnection clientConnection) {
         this.realm = realm;
 
         event = new Event();
 
-        if (realm.isEventsEnabled()) {
-            EventStoreProvider store = session.getBeanFactory().getBean(EventStoreProvider.class);
-            if (store != null) {
-                this.store = store;
-            } else {
-                log.error("Events enabled, but no event store provider configured");
-            }
+        if (realm.isEventsEnabled() && eventStoreProvider == null) {
+            LOG.error("Events enabled, but no event store provider configured");
         }
 
         if (realm.getEventsListeners() != null && !realm.getEventsListeners().isEmpty()) {
@@ -60,7 +58,7 @@ public class EventBuilder {
                 if (listener != null) {
                     listeners.add(listener);
                 } else {
-                    log.error("Event listener '" + id + "' registered, but provider not found");
+                    LOG.error("Event listener '" + id + "' registered, but provider not found");
                 }
             }
         }
@@ -69,8 +67,8 @@ public class EventBuilder {
         ipAddress(clientConnection.getRemoteAddr());
     }
 
-    private EventBuilder(EventStoreProvider store, List<EventListenerProvider> listeners, RealmModel realm, Event event) {
-        this.store = store;
+    private EventBuilder(EventStoreProvider eventStoreProvider, List<EventListenerProvider> listeners, RealmModel realm, Event event) {
+        this.eventStoreProvider = eventStoreProvider;
         this.listeners = listeners;
         this.realm = realm;
         this.event = event;
@@ -166,18 +164,18 @@ public class EventBuilder {
     }
 
     public EventBuilder clone() {
-        return new EventBuilder(store, listeners, realm, event.clone());
+        return new EventBuilder(eventStoreProvider, listeners, realm, event.clone());
     }
 
     private void send() {
         event.setTime(Time.currentTimeMillis());
 
-        if (store != null) {
+        if (eventStoreProvider != null) {
             if (realm.getEnabledEventTypes() != null && !realm.getEnabledEventTypes().isEmpty() ? realm.getEnabledEventTypes().contains(event.getType().name()) : event.getType().isSaveByDefault()) {
                 try {
-                    store.onEvent(event);
+                    eventStoreProvider.onEvent(event);
                 } catch (Throwable t) {
-                    log.error("Failed to save event", t);
+                    LOG.error("Failed to save event", t);
                 }
             }
         }
@@ -187,7 +185,7 @@ public class EventBuilder {
                 try {
                     l.onEvent(event);
                 } catch (Throwable t) {
-                    log.error("Failed to send type to " + l, t);
+                    LOG.error("Failed to send type to " + l, t);
                 }
             }
         }

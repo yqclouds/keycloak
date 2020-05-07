@@ -32,6 +32,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.TokenManager;
 import org.keycloak.protocol.oidc.OIDCConfigAttributes;
 import org.keycloak.util.TokenUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.UnsupportedEncodingException;
 import java.security.Key;
@@ -163,6 +164,9 @@ public class DefaultTokenManager implements TokenManager {
         return true;
     }
 
+    @Autowired
+    private PublicKeyStorageManager publicKeyStorageManager;
+
     private String getEncryptedToken(TokenCategory category, String encodedToken) {
         String encryptedToken = null;
 
@@ -177,7 +181,7 @@ public class DefaultTokenManager implements TokenManager {
 
         ClientModel client = session.getContext().getClient();
 
-        KeyWrapper keyWrapper = PublicKeyStorageManager.getClientPublicKeyWrapper(session, client, JWK.Use.ENCRYPTION, algAlgorithm);
+        KeyWrapper keyWrapper = publicKeyStorageManager.getClientPublicKeyWrapper(session, client, JWK.Use.ENCRYPTION, algAlgorithm);
         if (keyWrapper == null) {
             throw new RuntimeException("can not get encryption KEK");
         }

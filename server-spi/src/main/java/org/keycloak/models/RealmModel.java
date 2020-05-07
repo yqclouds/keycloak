@@ -571,19 +571,19 @@ public interface RealmModel extends RoleContainerModel {
     interface RealmCreationEvent extends ProviderEvent {
         RealmModel getCreatedRealm();
 
-        KeycloakSession getKeycloakSession();
+        KeycloakSession getSession();
     }
 
     interface RealmPostCreateEvent extends ProviderEvent {
         RealmModel getCreatedRealm();
 
-        KeycloakSession getKeycloakSession();
+        KeycloakSession getSession();
     }
 
     interface RealmRemovedEvent extends ProviderEvent {
         RealmModel getRealm();
 
-        KeycloakSession getKeycloakSession();
+        KeycloakSession getSession();
     }
 
     interface ClientCreationEvent extends ProviderEvent {
@@ -594,13 +594,13 @@ public interface RealmModel extends RoleContainerModel {
     interface ClientUpdatedEvent extends ProviderEvent {
         ClientModel getUpdatedClient();
 
-        KeycloakSession getKeycloakSession();
+        KeycloakSession getSession();
     }
 
     interface ClientRemovedEvent extends ProviderEvent {
         ClientModel getClient();
 
-        KeycloakSession getKeycloakSession();
+        KeycloakSession getSession();
     }
 
     interface IdentityProviderUpdatedEvent extends ProviderEvent {
@@ -608,7 +608,7 @@ public interface RealmModel extends RoleContainerModel {
 
         IdentityProviderModel getUpdatedIdentityProvider();
 
-        KeycloakSession getKeycloakSession();
+        KeycloakSession getSession();
     }
 
     interface IdentityProviderRemovedEvent extends ProviderEvent {
@@ -616,7 +616,7 @@ public interface RealmModel extends RoleContainerModel {
 
         IdentityProviderModel getRemovedIdentityProvider();
 
-        KeycloakSession getKeycloakSession();
+        KeycloakSession getSession();
     }
 
 }

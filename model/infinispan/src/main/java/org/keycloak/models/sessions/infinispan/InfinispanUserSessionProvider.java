@@ -114,7 +114,7 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
 
         this.loginFailuresTx = new InfinispanChangelogBasedTransaction<>(session, loginFailureCache, remoteCacheInvoker);
 
-        this.clusterEventsSenderTx = new SessionEventsSenderTransaction(session);
+        this.clusterEventsSenderTx = new SessionEventsSenderTransaction();
 
         this.lastSessionRefreshStore = lastSessionRefreshStore;
         this.offlineLastSessionRefreshStore = offlineLastSessionRefreshStore;
@@ -160,7 +160,7 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
 
     @Override
     public AuthenticatedClientSessionModel createClientSession(RealmModel realm, ClientModel client, UserSessionModel userSession) {
-        final UUID clientSessionId = keyGenerator.generateKeyUUID(session, clientSessionCache);
+        final UUID clientSessionId = keyGenerator.generateKeyUUID(clientSessionCache);
         AuthenticatedClientSessionEntity entity = new AuthenticatedClientSessionEntity(clientSessionId);
         entity.setRealmId(realm.getId());
         entity.setTimestamp(Time.currentTime());
@@ -1022,7 +1022,7 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
 
 
     private AuthenticatedClientSessionEntity createAuthenticatedClientSessionInstance(AuthenticatedClientSessionModel clientSession, String realmId, boolean offline) {
-        final UUID clientSessionId = keyGenerator.generateKeyUUID(session, getClientSessionCache(offline));
+        final UUID clientSessionId = keyGenerator.generateKeyUUID(getClientSessionCache(offline));
         AuthenticatedClientSessionEntity entity = new AuthenticatedClientSessionEntity(clientSessionId);
         entity.setRealmId(realmId);
 

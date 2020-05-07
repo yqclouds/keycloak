@@ -18,16 +18,18 @@ package org.keycloak.validation;
 
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.BadRequestException;
 
 public class ClientValidationUtil {
+    @Autowired(required = false)
+    private ClientValidationProvider clientValidationProvider;
 
-    public static void validate(KeycloakSession session, ClientModel client, boolean create, ErrorHandler errorHandler) throws BadRequestException {
-        ClientValidationProvider provider = session.getBeanFactory().getBean(ClientValidationProvider.class);
-        if (provider != null) {
+    public void validate(KeycloakSession session, ClientModel client, boolean create, ErrorHandler errorHandler) throws BadRequestException {
+        if (clientValidationProvider != null) {
             DefaultClientValidationContext context = new DefaultClientValidationContext(create ? ClientValidationContext.Event.CREATE : ClientValidationContext.Event.UPDATE, session, client);
-            provider.validate(context);
+            clientValidationProvider.validate(context);
 
             if (!context.isValid()) {
                 errorHandler.onError(context);

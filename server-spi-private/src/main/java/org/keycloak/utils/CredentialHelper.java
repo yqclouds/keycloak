@@ -65,12 +65,12 @@ public class CredentialHelper {
     }
 
     public static ConfigurableAuthenticatorFactory getConfigurableAuthenticatorFactory(KeycloakSession session, String providerId) {
-        ConfigurableAuthenticatorFactory factory = (AuthenticatorFactory) session.getKeycloakSessionFactory().getProviderFactory(Authenticator.class, providerId);
+        ConfigurableAuthenticatorFactory factory = (AuthenticatorFactory) session.getSessionFactory().getProviderFactory(Authenticator.class, providerId);
         if (factory == null) {
-            factory = (FormActionFactory) session.getKeycloakSessionFactory().getProviderFactory(FormAction.class, providerId);
+            factory = (FormActionFactory) session.getSessionFactory().getProviderFactory(FormAction.class, providerId);
         }
         if (factory == null) {
-            factory = (ClientAuthenticatorFactory) session.getKeycloakSessionFactory().getProviderFactory(ClientAuthenticator.class, providerId);
+            factory = (ClientAuthenticatorFactory) session.getSessionFactory().getProviderFactory(ClientAuthenticator.class, providerId);
         }
         return factory;
     }

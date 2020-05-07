@@ -11,6 +11,7 @@ import org.keycloak.scripting.EvaluatableScriptAdapter;
 import org.keycloak.scripting.ScriptCompilationException;
 import org.keycloak.scripting.ScriptingProvider;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -146,10 +147,9 @@ public class ScriptBasedMapper extends AbstractSAMLProtocolMapper implements SAM
         String single = mappingModel.getConfig().get(SINGLE_VALUE_ATTRIBUTE);
         boolean singleAttribute = Boolean.parseBoolean(single);
 
-        ScriptingProvider scripting = session.getBeanFactory().getBean(ScriptingProvider.class);
-        ScriptModel scriptModel = scripting.createScript(realm.getId(), ScriptModel.TEXT_JAVASCRIPT, "attribute-mapper-script_" + mappingModel.getName(), scriptSource, null);
+        ScriptModel scriptModel = scriptingProvider.createScript(realm.getId(), ScriptModel.TEXT_JAVASCRIPT, "attribute-mapper-script_" + mappingModel.getName(), scriptSource, null);
 
-        EvaluatableScriptAdapter script = scripting.prepareEvaluatableScript(scriptModel);
+        EvaluatableScriptAdapter script = scriptingProvider.prepareEvaluatableScript(scriptModel);
         Object attributeValue;
         try {
             attributeValue = script.eval((bindings) -> {
@@ -185,6 +185,9 @@ public class ScriptBasedMapper extends AbstractSAMLProtocolMapper implements SAM
         }
     }
 
+    @Autowired
+    private ScriptingProvider scriptingProvider;
+
     @Override
     public void validateConfig(KeycloakSession session, RealmModel realm, ProtocolMapperContainerModel client, ProtocolMapperModel mapperModel) throws ProtocolMapperConfigException {
 
@@ -193,11 +196,9 @@ public class ScriptBasedMapper extends AbstractSAMLProtocolMapper implements SAM
             return;
         }
 
-        ScriptingProvider scripting = session.getBeanFactory().getBean(ScriptingProvider.class);
-        ScriptModel scriptModel = scripting.createScript(realm.getId(), ScriptModel.TEXT_JAVASCRIPT, mapperModel.getName() + "-script", scriptCode, "");
-
+        ScriptModel scriptModel = scriptingProvider.createScript(realm.getId(), ScriptModel.TEXT_JAVASCRIPT, mapperModel.getName() + "-script", scriptCode, "");
         try {
-            scripting.prepareEvaluatableScript(scriptModel);
+            scriptingProvider.prepareEvaluatableScript(scriptModel);
         } catch (ScriptCompilationException ex) {
             throw new ProtocolMapperConfigException("error", "{0}", ex.getMessage());
         }

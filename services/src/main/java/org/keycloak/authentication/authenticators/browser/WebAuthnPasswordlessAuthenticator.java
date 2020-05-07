@@ -64,7 +64,7 @@ public class WebAuthnPasswordlessAuthenticator extends WebAuthnAuthenticator {
 
     @Override
     public List<RequiredActionFactory> getRequiredActions(KeycloakSession session) {
-        return Collections.singletonList((WebAuthnPasswordlessRegisterFactory) session.getKeycloakSessionFactory().getProviderFactory(RequiredActionProvider.class, WebAuthnPasswordlessRegisterFactory.PROVIDER_ID));
+        return Collections.singletonList((WebAuthnPasswordlessRegisterFactory) session.getSessionFactory().getProviderFactory(RequiredActionProvider.class, WebAuthnPasswordlessRegisterFactory.PROVIDER_ID));
     }
 
 

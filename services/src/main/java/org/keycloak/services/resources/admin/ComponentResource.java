@@ -216,7 +216,7 @@ public class ComponentResource {
             throw new RuntimeException(e);
         }
         List<ComponentTypeRepresentation> subcomponents = new LinkedList<>();
-        for (ProviderFactory factory : session.getKeycloakSessionFactory().getProviderFactories(providerClass)) {
+        for (ProviderFactory factory : session.getSessionFactory().getProviderFactories(providerClass)) {
             ComponentTypeRepresentation rep = new ComponentTypeRepresentation();
             rep.setId(factory.getId());
             if (!(factory instanceof ComponentFactory)) {

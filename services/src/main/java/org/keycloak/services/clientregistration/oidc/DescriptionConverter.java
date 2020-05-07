@@ -87,7 +87,7 @@ public class DescriptionConverter {
         String authMethod = clientOIDC.getTokenEndpointAuthMethod();
         ClientAuthenticatorFactory clientAuthFactory;
         if (authMethod == null) {
-            clientAuthFactory = (ClientAuthenticatorFactory) session.getKeycloakSessionFactory().getProviderFactory(ClientAuthenticator.class, KeycloakModelUtils.getDefaultClientAuthenticatorType());
+            clientAuthFactory = (ClientAuthenticatorFactory) session.getSessionFactory().getProviderFactory(ClientAuthenticator.class, KeycloakModelUtils.getDefaultClientAuthenticatorType());
         } else {
             clientAuthFactory = AuthorizeClientUtil.findClientAuthenticatorForOIDCAuthMethod(session, authMethod);
         }
@@ -177,7 +177,7 @@ public class DescriptionConverter {
         OIDCClientRepresentation response = new OIDCClientRepresentation();
         response.setClientId(client.getClientId());
 
-        ClientAuthenticatorFactory clientAuth = (ClientAuthenticatorFactory) session.getKeycloakSessionFactory().getProviderFactory(ClientAuthenticator.class, client.getClientAuthenticatorType());
+        ClientAuthenticatorFactory clientAuth = (ClientAuthenticatorFactory) session.getSessionFactory().getProviderFactory(ClientAuthenticator.class, client.getClientAuthenticatorType());
         Set<String> oidcClientAuthMethods = clientAuth.getProtocolAuthenticatorMethods(OIDCLoginProtocol.LOGIN_PROTOCOL);
         if (oidcClientAuthMethods != null && !oidcClientAuthMethods.isEmpty()) {
             response.setTokenEndpointAuthMethod(oidcClientAuthMethods.iterator().next());

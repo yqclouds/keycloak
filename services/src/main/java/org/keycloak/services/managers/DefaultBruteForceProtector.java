@@ -41,8 +41,9 @@ import java.util.concurrent.TimeUnit;
  */
 @Component
 public class DefaultBruteForceProtector implements Runnable, BruteForceProtector {
+    private static final Logger LOG = Logger.getLogger(DefaultBruteForceProtector.class);
+
     public static final int TRANSACTION_SIZE = 20;
-    private static final Logger logger = Logger.getLogger(DefaultBruteForceProtector.class);
     protected volatile boolean run = true;
     protected int maxDeltaTimeSeconds = 60 * 60 * 12; // 12 hours
     protected KeycloakSessionFactory factory;
@@ -67,7 +68,7 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
     }
 
     public void failure(KeycloakSession session, LoginEvent event) {
-        logger.debug("failure");
+        LOG.debug("failure");
         RealmModel realm = getRealmModel(session, event);
         logFailure(event);
 
@@ -92,19 +93,19 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
 
         if (realm.isPermanentLockout()) {
             userLoginFailure.incrementFailures();
-            logger.debugv("new num failures: {0}", userLoginFailure.getNumFailures());
+            LOG.debugv("new num failures: {0}", userLoginFailure.getNumFailures());
 
             if (userLoginFailure.getNumFailures() == realm.getFailureFactor()) {
-                logger.debugv("user {0} locked permanently due to too many login attempts", user.getUsername());
+                LOG.debugv("user {0} locked permanently due to too many login attempts", user.getUsername());
                 user.setEnabled(false);
                 return;
             }
 
             if (last > 0 && deltaTime < realm.getQuickLoginCheckMilliSeconds()) {
-                logger.debugv("quick login, set min wait seconds");
+                LOG.debugv("quick login, set min wait seconds");
                 int waitSeconds = realm.getMinimumQuickLoginWaitSeconds();
                 int notBefore = (int) (currentTime / 1000) + waitSeconds;
-                logger.debugv("set notBefore: {0}", notBefore);
+                LOG.debugv("set notBefore: {0}", notBefore);
                 userLoginFailure.setFailedLoginNotBefore(notBefore);
             }
             return;
@@ -117,22 +118,22 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
             }
         }
         userLoginFailure.incrementFailures();
-        logger.debugv("new num failures: {0}", userLoginFailure.getNumFailures());
+        LOG.debugv("new num failures: {0}", userLoginFailure.getNumFailures());
 
         int waitSeconds = realm.getWaitIncrementSeconds() * (userLoginFailure.getNumFailures() / realm.getFailureFactor());
-        logger.debugv("waitSeconds: {0}", waitSeconds);
-        logger.debugv("deltaTime: {0}", deltaTime);
+        LOG.debugv("waitSeconds: {0}", waitSeconds);
+        LOG.debugv("deltaTime: {0}", deltaTime);
 
         if (waitSeconds == 0) {
             if (last > 0 && deltaTime < realm.getQuickLoginCheckMilliSeconds()) {
-                logger.debugv("quick login, set min wait seconds");
+                LOG.debugv("quick login, set min wait seconds");
                 waitSeconds = realm.getMinimumQuickLoginWaitSeconds();
             }
         }
         if (waitSeconds > 0) {
             waitSeconds = Math.min(realm.getMaxFailureWaitSeconds(), waitSeconds);
             int notBefore = (int) (currentTime / 1000) + waitSeconds;
-            logger.debugv("set notBefore: {0}", notBefore);
+            LOG.debugv("set notBefore: {0}", notBefore);
             userLoginFailure.setFailedLoginNotBefore(notBefore);
         }
     }
@@ -224,7 +225,7 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
         UserLoginFailureModel user = getUserModel(session, event);
         if (user == null) return;
 
-        logger.debugv("user {0} successfully logged in, clearing all failures", model.getUsername());
+        LOG.debugv("user {0} successfully logged in, clearing all failures", model.getUsername());
         user.clearFailures();
     }
 
@@ -254,7 +255,7 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
             event.latch.await(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
         }
-        logger.trace("sent failure event");
+        LOG.trace("sent failure event");
     }
 
     @Override
@@ -266,7 +267,7 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
             event.latch.await(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
         }
-        logger.trace("sent success event");
+        LOG.trace("sent success event");
     }
 
     @Override
@@ -277,7 +278,7 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
             int currTime = (int) (Time.currentTimeMillis() / 1000);
             int failedLoginNotBefore = failure.getFailedLoginNotBefore();
             if (currTime < failedLoginNotBefore) {
-                logger.debugv("Current: {0} notBefore: {1}", currTime, failedLoginNotBefore);
+                LOG.debugv("Current: {0} notBefore: {1}", currTime, failedLoginNotBefore);
                 return true;
             }
         }

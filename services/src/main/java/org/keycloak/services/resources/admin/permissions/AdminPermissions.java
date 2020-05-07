@@ -59,13 +59,13 @@ public class AdminPermissions {
                 } else {
                     realm = (RealmModel) role.getContainer();
                 }
-                management(cast.getKeycloakSession(), realm).roles().setPermissionsEnabled(role, false);
+                management(cast.getSession(), realm).roles().setPermissionsEnabled(role, false);
             } else if (event instanceof RealmModel.ClientRemovedEvent) {
                 RealmModel.ClientRemovedEvent cast = (RealmModel.ClientRemovedEvent) event;
-                management(cast.getKeycloakSession(), cast.getClient().getRealm()).clients().setPermissionsEnabled(cast.getClient(), false);
+                management(cast.getSession(), cast.getClient().getRealm()).clients().setPermissionsEnabled(cast.getClient(), false);
             } else if (event instanceof GroupModel.GroupRemovedEvent) {
                 GroupModel.GroupRemovedEvent cast = (GroupModel.GroupRemovedEvent) event;
-                management(cast.getKeycloakSession(), cast.getRealm()).groups().setPermissionsEnabled(cast.getGroup(), false);
+                management(cast.getSession(), cast.getRealm()).groups().setPermissionsEnabled(cast.getGroup(), false);
             }
         });
     }

@@ -23,6 +23,7 @@ import org.keycloak.events.Details;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.*;
 import org.keycloak.services.managers.UserSessionCrossDCManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
 import java.util.UUID;
@@ -37,6 +38,8 @@ public class OAuth2CodeParser {
 
     private static final Pattern DOT = Pattern.compile("\\.");
 
+    @Autowired
+    private CodeToTokenStoreProvider codeToTokenStoreProvider;
 
     /**
      * Will persist the code to the cache and return the object with the codeData and code correctly set
@@ -46,19 +49,16 @@ public class OAuth2CodeParser {
      * @param codeData
      * @return code parameter to be used in OAuth2 handshake
      */
-    public static String persistCode(KeycloakSession session, AuthenticatedClientSessionModel clientSession, OAuth2Code codeData) {
-        CodeToTokenStoreProvider codeStore = session.getBeanFactory().getBean(CodeToTokenStoreProvider.class);
-
+    public String persistCode(KeycloakSession session, AuthenticatedClientSessionModel clientSession, OAuth2Code codeData) {
         UUID key = codeData.getId();
         if (key == null) {
             throw new IllegalStateException("ID not present in the data");
         }
 
         Map<String, String> serialized = codeData.serializeCode();
-        codeStore.put(key, clientSession.getUserSession().getRealm().getAccessCodeLifespan(), serialized);
+        codeToTokenStoreProvider.put(key, clientSession.getUserSession().getRealm().getAccessCodeLifespan(), serialized);
         return key.toString() + "." + clientSession.getUserSession().getId() + "." + clientSession.getClient().getId();
     }
-
 
     /**
      * Will parse the code and retrieve the corresponding OAuth2Code and AuthenticatedClientSessionModel. Will also check if code wasn't already
@@ -71,7 +71,7 @@ public class OAuth2CodeParser {
      * @param event
      * @return
      */
-    public static ParseResult parseCode(KeycloakSession session, String code, RealmModel realm, EventBuilder event) {
+    public ParseResult parseCode(KeycloakSession session, String code, RealmModel realm, EventBuilder event) {
         ParseResult result = new ParseResult(code);
 
         String[] parsed = DOT.split(code, 3);
@@ -107,8 +107,7 @@ public class OAuth2CodeParser {
 
         result.clientSession = userSession.getAuthenticatedClientSessionByClient(clientUUID);
 
-        CodeToTokenStoreProvider codeStore = session.getBeanFactory().getBean(CodeToTokenStoreProvider.class);
-        Map<String, String> codeData = codeStore.remove(codeUUID);
+        Map<String, String> codeData = codeToTokenStoreProvider.remove(codeUUID);
 
         // Either code not available or was already used
         if (codeData == null) {

@@ -38,6 +38,7 @@ import org.keycloak.representations.idm.IdentityProviderRepresentation;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.utils.ReservedCharValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -111,6 +112,9 @@ public class IdentityProvidersResource {
         return (Map<String, String>) providerFactory.parseConfig(session, inputStream);
     }
 
+    @Autowired
+    private HttpClientProvider httpClientProvider;
+
     /**
      * Import identity provider from JSON body
      *
@@ -132,7 +136,7 @@ public class IdentityProvidersResource {
 
         String providerId = data.get("providerId").toString();
         String from = data.get("fromUrl").toString();
-        InputStream inputStream = session.getBeanFactory().getBean(HttpClientProvider.class).get(from);
+        InputStream inputStream = httpClientProvider.get(from);
         try {
             IdentityProviderFactory providerFactory = getProviderFactorytById(providerId);
             Map<String, String> config;
@@ -229,7 +233,7 @@ public class IdentityProvidersResource {
     private List<ProviderFactory> getProviderFactories() {
         List<ProviderFactory> allProviders = new ArrayList<ProviderFactory>();
 
-        allProviders.addAll(this.session.getKeycloakSessionFactory().getProviderFactories(IdentityProvider.class));
+        allProviders.addAll(this.session.getSessionFactory().getProviderFactories(IdentityProvider.class));
 
         return allProviders;
     }

@@ -39,6 +39,7 @@ import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.*;
 import org.keycloak.representations.idm.authorization.*;
 import org.keycloak.util.JsonSerialization;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -52,12 +53,12 @@ import static org.keycloak.models.utils.ModelToRepresentation.toRepresentation;
  */
 public class ExportUtils {
 
-    public static RealmRepresentation exportRealm(KeycloakSession session, RealmModel realm, boolean includeUsers, boolean internal) {
+    public RealmRepresentation exportRealm(KeycloakSession session, RealmModel realm, boolean includeUsers, boolean internal) {
         ExportOptions opts = new ExportOptions(includeUsers, true, true, false);
         return exportRealm(session, realm, opts, internal);
     }
 
-    public static RealmRepresentation exportRealm(KeycloakSession session, RealmModel realm, ExportOptions options, boolean internal) {
+    public RealmRepresentation exportRealm(KeycloakSession session, RealmModel realm, ExportOptions options, boolean internal) {
         RealmRepresentation rep = ModelToRepresentation.toRepresentation(realm, internal);
         ModelToRepresentation.exportAuthenticationFlows(realm, rep);
         ModelToRepresentation.exportRequiredActions(realm, rep);
@@ -272,21 +273,24 @@ public class ExportUtils {
         return components;
     }
 
+    @Autowired
+    private ModelToRepresentation modelToRepresentation;
+
     /**
      * Full export of application including claims and secret
      *
      * @param client
      * @return full ApplicationRepresentation
      */
-    public static ClientRepresentation exportClient(KeycloakSession session, ClientModel client) {
-        ClientRepresentation clientRep = ModelToRepresentation.toRepresentation(client, session);
+    public ClientRepresentation exportClient(KeycloakSession session, ClientModel client) {
+        ClientRepresentation clientRep = modelToRepresentation.toRepresentation(client, session);
         clientRep.setSecret(client.getSecret());
         clientRep.setAuthorizationSettings(exportAuthorizationSettings(session, client));
         return clientRep;
     }
 
     public static ResourceServerRepresentation exportAuthorizationSettings(KeycloakSession session, ClientModel client) {
-        AuthorizationProviderFactory providerFactory = (AuthorizationProviderFactory) session.getKeycloakSessionFactory().getProviderFactory(AuthorizationProvider.class);
+        AuthorizationProviderFactory providerFactory = (AuthorizationProviderFactory) session.getSessionFactory().getProviderFactory(AuthorizationProvider.class);
         AuthorizationProvider authorization = providerFactory.create(session, client.getRealm());
         StoreFactory storeFactory = authorization.getStoreFactory();
         ResourceServer settingsModel = authorization.getStoreFactory().getResourceServerStore().findById(client.getId());

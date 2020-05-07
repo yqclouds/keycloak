@@ -31,6 +31,7 @@ import org.keycloak.scripting.EvaluatableScriptAdapter;
 import org.keycloak.scripting.ScriptCompilationException;
 import org.keycloak.scripting.ScriptingProvider;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -140,17 +141,18 @@ public class ScriptBasedOIDCProtocolMapper extends AbstractOIDCProtocolMapper im
         return ProtocolMapperUtils.PRIORITY_SCRIPT_MAPPER;
     }
 
+    @Autowired
+    private ScriptingProvider scriptingProvider;
+
     @Override
     protected void setClaim(IDToken token, ProtocolMapperModel mappingModel, UserSessionModel userSession, KeycloakSession keycloakSession, ClientSessionContext clientSessionCtx) {
-
         UserModel user = userSession.getUser();
         String scriptSource = getScriptCode(mappingModel);
         RealmModel realm = userSession.getRealm();
 
-        ScriptingProvider scripting = keycloakSession.getBeanFactory().getBean(ScriptingProvider.class);
-        ScriptModel scriptModel = scripting.createScript(realm.getId(), ScriptModel.TEXT_JAVASCRIPT, "token-mapper-script_" + mappingModel.getName(), scriptSource, null);
+        ScriptModel scriptModel = scriptingProvider.createScript(realm.getId(), ScriptModel.TEXT_JAVASCRIPT, "token-mapper-script_" + mappingModel.getName(), scriptSource, null);
 
-        EvaluatableScriptAdapter script = scripting.prepareEvaluatableScript(scriptModel);
+        EvaluatableScriptAdapter script = scriptingProvider.prepareEvaluatableScript(scriptModel);
 
         Object claimValue;
         try {
@@ -177,11 +179,10 @@ public class ScriptBasedOIDCProtocolMapper extends AbstractOIDCProtocolMapper im
             return;
         }
 
-        ScriptingProvider scripting = session.getBeanFactory().getBean(ScriptingProvider.class);
-        ScriptModel scriptModel = scripting.createScript(realm.getId(), ScriptModel.TEXT_JAVASCRIPT, mapperModel.getName() + "-script", scriptCode, "");
+        ScriptModel scriptModel = scriptingProvider.createScript(realm.getId(), ScriptModel.TEXT_JAVASCRIPT, mapperModel.getName() + "-script", scriptCode, "");
 
         try {
-            scripting.prepareEvaluatableScript(scriptModel);
+            scriptingProvider.prepareEvaluatableScript(scriptModel);
         } catch (ScriptCompilationException ex) {
             throw new ProtocolMapperConfigException("error", "{0}", ex.getMessage());
         }

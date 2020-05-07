@@ -24,6 +24,7 @@ import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.connections.jpa.JpaConnectionProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
@@ -34,10 +35,14 @@ import javax.persistence.EntityManager;
 @Component("JPAAuthorizationStoreFactory")
 @ProviderFactory(id = "jpa", providerClasses = StoreFactory.class)
 public class JPAAuthorizationStoreFactory implements AuthorizationStoreFactory {
+    @Autowired
+    private AuthorizationProvider authorizationProvider;
+    @Autowired
+    private JpaConnectionProvider connectionProvider;
+
     @Override
     public StoreFactory create(KeycloakSession session) {
-        AuthorizationProvider provider = session.getBeanFactory().getBean(AuthorizationProvider.class);
-        return new JPAStoreFactory(getEntityManager(session), provider);
+        return new JPAStoreFactory(getEntityManager(session), authorizationProvider);
     }
 
     @Override
@@ -46,6 +51,6 @@ public class JPAAuthorizationStoreFactory implements AuthorizationStoreFactory {
     }
 
     private EntityManager getEntityManager(KeycloakSession session) {
-        return session.getBeanFactory().getBean(JpaConnectionProvider.class).getEntityManager();
+        return connectionProvider.getEntityManager();
     }
 }

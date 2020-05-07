@@ -24,6 +24,7 @@ import org.keycloak.exportimport.UsersExportStrategy;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.representations.idm.RealmRepresentation;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.util.List;
@@ -59,6 +60,9 @@ public abstract class MultipleStepsExportProvider implements ExportProvider {
         exportRealmImpl(factory, realmName);
     }
 
+    @Autowired
+    private ExportUtils exportUtils;
+
     protected void exportRealmImpl(KeycloakSessionFactory factory, final String realmName) throws IOException {
         final UsersExportStrategy usersExportStrategy = ExportImportConfig.getUsersExportStrategy();
         final int usersPerFile = ExportImportConfig.getUsersPerFile();
@@ -71,7 +75,7 @@ public abstract class MultipleStepsExportProvider implements ExportProvider {
             @Override
             protected void runExportImportTask(KeycloakSession session) throws IOException {
                 RealmModel realm = session.realms().getRealmByName(realmName);
-                RealmRepresentation rep = ExportUtils.exportRealm(session, realm, exportUsersIntoRealmFile, true);
+                RealmRepresentation rep = exportUtils.exportRealm(session, realm, exportUsersIntoRealmFile, true);
                 writeRealm(realmName + "-realm.json", rep);
                 logger.info("Realm '" + realmName + "' - data exported");
 

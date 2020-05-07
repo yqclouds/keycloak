@@ -52,7 +52,7 @@ public class LogoutAction extends AdminAction {
         return adapterSessionIds;
     }
 
-    public List<String> getKeycloakSessionIds() {
+    public List<String> getSessionIds() {
         return keycloakSessionIds;
     }
 

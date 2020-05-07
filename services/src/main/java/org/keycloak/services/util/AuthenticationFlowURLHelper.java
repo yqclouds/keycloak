@@ -26,6 +26,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.AuthorizationEndpointBase;
 import org.keycloak.services.resources.LoginActionsService;
 import org.keycloak.sessions.AuthenticationSessionModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -49,13 +50,15 @@ public class AuthenticationFlowURLHelper {
         this.uriInfo = uriInfo;
     }
 
+    @Autowired
+    private LoginFormsProvider loginFormsProvider;
 
     public Response showPageExpired(AuthenticationSessionModel authSession) {
         URI lastStepUrl = getLastExecutionUrl(authSession);
 
         logger.debugf("Redirecting to 'page expired' now. Will use last step URL: %s", lastStepUrl);
 
-        return session.getBeanFactory().getBean(LoginFormsProvider.class).setAuthenticationSession(authSession)
+        return loginFormsProvider.setAuthenticationSession(authSession)
                 .setActionUri(lastStepUrl)
                 .setExecution(getExecutionId(authSession))
                 .createLoginExpiredPage();

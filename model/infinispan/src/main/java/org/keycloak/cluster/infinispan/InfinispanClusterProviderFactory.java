@@ -36,6 +36,7 @@ import org.keycloak.connections.infinispan.TopologyInfo;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
@@ -73,9 +74,13 @@ public class InfinispanClusterProviderFactory implements ClusterProviderFactory 
     private int clusterStartupTime;
 
     // Just to extract notifications related stuff to separate class
+    @Autowired
     private InfinispanNotificationsManager notificationsManager;
 
     private ExecutorService localExecutor = Executors.newCachedThreadPool();
+
+    @Autowired
+    private InfinispanConnectionProvider connectionProvider;
 
     // Will retry few times for the case when backup site not available in cross-dc environment.
     // The site might be taken offline automatically if "take-offline" properly configured
@@ -105,10 +110,13 @@ public class InfinispanClusterProviderFactory implements ClusterProviderFactory 
         return resultRef.get();
     }
 
+    @Autowired
+    private InfinispanUtil infinispanUtil;
+
     @Override
     public ClusterProvider create(KeycloakSession session) {
         lazyInit(session);
-        String myAddress = InfinispanUtil.getTopologyInfo(session).getMyNodeName();
+        String myAddress = infinispanUtil.getTopologyInfo(session).getMyNodeName();
         return new InfinispanClusterProvider(clusterStartupTime, myAddress, crossDCAwareCacheFactory, notificationsManager, localExecutor);
     }
 
@@ -116,8 +124,7 @@ public class InfinispanClusterProviderFactory implements ClusterProviderFactory 
         if (workCache == null) {
             synchronized (this) {
                 if (workCache == null) {
-                    InfinispanConnectionProvider ispnConnections = session.getBeanFactory().getBean(InfinispanConnectionProvider.class);
-                    workCache = ispnConnections.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);
+                    workCache = connectionProvider.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);
 
                     workCache.getCacheManager().addListener(new ViewChangeListener());
 
@@ -127,11 +134,11 @@ public class InfinispanClusterProviderFactory implements ClusterProviderFactory 
 
                     clusterStartupTime = initClusterStartupTime(session);
 
-                    TopologyInfo topologyInfo = InfinispanUtil.getTopologyInfo(session);
+                    TopologyInfo topologyInfo = infinispanUtil.getTopologyInfo(session);
                     String myAddress = topologyInfo.getMyNodeName();
                     String mySite = topologyInfo.getMySiteName();
 
-                    notificationsManager = InfinispanNotificationsManager.create(session, workCache, myAddress, mySite, remoteStores);
+                    notificationsManager = notificationsManager.create(workCache, myAddress, mySite, remoteStores);
                 }
             }
         }
@@ -144,7 +151,7 @@ public class InfinispanClusterProviderFactory implements ClusterProviderFactory 
             return existingClusterStartTime;
         } else {
             // clusterStartTime not yet initialized. Let's try to put our startupTime
-            int serverStartTime = (int) (session.getKeycloakSessionFactory().getServerStartupTimestamp() / 1000);
+            int serverStartTime = (int) (session.getSessionFactory().getServerStartupTimestamp() / 1000);
 
             existingClusterStartTime = putIfAbsentWithRetries(crossDCAwareCacheFactory, InfinispanClusterProvider.CLUSTER_STARTUP_TIME_KEY, serverStartTime, -1);
             if (existingClusterStartTime == null) {

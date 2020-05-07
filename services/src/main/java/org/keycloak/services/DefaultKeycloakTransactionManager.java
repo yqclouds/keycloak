@@ -22,6 +22,7 @@ import org.keycloak.models.KeycloakTransaction;
 import org.keycloak.models.KeycloakTransactionManager;
 import org.keycloak.transaction.JtaTransactionManagerLookup;
 import org.keycloak.transaction.JtaTransactionWrapper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.transaction.TransactionManager;
 import java.util.LinkedList;
@@ -85,6 +86,9 @@ public class DefaultKeycloakTransactionManager implements KeycloakTransactionMan
 
     }
 
+    @Autowired(required = false)
+    private JtaTransactionManagerLookup jtaTransactionManagerLookup;
+
     @Override
     public void begin() {
         if (active) {
@@ -94,11 +98,10 @@ public class DefaultKeycloakTransactionManager implements KeycloakTransactionMan
         completed = false;
 
         if (jtaPolicy == JTAPolicy.REQUIRES_NEW) {
-            JtaTransactionManagerLookup jtaLookup = session.getBeanFactory().getBean(JtaTransactionManagerLookup.class);
-            if (jtaLookup != null) {
-                TransactionManager tm = jtaLookup.getTransactionManager();
+            if (jtaTransactionManagerLookup != null) {
+                TransactionManager tm = jtaTransactionManagerLookup.getTransactionManager();
                 if (tm != null) {
-                    enlist(new JtaTransactionWrapper(session.getKeycloakSessionFactory(), tm));
+                    enlist(new JtaTransactionWrapper(session.getSessionFactory(), tm));
                 }
             }
         }

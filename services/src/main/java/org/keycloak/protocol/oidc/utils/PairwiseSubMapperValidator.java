@@ -7,6 +7,7 @@ import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.protocol.ProtocolMapperConfigException;
 import org.keycloak.protocol.oidc.mappers.PairwiseSubMapperHelper;
 import org.keycloak.util.JsonSerialization;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,14 +30,14 @@ public class PairwiseSubMapperValidator {
     public static final String PAIRWISE_FAILED_TO_GET_REDIRECT_URIS = "pairwiseFailedToGetRedirectURIs";
     public static final String PAIRWISE_REDIRECT_URIS_MISMATCH = "pairwiseRedirectURIsMismatch";
 
-    public static void validate(KeycloakSession session, ClientModel client, ProtocolMapperModel mapperModel) throws ProtocolMapperConfigException {
+    public void validate(KeycloakSession session, ClientModel client, ProtocolMapperModel mapperModel) throws ProtocolMapperConfigException {
         String sectorIdentifierUri = PairwiseSubMapperHelper.getSectorIdentifierUri(mapperModel);
         String rootUrl = client.getRootUrl();
         Set<String> redirectUris = client.getRedirectUris();
         validate(session, rootUrl, redirectUris, sectorIdentifierUri);
     }
 
-    public static void validate(KeycloakSession session, String rootUrl, Set<String> redirectUris, String sectorIdentifierUri) throws ProtocolMapperConfigException {
+    public void validate(KeycloakSession session, String rootUrl, Set<String> redirectUris, String sectorIdentifierUri) throws ProtocolMapperConfigException {
         if (sectorIdentifierUri == null || sectorIdentifierUri.isEmpty()) {
             validateClientRedirectUris(rootUrl, redirectUris);
             return;
@@ -81,7 +82,7 @@ public class PairwiseSubMapperValidator {
         }
     }
 
-    private static void validateSectorIdentifierUri(KeycloakSession session, String rootUrl, Set<String> redirectUris, String sectorIdentifierUri) throws ProtocolMapperConfigException {
+    private void validateSectorIdentifierUri(KeycloakSession session, String rootUrl, Set<String> redirectUris, String sectorIdentifierUri) throws ProtocolMapperConfigException {
         Set<String> sectorRedirects = getSectorRedirects(session, sectorIdentifierUri);
         if (!PairwiseSubMapperUtils.matchesRedirects(rootUrl, redirectUris, sectorRedirects)) {
             throw new ProtocolMapperConfigException("Client redirect URIs does not match redirect URIs fetched from the Sector Identifier URI.",
@@ -89,10 +90,13 @@ public class PairwiseSubMapperValidator {
         }
     }
 
-    private static Set<String> getSectorRedirects(KeycloakSession session, String sectorIdentifierUri) throws ProtocolMapperConfigException {
+    @Autowired
+    private HttpClientProvider httpClientProvider;
+
+    private Set<String> getSectorRedirects(KeycloakSession session, String sectorIdentifierUri) throws ProtocolMapperConfigException {
         InputStream is = null;
         try {
-            is = session.getBeanFactory().getBean(HttpClientProvider.class).get(sectorIdentifierUri);
+            is = httpClientProvider.get(sectorIdentifierUri);
             List<String> sectorRedirects = JsonSerialization.readValue(is, TypedList.class);
             return new HashSet<>(sectorRedirects);
         } catch (IOException e) {

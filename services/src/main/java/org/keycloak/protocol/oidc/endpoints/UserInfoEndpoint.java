@@ -46,6 +46,7 @@ import org.keycloak.services.resources.Cors;
 import org.keycloak.services.util.DefaultClientSessionContext;
 import org.keycloak.services.util.MtlsHoKTokenUtil;
 import org.keycloak.utils.MediaType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.OPTIONS;
@@ -117,6 +118,9 @@ public class UserInfoEndpoint {
         return new ErrorResponseException(oauthError, errorMessage, Response.Status.UNAUTHORIZED);
     }
 
+    @Autowired
+    private MtlsHoKTokenUtil mtlsHoKTokenUtil;
+
     private Response issueUserInfo(String tokenString) {
         EventBuilder event = new EventBuilder(realm, session, clientConnection)
                 .event(EventType.USER_INFO_REQUEST)
@@ -180,7 +184,7 @@ public class UserInfoEndpoint {
         // KEYCLOAK-6771 Certificate Bound Token
         // https://tools.ietf.org/html/draft-ietf-oauth-mtls-08#section-3
         if (OIDCAdvancedConfigWrapper.fromClientModel(clientModel).isUseMtlsHokToken()) {
-            if (!MtlsHoKTokenUtil.verifyTokenBindingWithClientCertificate(token, request, session)) {
+            if (!mtlsHoKTokenUtil.verifyTokenBindingWithClientCertificate(token, request, session)) {
                 event.error(Errors.NOT_ALLOWED);
                 throw newUnauthorizedErrorResponseException(OAuthErrorException.UNAUTHORIZED_CLIENT, "Client certificate missing, or its thumbprint and one in the refresh token did NOT match");
             }

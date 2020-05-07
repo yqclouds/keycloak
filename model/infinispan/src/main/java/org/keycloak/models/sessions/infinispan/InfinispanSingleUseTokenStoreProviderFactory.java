@@ -29,6 +29,7 @@ import org.keycloak.models.SingleUseTokenStoreProviderFactory;
 import org.keycloak.models.sessions.infinispan.entities.ActionTokenValueEntity;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.function.Supplier;
@@ -45,6 +46,9 @@ public class InfinispanSingleUseTokenStoreProviderFactory implements SingleUseTo
     // Reuse "actionTokens" infinispan cache for now
     private volatile Supplier<BasicCache<String, ActionTokenValueEntity>> tokenCache;
 
+    @Autowired
+    private InfinispanConnectionProvider connectionProvider;
+
     @Override
     public InfinispanSingleUseTokenStoreProvider create(KeycloakSession session) {
         lazyInit(session);
@@ -55,8 +59,7 @@ public class InfinispanSingleUseTokenStoreProviderFactory implements SingleUseTo
         if (tokenCache == null) {
             synchronized (this) {
                 if (tokenCache == null) {
-                    InfinispanConnectionProvider connections = session.getBeanFactory().getBean(InfinispanConnectionProvider.class);
-                    Cache cache = connections.getCache(InfinispanConnectionProvider.ACTION_TOKEN_CACHE);
+                    Cache cache = connectionProvider.getCache(InfinispanConnectionProvider.ACTION_TOKEN_CACHE);
 
                     RemoteCache remoteCache = InfinispanUtil.getRemoteCache(cache);
 

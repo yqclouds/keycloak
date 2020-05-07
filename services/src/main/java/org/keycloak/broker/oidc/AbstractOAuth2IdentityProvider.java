@@ -43,6 +43,7 @@ import org.keycloak.services.Urls;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.vault.VaultStringSecret;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -448,8 +449,11 @@ public abstract class AbstractOAuth2IdentityProvider<C extends OAuth2IdentityPro
         return context;
     }
 
+    @Autowired
+    private SimpleHttp simpleHttp;
+
     protected SimpleHttp buildUserInfoRequest(String subjectToken, String userInfoUrl) {
-        return SimpleHttp.doGet(userInfoUrl, session)
+        return simpleHttp.doGet(userInfoUrl, session)
                 .header("Authorization", "Bearer " + subjectToken);
     }
 
@@ -529,6 +533,9 @@ public abstract class AbstractOAuth2IdentityProvider<C extends OAuth2IdentityPro
             this.event = event;
         }
 
+        @Autowired
+        private ErrorPage errorPage;
+
         @GET
         public Response authResponse(@QueryParam(AbstractOAuth2IdentityProvider.OAUTH2_PARAMETER_STATE) String state,
                                      @QueryParam(AbstractOAuth2IdentityProvider.OAUTH2_PARAMETER_CODE) String authorizationCode,
@@ -570,12 +577,12 @@ public abstract class AbstractOAuth2IdentityProvider<C extends OAuth2IdentityPro
             }
             event.event(EventType.LOGIN);
             event.error(Errors.IDENTITY_PROVIDER_LOGIN_FAILURE);
-            return ErrorPage.error(session, null, Response.Status.BAD_GATEWAY, Messages.IDENTITY_PROVIDER_UNEXPECTED_ERROR);
+            return errorPage.error(session, null, Response.Status.BAD_GATEWAY, Messages.IDENTITY_PROVIDER_UNEXPECTED_ERROR);
         }
 
         public SimpleHttp generateTokenRequest(String authorizationCode) {
             KeycloakContext context = session.getContext();
-            SimpleHttp tokenRequest = SimpleHttp.doPost(getConfig().getTokenUrl(), session)
+            SimpleHttp tokenRequest = simpleHttp.doPost(getConfig().getTokenUrl(), session)
                     .param(OAUTH2_PARAMETER_CODE, authorizationCode)
                     .param(OAUTH2_PARAMETER_REDIRECT_URI, Urls.identityProviderAuthnResponse(context.getUri().getBaseUri(),
                             getConfig().getAlias(), context.getRealm().getName()).toString())

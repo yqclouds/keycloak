@@ -34,6 +34,7 @@ import org.keycloak.representations.JsonWebToken;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.Urls;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -55,6 +56,9 @@ public class JWTClientSecretAuthenticator extends AbstractClientAuthenticator {
 
     public static final String PROVIDER_ID = "client-secret-jwt";
     private static final Logger logger = Logger.getLogger(JWTClientSecretAuthenticator.class);
+
+    @Autowired
+    private SingleUseTokenStoreProvider singleUseTokenStoreProvider;
 
     @Override
     public void authenticateClient(ClientAuthenticationFlowContext context) {
@@ -147,10 +151,8 @@ public class JWTClientSecretAuthenticator extends AbstractClientAuthenticator {
                 throw new RuntimeException("Missing ID on the token");
             }
 
-            SingleUseTokenStoreProvider singleUseCache = context.getSession().getBeanFactory().getBean(SingleUseTokenStoreProvider.class);
             int lifespanInSecs = Math.max(token.getExpiration() - currentTime, 10);
-            if (singleUseCache.putIfAbsent(token.getId(), lifespanInSecs)) {
-
+            if (singleUseTokenStoreProvider.putIfAbsent(token.getId(), lifespanInSecs)) {
                 logger.tracef("Added token '%s' to single-use cache. Lifespan: %d seconds, client: %s", token.getId(), lifespanInSecs, clientId);
             } else {
                 logger.warnf("Token '%s' already used when authenticating client '%s'.", token.getId(), clientId);

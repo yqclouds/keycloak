@@ -31,6 +31,7 @@ import org.keycloak.keys.PublicKeyLoader;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.protocol.oidc.utils.JWKSHttpUtils;
 import org.keycloak.util.JWKSUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.security.PublicKey;
 import java.util.Collections;
@@ -46,6 +47,9 @@ public class OIDCIdentityProviderPublicKeyLoader implements PublicKeyLoader {
     private final KeycloakSession session;
     private final OIDCIdentityProviderConfig config;
 
+    @Autowired
+    private JWKSHttpUtils jwksHttpUtils;
+
     public OIDCIdentityProviderPublicKeyLoader(KeycloakSession session, OIDCIdentityProviderConfig config) {
         this.session = session;
         this.config = config;
@@ -55,7 +59,7 @@ public class OIDCIdentityProviderPublicKeyLoader implements PublicKeyLoader {
     public Map<String, KeyWrapper> loadKeys() throws Exception {
         if (config.isUseJwksUrl()) {
             String jwksUrl = config.getJwksUrl();
-            JSONWebKeySet jwks = JWKSHttpUtils.sendJwksRequest(session, jwksUrl);
+            JSONWebKeySet jwks = jwksHttpUtils.sendJwksRequest(session, jwksUrl);
             return JWKSUtils.getKeyWrappersForUse(jwks, JWK.Use.SIG);
         } else {
             try {

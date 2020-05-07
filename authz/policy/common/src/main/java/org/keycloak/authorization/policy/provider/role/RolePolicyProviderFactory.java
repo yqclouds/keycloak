@@ -33,6 +33,7 @@ import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.representations.idm.authorization.RolePolicyRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.util.JsonSerialization;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -194,13 +195,14 @@ public class RolePolicyProviderFactory implements PolicyProviderFactory<RolePoli
 
     }
 
+    @Autowired
+    private AuthorizationProvider authorizationProvider;
+
     @Override
     public void postInit(KeycloakSessionFactory factory) {
         factory.register(event -> {
             if (event instanceof RoleRemovedEvent) {
-                KeycloakSession keycloakSession = ((RoleRemovedEvent) event).getKeycloakSession();
-                AuthorizationProvider provider = keycloakSession.getBeanFactory().getBean(AuthorizationProvider.class);
-                StoreFactory storeFactory = provider.getStoreFactory();
+                StoreFactory storeFactory = authorizationProvider.getStoreFactory();
                 PolicyStore policyStore = storeFactory.getPolicyStore();
                 RoleModel removedRole = ((RoleRemovedEvent) event).getRole();
                 RoleContainerModel container = removedRole.getContainer();

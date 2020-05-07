@@ -26,6 +26,7 @@ import org.keycloak.models.cache.UserCache;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.policy.PasswordPolicyManagerProvider;
 import org.keycloak.policy.PolicyError;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collections;
 import java.util.List;
@@ -66,10 +67,13 @@ public class PasswordCredentialProvider implements CredentialProvider<PasswordCr
         return PasswordCredentialModel.createFromCredentialModel(passwords.get(0));
     }
 
+    @Autowired
+    private PasswordPolicyManagerProvider passwordPolicyManagerProvider;
+
     public boolean createCredential(RealmModel realm, UserModel user, String password) {
         PasswordPolicy policy = realm.getPasswordPolicy();
 
-        PolicyError error = session.getBeanFactory().getBean(PasswordPolicyManagerProvider.class).validate(realm, user, password);
+        PolicyError error = passwordPolicyManagerProvider.validate(realm, user, password);
         if (error != null) throw new ModelException(error.getMessage(), error.getParameters());
 
         PasswordHashProvider hash = getHashProvider(policy);

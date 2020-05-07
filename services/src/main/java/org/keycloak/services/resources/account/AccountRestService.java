@@ -38,6 +38,7 @@ import org.keycloak.services.resources.Cors;
 import org.keycloak.services.resources.account.resources.ResourcesService;
 import org.keycloak.storage.ReadOnlyException;
 import org.keycloak.theme.Theme;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -65,6 +66,7 @@ public class AccountRestService {
     protected ClientConnection clientConnection;
     @Context
     private HttpRequest request;
+    @Autowired
     private EventStoreProvider eventStore;
     private Auth auth;
 
@@ -82,10 +84,6 @@ public class AccountRestService {
         if (!Profile.isFeatureEnabled(Profile.Feature.ACCOUNT_API)) {
             throw new NotFoundException();
         }
-    }
-
-    public void init() {
-        eventStore = session.getBeanFactory().getBean(EventStoreProvider.class);
     }
 
     /**

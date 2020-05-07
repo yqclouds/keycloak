@@ -28,6 +28,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.util.JsonSerialization;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -52,6 +53,9 @@ public class SingleFileExportProvider implements ExportProvider {
         this.file = file;
     }
 
+    @Autowired
+    private ExportUtils exportUtils;
+
     @Override
     public void exportModel(KeycloakSessionFactory factory) throws IOException {
         logger.infof("Exporting model into file %s", this.file.getAbsolutePath());
@@ -62,7 +66,7 @@ public class SingleFileExportProvider implements ExportProvider {
                 List<RealmModel> realms = session.realms().getRealms();
                 List<RealmRepresentation> reps = new ArrayList<>();
                 for (RealmModel realm : realms) {
-                    reps.add(ExportUtils.exportRealm(session, realm, true, true));
+                    reps.add(exportUtils.exportRealm(session, realm, true, true));
                 }
 
                 writeToFile(reps);
@@ -80,7 +84,7 @@ public class SingleFileExportProvider implements ExportProvider {
             @Override
             protected void runExportImportTask(KeycloakSession session) throws IOException {
                 RealmModel realm = session.realms().getRealmByName(realmName);
-                RealmRepresentation realmRep = ExportUtils.exportRealm(session, realm, true, true);
+                RealmRepresentation realmRep = exportUtils.exportRealm(session, realm, true, true);
                 writeToFile(realmRep);
             }
 

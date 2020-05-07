@@ -22,6 +22,7 @@ import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.AbstractOAuthClient;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.OAuthErrorException;
+import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.util.KeycloakUriBuilder;
 import org.keycloak.forms.login.LoginFormsProvider;
@@ -33,6 +34,7 @@ import org.keycloak.services.ForbiddenException;
 import org.keycloak.services.managers.Auth;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.util.TokenUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -64,6 +66,9 @@ public abstract class AbstractSecuredLocalService {
     protected HttpRequest request;
     protected Auth auth;
 
+    @Autowired
+    private LoginFormsProvider loginFormsProvider;
+
     public AbstractSecuredLocalService(RealmModel realm, ClientModel client) {
         this.realm = realm;
         this.client = client;
@@ -82,7 +87,7 @@ public abstract class AbstractSecuredLocalService {
                 if (OAuthErrorException.ACCESS_DENIED.equals(error)) {
                     // cased by CANCELLED_BY_USER or CONSENT_DENIED
                     session.getContext().setClient(client);
-                    return session.getBeanFactory().getBean(LoginFormsProvider.class).setError(Messages.NO_ACCESS).createErrorPage(Response.Status.FORBIDDEN);
+                    return loginFormsProvider.setError(Messages.NO_ACCESS).createErrorPage(Response.Status.FORBIDDEN);
                 } else {
                     logger.debug("error from oauth");
                     throw new ForbiddenException("error");

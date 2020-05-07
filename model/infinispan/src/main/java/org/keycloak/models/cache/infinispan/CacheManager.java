@@ -6,6 +6,7 @@ import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.cache.infinispan.entities.Revisioned;
 import org.keycloak.models.cache.infinispan.events.InvalidationEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -53,6 +54,9 @@ public abstract class CacheManager {
     protected final Cache<String, Long> revisions;
     protected final Cache<String, Revisioned> cache;
     protected final UpdateCounter counter = new UpdateCounter();
+
+    @Autowired
+    private ClusterProvider clusterProvider;
 
     public CacheManager(Cache<String, Revisioned> cache, Cache<String, Long> revisions) {
         this.cache = cache;
@@ -195,8 +199,6 @@ public abstract class CacheManager {
 
 
     public void sendInvalidationEvents(KeycloakSession session, Collection<InvalidationEvent> invalidationEvents, String eventKey) {
-        ClusterProvider clusterProvider = session.getBeanFactory().getBean(ClusterProvider.class);
-
         // Maybe add InvalidationEvent, which will be collection of all invalidationEvents? That will reduce cluster traffic even more.
         for (InvalidationEvent event : invalidationEvents) {
             clusterProvider.notify(eventKey, event, true, ClusterProvider.DCNotify.ALL_DCS);

@@ -218,13 +218,13 @@ public class AuthorizationTokenService {
 
     private Response createSuccessfulResponse(Object response, KeycloakAuthorizationRequest request) {
         return Cors.add(request.getHttpRequest(), Response.status(Status.OK).type(MediaType.APPLICATION_JSON_TYPE).entity(response))
-                .allowedOrigins(request.getKeycloakSession(), request.getKeycloakSession().getContext().getClient())
+                .allowedOrigins(request.getSession(), request.getSession().getContext().getClient())
                 .allowedMethods(HttpMethod.POST)
                 .exposedHeaders(Cors.ACCESS_CONTROL_ALLOW_METHODS).build();
     }
 
     private boolean isPublicClientRequestingEntitlementWithClaims(KeycloakAuthorizationRequest request) {
-        return request.getClaimToken() != null && request.getKeycloakSession().getContext().getClient().isPublicClient() && request.getTicket() == null;
+        return request.getClaimToken() != null && request.getSession().getContext().getClient().isPublicClient() && request.getTicket() == null;
     }
 
     private Collection<Permission> evaluatePermissions(KeycloakAuthorizationRequest request, PermissionTicketToken ticket, ResourceServer resourceServer, EvaluationContext evaluationContext, KeycloakIdentity identity) {
@@ -249,7 +249,7 @@ public class AuthorizationTokenService {
     }
 
     private AuthorizationResponse createAuthorizationResponse(KeycloakIdentity identity, Collection<Permission> entitlements, KeycloakAuthorizationRequest request, ClientModel targetClient) {
-        KeycloakSession keycloakSession = request.getKeycloakSession();
+        KeycloakSession keycloakSession = request.getSession();
         AccessToken accessToken = identity.getAccessToken();
         RealmModel realm = request.getRealm();
         UserSessionProvider sessions = keycloakSession.sessions();
@@ -593,7 +593,7 @@ public class AuthorizationTokenService {
     private PermissionTicketToken verifyPermissionTicket(KeycloakAuthorizationRequest request) {
         String ticketString = request.getTicket();
 
-        PermissionTicketToken ticket = request.getKeycloakSession().tokens().decode(ticketString, PermissionTicketToken.class);
+        PermissionTicketToken ticket = request.getSession().tokens().decode(ticketString, PermissionTicketToken.class);
         if (ticket == null) {
             throw new CorsErrorResponseException(request.getCors(), "invalid_ticket", "Ticket verification failed", Status.FORBIDDEN);
         }
@@ -652,12 +652,12 @@ public class AuthorizationTokenService {
             return cors;
         }
 
-        KeycloakSession getKeycloakSession() {
+        KeycloakSession getSession() {
             return getAuthorization().getSession();
         }
 
         RealmModel getRealm() {
-            return getKeycloakSession().getContext().getRealm();
+            return getSession().getContext().getRealm();
         }
     }
 }

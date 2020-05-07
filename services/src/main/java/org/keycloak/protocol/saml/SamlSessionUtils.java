@@ -65,7 +65,7 @@ public class SamlSessionUtils {
     }
 
     public static Iterator<SamlAuthenticationPreprocessor> getSamlAuthenticationPreprocessorIterator(KeycloakSession session) {
-        return session.getKeycloakSessionFactory().getProviderFactories(SamlAuthenticationPreprocessor.class).stream()
+        return session.getSessionFactory().getProviderFactories(SamlAuthenticationPreprocessor.class).stream()
                 .filter(Objects::nonNull)
                 .map(SamlAuthenticationPreprocessor.class::cast)
                 .iterator();

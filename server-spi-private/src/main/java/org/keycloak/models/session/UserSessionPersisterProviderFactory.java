@@ -37,7 +37,7 @@ public interface UserSessionPersisterProviderFactory extends ProviderFactory<Use
                 if (event instanceof UserModel.UserRemovedEvent) {
                     UserModel.UserRemovedEvent userRemovedEvent = (UserModel.UserRemovedEvent) event;
 
-                    UserSessionPersisterProvider provider = userRemovedEvent.getKeycloakSession().getProvider(UserSessionPersisterProvider.class, getId());
+                    UserSessionPersisterProvider provider = userRemovedEvent.getSession().getProvider(UserSessionPersisterProvider.class, getId());
                     provider.onUserRemoved(userRemovedEvent.getRealm(), userRemovedEvent.getUser());
                 }
             }

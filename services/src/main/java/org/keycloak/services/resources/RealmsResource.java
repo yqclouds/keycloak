@@ -36,6 +36,7 @@ import org.keycloak.services.resources.account.AccountLoader;
 import org.keycloak.services.util.CacheControlUtil;
 import org.keycloak.services.util.ResolveRelative;
 import org.keycloak.wellknown.WellKnownProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
@@ -97,7 +98,7 @@ public class RealmsResource {
                               final @PathParam("protocol") String protocol) {
         RealmModel realm = init(name);
 
-        LoginProtocolFactory factory = (LoginProtocolFactory) session.getKeycloakSessionFactory().getProviderFactory(LoginProtocol.class, protocol);
+        LoginProtocolFactory factory = (LoginProtocolFactory) session.getSessionFactory().getProviderFactory(LoginProtocol.class, protocol);
         if (factory == null) {
             logger.debugf("protocol %s not found", protocol);
             throw new NotFoundException("Protocol not found");
@@ -243,11 +244,13 @@ public class RealmsResource {
         throw new NotFoundException();
     }
 
+    @Autowired
+    private AuthorizationProvider authorizationProvider;
+
     @Path("{realm}/authz")
     public Object getAuthorizationService(@PathParam("realm") String name) {
         init(name);
-        AuthorizationProvider authorization = this.session.getBeanFactory().getBean(AuthorizationProvider.class);
-        AuthorizationService service = new AuthorizationService(authorization);
+        AuthorizationService service = new AuthorizationService(authorizationProvider);
 
         ResteasyProviderFactory.getInstance().injectProperties(service);
 

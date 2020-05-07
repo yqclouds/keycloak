@@ -22,6 +22,7 @@ import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.entities.UserSessionEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -32,6 +33,8 @@ public class CrossDCLastSessionRefreshStoreFactory extends AbstractLastSessionRe
     public static final String LSR_PERIODIC_TASK_NAME = "lastSessionRefreshes";
     public static final String LSR_OFFLINE_PERIODIC_TASK_NAME = "lastSessionRefreshes-offline";
 
+    @Autowired
+    private ClusterProvider clusterProvider;
 
     public CrossDCLastSessionRefreshStore createAndInit(KeycloakSession kcSession, Cache<String, SessionEntityWrapper<UserSessionEntity>> cache, boolean offline) {
         return createAndInit(kcSession, cache, DEFAULT_TIMER_INTERVAL_MS, DEFAULT_MAX_INTERVAL_BETWEEN_MESSAGES_SECONDS, DEFAULT_MAX_COUNT, offline);
@@ -44,19 +47,15 @@ public class CrossDCLastSessionRefreshStoreFactory extends AbstractLastSessionRe
         CrossDCLastSessionRefreshStore store = createStoreInstance(maxIntervalBetweenMessagesSeconds, maxCount, eventKey);
 
         // Register listener
-        ClusterProvider cluster = kcSession.getBeanFactory().getBean(ClusterProvider.class);
-        cluster.registerListener(eventKey, new CrossDCLastSessionRefreshListener(kcSession, cache, offline));
+        clusterProvider.registerListener(eventKey, new CrossDCLastSessionRefreshListener(kcSession, cache, offline));
 
         // Setup periodic timer check
-        setupPeriodicTimer(kcSession, store, timerIntervalMs, eventKey);
+        setupPeriodicTimer(store, timerIntervalMs, eventKey);
 
         return store;
     }
 
-
     protected CrossDCLastSessionRefreshStore createStoreInstance(int maxIntervalBetweenMessagesSeconds, int maxCount, String eventKey) {
         return new CrossDCLastSessionRefreshStore(maxIntervalBetweenMessagesSeconds, maxCount, eventKey);
     }
-
-
 }

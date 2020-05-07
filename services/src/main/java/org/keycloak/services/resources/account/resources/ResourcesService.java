@@ -63,7 +63,7 @@ public class ResourcesService extends AbstractResourceService {
         }
 
         return queryResponse((f, m) -> resourceStore.findByResourceServer(filters, null, f, m).stream()
-                .map(resource -> new Resource(resource, user, provider)), first, max);
+                .map(resource -> new Resource(resource, user, authorizationProvider)), first, max);
     }
 
     /**
@@ -113,15 +113,15 @@ public class ResourcesService extends AbstractResourceService {
             throw new BadRequestException("invalid_resource");
         }
 
-        return new ResourceService(resource, provider.getSession(), user, auth, request);
+        return new ResourceService(resource, authorizationProvider.getSession(), user, auth, request);
     }
 
     private Collection<ResourcePermission> toPermissions(List<org.keycloak.authorization.model.Resource> resources, boolean withRequesters) {
         Collection<ResourcePermission> permissions = new ArrayList<>();
-        PermissionTicketStore ticketStore = provider.getStoreFactory().getPermissionTicketStore();
+        PermissionTicketStore ticketStore = authorizationProvider.getStoreFactory().getPermissionTicketStore();
 
         for (org.keycloak.authorization.model.Resource resource : resources) {
-            ResourcePermission permission = new ResourcePermission(resource, provider);
+            ResourcePermission permission = new ResourcePermission(resource, authorizationProvider);
 
             List<PermissionTicket> tickets;
 
@@ -144,7 +144,7 @@ public class ResourcesService extends AbstractResourceService {
 
                         if (user == null) {
                             permission.addPermission(ticket.getRequester(),
-                                    user = new Permission(ticket.getRequester(), provider));
+                                    user = new Permission(ticket.getRequester(), authorizationProvider));
                         }
 
                         user.addScope(ticket.getScope().getName());

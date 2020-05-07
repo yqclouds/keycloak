@@ -71,7 +71,7 @@ public class LiquibaseDBLockProvider implements DBLockProvider {
 
     @Override
     public void waitForLock(Namespace lock) {
-        KeycloakModelUtils.suspendJtaTransaction(session.getKeycloakSessionFactory(), () -> {
+        KeycloakModelUtils.suspendJtaTransaction(session.getSessionFactory(), () -> {
 
             lazyInit();
 
@@ -96,7 +96,7 @@ public class LiquibaseDBLockProvider implements DBLockProvider {
 
     @Override
     public void releaseLock() {
-        KeycloakModelUtils.suspendJtaTransaction(session.getKeycloakSessionFactory(), () -> {
+        KeycloakModelUtils.suspendJtaTransaction(session.getSessionFactory(), () -> {
             lazyInit();
         });
     }
@@ -114,7 +114,7 @@ public class LiquibaseDBLockProvider implements DBLockProvider {
 
     @Override
     public void destroyLockInfo() {
-        KeycloakModelUtils.suspendJtaTransaction(session.getKeycloakSessionFactory(), () -> {
+        KeycloakModelUtils.suspendJtaTransaction(session.getSessionFactory(), () -> {
             lazyInit();
 
             try {
@@ -129,7 +129,7 @@ public class LiquibaseDBLockProvider implements DBLockProvider {
 
     @Override
     public void close() {
-        KeycloakModelUtils.suspendJtaTransaction(session.getKeycloakSessionFactory(), this::safeCloseConnection);
+        KeycloakModelUtils.suspendJtaTransaction(session.getSessionFactory(), this::safeCloseConnection);
     }
 
     private void safeRollbackConnection() {

@@ -1315,7 +1315,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
                 em.remove(entity);
                 em.flush();
 
-                session.getKeycloakSessionFactory().publish(new RealmModel.IdentityProviderRemovedEvent() {
+                session.getSessionFactory().publish(new RealmModel.IdentityProviderRemovedEvent() {
 
                     @Override
                     public RealmModel getRealm() {
@@ -1328,7 +1328,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
                     }
 
                     @Override
-                    public KeycloakSession getKeycloakSession() {
+                    public KeycloakSession getSession() {
                         return session;
                     }
                 });
@@ -1357,7 +1357,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
         em.flush();
 
-        session.getKeycloakSessionFactory().publish(new RealmModel.IdentityProviderUpdatedEvent() {
+        session.getSessionFactory().publish(new RealmModel.IdentityProviderUpdatedEvent() {
 
             @Override
             public RealmModel getRealm() {
@@ -1370,7 +1370,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
             }
 
             @Override
-            public KeycloakSession getKeycloakSession() {
+            public KeycloakSession getSession() {
                 return session;
             }
         });

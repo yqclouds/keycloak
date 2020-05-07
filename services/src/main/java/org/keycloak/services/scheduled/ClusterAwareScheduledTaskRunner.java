@@ -23,6 +23,7 @@ import org.keycloak.cluster.ExecutionResult;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.timer.ScheduledTask;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.concurrent.Callable;
 
@@ -42,21 +43,20 @@ public class ClusterAwareScheduledTaskRunner extends ScheduledTaskRunner {
         this.intervalSecs = (int) (intervalMillis / 1000);
     }
 
+    @Autowired
+    private ClusterProvider clusterProvider;
+
     @Override
     protected void runTask(final KeycloakSession session) {
         session.getTransactionManager().begin();
 
-        ClusterProvider clusterProvider = session.getBeanFactory().getBean(ClusterProvider.class);
         String taskKey = task.getClass().getSimpleName();
-
         ExecutionResult<Void> result = clusterProvider.executeIfNotExecuted(taskKey, intervalSecs, new Callable<Void>() {
-
             @Override
             public Void call() throws Exception {
                 task.run(session);
                 return null;
             }
-
         });
 
         session.getTransactionManager().commit();

@@ -22,10 +22,9 @@ import java.security.PublicKey;
 import java.security.Signature;
 
 public class AsymmetricSignatureVerifierContext implements SignatureVerifierContext {
+    private KeyWrapper key;
 
-    private final KeyWrapper key;
-
-    public AsymmetricSignatureVerifierContext(KeyWrapper key) {
+    public void setKey(KeyWrapper key) {
         this.key = key;
     }
 

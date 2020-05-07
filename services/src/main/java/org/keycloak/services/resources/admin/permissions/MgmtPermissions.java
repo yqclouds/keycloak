@@ -66,7 +66,7 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
     MgmtPermissions(KeycloakSession session, RealmModel realm) {
         this.session = session;
         this.realm = realm;
-        KeycloakSessionFactory keycloakSessionFactory = session.getKeycloakSessionFactory();
+        KeycloakSessionFactory keycloakSessionFactory = session.getSessionFactory();
         AuthorizationProviderFactory factory = (AuthorizationProviderFactory) keycloakSessionFactory.getProviderFactory(AuthorizationProvider.class);
         this.authz = factory.create(session, realm);
     }

@@ -39,6 +39,7 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.Cors;
 import org.keycloak.services.resources.RealmsResource;
 import org.keycloak.services.util.CacheControlUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
@@ -68,6 +69,9 @@ public class OIDCLoginProtocolService {
 
     @Context
     private ClientConnection clientConnection;
+
+    @Autowired(required = false)
+    private OIDCExtProvider oidcExtProvider;
 
     public OIDCLoginProtocolService(RealmModel realm, EventBuilder event) {
         this.realm = realm;
@@ -218,14 +222,16 @@ public class OIDCLoginProtocolService {
         return endpoint;
     }
 
+    @Autowired
+    private LoginFormsProvider loginFormsProvider;
+
     @Path("oauth/oob")
     @GET
     public Response installedAppUrnCallback(final @QueryParam("code") String code, final @QueryParam("error") String error, final @QueryParam("error_description") String errorDescription) {
-        LoginFormsProvider forms = session.getBeanFactory().getBean(LoginFormsProvider.class);
         if (code != null) {
-            return forms.setClientSessionCode(code).createCode();
+            return loginFormsProvider.setClientSessionCode(code).createCode();
         } else {
-            return forms.setError(error).createCode();
+            return loginFormsProvider.setError(error).createCode();
         }
     }
 
@@ -242,15 +248,13 @@ public class OIDCLoginProtocolService {
         AuthenticationManager.expireIdentityCookie(realm, session.getContext().getUri(), clientConnection);
         AuthenticationManager.expireRememberMeCookie(realm, session.getContext().getUri(), clientConnection);
         if (error) {
-            LoginFormsProvider forms = session.getBeanFactory().getBean(LoginFormsProvider.class);
-            return forms
-                    .setAttribute("messageHeader", forms.getMessage(Messages.DELEGATION_FAILED_HEADER))
+            return loginFormsProvider
+                    .setAttribute("messageHeader", loginFormsProvider.getMessage(Messages.DELEGATION_FAILED_HEADER))
                     .setAttribute(Constants.SKIP_LINK, true).setError(Messages.DELEGATION_FAILED).createInfoPage();
 
         } else {
-            LoginFormsProvider forms = session.getBeanFactory().getBean(LoginFormsProvider.class);
-            return forms
-                    .setAttribute("messageHeader", forms.getMessage(Messages.DELEGATION_COMPLETE_HEADER))
+            return loginFormsProvider
+                    .setAttribute("messageHeader", loginFormsProvider.getMessage(Messages.DELEGATION_COMPLETE_HEADER))
                     .setAttribute(Constants.SKIP_LINK, true)
                     .setSuccess(Messages.DELEGATION_COMPLETE).createInfoPage();
         }
@@ -258,10 +262,9 @@ public class OIDCLoginProtocolService {
 
     @Path("ext/{extension}")
     public Object resolveExtension(@PathParam("extension") String extension) {
-        OIDCExtProvider provider = session.getProvider(OIDCExtProvider.class, extension);
-        if (provider != null) {
-            provider.setEvent(event);
-            return provider;
+        if (oidcExtProvider != null) {
+            oidcExtProvider.setEvent(event);
+            return oidcExtProvider;
         }
         throw new NotFoundException();
     }

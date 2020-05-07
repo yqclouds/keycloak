@@ -215,7 +215,7 @@ public class IdentityProviderResource {
     private IdentityProviderFactory getIdentityProviderFactory() {
         List<ProviderFactory> allProviders = new ArrayList<ProviderFactory>();
 
-        allProviders.addAll(this.session.getKeycloakSessionFactory().getProviderFactories(IdentityProvider.class));
+        allProviders.addAll(this.session.getSessionFactory().getProviderFactories(IdentityProvider.class));
 
         for (ProviderFactory providerFactory : allProviders) {
             if (providerFactory.getId().equals(identityProviderModel.getProviderId()))
@@ -262,7 +262,7 @@ public class IdentityProviderResource {
             throw new javax.ws.rs.NotFoundException();
         }
 
-        KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
+        KeycloakSessionFactory sessionFactory = session.getSessionFactory();
         Map<String, IdentityProviderMapperTypeRepresentation> types = new HashMap<>();
         List<ProviderFactory> factories = sessionFactory.getProviderFactories(IdentityProviderMapper.class);
         for (ProviderFactory factory : factories) {

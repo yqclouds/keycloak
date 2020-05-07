@@ -248,7 +248,7 @@ public class WebAuthnCredentialProvider implements CredentialProvider<WebAuthnCr
                 .build(session);
     }
 
-    protected KeycloakSession getKeycloakSession() {
+    protected KeycloakSession getSession() {
         return session;
     }
 

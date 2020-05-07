@@ -31,6 +31,7 @@ import org.keycloak.common.util.KeystoreUtil;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.truststore.TruststoreProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -152,6 +153,9 @@ public class DefaultHttpClientFactory implements HttpClientFactory {
         return "default";
     }
 
+    @Autowired(required = false)
+    private TruststoreProvider truststoreProvider;
+
     private void lazyInit(KeycloakSession session) {
         if (httpClient == null) {
             synchronized (this) {
@@ -167,7 +171,6 @@ public class DefaultHttpClientFactory implements HttpClientFactory {
                             .disableCookies(disableCookies)
                             .proxyMappings(ProxyMappings.valueOf(proxyMappings));
 
-                    TruststoreProvider truststoreProvider = session.getBeanFactory().getBean(TruststoreProvider.class);
                     boolean disableTruststoreProvider = truststoreProvider == null || truststoreProvider.getTruststore() == null;
 
                     if (disableTruststoreProvider) {

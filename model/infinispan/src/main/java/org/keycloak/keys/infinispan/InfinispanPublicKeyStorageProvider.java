@@ -27,6 +27,7 @@ import org.keycloak.keys.PublicKeyStorageProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakTransaction;
 import org.keycloak.models.cache.infinispan.ClearCacheEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -56,6 +57,9 @@ public class InfinispanPublicKeyStorageProvider implements PublicKeyStorageProvi
 
     private boolean transactionEnlisted = false;
 
+    @Autowired
+    private ClusterProvider clusterProvider;
+
     public InfinispanPublicKeyStorageProvider(KeycloakSession session, Cache<String, PublicKeysEntry> keys, Map<String, FutureTask<PublicKeysEntry>> tasksInProgress, int minTimeBetweenRequests) {
         this.session = session;
         this.keys = keys;
@@ -67,8 +71,7 @@ public class InfinispanPublicKeyStorageProvider implements PublicKeyStorageProvi
     @Override
     public void clearCache() {
         keys.clear();
-        ClusterProvider cluster = session.getBeanFactory().getBean(ClusterProvider.class);
-        cluster.notify(InfinispanPublicKeyStorageProviderFactory.KEYS_CLEAR_CACHE_EVENTS, new ClearCacheEvent(), true, ClusterProvider.DCNotify.ALL_DCS);
+        clusterProvider.notify(InfinispanPublicKeyStorageProviderFactory.KEYS_CLEAR_CACHE_EVENTS, new ClearCacheEvent(), true, ClusterProvider.DCNotify.ALL_DCS);
     }
 
 
@@ -117,11 +120,9 @@ public class InfinispanPublicKeyStorageProvider implements PublicKeyStorageProvi
 
 
     protected void runInvalidations() {
-        ClusterProvider cluster = session.getBeanFactory().getBean(ClusterProvider.class);
-
         for (String cacheKey : invalidations) {
             keys.remove(cacheKey);
-            cluster.notify(InfinispanPublicKeyStorageProviderFactory.PUBLIC_KEY_STORAGE_INVALIDATION_EVENT, PublicKeyStorageInvalidationEvent.create(cacheKey), true, ClusterProvider.DCNotify.ALL_DCS);
+            clusterProvider.notify(InfinispanPublicKeyStorageProviderFactory.PUBLIC_KEY_STORAGE_INVALIDATION_EVENT, PublicKeyStorageInvalidationEvent.create(cacheKey), true, ClusterProvider.DCNotify.ALL_DCS);
         }
     }
 

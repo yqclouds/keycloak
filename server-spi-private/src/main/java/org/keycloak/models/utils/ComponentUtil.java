@@ -82,7 +82,7 @@ public class ComponentUtil {
             throw new IllegalArgumentException("Invalid provider type '" + providerType + "'");
         }
 
-        ProviderFactory<? extends Provider> f = session.getKeycloakSessionFactory().getProviderFactory(provider, providerId);
+        ProviderFactory<? extends Provider> f = session.getSessionFactory().getProviderFactory(provider, providerId);
         if (f == null) {
             throw new IllegalArgumentException("No such provider '" + providerId + "'");
         }

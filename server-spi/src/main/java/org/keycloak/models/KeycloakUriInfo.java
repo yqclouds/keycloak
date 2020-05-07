@@ -19,7 +19,9 @@ package org.keycloak.models;
 import org.jboss.resteasy.specimpl.ResteasyUriBuilder;
 import org.keycloak.urls.HostnameProvider;
 import org.keycloak.urls.UrlType;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.PostConstruct;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.UriBuilder;
@@ -30,19 +32,27 @@ import java.util.List;
 public class KeycloakUriInfo implements UriInfo {
 
     private final UriInfo delegate;
-    private final String hostname;
-    private final String scheme;
-    private final int port;
-    private final String contextPath;
+    private String hostname;
+    private String scheme;
+    private int port;
+    private String contextPath;
 
     private URI absolutePath;
     private URI requestURI;
     private URI baseURI;
 
+    private UrlType type;
+
+    @Autowired
+    private HostnameProvider hostnameProvider;
+
     public KeycloakUriInfo(KeycloakSession session, UrlType type, UriInfo delegate) {
         this.delegate = delegate;
+        this.type = type;
+    }
 
-        HostnameProvider hostnameProvider = session.getBeanFactory().getBean(HostnameProvider.class);
+    @PostConstruct
+    public void afterPropertiesSet() {
         this.scheme = hostnameProvider.getScheme(delegate, type);
         this.hostname = hostnameProvider.getHostname(delegate, type);
         this.port = hostnameProvider.getPort(delegate, type);

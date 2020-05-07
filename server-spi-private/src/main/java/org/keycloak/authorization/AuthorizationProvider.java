@@ -74,6 +74,10 @@ public final class AuthorizationProvider implements Provider {
 
     @Autowired
     private PolicyEvaluator policyEvaluator;
+    @Autowired(required = false)
+    private CachedStoreFactoryProvider cachedStoreFactoryProvider;
+    @Autowired
+    private StoreFactory localStoreFactory;
 
     @Autowired
     private KeycloakSessionFactory sessionFactory;
@@ -103,7 +107,7 @@ public final class AuthorizationProvider implements Provider {
      */
     public StoreFactory getStoreFactory() {
         if (storeFactory != null) return storeFactory;
-        storeFactory = session.getBeanFactory().getBean(CachedStoreFactoryProvider.class);
+        storeFactory = this.cachedStoreFactoryProvider;
         if (storeFactory == null) storeFactory = getLocalStoreFactory();
         storeFactory = createStoreFactory(storeFactory);
         return storeFactory;
@@ -116,7 +120,7 @@ public final class AuthorizationProvider implements Provider {
      */
     public StoreFactory getLocalStoreFactory() {
         if (storeFactoryDelegate != null) return storeFactoryDelegate;
-        storeFactoryDelegate = session.getBeanFactory().getBean(StoreFactory.class);
+        storeFactoryDelegate = this.localStoreFactory;
         return storeFactoryDelegate;
     }
 
@@ -126,7 +130,7 @@ public final class AuthorizationProvider implements Provider {
      * @return a {@link List} containing all registered {@link PolicyProviderFactory}
      */
     public Collection<PolicyProviderFactory> getProviderFactories() {
-        return session.getKeycloakSessionFactory().getProviderFactories(PolicyProvider.class).stream().map(
+        return session.getSessionFactory().getProviderFactories(PolicyProvider.class).stream().map(
                 PolicyProviderFactory.class::cast).collect(Collectors.toList());
     }
 
@@ -137,7 +141,7 @@ public final class AuthorizationProvider implements Provider {
      * @return a {@link PolicyProviderFactory} with the given <code>type</code>
      */
     public PolicyProviderFactory getProviderFactory(String type) {
-        return (PolicyProviderFactory) session.getKeycloakSessionFactory().getProviderFactory(PolicyProvider.class, type);
+        return (PolicyProviderFactory) session.getSessionFactory().getProviderFactory(PolicyProvider.class, type);
     }
 
     /**

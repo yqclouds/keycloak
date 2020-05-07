@@ -29,6 +29,7 @@ import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.services.ErrorPageException;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.messages.Messages;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -39,8 +40,10 @@ import java.util.List;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class AuthorizationEndpointRequestParserProcessor {
+    @Autowired
+    private HttpClientProvider httpClientProvider;
 
-    public static AuthorizationEndpointRequest parseRequest(EventBuilder event, KeycloakSession session, ClientModel client, MultivaluedMap<String, String> requestParams) {
+    public AuthorizationEndpointRequest parseRequest(EventBuilder event, KeycloakSession session, ClientModel client, MultivaluedMap<String, String> requestParams) {
         try {
             AuthorizationEndpointRequest request = new AuthorizationEndpointRequest();
 
@@ -75,7 +78,7 @@ public class AuthorizationEndpointRequestParserProcessor {
             if (requestParam != null) {
                 new AuthzEndpointRequestObjectParser(session, requestParam, client).parseRequest(request);
             } else if (requestUriParam != null) {
-                try (InputStream is = session.getBeanFactory().getBean(HttpClientProvider.class).get(requestUriParam)) {
+                try (InputStream is = httpClientProvider.get(requestUriParam)) {
                     String retrievedRequest = StreamUtil.readString(is);
 
                     new AuthzEndpointRequestObjectParser(session, retrievedRequest, client).parseRequest(request);

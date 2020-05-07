@@ -22,6 +22,7 @@ import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.jose.jwk.JSONWebKeySet;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.util.JsonSerialization;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,9 +31,11 @@ import java.io.InputStream;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class JWKSHttpUtils {
+    @Autowired
+    private HttpClientProvider httpClientProvider;
 
-    public static JSONWebKeySet sendJwksRequest(KeycloakSession session, String jwksURI) throws IOException {
-        try (InputStream is = session.getBeanFactory().getBean(HttpClientProvider.class).get(jwksURI)) {
+    public JSONWebKeySet sendJwksRequest(KeycloakSession session, String jwksURI) throws IOException {
+        try (InputStream is = httpClientProvider.get(jwksURI)) {
             String keySetString = StreamUtil.readString(is);
             return JsonSerialization.readValue(keySetString, JSONWebKeySet.class);
         }

@@ -41,6 +41,7 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.services.validation.Validation;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.util.JsonSerialization;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -167,8 +168,11 @@ public class RegistrationRecaptcha implements FormAction, FormActionFactory, Con
         return "google.com";
     }
 
+    @Autowired
+    private HttpClientProvider httpClientProvider;
+
     protected boolean validateRecaptcha(ValidationContext context, boolean success, String captcha, String secret) {
-        HttpClient httpClient = context.getSession().getBeanFactory().getBean(HttpClientProvider.class).getHttpClient();
+        HttpClient httpClient = httpClientProvider.getHttpClient();
         HttpPost post = new HttpPost("https://www." + getRecaptchaDomain(context.getAuthenticatorConfig()) + "/recaptcha/api/siteverify");
         List<NameValuePair> formparams = new LinkedList<>();
         formparams.add(new BasicNameValuePair("secret", secret));

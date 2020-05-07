@@ -31,6 +31,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.sessions.infinispan.initializer.BaseCacheInitializer;
 import org.keycloak.models.sessions.infinispan.initializer.OfflinePersistentUserSessionLoader;
 import org.keycloak.models.sessions.infinispan.initializer.SessionLoader;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -49,6 +50,9 @@ public class RemoteCacheSessionsLoader implements SessionLoader<RemoteCacheSessi
 
     private final String cacheName;
     private final int sessionsPerSegment;
+
+    @Autowired
+    private InfinispanConnectionProvider connectionProvider;
 
     public RemoteCacheSessionsLoader(String cacheName, int sessionsPerSegment) {
         this.cacheName = cacheName;
@@ -191,15 +195,13 @@ public class RemoteCacheSessionsLoader implements SessionLoader<RemoteCacheSessi
 
 
     protected Cache getCache(KeycloakSession session) {
-        InfinispanConnectionProvider ispn = session.getBeanFactory().getBean(InfinispanConnectionProvider.class);
-        return ispn.getCache(cacheName);
+        return connectionProvider.getCache(cacheName);
     }
 
 
     // Get remoteCache, which may be secured
     protected RemoteCache getRemoteCache(KeycloakSession session) {
-        InfinispanConnectionProvider ispn = session.getBeanFactory().getBean(InfinispanConnectionProvider.class);
-        return ispn.getRemoteCache(cacheName);
+        return connectionProvider.getRemoteCache(cacheName);
     }
 
 

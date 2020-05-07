@@ -170,8 +170,7 @@ public class InfinispanAuthenticationSessionProvider implements AuthenticationSe
             return;
         }
 
-        ClusterProvider cluster = session.getBeanFactory().getBean(ClusterProvider.class);
-        cluster.notify(
+        clusterProvider.notify(
                 AUTHENTICATION_SESSION_EVENTS,
                 AuthenticationSessionAuthNoteUpdateEvent.create(compoundId.getRootSessionId(), compoundId.getTabId(), compoundId.getClientUUID(), authNotesFragment),
                 true,

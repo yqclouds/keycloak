@@ -31,6 +31,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.util.JsonSerialization;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
@@ -42,7 +43,8 @@ public class AdminEventBuilder {
 
     protected static final Logger logger = Logger.getLogger(AdminEventBuilder.class);
 
-    private EventStoreProvider store;
+    @Autowired(required = false)
+    private EventStoreProvider eventStoreProvider;
     private Map<String, EventListenerProvider> listeners;
     private RealmModel realm;
     private AdminEvent adminEvent;
@@ -85,9 +87,8 @@ public class AdminEventBuilder {
     }
 
     private AdminEventBuilder updateStore(KeycloakSession session) {
-        if (realm.isAdminEventsEnabled() && store == null) {
-            this.store = session.getBeanFactory().getBean(EventStoreProvider.class);
-            if (store == null) {
+        if (realm.isAdminEventsEnabled() && eventStoreProvider == null) {
+            if (eventStoreProvider == null) {
                 ServicesLogger.LOGGER.noEventStoreProvider();
             }
         }
@@ -243,9 +244,9 @@ public class AdminEventBuilder {
         }
         adminEvent.setTime(Time.currentTimeMillis());
 
-        if (store != null) {
+        if (eventStoreProvider != null) {
             try {
-                store.onEvent(adminEvent, includeRepresentation);
+                eventStoreProvider.onEvent(adminEvent, includeRepresentation);
             } catch (Throwable t) {
                 ServicesLogger.LOGGER.failedToSaveEvent(t);
             }

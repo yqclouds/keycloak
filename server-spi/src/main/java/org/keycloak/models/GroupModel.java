@@ -92,6 +92,6 @@ public interface GroupModel extends RoleMapperModel {
 
         GroupModel getGroup();
 
-        KeycloakSession getKeycloakSession();
+        KeycloakSession getSession();
     }
 }

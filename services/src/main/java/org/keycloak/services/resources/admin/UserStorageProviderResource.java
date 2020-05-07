@@ -131,9 +131,9 @@ public class UserStorageProviderResource {
         UserStorageSyncManager syncManager = new UserStorageSyncManager();
         SynchronizationResult syncResult;
         if ("triggerFullSync".equals(action)) {
-            syncResult = syncManager.syncAllUsers(session.getKeycloakSessionFactory(), realm.getId(), providerModel);
+            syncResult = syncManager.syncAllUsers(session.getSessionFactory(), realm.getId(), providerModel);
         } else if ("triggerChangedUsersSync".equals(action)) {
-            syncResult = syncManager.syncChangedUsers(session.getKeycloakSessionFactory(), realm.getId(), providerModel);
+            syncResult = syncManager.syncChangedUsers(session.getSessionFactory(), realm.getId(), providerModel);
         } else if (action == null || action == "") {
             logger.debug("Missing action");
             throw new BadRequestException("Missing action");

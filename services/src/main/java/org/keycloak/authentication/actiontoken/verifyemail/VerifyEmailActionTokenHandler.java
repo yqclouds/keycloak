@@ -39,6 +39,7 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -78,6 +79,9 @@ public class VerifyEmailActionTokenHandler extends AbstractActionTokenHandler<Ve
         );
     }
 
+    @Autowired
+    private LoginFormsProvider loginFormsProvider;
+
     @Override
     public Response handleToken(VerifyEmailActionToken token, ActionTokenContext<VerifyEmailActionToken> tokenContext) {
         UserModel user = tokenContext.getAuthenticationSession().getAuthenticatedUser();
@@ -100,7 +104,7 @@ public class VerifyEmailActionTokenHandler extends AbstractActionTokenHandler<Ve
                     authSession.getClient().getClientId(), authSession.getTabId());
             String confirmUri = builder.build(realm.getName()).toString();
 
-            return session.getBeanFactory().getBean(LoginFormsProvider.class)
+            return this.loginFormsProvider
                     .setAuthenticationSession(authSession)
                     .setSuccess(Messages.CONFIRM_EMAIL_ADDRESS_VERIFICATION, user.getEmail())
                     .setAttribute(Constants.TEMPLATE_ATTR_ACTION_URI, confirmUri)
@@ -118,8 +122,7 @@ public class VerifyEmailActionTokenHandler extends AbstractActionTokenHandler<Ve
             AuthenticationSessionManager asm = new AuthenticationSessionManager(tokenContext.getSession());
             asm.removeAuthenticationSession(tokenContext.getRealm(), authSession, true);
 
-            return tokenContext.getSession().getBeanFactory().getBean(LoginFormsProvider.class)
-                    .setAuthenticationSession(authSession)
+            return this.loginFormsProvider.setAuthenticationSession(authSession)
                     .setSuccess(Messages.EMAIL_VERIFIED)
                     .createInfoPage();
         }

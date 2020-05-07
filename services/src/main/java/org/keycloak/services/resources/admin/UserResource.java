@@ -52,6 +52,7 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluato
 import org.keycloak.services.validation.Validation;
 import org.keycloak.storage.ReadOnlyException;
 import org.keycloak.utils.ProfileHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
@@ -117,7 +118,7 @@ public class UserResource {
 
         if (reqActions != null) {
             Set<String> allActions = new HashSet<>();
-            for (ProviderFactory factory : session.getKeycloakSessionFactory().getProviderFactories(RequiredActionProvider.class)) {
+            for (ProviderFactory factory : session.getSessionFactory().getProviderFactories(RequiredActionProvider.class)) {
                 allActions.add(factory.getId());
             }
             for (String action : allActions) {
@@ -200,6 +201,9 @@ public class UserResource {
         }
     }
 
+    @Autowired
+    private BruteForceProtector bruteForceProtector;
+
     /**
      * Get representation of the user
      *
@@ -218,7 +222,7 @@ public class UserResource {
             rep.setFederatedIdentities(reps);
         }
 
-        if (session.getBeanFactory().getBean(BruteForceProtector.class).isTemporarilyDisabled(session, realm, user)) {
+        if (bruteForceProtector.isTemporarilyDisabled(session, realm, user)) {
             rep.setEnabled(false);
         }
         rep.setAccess(auth.users().getAccess(user));
@@ -684,6 +688,8 @@ public class UserResource {
         return executeActionsEmail(redirectUri, clientId, null, actions);
     }
 
+    @Autowired
+    private EmailTemplateProvider emailTemplateProvider;
 
     /**
      * Send a update account email to the user
@@ -759,8 +765,7 @@ public class UserResource {
 
             String link = builder.build(realm.getName()).toString();
 
-            this.session.getBeanFactory().getBean(EmailTemplateProvider.class)
-                    .setAttribute(Constants.TEMPLATE_ATTR_REQUIRED_ACTIONS, token.getRequiredActions())
+            this.emailTemplateProvider.setAttribute(Constants.TEMPLATE_ATTR_REQUIRED_ACTIONS, token.getRequiredActions())
                     .setRealm(realm)
                     .setUser(user)
                     .sendExecuteActions(link, TimeUnit.SECONDS.toMinutes(lifespan));

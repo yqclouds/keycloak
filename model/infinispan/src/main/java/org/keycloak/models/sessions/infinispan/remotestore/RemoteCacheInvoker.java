@@ -30,6 +30,7 @@ import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.changes.SessionUpdateTask;
 import org.keycloak.models.sessions.infinispan.entities.SessionEntity;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,6 +57,8 @@ public class RemoteCacheInvoker {
         return Collections.unmodifiableSet(remoteCaches.keySet());
     }
 
+    @Autowired
+    private InfinispanUtil infinispanUtil;
 
     public <K, V extends SessionEntity> void runTask(KeycloakSession kcSession, RealmModel realm, String cacheName, K key, SessionUpdateTask<V> task, SessionEntityWrapper<V> sessionWrapper) {
         RemoteCacheContext context = remoteCaches.get(cacheName);
@@ -84,7 +87,7 @@ public class RemoteCacheInvoker {
             logger.tracef("Running task '%s' on remote cache '%s' . Key is '%s'", operation, cacheName, key);
         }
 
-        TopologyInfo topology = InfinispanUtil.getTopologyInfo(kcSession);
+        TopologyInfo topology = infinispanUtil.getTopologyInfo(kcSession);
 
         Retry.executeWithBackoff((int iteration) -> {
 

@@ -36,6 +36,7 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -70,6 +71,9 @@ public class IdpVerifyAccountLinkActionTokenHandler extends AbstractActionTokenH
         return TokenUtils.predicates();
     }
 
+    @Autowired
+    private LoginFormsProvider loginFormsProvider;
+
     @Override
     public Response handleToken(IdpVerifyAccountLinkActionToken token, ActionTokenContext<IdpVerifyAccountLinkActionToken> tokenContext) {
         UserModel user = tokenContext.getAuthenticationSession().getAuthenticatedUser();
@@ -94,8 +98,7 @@ public class IdpVerifyAccountLinkActionTokenHandler extends AbstractActionTokenH
                     authSession.getClient().getClientId(), authSession.getTabId());
             String confirmUri = builder.build(realm.getName()).toString();
 
-            return session.getBeanFactory().getBean(LoginFormsProvider.class)
-                    .setAuthenticationSession(authSession)
+            return this.loginFormsProvider.setAuthenticationSession(authSession)
                     .setSuccess(Messages.CONFIRM_ACCOUNT_LINKING, token.getIdentityProviderUsername(), token.getIdentityProviderAlias())
                     .setAttribute(Constants.TEMPLATE_ATTR_ACTION_URI, confirmUri)
                     .createInfoPage();
@@ -122,8 +125,7 @@ public class IdpVerifyAccountLinkActionTokenHandler extends AbstractActionTokenH
                 );
             }
 
-            return session.getBeanFactory().getBean(LoginFormsProvider.class)
-                    .setAuthenticationSession(authSession)
+            return this.loginFormsProvider.setAuthenticationSession(authSession)
                     .setSuccess(Messages.IDENTITY_PROVIDER_LINK_SUCCESS, token.getIdentityProviderAlias(), token.getIdentityProviderUsername())
                     .setAttribute(Constants.SKIP_LINK, true)
                     .createInfoPage();

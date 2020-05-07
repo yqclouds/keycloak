@@ -35,6 +35,7 @@ import org.keycloak.models.cache.infinispan.entities.Revisioned;
 import org.keycloak.models.cache.infinispan.events.InvalidationEvent;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
 import org.keycloak.storage.StorageId;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
@@ -50,7 +51,7 @@ import static org.keycloak.models.cache.infinispan.RealmCacheSession.REALM_CLEAR
  * @version $Revision: 1 $
  */
 public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
-    protected static final Logger logger = Logger.getLogger(StoreFactoryCacheSession.class);
+    protected static final Logger LOG = Logger.getLogger(StoreFactoryCacheSession.class);
 
     public static final String AUTHORIZATION_CLEAR_CACHE_EVENTS = "AUTHORIZATION_CLEAR_CACHE_EVENTS";
     public static final String AUTHORIZATION_INVALIDATION_EVENTS = "AUTHORIZATION_INVALIDATION_EVENTS";
@@ -75,26 +76,31 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
     protected PolicyCache policyCache;
     protected PermissionTicketCache permissionTicketCache;
 
+    @Autowired
+    private InfinispanConnectionProvider connectionProvider;
+    @Autowired
+    private ClusterProvider clusterProvider;
+    @Autowired
+    private StoreFactory storeFactory;
+
     public StoreFactoryCacheSession(KeycloakSession session) {
         this.session = session;
     }
 
     @PostConstruct
     public void afterPropertiesSet() {
-        Cache<String, Revisioned> cache = session.getBeanFactory().getBean(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.AUTHORIZATION_CACHE_NAME);
-        Cache<String, Long> revisions = session.getBeanFactory().getBean(InfinispanConnectionProvider.class).getCache(InfinispanConnectionProvider.AUTHORIZATION_REVISIONS_CACHE_NAME);
+        Cache<String, Revisioned> cache = connectionProvider.getCache(InfinispanConnectionProvider.AUTHORIZATION_CACHE_NAME);
+        Cache<String, Long> revisions = connectionProvider.getCache(InfinispanConnectionProvider.AUTHORIZATION_REVISIONS_CACHE_NAME);
         this.storeCache = new StoreFactoryCacheManager(cache, revisions);
-        ClusterProvider cluster = session.getBeanFactory().getBean(ClusterProvider.class);
-
-        cluster.registerListener(AUTHORIZATION_INVALIDATION_EVENTS, (ClusterEvent event) -> {
+        clusterProvider.registerListener(AUTHORIZATION_INVALIDATION_EVENTS, (ClusterEvent event) -> {
             InvalidationEvent invalidationEvent = (InvalidationEvent) event;
             this.storeCache.invalidationEventReceived(invalidationEvent);
         });
 
-        cluster.registerListener(AUTHORIZATION_CLEAR_CACHE_EVENTS, (ClusterEvent event) -> cache.clear());
-        cluster.registerListener(REALM_CLEAR_CACHE_EVENTS, (ClusterEvent event) -> cache.clear());
+        clusterProvider.registerListener(AUTHORIZATION_CLEAR_CACHE_EVENTS, (ClusterEvent event) -> cache.clear());
+        clusterProvider.registerListener(REALM_CLEAR_CACHE_EVENTS, (ClusterEvent event) -> cache.clear());
 
-        logger.debug("Registered cluster listeners");
+        LOG.debug("Registered cluster listeners");
 
         this.startupRevision = storeCache.getCurrentCounter();
         this.resourceServerCache = new ResourceServerCache();
@@ -401,7 +407,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
 
     public StoreFactory getDelegate() {
         if (delegate != null) return delegate;
-        delegate = session.getBeanFactory().getBean(StoreFactory.class);
+        delegate = this.storeFactory;
         return delegate;
     }
 
@@ -487,7 +493,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
             if (id == null) return null;
             CachedResourceServer cached = storeCache.get(id, CachedResourceServer.class);
             if (cached != null) {
-                logger.tracev("by id cache hit: {0}", cached.getId());
+                LOG.tracev("by id cache hit: {0}", cached.getId());
             }
 
             if (cached == null) {
@@ -542,7 +548,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
             if (id == null) return null;
             CachedScope cached = storeCache.get(id, CachedScope.class);
             if (cached != null) {
-                logger.tracev("by id cache hit: {0}", cached.getId());
+                LOG.tracev("by id cache hit: {0}", cached.getId());
             }
             if (cached == null) {
                 Long loaded = storeCache.getCurrentRevision(id);
@@ -571,7 +577,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
             String cacheKey = getScopeByNameCacheKey(name, resourceServerId);
             ScopeListQuery query = storeCache.get(cacheKey, ScopeListQuery.class);
             if (query != null) {
-                logger.tracev("scope by name cache hit: {0}", name);
+                LOG.tracev("scope by name cache hit: {0}", name);
             }
             if (query == null) {
                 Long loaded = storeCache.getCurrentRevision(cacheKey);
@@ -638,7 +644,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
             if (id == null) return null;
             CachedResource cached = storeCache.get(id, CachedResource.class);
             if (cached != null) {
-                logger.tracev("by id cache hit: {0}", cached.getId());
+                LOG.tracev("by id cache hit: {0}", cached.getId());
             }
             if (cached == null) {
                 Long loaded = storeCache.getCurrentRevision(id);
@@ -807,7 +813,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
         private <R extends Resource, Q extends ResourceQuery> List<R> cacheQuery(String cacheKey, Class<Q> queryType, Supplier<List<R>> resultSupplier, BiFunction<Long, List<R>, Q> querySupplier, String resourceServerId, Consumer<R> consumer) {
             Q query = storeCache.get(cacheKey, queryType);
             if (query != null) {
-                logger.tracev("cache hit for key: {0}", cacheKey);
+                LOG.tracev("cache hit for key: {0}", cacheKey);
             }
             if (query == null) {
                 Long loaded = storeCache.getCurrentRevision(cacheKey);
@@ -892,7 +898,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
 
             CachedPolicy cached = storeCache.get(id, CachedPolicy.class);
             if (cached != null) {
-                logger.tracev("by id cache hit: {0}", cached.getId());
+                LOG.tracev("by id cache hit: {0}", cached.getId());
             }
             if (cached == null) {
                 if (!modelMightExist(id)) return null;
@@ -1021,7 +1027,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
         private <R extends Policy, Q extends PolicyQuery> List<R> cacheQuery(String cacheKey, Class<Q> queryType, Supplier<List<R>> resultSupplier, BiFunction<Long, List<R>, Q> querySupplier, String resourceServerId, Consumer<R> consumer) {
             Q query = storeCache.get(cacheKey, queryType);
             if (query != null) {
-                logger.tracev("cache hit for key: {0}", cacheKey);
+                LOG.tracev("cache hit for key: {0}", cacheKey);
             }
             if (query == null) {
                 Long loaded = storeCache.getCurrentRevision(cacheKey);
@@ -1102,7 +1108,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
 
             CachedPermissionTicket cached = storeCache.get(id, CachedPermissionTicket.class);
             if (cached != null) {
-                logger.tracev("by id cache hit: {0}", cached.getId());
+                LOG.tracev("by id cache hit: {0}", cached.getId());
             }
             if (cached == null) {
                 Long loaded = storeCache.getCurrentRevision(id);
@@ -1183,7 +1189,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
         private <R, Q extends PermissionTicketQuery> List<R> cacheQuery(String cacheKey, Class<Q> queryType, Supplier<List<R>> resultSupplier, BiFunction<Long, List<R>, Q> querySupplier, String resourceServerId) {
             Q query = storeCache.get(cacheKey, queryType);
             if (query != null) {
-                logger.tracev("cache hit for key: {0}", cacheKey);
+                LOG.tracev("cache hit for key: {0}", cacheKey);
             }
             if (query == null) {
                 Long loaded = storeCache.getCurrentRevision(cacheKey);

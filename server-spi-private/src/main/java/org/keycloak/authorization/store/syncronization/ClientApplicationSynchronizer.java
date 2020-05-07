@@ -42,7 +42,7 @@ public class ClientApplicationSynchronizer implements Synchronizer<ClientRemoved
     @Override
     public void synchronize(ClientRemovedEvent event, KeycloakSessionFactory factory) {
         ProviderFactory<AuthorizationProvider> providerFactory = factory.getProviderFactory(AuthorizationProvider.class);
-        AuthorizationProvider authorizationProvider = providerFactory.create(event.getKeycloakSession());
+        AuthorizationProvider authorizationProvider = providerFactory.create(event.getSession());
 
         removeFromClientPolicies(event, authorizationProvider);
     }

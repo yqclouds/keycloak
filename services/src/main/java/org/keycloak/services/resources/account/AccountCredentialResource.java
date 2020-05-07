@@ -139,7 +139,7 @@ public class AccountCredentialResource {
 
             for (AuthenticationExecutionModel execution : realm.getAuthenticationExecutions(flow.getId())) {
                 if (execution.getAuthenticator() != null && DISABLED != execution.getRequirement()) {
-                    AuthenticatorFactory authenticatorFactory = (AuthenticatorFactory) session.getKeycloakSessionFactory().getProviderFactory(Authenticator.class, execution.getAuthenticator());
+                    AuthenticatorFactory authenticatorFactory = (AuthenticatorFactory) session.getSessionFactory().getProviderFactory(Authenticator.class, execution.getAuthenticator());
                     if (authenticatorFactory != null && authenticatorFactory.getReferenceCategory() != null) {
                         enabledCredentialTypes.add(authenticatorFactory.getReferenceCategory());
                     }

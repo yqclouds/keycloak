@@ -28,6 +28,7 @@ import org.keycloak.models.UserLoginFailureModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.managers.BruteForceProtector;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -60,6 +61,9 @@ public class AttackDetectionResource {
         this.realm = realm;
         this.adminEvent = adminEvent.realm(realm).resource(ResourceType.USER_LOGIN_FAILURE);
     }
+
+    @Autowired
+    private BruteForceProtector bruteForceProtector;
 
     /**
      * Get status of a username in brute force detection
@@ -94,7 +98,7 @@ public class AttackDetectionResource {
         if (user == null) {
             disabled = Time.currentTime() < model.getFailedLoginNotBefore();
         } else {
-            disabled = session.getBeanFactory().getBean(BruteForceProtector.class).isTemporarilyDisabled(session, realm, user);
+            disabled = bruteForceProtector.isTemporarilyDisabled(session, realm, user);
         }
         if (disabled) {
             data.put("disabled", true);

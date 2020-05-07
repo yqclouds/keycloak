@@ -34,6 +34,7 @@ import org.keycloak.storage.UserStorageProviderModel;
 import org.keycloak.storage.user.ImportSynchronization;
 import org.keycloak.storage.user.SynchronizationResult;
 import org.keycloak.timer.TimerProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -62,14 +63,13 @@ public class UserStorageSyncManager {
                 for (final RealmModel realm : realms) {
                     List<UserStorageProviderModel> providers = realm.getUserStorageProviders();
                     for (final UserStorageProviderModel provider : providers) {
-                        UserStorageProviderFactory factory = (UserStorageProviderFactory) session.getKeycloakSessionFactory().getProviderFactory(UserStorageProvider.class, provider.getProviderId());
+                        UserStorageProviderFactory factory = (UserStorageProviderFactory) session.getSessionFactory().getProviderFactory(UserStorageProvider.class, provider.getProviderId());
                         if (factory instanceof ImportSynchronization && provider.isImportEnabled()) {
                             refreshPeriodicSyncForProvider(sessionFactory, timer, provider, realm.getId());
                         }
                     }
                 }
 
-                ClusterProvider clusterProvider = session.getBeanFactory().getBean(ClusterProvider.class);
                 clusterProvider.registerListener(USER_STORAGE_TASK_KEY, new UserStorageClusterListener(sessionFactory));
             }
         });
@@ -89,7 +89,6 @@ public class UserStorageSyncManager {
 
             @Override
             public void run(KeycloakSession session) {
-                ClusterProvider clusterProvider = session.getBeanFactory().getBean(ClusterProvider.class);
                 // shared key for "full" and "changed" . Improve if needed
                 String taskKey = provider.getId() + "::sync";
 
@@ -129,7 +128,6 @@ public class UserStorageSyncManager {
 
             @Override
             public void run(KeycloakSession session) {
-                ClusterProvider clusterProvider = session.getBeanFactory().getBean(ClusterProvider.class);
                 // shared key for "full" and "changed" . Improve if needed
                 String taskKey = provider.getId() + "::sync";
 
@@ -158,15 +156,18 @@ public class UserStorageSyncManager {
         }
     }
 
+    @Autowired
+    private ClusterProvider clusterProvider;
+
     // Ensure all cluster nodes are notified
     public void notifyToRefreshPeriodicSync(KeycloakSession session, RealmModel realm, UserStorageProviderModel provider, boolean removed) {
-        UserStorageProviderFactory factory = (UserStorageProviderFactory) session.getKeycloakSessionFactory().getProviderFactory(UserStorageProvider.class, provider.getProviderId());
+        UserStorageProviderFactory factory = (UserStorageProviderFactory) session.getSessionFactory().getProviderFactory(UserStorageProvider.class, provider.getProviderId());
         if (!(factory instanceof ImportSynchronization) || !provider.isImportEnabled()) {
             return;
 
         }
         UserStorageProviderClusterEvent event = UserStorageProviderClusterEvent.createEvent(removed, realm.getId(), provider);
-        session.getBeanFactory().getBean(ClusterProvider.class).notify(USER_STORAGE_TASK_KEY, event, false, ClusterProvider.DCNotify.ALL_DCS);
+        clusterProvider.notify(USER_STORAGE_TASK_KEY, event, false, ClusterProvider.DCNotify.ALL_DCS);
     }
 
     // Executed once it receives notification that some UserFederationProvider was created or updated
@@ -309,6 +310,9 @@ public class UserStorageSyncManager {
         ExecutionResult<SynchronizationResult> result;
     }
 
+    @Autowired
+    private TimerProvider timerProvider;
+
     private class UserStorageClusterListener implements ClusterListener {
 
         private final KeycloakSessionFactory sessionFactory;
@@ -320,18 +324,12 @@ public class UserStorageSyncManager {
         @Override
         public void eventReceived(ClusterEvent event) {
             final UserStorageProviderClusterEvent fedEvent = (UserStorageProviderClusterEvent) event;
-            KeycloakModelUtils.runJobInTransaction(sessionFactory, new KeycloakSessionTask() {
-
-                @Override
-                public void run(KeycloakSession session) {
-                    TimerProvider timer = session.getBeanFactory().getBean(TimerProvider.class);
-                    if (fedEvent.isRemoved()) {
-                        removePeriodicSyncForProvider(timer, fedEvent.getStorageProvider());
-                    } else {
-                        refreshPeriodicSyncForProvider(sessionFactory, timer, fedEvent.getStorageProvider(), fedEvent.getRealmId());
-                    }
+            KeycloakModelUtils.runJobInTransaction(sessionFactory, session -> {
+                if (fedEvent.isRemoved()) {
+                    removePeriodicSyncForProvider(timerProvider, fedEvent.getStorageProvider());
+                } else {
+                    refreshPeriodicSyncForProvider(sessionFactory, timerProvider, fedEvent.getStorageProvider(), fedEvent.getRealmId());
                 }
-
             });
         }
     }

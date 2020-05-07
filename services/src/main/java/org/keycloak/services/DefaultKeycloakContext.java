@@ -23,6 +23,7 @@ import org.keycloak.locale.LocaleSelectorProvider;
 import org.keycloak.models.*;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.urls.UrlType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
@@ -121,9 +122,12 @@ public class DefaultKeycloakContext implements KeycloakContext {
         this.connection = connection;
     }
 
+    @Autowired
+    private LocaleSelectorProvider localeSelectorProvider;
+
     @Override
     public Locale resolveLocale(UserModel user) {
-        return session.getBeanFactory().getBean(LocaleSelectorProvider.class).resolveLocale(getRealm(), user);
+        return localeSelectorProvider.resolveLocale(getRealm(), user);
     }
 
     @Override

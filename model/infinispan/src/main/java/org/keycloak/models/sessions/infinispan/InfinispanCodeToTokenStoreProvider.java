@@ -28,6 +28,7 @@ import org.keycloak.models.CodeToTokenStoreProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.sessions.infinispan.entities.ActionTokenValueEntity;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import java.util.Map;
@@ -44,15 +45,16 @@ public class InfinispanCodeToTokenStoreProvider implements CodeToTokenStoreProvi
     private Supplier<BasicCache<UUID, ActionTokenValueEntity>> codeCache;
     private final KeycloakSession session;
 
+    @Autowired
+    private InfinispanConnectionProvider connectionProvider;
+
     public InfinispanCodeToTokenStoreProvider(KeycloakSession session) {
         this.session = session;
     }
 
     @PostConstruct
     public void afterPropertiesSet() {
-        InfinispanConnectionProvider connections = session.getBeanFactory().getBean(InfinispanConnectionProvider.class);
-        Cache cache = connections.getCache(InfinispanConnectionProvider.ACTION_TOKEN_CACHE);
-
+        Cache cache = connectionProvider.getCache(InfinispanConnectionProvider.ACTION_TOKEN_CACHE);
         RemoteCache remoteCache = InfinispanUtil.getRemoteCache(cache);
 
         if (remoteCache != null) {

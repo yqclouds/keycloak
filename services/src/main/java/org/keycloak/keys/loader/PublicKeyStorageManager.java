@@ -28,6 +28,7 @@ import org.keycloak.keys.PublicKeyStorageUtils;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.security.PublicKey;
 
@@ -35,10 +36,12 @@ import java.security.PublicKey;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class PublicKeyStorageManager {
+    private static final Logger LOG = Logger.getLogger(PublicKeyStorageManager.class);
 
-    private static final Logger logger = Logger.getLogger(PublicKeyStorageManager.class);
+    @Autowired
+    private PublicKeyStorageProvider publicKeyStorageProvider;
 
-    public static PublicKey getClientPublicKey(KeycloakSession session, ClientModel client, JWSInput input) {
+    public PublicKey getClientPublicKey(KeycloakSession session, ClientModel client, JWSInput input) {
         KeyWrapper keyWrapper = getClientPublicKeyWrapper(session, client, input);
         PublicKey publicKey = null;
         if (keyWrapper != null) {
@@ -47,28 +50,25 @@ public class PublicKeyStorageManager {
         return publicKey;
     }
 
-    public static KeyWrapper getClientPublicKeyWrapper(KeycloakSession session, ClientModel client, JWSInput input) {
+    public KeyWrapper getClientPublicKeyWrapper(KeycloakSession session, ClientModel client, JWSInput input) {
         String kid = input.getHeader().getKeyId();
-        PublicKeyStorageProvider keyStorage = session.getBeanFactory().getBean(PublicKeyStorageProvider.class);
         String modelKey = PublicKeyStorageUtils.getClientModelCacheKey(client.getRealm().getId(), client.getId());
         ClientPublicKeyLoader loader = new ClientPublicKeyLoader(session, client);
-        return keyStorage.getPublicKey(modelKey, kid, loader);
+        return publicKeyStorageProvider.getPublicKey(modelKey, kid, loader);
     }
 
-    public static KeyWrapper getClientPublicKeyWrapper(KeycloakSession session, ClientModel client, JWK.Use keyUse, String algAlgorithm) {
-        PublicKeyStorageProvider keyStorage = session.getBeanFactory().getBean(PublicKeyStorageProvider.class);
+
+    public KeyWrapper getClientPublicKeyWrapper(KeycloakSession session, ClientModel client, JWK.Use keyUse, String algAlgorithm) {
         String modelKey = PublicKeyStorageUtils.getClientModelCacheKey(client.getRealm().getId(), client.getId(), keyUse);
         ClientPublicKeyLoader loader = new ClientPublicKeyLoader(session, client, keyUse);
-        return keyStorage.getFirstPublicKey(modelKey, algAlgorithm, loader);
+        return publicKeyStorageProvider.getFirstPublicKey(modelKey, algAlgorithm, loader);
     }
 
-    public static PublicKey getIdentityProviderPublicKey(KeycloakSession session, RealmModel realm, OIDCIdentityProviderConfig idpConfig, JWSInput input) {
+    public PublicKey getIdentityProviderPublicKey(KeycloakSession session, RealmModel realm, OIDCIdentityProviderConfig idpConfig, JWSInput input) {
         boolean keyIdSetInConfiguration = idpConfig.getPublicKeySignatureVerifierKeyId() != null
                 && !idpConfig.getPublicKeySignatureVerifierKeyId().trim().isEmpty();
 
         String kid = input.getHeader().getKeyId();
-
-        PublicKeyStorageProvider keyStorage = session.getBeanFactory().getBean(PublicKeyStorageProvider.class);
 
         String modelKey = PublicKeyStorageUtils.getIdpModelCacheKey(realm.getId(), idpConfig.getInternalId());
         PublicKeyLoader loader;
@@ -78,7 +78,7 @@ public class PublicKeyStorageManager {
             String pem = idpConfig.getPublicKeySignatureVerifier();
 
             if (pem == null || pem.trim().isEmpty()) {
-                logger.warnf("No public key saved on identityProvider %s", idpConfig.getAlias());
+                LOG.warnf("No public key saved on identityProvider %s", idpConfig.getAlias());
                 return null;
             }
 
@@ -88,6 +88,6 @@ public class PublicKeyStorageManager {
                             : kid, pem);
         }
 
-        return (PublicKey) keyStorage.getPublicKey(modelKey, kid, loader).getPublicKey();
+        return (PublicKey) publicKeyStorageProvider.getPublicKey(modelKey, kid, loader).getPublicKey();
     }
 }

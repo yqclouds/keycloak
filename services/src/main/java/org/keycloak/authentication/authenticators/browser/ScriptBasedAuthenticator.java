@@ -24,6 +24,7 @@ import org.keycloak.models.*;
 import org.keycloak.scripting.InvocableScriptAdapter;
 import org.keycloak.scripting.ScriptExecutionException;
 import org.keycloak.scripting.ScriptingProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
 
@@ -139,6 +140,9 @@ public class ScriptBasedAuthenticator implements Authenticator {
         return context.getAuthenticatorConfig();
     }
 
+    @Autowired
+    private ScriptingProvider scriptingProvider;
+
     private InvocableScriptAdapter getInvocableScriptAdapter(AuthenticationFlowContext context) {
 
         Map<String, String> config = getAuthenticatorConfig(context).getConfig();
@@ -149,13 +153,11 @@ public class ScriptBasedAuthenticator implements Authenticator {
 
         RealmModel realm = context.getRealm();
 
-        ScriptingProvider scripting = context.getSession().getBeanFactory().getBean(ScriptingProvider.class);
-
         //TODO lookup script by scriptId instead of creating it every time
-        ScriptModel script = scripting.createScript(realm.getId(), ScriptModel.TEXT_JAVASCRIPT, scriptName, scriptCode, scriptDescription);
+        ScriptModel script = scriptingProvider.createScript(realm.getId(), ScriptModel.TEXT_JAVASCRIPT, scriptName, scriptCode, scriptDescription);
 
         //how to deal with long running scripts -> timeout?
-        return scripting.prepareInvocableScript(script, bindings -> {
+        return scriptingProvider.prepareInvocableScript(script, bindings -> {
             bindings.put("script", script);
             bindings.put("realm", context.getRealm());
             bindings.put("user", context.getUser());

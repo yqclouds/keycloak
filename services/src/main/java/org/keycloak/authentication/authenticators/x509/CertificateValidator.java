@@ -27,6 +27,7 @@ import org.keycloak.saml.processing.core.util.XMLSignatureUtil;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.truststore.TruststoreProvider;
 import org.keycloak.utils.CRLUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -62,9 +63,11 @@ public class CertificateValidator {
     CRLLoaderImpl _crlLoader;
     boolean _ocspEnabled;
     OCSPChecker ocspChecker;
+
     public CertificateValidator() {
 
     }
+
     protected CertificateValidator(X509Certificate[] certChain,
                                    int keyUsageBits, List<String> extendedKeyUsage,
                                    boolean cRLCheckingEnabled,
@@ -154,11 +157,14 @@ public class CertificateValidator {
         }
     }
 
-    private static void checkRevocationStatusUsingCRL(X509Certificate[] certs, CRLLoaderImpl crLoader, KeycloakSession session) throws GeneralSecurityException {
+    @Autowired
+    private CRLUtils crlUtils;
+
+    private void checkRevocationStatusUsingCRL(X509Certificate[] certs, CRLLoaderImpl crLoader, KeycloakSession session) throws GeneralSecurityException {
         Collection<X509CRL> crlColl = crLoader.getX509CRLs();
         if (crlColl != null && crlColl.size() > 0) {
             for (X509CRL it : crlColl) {
-                CRLUtils.check(certs, it, session);
+                crlUtils.check(certs, it, session);
             }
         }
     }
@@ -172,8 +178,7 @@ public class CertificateValidator {
         return new ArrayList<>();
     }
 
-    private static void checkRevocationStatusUsingCRLDistributionPoints(X509Certificate[] certs, KeycloakSession session) throws GeneralSecurityException {
-
+    private void checkRevocationStatusUsingCRLDistributionPoints(X509Certificate[] certs, KeycloakSession session) throws GeneralSecurityException {
         List<String> distributionPoints = getCRLDistributionPoints(certs[0]);
         if (distributionPoints == null || distributionPoints.size() == 0) {
             throw new GeneralSecurityException("Could not find any CRL distribution points in the certificate, unable to check the certificate revocation status using CRL/DP.");
@@ -219,8 +224,10 @@ public class CertificateValidator {
         return this;
     }
 
+    @Autowired(required = false)
+    private TruststoreProvider truststoreProvider;
+
     private X509Certificate findCAInTruststore(X500Principal issuer) throws GeneralSecurityException {
-        TruststoreProvider truststoreProvider = session.getBeanFactory().getBean(TruststoreProvider.class);
         if (truststoreProvider == null || truststoreProvider.getTruststore() == null) {
             return null;
         }

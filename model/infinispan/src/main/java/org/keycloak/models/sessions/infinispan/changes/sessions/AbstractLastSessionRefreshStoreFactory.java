@@ -21,6 +21,7 @@ import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.utils.SessionTimeoutHelper;
 import org.keycloak.timer.TimerProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -36,13 +37,12 @@ public abstract class AbstractLastSessionRefreshStoreFactory {
     // Max count of lastSessionRefreshes. If count of lastSessionRefreshes reach this value, the message is sent to second DC
     public static final int DEFAULT_MAX_COUNT = 100;
 
+    @Autowired
+    private TimerProvider timerProvider;
 
-    protected void setupPeriodicTimer(KeycloakSession kcSession, AbstractLastSessionRefreshStore store, long timerIntervalMs, String eventKey) {
-        TimerProvider timer = kcSession.getBeanFactory().getBean(TimerProvider.class);
-        timer.scheduleTask((KeycloakSession keycloakSession) -> {
-
+    protected void setupPeriodicTimer(AbstractLastSessionRefreshStore store, long timerIntervalMs, String eventKey) {
+        timerProvider.scheduleTask((KeycloakSession keycloakSession) -> {
             store.checkSendingMessage(keycloakSession, Time.currentTime());
-
         }, timerIntervalMs, eventKey);
     }
 }

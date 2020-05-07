@@ -104,7 +104,7 @@ public class ProtocolMapperUtils {
      * @return The builtin locale mapper.
      */
     public static ProtocolMapperModel findLocaleMapper(KeycloakSession session) {
-        for (ProviderFactory p : session.getKeycloakSessionFactory().getProviderFactories(LoginProtocol.class)) {
+        for (ProviderFactory p : session.getSessionFactory().getProviderFactories(LoginProtocol.class)) {
             LoginProtocolFactory factory = (LoginProtocolFactory) p;
             ProtocolMapperModel found = factory.getBuiltinMappers().get(OIDCLoginProtocolFactory.LOCALE);
             if (found != null && found.getProtocol().equals(OIDCLoginProtocol.LOGIN_PROTOCOL)) {
@@ -119,7 +119,7 @@ public class ProtocolMapperUtils {
         Set<ProtocolMapperModel> mapperModels = ctx.getProtocolMappers();
         Map<ProtocolMapperModel, ProtocolMapper> result = new HashMap<>();
 
-        KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
+        KeycloakSessionFactory sessionFactory = session.getSessionFactory();
         for (ProtocolMapperModel mapperModel : mapperModels) {
             ProtocolMapper mapper = (ProtocolMapper) sessionFactory.getProviderFactory(ProtocolMapper.class, mapperModel.getProtocolMapper());
             if (mapper == null) {
@@ -141,6 +141,6 @@ public class ProtocolMapperUtils {
     }
 
     public static boolean isEnabled(KeycloakSession session, ProtocolMapperModel mapper) {
-        return session.getKeycloakSessionFactory().getProviderFactory(ProtocolMapper.class, mapper.getProtocolMapper()) != null;
+        return session.getSessionFactory().getProviderFactory(ProtocolMapper.class, mapper.getProtocolMapper()) != null;
     }
 }

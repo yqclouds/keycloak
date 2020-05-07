@@ -52,7 +52,7 @@ public class ResourceService extends AbstractResourceService {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getResource() {
-        return cors(Response.ok(new Resource(resource, provider)));
+        return cors(Response.ok(new Resource(resource, authorizationProvider)));
     }
 
     /**
@@ -167,7 +167,7 @@ public class ResourceService extends AbstractResourceService {
         Map<String, Permission> requests = new HashMap<>();
 
         for (PermissionTicket ticket : ticketStore.find(filters, null, -1, -1)) {
-            requests.computeIfAbsent(ticket.getRequester(), requester -> new Permission(ticket, provider)).addScope(ticket.getScope().getName());
+            requests.computeIfAbsent(ticket.getRequester(), requester -> new Permission(ticket, authorizationProvider)).addScope(ticket.getScope().getName());
         }
 
         return cors(Response.ok(requests.values()));
@@ -190,11 +190,11 @@ public class ResourceService extends AbstractResourceService {
     }
 
     private UserModel getUser(String requester) {
-        UserProvider users = provider.getSession().users();
-        UserModel user = users.getUserByUsername(requester, provider.getRealm());
+        UserProvider users = authorizationProvider.getSession().users();
+        UserModel user = users.getUserByUsername(requester, authorizationProvider.getRealm());
 
         if (user == null) {
-            user = users.getUserById(requester, provider.getRealm());
+            user = users.getUserById(requester, authorizationProvider.getRealm());
         }
 
         return user;
@@ -205,12 +205,12 @@ public class ResourceService extends AbstractResourceService {
 
         for (PermissionTicket ticket : tickets) {
             ResourcePermission resource = permissions
-                    .computeIfAbsent(ticket.getResource().getId(), s -> new ResourcePermission(ticket, provider));
+                    .computeIfAbsent(ticket.getResource().getId(), s -> new ResourcePermission(ticket, authorizationProvider));
 
             Permission user = resource.getPermission(ticket.getRequester());
 
             if (user == null) {
-                resource.addPermission(ticket.getRequester(), user = new Permission(ticket.getRequester(), provider));
+                resource.addPermission(ticket.getRequester(), user = new Permission(ticket.getRequester(), authorizationProvider));
             }
 
             user.addScope(ticket.getScope().getName());

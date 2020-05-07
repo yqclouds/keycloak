@@ -231,7 +231,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
 
         Map<ComponentModel, LDAPConfigDecorator> result = new HashMap<>();
         for (ComponentModel mapperModel : mapperComponents) {
-            LDAPStorageMapperFactory mapperFactory = (LDAPStorageMapperFactory) session.getKeycloakSessionFactory().getProviderFactory(LDAPStorageMapper.class, mapperModel.getProviderId());
+            LDAPStorageMapperFactory mapperFactory = (LDAPStorageMapperFactory) session.getSessionFactory().getProviderFactory(LDAPStorageMapper.class, mapperModel.getProviderId());
             if (mapperFactory instanceof LDAPConfigDecorator) {
                 result.put(mapperModel, (LDAPConfigDecorator) mapperFactory);
             }

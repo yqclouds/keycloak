@@ -32,7 +32,7 @@ public class RealmSynchronizer implements Synchronizer<RealmRemovedEvent> {
     @Override
     public void synchronize(RealmRemovedEvent event, KeycloakSessionFactory factory) {
         ProviderFactory<AuthorizationProvider> providerFactory = factory.getProviderFactory(AuthorizationProvider.class);
-        AuthorizationProvider authorizationProvider = providerFactory.create(event.getKeycloakSession());
+        AuthorizationProvider authorizationProvider = providerFactory.create(event.getSession());
         StoreFactory storeFactory = authorizationProvider.getStoreFactory();
 
         event.getRealm().getClients().forEach(clientModel -> {

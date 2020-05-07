@@ -36,7 +36,7 @@ public class DefaultClientScopes {
      * @param addScopesToExistingClients true when creating new realm. False when migrating from previous version
      */
     public static void createDefaultClientScopes(KeycloakSession session, RealmModel realm, boolean addScopesToExistingClients) {
-        List<ProviderFactory> loginProtocolFactories = session.getKeycloakSessionFactory().getProviderFactories(LoginProtocol.class);
+        List<ProviderFactory> loginProtocolFactories = session.getSessionFactory().getProviderFactories(LoginProtocol.class);
         for (ProviderFactory factory : loginProtocolFactories) {
             LoginProtocolFactory lpf = (LoginProtocolFactory) factory;
             lpf.createDefaultClientScopes(realm, addScopesToExistingClients);

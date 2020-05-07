@@ -37,6 +37,7 @@ import org.keycloak.representations.JsonWebToken;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.Urls;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -60,7 +61,10 @@ public class JWTClientAuthenticator extends AbstractClientAuthenticator {
     public static final String PROVIDER_ID = "client-jwt";
     public static final String ATTR_PREFIX = "jwt.credential";
     public static final String CERTIFICATE_ATTR = "jwt.credential.certificate";
-    private static final Logger logger = Logger.getLogger(JWTClientAuthenticator.class);
+    private static final Logger LOG = Logger.getLogger(JWTClientAuthenticator.class);
+
+    @Autowired
+    private SingleUseTokenStoreProvider singleUseTokenStoreProvider;
 
     @Override
     public void authenticateClient(ClientAuthenticationFlowContext context) {
@@ -152,13 +156,11 @@ public class JWTClientAuthenticator extends AbstractClientAuthenticator {
                 throw new RuntimeException("Missing ID on the token");
             }
 
-            SingleUseTokenStoreProvider singleUseCache = context.getSession().getBeanFactory().getBean(SingleUseTokenStoreProvider.class);
             int lifespanInSecs = Math.max(token.getExpiration() - currentTime, 10);
-            if (singleUseCache.putIfAbsent(token.getId(), lifespanInSecs)) {
-                logger.tracef("Added token '%s' to single-use cache. Lifespan: %d seconds, client: %s", token.getId(), lifespanInSecs, clientId);
-
+            if (singleUseTokenStoreProvider.putIfAbsent(token.getId(), lifespanInSecs)) {
+                LOG.tracef("Added token '%s' to single-use cache. Lifespan: %d seconds, client: %s", token.getId(), lifespanInSecs, clientId);
             } else {
-                logger.warnf("Token '%s' already used when authenticating client '%s'.", token.getId(), clientId);
+                LOG.warnf("Token '%s' already used when authenticating client '%s'.", token.getId(), clientId);
                 throw new RuntimeException("Token reuse detected");
             }
 
@@ -170,8 +172,11 @@ public class JWTClientAuthenticator extends AbstractClientAuthenticator {
         }
     }
 
+    @Autowired
+    private PublicKeyStorageManager publicKeyStorageManager;
+
     protected PublicKey getSignatureValidationKey(ClientModel client, ClientAuthenticationFlowContext context, JWSInput jws) {
-        PublicKey publicKey = PublicKeyStorageManager.getClientPublicKey(context.getSession(), client, jws);
+        PublicKey publicKey = publicKeyStorageManager.getClientPublicKey(context.getSession(), client, jws);
         if (publicKey == null) {
             Response challengeResponse = ClientAuthUtil.errorResponse(Response.Status.BAD_REQUEST.getStatusCode(), "unauthorized_client", "Unable to load public key");
             context.failure(AuthenticationFlowError.CLIENT_CREDENTIALS_SETUP_REQUIRED, challengeResponse);
