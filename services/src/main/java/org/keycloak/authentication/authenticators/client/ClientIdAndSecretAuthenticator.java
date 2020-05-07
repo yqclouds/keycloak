@@ -67,7 +67,6 @@ public class ClientIdAndSecretAuthenticator extends AbstractClientAuthenticator 
                 client_id = usernameSecret[0];
                 clientSecret = usernameSecret[1];
             } else {
-
                 // Don't send 401 if client_id parameter was sent in request. For example IE may automatically send "Authorization: Negotiate" in XHR requests even for public clients
                 if (formData != null && !formData.containsKey(OAuth2Constants.CLIENT_ID)) {
                     Response challengeResponse = Response.status(Response.Status.UNAUTHORIZED).header(HttpHeaders.WWW_AUTHENTICATE, "Basic realm=\"" + context.getRealm().getName() + "\"").build();

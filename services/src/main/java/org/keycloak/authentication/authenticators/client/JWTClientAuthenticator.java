@@ -65,6 +65,8 @@ public class JWTClientAuthenticator extends AbstractClientAuthenticator {
 
     @Autowired
     private SingleUseTokenStoreProvider singleUseTokenStoreProvider;
+    @Autowired
+    private PublicKeyStorageManager publicKeyStorageManager;
 
     @Override
     public void authenticateClient(ClientAuthenticationFlowContext context) {
@@ -171,9 +173,6 @@ public class JWTClientAuthenticator extends AbstractClientAuthenticator {
             context.failure(AuthenticationFlowError.INVALID_CLIENT_CREDENTIALS, challengeResponse);
         }
     }
-
-    @Autowired
-    private PublicKeyStorageManager publicKeyStorageManager;
 
     protected PublicKey getSignatureValidationKey(ClientModel client, ClientAuthenticationFlowContext context, JWSInput jws) {
         PublicKey publicKey = publicKeyStorageManager.getClientPublicKey(context.getSession(), client, jws);
