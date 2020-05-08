@@ -17,7 +17,7 @@
 
 package org.keycloak.exportimport.dir;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.Config;
 import org.keycloak.exportimport.ImportProvider;
 import org.keycloak.exportimport.Strategy;
@@ -44,7 +44,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class DirImportProvider implements ImportProvider {
 
-    private static final Logger logger = Logger.getLogger(DirImportProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DirImportProvider.class);
 
     private final File rootDirectory;
 
@@ -58,7 +58,7 @@ public class DirImportProvider implements ImportProvider {
             throw new IllegalStateException("Directory " + this.rootDirectory + " doesn't exists");
         }
 
-        logger.infof("Importing from directory %s", this.rootDirectory.getAbsolutePath());
+        LOG.info("Importing from directory %s", this.rootDirectory.getAbsolutePath());
     }
 
     public DirImportProvider(File rootDirectory) {
@@ -68,7 +68,7 @@ public class DirImportProvider implements ImportProvider {
             throw new IllegalStateException("Directory " + this.rootDirectory + " doesn't exists");
         }
 
-        logger.infof("Importing from directory %s", this.rootDirectory.getAbsolutePath());
+        LOG.info("Importing from directory %s", this.rootDirectory.getAbsolutePath());
     }
 
     @Override
@@ -152,7 +152,7 @@ public class DirImportProvider implements ImportProvider {
                     @Override
                     protected void runExportImportTask(KeycloakSession session) throws IOException {
                         ImportUtils.importUsersFromStream(session, realmName, JsonSerialization.mapper, fis);
-                        logger.infof("Imported users from %s", userFile.getAbsolutePath());
+                        LOG.info("Imported users from %s", userFile.getAbsolutePath());
                     }
                 });
             }
@@ -162,7 +162,7 @@ public class DirImportProvider implements ImportProvider {
                     @Override
                     protected void runExportImportTask(KeycloakSession session) throws IOException {
                         ImportUtils.importFederatedUsersFromStream(session, realmName, JsonSerialization.mapper, fis);
-                        logger.infof("Imported federated users from %s", userFile.getAbsolutePath());
+                        LOG.info("Imported federated users from %s", userFile.getAbsolutePath());
                     }
                 });
             }

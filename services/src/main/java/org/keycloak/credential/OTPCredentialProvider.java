@@ -16,7 +16,7 @@
  */
 package org.keycloak.credential;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.common.util.ObjectUtil;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.*;
@@ -33,7 +33,7 @@ import java.nio.charset.StandardCharsets;
  * @version $Revision: 1 $
  */
 public class OTPCredentialProvider implements CredentialProvider<OTPCredentialModel>, CredentialInputValidator/*, OnUserCache*/ {
-    private static final Logger logger = Logger.getLogger(OTPCredentialProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(OTPCredentialProvider.class);
 
     protected KeycloakSession session;
 
@@ -97,7 +97,7 @@ public class OTPCredentialProvider implements CredentialProvider<OTPCredentialMo
     @Override
     public boolean isValid(RealmModel realm, UserModel user, CredentialInput credentialInput) {
         if (!(credentialInput instanceof UserCredentialModel)) {
-            logger.debug("Expected instance of UserCredentialModel for CredentialInput");
+            LOG.debug("Expected instance of UserCredentialModel for CredentialInput");
             return false;
 
         }
@@ -106,7 +106,7 @@ public class OTPCredentialProvider implements CredentialProvider<OTPCredentialMo
             return false;
         }
         if (ObjectUtil.isBlank(credentialInput.getCredentialId())) {
-            logger.debugf("CredentialId is null when validating credential of user %s", user.getUsername());
+            LOG.debug("CredentialId is null when validating credential of user %s", user.getUsername());
             return false;
         }
 

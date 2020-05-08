@@ -17,7 +17,6 @@
 
 package org.keycloak.models.sessions.infinispan.events;
 
-import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterListener;
 import org.keycloak.cluster.ClusterProvider;
@@ -29,6 +28,8 @@ import org.keycloak.models.sessions.infinispan.InfinispanUserSessionProvider;
 import org.keycloak.models.sessions.infinispan.InfinispanUserSessionProviderFactory;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -36,7 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public abstract class AbstractUserSessionClusterListener<SE extends SessionClusterEvent> implements ClusterListener {
 
-    private static final Logger log = Logger.getLogger(AbstractUserSessionClusterListener.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractUserSessionClusterListener.class);
 
     private final KeycloakSessionFactory sessionFactory;
 
@@ -56,8 +57,8 @@ public abstract class AbstractUserSessionClusterListener<SE extends SessionClust
 
             boolean shouldResendEvent = shouldResendEvent(session, sessionEvent);
 
-            if (log.isDebugEnabled()) {
-                log.debugf("Received user session event '%s'. Should resend event: %b", sessionEvent.toString(), shouldResendEvent);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Received user session event '%s'. Should resend event: %b", sessionEvent.toString(), shouldResendEvent);
             }
 
             eventReceived(session, provider, sessionEvent);

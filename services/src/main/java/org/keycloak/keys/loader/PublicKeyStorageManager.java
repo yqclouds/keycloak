@@ -17,7 +17,6 @@
 
 package org.keycloak.keys.loader;
 
-import org.jboss.logging.Logger;
 import org.keycloak.broker.oidc.OIDCIdentityProviderConfig;
 import org.keycloak.crypto.KeyWrapper;
 import org.keycloak.jose.jwk.JWK;
@@ -28,6 +27,8 @@ import org.keycloak.keys.PublicKeyStorageUtils;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.security.PublicKey;
@@ -36,7 +37,7 @@ import java.security.PublicKey;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class PublicKeyStorageManager {
-    private static final Logger LOG = Logger.getLogger(PublicKeyStorageManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PublicKeyStorageManager.class);
 
     @Autowired
     private PublicKeyStorageProvider publicKeyStorageProvider;
@@ -78,7 +79,7 @@ public class PublicKeyStorageManager {
             String pem = idpConfig.getPublicKeySignatureVerifier();
 
             if (pem == null || pem.trim().isEmpty()) {
-                LOG.warnf("No public key saved on identityProvider %s", idpConfig.getAlias());
+                LOG.warn("No public key saved on identityProvider {}", idpConfig.getAlias());
                 return null;
             }
 

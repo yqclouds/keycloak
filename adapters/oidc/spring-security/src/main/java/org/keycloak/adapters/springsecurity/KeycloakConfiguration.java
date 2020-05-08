@@ -17,7 +17,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * @author Hendrik Ebbers
  */
 @Retention(value = RUNTIME)
-@Target(value = { TYPE })
+@Target(value = {TYPE})
 @Configuration
 @ComponentScan(basePackageClasses = KeycloakSecurityComponents.class)
 @EnableWebSecurity

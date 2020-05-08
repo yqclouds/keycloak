@@ -16,15 +16,6 @@
  */
 package org.keycloak.adapters.springsecurity.filter;
 
-import java.io.IOException;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.keycloak.KeycloakPrincipal;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.adapters.AdapterDeploymentContext;
@@ -43,11 +34,19 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
 public class KeycloakSecurityContextRequestFilter extends GenericFilterBean implements ApplicationContextAware {
-    private static final Logger log = LoggerFactory.getLogger(KeycloakSecurityContextRequestFilter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KeycloakSecurityContextRequestFilter.class);
 
     private static final String FILTER_APPLIED = KeycloakSecurityContext.class.getPackage().getName() + ".token-refreshed";
     private final AdapterTokenStoreFactory adapterTokenStoreFactory = new SpringSecurityAdapterTokenStoreFactory();
@@ -71,8 +70,8 @@ public class KeycloakSecurityContextRequestFilter extends GenericFilterBean impl
             KeycloakDeployment deployment = resolveDeployment(request, response);
 
             // just in case session got serialized
-            if (refreshableSecurityContext.getDeployment()==null) {
-                log.trace("Recreating missing deployment and related fields in deserialized context");
+            if (refreshableSecurityContext.getDeployment() == null) {
+                LOG.trace("Recreating missing deployment and related fields in deserialized context");
                 AdapterTokenStore adapterTokenStore = adapterTokenStoreFactory.createAdapterTokenStore(deployment, (HttpServletRequest) request,
                         (HttpServletResponse) response);
                 refreshableSecurityContext.setCurrentRequestInfo(deployment, adapterTokenStore);

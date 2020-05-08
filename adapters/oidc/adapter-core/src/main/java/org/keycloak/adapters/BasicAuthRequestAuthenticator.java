@@ -25,7 +25,6 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.jboss.logging.Logger;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.adapters.authentication.ClientCredentialsProviderUtils;
 import org.keycloak.adapters.spi.AuthOutcome;
@@ -35,6 +34,8 @@ import org.keycloak.common.util.KeycloakUriBuilder;
 import org.keycloak.constants.ServiceUrlConstants;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.util.JsonSerialization;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -42,13 +43,13 @@ import java.util.List;
  * Basic auth request authenticator.
  */
 public class BasicAuthRequestAuthenticator extends BearerTokenRequestAuthenticator {
-    protected Logger log = Logger.getLogger(BasicAuthRequestAuthenticator.class);
-    
+    private static final Logger LOG = LoggerFactory.getLogger(BasicAuthRequestAuthenticator.class);
+
     public BasicAuthRequestAuthenticator(KeycloakDeployment deployment) {
-    	super(deployment);
+        super(deployment);
     }
 
-    public AuthOutcome authenticate(HttpFacade exchange)  {
+    public AuthOutcome authenticate(HttpFacade exchange) {
         List<String> authHeaders = exchange.getRequest().getHeaders("Authorization");
         if (authHeaders == null || authHeaders.isEmpty()) {
             challenge = challengeResponse(exchange, OIDCAuthenticationError.Reason.NO_AUTHORIZATION_HEADER, null, null);
@@ -68,38 +69,38 @@ public class BasicAuthRequestAuthenticator extends BearerTokenRequestAuthenticat
             return AuthOutcome.NOT_ATTEMPTED;
         }
 
-        AccessTokenResponse atr=null;        
+        AccessTokenResponse atr = null;
         try {
-            String userpw=new String(Base64.decode(tokenString));
+            String userpw = new String(Base64.decode(tokenString));
             int seperatorIndex = userpw.indexOf(":");
             String user = userpw.substring(0, seperatorIndex);
             String pw = userpw.substring(seperatorIndex + 1);
             atr = getToken(user, pw);
             tokenString = atr.getToken();
         } catch (Exception e) {
-            log.debug("Failed to obtain token", e);
+            LOG.debug("Failed to obtain token", e);
             challenge = challengeResponse(exchange, OIDCAuthenticationError.Reason.INVALID_TOKEN, "no_token", e.getMessage());
             return AuthOutcome.FAILED;
         }
 
         return authenticateToken(exchange, atr.getToken());
-    } 
- 
+    }
+
     protected AccessTokenResponse getToken(String username, String password) throws Exception {
-    	AccessTokenResponse tokenResponse=null;
-    	HttpClient client = deployment.getClient();
+        AccessTokenResponse tokenResponse;
+        HttpClient client = deployment.getClient();
 
         HttpPost post = new HttpPost(
                 KeycloakUriBuilder.fromUri(deployment.getAuthServerBaseUrl())
-                .path(ServiceUrlConstants.TOKEN_PATH).build(deployment.getRealm()));
-        java.util.List <NameValuePair> formparams = new java.util.ArrayList <NameValuePair>();
-        formparams.add(new BasicNameValuePair(OAuth2Constants.GRANT_TYPE, OAuth2Constants.PASSWORD));
-        formparams.add(new BasicNameValuePair("username", username));
-        formparams.add(new BasicNameValuePair("password", password));
+                        .path(ServiceUrlConstants.TOKEN_PATH).build(deployment.getRealm()));
+        java.util.List<NameValuePair> formParams = new java.util.ArrayList<>();
+        formParams.add(new BasicNameValuePair(OAuth2Constants.GRANT_TYPE, OAuth2Constants.PASSWORD));
+        formParams.add(new BasicNameValuePair("username", username));
+        formParams.add(new BasicNameValuePair("password", password));
 
-        ClientCredentialsProviderUtils.setClientCredentials(deployment, post, formparams);
+        ClientCredentialsProviderUtils.setClientCredentials(deployment, post, formParams);
 
-        UrlEncodedFormEntity form = new UrlEncodedFormEntity(formparams, "UTF-8");
+        UrlEncodedFormEntity form = new UrlEncodedFormEntity(formParams, "UTF-8");
         post.setEntity(form);
 
         HttpResponse response = client.execute(post);
@@ -112,16 +113,12 @@ public class BasicAuthRequestAuthenticator extends BearerTokenRequestAuthenticat
         if (entity == null) {
             throw new java.io.IOException("No Entity");
         }
-        java.io.InputStream is = entity.getContent();
-        try {
+
+        try (java.io.InputStream is = entity.getContent()) {
             tokenResponse = JsonSerialization.readValue(is, AccessTokenResponse.class);
-        } finally {
-            try {
-                is.close();
-            } catch (java.io.IOException ignored) { }
         }
-    	
-    	return (tokenResponse);
+
+        return (tokenResponse);
     }
 
 }

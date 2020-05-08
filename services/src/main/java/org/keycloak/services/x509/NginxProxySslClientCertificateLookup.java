@@ -1,6 +1,5 @@
 package org.keycloak.services.x509;
 
-import org.jboss.logging.Logger;
 import org.jboss.logging.Logger.Level;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.common.util.PemException;
@@ -9,6 +8,8 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.truststore.TruststoreProvider;
 import org.keycloak.truststore.TruststoreProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.security.*;
@@ -47,7 +48,7 @@ import java.util.Set;
 
 public class NginxProxySslClientCertificateLookup extends AbstractClientCertificateFromHttpHeadersLookup {
 
-    private static final Logger log = Logger.getLogger(NginxProxySslClientCertificateLookup.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NginxProxySslClientCertificateLookup.class);
 
     private static boolean isTruststoreLoaded = false;
 
@@ -63,8 +64,8 @@ public class NginxProxySslClientCertificateLookup extends AbstractClientCertific
         super(sslCientCertHttpHeader, sslCertChainHttpHeaderPrefix, certificateChainLength);
 
         if (!loadKeycloakTrustStore(kcsession)) {
-            log.warn("Keycloak Truststore is null or empty, but it's required for NGINX x509cert-lookup provider");
-            log.warn("   see Keycloak documentation here : https://www.keycloak.org/docs/latest/server_installation/index.html#_truststore");
+            LOG.warn("Keycloak Truststore is null or empty, but it's required for NGINX x509cert-lookup provider");
+            LOG.warn("   see Keycloak documentation here : https://www.keycloak.org/docs/latest/server_installation/index.html#_truststore");
         }
     }
 
@@ -89,13 +90,13 @@ public class NginxProxySslClientCertificateLookup extends AbstractClientCertific
     protected X509Certificate decodeCertificateFromPem(String pem) throws PemException {
 
         if (pem == null) {
-            log.warn("End user TLS Certificate is NULL! ");
+            LOG.warn("End user TLS Certificate is NULL! ");
             return null;
         }
         try {
             pem = java.net.URLDecoder.decode(pem, "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            log.error("Cannot URL decode the end user TLS Certificate : " + pem, e);
+            LOG.error("Cannot URL decode the end user TLS Certificate : " + pem, e);
         }
 
         if (pem.startsWith("-----BEGIN CERTIFICATE-----")) {
@@ -111,19 +112,19 @@ public class NginxProxySslClientCertificateLookup extends AbstractClientCertific
 
         // Get the client certificate
         X509Certificate clientCert = getCertificateFromHttpHeader(httpRequest, sslClientCertHttpHeader);
-        log.debugf("End user certificate found : Subject DN=[%s]  SerialNumber=[%s]", clientCert.getSubjectDN().toString(), clientCert.getSerialNumber().toString());
+        LOG.debug("End user certificate found : Subject DN=[{}]  SerialNumber=[{}]", clientCert.getSubjectDN().toString(), clientCert.getSerialNumber().toString());
 
         if (clientCert != null) {
 
             // Rebuilding the end user certificate chain using Keycloak Truststore
             X509Certificate[] certChain = buildChain(clientCert);
             if (certChain == null || certChain.length == 0) {
-                log.info("Impossible to rebuild end user cert chain : client certificate authentication will fail.");
+                LOG.info("Impossible to rebuild end user cert chain : client certificate authentication will fail.");
                 chain.add(clientCert);
             } else {
                 for (X509Certificate cacert : certChain) {
                     chain.add(cacert);
-                    log.debugf("Rebuilded user cert chain DN : %s", cacert.getSubjectDN().toString());
+                    LOG.debug("Rebuilded user cert chain DN : {}", cacert.getSubjectDN().toString());
                 }
             }
         }
@@ -147,8 +148,8 @@ public class NginxProxySslClientCertificateLookup extends AbstractClientCertific
 
             // No truststore : no way!
             if (truststore == null) {
-                log.warn("Keycloak Truststore is null, but it is required !");
-                log.warn("  see https://www.keycloak.org/docs/latest/server_installation/index.html#_truststore");
+                LOG.warn("Keycloak Truststore is null, but it is required !");
+                LOG.warn("  see https://www.keycloak.org/docs/latest/server_installation/index.html#_truststore");
                 return null;
             }
 
@@ -180,21 +181,21 @@ public class NginxProxySslClientCertificateLookup extends AbstractClientCertific
             // Build and verify the certification chain (revocation status excluded)
             CertPathBuilder certPathBuilder = CertPathBuilder.getInstance("PKIX", "BC");
             CertPath certPath = certPathBuilder.build(pkixParams).getCertPath();
-            log.debug("Certification path building OK, and contains " + certPath.getCertificates().size() + " X509 Certificates");
+            LOG.debug("Certification path building OK, and contains " + certPath.getCertificates().size() + " X509 Certificates");
 
             user_cert_chain = convertCertPathtoX509CertArray(certPath);
 
         } catch (NoSuchAlgorithmException e) {
-            log.error(e.getLocalizedMessage(), e);
+            LOG.error(e.getLocalizedMessage(), e);
         } catch (CertPathBuilderException e) {
-            if (log.isEnabled(Level.TRACE))
-                log.debug(e.getLocalizedMessage(), e);
+            if (LOG.isTraceEnabled())
+                LOG.debug(e.getLocalizedMessage(), e);
             else
-                log.warn(e.getLocalizedMessage());
+                LOG.warn(e.getLocalizedMessage());
         } catch (InvalidAlgorithmParameterException e) {
-            log.error(e.getLocalizedMessage(), e);
+            LOG.error(e.getLocalizedMessage(), e);
         } catch (NoSuchProviderException e) {
-            log.error(e.getLocalizedMessage(), e);
+            LOG.error(e.getLocalizedMessage(), e);
         } finally {
             //Remove end user certificate
             intermediateCerts.remove(end_user_auth_cert);
@@ -229,7 +230,7 @@ public class NginxProxySslClientCertificateLookup extends AbstractClientCertific
     public boolean loadKeycloakTrustStore(KeycloakSession kcsession) {
 
         if (!isTruststoreLoaded) {
-            log.debug(" Loading Keycloak truststore ...");
+            LOG.debug(" Loading Keycloak truststore ...");
             KeycloakSessionFactory factory = kcsession.getSessionFactory();
             TruststoreProviderFactory truststoreFactory = (TruststoreProviderFactory) factory.getProviderFactory(TruststoreProvider.class, "file");
 
@@ -239,7 +240,7 @@ public class NginxProxySslClientCertificateLookup extends AbstractClientCertific
                 truststore = provider.getTruststore();
                 trustedRootCerts = new HashSet<>(provider.getRootCertificates().values());
                 intermediateCerts = new HashSet<>(provider.getIntermediateCertificates().values());
-                log.debug("Keycloak truststore loaded for NGINX x509cert-lookup provider.");
+                LOG.debug("Keycloak truststore loaded for NGINX x509cert-lookup provider.");
 
                 isTruststoreLoaded = true;
             }

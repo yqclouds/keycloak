@@ -21,10 +21,11 @@ import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.*;
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.BouncyIntegration;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.truststore.TruststoreProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.security.auth.x500.X500Principal;
@@ -44,7 +45,7 @@ import java.util.stream.Collectors;
 
 public final class CRLUtils {
 
-    private static final Logger log = Logger.getLogger(CRLUtils.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CRLUtils.class);
     private static final String CRL_DISTRIBUTION_POINTS_OID = "2.5.29.31";
 
     static {
@@ -115,14 +116,14 @@ public final class CRLUtils {
             if (crlIssuerPrincipal.equals(currentCACert.getSubjectX500Principal())) {
                 crlSignatureCertificate = currentCACert;
 
-                log.tracef("Found certificate used to sign CRL in the CA chain of the certificate. CRL issuer: %s", crlIssuerPrincipal);
+                LOG.trace("Found certificate used to sign CRL in the CA chain of the certificate. CRL issuer: {}", crlIssuerPrincipal);
                 break;
             }
         }
 
         // Try to find the CRL issuer certificate in the truststore
         if (crlSignatureCertificate == null) {
-            log.tracef("Not found CRL issuer '%s' in the CA chain of the certificate. Fallback to lookup CRL issuer in the truststore", crlIssuerPrincipal);
+            LOG.trace("Not found CRL issuer '{}' in the CA chain of the certificate. Fallback to lookup CRL issuer in the truststore", crlIssuerPrincipal);
             crlSignatureCertificate = findCRLSignatureCertificateInTruststore(session, certs, crlIssuerPrincipal);
         }
 
@@ -133,7 +134,7 @@ public final class CRLUtils {
         // Finally check if
         if (crl.isRevoked(certs[0])) {
             String message = String.format("Certificate has been revoked, certificate's subject: %s", certs[0].getSubjectDN().getName());
-            log.debug(message);
+            LOG.debug(message);
             throw new GeneralSecurityException(message);
         }
     }
@@ -157,7 +158,7 @@ public final class CRLUtils {
         if (crlSignatureCertificate == null) {
             throw new GeneralSecurityException("Not available certificate for CRL issuer '" + crlIssuerPrincipal + "' in the truststore, nor in the CA chain");
         } else {
-            log.tracef("Found CRL issuer certificate with subject '%s' in the truststore. Verifying trust anchor", crlIssuerPrincipal);
+            LOG.trace("Found CRL issuer certificate with subject '{}' in the truststore. Verifying trust anchor", crlIssuerPrincipal);
         }
 
         // Check if CRL issuer has trust anchor with the checked certificate (See https://tools.ietf.org/html/rfc5280#section-6.3.3 , paragraph (f))
@@ -172,7 +173,7 @@ public final class CRLUtils {
         X500Principal currentCRLAnchorPrincipal = crlIssuerPrincipal;
         while (true) {
             if (certificateCAPrincipals.contains(currentCRLAnchorPrincipal)) {
-                log.tracef("Found trust anchor of the CRL issuer '%s' in the CA chain. Anchor is '%s'", crlIssuerPrincipal, currentCRLAnchorPrincipal);
+                LOG.trace("Found trust anchor of the CRL issuer '{}' in the CA chain. Anchor is '{}'", crlIssuerPrincipal, currentCRLAnchorPrincipal);
                 break;
             }
 

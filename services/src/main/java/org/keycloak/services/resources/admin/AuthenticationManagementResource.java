@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.authentication.*;
 import org.keycloak.events.admin.OperationType;
@@ -47,7 +47,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
  */
 public class AuthenticationManagementResource {
 
-    protected static final Logger logger = Logger.getLogger(AuthenticationManagementResource.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(AuthenticationManagementResource.class);
     private final RealmModel realm;
     private final KeycloakSession session;
     private AdminPermissionEvaluator auth;
@@ -338,7 +338,7 @@ public class AuthenticationManagementResource {
 
         AuthenticationFlowModel flow = realm.getFlowByAlias(flowAlias);
         if (flow == null) {
-            logger.debug("flow not found: " + flowAlias);
+            LOG.debug("flow not found: " + flowAlias);
             return Response.status(NOT_FOUND).build();
         }
         AuthenticationFlowModel copy = copyFlow(realm, flow, newName);
@@ -474,7 +474,7 @@ public class AuthenticationManagementResource {
 
         AuthenticationFlowModel flow = realm.getFlowByAlias(flowAlias);
         if (flow == null) {
-            logger.debug("flow not found: " + flowAlias);
+            LOG.debug("flow not found: " + flowAlias);
             return Response.status(NOT_FOUND).build();
         }
         List<AuthenticationExecutionInfoRepresentation> result = new LinkedList<>();
@@ -563,7 +563,7 @@ public class AuthenticationManagementResource {
 
         AuthenticationFlowModel flow = realm.getFlowByAlias(flowAlias);
         if (flow == null) {
-            logger.debug("flow not found: " + flowAlias);
+            LOG.debug("flow not found: " + flowAlias);
             throw new NotFoundException("flow not found");
         }
 
@@ -593,7 +593,7 @@ public class AuthenticationManagementResource {
 
         final Optional<AuthenticationExecutionModel> model = Optional.ofNullable(realm.getAuthenticationExecutionById(executionId));
         if (!model.isPresent()) {
-            logger.debugv("Could not find execution by Id: {}", executionId);
+            LOG.debug("Could not find execution by Id: {}", executionId);
             throw new NotFoundException("Illegal execution");
         }
 

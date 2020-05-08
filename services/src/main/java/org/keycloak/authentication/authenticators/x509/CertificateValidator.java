@@ -24,9 +24,10 @@ import org.keycloak.models.Constants;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.saml.common.exceptions.ProcessingException;
 import org.keycloak.saml.processing.core.util.XMLSignatureUtil;
-import org.keycloak.services.ServicesLogger;
 import org.keycloak.truststore.TruststoreProvider;
 import org.keycloak.utils.CRLUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.naming.Context;
@@ -52,8 +53,8 @@ import java.util.stream.Collectors;
  */
 
 public class CertificateValidator {
+    private static final Logger LOG = LoggerFactory.getLogger(CertificateValidator.class);
 
-    private static final ServicesLogger logger = ServicesLogger.LOGGER;
     KeycloakSession session;
     X509Certificate[] _certChain;
     int _keyUsageBits;
@@ -116,7 +117,7 @@ public class CertificateValidator {
                 if (sb.length() > 0) sb.append("\n");
                 sb.append(message);
 
-                logger.warn(message);
+                LOG.warn(message);
             }
         }
         if (sb.length() > 0) {
@@ -128,7 +129,7 @@ public class CertificateValidator {
 
     private static void validateExtendedKeyUsage(X509Certificate[] certs, List<String> expectedEKU) throws GeneralSecurityException {
         if (expectedEKU == null || expectedEKU.size() == 0) {
-            logger.debug("Extended Key Usage validation is not enabled.");
+            LOG.debug("Extended Key Usage validation is not enabled.");
             return;
         }
         List<String> extendedKeyUsage = certs[0].getExtendedKeyUsage();
@@ -152,7 +153,7 @@ public class CertificateValidator {
                 if (isCritical) {
                     throw new GeneralSecurityException(message);
                 }
-                logger.warn(message);
+                LOG.warn(message);
             }
         }
     }
@@ -173,7 +174,7 @@ public class CertificateValidator {
         try {
             return CRLUtils.getCRLDistributionPoints(cert);
         } catch (IOException e) {
-            logger.error(e.getMessage());
+            LOG.error(e.getMessage());
         }
         return new ArrayList<>();
     }
@@ -184,7 +185,7 @@ public class CertificateValidator {
             throw new GeneralSecurityException("Could not find any CRL distribution points in the certificate, unable to check the certificate revocation status using CRL/DP.");
         }
         for (String dp : distributionPoints) {
-            logger.tracef("CRL Distribution point: \"%s\"", dp);
+            LOG.trace("CRL Distribution point: \"{}\"", dp);
             checkRevocationStatusUsingCRL(certs, new CRLFileLoader(dp), session);
         }
     }
@@ -241,9 +242,9 @@ public class CertificateValidator {
 
     private void checkRevocationUsingOCSP(X509Certificate[] certs) throws GeneralSecurityException {
 
-        if (logger.isDebugEnabled() && certs != null) {
+        if (LOG.isDebugEnabled() && certs != null) {
             for (X509Certificate cert : certs) {
-                logger.debugf("Certificate: %s", cert.getSubjectDN().getName());
+                LOG.debug("Certificate: {}", cert.getSubjectDN().getName());
             }
         }
 
@@ -261,7 +262,7 @@ public class CertificateValidator {
             issuer = findCAInTruststore(cert.getIssuerX500Principal());
             if (issuer == null) {
                 throw new GeneralSecurityException(
-                        String.format("No trusted CA in certificate found: %s. Add it to truststore SPI if valid.",
+                        String.format("No trusted CA in certificate found: {}. Add it to truststore SPI if valid.",
                                 cert.getIssuerX500Principal()));
             }
         }
@@ -281,7 +282,7 @@ public class CertificateValidator {
             sb.append("\n");
             sb.append(rs.getRevocationReason().toString());
             sb.append("\n");
-            sb.append(String.format("Revoked on: %s", rs.getRevocationTime().toString()));
+            sb.append(String.format("Revoked on: {}", rs.getRevocationTime().toString()));
 
             throw new GeneralSecurityException(sb.toString());
         }
@@ -428,7 +429,7 @@ public class CertificateValidator {
                     String message = String.format("Unable to check certificate revocation status using OCSP.\n%s", e.getMessage());
                     throw new CertPathValidatorException(message, e);
                 }
-                logger.tracef("Responder URI \"%s\" will be used to verify revocation status of the certificate using OCSP with responderCert=%s",
+                LOG.trace("Responder URI \"{}\" will be used to verify revocation status of the certificate using OCSP with responderCert={}",
                         uri.toString(), responderCert);
                 // Obtains the revocation status of a certificate using OCSP.
                 // OCSP responder's certificate is assumed to be the issuer's certificate
@@ -503,14 +504,14 @@ public class CertificateValidator {
                     try {
                         crlColl = loadFromURI(cf, new URI(cRLPath));
                     } catch (URISyntaxException e) {
-                        logger.error(e.getMessage());
+                        LOG.error(e.getMessage());
                     }
                 } else if (cRLPath.startsWith("ldap")) {
                     // load CRL from LDAP
                     try {
                         crlColl = loadCRLFromLDAP(cf, new URI(cRLPath));
                     } catch (URISyntaxException e) {
-                        logger.error(e.getMessage());
+                        LOG.error(e.getMessage());
                     }
                 } else {
                     // load CRL from file
@@ -526,7 +527,7 @@ public class CertificateValidator {
 
         private Collection<X509CRL> loadFromURI(CertificateFactory cf, URI remoteURI) throws GeneralSecurityException {
             try {
-                logger.debugf("Loading CRL from %s", remoteURI.toString());
+                LOG.debug("Loading CRL from {}", remoteURI.toString());
 
                 URLConnection conn = remoteURI.toURL().openConnection();
                 conn.setDoInput(true);
@@ -534,7 +535,7 @@ public class CertificateValidator {
                 X509CRL crl = loadFromStream(cf, conn.getInputStream());
                 return Collections.singleton(crl);
             } catch (IOException ex) {
-                logger.errorf(ex.getMessage());
+                LOG.error(ex.getMessage());
             }
             return Collections.emptyList();
 
@@ -552,7 +553,7 @@ public class CertificateValidator {
                     Attribute cRLAttribute = attrs.get("certificateRevocationList;binary");
                     byte[] data = (byte[]) cRLAttribute.get();
                     if (data == null || data.length == 0) {
-                        throw new CertificateException(String.format("Failed to download CRL from \"%s\"", remoteURI.toString()));
+                        throw new CertificateException(String.format("Failed to download CRL from \"{}\"", remoteURI.toString()));
                     }
                     X509CRL crl = loadFromStream(cf, new ByteArrayInputStream(data));
                     return Collections.singleton(crl);
@@ -560,9 +561,9 @@ public class CertificateValidator {
                     ctx.close();
                 }
             } catch (NamingException e) {
-                logger.error(e.getMessage());
+                LOG.error(e.getMessage());
             } catch (IOException e) {
-                logger.error(e.getMessage());
+                LOG.error(e.getMessage());
             }
 
             return Collections.emptyList();
@@ -574,17 +575,17 @@ public class CertificateValidator {
                 if (configDir != null) {
                     File f = new File(configDir + File.separator + relativePath);
                     if (f.isFile()) {
-                        logger.debugf("Loading CRL from %s", f.getAbsolutePath());
+                        LOG.debug("Loading CRL from {}", f.getAbsolutePath());
 
                         if (!f.canRead()) {
-                            throw new IOException(String.format("Unable to read CRL from \"%s\"", f.getAbsolutePath()));
+                            throw new IOException(String.format("Unable to read CRL from \"{}\"", f.getAbsolutePath()));
                         }
                         X509CRL crl = loadFromStream(cf, new FileInputStream(f.getAbsolutePath()));
                         return Collections.singleton(crl);
                     }
                 }
             } catch (IOException ex) {
-                logger.errorf(ex.getMessage());
+                LOG.error(ex.getMessage());
             }
             return Collections.emptyList();
         }
@@ -742,9 +743,9 @@ public class CertificateValidator {
                                 break;
                         }
                     } catch (IllegalArgumentException e) {
-                        logger.warnf("Unable to parse key usage bit: \"%s\"", s);
+                        LOG.warn("Unable to parse key usage bit: \"{}\"", s);
                     } catch (IndexOutOfBoundsException e) {
-                        logger.warnf("Invalid key usage bit: \"%s\"", s);
+                        LOG.warn("Invalid key usage bit: \"{}\"", s);
                     }
                 }
 
@@ -820,7 +821,7 @@ public class CertificateValidator {
                             _responderCert = XMLSignatureUtil.getX509CertificateFromKeyInfoString(responderCert);
                             _responderCert.checkValidity();
                         } catch (CertificateException e) {
-                            logger.warnf("Ignoring invalid certificate: %s", _responderCert);
+                            LOG.warn("Ignoring invalid certificate: {}", _responderCert);
                             _responderCert = null;
                         } catch (ProcessingException e) {
                             throw new RuntimeException(e);

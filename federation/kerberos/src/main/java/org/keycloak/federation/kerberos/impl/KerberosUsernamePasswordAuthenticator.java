@@ -17,10 +17,11 @@
 
 package org.keycloak.federation.kerberos.impl;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.KerberosJdkProvider;
 import org.keycloak.federation.kerberos.CommonKerberosConfig;
 import org.keycloak.models.ModelException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.*;
@@ -33,8 +34,7 @@ import java.io.IOException;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class KerberosUsernamePasswordAuthenticator {
-
-    private static final Logger logger = Logger.getLogger(KerberosUsernamePasswordAuthenticator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KerberosUsernamePasswordAuthenticator.class);
 
     protected final CommonKerberosConfig config;
     private LoginContext loginContext;
@@ -51,7 +51,7 @@ public class KerberosUsernamePasswordAuthenticator {
      * @return true if user available
      */
     public boolean isUserAvailable(String username) {
-        logger.debugf("Checking existence of user: %s", username);
+        LOG.debug("Checking existence of user: {}", username);
         try {
             String principal = getKerberosPrincipal(username);
             loginContext = new LoginContext("does-not-matter", null,
@@ -63,7 +63,7 @@ public class KerberosUsernamePasswordAuthenticator {
             throw new IllegalStateException("Didn't expect to end here");
         } catch (LoginException le) {
             String message = le.getMessage();
-            logger.debugf("Message from kerberos: %s", message);
+            LOG.debug("Message from kerberos: {}", message);
 
             checkKerberosServerAvailable(le);
 
@@ -89,7 +89,7 @@ public class KerberosUsernamePasswordAuthenticator {
         } catch (LoginException le) {
             checkKerberosServerAvailable(le);
 
-            logger.debug("Failed to authenticate user " + username, le);
+            LOG.debug("Failed to authenticate user " + username, le);
             return false;
         }
     }
@@ -116,13 +116,13 @@ public class KerberosUsernamePasswordAuthenticator {
     public Subject authenticateSubject(String username, String password) throws LoginException {
         String principal = getKerberosPrincipal(username);
 
-        logger.debug("Validating password of principal: " + principal);
+        LOG.debug("Validating password of principal: " + principal);
         loginContext = new LoginContext("does-not-matter", null,
                 createJaasCallbackHandler(principal, password),
                 createJaasConfiguration());
 
         loginContext.login();
-        logger.debug("Principal " + principal + " authenticated succesfully");
+        LOG.debug("Principal " + principal + " authenticated succesfully");
         return loginContext.getSubject();
     }
 
@@ -132,7 +132,7 @@ public class KerberosUsernamePasswordAuthenticator {
             try {
                 loginContext.logout();
             } catch (LoginException le) {
-                logger.error("Failed to logout kerberos subject", le);
+                LOG.error("Failed to logout kerberos subject", le);
             }
         }
     }
@@ -144,7 +144,7 @@ public class KerberosUsernamePasswordAuthenticator {
 
             String kerberosRealm = tokens[1];
             if (!kerberosRealm.toUpperCase().equals(config.getKerberosRealm())) {
-                logger.warn("Invalid kerberos realm. Expected realm: " + config.getKerberosRealm() + ", username: " + username);
+                LOG.warn("Invalid kerberos realm. Expected realm: " + config.getKerberosRealm() + ", username: " + username);
                 throw new LoginException("Client not found");
             }
 

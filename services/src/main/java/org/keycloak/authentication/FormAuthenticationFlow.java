@@ -78,7 +78,7 @@ public class FormAuthenticationFlow implements AuthenticationFlow {
                 if (!configuredFor) {
                     if (formActionExecution.isRequired()) {
                         if (factory.isUserSetupAllowed()) {
-                            AuthenticationProcessor.logger.debugv("authenticator SETUP_REQUIRED: {0}", formExecution.getAuthenticator());
+                            AuthenticationProcessor.LOG.debug("authenticator SETUP_REQUIRED: {}", formExecution.getAuthenticator());
                             executionStatus.put(formActionExecution.getId(), AuthenticationSessionModel.ExecutionStatus.SETUP_REQUIRED);
                             requiredActions.add(action);
                             continue;

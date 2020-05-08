@@ -18,6 +18,7 @@ package org.keycloak.adapters.spi;
 
 /**
  * Classes implementing this interface represent a mechanism for updating {@link SessionIdMapper} entries.
+ *
  * @author hmlnarik
  */
 public interface SessionIdMapperUpdater {
@@ -25,15 +26,18 @@ public interface SessionIdMapperUpdater {
      * {@link SessionIdMapper} entries are updated directly.
      */
     public static final SessionIdMapperUpdater DIRECT = new SessionIdMapperUpdater() {
-        @Override public void clear(SessionIdMapper idMapper) {
+        @Override
+        public void clear(SessionIdMapper idMapper) {
             idMapper.clear();
         }
 
-        @Override public void map(SessionIdMapper idMapper, String sso, String principal, String httpSessionId) {
+        @Override
+        public void map(SessionIdMapper idMapper, String sso, String principal, String httpSessionId) {
             idMapper.map(sso, principal, httpSessionId);
         }
 
-        @Override public void removeSession(SessionIdMapper idMapper, String httpSessionId) {
+        @Override
+        public void removeSession(SessionIdMapper idMapper, String httpSessionId) {
             idMapper.removeSession(httpSessionId);
         }
     };
@@ -43,11 +47,17 @@ public interface SessionIdMapperUpdater {
      * they have to be updated by some other means, e.g. by some listener of HTTP session changes.
      */
     public static final SessionIdMapperUpdater EXTERNAL = new SessionIdMapperUpdater() {
-        @Override public void clear(SessionIdMapper idMapper) { }
+        @Override
+        public void clear(SessionIdMapper idMapper) {
+        }
 
-        @Override public void map(SessionIdMapper idMapper, String sso, String principal, String httpSessionId) { }
+        @Override
+        public void map(SessionIdMapper idMapper, String sso, String principal, String httpSessionId) {
+        }
 
-        @Override public void removeSession(SessionIdMapper idMapper, String httpSessionId) { }
+        @Override
+        public void removeSession(SessionIdMapper idMapper, String httpSessionId) {
+        }
     };
 
     /**
@@ -57,17 +67,19 @@ public interface SessionIdMapperUpdater {
 
     /**
      * Delegates to {@link SessionIdMapper#map} method.
-     * @param idMapper Mapper
-     * @param sso User session ID
+     *
+     * @param idMapper  Mapper
+     * @param sso       User session ID
      * @param principal Principal
-     * @param session HTTP session ID
+     * @param session   HTTP session ID
      */
     public abstract void map(SessionIdMapper idMapper, String sso, String principal, String session);
 
     /**
      * Delegates to {@link SessionIdMapper#removeSession} method.
+     *
      * @param idMapper Mapper
-     * @param session HTTP session ID.
+     * @param session  HTTP session ID.
      */
     public abstract void removeSession(SessionIdMapper idMapper, String session);
 }

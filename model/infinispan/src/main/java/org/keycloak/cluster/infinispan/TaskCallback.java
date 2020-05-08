@@ -17,7 +17,8 @@
 
 package org.keycloak.cluster.infinispan;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
@@ -27,8 +28,7 @@ import java.util.concurrent.TimeUnit;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 class TaskCallback {
-
-    protected static final Logger logger = Logger.getLogger(TaskCallback.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(TaskCallback.class);
 
     static final int LATCH_TIMEOUT_MS = 10000;
     private final CountDownLatch taskCompletedLatch = new CountDownLatch(1);
@@ -48,7 +48,7 @@ class TaskCallback {
         try {
             this.futureAvailableLatch.await(LATCH_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (InterruptedException ie) {
-            logger.error("Interrupted thread!");
+            LOG.error("Interrupted thread!");
             Thread.currentThread().interrupt();
         }
 

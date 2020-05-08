@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.admin.permissions;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.models.AdminRoles;
 import org.keycloak.models.KeycloakSession;
@@ -30,7 +30,7 @@ import org.keycloak.services.ForbiddenException;
  * @version $Revision: 1 $
  */
 class RealmPermissions implements RealmPermissionEvaluator {
-    private static final Logger logger = Logger.getLogger(RealmPermissions.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RealmPermissions.class);
     protected final KeycloakSession session;
     protected final RealmModel realm;
     protected final AuthorizationProvider authz;

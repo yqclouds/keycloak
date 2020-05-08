@@ -29,7 +29,7 @@ import java.util.UUID;
  */
 public class IDGenerator {
 
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
 
     /*
      * Create a basic unique ID
@@ -47,7 +47,7 @@ public class IDGenerator {
      */
     public static String create(String prefix) {
         if (prefix == null)
-            throw logger.nullArgumentError("prefix");
+            throw LOG.nullArgumentError("prefix");
         StringBuilder sb = new StringBuilder(prefix);
         sb.append(IDGenerator.create());
         return sb.toString();

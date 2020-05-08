@@ -41,7 +41,7 @@ import java.util.Objects;
  */
 public class SAMLAttributeValueParser implements StaxParser {
 
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
 
     private static final SAMLAttributeValueParser INSTANCE = new SAMLAttributeValueParser();
     private static final QName NIL = new QName(JBossSAMLURIConstants.XSI_NSURI.get(), "nil", JBossSAMLURIConstants.XSI_PREFIX.get());
@@ -77,7 +77,7 @@ public class SAMLAttributeValueParser implements StaxParser {
                 return StaxParserUtil.getElementText(xmlEventReader);
             }
         } catch (Exception e) {
-            throw logger.parserError(e);
+            throw LOG.parserError(e);
         }
     }
 
@@ -94,10 +94,10 @@ public class SAMLAttributeValueParser implements StaxParser {
                 if (elementText == null || elementText.isEmpty()) {
                     return null;
                 } else {
-                    throw logger.nullValueError("nil attribute is not in SAML20 format");
+                    throw LOG.nullValueError("nil attribute is not in SAML20 format");
                 }
             } else {
-                throw logger.parserRequiredAttribute(JBossSAMLURIConstants.XSI_PREFIX.get() + ":nil");
+                throw LOG.parserRequiredAttribute(JBossSAMLURIConstants.XSI_PREFIX.get() + ":nil");
             }
         }
 
@@ -136,7 +136,7 @@ public class SAMLAttributeValueParser implements StaxParser {
             return StaxParserUtil.getElementText(xmlEventReader);
         }
 
-        throw logger.parserUnknownXSI(typeValue);
+        throw LOG.parserUnknownXSI(typeValue);
     }
 
 }

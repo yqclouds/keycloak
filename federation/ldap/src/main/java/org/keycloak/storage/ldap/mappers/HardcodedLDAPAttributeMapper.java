@@ -17,7 +17,6 @@
 
 package org.keycloak.storage.ldap.mappers;
 
-import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -34,13 +33,11 @@ import java.util.regex.Pattern;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class HardcodedLDAPAttributeMapper extends AbstractLDAPStorageMapper {
-
     public static final String LDAP_ATTRIBUTE_NAME = "ldap.attribute.name";
     public static final String LDAP_ATTRIBUTE_VALUE = "ldap.attribute.value";
-    private static final Logger logger = Logger.getLogger(HardcodedLDAPAttributeMapper.class);
-    private static final String CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW1234567890";
     public static Pattern substitution = Pattern.compile("\\$\\{([^}]+)\\}");
 
+    private static final String CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW1234567890";
 
     public HardcodedLDAPAttributeMapper(ComponentModel mapperModel, LDAPStorageProvider ldapProvider) {
         super(mapperModel, ldapProvider);

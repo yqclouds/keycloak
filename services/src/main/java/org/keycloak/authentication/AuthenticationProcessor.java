@@ -17,7 +17,7 @@
 
 package org.keycloak.authentication;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAuthenticator;
 import org.keycloak.authentication.authenticators.client.ClientAuthUtil;
@@ -70,7 +70,7 @@ public class AuthenticationProcessor {
     public static final String BROKER_USER_ID = "broker.user.id";
     public static final String FORWARDED_PASSIVE_LOGIN = "forwarded.passive.login";
 
-    protected static final Logger logger = Logger.getLogger(AuthenticationProcessor.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(AuthenticationProcessor.class);
     protected RealmModel realm;
     protected UserSessionModel userSession;
     protected AuthenticationSessionModel authenticationSession;
@@ -107,7 +107,7 @@ public class AuthenticationProcessor {
     }
 
     public static void resetFlow(AuthenticationSessionModel authSession, String flowPath) {
-        logger.debug("RESET FLOW");
+        LOG.debug("RESET FLOW");
         authSession.getParentSession().setTimestamp(Time.currentTime());
         authSession.setAuthenticatedUser(null);
         authSession.clearExecutionStatus();
@@ -132,7 +132,7 @@ public class AuthenticationProcessor {
 
         clone.setAuthNote(FORKED_FROM, authSession.getTabId());
 
-        logger.debugf("Forked authSession %s from authSession %s . Client: %s, Root session: %s",
+        LOG.debug("Forked authSession %s from authSession %s . Client: %s, Root session: %s",
                 clone.getTabId(), authSession.getTabId(), authSession.getClient().getClientId(), authSession.getParentSession().getId());
 
         return clone;
@@ -160,7 +160,7 @@ public class AuthenticationProcessor {
             } else {
                 // We have existing userSession even if it wasn't attached to authenticator. Could happen if SSO authentication was ignored (eg. prompt=login) and in some other cases.
                 // We need to handle case when different user was used
-                logger.debugf("No SSO login, but found existing userSession with ID '%s' after finished authentication.", userSession.getId());
+                LOG.debug("No SSO login, but found existing userSession with ID '%s' after finished authentication.", userSession.getId());
                 if (!authSession.getAuthenticatedUser().equals(userSession.getUser())) {
                     event.detail(Details.EXISTING_USER, userSession.getUser().getId());
                     event.error(Errors.DIFFERENT_USER_AUTHENTICATED);
@@ -374,10 +374,10 @@ public class AuthenticationProcessor {
 
     public Response handleBrowserExceptionList(AuthenticationFlowException e) {
         LoginFormsProvider loginFormsProvider = this.loginFormsProvider.setAuthenticationSession(authenticationSession);
-        ServicesLogger.LOGGER.failedAuthentication(e);
+        //ServicesLogger.LOGGER.failedAuthentication(e);
         loginFormsProvider.addError(new FormMessage(Messages.UNEXPECTED_ERROR_HANDLING_REQUEST));
         for (AuthenticationFlowException afe : e.getAfeList()) {
-            ServicesLogger.LOGGER.failedAuthentication(afe);
+            //ServicesLogger.LOGGER.failedAuthentication(afe);
             switch (afe.getError()) {
                 case INVALID_USER:
                     event.error(Errors.USER_NOT_FOUND);
@@ -423,29 +423,29 @@ public class AuthenticationProcessor {
             }
 
             if (e.getError() == AuthenticationFlowError.INVALID_USER) {
-                ServicesLogger.LOGGER.failedAuthentication(e);
+                //ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.USER_NOT_FOUND);
                 if (e.getResponse() != null) return e.getResponse();
                 return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.INVALID_USER);
             } else if (e.getError() == AuthenticationFlowError.USER_DISABLED) {
-                ServicesLogger.LOGGER.failedAuthentication(e);
+                //ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.USER_DISABLED);
                 if (e.getResponse() != null) return e.getResponse();
                 return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.ACCOUNT_DISABLED);
             } else if (e.getError() == AuthenticationFlowError.USER_TEMPORARILY_DISABLED) {
-                ServicesLogger.LOGGER.failedAuthentication(e);
+                //ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.USER_TEMPORARILY_DISABLED);
                 if (e.getResponse() != null) return e.getResponse();
                 return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.INVALID_USER);
 
             } else if (e.getError() == AuthenticationFlowError.INVALID_CLIENT_SESSION) {
-                ServicesLogger.LOGGER.failedAuthentication(e);
+                //ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.INVALID_CODE);
                 if (e.getResponse() != null) return e.getResponse();
                 return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.INVALID_CODE);
 
             } else if (e.getError() == AuthenticationFlowError.EXPIRED_CODE) {
-                ServicesLogger.LOGGER.failedAuthentication(e);
+                //ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.EXPIRED_CODE);
                 if (e.getResponse() != null) return e.getResponse();
                 return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.EXPIRED_CODE);
@@ -476,24 +476,24 @@ public class AuthenticationProcessor {
                 return processor.authenticate();
 
             } else if (e.getError() == AuthenticationFlowError.DISPLAY_NOT_SUPPORTED) {
-                ServicesLogger.LOGGER.failedAuthentication(e);
+                //ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.DISPLAY_UNSUPPORTED);
                 if (e.getResponse() != null) return e.getResponse();
                 return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.DISPLAY_UNSUPPORTED);
             } else if (e.getError() == AuthenticationFlowError.CREDENTIAL_SETUP_REQUIRED) {
-                ServicesLogger.LOGGER.failedAuthentication(e);
+               // ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.INVALID_USER_CREDENTIALS);
                 if (e.getResponse() != null) return e.getResponse();
                 return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.CREDENTIAL_SETUP_REQUIRED);
             } else {
-                ServicesLogger.LOGGER.failedAuthentication(e);
+               // ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.INVALID_USER_CREDENTIALS);
                 if (e.getResponse() != null) return e.getResponse();
                 return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.INVALID_USER);
             }
 
         } else {
-            ServicesLogger.LOGGER.failedAuthentication(failure);
+           // ServicesLogger.LOGGER.failedAuthentication(failure);
             event.error(Errors.INVALID_USER_CREDENTIALS);
             return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.UNEXPECTED_ERROR_HANDLING_REQUEST);
         }
@@ -503,7 +503,7 @@ public class AuthenticationProcessor {
     public Response handleClientAuthException(Exception failure) {
         if (failure instanceof AuthenticationFlowException) {
             AuthenticationFlowException e = (AuthenticationFlowException) failure;
-            ServicesLogger.LOGGER.failedClientAuthentication(e);
+            //ServicesLogger.LOGGER.failedClientAuthentication(e);
             if (e.getError() == AuthenticationFlowError.CLIENT_NOT_FOUND) {
                 event.error(Errors.CLIENT_NOT_FOUND);
                 return ClientAuthUtil.errorResponse(Response.Status.BAD_REQUEST.getStatusCode(), "unauthorized_client", "Invalid client credentials");
@@ -518,7 +518,7 @@ public class AuthenticationProcessor {
                 return ClientAuthUtil.errorResponse(Response.Status.BAD_REQUEST.getStatusCode(), "unauthorized_client", e.getError().toString() + ": " + e.getMessage());
             }
         } else {
-            ServicesLogger.LOGGER.errorAuthenticatingClient(failure);
+            //ServicesLogger.LOGGER.errorAuthenticatingClient(failure);
             event.error(Errors.INVALID_CLIENT_CREDENTIALS);
             return ClientAuthUtil.errorResponse(Response.Status.BAD_REQUEST.getStatusCode(), "unauthorized_client", "Unexpected error when authenticating client: " + failure.getMessage());
         }
@@ -527,7 +527,7 @@ public class AuthenticationProcessor {
     public AuthenticationFlow createFlowExecution(String flowId, AuthenticationExecutionModel execution) {
         AuthenticationFlowModel flow = realm.getAuthenticationFlowById(flowId);
         if (flow == null) {
-            logger.error("Unknown flow to execute with");
+            LOG.error("Unknown flow to execute with");
             throw new AuthenticationFlowException(AuthenticationFlowError.INTERNAL_ERROR);
         }
         if (flow.getProviderId() == null || flow.getProviderId().equals(AuthenticationFlow.BASIC_FLOW)) {
@@ -545,14 +545,14 @@ public class AuthenticationProcessor {
     }
 
     public Response authenticate() throws AuthenticationFlowException {
-        logger.debug("AUTHENTICATE");
+        LOG.debug("AUTHENTICATE");
         Response challenge = authenticateOnly();
         if (challenge != null) return challenge;
         return authenticationComplete();
     }
 
     public Response authenticateClient() throws AuthenticationFlowException {
-        logger.debug("AUTHENTICATE CLIENT");
+        LOG.debug("AUTHENTICATE CLIENT");
         AuthenticationFlow authenticationFlow = createFlowExecution(this.flowId, null);
         try {
             Response challenge = authenticationFlow.processFlow();
@@ -569,7 +569,7 @@ public class AuthenticationProcessor {
     public Response redirectToFlow() {
         URI redirect = new AuthenticationFlowURLHelper(session, realm, uriInfo).getLastExecutionUrl(authenticationSession);
 
-        logger.debug("Redirecting to URL: " + redirect.toString());
+        LOG.debug("Redirecting to URL: " + redirect.toString());
 
         return Response.status(302).location(redirect).build();
 
@@ -584,18 +584,18 @@ public class AuthenticationProcessor {
     }
 
     public Response authenticationAction(String execution) {
-        logger.debug("authenticationAction");
+        LOG.debug("authenticationAction");
         checkClientSession(true);
         String current = authenticationSession.getAuthNote(CURRENT_AUTHENTICATION_EXECUTION);
         if (execution == null || !execution.equals(current)) {
-            logger.debug("Current execution does not equal executed execution.  Might be a page refresh");
+            LOG.debug("Current execution does not equal executed execution.  Might be a page refresh");
             return new AuthenticationFlowURLHelper(session, realm, uriInfo).showPageExpired(authenticationSession);
         }
         UserModel authUser = authenticationSession.getAuthenticatedUser();
         validateUser(authUser);
         AuthenticationExecutionModel model = realm.getAuthenticationExecutionById(execution);
         if (model == null) {
-            logger.debug("Cannot find execution, reseting flow");
+            LOG.debug("Cannot find execution, reseting flow");
             logFailure();
             resetFlow();
             return authenticate();
@@ -637,7 +637,7 @@ public class AuthenticationProcessor {
     }
 
     public Response authenticateOnly() throws AuthenticationFlowException {
-        logger.debug("AUTHENTICATE ONLY");
+        LOG.debug("AUTHENTICATE ONLY");
         checkClientSession(false);
         event.client(authenticationSession.getClient().getClientId())
                 .detail(Details.REDIRECT_URI, authenticationSession.getRedirectUri())

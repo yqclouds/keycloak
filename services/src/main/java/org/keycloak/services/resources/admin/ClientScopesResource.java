@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.events.admin.OperationType;
@@ -46,7 +46,7 @@ import java.util.List;
  * @resource Client Scopes
  */
 public class ClientScopesResource {
-    protected static final Logger logger = Logger.getLogger(ClientScopesResource.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(ClientScopesResource.class);
     protected RealmModel realm;
     @Context
     protected KeycloakSession session;

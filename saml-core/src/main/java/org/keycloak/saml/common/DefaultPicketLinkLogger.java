@@ -17,11 +17,12 @@
 
 package org.keycloak.saml.common;
 
-import org.jboss.logging.Logger;
 import org.keycloak.saml.common.constants.GeneralConstants;
 import org.keycloak.saml.common.constants.WSTrustConstants;
 import org.keycloak.saml.common.exceptions.*;
 import org.keycloak.saml.common.exceptions.fed.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import javax.security.auth.login.LoginException;
@@ -35,10 +36,12 @@ import java.security.GeneralSecurityException;
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  */
 
-/**@author <a href="mailto:psilva@redhat.com">Pedro Silva</a> */
+/**
+ * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
+ */
 public class DefaultPicketLinkLogger implements PicketLinkLogger {
 
-    private Logger logger = Logger.getLogger(PicketLinkLogger.class.getPackage().getName());
+    private Logger LOG = LoggerFactory.getLogger(PicketLinkLogger.class.getPackage().getName());
 
     DefaultPicketLinkLogger() {
 
@@ -51,8 +54,8 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void info(String message) {
-        if (logger.isInfoEnabled()) {
-            logger.info(message);
+        if (LOG.isInfoEnabled()) {
+            LOG.info(message);
         }
     }
 
@@ -63,8 +66,8 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void debug(String message) {
-        if (logger.isDebugEnabled()) {
-            logger.debug(message);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(message);
         }
     }
 
@@ -75,8 +78,8 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void trace(String message) {
-        if (logger.isTraceEnabled()) {
-            logger.trace(message);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(message);
         }
     }
 
@@ -87,8 +90,8 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void trace(String message, Throwable t) {
-        if (logger.isTraceEnabled()) {
-            logger.trace(message, t);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(message, t);
         }
     }
 
@@ -99,8 +102,8 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void trace(Throwable t) {
-        if (logger.isTraceEnabled()) {
-            logger.trace(t.getMessage(), t);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(t.getMessage(), t);
         }
     }
 
@@ -111,7 +114,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void error(Throwable t) {
-        logger.error("Unexpected error", t);
+        LOG.error("Unexpected error", t);
     }
 
     /*
@@ -212,7 +215,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public boolean isInfoEnabled() {
-        return logger.isInfoEnabled();
+        return LOG.isInfoEnabled();
     }
 
     /*
@@ -523,7 +526,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void stsTokenRegistryInvalidType(String tokenRegistryOption) {
-        logger.warn(tokenRegistryOption + " is not an instance of SecurityTokenRegistry - using default registry");
+        LOG.warn(tokenRegistryOption + " is not an instance of SecurityTokenRegistry - using default registry");
     }
 
     /*
@@ -533,7 +536,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void stsTokenRegistryInstantiationError() {
-        logger.warn("Error instantiating token registry class - using default registry");
+        LOG.warn("Error instantiating token registry class - using default registry");
     }
 
     /*
@@ -553,7 +556,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void stsRevocationRegistryInvalidType(String registryOption) {
-        logger.warn(registryOption + " is not an instance of RevocationRegistry - using default registry");
+        LOG.warn(registryOption + " is not an instance of RevocationRegistry - using default registry");
     }
 
     /*
@@ -563,7 +566,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void stsRevocationRegistryInstantiationError() {
-        logger.warn("Error instantiating revocation registry class - using default registry");
+        LOG.warn("Error instantiating revocation registry class - using default registry");
     }
 
     /*
@@ -658,7 +661,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlMetaDataIdentityProviderLoadingError(Throwable t) {
-        logger.error("Exception loading the identity providers:", t);
+        LOG.error("Exception loading the identity providers:", t);
     }
 
     /*
@@ -668,7 +671,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlMetaDataServiceProviderLoadingError(Throwable t) {
-        logger.error("Exception loading the service providers:", t);
+        LOG.error("Exception loading the service providers:", t);
     }
 
     /*
@@ -678,7 +681,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void signatureAssertionValidationError(Throwable t) {
-        logger.error("Cannot validate signature of assertion", t);
+        LOG.error("Cannot validate signature of assertion", t);
     }
 
     /*
@@ -749,7 +752,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void stsConfigurationFileNotFoundTCL(String fileName) {
-        logger.warn(fileName + " configuration file not found using TCCL");
+        LOG.warn(fileName + " configuration file not found using TCCL");
     }
 
     /*
@@ -759,7 +762,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void stsConfigurationFileNotFoundClassLoader(String fileName) {
-        logger.warn(fileName + " configuration file not found using class loader");
+        LOG.warn(fileName + " configuration file not found using class loader");
     }
 
     /*
@@ -769,7 +772,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void stsUsingDefaultConfiguration(String fileName) {
-        logger.warn(fileName + " configuration file not found using URL. Using default configuration values");
+        LOG.warn(fileName + " configuration file not found using URL. Using default configuration values");
     }
 
     /*
@@ -809,7 +812,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void trustKeyManagerCreationError(Throwable t) {
-        logger.error("Exception creating TrustKeyManager:", t);
+        LOG.error("Exception creating TrustKeyManager:", t);
     }
 
     /*
@@ -819,7 +822,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void error(String message) {
-        logger.error(message);
+        LOG.error(message);
     }
 
     /*
@@ -829,7 +832,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void xmlCouldNotGetSchema(Throwable t) {
-        logger.error("Cannot get schema", t);
+        LOG.error("Cannot get schema", t);
     }
 
     /*
@@ -839,7 +842,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public boolean isTraceEnabled() {
-        return logger.isTraceEnabled();
+        return LOG.isTraceEnabled();
     }
 
     /*
@@ -849,7 +852,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public boolean isDebugEnabled() {
-        return logger.isDebugEnabled();
+        return LOG.isDebugEnabled();
     }
 
     /*
@@ -859,8 +862,8 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void jceProviderCouldNotBeLoaded(String name, Throwable t) {
-        logger.debug("The provider " + name + " could not be added: ", t);
-        logger.debug("Check addJceProvider method of org.picketlink.identity.federation.core.util.ProvidersUtil for more info.");
+        LOG.debug("The provider " + name + " could not be added: ", t);
+        LOG.debug("Check addJceProvider method of org.picketlink.identity.federation.core.util.ProvidersUtil for more info.");
     }
 
     /*
@@ -1096,7 +1099,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void stsSecurityTokenShouldBeEncrypted() {
-        logger.warn("Security token should be encrypted but no encrypting key could be found");
+        LOG.warn("Security token should be encrypted but no encrypting key could be found");
     }
 
     /*
@@ -1136,7 +1139,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void stsSecretKeyNotEncrypted() {
-        logger.warn("Secret key could not be encrypted because the endpoint's PKC has not been specified");
+        LOG.warn("Secret key could not be encrypted because the endpoint's PKC has not been specified");
     }
 
     /*
@@ -1180,7 +1183,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlAssertionWithoutExpiration(String id) {
-        logger.warn("SAML Assertion has been found to have no expiration: ID = " + id);
+        LOG.warn("SAML Assertion has been found to have no expiration: ID = " + id);
     }
 
     /*
@@ -1271,7 +1274,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void stsWrongAttributeProviderTypeNotInstalled(String attributeProviderClassName) {
-        logger.warn("Attribute provider not installed: " + attributeProviderClassName
+        LOG.warn("Attribute provider not installed: " + attributeProviderClassName
                 + "is not an instance of SAML20TokenAttributeProvider");
     }
 
@@ -1282,7 +1285,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void attributeProviderInstationError(Throwable t) {
-        logger.warn("Error instantiating attribute provider: " + t);
+        LOG.warn("Error instantiating attribute provider: " + t);
     }
 
     /*
@@ -1363,7 +1366,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlHandlerRoleGeneratorSetupError(Throwable t) {
-        logger.error("Exception initializing role generator:", t);
+        LOG.error("Exception initializing role generator:", t);
     }
 
     @Override
@@ -1388,7 +1391,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlHandlerAuthenticationError(Throwable t) {
-        logger.error("Exception in processing authentication:", t);
+        LOG.error("Exception in processing authentication:", t);
     }
 
     /*
@@ -1543,7 +1546,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlHandlerErrorSigningRedirectBindingMessage(Throwable t) {
-        logger.error("Error when trying to sign message for redirection", t);
+        LOG.error("Error when trying to sign message for redirection", t);
     }
 
     /*
@@ -1575,7 +1578,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlHandlerErrorValidatingSignature(Throwable t) {
-        logger.error("Error validating signature:", t);
+        LOG.error("Error validating signature:", t);
     }
 
     /*
@@ -1641,7 +1644,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlParsingError(Throwable t) {
-        logger.error("Exception in parsing saml message:", t);
+        LOG.error("Exception in parsing saml message:", t);
     }
 
     /*
@@ -1651,7 +1654,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void mappingContextNull() {
-        logger.error("Mapping Context returned is null");
+        LOG.error("Mapping Context returned is null");
     }
 
     /*
@@ -1661,12 +1664,12 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void attributeManagerError(Throwable t) {
-        logger.error("Exception in attribute mapping:", t);
+        LOG.error("Exception in attribute mapping:", t);
     }
 
     @Override
     public void couldNotObtainSecurityContext() {
-        logger.error("Could not obtain security context.");
+        LOG.error("Could not obtain security context.");
     }
 
     /*
@@ -1764,7 +1767,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlAssertionPasingFailed(Throwable t) {
-        logger.error("SAML Assertion parsing failed", t);
+        LOG.error("SAML Assertion parsing failed", t);
     }
 
     /*
@@ -1823,7 +1826,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void authSAMLAssertionIssuingFailed(Throwable t) {
-        logger.error("Unable to issue assertion", t);
+        LOG.error("Unable to issue assertion", t);
     }
 
     /*
@@ -1833,7 +1836,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void jbossWSUnableToCreateBinaryToken(Throwable t) {
-        logger.error("Unable to create binary token", t);
+        LOG.error("Unable to create binary token", t);
     }
 
     /*
@@ -1843,7 +1846,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void jbossWSUnableToCreateSecurityToken() {
-        logger.warn("Was not able to create security token. Just sending message without binary token");
+        LOG.warn("Was not able to create security token. Just sending message without binary token");
     }
 
     /*
@@ -1853,7 +1856,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void jbossWSUnableToWriteSOAPMessage(Throwable t) {
-        logger.error("Exception writing SOAP Message", t);
+        LOG.error("Exception writing SOAP Message", t);
     }
 
     /*
@@ -1883,7 +1886,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void jbossWSErrorGettingOperationName(Throwable t) {
-        logger.error("Exception using backup method to get op name=", t);
+        LOG.error("Exception using backup method to get op name=", t);
     }
 
     /*
@@ -1964,7 +1967,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlIDPHandlingSAML11Error(Throwable t) {
-        logger.error("Exception handling saml 11 use case:", t);
+        LOG.error("Exception handling saml 11 use case:", t);
     }
 
     /*
@@ -1984,7 +1987,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlIDPRequestProcessingError(Throwable t) {
-        logger.error("Exception in processing request:", t);
+        LOG.error("Exception in processing request:", t);
     }
 
     /*
@@ -1995,7 +1998,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlIDPUnableToSetParticipantStackUsingDefault(Throwable t) {
-        logger.warn("Unable to set the Identity Participant Stack Class. Will just use the default");
+        LOG.warn("Unable to set the Identity Participant Stack Class. Will just use the default");
     }
 
     /*
@@ -2005,7 +2008,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlHandlerConfigurationError(Throwable t) {
-        logger.error("Exception dealing with handler configuration:", t);
+        LOG.error("Exception dealing with handler configuration:", t);
     }
 
     /*
@@ -2015,7 +2018,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlIDPSettingCanonicalizationMethod(String canonicalizationMethod) {
-        logger.debug("Setting the CanonicalizationMethod on XMLSignatureUtil::" + canonicalizationMethod);
+        LOG.debug("Setting the CanonicalizationMethod on XMLSignatureUtil::" + canonicalizationMethod);
     }
 
     /*
@@ -2045,7 +2048,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlIDPInstallingDefaultSTSConfig() {
-        logger.info("Did not find picketlink-sts.xml. We will install default configuration");
+        LOG.info("Did not find picketlink-sts.xml. We will install default configuration");
     }
 
     /*
@@ -2055,7 +2058,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void warn(String message) {
-        logger.warn(message);
+        LOG.warn(message);
     }
 
     /*
@@ -2065,7 +2068,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlSPFallingBackToLocalFormAuthentication() {
-        logger.error("Falling back on local Form Authentication if available");
+        LOG.error("Falling back on local Form Authentication if available");
     }
 
     /*
@@ -2085,7 +2088,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlSPUnableToGetIDPDescriptorFromMetadata() {
-        logger.error("Unable to obtain the IDP SSO Descriptor from metadata");
+        LOG.error("Unable to obtain the IDP SSO Descriptor from metadata");
     }
 
     /*
@@ -2105,7 +2108,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlSPSettingCanonicalizationMethod(String canonicalizationMethod) {
-        logger.info("Service Provider is setting the CanonicalizationMethod on XMLSignatureUtil::" + canonicalizationMethod);
+        LOG.info("Service Provider is setting the CanonicalizationMethod on XMLSignatureUtil::" + canonicalizationMethod);
     }
 
     /*
@@ -2115,7 +2118,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlSPCouldNotDispatchToLogoutPage(String logOutPage) {
-        logger.errorf("Cannot dispatch to the logout page: no request dispatcher" + logOutPage);
+        LOG.error("Cannot dispatch to the logout page: no request dispatcher" + logOutPage);
     }
 
     /*
@@ -2125,7 +2128,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void usingLoggerImplementation(String className) {
-        logger.debugf("Using logger implementation: " + className);
+        LOG.debug("Using LOG implementation: " + className);
     }
 
     /*
@@ -2135,7 +2138,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlResponseFromIDPParsingFailed() {
-        logger.error("Error parsing the response from the IDP. Check the strict post binding configuration on both IDP and SP side.");
+        LOG.error("Error parsing the response from the IDP. Check the strict post binding configuration on both IDP and SP side.");
     }
 
     /*
@@ -2187,7 +2190,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlLogoutError(Throwable t) {
-        logger.error("Error during the logout.", t);
+        LOG.error("Error during the logout.", t);
     }
 
     /*
@@ -2197,7 +2200,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlErrorPageForwardError(String errorPage, Throwable t) {
-        logger.error("Error forwarding to the error page: " + errorPage);
+        LOG.error("Error forwarding to the error page: " + errorPage);
     }
 
     /*
@@ -2207,7 +2210,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public void samlSPHandleRequestError(Throwable t) {
-        logger.error("Service Provider could not handle the request.", t);
+        LOG.error("Service Provider could not handle the request.", t);
     }
 
     /*
@@ -2297,7 +2300,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
     }
 
     private void error(String msg, ConfigurationException e) {
-        logger.error(msg, e);
+        LOG.error(msg, e);
     }
 
     /*(non-Javadoc)

@@ -17,7 +17,7 @@
 
 package org.keycloak.services.clientregistration.policy.impl;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
  */
 public class TrustedHostClientRegistrationPolicy implements ClientRegistrationPolicy {
 
-    private static final Logger logger = Logger.getLogger(TrustedHostClientRegistrationPolicy.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TrustedHostClientRegistrationPolicy.class);
 
     private final KeycloakSession session;
     private final ComponentModel componentModel;
@@ -108,7 +108,7 @@ public class TrustedHostClientRegistrationPolicy implements ClientRegistrationPo
 
         String hostAddress = session.getContext().getConnection().getRemoteAddr();
 
-        logger.debugf("Verifying remote host : %s", hostAddress);
+        LOG.debug("Verifying remote host : {}", hostAddress);
 
         List<String> trustedHosts = getTrustedHosts();
         List<String> trustedDomains = getTrustedDomains();
@@ -125,7 +125,7 @@ public class TrustedHostClientRegistrationPolicy implements ClientRegistrationPo
             return;
         }
 
-        ServicesLogger.LOGGER.failedToVerifyRemoteHost(hostAddress);
+//        ServicesLogger.LOGGER.failedToVerifyRemoteHost(hostAddress);
         throw new ClientRegistrationPolicyException("Host not trusted.");
     }
 
@@ -157,13 +157,13 @@ public class TrustedHostClientRegistrationPolicy implements ClientRegistrationPo
             try {
                 String hostIPAddress = InetAddress.getByName(confHostName).getHostAddress();
 
-                logger.tracef("Trying host '%s' of address '%s'", confHostName, hostIPAddress);
+                LOG.trace("Trying host '{}' of address '{}'", confHostName, hostIPAddress);
                 if (hostIPAddress.equals(hostAddress)) {
-                    logger.debugf("Successfully verified host : %s", confHostName);
+                    LOG.debug("Successfully verified host : {}", confHostName);
                     return confHostName;
                 }
             } catch (UnknownHostException uhe) {
-                logger.debugf(uhe, "Unknown host from realm configuration: %s", confHostName);
+                LOG.debug("Unknown host from realm configuration: {}", confHostName);
             }
         }
 
@@ -175,16 +175,16 @@ public class TrustedHostClientRegistrationPolicy implements ClientRegistrationPo
             try {
                 String hostname = InetAddress.getByName(hostAddress).getHostName();
 
-                logger.debugf("Trying verify request from address '%s' of host '%s' by domains", hostAddress, hostname);
+                LOG.debug("Trying verify request from address '{}' of host '{}' by domains", hostAddress, hostname);
 
                 for (String confDomain : trustedDomains) {
                     if (hostname.endsWith(confDomain)) {
-                        logger.debugf("Successfully verified host '%s' by trusted domain '%s'", hostname, confDomain);
+                        LOG.debug("Successfully verified host '{}' by trusted domain '{}'", hostname, confDomain);
                         return hostname;
                     }
                 }
             } catch (UnknownHostException uhe) {
-                logger.debugf(uhe, "Request of address '%s' came from unknown host. Skip verification by domains", hostAddress);
+                LOG.debug("Request of address '{}' came from unknown host. Skip verification by domains", hostAddress);
             }
         }
 
@@ -242,11 +242,11 @@ public class TrustedHostClientRegistrationPolicy implements ClientRegistrationPo
                 }
             }
         } catch (MalformedURLException mfe) {
-            logger.debugf(mfe, "URL '%s' is malformed", url);
+            LOG.debug("URL '{}' is malformed", url);
             throw new ClientRegistrationPolicyException("URL is malformed");
         }
 
-        ServicesLogger.LOGGER.urlDoesntMatch(url);
+//        ServicesLogger.LOGGER.urlDoesntMatch(url);
         throw new ClientRegistrationPolicyException("URL doesn't match any trusted host or trusted domain");
     }
 

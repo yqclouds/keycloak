@@ -17,7 +17,7 @@
 
 package org.keycloak.authentication.authenticators.browser;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
@@ -41,7 +41,7 @@ import java.util.Map;
  */
 public class SpnegoAuthenticator extends AbstractUsernameFormAuthenticator implements Authenticator {
     public static final String KERBEROS_DISABLED = "kerberos_disabled";
-    private static final Logger logger = Logger.getLogger(SpnegoAuthenticator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SpnegoAuthenticator.class);
     // This is used for testing only.  Selenium will execute the HTML challenge sent back which results in the javascript
     // redirecting.  Our old Selenium tests expect that the current URL will be the original openid redirect.
     public static boolean bypassChallengeJavascript = false;
@@ -69,12 +69,12 @@ public class SpnegoAuthenticator extends AbstractUsernameFormAuthenticator imple
 
         String[] tokens = authHeader.split(" ");
         if (tokens.length == 0) { // assume not supported
-            logger.debug("Invalid length of tokens: " + tokens.length);
+            LOG.debug("Invalid length of tokens: " + tokens.length);
             context.attempted();
             return;
         }
         if (!KerberosConstants.NEGOTIATE.equalsIgnoreCase(tokens[0])) {
-            logger.debug("Unknown scheme " + tokens[0]);
+            LOG.debug("Unknown scheme " + tokens[0]);
             context.attempted();
             return;
         }
@@ -89,7 +89,7 @@ public class SpnegoAuthenticator extends AbstractUsernameFormAuthenticator imple
         CredentialValidationOutput output = context.getSession().userCredentialManager().authenticate(context.getSession(), context.getRealm(), spnegoCredential);
 
         if (output == null) {
-            logger.warn("Received kerberos token, but there is no user storage provider that handles kerberos credentials.");
+            LOG.warn("Received kerberos token, but there is no user storage provider that handles kerberos credentials.");
             context.attempted();
             return;
         }
@@ -117,8 +117,8 @@ public class SpnegoAuthenticator extends AbstractUsernameFormAuthenticator imple
     private Response challengeNegotiation(AuthenticationFlowContext context, final String negotiateToken) {
         String negotiateHeader = negotiateToken == null ? KerberosConstants.NEGOTIATE : KerberosConstants.NEGOTIATE + " " + negotiateToken;
 
-        if (logger.isTraceEnabled()) {
-            logger.trace("Sending back " + HttpHeaders.WWW_AUTHENTICATE + ": " + negotiateHeader);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Sending back " + HttpHeaders.WWW_AUTHENTICATE + ": " + negotiateHeader);
         }
         if (context.getExecution().isRequired()) {
             return this.loginFormsProvider.setAuthenticationSession(context.getAuthenticationSession())

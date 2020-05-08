@@ -17,7 +17,7 @@
 
 package org.keycloak.device;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.common.util.Base64;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.KeycloakSession;
@@ -36,7 +36,7 @@ import java.io.IOException;
 public class DeviceActivityManager {
 
     private static final String DEVICE_NOTE = "KC_DEVICE_NOTE";
-    private static final Logger logger = Logger.getLogger(DeviceActivityManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DeviceActivityManager.class);
     private static final int USER_AGENT_MAX_LENGTH = 512;
     private static final Parser UA_PARSER;
 
@@ -96,7 +96,7 @@ public class DeviceActivityManager {
         }
 
         if (userAgent.length() > USER_AGENT_MAX_LENGTH) {
-            logger.warn("Ignoring User-Agent header. Length is above the permitted: " + USER_AGENT_MAX_LENGTH);
+            LOG.warn("Ignoring User-Agent header. Length is above the permitted: " + USER_AGENT_MAX_LENGTH);
             return null;
         }
 
@@ -143,7 +143,7 @@ public class DeviceActivityManager {
             current.setIpAddress(context.getConnection().getRemoteAddr());
             current.setMobile(userAgent.toLowerCase().contains("mobile"));
         } catch (Exception cause) {
-            logger.error("Failed to create device info from user agent header", cause);
+            LOG.error("Failed to create device info from user agent header", cause);
             return null;
         }
 

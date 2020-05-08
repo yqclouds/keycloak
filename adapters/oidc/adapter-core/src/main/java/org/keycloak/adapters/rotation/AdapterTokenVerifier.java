@@ -17,13 +17,14 @@
 
 package org.keycloak.adapters.rotation;
 
-import org.jboss.logging.Logger;
 import org.keycloak.TokenVerifier;
 import org.keycloak.adapters.KeycloakDeployment;
 import org.keycloak.common.VerificationException;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.IDToken;
 import org.keycloak.representations.JsonWebToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.PublicKey;
 
@@ -31,9 +32,7 @@ import java.security.PublicKey;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class AdapterTokenVerifier {
-
-    private static final Logger log = Logger.getLogger(AdapterTokenVerifier.class);
-
+    private static final Logger LOG = LoggerFactory.getLogger(AdapterTokenVerifier.class);
 
     /**
      * Verifies bearer token. Typically called when bearer token (access token) is sent to the service, which wants to verify it. Hence it also checks the audience in the token.
@@ -120,7 +119,7 @@ public class AdapterTokenVerifier {
 
         PublicKey publicKey = pkLocator.getPublicKey(kid, deployment);
         if (publicKey == null) {
-            log.errorf("Didn't find publicKey for kid: %s", kid);
+            LOG.error("Didn't find publicKey for kid: {}", kid);
             throw new VerificationException("Didn't find publicKey for specified kid");
         }
 

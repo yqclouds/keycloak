@@ -21,24 +21,19 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.keycloak.KeycloakPrincipal;
 import org.keycloak.KeycloakSecurityContext;
-import org.keycloak.adapters.AdapterTokenStore;
-import org.keycloak.adapters.AdapterUtils;
-import org.keycloak.adapters.CookieTokenStore;
-import org.keycloak.adapters.KeycloakDeployment;
-import org.keycloak.adapters.OidcKeycloakAccount;
-import org.keycloak.adapters.RefreshableKeycloakSecurityContext;
-import org.keycloak.adapters.RequestAuthenticator;
+import org.keycloak.adapters.*;
 import org.keycloak.adapters.spi.HttpFacade;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Set;
-import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class CatalinaCookieTokenStore implements AdapterTokenStore {
 
-    private static final Logger log = Logger.getLogger(""+CatalinaCookieTokenStore.class);
+    private static final Logger LOG = LoggerFactory.getLogger("" + CatalinaCookieTokenStore.class);
 
     private Request request;
     private HttpFacade facade;
@@ -64,11 +59,11 @@ public class CatalinaCookieTokenStore implements AdapterTokenStore {
     public boolean isCached(RequestAuthenticator authenticator) {
         // Assuming authenticatedPrincipal set by previous call of checkCurrentToken() during this request
         if (authenticatedPrincipal != null) {
-            log.fine("remote logged in already. Establish state from cookie");
+            LOG.info("remote logged in already. Establish state from cookie");
             RefreshableKeycloakSecurityContext securityContext = authenticatedPrincipal.getKeycloakSecurityContext();
 
             if (!securityContext.getRealm().equals(deployment.getRealm())) {
-                log.fine("Account from cookie is from a different realm than for the request.");
+                LOG.info("Account from cookie is from a different realm than for the request.");
                 return false;
             }
 
@@ -87,7 +82,7 @@ public class CatalinaCookieTokenStore implements AdapterTokenStore {
 
     @Override
     public void saveAccountInfo(OidcKeycloakAccount account) {
-        RefreshableKeycloakSecurityContext securityContext = (RefreshableKeycloakSecurityContext)account.getKeycloakSecurityContext();
+        RefreshableKeycloakSecurityContext securityContext = (RefreshableKeycloakSecurityContext) account.getKeycloakSecurityContext();
         CookieTokenStore.setTokenCookie(deployment, facade, securityContext);
     }
 
@@ -119,7 +114,7 @@ public class CatalinaCookieTokenStore implements AdapterTokenStore {
     protected KeycloakPrincipal<RefreshableKeycloakSecurityContext> checkPrincipalFromCookie() {
         KeycloakPrincipal<RefreshableKeycloakSecurityContext> principal = CookieTokenStore.getPrincipalFromCookie(deployment, facade, this);
         if (principal == null) {
-            log.fine("Account was not in cookie or was invalid");
+            LOG.info("Account was not in cookie or was invalid");
             return null;
         }
 
@@ -129,7 +124,7 @@ public class CatalinaCookieTokenStore implements AdapterTokenStore {
         boolean success = session.refreshExpiredToken(false);
         if (success && session.isActive()) return principal;
 
-        log.fine("Cleanup and expire cookie for user " + principal.getName() + " after failed refresh");
+        LOG.info("Cleanup and expire cookie for user " + principal.getName() + " after failed refresh");
         request.setUserPrincipal(null);
         request.setAuthType(null);
         CookieTokenStore.removeCookie(deployment, facade);

@@ -16,11 +16,12 @@
  */
 package org.keycloak.services.managers;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.*;
 import org.keycloak.models.session.UserSessionPersisterProvider;
 import org.keycloak.services.ServicesLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashSet;
@@ -33,7 +34,7 @@ import java.util.Set;
  */
 public class UserSessionManager {
 
-    private static final Logger logger = Logger.getLogger(UserSessionManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UserSessionManager.class);
 
     private final KeycloakSession kcSession;
 
@@ -93,8 +94,8 @@ public class UserSessionManager {
         for (UserSessionModel userSession : userSessions) {
             AuthenticatedClientSessionModel clientSession = userSession.getAuthenticatedClientSessionByClient(client.getId());
             if (clientSession != null) {
-                if (logger.isTraceEnabled()) {
-                    logger.tracef("Removing existing offline token for user '%s' and client '%s' .",
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Removing existing offline token for user '{}' and client '{}' .",
                             user.getUsername(), client.getClientId());
                 }
 
@@ -109,8 +110,8 @@ public class UserSessionManager {
     }
 
     public void revokeOfflineUserSession(UserSessionModel userSession) {
-        if (logger.isTraceEnabled()) {
-            logger.tracef("Removing offline user session '%s' for user '%s' ", userSession.getId(), userSession.getLoginUsername());
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Removing offline user session '{}' for user '{}' ", userSession.getId(), userSession.getLoginUsername());
         }
         kcSession.sessions().removeOfflineUserSession(userSession.getRealm(), userSession);
         userSessionPersisterProvider.removeUserSession(userSession.getId(), true);
@@ -119,7 +120,7 @@ public class UserSessionManager {
     public boolean isOfflineTokenAllowed(ClientSessionContext clientSessionCtx) {
         RoleModel offlineAccessRole = clientSessionCtx.getClientSession().getRealm().getRole(Constants.OFFLINE_ACCESS_ROLE);
         if (offlineAccessRole == null) {
-            ServicesLogger.LOGGER.roleNotInRealm(Constants.OFFLINE_ACCESS_ROLE);
+//            ServicesLogger.LOGGER.roleNotInRealm(Constants.OFFLINE_ACCESS_ROLE);
             return false;
         }
 
@@ -128,8 +129,8 @@ public class UserSessionManager {
     }
 
     private UserSessionModel createOfflineUserSession(UserModel user, UserSessionModel userSession) {
-        if (logger.isTraceEnabled()) {
-            logger.tracef("Creating new offline user session. UserSessionID: '%s' , Username: '%s'", userSession.getId(), user.getUsername());
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Creating new offline user session. UserSessionID: '{}' , Username: '{}'", userSession.getId(), user.getUsername());
         }
 
         UserSessionModel offlineUserSession = kcSession.sessions().createOfflineUserSession(userSession);
@@ -138,8 +139,8 @@ public class UserSessionManager {
     }
 
     private void createOfflineClientSession(UserModel user, AuthenticatedClientSessionModel clientSession, UserSessionModel offlineUserSession) {
-        if (logger.isTraceEnabled()) {
-            logger.tracef("Creating new offline token client session. ClientSessionId: '%s', UserSessionID: '%s' , Username: '%s', Client: '%s'",
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Creating new offline token client session. ClientSessionId: '{}', UserSessionID: '{}' , Username: '{}', Client: '{}'",
                     clientSession.getId(), offlineUserSession.getId(), user.getUsername(), clientSession.getClient().getClientId());
         }
 
@@ -154,8 +155,8 @@ public class UserSessionManager {
             return;
         }
 
-        if (logger.isTraceEnabled()) {
-            logger.tracef("Removing offline userSession for user %s as it doesn't have any client sessions attached. UserSessionID: %s", user.getUsername(), userSession.getId());
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Removing offline userSession for user {} as it doesn't have any client sessions attached. UserSessionID: {}", user.getUsername(), userSession.getId());
         }
         kcSession.sessions().removeOfflineUserSession(realm, userSession);
         userSessionPersisterProvider.removeUserSession(userSession.getId(), true);

@@ -17,13 +17,14 @@
 
 package org.keycloak.models.jpa;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
 import org.keycloak.connections.jpa.util.JpaUtils;
 import org.keycloak.migration.MigrationModel;
 import org.keycloak.models.*;
 import org.keycloak.models.jpa.entities.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -37,7 +38,7 @@ import java.util.stream.Collectors;
  * @version $Revision: 1 $
  */
 public class JpaRealmProvider implements RealmProvider {
-    protected static final Logger logger = Logger.getLogger(JpaRealmProvider.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(JpaRealmProvider.class);
     private final KeycloakSession session;
     protected EntityManager em;
 
@@ -708,7 +709,7 @@ public class JpaRealmProvider implements RealmProvider {
         try {
             em.flush();
         } catch (RuntimeException e) {
-            logger.errorv("Unable to delete client entity: {0} from realm {1}", client.getClientId(), realm.getName());
+            LOG.error("Unable to delete client entity: {} from realm {}", client.getClientId(), realm.getName());
             throw e;
         }
 

@@ -1,7 +1,6 @@
 package org.keycloak.services.error;
 
 import com.fasterxml.jackson.core.JsonParseException;
-import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.Failure;
 import org.jboss.resteasy.spi.HttpResponse;
 import org.keycloak.Config;
@@ -21,6 +20,8 @@ import org.keycloak.theme.beans.MessageFormatterMethod;
 import org.keycloak.theme.beans.MessageType;
 import org.keycloak.utils.MediaType;
 import org.keycloak.utils.MediaTypeMatcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
@@ -40,7 +41,7 @@ import java.util.regex.Pattern;
 public class KeycloakErrorHandler implements ExceptionMapper<Throwable> {
 
     public static final String UNCAUGHT_SERVER_ERROR_TEXT = "Uncaught server error";
-    private static final Logger logger = Logger.getLogger(KeycloakErrorHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KeycloakErrorHandler.class);
     private static final Pattern realmNamePattern = Pattern.compile(".*/realms/([^/]+).*");
     @Context
     private KeycloakSession session;
@@ -59,7 +60,7 @@ public class KeycloakErrorHandler implements ExceptionMapper<Throwable> {
         int statusCode = getStatusCode(throwable);
 
         if (statusCode >= 500 && statusCode <= 599) {
-            logger.error(UNCAUGHT_SERVER_ERROR_TEXT, throwable);
+            LOG.error(UNCAUGHT_SERVER_ERROR_TEXT, throwable);
         }
 
         if (!MediaTypeMatcher.isHtmlRequest(headers)) {
@@ -88,7 +89,7 @@ public class KeycloakErrorHandler implements ExceptionMapper<Throwable> {
             String content = freeMarker.processTemplate(attributes, templateName, theme);
             return Response.status(statusCode).type(MediaType.TEXT_HTML_UTF_8_TYPE).entity(content).build();
         } catch (Throwable t) {
-            logger.error("Failed to create error page", t);
+            LOG.error("Failed to create error page", t);
             return Response.serverError().build();
         }
     }

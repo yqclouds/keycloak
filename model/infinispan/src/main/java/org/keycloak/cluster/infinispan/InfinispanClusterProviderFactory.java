@@ -26,7 +26,6 @@ import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.infinispan.persistence.remote.RemoteStore;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.Transport;
-import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.cluster.ClusterProviderFactory;
 import org.keycloak.common.util.Retry;
@@ -36,6 +35,8 @@ import org.keycloak.connections.infinispan.TopologyInfo;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
 import org.keycloak.stereotype.ProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -60,10 +61,9 @@ import java.util.stream.Collectors;
 @Component("InfinispanClusterProviderFactory")
 @ProviderFactory(id = "infinispan", providerClasses = ClusterProvider.class)
 public class InfinispanClusterProviderFactory implements ClusterProviderFactory {
+    protected static final Logger LOG = LoggerFactory.getLogger(InfinispanClusterProviderFactory.class);
 
     public static final String PROVIDER_ID = "infinispan";
-
-    protected static final Logger logger = Logger.getLogger(InfinispanClusterProviderFactory.class);
 
     // Infinispan cache
     private volatile Cache<String, Serializable> workCache;
@@ -99,7 +99,7 @@ public class InfinispanClusterProviderFactory implements ClusterProviderFactory 
                 resultRef.set(result);
 
             } catch (HotRodClientException re) {
-                logger.warnf(re, "Failed to write key '%s' and value '%s' in iteration '%d' . Retrying", key, value, iteration);
+                LOG.warn("Failed to write key '{}' and value '{}' in iteration '{}' . Retrying", key, value, iteration);
 
                 // Rethrow the exception. Retry will take care of handle the exception and eventually retry the operation.
                 throw re;
@@ -147,7 +147,7 @@ public class InfinispanClusterProviderFactory implements ClusterProviderFactory 
     protected int initClusterStartupTime(KeycloakSession session) {
         Integer existingClusterStartTime = (Integer) crossDCAwareCacheFactory.getCache().get(InfinispanClusterProvider.CLUSTER_STARTUP_TIME_KEY);
         if (existingClusterStartTime != null) {
-            logger.debugf("Loaded cluster startup time: %s", Time.toDate(existingClusterStartTime).toString());
+            LOG.debug("Loaded cluster startup time: {}", Time.toDate(existingClusterStartTime).toString());
             return existingClusterStartTime;
         } else {
             // clusterStartTime not yet initialized. Let's try to put our startupTime
@@ -155,10 +155,10 @@ public class InfinispanClusterProviderFactory implements ClusterProviderFactory 
 
             existingClusterStartTime = putIfAbsentWithRetries(crossDCAwareCacheFactory, InfinispanClusterProvider.CLUSTER_STARTUP_TIME_KEY, serverStartTime, -1);
             if (existingClusterStartTime == null) {
-                logger.debugf("Initialized cluster startup time to %s", Time.toDate(serverStartTime).toString());
+                LOG.debug("Initialized cluster startup time to {}", Time.toDate(serverStartTime).toString());
                 return serverStartTime;
             } else {
-                logger.debugf("Loaded cluster startup time: %s", Time.toDate(existingClusterStartTime).toString());
+                LOG.debug("Loaded cluster startup time: {}", Time.toDate(existingClusterStartTime).toString());
                 return existingClusterStartTime;
             }
         }
@@ -188,7 +188,7 @@ public class InfinispanClusterProviderFactory implements ClusterProviderFactory 
                     return;
                 }
 
-                logger.debugf("Nodes %s removed from cluster. Removing tasks locked by this nodes", removedNodesAddresses.toString());
+                LOG.debug("Nodes {} removed from cluster. Removing tasks locked by this nodes", removedNodesAddresses.toString());
 
                 Cache<String, Serializable> cache = cacheManager.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);
 
@@ -215,8 +215,8 @@ public class InfinispanClusterProviderFactory implements ClusterProviderFactory 
 
                 while (toRemove.hasNext()) {
                     String rem = toRemove.next();
-                    if (logger.isTraceEnabled()) {
-                        logger.tracef("Removing task %s due it's node left cluster", rem);
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("Removing task {} due it's node left cluster", rem);
                     }
 
                     // If we have task in progress, it needs to be notified

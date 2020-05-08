@@ -17,11 +17,12 @@
 
 package org.keycloak.services.managers;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.AuthenticatedClientSessionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserSessionModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Objects;
@@ -31,7 +32,7 @@ import java.util.Objects;
  */
 public class UserSessionCrossDCManager {
 
-    private static final Logger logger = Logger.getLogger(UserSessionCrossDCManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UserSessionCrossDCManager.class);
 
     private final KeycloakSession kcSession;
 

@@ -18,10 +18,11 @@ package org.keycloak.models.sessions.infinispan;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
-import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.models.KeycloakTransaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -37,7 +38,7 @@ import java.util.concurrent.TimeUnit;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class InfinispanKeycloakTransaction implements KeycloakTransaction {
 
-    private final static Logger log = Logger.getLogger(InfinispanKeycloakTransaction.class);
+    private final static Logger LOG = LoggerFactory.getLogger(InfinispanKeycloakTransaction.class);
     private final Map<Object, CacheTask> tasks = new LinkedHashMap<>();
     private boolean active;
     private boolean rollback;
@@ -93,7 +94,7 @@ public class InfinispanKeycloakTransaction implements KeycloakTransaction {
     }
 
     public <K, V> void put(Cache<K, V> cache, K key, V value) {
-        log.tracev("Adding cache operation: {0} on {1}", CacheOperation.ADD, key);
+        LOG.trace("Adding cache operation: {} on {}", CacheOperation.ADD, key);
 
         Object taskKey = getTaskKey(cache, key);
         if (tasks.containsKey(taskKey)) {
@@ -114,7 +115,7 @@ public class InfinispanKeycloakTransaction implements KeycloakTransaction {
     }
 
     public <K, V> void put(Cache<K, V> cache, K key, V value, long lifespan, TimeUnit lifespanUnit) {
-        log.tracev("Adding cache operation: {0} on {1}", CacheOperation.ADD_WITH_LIFESPAN, key);
+        LOG.trace("Adding cache operation: {} on {}", CacheOperation.ADD_WITH_LIFESPAN, key);
 
         Object taskKey = getTaskKey(cache, key);
         if (tasks.containsKey(taskKey)) {
@@ -135,7 +136,7 @@ public class InfinispanKeycloakTransaction implements KeycloakTransaction {
     }
 
     public <K, V> void putIfAbsent(Cache<K, V> cache, K key, V value) {
-        log.tracev("Adding cache operation: {0} on {1}", CacheOperation.ADD_IF_ABSENT, key);
+        LOG.trace("Adding cache operation: {} on {}", CacheOperation.ADD_IF_ABSENT, key);
 
         Object taskKey = getTaskKey(cache, key);
         if (tasks.containsKey(taskKey)) {
@@ -159,7 +160,7 @@ public class InfinispanKeycloakTransaction implements KeycloakTransaction {
     }
 
     public <K, V> void replace(Cache<K, V> cache, K key, V value) {
-        log.tracev("Adding cache operation: {0} on {1}", CacheOperation.REPLACE, key);
+        LOG.trace("Adding cache operation: {} on {}", CacheOperation.REPLACE, key);
 
         Object taskKey = getTaskKey(cache, key);
         CacheTask current = tasks.get(taskKey);
@@ -184,7 +185,7 @@ public class InfinispanKeycloakTransaction implements KeycloakTransaction {
     }
 
     public <K, V> void notify(ClusterProvider clusterProvider, String taskKey, ClusterEvent event, boolean ignoreSender) {
-        log.tracev("Adding cache operation SEND_EVENT: {0}", event);
+        LOG.trace("Adding cache operation SEND_EVENT: {}", event);
 
         String theTaskKey = taskKey;
         int i = 1;
@@ -196,7 +197,7 @@ public class InfinispanKeycloakTransaction implements KeycloakTransaction {
     }
 
     public <K, V> void remove(Cache<K, V> cache, K key) {
-        log.tracev("Adding cache operation: {0} on {1}", CacheOperation.REMOVE, key);
+        LOG.trace("Adding cache operation: {} on {}", CacheOperation.REMOVE, key);
 
         Object taskKey = getTaskKey(cache, key);
 

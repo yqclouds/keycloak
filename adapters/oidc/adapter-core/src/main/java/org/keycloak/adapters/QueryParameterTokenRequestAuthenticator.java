@@ -16,9 +16,10 @@
  */
 package org.keycloak.adapters;
 
-import org.jboss.logging.Logger;
 import org.keycloak.adapters.spi.AuthOutcome;
 import org.keycloak.adapters.spi.HttpFacade;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author <a href="mailto:froehlich.ch@gmail.com">Christian Froehlich</a>
@@ -26,16 +27,17 @@ import org.keycloak.adapters.spi.HttpFacade;
  * @author <a href="mailto:john.ament@spartasystems.com">John D. Ament</a>
  * @version $Revision: 1 $
  */
-public class QueryParamterTokenRequestAuthenticator extends BearerTokenRequestAuthenticator {
-    public static final String ACCESS_TOKEN = "access_token";
-    protected Logger log = Logger.getLogger(QueryParamterTokenRequestAuthenticator.class);
+public class QueryParameterTokenRequestAuthenticator extends BearerTokenRequestAuthenticator {
+    protected static final Logger LOG = LoggerFactory.getLogger(QueryParameterTokenRequestAuthenticator.class);
 
-    public QueryParamterTokenRequestAuthenticator(KeycloakDeployment deployment) {
+    public static final String ACCESS_TOKEN = "access_token";
+
+    public QueryParameterTokenRequestAuthenticator(KeycloakDeployment deployment) {
         super(deployment);
     }
 
     public AuthOutcome authenticate(HttpFacade exchange) {
-        if(!deployment.isOAuthQueryParameterEnabled()) {
+        if (!deployment.isOAuthQueryParameterEnabled()) {
             return AuthOutcome.NOT_ATTEMPTED;
         }
         tokenString = null;

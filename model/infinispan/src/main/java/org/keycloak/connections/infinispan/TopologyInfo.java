@@ -24,11 +24,12 @@ import org.infinispan.remoting.transport.LocalModeAddress;
 import org.infinispan.remoting.transport.Transport;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
-import org.jboss.logging.Logger;
 import org.jgroups.Event;
 import org.jgroups.JChannel;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.util.NameCache;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.security.SecureRandom;
@@ -38,8 +39,7 @@ import java.util.Objects;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class TopologyInfo {
-
-    private static final Logger logger = Logger.getLogger(TopologyInfo.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TopologyInfo.class);
 
 
     // Node name used in clustered environment. This typically points to "jboss.node.name" . If "jboss.node.name" is not set, it is randomly generated
@@ -142,7 +142,7 @@ public class TopologyInfo {
      */
     public String getRouteName(Cache cache, Object key) {
         if (cache.getCacheConfiguration().clustering().cacheMode().isClustered() && isGeneratedNodeName) {
-            logger.warn("Clustered configuration used, but node name is not properly set. Make sure to start server with jboss.node.name property identifying cluster node");
+            LOG.warn("Clustered configuration used, but node name is not properly set. Make sure to start server with jboss.node.name property identifying cluster node");
         }
 
         if (isGeneratedNodeName) {
@@ -171,7 +171,7 @@ public class TopologyInfo {
             InetSocketAddress socketAddress = (ipAddress != null) ? new InetSocketAddress(ipAddress.getIpAddress(), ipAddress.getPort()) : new InetSocketAddress(0);
             name = String.format("%s:%s", socketAddress.getHostString(), socketAddress.getPort());
 
-            logger.debugf("Address not found in NameCache. Fallback to %s", name);
+            LOG.debug("Address not found in NameCache. Fallback to {}", name);
         }
 
         return name;

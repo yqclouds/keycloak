@@ -21,7 +21,7 @@
                          schema document to establish a different
                          namespace prefix -->
         <!ENTITY % s ':xs'> <!-- if %p is defined (e.g. as foo:) then you must
-                         also define %s as the suffix for the appropriate
+                         also define {} as the suffix for the appropriate
                          namespace declaration (e.g. :foo) -->
         <!ENTITY % nds 'xmlns%s;'>
 

@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.HttpResponse;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
@@ -52,7 +52,7 @@ import java.util.Properties;
  */
 @Path("/admin")
 public class AdminRoot {
-    protected static final Logger logger = Logger.getLogger(AdminRoot.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(AdminRoot.class);
 
     @Context
     protected ClientConnection clientConnection;
@@ -108,7 +108,7 @@ public class AdminRoot {
             Locale locale = lang != null ? Locale.forLanguageTag(lang) : Locale.ENGLISH;
             return theme.getMessages(locale);
         } catch (IOException e) {
-            logger.error("Failed to load messages from theme", e);
+            LOG.error("Failed to load messages from theme", e);
             return new Properties();
         }
     }
@@ -128,7 +128,7 @@ public class AdminRoot {
             Locale locale = lang != null ? Locale.forLanguageTag(lang) : Locale.ENGLISH;
             return theme.getMessages(bundle, locale);
         } catch (IOException e) {
-            logger.error("Failed to load messages from theme", e);
+            LOG.error("Failed to load messages from theme", e);
             return new Properties();
         }
     }
@@ -203,7 +203,7 @@ public class AdminRoot {
         session.getContext().setRealm(realm);
         AuthenticationManager.AuthResult authResult = authManager.authenticateBearerToken(session, realm, session.getContext().getUri(), clientConnection, headers);
         if (authResult == null) {
-            logger.debug("Token not valid");
+            LOG.debug("Token not valid");
             throw new NotAuthorizedException("Bearer");
         }
 
@@ -230,7 +230,7 @@ public class AdminRoot {
 
         AdminAuth auth = authenticateRealmAdminRequest(headers);
         if (auth != null) {
-            logger.debug("authenticated admin access for: " + auth.getUser().getUsername());
+            LOG.debug("authenticated admin access for: " + auth.getUser().getUsername());
         }
 
         Cors.add(request).allowedOrigins(auth.getToken()).allowedMethods("GET", "PUT", "POST", "DELETE").exposedHeaders("Location").auth().build(response);
@@ -258,7 +258,7 @@ public class AdminRoot {
         }
 
         if (auth != null) {
-            logger.debug("authenticated admin access for: " + auth.getUser().getUsername());
+            LOG.debug("authenticated admin access for: " + auth.getUser().getUsername());
         }
 
         Cors.add(request).allowedOrigins(auth.getToken()).allowedMethods("GET", "PUT", "POST", "DELETE").auth().build(response);

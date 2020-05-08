@@ -1,8 +1,9 @@
 package org.keycloak.vault;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +23,7 @@ import java.nio.file.Paths;
 public class FilesPlainTextVaultProviderFactory extends AbstractVaultProviderFactory {
 
     public static final String PROVIDER_ID = "files-plaintext";
-    private static final Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     @Value("${dir}")
     private String vaultDirectory;
     private Path vaultPath;
@@ -30,7 +31,7 @@ public class FilesPlainTextVaultProviderFactory extends AbstractVaultProviderFac
     @Override
     public VaultProvider create(KeycloakSession session) {
         if (vaultDirectory == null) {
-            logger.debug("Can not create a vault since it's not initialized correctly");
+            LOG.debug("Can not create a vault since it's not initialized correctly");
             return null;
         }
         return new FilesPlainTextVaultProvider(vaultPath, getRealmName(session), super.keyResolvers);
@@ -41,7 +42,7 @@ public class FilesPlainTextVaultProviderFactory extends AbstractVaultProviderFac
         super.afterPropertiesSet();
 
         if (vaultDirectory == null) {
-            logger.debug("PlainTextVaultProviderFactory not configured");
+            LOG.debug("PlainTextVaultProviderFactory not configured");
             return;
         }
 
@@ -50,7 +51,7 @@ public class FilesPlainTextVaultProviderFactory extends AbstractVaultProviderFac
             throw new VaultNotFoundException("The " + vaultPath.toAbsolutePath().toString() + " directory doesn't exist");
         }
 
-        logger.debugf("Configured PlainTextVaultProviderFactory with directory %s", vaultPath.toString());
+        LOG.debug("Configured PlainTextVaultProviderFactory with directory {}", vaultPath.toString());
     }
 
     @Override

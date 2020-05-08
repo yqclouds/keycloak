@@ -16,9 +16,9 @@
  */
 package org.keycloak.adapters.springsecurity.filter;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.security.web.util.matcher.RequestMatcher;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Spring RequestMatcher that checks for the presence of a query parameter.

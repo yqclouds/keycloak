@@ -1,10 +1,11 @@
 package org.keycloak.storage.ldap.idm.store.ldap;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.LDAPConstants;
 import org.keycloak.storage.ldap.LDAPConfig;
 import org.keycloak.vault.VaultCharSecret;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.naming.AuthenticationException;
 import javax.naming.Context;
@@ -24,7 +25,7 @@ import static javax.naming.Context.SECURITY_CREDENTIALS;
  */
 public final class LDAPContextManager implements AutoCloseable {
 
-    private static final Logger logger = Logger.getLogger(LDAPContextManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LDAPContextManager.class);
 
     private final KeycloakSession session;
     private final LDAPConfig ldapConfig;
@@ -72,7 +73,7 @@ public final class LDAPContextManager implements AutoCloseable {
                 ldapContext.addToEnvironment(Context.SECURITY_CREDENTIALS, bindCredential);
             }
         } catch (Exception e) {
-            logger.error("Could not negotiate TLS", e);
+            LOG.error("Could not negotiate TLS", e);
             throw new AuthenticationException("Could not negotiate TLS");
         }
 
@@ -100,7 +101,7 @@ public final class LDAPContextManager implements AutoCloseable {
         if (url != null) {
             env.put(Context.PROVIDER_URL, url);
         } else {
-            logger.warn("LDAP URL is null. LDAPOperationManager won't work correctly");
+            LOG.warn("LDAP URL is null. LDAPOperationManager won't work correctly");
         }
 
         String useTruststoreSpi = ldapConfig.getUseTruststoreSpi();
@@ -208,12 +209,12 @@ public final class LDAPContextManager implements AutoCloseable {
             }
         }
 
-        if (logger.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             Map<Object, Object> copyEnv = new Hashtable<>(env);
             if (copyEnv.containsKey(Context.SECURITY_CREDENTIALS)) {
                 copyEnv.put(Context.SECURITY_CREDENTIALS, "**************************************");
             }
-            logger.debugf("Creating LdapContext using properties: [%s]", copyEnv);
+            LOG.debug("Creating LdapContext using properties: [{}]", copyEnv);
         }
 
         return env;
@@ -226,7 +227,7 @@ public final class LDAPContextManager implements AutoCloseable {
             try {
                 tlsResponse.close();
             } catch (IOException e) {
-                logger.error("Could not close Ldap tlsResponse.", e);
+                LOG.error("Could not close Ldap tlsResponse.", e);
             }
         }
 
@@ -234,7 +235,7 @@ public final class LDAPContextManager implements AutoCloseable {
             try {
                 ldapContext.close();
             } catch (NamingException e) {
-                logger.error("Could not close Ldap context.", e);
+                LOG.error("Could not close Ldap context.", e);
             }
         }
     }

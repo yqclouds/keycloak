@@ -21,10 +21,10 @@ import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyAffinityServiceFactory;
 import org.infinispan.affinity.KeyGenerator;
-import org.jboss.logging.Logger;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.sessions.StickySessionEncoderProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -38,7 +38,7 @@ import java.util.concurrent.Executors;
  */
 @Component
 public class InfinispanKeyGenerator {
-    private static final Logger LOG = Logger.getLogger(InfinispanKeyGenerator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(InfinispanKeyGenerator.class);
 
     private final Map<String, KeyAffinityService> keyAffinityServices = new ConcurrentHashMap<>();
 
@@ -67,7 +67,7 @@ public class InfinispanKeyGenerator {
                 keyAffinityService = createKeyAffinityService(cache, keyGenerator);
                 keyAffinityServices.put(cacheName, keyAffinityService);
 
-                LOG.debugf("Registered key affinity service for cache '%s'", cacheName);
+                LOG.debug("Registered key affinity service for cache '%s'", cacheName);
             }
 
             return keyAffinityService.getKeyForAddress(cache.getCacheManager().getAddress());

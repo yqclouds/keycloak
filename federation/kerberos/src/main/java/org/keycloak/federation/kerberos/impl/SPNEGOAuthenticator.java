@@ -18,11 +18,12 @@
 package org.keycloak.federation.kerberos.impl;
 
 import org.ietf.jgss.*;
-import org.jboss.logging.Logger;
 import org.keycloak.common.constants.KerberosConstants;
 import org.keycloak.common.util.Base64;
 import org.keycloak.common.util.KerberosSerializationUtils;
 import org.keycloak.federation.kerberos.CommonKerberosConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.security.auth.Subject;
 import javax.security.auth.kerberos.KerberosTicket;
@@ -35,8 +36,7 @@ import java.util.Set;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class SPNEGOAuthenticator {
-
-    private static final Logger log = Logger.getLogger(SPNEGOAuthenticator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SPNEGOAuthenticator.class);
 
     private final KerberosServerSubjectAuthenticator kerberosSubjectAuthenticator;
     private final String spnegoToken;
@@ -55,8 +55,8 @@ public class SPNEGOAuthenticator {
     }
 
     public void authenticate() {
-        if (log.isTraceEnabled()) {
-            log.trace("SPNEGO Login with token: " + spnegoToken);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("SPNEGO Login with token: " + spnegoToken);
         }
 
         try {
@@ -71,7 +71,7 @@ public class SPNEGOAuthenticator {
             }
 
         } catch (Exception e) {
-            log.warn("SPNEGO login failed", e);
+            LOG.warn("SPNEGO login failed", e);
         } finally {
             kerberosSubjectAuthenticator.logoutServerSubject();
         }
@@ -87,20 +87,20 @@ public class SPNEGOAuthenticator {
 
     public String getSerializedDelegationCredential() {
         if (delegationCredential == null) {
-            if (log.isTraceEnabled()) {
-                log.trace("No delegation credential available.");
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("No delegation credential available.");
             }
 
             return null;
         }
 
         try {
-            if (log.isTraceEnabled()) {
-                log.trace("Serializing credential " + delegationCredential);
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Serializing credential " + delegationCredential);
             }
             return KerberosSerializationUtils.serializeCredential(kerberosTicket, delegationCredential);
         } catch (KerberosSerializationUtils.KerberosSerializationException kse) {
-            log.warn("Couldn't serialize credential: " + delegationCredential, kse);
+            LOG.warn("Couldn't serialize credential: " + delegationCredential, kse);
             return null;
         }
     }
@@ -129,7 +129,7 @@ public class SPNEGOAuthenticator {
     }
 
     protected void logAuthDetails(GSSContext gssContext) throws GSSException {
-        if (log.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             String message = new StringBuilder("SPNEGO Security context accepted with token: " + responseToken)
                     .append(", established: ").append(gssContext.isEstablished())
                     .append(", credDelegState: ").append(gssContext.getCredDelegState())
@@ -140,7 +140,7 @@ public class SPNEGOAuthenticator {
                     .append(", srcName: ").append(gssContext.getSrcName())
                     .append(", targName: ").append(gssContext.getTargName())
                     .toString();
-            log.debug(message);
+            LOG.debug(message);
         }
     }
 
@@ -150,8 +150,8 @@ public class SPNEGOAuthenticator {
         public Boolean run() throws Exception {
             GSSContext gssContext = null;
             try {
-                if (log.isTraceEnabled()) {
-                    log.trace("Going to establish security context");
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Going to establish security context");
                 }
 
                 gssContext = establishContext();
@@ -159,7 +159,7 @@ public class SPNEGOAuthenticator {
 
                 if (gssContext.isEstablished()) {
                     if (gssContext.getSrcName() == null) {
-                        log.warn("GSS Context accepted, but no context initiator recognized. Check your kerberos configuration and reverse DNS lookup configuration");
+                        LOG.warn("GSS Context accepted, but no context initiator recognized. Check your kerberos configuration and reverse DNS lookup configuration");
                         return false;
                     }
 

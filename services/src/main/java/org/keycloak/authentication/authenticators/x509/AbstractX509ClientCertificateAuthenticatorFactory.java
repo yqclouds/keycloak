@@ -58,7 +58,7 @@ public abstract class AbstractX509ClientCertificateAuthenticatorFactory implemen
             USER_ATTRIBUTE_MAPPER,
             USERNAME_EMAIL_MAPPER
     };
-    protected static ServicesLogger logger = ServicesLogger.LOGGER;
+//    protected static ServicesLogger LOG = ServicesLogger.LOGGER;
 
     static {
         List<String> mappingSourceTypes = new LinkedList<>();

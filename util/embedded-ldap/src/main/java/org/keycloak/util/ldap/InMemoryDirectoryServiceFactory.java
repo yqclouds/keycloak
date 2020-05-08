@@ -43,7 +43,8 @@ import org.apache.directory.server.core.factory.DirectoryServiceFactory;
 import org.apache.directory.server.core.factory.PartitionFactory;
 import org.apache.directory.server.core.normalization.NormalizationInterceptor;
 import org.apache.directory.server.i18n.I18n;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,7 +57,7 @@ import java.util.List;
  */
 class InMemoryDirectoryServiceFactory implements DirectoryServiceFactory {
 
-    private static final Logger log = Logger.getLogger(InMemoryDirectoryServiceFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(InMemoryDirectoryServiceFactory.class);
     private static final int PAGE_SIZE = 30;
 
     private final DirectoryService directoryService;
@@ -103,7 +104,7 @@ class InMemoryDirectoryServiceFactory implements DirectoryServiceFactory {
             try {
                 FileUtils.deleteDirectory(instanceLayout.getInstanceDirectory());
             } catch (IOException e) {
-                log.warn("couldn't delete the instance directory before initializing the DirectoryService", e);
+                LOG.warn("couldn't delete the instance directory before initializing the DirectoryService", e);
             }
         }
         directoryService.setInstanceLayout(instanceLayout);

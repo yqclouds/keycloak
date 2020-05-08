@@ -18,7 +18,6 @@
 package org.keycloak.keys.infinispan;
 
 import org.infinispan.Cache;
-import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.common.util.Time;
 import org.keycloak.crypto.KeyWrapper;
@@ -27,6 +26,8 @@ import org.keycloak.keys.PublicKeyStorageProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakTransaction;
 import org.keycloak.models.cache.infinispan.ClearCacheEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collections;
@@ -42,8 +43,7 @@ import java.util.concurrent.FutureTask;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class InfinispanPublicKeyStorageProvider implements PublicKeyStorageProvider {
-
-    private static final Logger log = Logger.getLogger(InfinispanPublicKeyStorageProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(InfinispanPublicKeyStorageProvider.class);
 
     private final KeycloakSession session;
 
@@ -183,11 +183,11 @@ public class InfinispanPublicKeyStorageProvider implements PublicKeyStorageProvi
                 }
             }
         } else {
-            log.warnf("Won't load the keys for model '%s' . Last request time was %d", modelKey, lastRequestTime);
+            LOG.warn("Won't load the keys for model '{}' . Last request time was {}", modelKey, lastRequestTime);
         }
 
         Set<String> availableKids = entry == null ? Collections.emptySet() : entry.getCurrentKeys().keySet();
-        log.warnf("PublicKey wasn't found in the storage. Requested kid: '%s' . Available kids: '%s'", kid, availableKids);
+        LOG.warn("PublicKey wasn't found in the storage. Requested kid: '{}' . Available kids: '{}'", kid, availableKids);
 
         return null;
     }
@@ -235,8 +235,8 @@ public class InfinispanPublicKeyStorageProvider implements PublicKeyStorageProvi
 
                 Map<String, KeyWrapper> publicKeys = delegate.loadKeys();
 
-                if (log.isDebugEnabled()) {
-                    log.debugf("Public keys retrieved successfully for model %s. New kids: %s", modelKey, publicKeys.keySet().toString());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Public keys retrieved successfully for model {}. New kids: {}", modelKey, publicKeys.keySet().toString());
                 }
 
                 entry = new PublicKeysEntry(currentTime, publicKeys);

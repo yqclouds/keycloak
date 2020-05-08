@@ -16,7 +16,6 @@
  */
 package org.keycloak.jose.jws;
 
-import org.jboss.logging.Logger;
 import org.keycloak.Token;
 import org.keycloak.TokenCategory;
 import org.keycloak.crypto.Algorithm;
@@ -32,6 +31,8 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.TokenManager;
 import org.keycloak.protocol.oidc.OIDCConfigAttributes;
 import org.keycloak.util.TokenUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.UnsupportedEncodingException;
@@ -39,7 +40,7 @@ import java.security.Key;
 
 public class DefaultTokenManager implements TokenManager {
 
-    private static final Logger logger = Logger.getLogger(DefaultTokenManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultTokenManager.class);
 
     private static String DEFAULT_ALGORITHM_NAME = Algorithm.RS256;
 
@@ -79,14 +80,14 @@ public class DefaultTokenManager implements TokenManager {
             String kid = jws.getHeader().getKeyId();
             // Backwards compatibility. Old offline tokens and cookies didn't have KID in the header
             if (kid == null) {
-                logger.debugf("KID is null in token. Using the realm active key to verify token signature.");
+                LOG.debug("KID is null in token. Using the realm active key to verify token signature.");
                 kid = session.keys().getActiveKey(session.getContext().getRealm(), KeyUse.SIG, signatureAlgorithm).getKid();
             }
 
             boolean valid = signatureProvider.verifier(kid).verify(jws.getEncodedSignatureInput().getBytes("UTF-8"), jws.getSignature());
             return valid ? jws.readJsonContent(clazz) : null;
         } catch (Exception e) {
-            logger.debug("Failed to decode token", e);
+            LOG.debug("Failed to decode token", e);
             return null;
         }
     }
@@ -109,7 +110,7 @@ public class DefaultTokenManager implements TokenManager {
             boolean valid = signatureProvider.verifier(client, jws).verify(jws.getEncodedSignatureInput().getBytes("UTF-8"), jws.getSignature());
             return valid ? jws.readJsonContent(clazz) : null;
         } catch (Exception e) {
-            logger.debug("Failed to decode token", e);
+            LOG.debug("Failed to decode token", e);
             return null;
         }
     }

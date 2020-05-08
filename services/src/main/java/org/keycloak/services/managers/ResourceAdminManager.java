@@ -16,7 +16,6 @@
  */
 package org.keycloak.services.managers;
 
-import org.jboss.logging.Logger;
 import org.keycloak.TokenIdGenerator;
 import org.keycloak.common.util.KeycloakUriBuilder;
 import org.keycloak.common.util.MultivaluedHashMap;
@@ -32,6 +31,8 @@ import org.keycloak.representations.adapters.action.LogoutAction;
 import org.keycloak.representations.adapters.action.TestAvailabilityAction;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.util.ResolveRelative;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.UriBuilder;
@@ -44,7 +45,7 @@ import java.util.*;
  * @version $Revision: 1 $
  */
 public class ResourceAdminManager {
-    private static final Logger logger = Logger.getLogger(ResourceAdminManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ResourceAdminManager.class);
     private static final String CLIENT_SESSION_HOST_PROPERTY = "${application.session.host}";
 
     private KeycloakSession session;
@@ -110,8 +111,8 @@ public class ResourceAdminManager {
             putClientSessions(clientSessions, userSession);
         }
 
-        logger.debugv("logging out {0} resources ", clientSessions.size());
-        //logger.infov("logging out resources: {0}", clientSessions);
+        LOG.debug("logging out {} resources ", clientSessions.size());
+        //LOG.info("logging out resources: {}", clientSessions);
 
         for (Map.Entry<String, List<AuthenticatedClientSessionModel>> entry : clientSessions.entrySet()) {
             if (entry.getValue().size() == 0) {
@@ -153,7 +154,7 @@ public class ResourceAdminManager {
             }
 
             if (adapterSessionIds == null || adapterSessionIds.isEmpty()) {
-                logger.debugv("Can't logout {0}: no logged adapter sessions", resource.getClientId());
+                LOG.debug("Can't logout {}: no logged adapter sessions", resource.getClientId());
                 return false;
             }
 
@@ -178,7 +179,7 @@ public class ResourceAdminManager {
                 return sendLogoutRequest(realm, resource, allSessionIds, userSessions, 0, managementUrl);
             }
         } else {
-            logger.debugv("Can't logout {0}: no management url", resource.getClientId());
+            LOG.debug("Can't logout {}: no management url", resource.getClientId());
             return false;
         }
     }
@@ -188,7 +189,7 @@ public class ResourceAdminManager {
     public GlobalRequestResult logoutAll(RealmModel realm) {
         realm.setNotBefore(Time.currentTime());
         List<ClientModel> resources = realm.getClients();
-        logger.debugv("logging out {0} resources ", resources.size());
+        LOG.debug("logging out {} resources ", resources.size());
 
         GlobalRequestResult finalResult = new GlobalRequestResult();
         for (ClientModel resource : resources) {
@@ -212,11 +213,11 @@ public class ResourceAdminManager {
 
         List<String> mgmtUrls = getAllManagementUrls(resource);
         if (mgmtUrls.isEmpty()) {
-            logger.debug("No management URL or no registered cluster nodes for the client " + resource.getClientId());
+            LOG.debug("No management URL or no registered cluster nodes for the client " + resource.getClientId());
             return new GlobalRequestResult();
         }
 
-        if (logger.isDebugEnabled()) logger.debug("Send logoutClient for URLs: " + mgmtUrls);
+        if (LOG.isDebugEnabled()) LOG.debug("Send logoutClient for URLs: " + mgmtUrls);
 
         // Propagate this to all hosts
         GlobalRequestResult result = new GlobalRequestResult();
@@ -233,16 +234,16 @@ public class ResourceAdminManager {
     protected boolean sendLogoutRequest(RealmModel realm, ClientModel resource, List<String> adapterSessionIds, List<String> userSessions, int notBefore, String managementUrl) {
         LogoutAction adminAction = new LogoutAction(TokenIdGenerator.generateId(), Time.currentTime() + 30, resource.getClientId(), adapterSessionIds, notBefore, userSessions);
         String token = session.tokens().encode(adminAction);
-        if (logger.isDebugEnabled())
-            logger.debugv("logout resource {0} url: {1} sessionIds: " + adapterSessionIds, resource.getClientId(), managementUrl);
+        if (LOG.isDebugEnabled())
+            LOG.debug("logout resource {} url: {} sessionIds: " + adapterSessionIds, resource.getClientId(), managementUrl);
         URI target = UriBuilder.fromUri(managementUrl).path(AdapterConstants.K_LOGOUT).build();
         try {
             int status = httpClientProvider.postText(target.toString(), token);
             boolean success = status == 204 || status == 200;
-            logger.debugf("logout success for %s: %s", managementUrl, success);
+            LOG.debug("logout success for {}: {}", managementUrl, success);
             return success;
         } catch (IOException e) {
-            ServicesLogger.LOGGER.logoutFailed(e, resource.getClientId());
+//            ServicesLogger.LOGGER.logoutFailed(e, resource.getClientId());
             return false;
         }
     }
@@ -264,11 +265,11 @@ public class ResourceAdminManager {
     protected GlobalRequestResult pushRevocationPolicy(RealmModel realm, ClientModel resource, int notBefore) {
         List<String> mgmtUrls = getAllManagementUrls(resource);
         if (mgmtUrls.isEmpty()) {
-            logger.debugf("No management URL or no registered cluster nodes for the client %s", resource.getClientId());
+            LOG.debug("No management URL or no registered cluster nodes for the client {}", resource.getClientId());
             return new GlobalRequestResult();
         }
 
-        if (logger.isDebugEnabled()) logger.debug("Sending push revocation to URLS: " + mgmtUrls);
+        if (LOG.isDebugEnabled()) LOG.debug("Sending push revocation to URLS: " + mgmtUrls);
 
         // Propagate this to all hosts
         GlobalRequestResult result = new GlobalRequestResult();
@@ -296,12 +297,12 @@ public class ResourceAdminManager {
     public GlobalRequestResult testNodesAvailability(RealmModel realm, ClientModel client) {
         List<String> mgmtUrls = getAllManagementUrls(client);
         if (mgmtUrls.isEmpty()) {
-            logger.debug("No management URL or no registered cluster nodes for the application " + client.getClientId());
+            LOG.debug("No management URL or no registered cluster nodes for the application " + client.getClientId());
             return new GlobalRequestResult();
         }
 
 
-        if (logger.isDebugEnabled()) logger.debug("Sending test nodes availability: " + mgmtUrls);
+        if (LOG.isDebugEnabled()) LOG.debug("Sending test nodes availability: " + mgmtUrls);
 
         // Propagate this to all hosts
         GlobalRequestResult result = new GlobalRequestResult();
@@ -321,15 +322,15 @@ public class ResourceAdminManager {
     protected boolean sendTestNodeAvailabilityRequest(RealmModel realm, ClientModel client, String managementUrl) {
         TestAvailabilityAction adminAction = new TestAvailabilityAction(TokenIdGenerator.generateId(), Time.currentTime() + 30, client.getClientId());
         String token = session.tokens().encode(adminAction);
-        logger.debugv("testNodes availability resource: {0} url: {1}", client.getClientId(), managementUrl);
+        LOG.debug("testNodes availability resource: {} url: {}", client.getClientId(), managementUrl);
         URI target = UriBuilder.fromUri(managementUrl).path(AdapterConstants.K_TEST_AVAILABLE).build();
         try {
             int status = httpClientProvider.postText(target.toString(), token);
             boolean success = status == 204 || status == 200;
-            logger.debugf("testAvailability success for %s: %s", managementUrl, success);
+            LOG.debug("testAvailability success for {}: {}", managementUrl, success);
             return success;
         } catch (IOException e) {
-            ServicesLogger.LOGGER.availabilityTestFailed(managementUrl);
+//            ServicesLogger.LOGGER.availabilityTestFailed(managementUrl);
             return false;
         }
     }

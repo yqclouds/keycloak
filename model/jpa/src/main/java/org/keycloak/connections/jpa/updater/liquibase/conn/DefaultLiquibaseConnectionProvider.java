@@ -27,7 +27,7 @@ import liquibase.resource.ClassLoaderResourceAccessor;
 import liquibase.resource.ResourceAccessor;
 import liquibase.servicelocator.ServiceLocator;
 import liquibase.sqlgenerator.SqlGeneratorFactory;
-import org.keycloak.connections.jpa.updater.liquibase.*;
+import org.keycloak.connections.jpa.updater.liquibase.LiquibaseJpaUpdaterProvider;
 import org.keycloak.connections.jpa.updater.liquibase.lock.CustomInsertLockRecordGenerator;
 import org.keycloak.connections.jpa.updater.liquibase.lock.CustomLockDatabaseChangeLogGenerator;
 import org.keycloak.models.KeycloakSession;

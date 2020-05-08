@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.spi.BadRequestException;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.OAuthErrorException;
@@ -43,7 +43,7 @@ import javax.ws.rs.ext.Providers;
  */
 public class ClientsManagementService {
 
-    private static final Logger logger = Logger.getLogger(ClientsManagementService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClientsManagementService.class);
     @Context
     protected HttpHeaders headers;
     @Context
@@ -102,7 +102,7 @@ public class ClientsManagementService {
         String nodeHost = getClientClusterHost(formData);
 
         event.client(client).detail(Details.NODE_HOST, nodeHost);
-        logger.debugf("Registering cluster host '%s' for client '%s'", nodeHost, client.getClientId());
+        LOG.debug("Registering cluster host '{}' for client '{}'", nodeHost, client.getClientId());
 
         try {
             client.registerNode(nodeHost, Time.currentTime());
@@ -143,7 +143,7 @@ public class ClientsManagementService {
         String nodeHost = getClientClusterHost(formData);
 
         event.client(client).detail(Details.NODE_HOST, nodeHost);
-        logger.debugf("Unregistering cluster host '%s' for client '%s'", nodeHost, client.getClientId());
+        LOG.debug("Unregistering cluster host '%s' for client '%s'", nodeHost, client.getClientId());
 
         client.unregisterNode(nodeHost);
 

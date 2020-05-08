@@ -23,12 +23,7 @@ import org.apache.catalina.realm.GenericPrincipal;
 import javax.security.auth.Subject;
 import java.security.Principal;
 import java.security.acl.Group;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:ungarida@gmail.com">Davide Ungari</a>
@@ -52,7 +47,7 @@ public abstract class GenericPrincipalFactory {
                 subjectGroup.addMember(role);
             }
         }
-        
+
         Principal userPrincipal = getPrincipal(subject);
         List<String> rolesAsStringList = new ArrayList<String>();
         rolesAsStringList.addAll(roleSet);

@@ -29,14 +29,14 @@ import org.keycloak.jose.jws.crypto.HMACProvider;
 import org.keycloak.jose.jws.crypto.RSAProvider;
 import org.keycloak.representations.JsonWebToken;
 import org.keycloak.util.TokenUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.crypto.SecretKey;
 import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -73,7 +73,7 @@ public class TokenVerifier<T extends JsonWebToken> {
             return true;
         }
     };
-    private static final Logger LOG = Logger.getLogger(TokenVerifier.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(TokenVerifier.class.getName());
     private final LinkedList<Predicate<? super T>> checks = new LinkedList<>();
     private String tokenString;
 
@@ -92,10 +92,12 @@ public class TokenVerifier<T extends JsonWebToken> {
     private JWSInput jws;
     private T token;
     private SignatureVerifierContext verifier = null;
+
     protected TokenVerifier(String tokenString, Class<T> clazz) {
         this.tokenString = tokenString;
         this.clazz = clazz;
     }
+
     protected TokenVerifier(T token) {
         this.token = token;
     }
@@ -141,12 +143,12 @@ public class TokenVerifier<T extends JsonWebToken> {
             public boolean test(T t) throws VerificationException {
                 try {
                     if (!mandatoryPredicate.test(t)) {
-                        LOG.finer("[optional] predicate failed: " + mandatoryPredicate);
+                        LOG.info("[optional] predicate failed: " + mandatoryPredicate);
                     }
 
                     return true;
                 } catch (VerificationException ex) {
-                    LOG.log(Level.FINER, "[optional] predicate " + mandatoryPredicate + " failed.", ex);
+                    LOG.info("[optional] predicate " + mandatoryPredicate + " failed.", ex);
                     return true;
                 }
             }
@@ -171,9 +173,9 @@ public class TokenVerifier<T extends JsonWebToken> {
                             return true;
                         }
 
-                        LOG.finer("[alternative] predicate failed: " + predicate);
+                        LOG.info("[alternative] predicate failed: " + predicate);
                     } catch (VerificationException ex) {
-                        LOG.log(Level.FINER, "[alternative] predicate " + predicate + " failed.", ex);
+                        LOG.info("[alternative] predicate " + predicate + " failed.", ex);
                     }
                 }
 

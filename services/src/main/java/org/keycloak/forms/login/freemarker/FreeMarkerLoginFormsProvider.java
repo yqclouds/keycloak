@@ -16,7 +16,6 @@
  */
 package org.keycloak.forms.login.freemarker;
 
-import org.jboss.logging.Logger;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.authenticators.browser.OTPFormAuthenticator;
@@ -39,6 +38,8 @@ import org.keycloak.theme.FreeMarkerUtil;
 import org.keycloak.theme.Theme;
 import org.keycloak.theme.beans.*;
 import org.keycloak.utils.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -61,7 +62,7 @@ import static org.springframework.beans.factory.config.ConfigurableBeanFactory.S
 @Scope(SCOPE_PROTOTYPE)
 public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
 
-    private static final Logger logger = Logger.getLogger(FreeMarkerLoginFormsProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FreeMarkerLoginFormsProvider.class);
     protected final Map<String, Object> attributes = new HashMap<>();
     protected String accessCode;
     protected Response.Status status;
@@ -145,7 +146,7 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
         try {
             theme = getTheme();
         } catch (IOException e) {
-            logger.error("Failed to create theme", e);
+            LOG.error("Failed to create theme", e);
             return Response.serverError().build();
         }
 
@@ -211,7 +212,7 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
         try {
             theme = getTheme();
         } catch (IOException e) {
-            logger.error("Failed to create theme", e);
+            LOG.error("Failed to create theme", e);
             return Response.serverError().build();
         }
 
@@ -271,14 +272,14 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
             messagesBundle = theme.getMessages(locale);
             attributes.put("msg", new MessageFormatterMethod(locale, messagesBundle));
         } catch (IOException e) {
-            logger.warn("Failed to load messages", e);
+            LOG.warn("Failed to load messages", e);
             messagesBundle = new Properties();
         }
 
         try {
             attributes.put("properties", theme.getProperties());
         } catch (IOException e) {
-            logger.warn("Failed to load properties", e);
+            LOG.warn("Failed to load properties", e);
         }
 
         return messagesBundle;
@@ -316,7 +317,7 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
         try {
             theme = getTheme();
         } catch (IOException e) {
-            logger.error("Failed to create theme", e);
+            LOG.error("Failed to create theme", e);
             throw new RuntimeException("Failed to create theme");
         }
 
@@ -332,7 +333,7 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
         try {
             theme = getTheme();
         } catch (IOException e) {
-            logger.error("Failed to create theme", e);
+            LOG.error("Failed to create theme", e);
             throw new RuntimeException("Failed to create theme");
         }
 
@@ -435,7 +436,7 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
             }
             return builder.build();
         } catch (FreeMarkerException e) {
-            logger.error("Failed to process template", e);
+            LOG.error("Failed to process template", e);
             return Response.serverError().build();
         }
     }

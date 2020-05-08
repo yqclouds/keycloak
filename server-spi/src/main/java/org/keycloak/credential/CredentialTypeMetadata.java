@@ -18,10 +18,11 @@
 
 package org.keycloak.credential;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RequiredActionProviderModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -29,7 +30,7 @@ import org.keycloak.models.RequiredActionProviderModel;
 public class CredentialTypeMetadata implements Comparable<CredentialTypeMetadata> {
 
     public static final String DEFAULT_ICON_CSS_CLASS = "kcAuthenticatorDefaultClass";
-    private static final Logger logger = Logger.getLogger(CredentialTypeMetadata.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CredentialTypeMetadata.class);
     private String type;
 
     private String displayName;
@@ -259,7 +260,7 @@ public class CredentialTypeMetadata implements Comparable<CredentialTypeMetadata
 
             RealmModel realm = session.getContext().getRealm();
             if (realm == null) {
-                logger.warnf("Realm was not set in context when trying to get credential metadata of provider '%s'", instance.type);
+                LOG.warn("Realm was not set in context when trying to get credential metadata of provider '{}'", instance.type);
                 return false;
             }
 

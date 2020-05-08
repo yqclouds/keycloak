@@ -23,7 +23,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.authentication.FormAction;
 import org.keycloak.authentication.FormActionFactory;
 import org.keycloak.authentication.FormContext;
@@ -61,7 +61,7 @@ public class RegistrationRecaptcha implements FormAction, FormActionFactory, Con
     public static final String SITE_SECRET = "secret";
     public static final String USE_RECAPTCHA_NET = "useRecaptchaNet";
     public static final String PROVIDER_ID = "registration-recaptcha-action";
-    private static final Logger logger = Logger.getLogger(RegistrationRecaptcha.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RegistrationRecaptcha.class);
     private static final List<ProviderConfigProperty> CONFIG_PROPERTIES = new ArrayList<ProviderConfigProperty>();
     private static AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
             AuthenticationExecutionModel.Requirement.REQUIRED,
@@ -191,7 +191,7 @@ public class RegistrationRecaptcha implements FormAction, FormActionFactory, Con
                 content.close();
             }
         } catch (Exception e) {
-            ServicesLogger.LOGGER.recaptchaFailed(e);
+//            ServicesLogger.LOGGER.recaptchaFailed(e);
         }
         return success;
     }

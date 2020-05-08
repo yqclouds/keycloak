@@ -17,7 +17,6 @@
 
 package org.keycloak.protocol.oidc;
 
-import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.OAuthErrorException;
@@ -53,6 +52,8 @@ import org.keycloak.services.util.DefaultClientSessionContext;
 import org.keycloak.services.util.MtlsHoKTokenUtil;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.util.TokenUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -67,7 +68,7 @@ import java.util.*;
  * @version $Revision: 1 $
  */
 public class TokenManager {
-    private static final Logger logger = Logger.getLogger(TokenManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TokenManager.class);
     private static final String JWT = "JWT";
 
     public static ClientSessionContext attachAuthenticationSession(KeycloakSession session, UserSessionModel userSession, AuthenticationSessionModel authSession) {
@@ -120,8 +121,8 @@ public class TokenManager {
         Set<RoleModel> roleMappings = RoleUtils.getDeepUserRoleMappings(user);
 
         if (client.isFullScopeAllowed()) {
-            if (logger.isTraceEnabled()) {
-                logger.tracef("Using full scope for client %s", client.getClientId());
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Using full scope for client %s", client.getClientId());
             }
             return roleMappings;
         } else {
@@ -131,8 +132,8 @@ public class TokenManager {
 
             // 2 - Role mappings of client itself + default client scopes + optional client scopes requested by scope parameter (if applyScopeParam is true)
             for (ClientScopeModel clientScope : clientScopes) {
-                if (logger.isTraceEnabled()) {
-                    logger.tracef("Adding client scope role mappings of client scope '%s' to client '%s'", clientScope.getName(), client.getClientId());
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Adding client scope role mappings of client scope '%s' to client '%s'", clientScope.getName(), client.getClientId());
                 }
                 scopeMappings.addAll(clientScope.getScopeMappings());
             }
@@ -189,7 +190,7 @@ public class TokenManager {
             }
 
             if (!grantedConsent.getGrantedClientScopes().contains(requestedScope)) {
-                logger.debugf("Client '%s' no longer has requested consent from user '%s' for client scope '%s'",
+                LOG.debug("Client '%s' no longer has requested consent from user '%s' for client scope '%s'",
                         client.getClientId(), user.getUsername(), requestedScope.getName());
                 return false;
             }
@@ -237,7 +238,7 @@ public class TokenManager {
         }
 
         if (oldToken.getIssuedAt() + 1 < userSession.getStarted()) {
-            logger.debug("Refresh toked issued before the user session started");
+            LOG.debug("Refresh toked issued before the user session started");
             throw new OAuthErrorException(OAuthErrorException.INVALID_GRANT, "Refresh toked issued before the user session started");
         }
 
@@ -272,7 +273,7 @@ public class TokenManager {
 
         // Case when offline token is migrated from previous version
         if (oldTokenScope == null && userSession.isOffline()) {
-            logger.debugf("Migrating offline token of user '%s' for client '%s' of realm '%s'", user.getUsername(), client.getClientId(), realm.getName());
+            LOG.debug("Migrating offline token of user '%s' for client '%s' of realm '%s'", user.getUsername(), client.getClientId(), realm.getName());
             oldTokenScope = OAuth2Constants.OFFLINE_ACCESS;
         }
 

@@ -19,11 +19,12 @@ package org.keycloak.models.sessions.infinispan.initializer;
 
 import org.infinispan.Cache;
 import org.infinispan.distexec.DistributedCallable;
-import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.KeycloakSessionTask;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -33,7 +34,7 @@ import java.util.Set;
  */
 public class SessionInitializerWorker implements DistributedCallable<String, Serializable, SessionLoader.WorkerResult>, Serializable {
 
-    private static final Logger log = Logger.getLogger(SessionInitializerWorker.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SessionInitializerWorker.class);
 
 
     private SessionLoader.LoaderContext loaderCtx;
@@ -55,13 +56,13 @@ public class SessionInitializerWorker implements DistributedCallable<String, Ser
 
     @Override
     public SessionLoader.WorkerResult call() throws Exception {
-        if (log.isTraceEnabled()) {
-            log.tracef("Running computation for segment: %s", workerCtx.toString());
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Running computation for segment: {}", workerCtx.toString());
         }
 
         KeycloakSessionFactory sessionFactory = workCache.getAdvancedCache().getComponentRegistry().getComponent(KeycloakSessionFactory.class);
         if (sessionFactory == null) {
-            log.debugf("KeycloakSessionFactory not yet set in cache. Worker skipped");
+            LOG.debug("KeycloakSessionFactory not yet set in cache. Worker skipped");
             return sessionLoader.createFailedWorkerResult(loaderCtx, workerCtx);
         }
 

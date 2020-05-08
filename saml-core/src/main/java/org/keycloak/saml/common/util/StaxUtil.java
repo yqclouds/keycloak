@@ -40,7 +40,7 @@ import java.util.Stack;
  */
 public class StaxUtil {
 
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
 
     private static final ThreadLocal<Stack<String>> registeredNSStack = new ThreadLocal<Stack<String>>();
 
@@ -54,7 +54,7 @@ public class StaxUtil {
         try {
             writer.flush();
         } catch (XMLStreamException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
     }
 
@@ -70,7 +70,7 @@ public class StaxUtil {
         try {
             return xmlOutputFactory.createXMLEventWriter(outStream, GeneralConstants.SAML_CHARSET_NAME);
         } catch (XMLStreamException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
     }
 
@@ -86,7 +86,7 @@ public class StaxUtil {
         try {
             return xmlOutputFactory.createXMLStreamWriter(outStream, GeneralConstants.SAML_CHARSET_NAME);
         } catch (XMLStreamException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
     }
 
@@ -102,7 +102,7 @@ public class StaxUtil {
         try {
             return xmlOutputFactory.createXMLStreamWriter(writer);
         } catch (XMLStreamException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
     }
 
@@ -111,7 +111,7 @@ public class StaxUtil {
         try {
             return factory.createXMLStreamWriter(result);
         } catch (XMLStreamException xe) {
-            throw logger.processingError(xe);
+            throw LOG.processingError(xe);
         }
     }
 
@@ -127,7 +127,7 @@ public class StaxUtil {
         try {
             writer.setPrefix(prefix, nsURI);
         } catch (XMLStreamException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
     }
 
@@ -158,7 +158,7 @@ public class StaxUtil {
             writer.writeAttribute(attributeName.getPrefix(), attributeName.getNamespaceURI(), attributeName.getLocalPart(),
                     attributeValue);
         } catch (XMLStreamException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
     }
 
@@ -174,7 +174,7 @@ public class StaxUtil {
         try {
             writer.writeAttribute(localName, value);
         } catch (XMLStreamException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
     }
 
@@ -192,7 +192,7 @@ public class StaxUtil {
         try {
             writer.writeAttribute(localName, type, value);
         } catch (XMLStreamException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
     }
 
@@ -211,7 +211,7 @@ public class StaxUtil {
         try {
             writer.writeAttribute(prefix, localName, type, value);
         } catch (XMLStreamException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
     }
 
@@ -226,7 +226,7 @@ public class StaxUtil {
         try {
             writer.writeCharacters(value);
         } catch (XMLStreamException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
     }
 
@@ -241,7 +241,7 @@ public class StaxUtil {
         try {
             writer.writeCData(value);
         } catch (XMLStreamException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
     }
 
@@ -256,7 +256,7 @@ public class StaxUtil {
         try {
             writer.writeDefaultNamespace(ns);
         } catch (XMLStreamException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
     }
 
@@ -288,9 +288,9 @@ public class StaxUtil {
                     // Don't care
             }
         } catch (DOMException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         } catch (XMLStreamException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
     }
 
@@ -366,7 +366,7 @@ public class StaxUtil {
         try {
             writer.writeNamespace(prefix, ns);
         } catch (XMLStreamException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
     }
 
@@ -384,7 +384,7 @@ public class StaxUtil {
         try {
             writer.writeStartElement(prefix, localPart, ns);
         } catch (XMLStreamException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
     }
 
@@ -399,7 +399,7 @@ public class StaxUtil {
         try {
             writer.writeEndElement();
         } catch (XMLStreamException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
     }
 

@@ -21,8 +21,9 @@ import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.remoting.transport.Transport;
-import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 
@@ -33,7 +34,7 @@ public abstract class BaseCacheInitializer extends CacheInitializer {
 
     private static final String STATE_KEY_PREFIX = "distributed::";
 
-    private static final Logger log = Logger.getLogger(BaseCacheInitializer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BaseCacheInitializer.class);
 
     protected final KeycloakSessionFactory sessionFactory;
     protected final Cache<String, Serializable> workCache;
@@ -105,8 +106,8 @@ public abstract class BaseCacheInitializer extends CacheInitializer {
             } catch (RuntimeException e) {
                 ComponentStatus status = workCache.getStatus();
                 if (status.isStopping() || status.isTerminated()) {
-                    log.warn("Failed to put initializerState to the cache. Cache is already terminating");
-                    log.debug(e.getMessage(), e);
+                    LOG.warn("Failed to put initializerState to the cache. Cache is already terminating");
+                    LOG.debug(e.getMessage(), e);
                     return;
                 }
                 retry--;

@@ -17,8 +17,9 @@
 
 package org.keycloak.models;
 
-import org.jboss.logging.Logger;
 import org.keycloak.crypto.Algorithm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ import java.util.List;
 
 public class WebAuthnPolicy implements Serializable {
 
-    protected static final Logger logger = Logger.getLogger(WebAuthnPolicy.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(WebAuthnPolicy.class);
     // TODO : must be thread safe list
     public static WebAuthnPolicy DEFAULT_POLICY = new WebAuthnPolicy(new ArrayList<>(Arrays.asList(Algorithm.ES256)));
     // required

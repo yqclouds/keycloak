@@ -33,7 +33,7 @@ import java.io.InputStream;
  */
 public class PostBindingUtil {
 
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
 
     /**
      * Apply base64 encoding on the message
@@ -53,7 +53,7 @@ public class PostBindingUtil {
      */
     public static byte[] base64Decode(String encodedString) {
         if (encodedString == null)
-            throw logger.nullArgumentError("encodedString");
+            throw LOG.nullArgumentError("encodedString");
 
         return Base64.decode(encodedString);
     }
@@ -66,7 +66,7 @@ public class PostBindingUtil {
      */
     public static InputStream base64DecodeAsStream(String encodedString) {
         if (encodedString == null)
-            throw logger.nullArgumentError("encodedString");
+            throw LOG.nullArgumentError("encodedString");
 
         return new ByteArrayInputStream(base64Decode(encodedString));
     }

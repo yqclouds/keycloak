@@ -18,7 +18,6 @@
 package org.keycloak.keys.infinispan;
 
 import org.infinispan.Cache;
-import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
@@ -31,6 +30,8 @@ import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderEvent;
 import org.keycloak.stereotype.ProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -47,11 +48,11 @@ import java.util.concurrent.FutureTask;
 @Component("InfinispanPublicKeyStorageProviderFactory")
 @ProviderFactory(id = "infinispan", providerClasses = PublicKeyStorageProvider.class)
 public class InfinispanPublicKeyStorageProviderFactory implements PublicKeyStorageProviderFactory {
+    private static final Logger LOG = LoggerFactory.getLogger(InfinispanPublicKeyStorageProviderFactory.class);
 
     public static final String PROVIDER_ID = "infinispan";
     public static final String KEYS_CLEAR_CACHE_EVENTS = "KEYS_CLEAR_CACHE_EVENTS";
     public static final String PUBLIC_KEY_STORAGE_INVALIDATION_EVENT = "PUBLIC_KEY_STORAGE_INVALIDATION_EVENT";
-    private static final Logger log = Logger.getLogger(InfinispanPublicKeyStorageProviderFactory.class);
     private final Map<String, FutureTask<PublicKeysEntry>> tasksInProgress = new ConcurrentHashMap<>();
     private volatile Cache<String, PublicKeysEntry> keysCache;
 
@@ -99,7 +100,7 @@ public class InfinispanPublicKeyStorageProviderFactory implements PublicKeyStora
 
             SessionAndKeyHolder cacheKey = getCacheKeyToInvalidate(event);
             if (cacheKey != null) {
-                log.debugf("Invalidating %s from keysCache", cacheKey);
+                LOG.debug("Invalidating {} from keysCache", cacheKey);
                 InfinispanPublicKeyStorageProvider provider = (InfinispanPublicKeyStorageProvider) cacheKey.session.getProvider(PublicKeyStorageProvider.class, getId());
                 for (String ck : cacheKey.cacheKeys) provider.addInvalidation(ck);
             }

@@ -18,13 +18,9 @@
 package org.keycloak.services.managers;
 
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>

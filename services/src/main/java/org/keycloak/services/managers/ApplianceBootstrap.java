@@ -55,7 +55,7 @@ public class ApplianceBootstrap {
         }
 
         String adminRealmName = Config.getAdminRealm();
-        ServicesLogger.LOGGER.initializingAdminRealm(adminRealmName);
+//        ServicesLogger.LOGGER.initializingAdminRealm(adminRealmName);
 
         RealmManager manager = new RealmManager(session);
         RealmModel realm = manager.createRealm(adminRealmName, adminRealmName);

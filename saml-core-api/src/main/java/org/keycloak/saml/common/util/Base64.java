@@ -16,9 +16,10 @@
  */
 package org.keycloak.saml.common.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.charset.StandardCharsets;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Encodes and decodes to and from Base64 notation.
@@ -155,7 +156,7 @@ public class Base64 {
     // private static final byte BAD_ENCODING = -9; // Indicates error in encoding
     private static final byte WHITE_SPACE_ENC = -5; // Indicates white space in encoding
     private static final byte EQUALS_SIGN_ENC = -1; // Indicates equals sign in encoding
-    private static Logger logger = Logger.getLogger(Base64.class.getCanonicalName());
+    private static Logger LOG = LoggerFactory.getLogger(Base64.class.getCanonicalName());
 
     /** Determine which ALPHABET to use. */
     static {
@@ -554,10 +555,10 @@ public class Base64 {
 
                 return 3;
             } catch (Exception e) {
-                logger.log(Level.FINE, "" + source[srcOffset] + ": " + (DECODABET[source[srcOffset]]));
-                logger.log(Level.FINE, "" + source[srcOffset + 1] + ": " + (DECODABET[source[srcOffset + 1]]));
-                logger.log(Level.FINE, "" + source[srcOffset + 2] + ": " + (DECODABET[source[srcOffset + 2]]));
-                logger.log(Level.FINE, "" + source[srcOffset + 3] + ": " + (DECODABET[source[srcOffset + 3]]));
+                LOG.info("" + source[srcOffset] + ": " + (DECODABET[source[srcOffset]]));
+                LOG.info("" + source[srcOffset + 1] + ": " + (DECODABET[source[srcOffset + 1]]));
+                LOG.info("" + source[srcOffset + 2] + ": " + (DECODABET[source[srcOffset + 2]]));
+                LOG.info("" + source[srcOffset + 3] + ": " + (DECODABET[source[srcOffset + 3]]));
                 return -1;
             } // end catch
         }
@@ -1007,8 +1008,6 @@ public class Base64 {
 
         /**
          * Method added by PHIL. [Thanks, PHIL. -Rob] This pads the buffer without closing the stream.
-         *
-         * @throws IOException
          */
         public void flushBase64() throws java.io.IOException {
             if (position > 0) {
@@ -1043,7 +1042,6 @@ public class Base64 {
         /**
          * Suspends encoding of the stream. May be helpful if you need to embed a piece of base640-encoded data in a stream.
          *
-         * @throws IOException
          * @since 1.5.1
          */
         public void suspendEncoding() throws java.io.IOException {

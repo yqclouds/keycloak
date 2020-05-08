@@ -17,10 +17,11 @@
 
 package org.keycloak.models.sessions.infinispan.initializer;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.dblock.DBLockManager;
 import org.keycloak.models.dblock.DBLockProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Encapsulates preloading of sessions within the DB Lock. This DB-aware lock ensures that "startLoading" is done on single DC and the other DCs need to wait.
@@ -29,7 +30,7 @@ import org.keycloak.models.dblock.DBLockProvider;
  */
 public class DBLockBasedCacheInitializer extends CacheInitializer {
 
-    private static final Logger log = Logger.getLogger(DBLockBasedCacheInitializer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DBLockBasedCacheInitializer.class);
 
     private final KeycloakSession session;
     private final CacheInitializer delegate;
@@ -70,7 +71,7 @@ public class DBLockBasedCacheInitializer extends CacheInitializer {
         try {
 
             if (isFinished()) {
-                log.infof("Task already finished when DBLock retrieved");
+                LOG.info("Task already finished when DBLock retrieved");
             } else {
                 delegate.startLoading();
             }

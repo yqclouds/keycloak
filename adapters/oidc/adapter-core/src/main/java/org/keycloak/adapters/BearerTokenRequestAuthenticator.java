@@ -17,7 +17,6 @@
 
 package org.keycloak.adapters;
 
-import org.jboss.logging.Logger;
 import org.keycloak.adapters.rotation.AdapterTokenVerifier;
 import org.keycloak.adapters.spi.AuthChallenge;
 import org.keycloak.adapters.spi.AuthOutcome;
@@ -26,15 +25,19 @@ import org.keycloak.common.VerificationException;
 import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.jose.jws.JWSInputException;
 import org.keycloak.representations.AccessToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import javax.security.cert.X509Certificate;
+import java.util.List;
+
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public class BearerTokenRequestAuthenticator {
-    protected Logger log = Logger.getLogger(BearerTokenRequestAuthenticator.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(BearerTokenRequestAuthenticator.class);
+
     protected String tokenString;
     protected AccessToken token;
     protected String surrogate;
@@ -61,7 +64,7 @@ public class BearerTokenRequestAuthenticator {
         return surrogate;
     }
 
-    public AuthOutcome authenticate(HttpFacade exchange)  {
+    public AuthOutcome authenticate(HttpFacade exchange) {
         List<String> authHeaders = exchange.getRequest().getHeaders("Authorization");
         if (authHeaders == null || authHeaders.isEmpty()) {
             challenge = challengeResponse(exchange, OIDCAuthenticationError.Reason.NO_BEARER_TOKEN, null, null);
@@ -75,7 +78,7 @@ public class BearerTokenRequestAuthenticator {
             if (split[0].equalsIgnoreCase("Bearer")) {
                 tokenString = split[1];
 
-                log.debugf("Found [%d] values in authorization header, selecting the first value for Bearer.", (Integer) authHeaders.size());
+                LOG.debug("Found [{}] values in authorization header, selecting the first value for Bearer.", authHeaders.size());
                 break;
             }
         }
@@ -87,28 +90,28 @@ public class BearerTokenRequestAuthenticator {
 
         return (authenticateToken(exchange, tokenString));
     }
-    
+
     protected AuthOutcome authenticateToken(HttpFacade exchange, String tokenString) {
-        log.debug("Verifying access_token");
-        if (log.isTraceEnabled()) {
+        LOG.debug("Verifying access_token");
+        if (LOG.isTraceEnabled()) {
             try {
                 JWSInput jwsInput = new JWSInput(tokenString);
                 String wireString = jwsInput.getWireString();
-                log.tracef("\taccess_token: %s", wireString.substring(0, wireString.lastIndexOf(".")) + ".signature");
+                LOG.trace("\taccess_token: {}", wireString.substring(0, wireString.lastIndexOf(".")) + ".signature");
             } catch (JWSInputException e) {
-                log.errorf(e, "Failed to parse access_token: %s", tokenString);
+                LOG.error("Failed to parse access_token: {}, e: {}", tokenString, e);
             }
         }
         try {
             token = AdapterTokenVerifier.verifyToken(tokenString, deployment);
         } catch (VerificationException e) {
-            log.debug("Failed to verify token");
+            LOG.debug("Failed to verify token");
             challenge = challengeResponse(exchange, OIDCAuthenticationError.Reason.INVALID_TOKEN, "invalid_token", e.getMessage());
             return AuthOutcome.FAILED;
         }
         if (token.getIssuedAt() < deployment.getNotBefore()) {
-            log.debug("Stale token");
-            challenge = challengeResponse(exchange,  OIDCAuthenticationError.Reason.STALE_TOKEN, "invalid_token", "Stale token");
+            LOG.debug("Stale token");
+            challenge = challengeResponse(exchange, OIDCAuthenticationError.Reason.STALE_TOKEN, "invalid_token", "Stale token");
             return AuthOutcome.FAILED;
         }
         boolean verifyCaller = false;
@@ -120,7 +123,7 @@ public class BearerTokenRequestAuthenticator {
         surrogate = null;
         if (verifyCaller) {
             if (token.getTrustedCertificates() == null || token.getTrustedCertificates().isEmpty()) {
-                log.warn("No trusted certificates in token");
+                LOG.warn("No trusted certificates in token");
                 challenge = clientCertChallenge();
                 return AuthOutcome.FAILED;
             }
@@ -134,13 +137,13 @@ public class BearerTokenRequestAuthenticator {
 
             }
             if (chain == null || chain.length == 0) {
-                log.warn("No certificates provided by undertow to verify the caller");
+                LOG.warn("No certificates provided by undertow to verify the caller");
                 challenge = clientCertChallenge();
                 return AuthOutcome.FAILED;
             }
             surrogate = chain[0].getSubjectDN().getName();
         }
-        log.debug("successful authorized");
+        LOG.debug("successful authorized");
         return AuthOutcome.AUTHENTICATED;
     }
 
@@ -185,10 +188,9 @@ public class BearerTokenRequestAuthenticator {
                 OIDCAuthenticationError error = new OIDCAuthenticationError(reason, description);
                 facade.getRequest().setError(error);
                 facade.getResponse().addHeader("WWW-Authenticate", challenge);
-                if(deployment.isDelegateBearerErrorResponseSending()){
+                if (deployment.isDelegateBearerErrorResponseSending()) {
                     facade.getResponse().setStatus(401);
-                }
-                else {
+                } else {
                     facade.getResponse().sendError(401);
                 }
                 return true;

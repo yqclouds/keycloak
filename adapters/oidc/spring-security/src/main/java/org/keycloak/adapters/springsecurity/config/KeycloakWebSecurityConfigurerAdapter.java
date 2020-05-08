@@ -23,11 +23,7 @@ import org.keycloak.adapters.springsecurity.AdapterDeploymentContextFactoryBean;
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationEntryPoint;
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider;
 import org.keycloak.adapters.springsecurity.authentication.KeycloakLogoutHandler;
-import org.keycloak.adapters.springsecurity.filter.KeycloakAuthenticatedActionsFilter;
-import org.keycloak.adapters.springsecurity.filter.KeycloakAuthenticationProcessingFilter;
-import org.keycloak.adapters.springsecurity.filter.KeycloakCsrfRequestMatcher;
-import org.keycloak.adapters.springsecurity.filter.KeycloakPreAuthActionsFilter;
-import org.keycloak.adapters.springsecurity.filter.KeycloakSecurityContextRequestFilter;
+import org.keycloak.adapters.springsecurity.filter.*;
 import org.keycloak.adapters.springsecurity.management.HttpSessionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -64,9 +60,8 @@ public abstract class KeycloakWebSecurityConfigurerAdapter extends WebSecurityCo
     protected AdapterDeploymentContext adapterDeploymentContext() throws Exception {
         AdapterDeploymentContextFactoryBean factoryBean;
         if (keycloakConfigResolver != null) {
-             factoryBean = new AdapterDeploymentContextFactoryBean(new KeycloakSpringConfigResolverWrapper(keycloakConfigResolver));
-        }
-        else {
+            factoryBean = new AdapterDeploymentContextFactoryBean(new KeycloakSpringConfigResolverWrapper(keycloakConfigResolver));
+        } else {
             factoryBean = new AdapterDeploymentContextFactoryBean(keycloakConfigFileResource);
         }
         factoryBean.afterPropertiesSet();

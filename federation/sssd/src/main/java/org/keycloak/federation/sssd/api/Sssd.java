@@ -22,7 +22,7 @@ import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.Variant;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.sssd.infopipe.InfoPipe;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.models.UserModel;
 
 import java.util.Arrays;
@@ -36,7 +36,7 @@ import java.util.Vector;
  */
 public class Sssd {
 
-    private static final Logger logger = Logger.getLogger(Sssd.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Sssd.class);
     private static DBusConnection dBusConnection;
     private String username;
     private Sssd() {
@@ -75,15 +75,15 @@ public class Sssd {
                 InfoPipe infoPipe = connection.getRemoteObject(InfoPipe.BUSNAME, InfoPipe.OBJECTPATH, InfoPipe.class);
 
                 if (infoPipe.ping("PING") == null || infoPipe.ping("PING").isEmpty()) {
-                    logger.debugv("SSSD is not available in your system. Federation provider will be disabled.");
+                    LOG.debug("SSSD is not available in your system. Federation provider will be disabled.");
                 } else {
                     sssdAvailable = true;
                 }
             } else {
-                logger.debugv("The RPM libunix-dbus-java is not installed. SSSD Federation provider will be disabled.");
+                LOG.debug("The RPM libunix-dbus-java is not installed. SSSD Federation provider will be disabled.");
             }
         } catch (Exception e) {
-            logger.debugv("SSSD is not available in your system. Federation provider will be disabled.", e);
+            LOG.debug("SSSD is not available in your system. Federation provider will be disabled.", e);
         }
         return sssdAvailable;
     }

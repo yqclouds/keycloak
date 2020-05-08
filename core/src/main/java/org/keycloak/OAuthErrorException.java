@@ -81,6 +81,7 @@ public class OAuthErrorException extends Exception {
         super(error);
         this.error = error;
     }
+
     public OAuthErrorException(String error, Throwable cause) {
         super(error, cause);
         this.error = error;

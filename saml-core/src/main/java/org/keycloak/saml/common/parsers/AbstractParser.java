@@ -48,7 +48,7 @@ import java.util.regex.Pattern;
  */
 public abstract class AbstractParser implements StaxParser {
 
-    protected static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    protected static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
 
     private static final ThreadLocal<XMLInputFactory> XML_INPUT_FACTORY = new ThreadLocal<XMLInputFactory>() {
         @Override
@@ -81,7 +81,7 @@ public abstract class AbstractParser implements StaxParser {
 
     public static XMLEventReader createEventReader(InputStream configStream) throws ParsingException {
         if (configStream == null)
-            throw logger.nullArgumentError("InputStream");
+            throw LOG.nullArgumentError("InputStream");
 
         XMLEventReader xmlEventReader = StaxParserUtil.getXMLEventReader(configStream);
 
@@ -114,7 +114,7 @@ public abstract class AbstractParser implements StaxParser {
                 }
             });
         } catch (XMLStreamException ex) {
-            throw logger.parserException(ex);
+            throw LOG.parserException(ex);
         }
 
         // Handle IBM JDK bug with Stax parsing when EventReader presented
@@ -163,7 +163,7 @@ public abstract class AbstractParser implements StaxParser {
 
     public XMLEventReader createEventReader(Source source) throws ParsingException {
         if (source == null)
-            throw logger.nullArgumentError("Source");
+            throw LOG.nullArgumentError("Source");
 
         XMLEventReader xmlEventReader = StaxParserUtil.getXMLEventReader(source);
 

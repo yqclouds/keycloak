@@ -17,7 +17,6 @@
 package org.keycloak.models.cache.infinispan.authorization;
 
 import org.infinispan.Cache;
-import org.jboss.logging.Logger;
 import org.keycloak.authorization.UserManagedPermissionUtil;
 import org.keycloak.authorization.model.*;
 import org.keycloak.authorization.store.*;
@@ -35,6 +34,8 @@ import org.keycloak.models.cache.infinispan.entities.Revisioned;
 import org.keycloak.models.cache.infinispan.events.InvalidationEvent;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
 import org.keycloak.storage.StorageId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -51,7 +52,7 @@ import static org.keycloak.models.cache.infinispan.RealmCacheSession.REALM_CLEAR
  * @version $Revision: 1 $
  */
 public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
-    protected static final Logger LOG = Logger.getLogger(StoreFactoryCacheSession.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(StoreFactoryCacheSession.class);
 
     public static final String AUTHORIZATION_CLEAR_CACHE_EVENTS = "AUTHORIZATION_CLEAR_CACHE_EVENTS";
     public static final String AUTHORIZATION_INVALIDATION_EVENTS = "AUTHORIZATION_INVALIDATION_EVENTS";
@@ -493,7 +494,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
             if (id == null) return null;
             CachedResourceServer cached = storeCache.get(id, CachedResourceServer.class);
             if (cached != null) {
-                LOG.tracev("by id cache hit: {0}", cached.getId());
+                LOG.trace("by id cache hit: {}", cached.getId());
             }
 
             if (cached == null) {
@@ -548,7 +549,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
             if (id == null) return null;
             CachedScope cached = storeCache.get(id, CachedScope.class);
             if (cached != null) {
-                LOG.tracev("by id cache hit: {0}", cached.getId());
+                LOG.trace("by id cache hit: {}", cached.getId());
             }
             if (cached == null) {
                 Long loaded = storeCache.getCurrentRevision(id);
@@ -577,7 +578,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
             String cacheKey = getScopeByNameCacheKey(name, resourceServerId);
             ScopeListQuery query = storeCache.get(cacheKey, ScopeListQuery.class);
             if (query != null) {
-                LOG.tracev("scope by name cache hit: {0}", name);
+                LOG.trace("scope by name cache hit: {}", name);
             }
             if (query == null) {
                 Long loaded = storeCache.getCurrentRevision(cacheKey);
@@ -644,7 +645,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
             if (id == null) return null;
             CachedResource cached = storeCache.get(id, CachedResource.class);
             if (cached != null) {
-                LOG.tracev("by id cache hit: {0}", cached.getId());
+                LOG.trace("by id cache hit: {}", cached.getId());
             }
             if (cached == null) {
                 Long loaded = storeCache.getCurrentRevision(id);
@@ -813,7 +814,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
         private <R extends Resource, Q extends ResourceQuery> List<R> cacheQuery(String cacheKey, Class<Q> queryType, Supplier<List<R>> resultSupplier, BiFunction<Long, List<R>, Q> querySupplier, String resourceServerId, Consumer<R> consumer) {
             Q query = storeCache.get(cacheKey, queryType);
             if (query != null) {
-                LOG.tracev("cache hit for key: {0}", cacheKey);
+                LOG.trace("cache hit for key: {}", cacheKey);
             }
             if (query == null) {
                 Long loaded = storeCache.getCurrentRevision(cacheKey);
@@ -898,7 +899,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
 
             CachedPolicy cached = storeCache.get(id, CachedPolicy.class);
             if (cached != null) {
-                LOG.tracev("by id cache hit: {0}", cached.getId());
+                LOG.trace("by id cache hit: {}", cached.getId());
             }
             if (cached == null) {
                 if (!modelMightExist(id)) return null;
@@ -1027,7 +1028,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
         private <R extends Policy, Q extends PolicyQuery> List<R> cacheQuery(String cacheKey, Class<Q> queryType, Supplier<List<R>> resultSupplier, BiFunction<Long, List<R>, Q> querySupplier, String resourceServerId, Consumer<R> consumer) {
             Q query = storeCache.get(cacheKey, queryType);
             if (query != null) {
-                LOG.tracev("cache hit for key: {0}", cacheKey);
+                LOG.trace("cache hit for key: {}", cacheKey);
             }
             if (query == null) {
                 Long loaded = storeCache.getCurrentRevision(cacheKey);
@@ -1108,7 +1109,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
 
             CachedPermissionTicket cached = storeCache.get(id, CachedPermissionTicket.class);
             if (cached != null) {
-                LOG.tracev("by id cache hit: {0}", cached.getId());
+                LOG.trace("by id cache hit: {}", cached.getId());
             }
             if (cached == null) {
                 Long loaded = storeCache.getCurrentRevision(id);
@@ -1189,7 +1190,7 @@ public class StoreFactoryCacheSession implements CachedStoreFactoryProvider {
         private <R, Q extends PermissionTicketQuery> List<R> cacheQuery(String cacheKey, Class<Q> queryType, Supplier<List<R>> resultSupplier, BiFunction<Long, List<R>, Q> querySupplier, String resourceServerId) {
             Q query = storeCache.get(cacheKey, queryType);
             if (query != null) {
-                LOG.tracev("cache hit for key: {0}", cacheKey);
+                LOG.trace("cache hit for key: {}", cacheKey);
             }
             if (query == null) {
                 Long loaded = storeCache.getCurrentRevision(cacheKey);

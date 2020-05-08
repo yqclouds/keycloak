@@ -17,7 +17,7 @@
 
 package org.keycloak.authentication.requiredactions;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.authentication.*;
 import org.keycloak.common.util.Time;
@@ -49,7 +49,7 @@ import java.util.concurrent.TimeUnit;
 @Component("UpdatePassword")
 @ProviderFactory(id = "UPDATE_PASSWORD", providerClasses = RequiredActionProvider.class)
 public class UpdatePassword implements RequiredActionProvider, RequiredActionFactory, DisplayTypeRequiredActionFactory {
-    private static final Logger logger = Logger.getLogger(UpdatePassword.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UpdatePassword.class);
 
     @Override
     public InitiatedActionSupport initiatedActionSupport() {
@@ -65,14 +65,14 @@ public class UpdatePassword implements RequiredActionProvider, RequiredActionFac
             if (password != null) {
                 if (password.getCreatedDate() == null) {
                     context.getUser().addRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD);
-                    logger.debug("User is required to update password");
+                    LOG.debug("User is required to update password");
                 } else {
                     long timeElapsed = Time.toMillis(Time.currentTime()) - password.getCreatedDate();
                     long timeToExpire = TimeUnit.DAYS.toMillis(daysToExpirePassword);
 
                     if (timeElapsed > timeToExpire) {
                         context.getUser().addRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD);
-                        logger.debug("User is required to update password");
+                        LOG.debug("User is required to update password");
                     }
                 }
             }

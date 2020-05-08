@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.broker.provider.IdentityProvider;
 import org.keycloak.broker.provider.IdentityProviderFactory;
@@ -48,7 +48,7 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
  */
 public class IdentityProviderResource {
 
-    protected static final Logger logger = Logger.getLogger(IdentityProviderResource.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(IdentityProviderResource.class);
 
     private final AdminPermissionEvaluator auth;
     private final RealmModel realm;
@@ -206,7 +206,7 @@ public class IdentityProviderResource {
         if (oldProviderId != null && !oldProviderId.equals(newProviderId)) {
 
             // Admin changed the ID (alias) of identity provider. We must update all clients and users
-            logger.debug("Changing providerId in all clients and linked users. oldProviderId=" + oldProviderId + ", newProviderId=" + newProviderId);
+            LOG.debug("Changing providerId in all clients and linked users. oldProviderId=" + oldProviderId + ", newProviderId=" + newProviderId);
 
             updateUsersAfterProviderAliasChange(session.users().getUsers(realm, false), oldProviderId, newProviderId, realm, session);
         }

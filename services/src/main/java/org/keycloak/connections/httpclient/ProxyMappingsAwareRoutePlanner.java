@@ -27,7 +27,7 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.conn.DefaultRoutePlanner;
 import org.apache.http.impl.conn.DefaultSchemePortResolver;
 import org.apache.http.protocol.HttpContext;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 
 import static org.keycloak.connections.httpclient.ProxyMappings.ProxyMapping;
 
@@ -40,7 +40,7 @@ import static org.keycloak.connections.httpclient.ProxyMappings.ProxyMapping;
  */
 public class ProxyMappingsAwareRoutePlanner extends DefaultRoutePlanner {
 
-    private static final Logger LOG = Logger.getLogger(ProxyMappingsAwareRoutePlanner.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ProxyMappingsAwareRoutePlanner.class);
 
     private final ProxyMappings proxyMappings;
 
@@ -54,7 +54,7 @@ public class ProxyMappingsAwareRoutePlanner extends DefaultRoutePlanner {
 
         String targetHostName = target.getHostName();
         ProxyMapping proxyMapping = proxyMappings.getProxyFor(targetHostName);
-        LOG.debugf("Returning proxyMapping=%s for targetHost=%s", proxyMapping, targetHostName);
+        LOG.debug("Returning proxyMapping=%s for targetHost=%s", proxyMapping, targetHostName);
         UsernamePasswordCredentials proxyCredentials = proxyMapping.getProxyCredentials();
         HttpHost proxyHost = proxyMapping.getProxyHost();
         if (proxyCredentials != null) {

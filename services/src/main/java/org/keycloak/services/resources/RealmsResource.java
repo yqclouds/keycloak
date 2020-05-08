@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authorization.AuthorizationProvider;
@@ -49,7 +49,7 @@ import java.net.URI;
  */
 @Path("/realms")
 public class RealmsResource {
-    protected static final Logger logger = Logger.getLogger(RealmsResource.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(RealmsResource.class);
 
     @Context
     protected KeycloakSession session;
@@ -100,7 +100,7 @@ public class RealmsResource {
 
         LoginProtocolFactory factory = (LoginProtocolFactory) session.getSessionFactory().getProviderFactory(LoginProtocol.class, protocol);
         if (factory == null) {
-            logger.debugf("protocol %s not found", protocol);
+            LOG.debug("protocol %s not found", protocol);
             throw new NotFoundException("Protocol not found");
         }
 

@@ -37,6 +37,7 @@ public interface NodeManager {
     /**
      * Unregisters the give deployment from the Keycloak server
      * .
+     *
      * @param deployment the deployment to unregister (required)
      */
     void unregister(KeycloakDeployment deployment);

@@ -16,7 +16,7 @@
  */
 package org.keycloak.authorization.authorization;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.authorization.AuthorizationProvider;
@@ -79,7 +79,7 @@ public class AuthorizationTokenService {
 
     public static final String CLAIM_TOKEN_FORMAT_ID_TOKEN = "http://openid.net/specs/openid-connect-core-1_0.html#IDToken";
 
-    private static final Logger logger = Logger.getLogger(AuthorizationTokenService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AuthorizationTokenService.class);
     private static final String RESPONSE_MODE_DECISION = "decision";
     private static final String RESPONSE_MODE_PERMISSIONS = "permissions";
     private static final String RESPONSE_MODE_DECISION_RESULT = "result";
@@ -206,12 +206,12 @@ public class AuthorizationTokenService {
                 throw new CorsErrorResponseException(request.getCors(), OAuthErrorException.ACCESS_DENIED, "not_authorized", Status.FORBIDDEN);
             }
         } catch (ErrorResponseException | CorsErrorResponseException cause) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Error while evaluating permissions", cause);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Error while evaluating permissions", cause);
             }
             throw cause;
         } catch (Exception cause) {
-            logger.error("Unexpected error while evaluating permissions", cause);
+            LOG.error("Unexpected error while evaluating permissions", cause);
             throw new CorsErrorResponseException(request.getCors(), OAuthErrorException.SERVER_ERROR, "Unexpected error while evaluating permissions", Status.INTERNAL_SERVER_ERROR);
         }
     }

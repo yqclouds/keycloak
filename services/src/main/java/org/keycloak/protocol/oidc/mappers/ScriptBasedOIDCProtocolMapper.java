@@ -17,7 +17,6 @@
 
 package org.keycloak.protocol.oidc.mappers;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.Profile;
 import org.keycloak.models.*;
 import org.keycloak.protocol.ProtocolMapper;
@@ -31,6 +30,8 @@ import org.keycloak.scripting.EvaluatableScriptAdapter;
 import org.keycloak.scripting.ScriptCompilationException;
 import org.keycloak.scripting.ScriptingProvider;
 import org.keycloak.stereotype.ProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -48,7 +49,7 @@ public class ScriptBasedOIDCProtocolMapper extends AbstractOIDCProtocolMapper im
 
     public static final String PROVIDER_ID = "oidc-script-based-protocol-mapper";
 
-    private static final Logger LOGGER = Logger.getLogger(ScriptBasedOIDCProtocolMapper.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScriptBasedOIDCProtocolMapper.class);
 
     private static final String SCRIPT = "script";
 
@@ -184,7 +185,7 @@ public class ScriptBasedOIDCProtocolMapper extends AbstractOIDCProtocolMapper im
         try {
             scriptingProvider.prepareEvaluatableScript(scriptModel);
         } catch (ScriptCompilationException ex) {
-            throw new ProtocolMapperConfigException("error", "{0}", ex.getMessage());
+            throw new ProtocolMapperConfigException("error", "{}", ex.getMessage());
         }
     }
 

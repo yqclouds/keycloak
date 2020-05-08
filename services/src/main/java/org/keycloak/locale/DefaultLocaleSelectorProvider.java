@@ -16,11 +16,12 @@
  */
 package org.keycloak.locale;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.sessions.AuthenticationSessionModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
@@ -30,7 +31,7 @@ import java.util.Set;
 
 public class DefaultLocaleSelectorProvider implements LocaleSelectorProvider {
 
-    private static final Logger logger = Logger.getLogger(LocaleSelectorProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LocaleSelectorProvider.class);
 
     private KeycloakSession session;
 

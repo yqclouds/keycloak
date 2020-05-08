@@ -18,7 +18,7 @@
 package org.keycloak.exportimport;
 
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.services.ServicesLogger;
@@ -30,7 +30,7 @@ import java.io.IOException;
  */
 public class ExportImportManager {
 
-    private static final Logger logger = Logger.getLogger(ExportImportManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ExportImportManager.class);
     private final String realmName;
     private KeycloakSessionFactory sessionFactory;
     private ExportProvider exportProvider;
@@ -80,13 +80,13 @@ public class ExportImportManager {
         try {
             Strategy strategy = ExportImportConfig.getStrategy();
             if (realmName == null) {
-                ServicesLogger.LOGGER.fullModelImport(strategy.toString());
+//                ServicesLogger.LOGGER.fullModelImport(strategy.toString());
                 importProvider.importModel(sessionFactory, strategy);
             } else {
-                ServicesLogger.LOGGER.realmImportRequested(realmName, strategy.toString());
+//                ServicesLogger.LOGGER.realmImportRequested(realmName, strategy.toString());
                 importProvider.importRealm(sessionFactory, realmName, strategy);
             }
-            ServicesLogger.LOGGER.importSuccess();
+//            ServicesLogger.LOGGER.importSuccess();
         } catch (IOException e) {
             throw new RuntimeException("Failed to run import", e);
         }
@@ -95,13 +95,13 @@ public class ExportImportManager {
     public void runExport() {
         try {
             if (realmName == null) {
-                ServicesLogger.LOGGER.fullModelExportRequested();
+//                ServicesLogger.LOGGER.fullModelExportRequested();
                 exportProvider.exportModel(sessionFactory);
             } else {
-                ServicesLogger.LOGGER.realmExportRequested(realmName);
+//                ServicesLogger.LOGGER.realmExportRequested(realmName);
                 exportProvider.exportRealm(sessionFactory, realmName);
             }
-            ServicesLogger.LOGGER.exportSuccess();
+//            ServicesLogger.LOGGER.exportSuccess();
         } catch (IOException e) {
             throw new RuntimeException("Failed to run export");
         }

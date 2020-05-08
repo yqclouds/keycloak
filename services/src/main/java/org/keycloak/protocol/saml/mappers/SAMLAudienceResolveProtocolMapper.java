@@ -16,7 +16,6 @@
  */
 package org.keycloak.protocol.saml.mappers;
 
-import org.jboss.logging.Logger;
 import org.keycloak.dom.saml.v2.assertion.AudienceRestrictionType;
 import org.keycloak.dom.saml.v2.protocol.ResponseType;
 import org.keycloak.models.*;
@@ -24,6 +23,8 @@ import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.saml.SamlProtocol;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
@@ -44,7 +45,7 @@ import java.util.Set;
 public class SAMLAudienceResolveProtocolMapper extends AbstractSAMLProtocolMapper implements SAMLLoginResponseMapper {
 
     public static final String PROVIDER_ID = "saml-audience-resolve-mapper";
-    protected static final Logger logger = Logger.getLogger(SAMLAudienceResolveProtocolMapper.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(SAMLAudienceResolveProtocolMapper.class);
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
 
     @Override
@@ -85,7 +86,7 @@ public class SAMLAudienceResolveProtocolMapper extends AbstractSAMLProtocolMappe
             Set<String> audiences = new HashSet<>();
             // add as audience any SAML clientId with role included (same as OIDC)
             for (RoleModel role : roles) {
-                logger.tracef("Managing role: %s", role.getName());
+                LOG.trace("Managing role: {}", role.getName());
                 if (role.isClientRole()) {
                     ClientModel app = (ClientModel) role.getContainer();
                     // only adding SAML clients that are not this clientId (which is added by default)
@@ -95,13 +96,13 @@ public class SAMLAudienceResolveProtocolMapper extends AbstractSAMLProtocolMappe
                     }
                 }
             }
-            logger.debugf("Calculated audiences to add: %s", audiences);
+            LOG.debug("Calculated audiences to add: {}", audiences);
             // add the audiences
             for (String audience : audiences) {
                 try {
                     aud.addAudience(URI.create(audience));
                 } catch (IllegalArgumentException e) {
-                    logger.warnf(e, "Invalid URI syntax for audience: %s", audience);
+                    LOG.warn("Invalid URI syntax for audience: {}", audience);
                 }
             }
         }

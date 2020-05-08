@@ -16,7 +16,8 @@
  */
 package org.keycloak.utils;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.BadRequestException;
 
@@ -24,7 +25,7 @@ import javax.ws.rs.BadRequestException;
  * @author Stan Silvert
  */
 public class ReservedCharValidator {
-    protected static final Logger logger = Logger.getLogger(ReservedCharValidator.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(ReservedCharValidator.class);
 
     // https://tools.ietf.org/html/rfc3986#section-2.2
     private static final String[] RESERVED_CHARS = {":", "/", "?", "#", "[", "@", "!", "$",
@@ -41,7 +42,7 @@ public class ReservedCharValidator {
             if (str.contains(c)) {
                 String message = "Character '" + c + "' not allowed.";
                 ReservedCharException e = new ReservedCharException(message);
-                logger.warn(message, e);
+                LOG.warn(message, e);
                 throw e;
             }
         }

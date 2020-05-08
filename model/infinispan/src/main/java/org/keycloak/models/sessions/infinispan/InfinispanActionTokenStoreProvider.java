@@ -17,12 +17,13 @@
 package org.keycloak.models.sessions.infinispan;
 
 import org.infinispan.Cache;
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.*;
 import org.keycloak.models.sessions.infinispan.entities.ActionTokenReducedKey;
 import org.keycloak.models.sessions.infinispan.entities.ActionTokenValueEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -33,7 +34,7 @@ import java.util.concurrent.TimeUnit;
  * @author hmlnarik
  */
 public class InfinispanActionTokenStoreProvider implements ActionTokenStoreProvider {
-    private static final Logger LOG = Logger.getLogger(InfinispanActionTokenStoreProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(InfinispanActionTokenStoreProvider.class);
 
     private final Cache<ActionTokenReducedKey, ActionTokenValueEntity> actionKeyCache;
 
@@ -65,7 +66,7 @@ public class InfinispanActionTokenStoreProvider implements ActionTokenStoreProvi
         ActionTokenReducedKey tokenKey = new ActionTokenReducedKey(key.getUserId(), key.getActionId(), key.getActionVerificationNonce());
         ActionTokenValueEntity tokenValue = new ActionTokenValueEntity(notes);
 
-        LOG.debugf("Adding used action token to actionTokens cache: %s", tokenKey.toString());
+        LOG.debug("Adding used action token to actionTokens cache: %s", tokenKey.toString());
 
         this.tx.put(actionKeyCache, tokenKey, tokenValue, key.getExpiration() - Time.currentTime(), TimeUnit.SECONDS);
     }
@@ -80,9 +81,9 @@ public class InfinispanActionTokenStoreProvider implements ActionTokenStoreProvi
 
         ActionTokenValueModel value = this.actionKeyCache.getAdvancedCache().get(key);
         if (value == null) {
-            LOG.debugf("Not found any value in actionTokens cache for key: %s", key.toString());
+            LOG.debug("Not found any value in actionTokens cache for key: %s", key.toString());
         } else {
-            LOG.debugf("Found value in actionTokens cache for key: %s", key.toString());
+            LOG.debug("Found value in actionTokens cache for key: %s", key.toString());
         }
 
         return value;

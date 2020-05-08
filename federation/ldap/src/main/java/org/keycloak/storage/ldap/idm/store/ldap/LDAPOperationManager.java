@@ -17,7 +17,6 @@
 
 package org.keycloak.storage.ldap.idm.store.ldap;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.LDAPConstants;
@@ -26,6 +25,8 @@ import org.keycloak.storage.ldap.LDAPConfig;
 import org.keycloak.storage.ldap.idm.model.LDAPDn;
 import org.keycloak.storage.ldap.idm.query.internal.LDAPQuery;
 import org.keycloak.storage.ldap.mappers.LDAPOperationDecorator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.naming.*;
 import javax.naming.directory.*;
@@ -41,9 +42,9 @@ import java.util.*;
  */
 public class LDAPOperationManager {
 
-    private static final Logger logger = Logger.getLogger(LDAPOperationManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LDAPOperationManager.class);
 
-    private static final Logger perfLogger = Logger.getLogger(LDAPOperationManager.class, "perf");
+    private static final Logger perfLogger = LoggerFactory.getLogger(LDAPOperationManager.class);
 
     private final KeycloakSession session;
     private final LDAPConfig config;
@@ -129,8 +130,8 @@ public class LDAPOperationManager {
 
                 @Override
                 public SearchResult execute(LdapContext context) throws NamingException {
-                    if (logger.isTraceEnabled()) {
-                        logger.tracef("Removing entry with DN [%s]", entryDn);
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("Removing entry with DN [{}]", entryDn);
                     }
                     destroySubcontext(context, entryDn);
                     return null;
@@ -181,9 +182,9 @@ public class LDAPOperationManager {
                                 String failedDn = dn;
                                 if (i < max) {
                                     dn = findNextDNForFallback(newDn, i);
-                                    logger.warnf("Failed to rename DN [%s] to [%s]. Will try to fallback to DN [%s]", oldDn, failedDn, dn);
+                                    LOG.warn("Failed to rename DN [{}] to [{}]. Will try to fallback to DN [{}]", oldDn, failedDn, dn);
                                 } else {
-                                    logger.warnf("Failed all fallbacks for renaming [%s]", oldDn);
+                                    LOG.warn("Failed all fallbacks for renaming [{}]", oldDn);
                                     throw ex;
                                 }
                             }
@@ -253,7 +254,7 @@ public class LDAPOperationManager {
 
             });
         } catch (NamingException e) {
-            logger.errorf(e, "Could not query server using DN [%s] and filter [%s]", baseDN, filter);
+            LOG.error("Could not query server using DN [{}] and filter [{}]", baseDN, filter);
             throw e;
         }
     }
@@ -298,7 +299,7 @@ public class LDAPOperationManager {
 
                         return result;
                     } catch (IOException ioe) {
-                        logger.errorf(ioe, "Could not query server with paginated query using DN [%s], filter [%s]", baseDN, filter);
+                        LOG.error("Could not query server with paginated query using DN [{}], filter [{}]", baseDN, filter);
                         throw new NamingException(ioe.getMessage());
                     }
                 }
@@ -318,7 +319,7 @@ public class LDAPOperationManager {
 
             }, identityQuery.getPaginationContext().getLdapContext(), null);
         } catch (NamingException e) {
-            logger.errorf(e, "Could not query server using DN [%s] and filter [%s]", baseDN, filter);
+            LOG.error("Could not query server using DN [{}] and filter [{}]", baseDN, filter);
             throw e;
         }
     }
@@ -372,8 +373,8 @@ public class LDAPOperationManager {
             filter = "(&(objectClass=*)(" + getUuidAttributeName() + LDAPConstants.EQUAL + id + "))";
         }
 
-        if (logger.isTraceEnabled()) {
-            logger.tracef("Using filter for lookup user by LDAP ID: %s", filter);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Using filter for lookup user by LDAP ID: {}", filter);
         }
 
         return filter;
@@ -495,13 +496,13 @@ public class LDAPOperationManager {
                 }
             }
         } catch (AuthenticationException ae) {
-            if (logger.isDebugEnabled()) {
-                logger.debugf(ae, "Authentication failed for DN [%s]", dn);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Authentication failed for DN [{}]", dn);
             }
 
             throw ae;
         } catch (Exception e) {
-            logger.errorf(e, "Unexpected exception when validating password of DN [%s]", dn);
+            LOG.error("Unexpected exception when validating password of DN [{}]", dn);
             throw new AuthenticationException("Unexpected exception when validating password of user");
         } finally {
             if (tlsResponse != null) {
@@ -523,8 +524,8 @@ public class LDAPOperationManager {
     }
 
     public void modifyAttributesNaming(final String dn, final ModificationItem[] mods, LDAPOperationDecorator decorator) throws NamingException {
-        if (logger.isTraceEnabled()) {
-            logger.tracef("Modifying attributes for entry [%s]: [", dn);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Modifying attributes for entry [{}]: [", dn);
 
             for (ModificationItem item : mods) {
                 Object values;
@@ -540,10 +541,10 @@ public class LDAPOperationManager {
                     values = "********************";
                 }
 
-                logger.tracef("  Op [%s]: %s = %s", item.getModificationOp(), item.getAttribute().getID(), values);
+                LOG.trace("  Op [{}]: {} = {}", item.getModificationOp(), item.getAttribute().getID(), values);
             }
 
-            logger.tracef("]");
+            LOG.trace("]");
         }
 
         execute(new LdapOperation<Void>() {
@@ -575,8 +576,8 @@ public class LDAPOperationManager {
 
     public void createSubContext(final String name, final Attributes attributes) {
         try {
-            if (logger.isTraceEnabled()) {
-                logger.tracef("Creating entry [%s] with attributes: [", name);
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Creating entry [{}] with attributes: [", name);
 
                 NamingEnumeration<? extends Attribute> all = attributes.getAll();
 
@@ -589,10 +590,10 @@ public class LDAPOperationManager {
                         attrVal = "********************";
                     }
 
-                    logger.tracef("  %s = %s", attribute.getID(), attrVal);
+                    LOG.trace("  {} = {}", attribute.getID(), attrVal);
                 }
 
-                logger.tracef("]");
+                LOG.trace("]");
             }
 
             execute(new LdapOperation<Void>() {
@@ -678,9 +679,9 @@ public class LDAPOperationManager {
                 long took = Time.currentTimeMillis() - start;
 
                 if (took > 100) {
-                    perfLogger.debugf("\n%s\ntook: %d ms\n", operation.toString(), took);
+                    perfLogger.debug("\n{}\ntook: {} ms\n", operation.toString(), took);
                 } else if (perfLogger.isTraceEnabled()) {
-                    perfLogger.tracef("\n%s\ntook: %d ms\n", operation.toString(), took);
+                    perfLogger.trace("\n{}\ntook: {} ms\n", operation.toString(), took);
                 }
             }
         }

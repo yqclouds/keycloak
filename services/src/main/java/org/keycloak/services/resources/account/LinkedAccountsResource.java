@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.account;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.events.Details;
@@ -51,7 +51,7 @@ import static org.keycloak.models.Constants.ACCOUNT_CONSOLE_CLIENT_ID;
  * @author Stan Silvert
  */
 public class LinkedAccountsResource {
-    private static final Logger logger = Logger.getLogger(LinkedAccountsResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LinkedAccountsResource.class);
 
     private final KeycloakSession session;
     private final HttpRequest request;
@@ -196,7 +196,7 @@ public class LinkedAccountsResource {
 
         session.users().removeFederatedIdentity(realm, user, providerId);
 
-        logger.debugv("Social provider {0} removed successfully from user {1}", providerId, user.getUsername());
+        LOG.debug("Social provider {} removed successfully from user {}", providerId, user.getUsername());
 
         event.event(EventType.REMOVE_FEDERATED_IDENTITY).client(auth.getClient()).user(auth.getUser())
                 .detail(Details.USERNAME, auth.getUser().getUsername())

@@ -17,7 +17,7 @@
 
 package org.keycloak.exportimport.singlefile;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.Config;
 import org.keycloak.exportimport.ImportProvider;
 import org.keycloak.exportimport.Strategy;
@@ -39,7 +39,7 @@ import java.util.Map;
  */
 public class SingleFileImportProvider implements ImportProvider {
 
-    private static final Logger logger = Logger.getLogger(SingleFileImportProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SingleFileImportProvider.class);
     // Allows to cache representation per provider to avoid parsing them twice
     protected Map<String, RealmRepresentation> realmReps;
     private File file;
@@ -50,7 +50,7 @@ public class SingleFileImportProvider implements ImportProvider {
 
     @Override
     public void importModel(KeycloakSessionFactory factory, final Strategy strategy) throws IOException {
-        logger.infof("Full importing from file %s", this.file.getAbsolutePath());
+        LOG.info("Full importing from file %s", this.file.getAbsolutePath());
         checkRealmReps();
 
         KeycloakModelUtils.runJobInTransaction(factory, new ExportImportSessionTask() {

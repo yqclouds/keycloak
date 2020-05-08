@@ -42,7 +42,7 @@ import java.net.URI;
  */
 public class JBossSAMLAuthnResponseFactory {
 
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
 
     /**
      * Create a StatusType given the status code uri
@@ -104,7 +104,7 @@ public class JBossSAMLAuthnResponseFactory {
         // Status
         String statusCode = issuerInfo.getStatusCode();
         if (statusCode == null)
-            throw logger.issuerInfoMissingStatusCodeError();
+            throw LOG.issuerInfoMissingStatusCodeError();
 
         responseType.setStatus(createStatusType(statusCode));
 
@@ -131,7 +131,7 @@ public class JBossSAMLAuthnResponseFactory {
         // Status
         String statusCode = issuerInfo.getStatusCode();
         if (statusCode == null)
-            throw logger.issuerInfoMissingStatusCodeError();
+            throw LOG.issuerInfoMissingStatusCodeError();
 
         responseType.setStatus(createStatusType(statusCode));
 

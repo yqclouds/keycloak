@@ -18,7 +18,6 @@
 package org.keycloak.services;
 
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.*;
 import org.keycloak.email.EmailException;
 import org.keycloak.events.EventListenerProvider;
@@ -39,7 +38,7 @@ import static org.jboss.logging.Logger.Level.*;
 @MessageLogger(projectCode = "KC-SERVICES", length = 4)
 public interface ServicesLogger extends BasicLogger {
 
-    ServicesLogger LOGGER = Logger.getMessageLogger(ServicesLogger.class, "org.keycloak.services");
+    // ServicesLogger LOGGER = Logger.getMessageLogger(ServicesLogger.class, "org.keycloak.services");
 
     @LogMessage(level = INFO)
     @Message(id = 1, value = "Loading config from %s")

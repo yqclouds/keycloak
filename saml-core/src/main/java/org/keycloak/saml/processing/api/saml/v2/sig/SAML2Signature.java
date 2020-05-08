@@ -47,7 +47,7 @@ import java.security.cert.X509Certificate;
  */
 public class SAML2Signature {
 
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
 
     private String signatureMethod = SignatureMethod.RSA_SHA1;
 
@@ -178,7 +178,7 @@ public class SAML2Signature {
         try {
             sign(samlDocument, id, keyName, keypair, canonicalizationMethodType);
         } catch (ParserConfigurationException | GeneralSecurityException | MarshalException | XMLSignatureException e) {
-            throw new ProcessingException(logger.signatureError(e));
+            throw new ProcessingException(LOG.signatureError(e));
         }
     }
 
@@ -195,7 +195,7 @@ public class SAML2Signature {
             configureIdAttribute(signedDocument);
             return XMLSignatureUtil.validate(signedDocument, keyLocator);
         } catch (MarshalException | XMLSignatureException me) {
-            throw new ProcessingException(logger.signatureError(me));
+            throw new ProcessingException(LOG.signatureError(me));
         }
     }
 

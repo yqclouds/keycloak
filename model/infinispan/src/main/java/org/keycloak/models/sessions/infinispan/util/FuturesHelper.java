@@ -17,7 +17,8 @@
 
 package org.keycloak.models.sessions.infinispan.util;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -31,7 +32,7 @@ import java.util.concurrent.Future;
  */
 public class FuturesHelper {
 
-    private static final Logger log = Logger.getLogger(FuturesHelper.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FuturesHelper.class);
 
     private final Queue<Future> futures = new LinkedList<>();
 
@@ -46,7 +47,7 @@ public class FuturesHelper {
             try {
                 future.get();
             } catch (ExecutionException | InterruptedException ee) {
-                log.error("Exception when waiting for future", ee); // TODO Possibly some good mechanism to avoid swamp log with many same exceptions?
+                LOG.error("Exception when waiting for future", ee); // TODO Possibly some good mechanism to avoid swamp log with many same exceptions?
             }
         }
     }

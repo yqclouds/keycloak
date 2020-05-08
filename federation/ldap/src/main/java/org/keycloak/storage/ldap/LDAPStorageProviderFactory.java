@@ -17,7 +17,6 @@
 
 package org.keycloak.storage.ldap;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.constants.KerberosConstants;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
@@ -45,6 +44,8 @@ import org.keycloak.storage.ldap.mappers.msad.MSADUserAccountControlStorageMappe
 import org.keycloak.storage.user.ImportSynchronization;
 import org.keycloak.storage.user.SynchronizationResult;
 import org.keycloak.utils.CredentialHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -62,11 +63,10 @@ import java.util.Map;
 @Component("LDAPStorageProviderFactory")
 @ProviderFactory(id = LDAPConstants.LDAP_PROVIDER, providerClasses = UserStorageProvider.class)
 public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LDAPStorageProvider>, ImportSynchronization {
-
+    private static final Logger LOG = LoggerFactory.getLogger(LDAPStorageProviderFactory.class);
 
     public static final String PROVIDER_NAME = LDAPConstants.LDAP_PROVIDER;
     protected static final List<ProviderConfigProperty> configProperties;
-    private static final Logger logger = Logger.getLogger(LDAPStorageProviderFactory.class);
 
     static {
         configProperties = getConfigProps(null);
@@ -434,14 +434,14 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
     public SynchronizationResult sync(KeycloakSessionFactory sessionFactory, String realmId, UserStorageProviderModel model) {
         syncMappers(sessionFactory, realmId, model);
 
-        logger.infof("Sync all users from LDAP to local store: realm: %s, federation provider: %s", realmId, model.getName());
+        LOG.info("Sync all users from LDAP to local store: realm: {}, federation provider: {}", realmId, model.getName());
 
         try (LDAPQuery userQuery = createQuery(sessionFactory, realmId, model)) {
             SynchronizationResult syncResult = syncImpl(sessionFactory, userQuery, realmId, model);
 
             // TODO: Remove all existing keycloak users, which have federation links, but are not in LDAP. Perhaps don't check users, which were just added or updated during this sync?
 
-            logger.infof("Sync all users finished: %s", syncResult.getStatus());
+            LOG.info("Sync all users finished: {}", syncResult.getStatus());
             return syncResult;
         }
     }
@@ -450,7 +450,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
     public SynchronizationResult syncSince(Date lastSync, KeycloakSessionFactory sessionFactory, String realmId, UserStorageProviderModel model) {
         syncMappers(sessionFactory, realmId, model);
 
-        logger.infof("Sync changed users from LDAP to local store: realm: %s, federation provider: %s, last sync time: " + lastSync, realmId, model.getName());
+        LOG.info("Sync changed users from LDAP to local store: realm: {}, federation provider: {}, last sync time: " + lastSync, realmId, model.getName());
 
         // Sync newly created and updated users
         LDAPQueryConditionsBuilder conditionsBuilder = new LDAPQueryConditionsBuilder();
@@ -462,7 +462,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
             userQuery.addWhereCondition(orCondition);
             SynchronizationResult result = syncImpl(sessionFactory, userQuery, realmId, model);
 
-            logger.infof("Sync changed users finished: %s", result.getStatus());
+            LOG.info("Sync changed users finished: {}", result.getStatus());
             return result;
         }
     }
@@ -480,7 +480,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
                     LDAPStorageMapper ldapMapper = session.getProvider(LDAPStorageMapper.class, mapperModel);
                     SynchronizationResult syncResult = ldapMapper.syncDataFromFederationProviderToKeycloak(realm);
                     if (syncResult.getAdded() > 0 || syncResult.getUpdated() > 0 || syncResult.getRemoved() > 0 || syncResult.getFailed() > 0) {
-                        logger.infof("Sync of federation mapper '%s' finished. Status: %s", mapperModel.getName(), syncResult.toString());
+                        LOG.info("Sync of federation mapper '{}' finished. Status: {}", mapperModel.getName(), syncResult.toString());
                     }
                 }
             }
@@ -591,10 +591,10 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
                                 if (userCache != null) {
                                     userCache.evict(currentRealm, currentUser);
                                 }
-                                logger.debugf("Updated user from LDAP: %s", currentUser.getUsername());
+                                LOG.debug("Updated user from LDAP: {}", currentUser.getUsername());
                                 syncResult.increaseUpdated();
                             } else {
-                                logger.warnf("User '%s' is not updated during sync as he already exists in Keycloak database but is not linked to federation provider '%s'", username, fedModel.getName());
+                                LOG.warn("User '{}' is not updated during sync as he already exists in Keycloak database but is not linked to federation provider '{}'", username, fedModel.getName());
                                 syncResult.increaseFailed();
                             }
                         }
@@ -602,7 +602,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
 
                 });
             } catch (ModelException me) {
-                logger.error("Failed during import user from LDAP", me);
+                LOG.error("Failed during import user from LDAP", me);
                 syncResult.increaseFailed();
 
                 // Remove user if we already added him during this transaction

@@ -22,12 +22,13 @@ import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.commons.api.BasicCache;
-import org.jboss.logging.Logger;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.CodeToTokenStoreProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.sessions.infinispan.entities.ActionTokenValueEntity;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -40,7 +41,7 @@ import java.util.function.Supplier;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class InfinispanCodeToTokenStoreProvider implements CodeToTokenStoreProvider {
-    public static final Logger LOG = Logger.getLogger(InfinispanCodeToTokenStoreProvider.class);
+    public static final Logger LOG = LoggerFactory.getLogger(InfinispanCodeToTokenStoreProvider.class);
 
     private Supplier<BasicCache<UUID, ActionTokenValueEntity>> codeCache;
     private final KeycloakSession session;
@@ -58,13 +59,13 @@ public class InfinispanCodeToTokenStoreProvider implements CodeToTokenStoreProvi
         RemoteCache remoteCache = InfinispanUtil.getRemoteCache(cache);
 
         if (remoteCache != null) {
-            LOG.debugf("Having remote stores. Using remote cache '%s' for single-use cache of code", remoteCache.getName());
+            LOG.debug("Having remote stores. Using remote cache '{}' for single-use cache of code", remoteCache.getName());
             this.codeCache = () -> {
                 // Doing this way as flag is per invocation
                 return remoteCache.withFlags(Flag.FORCE_RETURN_VALUE);
             };
         } else {
-            LOG.debugf("Not having remote stores. Using normal cache '%s' for single-use cache of code", cache.getName());
+            LOG.debug("Not having remote stores. Using normal cache '{}' for single-use cache of code", cache.getName());
             this.codeCache = () -> cache;
         }
     }
@@ -79,7 +80,7 @@ public class InfinispanCodeToTokenStoreProvider implements CodeToTokenStoreProvi
         } catch (HotRodClientException re) {
             // No need to retry. The hotrod (remoteCache) has some retries in itself in case of some random network error happened.
             if (LOG.isDebugEnabled()) {
-                LOG.debugf(re, "Failed when adding code %s", codeId);
+                LOG.debug("Failed when adding code {}", codeId);
             }
 
             throw re;
@@ -97,7 +98,7 @@ public class InfinispanCodeToTokenStoreProvider implements CodeToTokenStoreProvi
             // No need to retry. The hotrod (remoteCache) has some retries in itself in case of some random network error happened.
             // In case of lock conflict, we don't want to retry anyway as there was likely an attempt to remove the code from different place.
             if (LOG.isDebugEnabled()) {
-                LOG.debugf(re, "Failed when removing code %s", codeId);
+                LOG.debug("Failed when removing code {}", codeId);
             }
 
             return null;

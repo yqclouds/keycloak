@@ -17,7 +17,7 @@
 
 package org.keycloak.services.scheduled;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.cluster.ExecutionResult;
 import org.keycloak.models.KeycloakSession;
@@ -34,7 +34,7 @@ import java.util.concurrent.Callable;
  */
 public class ClusterAwareScheduledTaskRunner extends ScheduledTaskRunner {
 
-    private static final Logger logger = Logger.getLogger(ClusterAwareScheduledTaskRunner.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClusterAwareScheduledTaskRunner.class);
 
     private final int intervalSecs;
 
@@ -62,9 +62,9 @@ public class ClusterAwareScheduledTaskRunner extends ScheduledTaskRunner {
         session.getTransactionManager().commit();
 
         if (result.isExecuted()) {
-            logger.debugf("Executed scheduled task %s", taskKey);
+            LOG.debug("Executed scheduled task {}", taskKey);
         } else {
-            logger.debugf("Skipped execution of task %s as other cluster node is executing it", taskKey);
+            LOG.debug("Skipped execution of task {} as other cluster node is executing it", taskKey);
         }
     }
 

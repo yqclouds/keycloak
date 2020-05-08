@@ -16,7 +16,7 @@
  */
 package org.keycloak.transaction;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 
@@ -32,7 +32,7 @@ import javax.transaction.TransactionManager;
 @Component("JBossJtaTransactionManagerLookup")
 @ProviderFactory(id = "jboss", providerClasses = JtaTransactionManagerLookup.class)
 public class JBossJtaTransactionManagerLookup implements JtaTransactionManagerLookup {
-    private static final Logger logger = Logger.getLogger(JBossJtaTransactionManagerLookup.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JBossJtaTransactionManagerLookup.class);
     private TransactionManager tm;
 
     @Override
@@ -46,10 +46,10 @@ public class JBossJtaTransactionManagerLookup implements JtaTransactionManagerLo
             InitialContext ctx = new InitialContext();
             tm = (TransactionManager) ctx.lookup("java:jboss/TransactionManager");
             if (tm == null) {
-                logger.debug("Could not locate TransactionManager");
+                LOG.debug("Could not locate TransactionManager");
             }
         } catch (NamingException e) {
-            logger.debug("Could not load TransactionManager", e);
+            LOG.debug("Could not load TransactionManager", e);
         }
     }
 

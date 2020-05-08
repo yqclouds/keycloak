@@ -17,7 +17,7 @@
 
 package org.keycloak.authentication.authenticators.broker;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.authenticators.broker.util.ExistingUserInfo;
 import org.keycloak.authentication.authenticators.broker.util.SerializedBrokeredIdentityContext;
@@ -40,7 +40,7 @@ import java.util.Map;
  */
 public class IdpCreateUserIfUniqueAuthenticator extends AbstractIdpAuthenticator {
 
-    private static Logger logger = Logger.getLogger(IdpCreateUserIfUniqueAuthenticator.class);
+    private static Logger LOG = LoggerFactory.getLogger(IdpCreateUserIfUniqueAuthenticator.class);
 
 
     @Override
@@ -60,7 +60,7 @@ public class IdpCreateUserIfUniqueAuthenticator extends AbstractIdpAuthenticator
 
         String username = getUsername(context, serializedCtx, brokerContext);
         if (username == null) {
-            ServicesLogger.LOGGER.resetFlow(realm.isRegistrationEmailAsUsername() ? "Email" : "Username");
+            // ServicesLogger.LOGGER.resetFlow(realm.isRegistrationEmailAsUsername() ? "Email" : "Username");
             context.getAuthenticationSession().setAuthNote(ENFORCE_UPDATE_PROFILE, "true");
             context.resetFlow();
             return;
@@ -69,7 +69,7 @@ public class IdpCreateUserIfUniqueAuthenticator extends AbstractIdpAuthenticator
         ExistingUserInfo duplication = checkExistingUser(context, username, serializedCtx, brokerContext);
 
         if (duplication == null) {
-            logger.debugf("No duplication detected. Creating account for user '%s' and linking with identity provider '%s' .",
+            LOG.debug("No duplication detected. Creating account for user '{}' and linking with identity provider '{}' .",
                     username, brokerContext.getIdpConfig().getAlias());
 
             UserModel federatedUser = session.users().addUser(realm, username);
@@ -84,7 +84,7 @@ public class IdpCreateUserIfUniqueAuthenticator extends AbstractIdpAuthenticator
 
             AuthenticatorConfigModel config = context.getAuthenticatorConfig();
             if (config != null && Boolean.parseBoolean(config.getConfig().get(IdpCreateUserIfUniqueAuthenticatorFactory.REQUIRE_PASSWORD_UPDATE_AFTER_REGISTRATION))) {
-                logger.debugf("User '%s' required to update password", federatedUser.getUsername());
+                LOG.debug("User '{}' required to update password", federatedUser.getUsername());
                 federatedUser.addRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD);
             }
 
@@ -94,7 +94,7 @@ public class IdpCreateUserIfUniqueAuthenticator extends AbstractIdpAuthenticator
             context.getAuthenticationSession().setAuthNote(BROKER_REGISTERED_NEW_USER, "true");
             context.success();
         } else {
-            logger.debugf("Duplication detected. There is already existing user with %s '%s' .",
+            LOG.debug("Duplication detected. There is already existing user with {} '{}' .",
                     duplication.getDuplicateAttributeName(), duplication.getDuplicateAttributeValue());
 
             // Set duplicated user, so next authenticators can deal with it

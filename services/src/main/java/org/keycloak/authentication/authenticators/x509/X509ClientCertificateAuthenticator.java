@@ -57,7 +57,7 @@ public class X509ClientCertificateAuthenticator extends AbstractX509ClientCertif
             if (certs == null || certs.length == 0) {
                 // No x509 client cert, fall through and
                 // continue processing the rest of the authentication flow
-                logger.debug("[X509ClientCertificateAuthenticator:authenticate] x509 client certificate is not available for mutual SSL.");
+                LOG.debug("[X509ClientCertificateAuthenticator:authenticate] x509 client certificate is not available for mutual SSL.");
                 context.attempted();
                 return;
             }
@@ -70,7 +70,7 @@ public class X509ClientCertificateAuthenticator extends AbstractX509ClientCertif
                 config = new X509AuthenticatorConfigModel(context.getAuthenticatorConfig());
             }
             if (config == null) {
-                logger.warn("[X509ClientCertificateAuthenticator:authenticate] x509 Client Certificate Authentication configuration is not available.");
+                LOG.warn("[X509ClientCertificateAuthenticator:authenticate] x509 Client Certificate Authentication configuration is not available.");
                 context.challenge(createInfoResponse(context, "X509 client authentication has not been configured yet"));
                 context.attempted();
                 return;
@@ -85,7 +85,7 @@ public class X509ClientCertificateAuthenticator extends AbstractX509ClientCertif
                         .validateExtendedKeyUsage()
                         .validateTimestamps(config.isCertValidationEnabled());
             } catch (Exception e) {
-                logger.error(e.getMessage(), e);
+                LOG.error(e.getMessage(), e);
                 // TODO use specific locale to load error messages
                 String errorMessage = "Certificate validation's failed.";
                 // TODO is calling form().setErrors enough to show errors on login screen?
@@ -98,7 +98,7 @@ public class X509ClientCertificateAuthenticator extends AbstractX509ClientCertif
             Object userIdentity = getUserIdentityExtractor(config).extractUserIdentity(certs);
             if (userIdentity == null) {
                 context.getEvent().error(Errors.INVALID_USER_CREDENTIALS);
-                logger.warnf("[X509ClientCertificateAuthenticator:authenticate] Unable to extract user identity from certificate.");
+                LOG.warn("[X509ClientCertificateAuthenticator:authenticate] Unable to extract user identity from certificate.");
                 // TODO use specific locale to load error messages
                 String errorMessage = "Unable to extract user identity from specified certificate";
                 // TODO is calling form().setErrors enough to show errors on login screen?
@@ -113,7 +113,7 @@ public class X509ClientCertificateAuthenticator extends AbstractX509ClientCertif
                 context.getAuthenticationSession().setAuthNote(AbstractUsernameFormAuthenticator.ATTEMPTED_USERNAME, userIdentity.toString());
                 user = getUserIdentityToModelMapper(config).find(context, userIdentity);
             } catch (ModelDuplicateException e) {
-                logger.modelDuplicateException(e);
+//                LOG.modelDuplicateException(e);
                 String errorMessage = "X509 certificate authentication's failed.";
                 // TODO is calling form().setErrors enough to show errors on login screen?
                 context.challenge(createErrorResponse(context, certs[0].getSubjectDN().getName(),
@@ -172,7 +172,7 @@ public class X509ClientCertificateAuthenticator extends AbstractX509ClientCertif
                 context.success();
             }
         } catch (Exception e) {
-            logger.errorf("[X509ClientCertificateAuthenticator:authenticate] Exception: %s", e.getMessage());
+            LOG.error("[X509ClientCertificateAuthenticator:authenticate] Exception: %s", e.getMessage());
             context.attempted();
         }
     }
@@ -228,7 +228,7 @@ public class X509ClientCertificateAuthenticator extends AbstractX509ClientCertif
         Enumeration<String> attributeNames = context.getHttpRequest().getAttributeNames();
         while (attributeNames.hasMoreElements()) {
             String a = attributeNames.nextElement();
-            logger.tracef("[X509ClientCertificateAuthenticator:dumpContainerAttributes] \"%s\"", a);
+            LOG.trace("[X509ClientCertificateAuthenticator:dumpContainerAttributes] \"{}\"", a);
         }
     }
 

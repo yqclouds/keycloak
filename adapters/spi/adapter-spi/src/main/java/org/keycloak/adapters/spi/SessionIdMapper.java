@@ -26,6 +26,7 @@ import java.util.Set;
 public interface SessionIdMapper {
     /**
      * Returns {@code true} if the mapper contains mapping for the given HTTP session ID.
+     *
      * @param id
      * @return
      */
@@ -38,6 +39,7 @@ public interface SessionIdMapper {
 
     /**
      * Returns set of HTTP session IDs for the given principal.
+     *
      * @param principal Principal
      * @return
      */
@@ -45,6 +47,7 @@ public interface SessionIdMapper {
 
     /**
      * Returns HTTP session ID from the given user session ID.
+     *
      * @param sso User session ID
      * @return
      */
@@ -52,14 +55,16 @@ public interface SessionIdMapper {
 
     /**
      * Establishes mapping between user session ID, principal and HTTP session ID.
-     * @param sso User session ID
+     *
+     * @param sso       User session ID
      * @param principal Principal
-     * @param session HTTP session ID
+     * @param session   HTTP session ID
      */
     void map(String sso, String principal, String session);
 
     /**
      * Removes mappings for the given HTTP session ID.
+     *
      * @param session HTTP session ID.
      */
     void removeSession(String session);

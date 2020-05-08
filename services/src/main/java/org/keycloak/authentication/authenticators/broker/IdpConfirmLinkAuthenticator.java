@@ -45,7 +45,7 @@ public class IdpConfirmLinkAuthenticator extends AbstractIdpAuthenticator {
 
         String existingUserInfo = authSession.getAuthNote(EXISTING_USER_INFO);
         if (existingUserInfo == null) {
-            ServicesLogger.LOGGER.noDuplicationDetected();
+//            ServicesLogger.LOGGER.noDuplicationDetected();
             context.attempted();
             return;
         }

@@ -17,7 +17,8 @@
 
 package org.keycloak.theme;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -35,7 +36,7 @@ public class PropertiesUtil {
     public static final Pattern DETECT_ENCODING_PATTERN = Pattern.compile("^#\\s*encoding:\\s*([\\w.:-]+)",
             Pattern.CASE_INSENSITIVE);
     public static final Charset DEFAULT_ENCODING = Charset.forName("ISO-8859-1");
-    private static final Logger logger = Logger.getLogger(PropertiesUtil.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PropertiesUtil.class);
 
     /**
      * <p>
@@ -60,7 +61,7 @@ public class PropertiesUtil {
                     if (Charset.isSupported(encoding)) {
                         return Charset.forName(encoding);
                     } else {
-                        logger.warnv("Unsupported encoding: {0}", encoding);
+                        LOG.warn("Unsupported encoding: {}", encoding);
                     }
                 }
             }

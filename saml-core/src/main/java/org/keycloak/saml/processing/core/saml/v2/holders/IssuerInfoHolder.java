@@ -31,7 +31,7 @@ import org.keycloak.saml.common.constants.JBossSAMLURIConstants;
  */
 public class IssuerInfoHolder {
 
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
 
     private NameIDType issuer;
 
@@ -41,13 +41,13 @@ public class IssuerInfoHolder {
 
     public IssuerInfoHolder(NameIDType issuer) {
         if (issuer == null)
-            throw logger.nullArgumentError("issuer");
+            throw LOG.nullArgumentError("issuer");
         this.issuer = issuer;
     }
 
     public IssuerInfoHolder(String issuerAsString) {
         if (issuerAsString == null)
-            throw logger.nullArgumentError("issuerAsString");
+            throw LOG.nullArgumentError("issuerAsString");
         issuer = new NameIDType();
         issuer.setValue(issuerAsString);
     }

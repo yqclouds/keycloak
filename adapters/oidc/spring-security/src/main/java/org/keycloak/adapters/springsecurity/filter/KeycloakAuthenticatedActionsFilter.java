@@ -16,22 +16,9 @@
  */
 package org.keycloak.adapters.springsecurity.filter;
 
-import java.io.IOException;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.keycloak.KeycloakPrincipal;
 import org.keycloak.KeycloakSecurityContext;
-import org.keycloak.adapters.AdapterDeploymentContext;
-import org.keycloak.adapters.AuthenticatedActionsHandler;
-import org.keycloak.adapters.KeycloakDeployment;
-import org.keycloak.adapters.OIDCHttpFacade;
-import org.keycloak.adapters.RefreshableKeycloakSecurityContext;
+import org.keycloak.adapters.*;
 import org.keycloak.adapters.spi.HttpFacade;
 import org.keycloak.adapters.springsecurity.facade.SimpleHttpFacade;
 import org.springframework.beans.BeansException;
@@ -40,6 +27,14 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>

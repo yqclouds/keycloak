@@ -17,7 +17,6 @@
 
 package org.keycloak.storage.ldap.mappers.membership.group;
 
-import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
@@ -34,6 +33,8 @@ import org.keycloak.storage.ldap.idm.query.internal.LDAPQueryConditionsBuilder;
 import org.keycloak.storage.ldap.mappers.AbstractLDAPStorageMapper;
 import org.keycloak.storage.ldap.mappers.membership.*;
 import org.keycloak.storage.user.SynchronizationResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Function;
@@ -43,8 +44,7 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements CommonLDAPGroupMapper {
-
-    private static final Logger logger = Logger.getLogger(GroupLDAPStorageMapper.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GroupLDAPStorageMapper.class);
 
     private final GroupMapperConfig config;
     private final GroupLDAPStorageMapperFactory factory;
@@ -110,7 +110,7 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
         LDAPObject ldapGroup = LDAPUtils.createLDAPGroup(ldapProvider, groupName, config.getGroupNameLdapAttribute(), config.getGroupObjectClasses(ldapProvider),
                 config.getGroupsDn(), additionalAttributes, config.getMembershipLdapAttribute());
 
-        logger.debugf("Creating group [%s] to LDAP with DN [%s]", groupName, ldapGroup.getDn().toString());
+        LOG.debug("Creating group [{}] to LDAP with DN [{}]", groupName, ldapGroup.getDn().toString());
         return ldapGroup;
     }
 
@@ -147,7 +147,7 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
 
         };
 
-        logger.debugf("Syncing groups from LDAP into Keycloak DB. Mapper is [%s], LDAP provider is [%s]", mapperModel.getName(), ldapProvider.getModel().getName());
+        LOG.debug("Syncing groups from LDAP into Keycloak DB. Mapper is [{}], LDAP provider is [{}]", mapperModel.getName(), ldapProvider.getModel().getName());
 
         // Get all LDAP groups
         List<LDAPObject> ldapGroups = getAllLDAPGroups(config.isPreserveGroupsInheritance());
@@ -187,7 +187,7 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
             });
 
         } catch (ModelException me) {
-            logger.error(String.format("Failed to update attributes of LDAP group %s: ", groupName), me);
+            LOG.error(String.format("Failed to update attributes of LDAP group {}: ", groupName), me);
             syncResult.increaseFailed();
         }
     }
@@ -206,7 +206,7 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
                 visitedGroupIds.add(kcGroup.getId());
             });
         } catch (ModelException me) {
-            logger.error(String.format("Failed to sync group %s from LDAP: ", groupName), me);
+            LOG.error(String.format("Failed to sync group {} from LDAP: ", groupName), me);
             syncResult.increaseFailed();
         }
     }
@@ -301,16 +301,16 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
         }
 
         if (kcGroup != null) {
-            logger.debugf("Updated Keycloak group '%s' from LDAP", kcGroup.getName());
+            LOG.debug("Updated Keycloak group '{}' from LDAP", kcGroup.getName());
             updateAttributesOfKCGroup(kcGroup, ldapGroups.get(kcGroup.getName()));
             syncResult.increaseUpdated();
         } else {
             if (kcParent == null) {
                 kcGroup = realm.createGroup(groupTreeEntry.getGroupName());
-                logger.debugf("Imported top-level group '%s' from LDAP", kcGroup.getName());
+                LOG.debug("Imported top-level group '{}' from LDAP", kcGroup.getName());
             } else {
                 kcGroup = realm.createGroup(groupTreeEntry.getGroupName(), kcParent);
-                logger.debugf("Imported group '%s' from LDAP as child of group '%s'", kcGroup.getName(), kcParent.getName());
+                LOG.debug("Imported group '{}' from LDAP as child of group '{}'", kcGroup.getName(), kcParent.getName());
             }
 
             updateAttributesOfKCGroup(kcGroup, ldapGroups.get(kcGroup.getName()));
@@ -329,7 +329,7 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
         List<GroupModel> allGroups = realm.getGroups();
         for (GroupModel kcGroup : allGroups) {
             if (!visitedGroupIds.contains(kcGroup.getId())) {
-                logger.debugf("Removing Keycloak group '%s', which doesn't exist in LDAP", kcGroup.getName());
+                LOG.debug("Removing Keycloak group '{}', which doesn't exist in LDAP", kcGroup.getName());
                 realm.removeGroup(kcGroup);
                 syncResult.increaseRemoved();
             }
@@ -393,7 +393,7 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
             // Could theoretically happen on some LDAP servers if 'memberof' style is used and 'memberof' attribute of user references non-existing group
             if (kcGroup == null) {
                 String groupName = ldapGroup.getAttributeAsString(config.getGroupNameLdapAttribute());
-                logger.warnf("User '%s' is member of group '%s', which doesn't exists in LDAP", user.getUsername(), groupName);
+                LOG.warn("User '{}' is member of group '{}', which doesn't exists in LDAP", user.getUsername(), groupName);
             }
         }
 
@@ -421,11 +421,11 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
         };
 
         if (config.getMode() != LDAPGroupMapperMode.LDAP_ONLY) {
-            logger.warnf("Ignored sync for federation mapper '%s' as it's mode is '%s'", mapperModel.getName(), config.getMode().toString());
+            LOG.warn("Ignored sync for federation mapper '{}' as it's mode is '{}'", mapperModel.getName(), config.getMode().toString());
             return syncResult;
         }
 
-        logger.debugf("Syncing groups from Keycloak into LDAP. Mapper is [%s], LDAP provider is [%s]", mapperModel.getName(), ldapProvider.getModel().getName());
+        LOG.debug("Syncing groups from Keycloak into LDAP. Mapper is [{}], LDAP provider is [{}]", mapperModel.getName(), ldapProvider.getModel().getName());
 
         // Query existing LDAP groups
 
@@ -584,7 +584,7 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
             if (config.isPreserveGroupsInheritance()) {
                 GroupModel highestGroupToSync = getHighestPredecessorNotExistentInLdap(kcGroup);
 
-                logger.debugf("Will sync group '%s' and it's subgroups from DB to LDAP", highestGroupToSync.getName());
+                LOG.debug("Will sync group '{}' and it's subgroups from DB to LDAP", highestGroupToSync.getName());
 
                 Map<String, LDAPObject> syncedLDAPGroups = new HashMap<>();
                 processKeycloakGroupSyncToLDAP(highestGroupToSync, syncedLDAPGroups, new HashSet<>(), new SynchronizationResult());
@@ -599,7 +599,7 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
                 }
             } else {
                 // No care about group inheritance. Let's just sync current group
-                logger.debugf("Will sync group '%s' from DB to LDAP", groupName);
+                LOG.debug("Will sync group '{}' from DB to LDAP", groupName);
                 processKeycloakGroupSyncToLDAP(kcGroup, new HashMap<>(), new HashSet<>(), new SynchronizationResult());
                 ldapGroup = loadLDAPGroupByName(groupName);
             }
@@ -660,7 +660,7 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
 
                 GroupModel kcGroup = findKcGroupOrSyncFromLDAP(realm, ldapGroup, user);
                 if (kcGroup != null) {
-                    logger.debugf("User '%s' joins group '%s' during import from LDAP", user.getUsername(), kcGroup.getName());
+                    LOG.debug("User '{}' joins group '{}' during import from LDAP", user.getUsername(), kcGroup.getName());
                     user.joinGroup(kcGroup);
                 }
             }

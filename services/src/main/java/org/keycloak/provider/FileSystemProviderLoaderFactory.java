@@ -16,7 +16,8 @@
  */
 package org.keycloak.provider;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -30,7 +31,7 @@ import java.util.List;
  */
 public class FileSystemProviderLoaderFactory implements ProviderLoaderFactory {
 
-    private static final Logger logger = Logger.getLogger(FileSystemProviderLoaderFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FileSystemProviderLoaderFactory.class);
 
     private static URLClassLoader createClassLoader(ClassLoader parent, String... files) {
         try {
@@ -49,7 +50,7 @@ public class FileSystemProviderLoaderFactory implements ProviderLoaderFactory {
                 }
             }
 
-            logger.debug("Loading providers from " + urls.toString());
+            LOG.debug("Loading providers from " + urls.toString());
 
             return new URLClassLoader(urls.toArray(new URL[urls.size()]), parent);
         } catch (Exception e) {

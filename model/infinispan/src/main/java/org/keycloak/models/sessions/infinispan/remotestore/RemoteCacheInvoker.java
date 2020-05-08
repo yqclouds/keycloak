@@ -21,7 +21,6 @@ import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.VersionedValue;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.Retry;
 import org.keycloak.connections.infinispan.TopologyInfo;
 import org.keycloak.models.KeycloakSession;
@@ -30,6 +29,8 @@ import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.changes.SessionUpdateTask;
 import org.keycloak.models.sessions.infinispan.entities.SessionEntity;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collections;
@@ -43,7 +44,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class RemoteCacheInvoker {
 
-    public static final Logger logger = Logger.getLogger(RemoteCacheInvoker.class);
+    public static final Logger LOG = LoggerFactory.getLogger(RemoteCacheInvoker.class);
 
     private final Map<String, RemoteCacheContext> remoteCaches = new HashMap<>();
 
@@ -72,8 +73,8 @@ public class RemoteCacheInvoker {
         SessionUpdateTask.CrossDCMessageStatus status = task.getCrossDCMessageStatus(sessionWrapper);
 
         if (status == SessionUpdateTask.CrossDCMessageStatus.NOT_NEEDED) {
-            if (logger.isTraceEnabled()) {
-                logger.tracef("Skip writing to remoteCache for entity '%s' of cache '%s' and operation '%s'", key, cacheName, operation);
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Skip writing to remoteCache for entity '{}' of cache '{}' and operation '{}'", key, cacheName, operation);
             }
             return;
         }
@@ -83,8 +84,8 @@ public class RemoteCacheInvoker {
         // Increase the timeout to ensure that entry won't expire on remoteCache in case that write of some entities to remoteCache is postponed (eg. userSession.lastSessionRefresh)
         final long maxIdleTimeMs = loadedMaxIdleTimeMs + 1800000;
 
-        if (logger.isTraceEnabled()) {
-            logger.tracef("Running task '%s' on remote cache '%s' . Key is '%s'", operation, cacheName, key);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Running task '{}' on remote cache '{}' . Key is '{}'", operation, cacheName, key);
         }
 
         TopologyInfo topology = infinispanUtil.getTopologyInfo(kcSession);
@@ -94,8 +95,8 @@ public class RemoteCacheInvoker {
             try {
                 runOnRemoteCache(topology, context.remoteCache, maxIdleTimeMs, key, task, sessionWrapper);
             } catch (HotRodClientException re) {
-                if (logger.isDebugEnabled()) {
-                    logger.debugf(re, "Failed running task '%s' on remote cache '%s' . Key: '%s', iteration '%s'. Will try to retry the task",
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Failed running task '{}' on remote cache '{}' . Key: '{}', iteration '{}'. Will try to retry the task",
                             operation, cacheName, key, iteration);
                 }
 
@@ -123,7 +124,7 @@ public class RemoteCacheInvoker {
                         .withFlags(Flag.FORCE_RETURN_VALUE)
                         .putIfAbsent(key, sessionWrapper.forTransport(), -1, TimeUnit.MILLISECONDS, maxIdleMs, TimeUnit.MILLISECONDS);
                 if (existing != null) {
-                    logger.debugf("Existing entity in remote cache for key: %s . Will update it", key);
+                    LOG.debug("Existing entity in remote cache for key: {} . Will update it", key);
 
                     replace(topology, remoteCache, task.getLifespanMs(), maxIdleMs, key, task);
                 }
@@ -145,7 +146,7 @@ public class RemoteCacheInvoker {
 
             VersionedValue<SessionEntityWrapper<V>> versioned = remoteCache.getWithMetadata(key);
             if (versioned == null) {
-                logger.warnf("Not found entity to replace for key '%s'", key);
+                LOG.warn("Not found entity to replace for key '{}'", key);
                 return;
             }
 
@@ -155,24 +156,24 @@ public class RemoteCacheInvoker {
             // Run task on the remote session
             task.runUpdate(session);
 
-            if (logger.isTraceEnabled()) {
-                logger.tracef("%s: Before replaceWithVersion. Entity to write version %d: %s", logTopologyData(topology, replaceIteration),
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("{}: Before replaceWithVersion. Entity to write version {}: {}", logTopologyData(topology, replaceIteration),
                         versioned.getVersion(), session);
             }
 
             replaced = remoteCache.replaceWithVersion(key, SessionEntityWrapper.forTransport(session), versioned.getVersion(), lifespanMs, TimeUnit.MILLISECONDS, maxIdleMs, TimeUnit.MILLISECONDS);
 
             if (!replaced) {
-                logger.debugf("%s: Failed to replace entity '%s' version %d. Will retry again", logTopologyData(topology, replaceIteration), key, versioned.getVersion());
+                LOG.debug("{}: Failed to replace entity '{}' version {}. Will retry again", logTopologyData(topology, replaceIteration), key, versioned.getVersion());
             } else {
-                if (logger.isTraceEnabled()) {
-                    logger.tracef("%s: Replaced entity version %d in remote cache: %s", logTopologyData(topology, replaceIteration), versioned.getVersion(), session);
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("{}: Replaced entity version {} in remote cache: {}", logTopologyData(topology, replaceIteration), versioned.getVersion(), session);
                 }
             }
         }
 
         if (!replaced) {
-            logger.warnf("Failed to replace entity '%s' in remote cache '%s'", key, remoteCache.getName());
+            LOG.warn("Failed to replace entity '{}' in remote cache '{}'", key, remoteCache.getName());
         }
     }
 

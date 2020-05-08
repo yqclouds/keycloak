@@ -41,7 +41,8 @@ import org.apache.directory.server.core.factory.LdifPartitionFactory;
 import org.apache.directory.server.core.factory.PartitionFactory;
 import org.apache.directory.server.core.partition.ldif.LdifPartition;
 import org.apache.directory.server.i18n.I18n;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,9 +56,9 @@ import java.util.List;
 class FileDirectoryServiceFactory implements DirectoryServiceFactory {
 
     /**
-     * A logger for this class
+     * A LOG for this class
      */
-    private static final Logger LOG = Logger.getLogger(FileDirectoryServiceFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FileDirectoryServiceFactory.class);
 
     /**
      * The directory service.

@@ -17,7 +17,7 @@
 
 package org.keycloak.federation.sssd;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.federation.sssd.api.Sssd;
 import org.keycloak.federation.sssd.impl.PAMAuthenticator;
@@ -38,7 +38,7 @@ import org.springframework.stereotype.Component;
 public class SSSDFederationProviderFactory implements UserStorageProviderFactory<SSSDFederationProvider>, EnvironmentDependentProviderFactory {
 
     private static final String PROVIDER_NAME = "sssd";
-    private static final Logger logger = Logger.getLogger(SSSDFederationProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SSSDFederationProvider.class);
 
 
     @Override

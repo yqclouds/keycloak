@@ -17,7 +17,7 @@
 
 package org.keycloak.services.clientregistration.policy;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.events.Details;
 import org.keycloak.models.ClientModel;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
  */
 public class ClientRegistrationPolicyManager {
 
-    private static final Logger logger = Logger.getLogger(ClientRegistrationPolicyManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClientRegistrationPolicyManager.class);
 
     public static void triggerBeforeRegister(ClientRegistrationContext context, RegistrationAuth authType) throws ClientRegistrationPolicyException {
         triggerPolicies(context.getSession(), context.getProvider(), authType, "before register client", (ClientRegistrationPolicy policy) -> {
@@ -114,8 +114,8 @@ public class ClientRegistrationPolicyManager {
                 throw new ClientRegistrationPolicyException("Policy of type '" + policyModel.getProviderId() + "' not found");
             }
 
-            if (logger.isTraceEnabled()) {
-                logger.tracef("Running policy '%s' %s", policyModel.getName(), opDescription);
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Running policy '%s' %s", policyModel.getName(), opDescription);
             }
 
             try {
@@ -123,7 +123,7 @@ public class ClientRegistrationPolicyManager {
             } catch (ClientRegistrationPolicyException crpe) {
                 provider.getEvent().detail(Details.CLIENT_REGISTRATION_POLICY, policyModel.getName());
                 crpe.setPolicyModel(policyModel);
-                ServicesLogger.LOGGER.clientRegistrationRequestRejected(opDescription, crpe.getMessage());
+//                ServicesLogger.LOGGER.clientRegistrationRequestRejected(opDescription, crpe.getMessage());
                 throw crpe;
             }
         }

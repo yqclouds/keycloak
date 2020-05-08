@@ -47,7 +47,7 @@ public class DocumentUtil {
     public static final String feature_external_general_entities = "http://xml.org/sax/features/external-general-entities";
     public static final String feature_external_parameter_entities = "http://xml.org/sax/features/external-parameter-entities";
     public static final String feature_disallow_doctype_decl = "http://apache.org/xml/features/disallow-doctype-decl";
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
     private static DocumentBuilderFactory documentBuilderFactory;
     private static final ThreadLocal<DocumentBuilder> XML_DOCUMENT_BUILDER = new ThreadLocal<DocumentBuilder>() {
         @Override
@@ -90,9 +90,9 @@ public class DocumentUtil {
             DocumentBuilder builder = getDocumentBuilder();
             return builder.getDOMImplementation().createDocument(baseNamespace, localPart, null);
         } catch (DOMException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         } catch (ParserConfigurationException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
     }
 
@@ -124,11 +124,11 @@ public class DocumentUtil {
             DocumentBuilder builder = getDocumentBuilder();
             return builder.parse(new InputSource(reader));
         } catch (ParserConfigurationException e) {
-            throw logger.configurationError(e);
+            throw LOG.configurationError(e);
         } catch (SAXException e) {
-            throw logger.parserError(e);
+            throw LOG.parserError(e);
         } catch (IOException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
     }
 
@@ -146,11 +146,11 @@ public class DocumentUtil {
             DocumentBuilder builder = getDocumentBuilder();
             return builder.parse(file);
         } catch (ParserConfigurationException e) {
-            throw logger.configurationError(e);
+            throw LOG.configurationError(e);
         } catch (SAXException e) {
-            throw logger.parserError(e);
+            throw LOG.parserError(e);
         } catch (IOException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
     }
 
@@ -168,11 +168,11 @@ public class DocumentUtil {
             DocumentBuilder builder = getDocumentBuilder();
             return builder.parse(is);
         } catch (ParserConfigurationException e) {
-            throw logger.configurationError(e);
+            throw LOG.configurationError(e);
         } catch (SAXException e) {
-            throw logger.parserError(e);
+            throw LOG.parserError(e);
         } catch (IOException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
     }
 
@@ -194,7 +194,7 @@ public class DocumentUtil {
         try {
             xformer.transform(source, streamResult);
         } catch (TransformerException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
 
         return sw.toString();
@@ -269,7 +269,7 @@ public class DocumentUtil {
         try {
             transformer.transform(source, streamResult);
         } catch (TransformerException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
 
         return new ByteArrayInputStream(baos.toByteArray());
@@ -308,7 +308,7 @@ public class DocumentUtil {
             // Get child node
             Node childNode = list.item(i);
 
-            logger.trace("Node=" + childNode.getNamespaceURI() + "::" + childNode.getLocalName());
+            LOG.trace("Node=" + childNode.getNamespaceURI() + "::" + childNode.getLocalName());
 
             // Visit child node
             visit(childNode, level + 1);
@@ -348,7 +348,7 @@ public class DocumentUtil {
                     feature = feature_external_parameter_entities;
                     documentBuilderFactory.setFeature(feature, false);
                 } catch (ParserConfigurationException e) {
-                    throw logger.parserFeatureNotSupported(feature);
+                    throw LOG.parserFeatureNotSupported(feature);
                 }
             } finally {
                 if (tccl_jaxp) {

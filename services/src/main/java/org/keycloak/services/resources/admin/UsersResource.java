@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.common.ClientConnection;
@@ -49,7 +49,7 @@ import java.util.*;
  */
 public class UsersResource {
 
-    private static final Logger logger = Logger.getLogger(UsersResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UsersResource.class);
     private static final String SEARCH_ID_PARAMETER = "id:";
 
     protected RealmModel realm;
@@ -127,7 +127,7 @@ public class UsersResource {
             if (session.getTransactionManager().isActive()) {
                 session.getTransactionManager().setRollbackOnly();
             }
-            logger.warn("Could not create user", me);
+            LOG.warn("Could not create user", me);
             return ErrorResponse.error("Could not create user", Response.Status.BAD_REQUEST);
         }
     }

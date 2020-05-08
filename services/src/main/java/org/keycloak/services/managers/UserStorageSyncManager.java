@@ -16,7 +16,6 @@
  */
 package org.keycloak.services.managers;
 
-import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterListener;
 import org.keycloak.cluster.ClusterProvider;
@@ -27,13 +26,14 @@ import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.KeycloakSessionTask;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
-import org.keycloak.services.ServicesLogger;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.UserStorageProviderFactory;
 import org.keycloak.storage.UserStorageProviderModel;
 import org.keycloak.storage.user.ImportSynchronization;
 import org.keycloak.storage.user.SynchronizationResult;
 import org.keycloak.timer.TimerProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -46,7 +46,7 @@ public class UserStorageSyncManager {
 
     private static final String USER_STORAGE_TASK_KEY = "user-storage";
 
-    private static final Logger logger = Logger.getLogger(UserStorageSyncManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UserStorageSyncManager.class);
 
     /**
      * Check federationProviderModel of all realms and possibly start periodic sync for them
@@ -108,7 +108,7 @@ public class UserStorageSyncManager {
         });
 
         if (holder.result == null || !holder.result.isExecuted()) {
-            logger.debugf("syncAllUsers for federation provider %s was ignored as it's already in progress", provider.getName());
+            LOG.debug("syncAllUsers for federation provider {} was ignored as it's already in progress", provider.getName());
             return SynchronizationResult.ignored();
         } else {
             return holder.result.getResult();
@@ -149,7 +149,7 @@ public class UserStorageSyncManager {
         });
 
         if (holder.result == null || !holder.result.isExecuted()) {
-            logger.debugf("syncChangedUsers for federation provider %s was ignored as it's already in progress", provider.getName());
+            LOG.debug("syncChangedUsers for federation provider {} was ignored as it's already in progress", provider.getName());
             return SynchronizationResult.ignored();
         } else {
             return holder.result.getResult();
@@ -172,7 +172,7 @@ public class UserStorageSyncManager {
 
     // Executed once it receives notification that some UserFederationProvider was created or updated
     protected void refreshPeriodicSyncForProvider(final KeycloakSessionFactory sessionFactory, TimerProvider timer, final UserStorageProviderModel provider, final String realmId) {
-        logger.debugf("Going to refresh periodic sync for provider '%s' . Full sync period: %d , changed users sync period: %d",
+        LOG.debug("Going to refresh periodic sync for provider '{}' . Full sync period: %d , changed users sync period: %d",
                 provider.getName(), provider.getFullSyncPeriod(), provider.getChangedSyncPeriod());
 
         if (provider.getFullSyncPeriod() > 0) {
@@ -186,10 +186,10 @@ public class UserStorageSyncManager {
                         if (shouldPerformSync) {
                             syncAllUsers(sessionFactory, realmId, provider);
                         } else {
-                            logger.debugf("Ignored periodic full sync with storage provider %s due small time since last sync", provider.getName());
+                            LOG.debug("Ignored periodic full sync with storage provider {} due small time since last sync", provider.getName());
                         }
                     } catch (Throwable t) {
-                        ServicesLogger.LOGGER.errorDuringFullUserSync(t);
+                        LOG.error("", t);
                     }
                 }
 
@@ -209,10 +209,10 @@ public class UserStorageSyncManager {
                         if (shouldPerformSync) {
                             syncChangedUsers(sessionFactory, realmId, provider);
                         } else {
-                            logger.debugf("Ignored periodic changed-users sync with storage provider %s due small time since last sync", provider.getName());
+                            LOG.debug("Ignored periodic changed-users sync with storage provider {} due small time since last sync", provider.getName());
                         }
                     } catch (Throwable t) {
-                        ServicesLogger.LOGGER.errorDuringChangedUserSync(t);
+                        LOG.error("", t);
                     }
                 }
 
@@ -237,7 +237,7 @@ public class UserStorageSyncManager {
 
     // Executed once it receives notification that some UserFederationProvider was removed
     protected void removePeriodicSyncForProvider(TimerProvider timer, UserStorageProviderModel fedProvider) {
-        logger.debugf("Removing periodic sync for provider %s", fedProvider.getName());
+        LOG.debug("Removing periodic sync for provider {}", fedProvider.getName());
         timer.cancelTask(fedProvider.getId() + "-FULL");
         timer.cancelTask(fedProvider.getId() + "-CHANGED");
     }

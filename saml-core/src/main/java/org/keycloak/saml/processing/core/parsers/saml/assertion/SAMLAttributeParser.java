@@ -69,7 +69,7 @@ public class SAMLAttributeParser extends AbstractStaxSamlAssertionParser<Attribu
             String attributeValue = currentAttribute.getValue();
             otherAttributes.put(attributeQName, attributeValue);
             if (LOGGER.isTraceEnabled()) {
-                LOGGER.trace(String.format("Adding attribute %s with value %s", attributeQName, attributeValue));
+                LOGGER.trace(String.format("Adding attribute {} with value {}", attributeQName, attributeValue));
             }
         }
 

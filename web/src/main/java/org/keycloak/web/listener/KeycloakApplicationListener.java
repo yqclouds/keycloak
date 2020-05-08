@@ -187,23 +187,23 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
                 RealmManager manager = new RealmManager(session);
 
                 if (rep.getId() != null && manager.getRealm(rep.getId()) != null) {
-                    ServicesLogger.LOGGER.realmExists(rep.getRealm(), from);
+//                    ServicesLogger.LOGGER.realmExists(rep.getRealm(), from);
                     exists = true;
                 }
 
                 if (manager.getRealmByName(rep.getRealm()) != null) {
-                    ServicesLogger.LOGGER.realmExists(rep.getRealm(), from);
+//                    ServicesLogger.LOGGER.realmExists(rep.getRealm(), from);
                     exists = true;
                 }
                 if (!exists) {
                     RealmModel realm = manager.importRealm(rep);
-                    ServicesLogger.LOGGER.importedRealm(realm.getName(), from);
+//                    ServicesLogger.LOGGER.importedRealm(realm.getName(), from);
                 }
                 session.getTransactionManager().commit();
             } catch (Throwable t) {
                 session.getTransactionManager().rollback();
                 if (!exists) {
-                    ServicesLogger.LOGGER.unableToImportRealm(t, rep.getRealm(), from);
+//                    ServicesLogger.LOGGER.unableToImportRealm(t, rep.getRealm(), from);
                 }
             }
         } finally {
@@ -216,14 +216,14 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
         if (configDir != null) {
             File addUserFile = new File(configDir + File.separator + "keycloak-add-user.json");
             if (addUserFile.isFile()) {
-                ServicesLogger.LOGGER.imprtingUsersFrom(addUserFile);
+//                ServicesLogger.LOGGER.imprtingUsersFrom(addUserFile);
 
                 List<RealmRepresentation> realms;
                 try {
                     realms = JsonSerialization.readValue(new FileInputStream(addUserFile), new TypeReference<List<RealmRepresentation>>() {
                     });
                 } catch (IOException e) {
-                    ServicesLogger.LOGGER.failedToLoadUsers(e);
+//                    ServicesLogger.LOGGER.failedToLoadUsers(e);
                     return;
                 }
 
@@ -236,28 +236,28 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
                             RealmModel realm = session.realms().getRealmByName(realmRep.getRealm());
 
                             if (realm == null) {
-                                ServicesLogger.LOGGER.addUserFailedRealmNotFound(userRep.getUsername(), realmRep.getRealm());
+//                                ServicesLogger.LOGGER.addUserFailedRealmNotFound(userRep.getUsername(), realmRep.getRealm());
                             }
 
                             UserProvider users = session.users();
 
                             if (users.getUserByUsername(userRep.getUsername(), realm) != null) {
-                                ServicesLogger.LOGGER.notCreatingExistingUser(userRep.getUsername());
+//                                ServicesLogger.LOGGER.notCreatingExistingUser(userRep.getUsername());
                             } else {
                                 UserModel user = users.addUser(realm, userRep.getUsername());
                                 user.setEnabled(userRep.isEnabled());
                                 RepresentationToModel.createCredentials(userRep, session, realm, user, false);
                                 RepresentationToModel.createRoleMappings(userRep, user, realm);
-                                ServicesLogger.LOGGER.addUserSuccess(userRep.getUsername(), realmRep.getRealm());
+//                                ServicesLogger.LOGGER.addUserSuccess(userRep.getUsername(), realmRep.getRealm());
                             }
 
                             session.getTransactionManager().commit();
                         } catch (ModelDuplicateException e) {
                             session.getTransactionManager().rollback();
-                            ServicesLogger.LOGGER.addUserFailedUserExists(userRep.getUsername(), realmRep.getRealm());
+//                            ServicesLogger.LOGGER.addUserFailedUserExists(userRep.getUsername(), realmRep.getRealm());
                         } catch (Throwable t) {
                             session.getTransactionManager().rollback();
-                            ServicesLogger.LOGGER.addUserFailed(t, userRep.getUsername(), realmRep.getRealm());
+//                            ServicesLogger.LOGGER.addUserFailed(t, userRep.getUsername(), realmRep.getRealm());
                         } finally {
                             session.close();
                         }
@@ -265,7 +265,7 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
                 }
 
                 if (!addUserFile.delete()) {
-                    ServicesLogger.LOGGER.failedToDeleteFile(addUserFile.getAbsolutePath());
+//                    ServicesLogger.LOGGER.failedToDeleteFile(addUserFile.getAbsolutePath());
                 }
             }
         }

@@ -26,16 +26,15 @@ import org.springframework.web.client.RestTemplate;
  * This class is designed to work with other services secured by Keycloak.
  *
  * <p>
- *     The main advantage to using this class over Spring's <code>RestTemplate</code> is that authentication
- *     is handled automatically when both the service making the API call and the service being called are
- *     protected by Keycloak authentication.
+ * The main advantage to using this class over Spring's <code>RestTemplate</code> is that authentication
+ * is handled automatically when both the service making the API call and the service being called are
+ * protected by Keycloak authentication.
  * </p>
- *
- * @see RestOperations
- * @see RestTemplate
  *
  * @author Scott Rossillo
  * @version $Revision: 1 $
+ * @see RestOperations
+ * @see RestTemplate
  */
 public class KeycloakRestTemplate extends RestTemplate implements RestOperations {
 

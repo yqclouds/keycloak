@@ -29,9 +29,7 @@ import org.keycloak.common.enums.SslRequired;
 import org.keycloak.common.util.PemUtils;
 import org.keycloak.enums.TokenStore;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>

@@ -20,8 +20,9 @@ package org.keycloak.models.sessions.infinispan.changes;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.commons.marshall.SerializeWith;
-import org.jboss.logging.Logger;
 import org.keycloak.models.sessions.infinispan.entities.SessionEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -38,7 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @SerializeWith(SessionEntityWrapper.ExternalizerImpl.class)
 public class SessionEntityWrapper<S extends SessionEntity> {
 
-    private static final Logger log = Logger.getLogger(SessionEntityWrapper.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SessionEntityWrapper.class);
     private final S entity;
     private final Map<String, String> localMetadata;
     private UUID version;
@@ -184,16 +185,16 @@ public class SessionEntityWrapper<S extends SessionEntity> {
             if (forTransport) {
                 final SessionEntity entity = (SessionEntity) input.readObject();
                 final SessionEntityWrapper res = new SessionEntityWrapper(entity);
-                if (log.isTraceEnabled()) {
-                    log.tracef("Loaded entity from remote store: %s, version=%s, metadata=%s", entity, res.version, res.localMetadata);
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Loaded entity from remote store: %s, version=%s, metadata=%s", entity, res.version, res.localMetadata);
                 }
                 return res;
             } else {
                 UUID sessionVersion = new UUID(input.readLong(), input.readLong());
                 HashMap<String, String> map = MarshallUtil.unmarshallMap(input, HashMap::new);
                 final SessionEntity entity = (SessionEntity) input.readObject();
-                if (log.isTraceEnabled()) {
-                    log.tracef("Found entity locally: entity=%s, version=%s, metadata=%s", entity, sessionVersion, map);
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Found entity locally: entity=%s, version=%s, metadata=%s", entity, sessionVersion, map);
                 }
                 return new SessionEntityWrapper(sessionVersion, map, entity);
             }

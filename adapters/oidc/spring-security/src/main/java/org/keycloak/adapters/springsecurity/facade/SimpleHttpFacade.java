@@ -19,8 +19,6 @@ package org.keycloak.adapters.springsecurity.facade;
 
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.adapters.OIDCHttpFacade;
-import org.keycloak.adapters.spi.KeycloakAccount;
-import org.keycloak.adapters.springsecurity.account.SimpleKeycloakAccount;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -44,7 +42,7 @@ public class SimpleHttpFacade implements OIDCHttpFacade {
     /**
      * Creates a new simple HTTP facade for the given request and response.
      *
-     * @param request the current <code>HttpServletRequest</code> (required)
+     * @param request  the current <code>HttpServletRequest</code> (required)
      * @param response the current <code>HttpServletResponse</code> (required)
      */
     public SimpleHttpFacade(HttpServletRequest request, HttpServletResponse response) {

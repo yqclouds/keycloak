@@ -31,22 +31,21 @@ public class RolePrincipal implements Principal, Serializable {
         this.roleName = roleName;
     }
 
-    public boolean equals (Object p) {
-        if (! (p instanceof RolePrincipal))
+    public boolean equals(Object p) {
+        if (!(p instanceof RolePrincipal))
             return false;
-        return getName().equals(((RolePrincipal)p).getName());
+        return getName().equals(((RolePrincipal) p).getName());
     }
 
-    public int hashCode () {
+    public int hashCode() {
         return getName().hashCode();
     }
 
-    public String getName () {
+    public String getName() {
         return this.roleName;
     }
 
-    public String toString ()
-    {
+    public String toString() {
         return getName();
     }
 

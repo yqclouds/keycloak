@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.common.Version;
 import org.keycloak.common.util.MimeTypeUtil;
 import org.keycloak.models.KeycloakSession;
@@ -39,7 +39,7 @@ import java.io.InputStream;
 @Path("/resources")
 public class ThemeResource {
 
-    protected static final Logger logger = Logger.getLogger(ThemeResource.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(ThemeResource.class);
 
     @Context
     private KeycloakSession session;
@@ -68,7 +68,7 @@ public class ThemeResource {
                 return Response.status(Response.Status.NOT_FOUND).build();
             }
         } catch (Exception e) {
-            ServicesLogger.LOGGER.failedToGetThemeRequest(e);
+//            ServicesLogger.LOGGER.failedToGetThemeRequest(e);
             return Response.serverError().build();
         }
     }

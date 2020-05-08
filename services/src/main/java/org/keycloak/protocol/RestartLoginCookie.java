@@ -18,7 +18,6 @@
 package org.keycloak.protocol;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.jboss.logging.Logger;
 import org.keycloak.Token;
 import org.keycloak.TokenCategory;
 import org.keycloak.common.ClientConnection;
@@ -30,6 +29,8 @@ import org.keycloak.services.managers.AuthenticationSessionManager;
 import org.keycloak.services.util.CookieHelper;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.UriInfo;
@@ -45,7 +46,7 @@ import java.util.Map;
  */
 public class RestartLoginCookie implements Token {
     public static final String KC_RESTART = "KC_RESTART";
-    private static final Logger logger = Logger.getLogger(RestartLoginCookie.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RestartLoginCookie.class);
     @JsonProperty("cid")
     protected String clientId;
 
@@ -96,14 +97,14 @@ public class RestartLoginCookie implements Token {
                                                             RootAuthenticationSessionModel rootSession, String expectedClientId) throws Exception {
         Cookie cook = session.getContext().getRequestHeaders().getCookies().get(KC_RESTART);
         if (cook == null) {
-            logger.debug("KC_RESTART cookie doesn't exist");
+            LOG.debug("KC_RESTART cookie doesn't exist");
             return null;
         }
         String encodedCookie = cook.getValue();
 
         RestartLoginCookie cookie = session.tokens().decode(encodedCookie, RestartLoginCookie.class);
         if (cookie == null) {
-            logger.debug("Failed to verify encoded RestartLoginCookie");
+            LOG.debug("Failed to verify encoded RestartLoginCookie");
             return null;
         }
 
@@ -112,7 +113,7 @@ public class RestartLoginCookie implements Token {
 
         // Restart just if client from cookie matches client from the URL.
         if (!client.getClientId().equals(expectedClientId)) {
-            logger.debugf("Skip restarting from the KC_RESTART. Clients doesn't match: Cookie client: %s, Requested client: %s", client.getClientId(), expectedClientId);
+            LOG.debug("Skip restarting from the KC_RESTART. Clients doesn't match: Cookie client: {}, Requested client: {}", client.getClientId(), expectedClientId);
             return null;
         }
 

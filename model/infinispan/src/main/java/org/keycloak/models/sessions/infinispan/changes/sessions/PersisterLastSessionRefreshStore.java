@@ -17,12 +17,13 @@
 
 package org.keycloak.models.sessions.infinispan.changes.sessions;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.session.UserSessionPersisterProvider;
 import org.keycloak.models.utils.SessionTimeoutHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
@@ -37,7 +38,7 @@ import java.util.stream.Collectors;
  */
 public class PersisterLastSessionRefreshStore extends AbstractLastSessionRefreshStore {
 
-    protected static final Logger logger = Logger.getLogger(PersisterLastSessionRefreshStore.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(PersisterLastSessionRefreshStore.class);
 
     private final boolean offline;
 
@@ -58,8 +59,8 @@ public class PersisterLastSessionRefreshStore extends AbstractLastSessionRefresh
         // Update DB with a bit lower value than current time to ensure 'revokeRefreshToken' will work correctly taking server
         int lastSessionRefresh = Time.currentTime() - SessionTimeoutHelper.PERIODIC_TASK_INTERVAL_SECONDS;
 
-        if (logger.isDebugEnabled()) {
-            logger.debugf("Updating %d userSessions with lastSessionRefresh: %d", refreshesToSend.size(), lastSessionRefresh);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Updating {} userSessions with lastSessionRefresh: {}", refreshesToSend.size(), lastSessionRefresh);
         }
 
         for (Map.Entry<String, Set<String>> entry : sessionIdsByRealm.entrySet()) {

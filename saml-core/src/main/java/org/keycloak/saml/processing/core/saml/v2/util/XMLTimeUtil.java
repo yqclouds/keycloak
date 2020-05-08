@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class XMLTimeUtil {
 
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
     private static final ThreadLocal<DatatypeFactory> DATATYPE_FACTORY = new ThreadLocal<DatatypeFactory>() {
         @Override
         protected DatatypeFactory initialValue() {
@@ -101,10 +101,10 @@ public class XMLTimeUtil {
 
         Long offsetMilis = TimeUnit.MILLISECONDS.convert(Time.getOffset(), TimeUnit.SECONDS);
         if (offsetMilis != 0) {
-            if (logger.isDebugEnabled()) logger.debug(XMLTimeUtil.class.getName() + " timeOffset: " + offsetMilis);
+            if (LOG.isDebugEnabled()) LOG.debug(XMLTimeUtil.class.getName() + " timeOffset: " + offsetMilis);
             xgc.add(parseAsDuration(offsetMilis.toString()));
         }
-        if (logger.isDebugEnabled()) logger.debug(XMLTimeUtil.class.getName() + " issueInstant: " + xgc.toString());
+        if (LOG.isDebugEnabled()) LOG.debug(XMLTimeUtil.class.getName() + " issueInstant: " + xgc.toString());
         return xgc;
     }
 
@@ -193,7 +193,7 @@ public class XMLTimeUtil {
                 return factory.newDuration(Long.valueOf(timeValue));
             }
         } catch (Exception e) {
-            throw logger.samlMetaDataFailedToCreateCacheDuration(timeValue);
+            throw LOG.samlMetaDataFailedToCreateCacheDuration(timeValue);
         }
     }
 

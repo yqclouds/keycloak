@@ -17,7 +17,6 @@
 
 package org.keycloak.storage.ldap.mappers;
 
-import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -27,6 +26,8 @@ import org.keycloak.storage.ldap.LDAPStorageProvider;
 import org.keycloak.storage.ldap.LDAPUtils;
 import org.keycloak.storage.ldap.idm.model.LDAPObject;
 import org.keycloak.storage.ldap.idm.query.internal.LDAPQuery;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,11 +35,13 @@ import java.util.Map;
 
 
 public class HardcodedAttributeMapper extends AbstractLDAPStorageMapper {
+    private static final Logger LOG = LoggerFactory.getLogger(HardcodedAttributeMapper.class);
 
     public static final String USER_MODEL_ATTRIBUTE = "user.model.attribute";
     public static final String ATTRIBUTE_VALUE = "attribute.value";
-    private static final Logger logger = Logger.getLogger(HardcodedAttributeMapper.class);
+
     private static final Map<String, Property<Object>> userModelProperties = LDAPUtils.getUserModelProperties();
+
     public HardcodedAttributeMapper(ComponentModel mapperModel, LDAPStorageProvider ldapProvider) {
         super(mapperModel, ldapProvider);
     }
@@ -117,7 +120,7 @@ public class HardcodedAttributeMapper extends AbstractLDAPStorageMapper {
                 Boolean boolVal = Boolean.valueOf(ldapAttrValue);
                 userModelProperty.setValue(user, boolVal);
             } else {
-                logger.warnf("Don't know how to set the property '%s' on user '%s' . Value of LDAP attribute is '%s' ", userModelProperty.getName(), user.getUsername(), ldapAttrValue.toString());
+                LOG.warn("Don't know how to set the property '{}' on user '{}' . Value of LDAP attribute is '{}' ", userModelProperty.getName(), user.getUsername(), ldapAttrValue.toString());
             }
         }
     }

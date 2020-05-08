@@ -17,7 +17,6 @@
 
 package org.keycloak.federation.kerberos;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.constants.KerberosConstants;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.federation.kerberos.impl.KerberosServerSubjectAuthenticator;
@@ -48,10 +47,8 @@ import java.util.List;
 @Component("KerberosFederationProviderFactory")
 @ProviderFactory(id = "kerberos", providerClasses = UserStorageProvider.class)
 public class KerberosFederationProviderFactory implements UserStorageProviderFactory<KerberosFederationProvider> {
-
     public static final String PROVIDER_NAME = "kerberos";
     protected static final List<ProviderConfigProperty> configProperties;
-    private static final Logger logger = Logger.getLogger(KerberosFederationProviderFactory.class);
 
     static {
         configProperties = getConfigProps();

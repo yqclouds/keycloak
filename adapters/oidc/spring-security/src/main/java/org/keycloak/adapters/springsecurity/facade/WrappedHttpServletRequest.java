@@ -24,7 +24,6 @@ import org.keycloak.adapters.spi.LogoutError;
 import org.springframework.util.Assert;
 
 import javax.servlet.http.HttpServletRequest;
-
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;

@@ -17,11 +17,12 @@
 
 package org.keycloak.protocol.oidc.endpoints.request;
 
-import org.jboss.logging.Logger;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.constants.AdapterConstants;
 import org.keycloak.models.Constants;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -40,7 +41,7 @@ abstract class AuthzEndpointRequestParser {
      * Max size of additional req param value copied into client session note to prevent DoS attacks - params with longer value are ignored
      */
     public static final int ADDITIONAL_REQ_PARAMS_MAX_SIZE = 200;
-    private static final Logger logger = Logger.getLogger(AuthzEndpointRequestParser.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AuthzEndpointRequestParser.class);
     /**
      * Set of known protocol GET params not to be stored into additionalReqParams}
      */
@@ -110,12 +111,12 @@ abstract class AuthzEndpointRequestParser {
                 }
                 if (value != null && value.length() <= ADDITIONAL_REQ_PARAMS_MAX_SIZE) {
                     if (additionalReqParams.size() >= ADDITIONAL_REQ_PARAMS_MAX_MUMBER) {
-                        logger.debug("Maximal number of additional OIDC params (" + ADDITIONAL_REQ_PARAMS_MAX_MUMBER + ") exceeded, ignoring rest of them!");
+                        LOG.debug("Maximal number of additional OIDC params (" + ADDITIONAL_REQ_PARAMS_MAX_MUMBER + ") exceeded, ignoring rest of them!");
                         break;
                     }
                     additionalReqParams.put(paramName, value);
                 } else {
-                    logger.debug("OIDC Additional param " + paramName + " ignored because value is empty or longer than " + ADDITIONAL_REQ_PARAMS_MAX_SIZE);
+                    LOG.debug("OIDC Additional param " + paramName + " ignored because value is empty or longer than " + ADDITIONAL_REQ_PARAMS_MAX_SIZE);
                 }
             }
 

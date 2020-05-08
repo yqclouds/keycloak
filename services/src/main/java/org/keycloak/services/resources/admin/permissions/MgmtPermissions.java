@@ -16,7 +16,6 @@
  */
 package org.keycloak.services.resources.admin.permissions;
 
-import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.AuthorizationProviderFactory;
@@ -35,6 +34,8 @@ import org.keycloak.representations.idm.authorization.Permission;
 import org.keycloak.services.ForbiddenException;
 import org.keycloak.services.managers.RealmManager;
 import org.keycloak.services.resources.admin.AdminAuth;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,7 +46,7 @@ import java.util.List;
  * @version $Revision: 1 $
  */
 class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManagement, RealmsPermissionEvaluator {
-    private static final Logger logger = Logger.getLogger(MgmtPermissions.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MgmtPermissions.class);
 
     protected RealmModel realm;
     protected KeycloakSession session;
@@ -109,7 +110,6 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
         if (Constants.ADMIN_CLI_CLIENT_ID.equals(auth.getToken().getIssuedFor())
                 || Constants.ADMIN_CONSOLE_CLIENT_ID.equals(auth.getToken().getIssuedFor())) {
             this.identity = new UserModelIdentity(auth.getRealm(), auth.getUser());
-
         } else {
             this.identity = new KeycloakIdentity(auth.getToken(), session);
         }

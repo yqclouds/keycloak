@@ -21,7 +21,6 @@ import org.infinispan.Cache;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.persistence.remote.configuration.RemoteStoreConfigurationBuilder;
-import org.jboss.logging.Logger;
 import org.junit.Assert;
 import org.keycloak.common.util.Time;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
@@ -32,6 +31,8 @@ import org.keycloak.models.sessions.infinispan.initializer.SessionLoader;
 import org.keycloak.models.sessions.infinispan.remotestore.RemoteCacheSessionsLoader;
 import org.keycloak.models.sessions.infinispan.remotestore.RemoteCacheSessionsLoaderContext;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -40,8 +41,7 @@ import java.util.Set;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class RemoteCacheSessionsLoaderTest {
-
-    protected static final Logger logger = Logger.getLogger(RemoteCacheSessionsLoaderTest.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(RemoteCacheSessionsLoaderTest.class);
 
     private static final int COUNT = 10000;
 
@@ -76,7 +76,7 @@ public class RemoteCacheSessionsLoaderTest {
                 Assert.assertFalse(cache2.containsKey("loader-key-" + i));
 
                 if (i % 1000 == 0) {
-                    logger.infof("%d sessions added", i);
+                    LOG.info("{} sessions added", i);
                 }
             }
 
@@ -106,14 +106,14 @@ public class RemoteCacheSessionsLoaderTest {
             Assert.assertEquals(ctx.getSessionsPerSegment(), 64);
 
             int totalCount = 0;
-            logger.infof("segmentsCount: %d", ctx.getSegmentsCount());
+            LOG.info("segmentsCount: {}", ctx.getSegmentsCount());
 
             Set<String> visitedKeys = new HashSet<>();
             for (int currentSegment = 0; currentSegment < ctx.getSegmentsCount(); currentSegment++) {
-                logger.infof("Loading segment %d", currentSegment);
+                LOG.info("Loading segment {}", currentSegment);
                 loader.loadSessions(null, ctx, new SessionLoader.WorkerContext(currentSegment, currentSegment));
 
-                logger.infof("Loaded %d keys for segment %d", cache2.keySet().size(), currentSegment);
+                LOG.info("Loaded {} keys for segment {}", cache2.keySet().size(), currentSegment);
                 totalCount = totalCount + cache2.keySet().size();
                 visitedKeys.addAll(cache2.keySet());
                 cache2.clear();
@@ -121,7 +121,7 @@ public class RemoteCacheSessionsLoaderTest {
 
             Assert.assertEquals(totalCount, COUNT);
             Assert.assertEquals(visitedKeys.size(), COUNT);
-            logger.infof("SUCCESS: Loaded %d sessions", totalCount);
+            LOG.info("SUCCESS: Loaded {} sessions", totalCount);
         } finally {
             // Finish JVM
             cache1.getCacheManager().stop();

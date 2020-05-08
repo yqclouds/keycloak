@@ -45,7 +45,7 @@ import java.net.URI;
  */
 public class SAML11SubjectParser implements StaxParser {
 
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
 
     /**
      * @see {@link ParserNamespaceSupport#parse(XMLEventReader)}
@@ -64,7 +64,7 @@ public class SAML11SubjectParser implements StaxParser {
                     endElement = StaxParserUtil.getNextEndElement(xmlEventReader);
                     break;
                 } else
-                    throw logger.parserUnknownEndElement(StaxParserUtil.getElementName(endElement), xmlEvent.getLocation());
+                    throw LOG.parserUnknownEndElement(StaxParserUtil.getElementName(endElement), xmlEvent.getLocation());
             }
 
             StartElement peekedElement = StaxParserUtil.peekNextStartElement(xmlEventReader);
@@ -94,7 +94,7 @@ public class SAML11SubjectParser implements StaxParser {
                         .parseSAML11SubjectConfirmation(xmlEventReader);
                 subject.setSubjectConfirmation(subjectConfirmationType);
             } else
-                throw logger.parserUnknownTag(tag, peekedElement.getLocation());
+                throw LOG.parserUnknownTag(tag, peekedElement.getLocation());
         }
         return subject;
     }

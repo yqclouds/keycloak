@@ -17,12 +17,13 @@
 
 package org.keycloak.protocol.oidc.utils;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
 import org.keycloak.events.Details;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.*;
 import org.keycloak.services.managers.UserSessionCrossDCManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
@@ -34,7 +35,7 @@ import java.util.regex.Pattern;
  */
 public class OAuth2CodeParser {
 
-    private static final Logger logger = Logger.getLogger(OAuth2CodeParser.class);
+    private static final Logger LOG = LoggerFactory.getLogger(OAuth2CodeParser.class);
 
     private static final Pattern DOT = Pattern.compile("\\.");
 
@@ -76,7 +77,7 @@ public class OAuth2CodeParser {
 
         String[] parsed = DOT.split(code, 3);
         if (parsed.length < 3) {
-            logger.warn("Invalid format of the code");
+            LOG.warn("Invalid format of the code");
             return result.illegalCode();
         }
 
@@ -91,7 +92,7 @@ public class OAuth2CodeParser {
         try {
             codeUUID = UUID.fromString(parsed[0]);
         } catch (IllegalArgumentException re) {
-            logger.warn("Invalid format of the UUID in the code");
+            LOG.warn("Invalid format of the UUID in the code");
             return result.illegalCode();
         }
 
@@ -111,11 +112,11 @@ public class OAuth2CodeParser {
 
         // Either code not available or was already used
         if (codeData == null) {
-            logger.warnf("Code '%s' already used for userSession '%s' and client '%s'.", codeUUID, userSessionId, clientUUID);
+            LOG.warn("Code '%s' already used for userSession '%s' and client '%s'.", codeUUID, userSessionId, clientUUID);
             return result.illegalCode();
         }
 
-        logger.tracef("Successfully verified code '%s'. User session: '%s', client: '%s'", codeUUID, userSessionId, clientUUID);
+        LOG.trace("Successfully verified code '%s'. User session: '%s', client: '%s'", codeUUID, userSessionId, clientUUID);
 
         result.codeData = OAuth2Code.deserializeCode(codeData);
 

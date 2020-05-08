@@ -122,7 +122,7 @@ public class SAML11ResponseWriter extends BaseSAML11Writer {
 
         QName value = statusCode.getValue();
         if (value == null)
-            throw logger.writerNullValueError("Attribute Value");
+            throw LOG.writerNullValueError("Attribute Value");
         StaxUtil.writeAttribute(writer, SAML11Constants.VALUE, value);
 
         SAML11StatusCodeType secondCode = statusCode.getStatusCode();

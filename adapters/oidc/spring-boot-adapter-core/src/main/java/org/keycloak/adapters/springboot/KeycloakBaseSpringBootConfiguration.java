@@ -24,17 +24,14 @@ import org.apache.tomcat.util.descriptor.web.SecurityConstraint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 /**
  * Keycloak authentication base integration for Spring Boot - base to be extended for particular boot versions.
  */
 public class KeycloakBaseSpringBootConfiguration {
-	
+
     protected KeycloakSpringBootProperties keycloakProperties;
 
     @Autowired
@@ -75,7 +72,7 @@ public class KeycloakBaseSpringBootConfiguration {
                 SecurityConstraint tomcatConstraint = new SecurityConstraint();
                 for (String authRole : constraint.getAuthRoles()) {
                     tomcatConstraint.addAuthRole(authRole);
-                    if(authRole.equals("*") || authRole.equals("**")) {
+                    if (authRole.equals("*") || authRole.equals("**")) {
                         // For some reasons embed tomcat don't set the auth constraint on true when wildcard is used
                         tomcatConstraint.setAuthConstraint(true);
                     }

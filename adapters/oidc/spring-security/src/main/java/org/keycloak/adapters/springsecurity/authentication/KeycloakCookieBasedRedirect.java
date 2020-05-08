@@ -29,7 +29,8 @@ public final class KeycloakCookieBasedRedirect {
 
     private static final String REDIRECT_COOKIE = "KC_REDIRECT";
 
-    private KeycloakCookieBasedRedirect() {}
+    private KeycloakCookieBasedRedirect() {
+    }
 
     /**
      * Checks if a cookie with name {@value REDIRECT_COOKIE} exists, and if so, returns its value.
@@ -52,9 +53,9 @@ public final class KeycloakCookieBasedRedirect {
 
     /**
      * Creates a cookie with name {@value REDIRECT_COOKIE} and the given URL as value.
-     * 
+     *
      * @param url the value that the cookie should have. If {@code null}, a cookie is created that
-     *     expires immediately and has an empty string as value.
+     *            expires immediately and has an empty string as value.
      * @return a cookie that can be added to a response.
      */
     public static Cookie createCookieFromRedirectUrl(String url) {

@@ -24,7 +24,8 @@ import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.keycloak.common.util.PemUtils;
-import org.keycloak.services.ServicesLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateParsingException;
@@ -44,8 +45,7 @@ import java.util.regex.Pattern;
  */
 
 public abstract class UserIdentityExtractor {
-
-    private static final ServicesLogger logger = ServicesLogger.LOGGER;
+    private static final Logger LOG = LoggerFactory.getLogger(UserIdentityExtractor.class);
 
     public static UserIdentityExtractor getPatternIdentityExtractor(String pattern,
                                                                     Function<X509Certificate[], String> func) {
@@ -79,7 +79,7 @@ public abstract class UserIdentityExtractor {
                 }
 
                 String pem = PemUtils.encodeCertificate(certs[0]);
-                logger.debugf("Using PEM certificate \"%s\" as user identity.", pem);
+                LOG.debug("Using PEM certificate \"{}\" as user identity.", pem);
                 return pem;
             }
         };
@@ -188,7 +188,7 @@ public abstract class UserIdentityExtractor {
 
                             // We have Subject Alternative Name of other type than 'otherName' . Just return it directly
                             if (generalName != 0) {
-                                logger.tracef("Extracted identity '%s' from Subject Alternative Name of type '%d'", obj, generalName);
+                                LOG.trace("Extracted identity '{}' from Subject Alternative Name of type '{}'", obj, generalName);
                                 return obj;
                             }
 
@@ -219,19 +219,19 @@ public abstract class UserIdentityExtractor {
                                 }
 
                             } catch (Exception e) {
-                                logger.error("Failed to parse subjectAltName", e);
+                                LOG.error("Failed to parse subjectAltName", e);
                             }
                         }
 
                     }
                 }
 
-                logger.tracef("Parsed otherName from subjectAltName. OID: '%s', Principal: '%s'", tempOid, tempOtherName);
+                LOG.trace("Parsed otherName from subjectAltName. OID: '{}', Principal: '{}'", tempOid, tempOtherName);
 
                 return tempOtherName;
 
             } catch (CertificateParsingException cause) {
-                logger.errorf(cause, "Failed to obtain identity from subjectAltName extension");
+                LOG.error("Failed to obtain identity from subjectAltName extension", cause);
             }
 
             return null;
@@ -266,12 +266,12 @@ public abstract class UserIdentityExtractor {
             Matcher m = r.matcher(value);
 
             if (!m.find()) {
-                logger.debugf("[PatternMatcher:extract] No matches were found for input \"%s\", pattern=\"%s\"", value, _pattern);
+                LOG.debug("[PatternMatcher:extract] No matches were found for input \"{}\", pattern=\"{}\"", value, _pattern);
                 return null;
             }
 
             if (m.groupCount() != 1) {
-                logger.debugf("[PatternMatcher:extract] Match produced more than a single group for input \"%s\", pattern=\"%s\"", value, _pattern);
+                LOG.debug("[PatternMatcher:extract] Match produced more than a single group for input \"{}\", pattern=\"{}\"", value, _pattern);
                 return null;
             }
 

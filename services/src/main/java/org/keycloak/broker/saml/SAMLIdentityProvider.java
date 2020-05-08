@@ -16,7 +16,6 @@
  */
 package org.keycloak.broker.saml;
 
-import org.jboss.logging.Logger;
 import org.keycloak.broker.provider.*;
 import org.keycloak.broker.provider.util.SimpleHttp;
 import org.keycloak.common.util.PemUtils;
@@ -44,6 +43,8 @@ import org.keycloak.saml.processing.api.saml.v2.request.SAML2Request;
 import org.keycloak.saml.processing.core.util.KeycloakKeySamlExtensionGenerator;
 import org.keycloak.saml.validators.DestinationValidator;
 import org.keycloak.sessions.AuthenticationSessionModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.MediaType;
@@ -59,7 +60,7 @@ import java.util.TreeSet;
  * @author Pedro Igor
  */
 public class SAMLIdentityProvider extends AbstractIdentityProvider<SAMLIdentityProviderConfig> {
-    protected static final Logger logger = Logger.getLogger(SAMLIdentityProvider.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(SAMLIdentityProvider.class);
     private final DestinationValidator destinationValidator;
 
     public SAMLIdentityProvider(KeycloakSession session, SAMLIdentityProviderConfig config, DestinationValidator destinationValidator) {
@@ -181,10 +182,10 @@ public class SAMLIdentityProvider extends AbstractIdentityProvider<SAMLIdentityP
                     .param(GeneralConstants.RELAY_STATE, userSession.getId()).asStatus();
             boolean success = status >= 200 && status < 400;
             if (!success) {
-                logger.warn("Failed saml backchannel broker logout to: " + singleLogoutServiceUrl);
+                LOG.warn("Failed saml backchannel broker logout to: " + singleLogoutServiceUrl);
             }
         } catch (Exception e) {
-            logger.warn("Failed saml backchannel broker logout to: " + singleLogoutServiceUrl, e);
+            LOG.warn("Failed saml backchannel broker logout to: " + singleLogoutServiceUrl, e);
         }
 
     }

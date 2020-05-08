@@ -44,18 +44,18 @@ import javax.xml.stream.events.StartElement;
  */
 public class SAML11RequestParser implements StaxParser {
 
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
 
     protected SAML11RequestType parseRequiredAttributes(StartElement startElement) throws ParsingException {
         Attribute idAttr = startElement.getAttributeByName(new QName(SAML11Constants.REQUEST_ID));
         if (idAttr == null)
-            throw logger.parserRequiredAttribute(SAML11Constants.REQUEST_ID);
+            throw LOG.parserRequiredAttribute(SAML11Constants.REQUEST_ID);
 
         String id = StaxParserUtil.getAttributeValue(idAttr);
 
         Attribute issueInstantAttr = startElement.getAttributeByName(new QName(SAML11Constants.ISSUE_INSTANT));
         if (issueInstantAttr == null)
-            throw logger.parserRequiredAttribute(SAML11Constants.ISSUE_INSTANT);
+            throw LOG.parserRequiredAttribute(SAML11Constants.ISSUE_INSTANT);
         XMLGregorianCalendar issueInstant = XMLTimeUtil.parse(StaxParserUtil.getAttributeValue(issueInstantAttr));
         return new SAML11RequestType(id, issueInstant);
     }
@@ -100,7 +100,7 @@ public class SAML11RequestParser implements StaxParser {
                 startElement = StaxParserUtil.getNextStartElement(xmlEventReader);
                 request.addAssertionIDRef(StaxParserUtil.getElementText(xmlEventReader));
             } else
-                throw logger.parserUnknownStartElement(elementName, startElement.getLocation());
+                throw LOG.parserUnknownStartElement(elementName, startElement.getLocation());
         }
         return request;
     }

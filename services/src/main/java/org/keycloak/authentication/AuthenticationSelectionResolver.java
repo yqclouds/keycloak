@@ -18,7 +18,7 @@
 
 package org.keycloak.authentication;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticationFlowModel;
@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  */
 class AuthenticationSelectionResolver {
 
-    private static final Logger logger = Logger.getLogger(AuthenticationSelectionResolver.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AuthenticationSelectionResolver.class);
 
     /**
      * This method creates the list of authenticators that is presented to the user. For a required execution, this is
@@ -95,7 +95,7 @@ class AuthenticationSelectionResolver {
             }
         }
 
-        logger.debugf("Selections when trying execution '%s' : %s", model.getAuthenticator(), authenticationSelectionList);
+        LOG.debug("Selections when trying execution '%s' : %s", model.getAuthenticator(), authenticationSelectionList);
 
         return authenticationSelectionList;
     }
@@ -182,7 +182,7 @@ class AuthenticationSelectionResolver {
 
         DefaultAuthenticationFlow flow = new DefaultAuthenticationFlow(processor, flowModel);
 
-        logger.debugf("Going through the flow '%s' for adding executions", flowModel.getAlias());
+        LOG.debug("Going through the flow '%s' for adding executions", flowModel.getAlias());
 
         List<AuthenticationExecutionModel> executions = processor.getRealm().getAuthenticationExecutions(flowId);
 

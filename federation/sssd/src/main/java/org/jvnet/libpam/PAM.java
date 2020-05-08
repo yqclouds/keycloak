@@ -25,7 +25,7 @@ package org.jvnet.libpam;
 
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.PointerByReference;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jvnet.libpam.impl.CLibrary.passwd;
 import org.jvnet.libpam.impl.PAMLibrary.*;
 import org.jvnet.libpam.impl.PAMLibrary.pam_conv.PamCallback;
@@ -54,7 +54,7 @@ import static org.jvnet.libpam.impl.PAMLibrary.*;
  * @author Kohsuke Kawaguchi
  */
 public class PAM {
-    private static final Logger LOGGER = Logger.getLogger(PAM.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(PAM.class.getName());
     private pam_handle_t pht;
     private int ret;
     /**

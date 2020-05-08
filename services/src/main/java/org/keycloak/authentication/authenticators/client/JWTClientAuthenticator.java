@@ -18,7 +18,7 @@
 package org.keycloak.authentication.authenticators.client;
 
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.ClientAuthenticationFlowContext;
@@ -61,7 +61,7 @@ public class JWTClientAuthenticator extends AbstractClientAuthenticator {
     public static final String PROVIDER_ID = "client-jwt";
     public static final String ATTR_PREFIX = "jwt.credential";
     public static final String CERTIFICATE_ATTR = "jwt.credential.certificate";
-    private static final Logger LOG = Logger.getLogger(JWTClientAuthenticator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JWTClientAuthenticator.class);
 
     @Autowired
     private SingleUseTokenStoreProvider singleUseTokenStoreProvider;
@@ -160,15 +160,15 @@ public class JWTClientAuthenticator extends AbstractClientAuthenticator {
 
             int lifespanInSecs = Math.max(token.getExpiration() - currentTime, 10);
             if (singleUseTokenStoreProvider.putIfAbsent(token.getId(), lifespanInSecs)) {
-                LOG.tracef("Added token '%s' to single-use cache. Lifespan: %d seconds, client: %s", token.getId(), lifespanInSecs, clientId);
+                LOG.trace("Added token '{}' to single-use cache. Lifespan: %d seconds, client: {}", token.getId(), lifespanInSecs, clientId);
             } else {
-                LOG.warnf("Token '%s' already used when authenticating client '%s'.", token.getId(), clientId);
+                LOG.warn("Token '{}' already used when authenticating client '{}'.", token.getId(), clientId);
                 throw new RuntimeException("Token reuse detected");
             }
 
             context.success();
         } catch (Exception e) {
-            ServicesLogger.LOGGER.errorValidatingAssertion(e);
+//            ServicesLogger.LOGGER.errorValidatingAssertion(e);
             Response challengeResponse = ClientAuthUtil.errorResponse(Response.Status.BAD_REQUEST.getStatusCode(), "unauthorized_client", "Client authentication with signed JWT failed: " + e.getMessage());
             context.failure(AuthenticationFlowError.INVALID_CLIENT_CREDENTIALS, challengeResponse);
         }

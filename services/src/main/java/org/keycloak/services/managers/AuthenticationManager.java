@@ -16,7 +16,6 @@
  */
 package org.keycloak.services.managers;
 
-import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.TokenVerifier;
@@ -57,6 +56,8 @@ import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.CommonClientSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
 import org.keycloak.util.TokenUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.*;
@@ -94,7 +95,7 @@ public class AuthenticationManager {
     public static final String KEYCLOAK_SESSION_COOKIE = "KEYCLOAK_SESSION";
     public static final String KEYCLOAK_REMEMBER_ME = "KEYCLOAK_REMEMBER_ME";
     public static final String KEYCLOAK_LOGOUT_PROTOCOL = "KEYCLOAK_LOGOUT_PROTOCOL";
-    protected static final Logger logger = Logger.getLogger(AuthenticationManager.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(AuthenticationManager.class);
     private static final TokenTypeCheck VALIDATE_IDENTITY_COOKIE = new TokenTypeCheck(TokenUtil.TOKEN_TYPE_KEYCLOAK_ID);
 
     @Autowired
@@ -102,7 +103,7 @@ public class AuthenticationManager {
 
     public static boolean isSessionValid(RealmModel realm, UserSessionModel userSession) {
         if (userSession == null) {
-            logger.debug("No user session");
+            LOG.debug("No user session");
             return false;
         }
         int currentTime = Time.currentTime();
@@ -120,7 +121,7 @@ public class AuthenticationManager {
 
     public static boolean isOfflineSessionValid(RealmModel realm, UserSessionModel userSession) {
         if (userSession == null) {
-            logger.debug("No offline user session");
+            LOG.debug("No offline user session");
             return false;
         }
         int currentTime = Time.currentTime();
@@ -204,7 +205,7 @@ public class AuthenticationManager {
             userSession.setState(UserSessionModel.State.LOGGING_OUT);
         }
 
-        logger.debugv("Logging out: {0} ({1}) offline: {2}", user.getUsername(), userSession.getId(), userSession.isOffline());
+        LOG.debug("Logging out: {} ({}) offline: {}", user.getUsername(), userSession.getId(), userSession.isOffline());
         expireUserSessionCookie(session, userSession, realm, uriInfo, headers, connection);
 
         final AuthenticationSessionManager asm = new AuthenticationSessionManager(session);
@@ -287,7 +288,7 @@ public class AuthenticationManager {
                 try {
                     identityProvider.backchannelLogout(session, userSession, uriInfo, realm);
                 } catch (Exception e) {
-                    logger.warn("Exception at broker backchannel logout for broker " + brokerId, e);
+                    LOG.warn("Exception at broker backchannel logout for broker " + brokerId, e);
                 }
             }
         }
@@ -315,7 +316,7 @@ public class AuthenticationManager {
         boolean allClientsLoggedOut = notLoggedOutSessions.isEmpty();
 
         if (!allClientsLoggedOut) {
-            logger.warnf("Some clients have been not been logged out for user %s in %s realm: %s",
+            LOG.warn("Some clients have been not been logged out for user {} in {} realm: {}",
                     userSession.getUser().getUsername(), realm.getName(),
                     notLoggedOutSessions.stream()
                             .map(AuthenticatedClientSessionModel::getClient)
@@ -323,8 +324,8 @@ public class AuthenticationManager {
                             .sorted()
                             .collect(Collectors.joining(", "))
             );
-        } else if (logger.isDebugEnabled()) {
-            logger.debugf("All clients have been logged out for user %s in %s realm, session %s",
+        } else if (LOG.isDebugEnabled()) {
+            LOG.debug("All clients have been logged out for user {} in {} realm, session {}",
                     userSession.getUser().getUsername(), realm.getName(), userSession.getId());
         }
 
@@ -368,7 +369,7 @@ public class AuthenticationManager {
             String authMethod = clientSession.getProtocol();
             if (authMethod == null) return true; // must be a keycloak service like account
 
-            logger.debugv("backchannel logout to: {0}", client.getClientId());
+            LOG.debug("backchannel logout to: {}", client.getClientId());
             LoginProtocol protocol = session.getProvider(LoginProtocol.class, authMethod);
             protocol.setRealm(realm)
                     .setHttpHeaders(headers)
@@ -379,7 +380,7 @@ public class AuthenticationManager {
 
             return true;
         } catch (Exception ex) {
-            ServicesLogger.LOGGER.failedToLogoutClient(ex);
+            //ServicesLogger.LOGGER.failedToLogoutClient(ex);
             return false;
         }
     }
@@ -406,7 +407,7 @@ public class AuthenticationManager {
             String authMethod = clientSession.getProtocol();
             if (authMethod == null) return null; // must be a keycloak service like account
 
-            logger.debugv("frontchannel logout to: {0}", client.getClientId());
+            LOG.debug("frontchannel logout to: {}", client.getClientId());
             LoginProtocol protocol = session.getProvider(LoginProtocol.class, authMethod);
             protocol.setRealm(realm)
                     .setHttpHeaders(headers)
@@ -414,7 +415,7 @@ public class AuthenticationManager {
 
             Response response = protocol.frontchannelLogout(userSession, clientSession);
             if (response != null) {
-                logger.debug("returning frontchannel logout request to client");
+                LOG.debug("returning frontchannel logout request to client");
                 // setting this to logged out cuz I'm not sure protocols can always verify that the client was logged out or not
 
                 setClientLogoutAction(logoutAuthSession, client.getId(), AuthenticationSessionModel.Action.LOGGED_OUT);
@@ -422,7 +423,7 @@ public class AuthenticationManager {
                 return response;
             }
         } catch (Exception e) {
-            ServicesLogger.LOGGER.failedToLogoutClient(e);
+            //ServicesLogger.LOGGER.failedToLogoutClient(e);
         }
 
         return null;
@@ -488,9 +489,9 @@ public class AuthenticationManager {
                                          String initiatingIdp) {
         if (userSession == null) return null;
 
-        if (logger.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             UserModel user = userSession.getUser();
-            logger.debugv("Logging out: {0} ({1})", user.getUsername(), userSession.getId());
+            LOG.debug("Logging out: {} ({})", user.getUsername(), userSession.getId());
         }
 
         if (userSession.getState() != UserSessionModel.State.LOGGING_OUT) {
@@ -598,7 +599,7 @@ public class AuthenticationManager {
         if (session != null && session.isRememberMe()) {
             maxAge = realm.getSsoSessionMaxLifespanRememberMe() > 0 ? realm.getSsoSessionMaxLifespanRememberMe() : realm.getSsoSessionMaxLifespan();
         }
-        logger.debugv("Create login cookie - name: {0}, path: {1}, max-age: {2}", KEYCLOAK_IDENTITY_COOKIE, cookiePath, maxAge);
+        LOG.debug("Create login cookie - name: {}, path: {}, max-age: {}", KEYCLOAK_IDENTITY_COOKIE, cookiePath, maxAge);
         CookieHelper.addCookie(KEYCLOAK_IDENTITY_COOKIE, encoded, cookiePath, null, null, maxAge, secureOnly, true, SameSiteAttributeValue.NONE);
         //builder.cookie(new NewCookie(cookieName, encoded, cookiePath, null, null, maxAge, secureOnly));// todo httponly , true);
 
@@ -636,7 +637,7 @@ public class AuthenticationManager {
     }
 
     public static void expireIdentityCookie(RealmModel realm, UriInfo uriInfo, ClientConnection connection) {
-        logger.debug("Expiring identity cookie");
+        LOG.debug("Expiring identity cookie");
         String path = getIdentityCookiePath(realm, uriInfo);
         expireCookie(realm, KEYCLOAK_IDENTITY_COOKIE, path, true, connection, SameSiteAttributeValue.NONE);
         expireCookie(realm, KEYCLOAK_SESSION_COOKIE, path, false, connection, SameSiteAttributeValue.NONE);
@@ -647,7 +648,7 @@ public class AuthenticationManager {
     }
 
     public static void expireOldIdentityCookie(RealmModel realm, UriInfo uriInfo, ClientConnection connection) {
-        logger.debug("Expiring old identity cookie with wrong path");
+        LOG.debug("Expiring old identity cookie with wrong path");
 
         String oldPath = getOldCookiePath(realm, uriInfo);
         expireCookie(realm, KEYCLOAK_IDENTITY_COOKIE, oldPath, true, connection, SameSiteAttributeValue.NONE);
@@ -656,14 +657,14 @@ public class AuthenticationManager {
 
 
     public static void expireRememberMeCookie(RealmModel realm, UriInfo uriInfo, ClientConnection connection) {
-        logger.debug("Expiring remember me cookie");
+        LOG.debug("Expiring remember me cookie");
         String path = getIdentityCookiePath(realm, uriInfo);
         String cookieName = KEYCLOAK_REMEMBER_ME;
         expireCookie(realm, cookieName, path, true, connection, null);
     }
 
     public static void expireOldAuthSessionCookie(RealmModel realm, UriInfo uriInfo, ClientConnection connection) {
-        logger.debugv("Expire {1} cookie .", AuthenticationSessionManager.AUTH_SESSION_ID);
+        LOG.debug("Expire {} cookie .", AuthenticationSessionManager.AUTH_SESSION_ID);
 
         String oldPath = getOldCookiePath(realm, uriInfo);
         expireCookie(realm, AuthenticationSessionManager.AUTH_SESSION_ID, oldPath, true, connection, null);
@@ -690,7 +691,7 @@ public class AuthenticationManager {
     }
 
     public static void expireCookie(RealmModel realm, String cookieName, String path, boolean httpOnly, ClientConnection connection, SameSiteAttributeValue sameSite) {
-        logger.debugf("Expiring cookie: %s path: %s", cookieName, path);
+        LOG.debug("Expiring cookie: {} path: {}", cookieName, path);
         boolean secureOnly = realm.getSslRequired().isRequired(connection);
         ;
         CookieHelper.addCookie(cookieName, "", path, null, "Expiring cookie", 0, secureOnly, httpOnly, sameSite);
@@ -699,7 +700,7 @@ public class AuthenticationManager {
     public static AuthResult authenticateIdentityCookie(KeycloakSession session, RealmModel realm, boolean checkActive) {
         Cookie cookie = CookieHelper.getCookie(session.getContext().getRequestHeaders().getCookies(), KEYCLOAK_IDENTITY_COOKIE);
         if (cookie == null || "".equals(cookie.getValue())) {
-            logger.debugv("Could not find cookie: {0}", KEYCLOAK_IDENTITY_COOKIE);
+            LOG.debug("Could not find cookie: {}", KEYCLOAK_IDENTITY_COOKIE);
             return null;
         }
 
@@ -740,7 +741,7 @@ public class AuthenticationManager {
                 if (!oldSessionId.equals(userSession.getId())) {
                     UserSessionModel oldSession = session.sessions().getUserSession(realm, oldSessionId);
                     if (oldSession != null) {
-                        logger.debugv("Removing old user session: session: {0}", oldSessionId);
+                        LOG.debug("Removing old user session: session: {}", oldSessionId);
                         session.sessions().removeUserSession(realm, oldSession);
                     }
                 }
@@ -782,13 +783,13 @@ public class AuthenticationManager {
     public static String getSessionIdFromSessionCookie(KeycloakSession session) {
         Cookie cookie = getCookie(session.getContext().getRequestHeaders().getCookies(), KEYCLOAK_SESSION_COOKIE);
         if (cookie == null || "".equals(cookie.getValue())) {
-            logger.debugv("Could not find cookie: {0}", KEYCLOAK_SESSION_COOKIE);
+            LOG.debug("Could not find cookie: {}", KEYCLOAK_SESSION_COOKIE);
             return null;
         }
 
         String[] parts = cookie.getValue().split("/", 3);
         if (parts.length != 3) {
-            logger.debugv("Cannot parse session value from: {0}", KEYCLOAK_SESSION_COOKIE);
+            LOG.debug("Cannot parse session value from: {}", KEYCLOAK_SESSION_COOKIE);
             return null;
         }
         return parts[2];
@@ -943,7 +944,7 @@ public class AuthenticationManager {
         evaluateRequiredActionTriggers(session, authSession, clientConnection, request, uriInfo, event, realm, user);
 
 
-        logger.debugv("processAccessCode: go to oauth page?: {0}", client.isConsentRequired());
+        LOG.debug("processAccessCode: go to oauth page?: {}", client.isConsentRequired());
 
         event.detail(Details.CODE_ID, authSession.getParentSession().getId());
 
@@ -1064,7 +1065,7 @@ public class AuthenticationManager {
                 }
             }
 
-            logger.debugv("Requested action {0} not configured for realm", kcAction);
+            LOG.debug("Requested action {} not configured for realm", kcAction);
             setKcActionStatus(kcAction, RequiredActionContext.KcActionStatus.ERROR, authSession);
         }
 
@@ -1090,11 +1091,11 @@ public class AuthenticationManager {
 
         if (kcActionExecution) {
             if (actionProvider.initiatedActionSupport() == InitiatedActionSupport.NOT_SUPPORTED) {
-                logger.debugv("Requested action {0} does not support being invoked with kc_action", factory.getId());
+                LOG.debug("Requested action {} does not support being invoked with kc_action", factory.getId());
                 setKcActionStatus(factory.getId(), RequiredActionContext.KcActionStatus.ERROR, authSession);
                 return null;
             } else if (!model.isEnabled()) {
-                logger.debugv("Requested action {0} is disabled and can't be invoked with kc_action", factory.getId());
+                LOG.debug("Requested action {} is disabled and can't be invoked with kc_action", factory.getId());
                 setKcActionStatus(factory.getId(), RequiredActionContext.KcActionStatus.ERROR, authSession);
                 return null;
             } else {
@@ -1132,7 +1133,7 @@ public class AuthenticationManager {
         for (String action : requiredActions) {
             RequiredActionProviderModel model = realm.getRequiredActionProviderByAlias(action);
             if (model == null) {
-                logger.warnv("Could not find configuration for Required Action {0}, did you forget to register it?", action);
+                LOG.warn("Could not find configuration for Required Action {}, did you forget to register it?", action);
                 continue;
             }
             if (!model.isEnabled()) {
@@ -1198,7 +1199,7 @@ public class AuthenticationManager {
             AccessToken token = verifier.verify().getToken();
             if (checkActive) {
                 if (!token.isActive() || token.getIssuedAt() < realm.getNotBefore()) {
-                    logger.debug("Identity cookie expired");
+                    LOG.debug("Identity cookie expired");
                     return null;
                 }
             }
@@ -1208,13 +1209,13 @@ public class AuthenticationManager {
             if (userSession != null) {
                 user = userSession.getUser();
                 if (user == null || !user.isEnabled()) {
-                    logger.debug("Unknown user in identity token");
+                    LOG.debug("Unknown user in identity token");
                     return null;
                 }
 
                 int userNotBefore = session.users().getNotBeforeOfUser(realm, user);
                 if (token.getIssuedAt() < userNotBefore) {
-                    logger.debug("User notBefore newer than token");
+                    LOG.debug("User notBefore newer than token");
                     return null;
                 }
             }
@@ -1231,7 +1232,7 @@ public class AuthenticationManager {
 
                 if (userSession != null)
                     backchannelLogout(session, realm, userSession, uriInfo, connection, headers, true);
-                logger.debug("User session not active");
+                LOG.debug("User session not active");
                 return null;
             }
 
@@ -1239,7 +1240,7 @@ public class AuthenticationManager {
 
             return new AuthResult(user, userSession, token);
         } catch (VerificationException e) {
-            logger.debugf("Failed to verify identity token: %s", e.getMessage());
+            LOG.debug("Failed to verify identity token: {}", e.getMessage());
         }
         return null;
     }

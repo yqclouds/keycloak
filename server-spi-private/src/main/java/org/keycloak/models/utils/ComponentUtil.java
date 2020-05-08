@@ -17,7 +17,7 @@
 
 package org.keycloak.models.utils;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.KeycloakSession;
@@ -39,7 +39,7 @@ import java.util.Map;
  */
 public class ComponentUtil {
 
-    private static final Logger logger = Logger.getLogger(ComponentUtil.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ComponentUtil.class);
 
     public static Map<String, ProviderConfigProperty> getComponentConfigProperties(KeycloakSession session, ComponentRepresentation component) {
         return getComponentConfigProperties(session, component.getProviderType(), component.getProviderId());
@@ -113,7 +113,7 @@ public class ComponentUtil {
             factory.preRemove(session, realm, model);
         } catch (IllegalArgumentException iae) {
             // We allow to remove broken providers without throwing an exception
-            logger.warn(iae.getMessage());
+            LOG.warn(iae.getMessage());
         }
     }
 

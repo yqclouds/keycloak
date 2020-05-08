@@ -71,7 +71,7 @@ import java.util.List;
  */
 public class XMLSignatureUtil {
 
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
     private static final XMLSignatureFactory fac = getXMLSignatureFactory();
 
     ;
@@ -99,7 +99,7 @@ public class XMLSignatureUtil {
             try {
                 xsf = XMLSignatureFactory.getInstance("DOM");
             } catch (Exception err) {
-                throw new RuntimeException(logger.couldNotCreateInstance("DOM", err));
+                throw new RuntimeException(LOG.couldNotCreateInstance("DOM", err));
             }
         }
         return xsf;
@@ -135,10 +135,10 @@ public class XMLSignatureUtil {
                                 String canonicalizationMethodType) throws ParserConfigurationException, GeneralSecurityException,
             MarshalException, XMLSignatureException {
         if (nodeToBeSigned == null)
-            throw logger.nullArgumentError("Node to be signed");
+            throw LOG.nullArgumentError("Node to be signed");
 
-        if (logger.isTraceEnabled()) {
-            logger.trace("Document to be signed=" + DocumentUtil.asString(doc));
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Document to be signed=" + DocumentUtil.asString(doc));
         }
 
         Node parentNode = nodeToBeSigned.getParentNode();
@@ -274,8 +274,8 @@ public class XMLSignatureUtil {
     public static Document sign(Document doc, String keyName, KeyPair keyPair, String digestMethod, String signatureMethod, String referenceURI,
                                 X509Certificate x509Certificate, String canonicalizationMethodType)
             throws GeneralSecurityException, MarshalException, XMLSignatureException {
-        if (logger.isTraceEnabled()) {
-            logger.trace("Document to be signed=" + DocumentUtil.asString(doc));
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Document to be signed=" + DocumentUtil.asString(doc));
         }
         PrivateKey signingKey = keyPair.getPrivate();
         PublicKey publicKey = keyPair.getPublic();
@@ -305,8 +305,8 @@ public class XMLSignatureUtil {
         String referenceURI = dto.getReferenceURI();
         String signatureMethod = dto.getSignatureMethod();
 
-        if (logger.isTraceEnabled()) {
-            logger.trace("Document to be signed=" + DocumentUtil.asString(doc));
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Document to be signed=" + DocumentUtil.asString(doc));
         }
 
         PrivateKey signingKey = keyPair.getPrivate();
@@ -316,8 +316,8 @@ public class XMLSignatureUtil {
 
         signImpl(dsc, digestMethod, signatureMethod, referenceURI, keyName, publicKey, dto.getX509Certificate(), canonicalizationMethodType);
 
-        if (logger.isTraceEnabled()) {
-            logger.trace("Signed document=" + DocumentUtil.asString(doc));
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Signed document=" + DocumentUtil.asString(doc));
         }
 
         return doc;
@@ -336,19 +336,19 @@ public class XMLSignatureUtil {
     @SuppressWarnings("unchecked")
     public static boolean validate(Document signedDoc, final KeyLocator locator) throws MarshalException, XMLSignatureException {
         if (signedDoc == null)
-            throw logger.nullArgumentError("Signed Document");
+            throw LOG.nullArgumentError("Signed Document");
 
         propagateIDAttributeSetup(signedDoc.getDocumentElement(), signedDoc.getDocumentElement());
 
         NodeList nl = signedDoc.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
 
         if (nl == null || nl.getLength() == 0) {
-            logger.debug("Cannot find Signature element");
+            LOG.debug("Cannot find Signature element");
             return false;
         }
 
         if (locator == null)
-            throw logger.nullValueError("Public Key");
+            throw LOG.nullValueError("Public Key");
 
         int signedAssertions = 0;
         String assertionNameSpaceUri = null;
@@ -369,8 +369,8 @@ public class XMLSignatureUtil {
         NodeList assertions = signedDoc.getElementsByTagNameNS(assertionNameSpaceUri, JBossSAMLConstants.ASSERTION.get());
 
         if (signedAssertions > 0 && assertions != null && assertions.getLength() != signedAssertions) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("SAML Response document may contain malicious assertions. Signature validation will fail.");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("SAML Response document may contain malicious assertions. Signature validation will fail.");
             }
             // there are unsigned assertions mixed with signed ones
             return false;
@@ -389,16 +389,16 @@ public class XMLSignatureUtil {
                 return false;
             }
         } catch (XMLSignatureException ex) { // pass through MarshalException
-            logger.debug("Verification failed for key " + sel.keyName + ": " + ex);
-            logger.trace(ex);
+            LOG.debug("Verification failed for key " + sel.keyName + ": " + ex);
+            LOG.trace(ex);
         }
 
-        logger.trace("Could not validate signature using ds:KeyInfo/ds:KeyName hint.");
+        LOG.trace("Could not validate signature using ds:KeyInfo/ds:KeyName hint.");
 
         if (locator instanceof Iterable) {
             Iterable<Key> availableKeys = (Iterable<Key>) locator;
 
-            logger.trace("Trying hard to validate XML signature using all available keys.");
+            LOG.trace("Trying hard to validate XML signature using all available keys.");
 
             for (Key key : availableKeys) {
                 try {
@@ -406,8 +406,8 @@ public class XMLSignatureUtil {
                         return true;
                     }
                 } catch (XMLSignatureException ex) { // pass through MarshalException
-                    logger.debug("Verification failed: " + ex);
-                    logger.trace(ex);
+                    LOG.debug("Verification failed: " + ex);
+                    LOG.trace(ex);
                 }
             }
         }
@@ -421,13 +421,13 @@ public class XMLSignatureUtil {
         boolean coreValidity = signature.validate(valContext);
 
         if (!coreValidity) {
-            if (logger.isTraceEnabled()) {
+            if (LOG.isTraceEnabled()) {
                 boolean sv = signature.getSignatureValue().validate(valContext);
-                logger.trace("Signature validation status: " + sv);
+                LOG.trace("Signature validation status: " + sv);
 
                 List<Reference> references = signature.getSignedInfo().getReferences();
                 for (Reference ref : references) {
-                    logger.trace("[Ref id=" + ref.getId() + ":uri=" + ref.getURI() + "]validity status:" + ref.validate(valContext));
+                    LOG.trace("[Ref id=" + ref.getId() + ":uri=" + ref.getURI() + "]validity status:" + ref.validate(valContext));
                 }
             }
         }
@@ -444,7 +444,7 @@ public class XMLSignatureUtil {
      * @throws JAXBException
      */
     public static void marshall(SignatureType signature, OutputStream os) throws JAXBException, SAXException {
-        throw logger.notImplementedYet("NYI");
+        throw LOG.notImplementedYet("NYI");
         /*
          * JAXBElement<SignatureType> jsig = objectFactory.createSignature(signature); Marshaller marshaller =
          * JAXBUtil.getValidatingMarshaller(pkgName, schemaLocation); marshaller.marshal(jsig, os);
@@ -486,7 +486,7 @@ public class XMLSignatureUtil {
                 cert = (X509Certificate) cf.generateCertificate(bais);
             }
         } catch (java.security.cert.CertificateException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
         return cert;
     }
@@ -594,7 +594,7 @@ public class XMLSignatureUtil {
             dsaKeyValue.setY(Base64.encodeBytes(Y).getBytes(GeneralConstants.SAML_CHARSET));
             return dsaKeyValue;
         }
-        throw logger.unsupportedType(key.toString());
+        throw LOG.unsupportedType(key.toString());
     }
 
     private static void signImpl(DOMSignContext dsc, String digestMethod, String signatureMethod, String referenceURI, String keyName, PublicKey publicKey,

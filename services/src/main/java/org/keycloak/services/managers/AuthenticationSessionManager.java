@@ -17,7 +17,6 @@
 
 package org.keycloak.services.managers;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
@@ -28,6 +27,8 @@ import org.keycloak.services.util.CookieHelper;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
 import org.keycloak.sessions.StickySessionEncoderProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.UriInfo;
@@ -45,7 +46,7 @@ public class AuthenticationSessionManager {
 
     public static final int AUTH_SESSION_LIMIT = 3;
 
-    private static final Logger log = Logger.getLogger(AuthenticationSessionManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AuthenticationSessionManager.class);
 
     private final KeycloakSession session;
 
@@ -152,7 +153,7 @@ public class AuthenticationSessionManager {
 
         CookieHelper.addCookie(AUTH_SESSION_ID, encodedAuthSessionId, cookiePath, null, null, -1, sslRequired, true);
 
-        log.debugf("Set AUTH_SESSION_ID cookie with value %s", encodedAuthSessionId);
+        LOG.debug("Set AUTH_SESSION_ID cookie with value {}", encodedAuthSessionId);
     }
 
 
@@ -161,7 +162,7 @@ public class AuthenticationSessionManager {
      * @return object with decoded and actually encoded authSessionId
      */
     AuthSessionId decodeAuthSessionId(String encodedAuthSessionId) {
-        log.debugf("Found AUTH_SESSION_ID cookie with value %s", encodedAuthSessionId);
+        LOG.debug("Found AUTH_SESSION_ID cookie with value {}", encodedAuthSessionId);
         String decodedAuthSessionId = stickySessionEncoderProvider.decodeSessionId(encodedAuthSessionId);
         String reencoded = stickySessionEncoderProvider.encodeSessionId(decodedAuthSessionId);
 
@@ -171,7 +172,7 @@ public class AuthenticationSessionManager {
 
     void reencodeAuthSessionCookie(String oldEncodedAuthSessionId, AuthSessionId newAuthSessionId, RealmModel realm) {
         if (!oldEncodedAuthSessionId.equals(newAuthSessionId.getEncodedId())) {
-            log.debugf("Route changed. Will update authentication session cookie. Old: '%s', New: '%s'", oldEncodedAuthSessionId,
+            LOG.debug("Route changed. Will update authentication session cookie. Old: '{}', New: '{}'", oldEncodedAuthSessionId,
                     newAuthSessionId.getEncodedId());
             setAuthSessionCookie(newAuthSessionId.getDecodedId(), realm);
         }
@@ -192,7 +193,7 @@ public class AuthenticationSessionManager {
         List<String> authSessionIds = cookiesVal.stream().limit(AUTH_SESSION_LIMIT).collect(Collectors.toList());
 
         if (authSessionIds.isEmpty()) {
-            log.debugf("Not found AUTH_SESSION_ID cookie");
+            LOG.debug("Not found AUTH_SESSION_ID cookie");
         }
 
         return authSessionIds;
@@ -202,7 +203,7 @@ public class AuthenticationSessionManager {
     public void removeAuthenticationSession(RealmModel realm, AuthenticationSessionModel authSession, boolean expireRestartCookie) {
         RootAuthenticationSessionModel rootAuthSession = authSession.getParentSession();
 
-        log.debugf("Removing authSession '%s'. Expire restart cookie: %b", rootAuthSession.getId(), expireRestartCookie);
+        LOG.debug("Removing authSession '{}'. Expire restart cookie: %b", rootAuthSession.getId(), expireRestartCookie);
         session.authenticationSessions().removeRootAuthenticationSession(realm, rootAuthSession);
 
         // expire restart cookie

@@ -17,19 +17,19 @@
 
 package org.keycloak.adapters.authentication;
 
-import java.security.KeyPair;
-import java.security.PublicKey;
-import java.util.Map;
-
 import org.keycloak.OAuth2Constants;
 import org.keycloak.adapters.AdapterUtils;
 import org.keycloak.adapters.KeycloakDeployment;
+import org.keycloak.common.util.KeystoreUtil;
+import org.keycloak.common.util.Time;
 import org.keycloak.jose.jwk.JWK;
 import org.keycloak.jose.jwk.JWKBuilder;
 import org.keycloak.jose.jws.JWSBuilder;
 import org.keycloak.representations.JsonWebToken;
-import org.keycloak.common.util.KeystoreUtil;
-import org.keycloak.common.util.Time;
+
+import java.security.KeyPair;
+import java.security.PublicKey;
+import java.util.Map;
 
 /**
  * Client authentication based on JWT signed by client private key .
@@ -76,15 +76,15 @@ public class JWTClientCredentialsProvider implements ClientCredentialsProvider {
 
         Map<String, Object> cfg = (Map<String, Object>) config;
 
-        String clientKeystoreFile =  (String) cfg.get("client-keystore-file");
+        String clientKeystoreFile = (String) cfg.get("client-keystore-file");
         if (clientKeystoreFile == null) {
             throw new RuntimeException("Missing parameter client-keystore-file in configuration of jwt for client " + deployment.getResourceName());
         }
 
         String clientKeystoreType = (String) cfg.get("client-keystore-type");
-        KeystoreUtil.KeystoreFormat clientKeystoreFormat = clientKeystoreType==null ? KeystoreUtil.KeystoreFormat.JKS : Enum.valueOf(KeystoreUtil.KeystoreFormat.class, clientKeystoreType.toUpperCase());
+        KeystoreUtil.KeystoreFormat clientKeystoreFormat = clientKeystoreType == null ? KeystoreUtil.KeystoreFormat.JKS : Enum.valueOf(KeystoreUtil.KeystoreFormat.class, clientKeystoreType.toUpperCase());
 
-        String clientKeystorePassword =  (String) cfg.get("client-keystore-password");
+        String clientKeystorePassword = (String) cfg.get("client-keystore-password");
         if (clientKeystorePassword == null) {
             throw new RuntimeException("Missing parameter client-keystore-password in configuration of jwt for client " + deployment.getResourceName());
         }
@@ -94,7 +94,7 @@ public class JWTClientCredentialsProvider implements ClientCredentialsProvider {
             clientKeyPassword = clientKeystorePassword;
         }
 
-        String clientKeyAlias =  (String) cfg.get("client-key-alias");
+        String clientKeyAlias = (String) cfg.get("client-key-alias");
         if (clientKeyAlias == null) {
             clientKeyAlias = deployment.getResourceName();
         }

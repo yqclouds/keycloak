@@ -18,7 +18,6 @@
 package org.keycloak.models.sessions.infinispan;
 
 import org.infinispan.Cache;
-import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.common.util.Base64Url;
@@ -40,6 +39,8 @@ import org.keycloak.models.utils.RealmInfoUtil;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionProvider;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -53,7 +54,7 @@ import static org.keycloak.models.sessions.infinispan.InfinispanAuthenticationSe
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class InfinispanAuthenticationSessionProvider implements AuthenticationSessionProvider {
-    private static final Logger LOG = Logger.getLogger(InfinispanAuthenticationSessionProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(InfinispanAuthenticationSessionProvider.class);
 
     private Cache<String, RootAuthenticationSessionEntity> cache;
 
@@ -82,7 +83,7 @@ public class InfinispanAuthenticationSessionProvider implements AuthenticationSe
 
         clusterProvider.registerListener(AUTHENTICATION_SESSION_EVENTS, this::updateAuthNotes);
 
-        LOG.debugf("[%s] Registered cluster listeners", cache.getCacheManager().getAddress());
+        LOG.debug("[{}] Registered cluster listeners", cache.getCacheManager().getAddress());
 
         session.getTransactionManager().enlistAfterCompletion(tx);
         session.getTransactionManager().enlistAfterCompletion(clusterEventsSenderTx);
@@ -108,7 +109,7 @@ public class InfinispanAuthenticationSessionProvider implements AuthenticationSe
 
     @Override
     public void removeExpired(RealmModel realm) {
-        LOG.debugf("Removing expired sessions");
+        LOG.debug("Removing expired sessions");
 
         int expired = Time.currentTime() - RealmInfoUtil.getDettachedClientSessionLifespan(realm);
 
@@ -127,7 +128,7 @@ public class InfinispanAuthenticationSessionProvider implements AuthenticationSe
             tx.remove(cache, entity.getId());
         }
 
-        LOG.debugf("Removed %d expired authentication sessions for realm '%s'", counter, realm.getName());
+        LOG.debug("Removed {} expired authentication sessions for realm '{}'", counter, realm.getName());
     }
 
     @Override

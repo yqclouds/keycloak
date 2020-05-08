@@ -21,34 +21,24 @@ import org.apache.catalina.*;
 import org.apache.catalina.authenticator.FormAuthenticator;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
-import org.jboss.logging.Logger;
 import org.keycloak.KeycloakSecurityContext;
-import org.keycloak.adapters.AdapterDeploymentContext;
-import org.keycloak.adapters.AdapterTokenStore;
-import org.keycloak.adapters.KeycloakConfigResolver;
-import org.keycloak.adapters.KeycloakDeployment;
-import org.keycloak.adapters.KeycloakDeploymentBuilder;
-import org.keycloak.adapters.NodesRegistrationManagement;
-import org.keycloak.adapters.PreAuthActionsHandler;
-import org.keycloak.adapters.RefreshableKeycloakSecurityContext;
+import org.keycloak.adapters.*;
 import org.keycloak.adapters.spi.AuthChallenge;
 import org.keycloak.adapters.spi.AuthOutcome;
 import org.keycloak.adapters.spi.HttpFacade;
 import org.keycloak.constants.AdapterConstants;
 import org.keycloak.enums.TokenStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 /**
  * Keycloak authentication valve
- * 
+ *
  * @author <a href="mailto:ungarida@gmail.com">Davide Ungari</a>
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
@@ -57,8 +47,8 @@ public abstract class AbstractKeycloakAuthenticatorValve extends FormAuthenticat
 
     public static final String TOKEN_STORE_NOTE = "TOKEN_STORE_NOTE";
 
-	private final static Logger log = Logger.getLogger(AbstractKeycloakAuthenticatorValve.class);
-	protected CatalinaUserSessionManagement userSessionManagement = new CatalinaUserSessionManagement();
+    private final static Logger LOG = LoggerFactory.getLogger(AbstractKeycloakAuthenticatorValve.class);
+    protected CatalinaUserSessionManagement userSessionManagement = new CatalinaUserSessionManagement();
     protected AdapterDeploymentContext deploymentContext;
     protected NodesRegistrationManagement nodesRegistrationManagement;
 
@@ -67,14 +57,14 @@ public abstract class AbstractKeycloakAuthenticatorValve extends FormAuthenticat
         if (Lifecycle.START_EVENT.equals(event.getType())) {
             cache = false;
         } else if (Lifecycle.AFTER_START_EVENT.equals(event.getType())) {
-        	keycloakInit();
+            keycloakInit();
         } else if (event.getType() == Lifecycle.BEFORE_STOP_EVENT) {
             beforeStop();
         }
     }
 
     protected void logoutInternal(Request request) {
-        KeycloakSecurityContext ksc = (KeycloakSecurityContext)request.getAttribute(KeycloakSecurityContext.class.getName());
+        KeycloakSecurityContext ksc = (KeycloakSecurityContext) request.getAttribute(KeycloakSecurityContext.class.getName());
         if (ksc != null) {
             CatalinaHttpFacade facade = new OIDCCatalinaHttpFacade(request, null);
             KeycloakDeployment deployment = deploymentContext.resolveDeployment(facade);
@@ -113,22 +103,22 @@ public abstract class AbstractKeycloakAuthenticatorValve extends FormAuthenticat
             try {
                 KeycloakConfigResolver configResolver = (KeycloakConfigResolver) context.getLoader().getClassLoader().loadClass(configResolverClass).newInstance();
                 deploymentContext = new AdapterDeploymentContext(configResolver);
-                log.debugv("Using {0} to resolve Keycloak configuration on a per-request basis.", configResolverClass);
+                LOG.debug("Using {} to resolve Keycloak configuration on a per-request basis.", configResolverClass);
             } catch (Exception ex) {
-                log.errorv("The specified resolver {0} could NOT be loaded. Keycloak is unconfigured and will deny all requests. Reason: {1}", configResolverClass, ex.getMessage());
+                LOG.error("The specified resolver {} could NOT be loaded. Keycloak is unconfigured and will deny all requests. Reason: {}", configResolverClass, ex.getMessage());
                 deploymentContext = new AdapterDeploymentContext(new KeycloakDeployment());
             }
         } else {
             InputStream configInputStream = getConfigInputStream(context);
             KeycloakDeployment kd;
             if (configInputStream == null) {
-                log.warn("No adapter configuration. Keycloak is unconfigured and will deny all requests.");
+                LOG.warn("No adapter configuration. Keycloak is unconfigured and will deny all requests.");
                 kd = new KeycloakDeployment();
             } else {
                 kd = KeycloakDeploymentBuilder.build(configInputStream);
             }
             deploymentContext = new AdapterDeploymentContext(kd);
-            log.debug("Keycloak is using a per-deployment configuration.");
+            LOG.debug("Keycloak is using a per-deployment configuration.");
         }
 
         context.getServletContext().setAttribute(AdapterDeploymentContext.class.getName(), deploymentContext);
@@ -144,7 +134,7 @@ public abstract class AbstractKeycloakAuthenticatorValve extends FormAuthenticat
         if (json == null) {
             return null;
         }
-        log.trace("**** using " + AdapterConstants.AUTH_DATA_PARAM_NAME);
+        LOG.trace("**** using " + AdapterConstants.AUTH_DATA_PARAM_NAME);
         return new ByteArrayInputStream(json.getBytes());
     }
 
@@ -153,13 +143,13 @@ public abstract class AbstractKeycloakAuthenticatorValve extends FormAuthenticat
         if (is == null) {
             String path = context.getServletContext().getInitParameter("keycloak.config.file");
             if (path == null) {
-                log.trace("**** using /WEB-INF/keycloak.json");
+                LOG.trace("**** using /WEB-INF/keycloak.json");
                 is = context.getServletContext().getResourceAsStream("/WEB-INF/keycloak.json");
             } else {
                 try {
                     is = new FileInputStream(path);
                 } catch (FileNotFoundException e) {
-                    log.errorv("NOT FOUND {0}", path);
+                    LOG.error("NOT FOUND {}", path);
                     throw new RuntimeException(e);
                 }
             }
@@ -184,7 +174,9 @@ public abstract class AbstractKeycloakAuthenticatorValve extends FormAuthenticat
     }
 
     protected abstract GenericPrincipalFactory createPrincipalFactory();
+
     protected abstract boolean forwardToErrorPageInternal(Request request, HttpServletResponse response, Object loginConfig) throws IOException;
+
     protected abstract AbstractAuthenticatedActionsValve createAuthenticatedActionsValve(AdapterDeploymentContext deploymentContext, Valve next, Container container);
 
     protected boolean authenticateInternal(Request request, HttpServletResponse response, Object loginConfig) throws IOException {
@@ -242,7 +234,7 @@ public abstract class AbstractKeycloakAuthenticatorValve extends FormAuthenticat
     }
 
     protected AdapterTokenStore getTokenStore(Request request, HttpFacade facade, KeycloakDeployment resolvedDeployment) {
-        AdapterTokenStore store = (AdapterTokenStore)request.getNote(TOKEN_STORE_NOTE);
+        AdapterTokenStore store = (AdapterTokenStore) request.getNote(TOKEN_STORE_NOTE);
         if (store != null) {
             return store;
         }

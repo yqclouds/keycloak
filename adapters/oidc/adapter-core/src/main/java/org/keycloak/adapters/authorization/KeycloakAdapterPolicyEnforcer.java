@@ -17,13 +17,6 @@
  */
 package org.keycloak.adapters.authorization;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-
-import org.jboss.logging.Logger;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.adapters.KeycloakDeployment;
 import org.keycloak.adapters.OIDCHttpFacade;
@@ -33,7 +26,6 @@ import org.keycloak.authorization.client.AuthorizationDeniedException;
 import org.keycloak.authorization.client.AuthzClient;
 import org.keycloak.authorization.client.resource.PermissionResource;
 import org.keycloak.authorization.client.resource.ProtectionResource;
-import org.keycloak.authorization.client.util.HttpResponseException;
 import org.keycloak.common.util.Base64;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.adapters.config.PolicyEnforcerConfig;
@@ -43,13 +35,16 @@ import org.keycloak.representations.idm.authorization.AuthorizationResponse;
 import org.keycloak.representations.idm.authorization.Permission;
 import org.keycloak.representations.idm.authorization.PermissionRequest;
 import org.keycloak.util.JsonSerialization;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.*;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
 public class KeycloakAdapterPolicyEnforcer extends AbstractPolicyEnforcer {
-
-    private static Logger LOGGER = Logger.getLogger(KeycloakAdapterPolicyEnforcer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KeycloakAdapterPolicyEnforcer.class);
 
     public KeycloakAdapterPolicyEnforcer(PolicyEnforcer policyEnforcer) {
         super(policyEnforcer);
@@ -109,8 +104,8 @@ public class KeycloakAdapterPolicyEnforcer extends AbstractPolicyEnforcer {
                 response.setStatus(403);
             }
 
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Sending challenge");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Sending challenge");
             }
 
             return true;
@@ -159,7 +154,7 @@ public class KeycloakAdapterPolicyEnforcer extends AbstractPolicyEnforcer {
                 authzRequest.setRpt(accessTokenString);
             }
 
-            LOGGER.debug("Obtaining authorization for authenticated user.");
+            LOG.debug("Obtaining authorization for authenticated user.");
             AuthorizationResponse authzResponse;
 
             if (isBearerAuthorization(httpFacade)) {
@@ -173,9 +168,9 @@ public class KeycloakAdapterPolicyEnforcer extends AbstractPolicyEnforcer {
                 return AdapterTokenVerifier.verifyToken(authzResponse.getToken(), deployment);
             }
         } catch (AuthorizationDeniedException ignore) {
-            LOGGER.debug("Authorization denied", ignore);
+            LOG.debug("Authorization denied", ignore);
         } catch (Exception e) {
-            LOGGER.debug("Authorization failed", e);
+            LOG.debug("Authorization failed", e);
         }
 
         return null;

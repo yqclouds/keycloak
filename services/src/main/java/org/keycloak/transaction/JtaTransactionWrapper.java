@@ -16,7 +16,7 @@
  */
 package org.keycloak.transaction;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.KeycloakTransaction;
 import org.keycloak.provider.ExceptionConverter;
@@ -32,7 +32,7 @@ import javax.transaction.TransactionManager;
  * @version $Revision: 1 $
  */
 public class JtaTransactionWrapper implements KeycloakTransaction {
-    private static final Logger logger = Logger.getLogger(JtaTransactionWrapper.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JtaTransactionWrapper.class);
     protected TransactionManager tm;
     protected Transaction ut;
     protected Transaction suspended;
@@ -45,8 +45,8 @@ public class JtaTransactionWrapper implements KeycloakTransaction {
         try {
 
             suspended = tm.suspend();
-            logger.debug("new JtaTransactionWrapper");
-            logger.debugv("was existing? {0}", suspended != null);
+            LOG.debug("new JtaTransactionWrapper");
+            LOG.debug("was existing? {}", suspended != null);
             tm.begin();
             ut = tm.getTransaction();
             //ended = new Exception();
@@ -87,7 +87,7 @@ public class JtaTransactionWrapper implements KeycloakTransaction {
     @Override
     public void commit() {
         try {
-            logger.debug("JtaTransactionWrapper  commit");
+            LOG.debug("JtaTransactionWrapper  commit");
             tm.commit();
         } catch (Exception e) {
             handleException(e);
@@ -99,7 +99,7 @@ public class JtaTransactionWrapper implements KeycloakTransaction {
     @Override
     public void rollback() {
         try {
-            logger.debug("JtaTransactionWrapper rollback");
+            LOG.debug("JtaTransactionWrapper rollback");
             tm.rollback();
         } catch (Exception e) {
             handleException(e);
@@ -142,7 +142,7 @@ public class JtaTransactionWrapper implements KeycloakTransaction {
     @Override
     protected void finalize() throws Throwable {
         if (ended != null) {
-            logger.error("TX didn't close at position", ended);
+            LOG.error("TX didn't close at position", ended);
         }
 
     }
@@ -150,10 +150,10 @@ public class JtaTransactionWrapper implements KeycloakTransaction {
 
     protected void end() {
         ended = null;
-        logger.debug("JtaTransactionWrapper end");
+        LOG.debug("JtaTransactionWrapper end");
         if (suspended != null) {
             try {
-                logger.debug("JtaTransactionWrapper resuming suspended");
+                LOG.debug("JtaTransactionWrapper resuming suspended");
                 tm.resume(suspended);
             } catch (Exception e) {
                 throw new RuntimeException(e);

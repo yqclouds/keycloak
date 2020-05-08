@@ -40,13 +40,14 @@ import liquibase.statement.core.UpdateStatement;
 import liquibase.structure.core.Column;
 import liquibase.structure.core.Table;
 import liquibase.util.StreamUtil;
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.reflections.Reflections;
 import org.keycloak.connections.jpa.entityprovider.JpaEntityProvider;
 import org.keycloak.connections.jpa.updater.JpaUpdaterProvider;
 import org.keycloak.connections.jpa.updater.liquibase.conn.LiquibaseConnectionProvider;
 import org.keycloak.connections.jpa.util.JpaUtils;
 import org.keycloak.models.KeycloakSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
@@ -67,7 +68,7 @@ public class LiquibaseJpaUpdaterProvider implements JpaUpdaterProvider {
 
     public static final String CHANGELOG = "META-INF/jpa-changelog-master.xml";
     public static final String DEPLOYMENT_ID_COLUMN = "DEPLOYMENT_ID";
-    private static final Logger logger = Logger.getLogger(LiquibaseJpaUpdaterProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LiquibaseJpaUpdaterProvider.class);
     private final KeycloakSession session;
 
     @Autowired
@@ -92,7 +93,7 @@ public class LiquibaseJpaUpdaterProvider implements JpaUpdaterProvider {
     }
 
     private void update(Connection connection, File file, String defaultSchema) {
-        logger.debug("Starting database update");
+        LOG.debug("Starting database update");
 
         // Need ThreadLocal as liquibase doesn't seem to have API to inject custom objects into tasks
         ThreadLocalSessionContext.setCurrentSession(session);
@@ -145,7 +146,7 @@ public class LiquibaseJpaUpdaterProvider implements JpaUpdaterProvider {
                 changelogHistoryService.generateDeploymentId();
                 String deploymentId = changelogHistoryService.getDeploymentId();
 
-                logger.debugv("Adding missing column {0}={1} to {2} table", DEPLOYMENT_ID_COLUMN, deploymentId, changelogTable.getName());
+                LOG.debug("Adding missing column {}={} to {} table", DEPLOYMENT_ID_COLUMN, deploymentId, changelogTable.getName());
 
                 List<SqlStatement> statementsToExecute = new ArrayList<>();
                 statementsToExecute.add(new AddColumnStatement(database.getLiquibaseCatalogName(), database.getLiquibaseSchemaName(),
@@ -169,12 +170,12 @@ public class LiquibaseJpaUpdaterProvider implements JpaUpdaterProvider {
         if (!changeSets.isEmpty()) {
             List<RanChangeSet> ranChangeSets = liquibase.getDatabase().getRanChangeSetList();
             if (ranChangeSets.isEmpty()) {
-                logger.infov("Initializing database schema. Using changelog {0}", changelog);
+                LOG.info("Initializing database schema. Using changelog {}", changelog);
             } else {
-                if (logger.isDebugEnabled()) {
-                    logger.debugv("Updating database from {0} to {1}. Using changelog {2}", ranChangeSets.get(ranChangeSets.size() - 1).getId(), changeSets.get(changeSets.size() - 1).getId(), changelog);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Updating database from {} to {}. Using changelog {}", ranChangeSets.get(ranChangeSets.size() - 1).getId(), changeSets.get(changeSets.size() - 1).getId(), changelog);
                 } else {
-                    logger.infov("Updating database. Using changelog {0}", changelog);
+                    LOG.info("Updating database. Using changelog {}", changelog);
                 }
             }
 
@@ -187,9 +188,9 @@ public class LiquibaseJpaUpdaterProvider implements JpaUpdaterProvider {
                 liquibase.update((Contexts) null);
             }
 
-            logger.debugv("Completed database update for changelog {0}", changelog);
+            LOG.debug("Completed database update for changelog {}", changelog);
         } else {
-            logger.debugv("Database is up to date for changelog {0}", changelog);
+            LOG.debug("Database is up to date for changelog {}", changelog);
         }
 
         // Needs to restart liquibase services to clear ChangeLogHistoryServiceFactory.getInstance().
@@ -217,7 +218,7 @@ public class LiquibaseJpaUpdaterProvider implements JpaUpdaterProvider {
 
     @Override
     public Status validate(Connection connection, String defaultSchema) {
-        logger.debug("Validating if database is updated");
+        LOG.debug("Validating if database is updated");
         ThreadLocalSessionContext.setCurrentSession(session);
 
         try {
@@ -257,11 +258,11 @@ public class LiquibaseJpaUpdaterProvider implements JpaUpdaterProvider {
             if (changeSets.size() == liquibase.getDatabaseChangeLog().getChangeSets().size()) {
                 result = Status.EMPTY;
             } else {
-                logger.debugf("Validation failed. Database is not up-to-date for changelog %s", changelog);
+                LOG.debug("Validation failed. Database is not up-to-date for changelog {}", changelog);
                 result = Status.OUTDATED;
             }
         } else {
-            logger.debugf("Validation passed. Database is up-to-date for changelog %s", changelog);
+            LOG.debug("Validation passed. Database is up-to-date for changelog {}", changelog);
             result = Status.VALID;
         }
 

@@ -111,7 +111,7 @@ public abstract class AbstractPartialImport<T> implements PartialImport<T> {
             try {
                 create(realm, session, resourceRep);
             } catch (Exception e) {
-                ServicesLogger.LOGGER.overwriteError(e, getName(resourceRep));
+//                ServicesLogger.LOGGER.overwriteError(e, getName(resourceRep));
                 throw new ErrorResponseException(ErrorResponse.error(e.getMessage(), Response.Status.INTERNAL_SERVER_ERROR));
             }
 
@@ -133,7 +133,7 @@ public abstract class AbstractPartialImport<T> implements PartialImport<T> {
                 String modelId = getModelId(realm, session, resourceRep);
                 results.addResult(added(modelId, resourceRep));
             } catch (Exception e) {
-                ServicesLogger.LOGGER.creationError(e, getName(resourceRep));
+//                ServicesLogger.LOGGER.creationError(e, getName(resourceRep));
                 throw new ErrorResponseException(ErrorResponse.error(e.getMessage(), Response.Status.INTERNAL_SERVER_ERROR));
             }
         }

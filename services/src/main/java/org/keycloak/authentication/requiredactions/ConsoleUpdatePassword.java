@@ -17,7 +17,7 @@
 
 package org.keycloak.authentication.requiredactions;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.authentication.ConsoleDisplayMode;
 import org.keycloak.authentication.RequiredActionContext;
 import org.keycloak.authentication.RequiredActionProvider;
@@ -44,7 +44,7 @@ public class ConsoleUpdatePassword extends UpdatePassword implements RequiredAct
     public static final ConsoleUpdatePassword SINGLETON = new ConsoleUpdatePassword();
     public static final String PASSWORD_NEW = "password-new";
     public static final String PASSWORD_CONFIRM = "password-confirm";
-    private static final Logger logger = Logger.getLogger(ConsoleUpdatePassword.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ConsoleUpdatePassword.class);
 
     protected ConsoleDisplayMode challenge(RequiredActionContext context) {
         return ConsoleDisplayMode.challenge(context)

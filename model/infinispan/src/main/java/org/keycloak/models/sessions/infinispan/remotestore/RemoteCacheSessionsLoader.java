@@ -25,12 +25,13 @@ import org.infinispan.client.hotrod.impl.operations.IterationStartResponse;
 import org.infinispan.client.hotrod.impl.operations.OperationsFactory;
 import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.context.Flag;
-import org.jboss.logging.Logger;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.sessions.infinispan.initializer.BaseCacheInitializer;
 import org.keycloak.models.sessions.infinispan.initializer.OfflinePersistentUserSessionLoader;
 import org.keycloak.models.sessions.infinispan.initializer.SessionLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.Serializable;
@@ -46,7 +47,7 @@ import static org.infinispan.client.hotrod.impl.Util.await;
  */
 public class RemoteCacheSessionsLoader implements SessionLoader<RemoteCacheSessionsLoaderContext, SessionLoader.WorkerContext, SessionLoader.WorkerResult>, Serializable {
 
-    private static final Logger log = Logger.getLogger(RemoteCacheSessionsLoader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RemoteCacheSessionsLoader.class);
 
     private final String cacheName;
     private final int sessionsPerSegment;
@@ -116,7 +117,7 @@ public class RemoteCacheSessionsLoader implements SessionLoader<RemoteCacheSessi
 
         Set<Integer> myIspnSegments = getMyIspnSegments(ctx.getSegment(), loaderContext);
 
-        log.debugf("Will do bulk load of sessions from remote cache '%s' . Segment: %d", cache.getName(), ctx.getSegment());
+        LOG.debug("Will do bulk load of sessions from remote cache '{}' . Segment: {}", cache.getName(), ctx.getSegment());
 
         Map<Object, Object> remoteEntries = new HashMap<>();
         CloseableIterator<Map.Entry> iterator = null;
@@ -129,7 +130,7 @@ public class RemoteCacheSessionsLoader implements SessionLoader<RemoteCacheSessi
                 remoteEntries.put(entry.getKey(), entry.getValue());
             }
         } catch (RuntimeException e) {
-            log.warnf(e, "Error loading sessions from remote cache '%s' for segment '%d'", remoteCache.getName(), ctx.getSegment());
+            LOG.warn("Error loading sessions from remote cache '{}' for segment '{}'", remoteCache.getName(), ctx.getSegment());
             throw e;
         } finally {
             if (iterator != null) {
@@ -139,7 +140,7 @@ public class RemoteCacheSessionsLoader implements SessionLoader<RemoteCacheSessi
 
         decoratedCache.putAll(remoteEntries);
 
-        log.debugf("Successfully finished loading sessions from cache '%s' . Segment: %d, Count of sessions loaded: %d", cache.getName(), ctx.getSegment(), countLoaded);
+        LOG.debug("Successfully finished loading sessions from cache '{}' . Segment: {}, Count of sessions loaded: {}", cache.getName(), ctx.getSegment(), countLoaded);
 
         return new WorkerResult(true, ctx.getSegment(), ctx.getWorkerId());
     }
@@ -180,10 +181,10 @@ public class RemoteCacheSessionsLoader implements SessionLoader<RemoteCacheSessi
 
         if ((cacheName.equals(InfinispanConnectionProvider.OFFLINE_USER_SESSION_CACHE_NAME) || (cacheName.equals(InfinispanConnectionProvider.OFFLINE_CLIENT_SESSION_CACHE_NAME)))
                 && sessionsLoaded != null && sessionsLoaded) {
-            log.debugf("Sessions already loaded in current DC. Skip sessions loading from remote cache '%s'", cacheName);
+            LOG.debug("Sessions already loaded in current DC. Skip sessions loading from remote cache '{}'", cacheName);
             return true;
         } else {
-            log.debugf("Sessions maybe not yet loaded in current DC. Will load them from remote cache '%s'", cacheName);
+            LOG.debug("Sessions maybe not yet loaded in current DC. Will load them from remote cache '{}'", cacheName);
             return false;
         }
     }

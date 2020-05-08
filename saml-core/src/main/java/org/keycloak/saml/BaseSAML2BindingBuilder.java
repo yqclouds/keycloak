@@ -17,7 +17,6 @@
 
 package org.keycloak.saml;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.KeycloakUriBuilder;
 import org.keycloak.saml.common.constants.GeneralConstants;
 import org.keycloak.saml.common.constants.JBossSAMLConstants;
@@ -29,6 +28,8 @@ import org.keycloak.saml.processing.core.saml.v2.util.DocumentUtil;
 import org.keycloak.saml.processing.core.util.XMLEncryptionUtil;
 import org.keycloak.saml.processing.web.util.PostBindingUtil;
 import org.keycloak.saml.processing.web.util.RedirectBindingUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -50,7 +51,7 @@ import static org.keycloak.saml.common.util.StringUtil.isNotNull;
  * @version $Revision: 1 $
  */
 public class BaseSAML2BindingBuilder<T extends BaseSAML2BindingBuilder> {
-    protected static final Logger logger = Logger.getLogger(BaseSAML2BindingBuilder.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(BaseSAML2BindingBuilder.class);
 
     protected String signingKeyName;
     protected KeyPair signingKeyPair;
@@ -267,7 +268,7 @@ public class BaseSAML2BindingBuilder<T extends BaseSAML2BindingBuilder> {
 
     public String base64Encoded(Document document) throws ConfigurationException, ProcessingException, IOException {
         String documentAsString = DocumentUtil.getDocumentAsString(document);
-        logger.debugv("saml document: {0}", documentAsString);
+        LOG.debug("saml document: {}", documentAsString);
         byte[] responseBytes = documentAsString.getBytes(GeneralConstants.SAML_CHARSET);
 
         return RedirectBindingUtil.deflateBase64Encode(responseBytes);

@@ -18,9 +18,10 @@
 
 package org.keycloak.services.x509;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.PemException;
 import org.keycloak.common.util.PemUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.cert.X509Certificate;
 
@@ -35,7 +36,7 @@ import java.security.cert.X509Certificate;
 
 public class HaProxySslClientCertificateLookup extends AbstractClientCertificateFromHttpHeadersLookup {
 
-    private static final Logger logger = Logger.getLogger(HaProxySslClientCertificateLookup.class);
+    private static final Logger LOG = LoggerFactory.getLogger(HaProxySslClientCertificateLookup.class);
 
     public HaProxySslClientCertificateLookup(String sslCientCertHttpHeader,
                                              String sslCertChainHttpHeaderPrefix,

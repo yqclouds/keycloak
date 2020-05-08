@@ -17,7 +17,6 @@
 
 package org.keycloak.storage.ldap.mappers;
 
-import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
@@ -29,6 +28,8 @@ import org.keycloak.storage.ldap.LDAPUtils;
 import org.keycloak.storage.ldap.idm.model.LDAPObject;
 import org.keycloak.storage.ldap.idm.query.Condition;
 import org.keycloak.storage.ldap.idm.query.internal.LDAPQuery;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -36,6 +37,7 @@ import java.util.*;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
+    private static final Logger LOG = LoggerFactory.getLogger(UserAttributeLDAPStorageMapper.class);
 
     public static final String USER_MODEL_ATTRIBUTE = "user.model.attribute";
     public static final String LDAP_ATTRIBUTE = "ldap.attribute";
@@ -43,7 +45,6 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
     public static final String ALWAYS_READ_VALUE_FROM_LDAP = "always.read.value.from.ldap";
     public static final String IS_MANDATORY_IN_LDAP = "is.mandatory.in.ldap";
     public static final String IS_BINARY_ATTRIBUTE = "is.binary.attribute";
-    private static final Logger logger = Logger.getLogger(UserAttributeLDAPStorageMapper.class);
     private static final Map<String, Property<Object>> userModelProperties = LDAPUtils.getUserModelProperties();
 
     public UserAttributeLDAPStorageMapper(ComponentModel mapperModel, LDAPStorageProvider ldapProvider) {
@@ -204,8 +205,8 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
 
                 protected boolean setLDAPAttribute(String modelAttrName, Object value) {
                     if (modelAttrName.equalsIgnoreCase(userModelAttrName)) {
-                        if (UserAttributeLDAPStorageMapper.logger.isTraceEnabled()) {
-                            UserAttributeLDAPStorageMapper.logger.tracef("Pushing user attribute to LDAP. username: %s, Model attribute name: %s, LDAP attribute name: %s, Attribute value: %s", getUsername(), modelAttrName, ldapAttrName, value);
+                        if (UserAttributeLDAPStorageMapper.LOG.isTraceEnabled()) {
+                            UserAttributeLDAPStorageMapper.LOG.trace("Pushing user attribute to LDAP. username: %s, Model attribute name: %s, LDAP attribute name: %s, Attribute value: %s", getUsername(), modelAttrName, ldapAttrName, value);
                         }
 
                         ensureTransactionStarted();
@@ -228,7 +229,7 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
                         }
 
                         if (isBinaryAttribute) {
-                            UserAttributeLDAPStorageMapper.logger.debugf("Skip writing model attribute '%s' to DB for user '%s' as it is mapped to binary LDAP attribute.", userModelAttrName, getUsername());
+                            UserAttributeLDAPStorageMapper.LOG.debug("Skip writing model attribute '%s' to DB for user '%s' as it is mapped to binary LDAP attribute.", userModelAttrName, getUsername());
                             return false;
                         } else {
                             return true;
@@ -236,7 +237,9 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
                     }
 
                     return true;
-                }                @Override
+                }
+
+                @Override
                 public void setEmail(String email) {
                     checkDuplicateEmail(userModelAttrName, email, realm, ldapProvider.getSession(), this);
 
@@ -255,7 +258,6 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
                     setLDAPAttribute(UserModel.FIRST_NAME, firstName);
                     super.setFirstName(firstName);
                 }
-
 
 
             };
@@ -292,7 +294,7 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
                 }
 
                 private void logSkipDBWrite() {
-                    logger.debugf("Skip writing model attribute '%s' to DB for user '%s' as it is mapped to binary LDAP attribute", userModelAttrName, getUsername());
+                    LOG.debug("Skip writing model attribute '{}' to DB for user '{}' as it is mapped to binary LDAP attribute", userModelAttrName, getUsername());
                 }
 
             };
@@ -426,7 +428,7 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
                 Boolean boolVal = Boolean.valueOf(ldapAttrValue);
                 userModelProperty.setValue(user, boolVal);
             } else {
-                logger.warnf("Don't know how to set the property '%s' on user '%s' . Value of LDAP attribute is '%s' ", userModelProperty.getName(), user.getUsername(), ldapAttrValue.toString());
+                LOG.warn("Don't know how to set the property '{}' on user '{}' . Value of LDAP attribute is '{}' ", userModelProperty.getName(), user.getUsername(), ldapAttrValue.toString());
             }
         }
     }

@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
@@ -88,7 +88,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
     // Authentication session note, which references identity provider that is currently linked
     private static final String LINKING_IDENTITY_PROVIDER = "LINKING_IDENTITY_PROVIDER";
 
-    private static final Logger logger = Logger.getLogger(IdentityBrokerService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IdentityBrokerService.class);
 
     private final RealmModel realmModel;
 
@@ -318,7 +318,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
 
             if (response != null) {
                 if (isDebugEnabled()) {
-                    logger.debugf("Identity provider [%s] is going to send a request [%s].", identityProvider, response);
+                    LOG.debug("Identity provider [%s] is going to send a request [%s].", identityProvider, response);
                 }
                 return response;
             }
@@ -351,7 +351,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
         this.event.detail(Details.IDENTITY_PROVIDER, providerId);
 
         if (isDebugEnabled()) {
-            logger.debugf("Sending authentication request to identity provider [%s].", providerId);
+            LOG.debug("Sending authentication request to identity provider [%s].", providerId);
         }
 
         try {
@@ -377,7 +377,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
 
             if (response != null) {
                 if (isDebugEnabled()) {
-                    logger.debugf("Identity provider [%s] is going to send a request [%s].", identityProvider, response);
+                    LOG.debug("Identity provider [%s] is going to send a request [%s].", identityProvider, response);
                 }
                 return response;
             }
@@ -494,7 +494,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
         String providerId = identityProviderConfig.getAlias();
         if (!identityProviderConfig.isStoreToken()) {
             if (isDebugEnabled()) {
-                logger.debugf("Token will not be stored for identity provider [%s].", providerId);
+                LOG.debug("Token will not be stored for identity provider [%s].", providerId);
             }
             context.setToken(null);
         }
@@ -539,7 +539,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
 
         if (federatedUser == null) {
 
-            logger.debugf("Federated user not found for provider '%s' and broker username '%s'", providerId, context.getUsername());
+            LOG.debug("Federated user not found for provider '%s' and broker username '%s'", providerId, context.getUsername());
 
             String username = context.getModelUsername();
             if (username == null) {
@@ -558,14 +558,14 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
             if (ctx0 != null) {
                 SerializedBrokeredIdentityContext ctx1 = SerializedBrokeredIdentityContext.serialize(context);
                 ctx1.saveToAuthenticationSession(authenticationSession, AbstractIdpAuthenticator.NESTED_FIRST_BROKER_CONTEXT);
-                logger.warnv("Nested first broker flow detected: {0} -> {1}", ctx0.getIdentityProviderId(), ctx1.getIdentityProviderId());
-                logger.debug("Resuming last execution");
+                LOG.warn("Nested first broker flow detected: {} -> {}", ctx0.getIdentityProviderId(), ctx1.getIdentityProviderId());
+                LOG.debug("Resuming last execution");
                 URI redirect = new AuthenticationFlowURLHelper(session, realmModel, session.getContext().getUri())
                         .getLastExecutionUrl(authenticationSession);
                 return Response.status(Status.FOUND).location(redirect).build();
             }
 
-            logger.debug("Redirecting to flow for firstBrokerLogin");
+            LOG.debug("Redirecting to flow for firstBrokerLogin");
 
             boolean forwardedPassiveLogin = "true".equals(authenticationSession.getAuthNote(AuthenticationProcessor.FORWARDED_PASSIVE_LOGIN));
             // Redirect to firstBrokerLogin after successful login and ensure that previous authentication state removed
@@ -682,7 +682,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
             String isRegisteredNewUser = authSession.getAuthNote(AbstractIdpAuthenticator.BROKER_REGISTERED_NEW_USER);
             if (Boolean.parseBoolean(isRegisteredNewUser)) {
 
-                logger.debugf("Registered new user '%s' after first login with identity provider '%s'. Identity provider username is '%s' . ", federatedUser.getUsername(), providerId, context.getUsername());
+                LOG.debug("Registered new user '%s' after first login with identity provider '%s'. Identity provider username is '%s' . ", federatedUser.getUsername(), providerId, context.getUsername());
 
                 context.getIdp().importNewUser(session, realmModel, federatedUser, context);
                 Set<IdentityProviderMapperModel> mappers = realmModel.getIdentityProviderMappersByAlias(providerId);
@@ -695,7 +695,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
                 }
 
                 if (context.getIdpConfig().isTrustEmail() && !Validation.isBlank(federatedUser.getEmail()) && !Boolean.parseBoolean(authSession.getAuthNote(AbstractIdpAuthenticator.UPDATE_PROFILE_EMAIL_CHANGED))) {
-                    logger.debugf("Email verified automatically after registration of user '%s' through Identity provider '%s' ", federatedUser.getUsername(), context.getIdpConfig().getAlias());
+                    LOG.debug("Email verified automatically after registration of user '%s' through Identity provider '%s' ", federatedUser.getUsername(), context.getIdpConfig().getAlias());
                     federatedUser.setEmailVerified(true);
                 }
 
@@ -705,7 +705,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
                         .success();
 
             } else {
-                logger.debugf("Linked existing keycloak user '%s' with identity provider '%s' . Identity provider username is '%s' .", federatedUser.getUsername(), providerId, context.getUsername());
+                LOG.debug("Linked existing keycloak user '%s' with identity provider '%s' . Identity provider username is '%s' .", federatedUser.getUsername(), providerId, context.getUsername());
 
                 event.event(EventType.FEDERATED_IDENTITY_LINK)
                         .success();
@@ -724,11 +724,11 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
         String postBrokerLoginFlowId = context.getIdpConfig().getPostBrokerLoginFlowId();
         if (postBrokerLoginFlowId == null) {
 
-            logger.debugf("Skip redirect to postBrokerLogin flow. PostBrokerLogin flow not set for identityProvider '%s'.", context.getIdpConfig().getAlias());
+            LOG.debug("Skip redirect to postBrokerLogin flow. PostBrokerLogin flow not set for identityProvider '%s'.", context.getIdpConfig().getAlias());
             return afterPostBrokerLoginFlowSuccess(authSession, context, wasFirstBrokerLogin, clientSessionCode);
         } else {
 
-            logger.debugf("Redirect to postBrokerLogin flow after authentication with identityProvider '%s'.", context.getIdpConfig().getAlias());
+            LOG.debug("Redirect to postBrokerLogin flow after authentication with identityProvider '%s'.", context.getIdpConfig().getAlias());
 
             authSession.getParentSession().setTimestamp(Time.currentTime());
 
@@ -795,7 +795,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
 
             boolean firstBrokerLoginInProgress = (authSession.getAuthNote(AbstractIdpAuthenticator.BROKERED_CONTEXT_NOTE) != null);
             if (firstBrokerLoginInProgress) {
-                logger.debugf("Reauthenticated with broker '%s' when linking user '%s' with other broker", context.getIdpConfig().getAlias(), federatedUser.getUsername());
+                LOG.debug("Reauthenticated with broker '%s' when linking user '%s' with other broker", context.getIdpConfig().getAlias(), federatedUser.getUsername());
 
                 SerializedBrokeredIdentityContext serializedCtx = SerializedBrokeredIdentityContext.readFromAuthenticationSession(authSession, AbstractIdpAuthenticator.BROKERED_CONTEXT_NOTE);
                 authSession.setAuthNote(AbstractIdpAuthenticator.FIRST_BROKER_LOGIN_SUCCESS, serializedCtx.getIdentityProviderId());
@@ -824,7 +824,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
                 .detail(Details.IDENTITY_PROVIDER_USERNAME, context.getUsername());
 
         if (isDebugEnabled()) {
-            logger.debugf("Performing local authentication for user [%s].", federatedUser);
+            LOG.debug("Performing local authentication for user [%s].", federatedUser);
         }
 
         AuthenticationManager.setClientScopesInSession(authSession);
@@ -832,7 +832,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
         String nextRequiredAction = AuthenticationManager.nextRequiredAction(session, authSession, clientConnection, request, session.getContext().getUri(), event);
         if (nextRequiredAction != null) {
             if ("true".equals(authSession.getAuthNote(AuthenticationProcessor.FORWARDED_PASSIVE_LOGIN))) {
-                logger.errorf("Required action %s found. Auth requests using prompt=none are incompatible with required actions", nextRequiredAction);
+                LOG.error("Required action %s found. Auth requests using prompt=none are incompatible with required actions", nextRequiredAction);
                 return checkPassiveLoginError(authSession, OAuthErrorException.INTERACTION_REQUIRED);
             }
             return AuthenticationManager.redirectToRequiredActions(session, realmModel, authSession, session.getContext().getUri(), nextRequiredAction);
@@ -902,7 +902,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
     }
 
     private Response performAccountLinking(AuthenticationSessionModel authSession, UserSessionModel userSession, BrokeredIdentityContext context, FederatedIdentityModel newModel, UserModel federatedUser) {
-        logger.debugf("Will try to link identity provider [%s] to user [%s]", context.getIdpConfig().getAlias(), userSession.getUser().getUsername());
+        LOG.debug("Will try to link identity provider [%s] to user [%s]", context.getIdpConfig().getAlias(), userSession.getUser().getUsername());
 
         this.event.event(EventType.FEDERATED_IDENTITY_LINK);
 
@@ -929,7 +929,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
                 if (!ObjectUtil.isEqualOrBothNull(context.getToken(), oldModel.getToken())) {
                     this.session.users().updateFederatedIdentity(this.realmModel, federatedUser, newModel);
                     if (isDebugEnabled()) {
-                        logger.debugf("Identity [%s] update with response from identity provider [%s].", federatedUser, context.getIdpConfig().getAlias());
+                        LOG.debug("Identity [%s] update with response from identity provider [%s].", federatedUser, context.getIdpConfig().getAlias());
                     }
                 }
             }
@@ -942,7 +942,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
         TokenManager.attachAuthenticationSession(session, userSession, authSession);
 
         if (isDebugEnabled()) {
-            logger.debugf("Linking account [%s] from identity provider [%s] to user [%s].", newModel, context.getIdpConfig().getAlias(), authenticatedUser);
+            LOG.debug("Linking account [%s] from identity provider [%s] to user [%s].", newModel, context.getIdpConfig().getAlias(), authenticatedUser);
         }
 
         this.event.user(authenticatedUser)
@@ -994,7 +994,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
             this.session.users().updateFederatedIdentity(this.realmModel, federatedUser, federatedIdentityModel);
 
             if (isDebugEnabled()) {
-                logger.debugf("Identity [%s] update with response from identity provider [%s].", federatedUser, context.getIdpConfig().getAlias());
+                LOG.debug("Identity [%s] update with response from identity provider [%s].", federatedUser, context.getIdpConfig().getAlias());
             }
         }
     }
@@ -1009,7 +1009,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
 
     private ParsedCodeContext parseSessionCode(String code, String clientId, String tabId) {
         if (code == null || clientId == null || tabId == null) {
-            logger.debugf("Invalid request. Authorization code, clientId or tabId was null. Code=%s, clientId=%s, tabID=%s", code, clientId, tabId);
+            LOG.debug("Invalid request. Authorization code, clientId or tabId was null. Code=%s, clientId=%s, tabID=%s", code, clientId, tabId);
             Response staleCodeError = redirectToErrorPage(Response.Status.BAD_REQUEST, Messages.INVALID_REQUEST);
             return ParsedCodeContext.response(staleCodeError);
         }
@@ -1036,7 +1036,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
             }
         } else {
             if (isDebugEnabled()) {
-                logger.debugf("Authorization code is valid.");
+                LOG.debug("Authorization code is valid.");
             }
 
             return ParsedCodeContext.clientSessionCode(checks.getClientCode());
@@ -1235,15 +1235,15 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
                     this.session.getTransactionManager().commit();
                 }
             } catch (Exception e) {
-                ServicesLogger.LOGGER.couldNotFireEvent(e);
+//                ServicesLogger.LOGGER.couldNotFireEvent(e);
                 rollback();
             }
         }
 
         if (throwable != null) {
-            logger.error(message, throwable);
+            LOG.error(message, throwable);
         } else {
-            logger.error(message);
+            LOG.error(message);
         }
     }
 
@@ -1252,7 +1252,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
     }
 
     private boolean isDebugEnabled() {
-        return logger.isDebugEnabled();
+        return LOG.isDebugEnabled();
     }
 
     private void rollback() {

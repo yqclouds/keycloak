@@ -16,23 +16,19 @@
  */
 package org.keycloak.adapters.authorization.util;
 
-import static org.keycloak.adapters.authorization.util.PlaceHolders.getParameter;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import org.keycloak.adapters.spi.HttpFacade;
 import org.keycloak.adapters.spi.HttpFacade.Cookie;
 import org.keycloak.adapters.spi.HttpFacade.Request;
 import org.keycloak.util.JsonSerialization;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static org.keycloak.adapters.authorization.util.PlaceHolders.getParameter;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -102,7 +98,7 @@ public class RequestPlaceHolderResolver implements PlaceHolderResolver {
 
             if (contentType == null) {
                 contentType = "";
-            } else if (contentType.indexOf(';') != -1){
+            } else if (contentType.indexOf(';') != -1) {
                 contentType = contentType.substring(0, contentType.indexOf(';')).trim();
             }
 

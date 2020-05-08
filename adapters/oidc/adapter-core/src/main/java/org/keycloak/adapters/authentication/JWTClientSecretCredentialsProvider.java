@@ -16,13 +16,6 @@
  */
 package org.keycloak.adapters.authentication;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
-
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-
-import org.jboss.logging.Logger;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.adapters.AdapterUtils;
 import org.keycloak.adapters.KeycloakDeployment;
@@ -32,15 +25,16 @@ import org.keycloak.crypto.JavaAlgorithm;
 import org.keycloak.jose.jws.JWSBuilder;
 import org.keycloak.representations.JsonWebToken;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+
 /**
  * Client authentication based on JWT signed by client secret instead of private key .
  * See <a href="http://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication">specs</a> for more details.
- *
  */
 public class JWTClientSecretCredentialsProvider implements ClientCredentialsProvider {
-
-    private static final Logger logger = Logger.getLogger(JWTClientSecretCredentialsProvider.class);
-
     public static final String PROVIDER_ID = "secret-jwt";
 
     private SecretKey clientSecret;
@@ -67,9 +61,9 @@ public class JWTClientSecretCredentialsProvider implements ClientCredentialsProv
         String clientSecretJwtAlg = (String) cfg.get("algorithm");
         if (clientSecretJwtAlg == null) {
             // "algorithm" field is optional. fallback to HS256.
-            setClientSecret(clientSecretString); 
+            setClientSecret(clientSecretString);
         } else if (isValidClientSecretJwtAlg(clientSecretJwtAlg)) {
-            setClientSecret(clientSecretString, clientSecretJwtAlg); 
+            setClientSecret(clientSecretString, clientSecretJwtAlg);
         } else {
             // invalid "algorithm" field
             throw new RuntimeException("Invalid parameter secret-jwt in configuration of jwt for client " + deployment.getResourceName());

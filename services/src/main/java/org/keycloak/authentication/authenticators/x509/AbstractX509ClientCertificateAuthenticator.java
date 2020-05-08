@@ -33,8 +33,9 @@ import org.keycloak.models.Constants;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.x509.X509ClientCertificateLookup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.security.auth.x500.X500Principal;
@@ -83,7 +84,8 @@ public abstract class AbstractX509ClientCertificateAuthenticator implements Auth
     public static final String CERTIFICATE_EXTENDED_KEY_USAGE = "x509-cert-auth.extendedkeyusage";
     public static final String CONFIRMATION_PAGE_DISALLOWED = "x509-cert-auth.confirmation-page-disallowed";
     static final String DEFAULT_MATCH_ALL_EXPRESSION = "(.*?)(?:$)";
-    protected static ServicesLogger logger = ServicesLogger.LOGGER;
+
+    protected static final Logger LOG = LoggerFactory.getLogger(AbstractX509ClientCertificateAuthenticator.class);
 
     @Autowired(required = false)
     private X509ClientCertificateLookup x509ClientCertificateLookup;
@@ -107,8 +109,8 @@ public abstract class AbstractX509ClientCertificateAuthenticator implements Auth
         try {
             // Get a x509 client certificate
             if (x509ClientCertificateLookup == null) {
-                logger.errorv("\"{0}\" Spi is not available, did you forget to update the configuration?",
-                        X509ClientCertificateLookup.class);
+                LOG.error("\"{}\" Spi is not available, did you forget to update the configuration?",
+                        X509ClientCertificateLookup.class.getName());
                 return null;
             }
 
@@ -116,13 +118,13 @@ public abstract class AbstractX509ClientCertificateAuthenticator implements Auth
 
             if (certs != null) {
                 for (X509Certificate cert : certs) {
-                    logger.tracev("\"{0}\"", cert.getSubjectDN().getName());
+                    LOG.trace("\"{}\"", cert.getSubjectDN().getName());
                 }
             }
 
             return certs;
         } catch (GeneralSecurityException e) {
-            logger.error(e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
         }
         return null;
     }
@@ -198,7 +200,7 @@ public abstract class AbstractX509ClientCertificateAuthenticator implements Auth
             try {
                 return new JcaX509CertificateHolder(certs[0]).getSubject();
             } catch (CertificateEncodingException e) {
-                logger.warn("Unable to get certificate Subject", e);
+                LOG.warn("Unable to get certificate Subject", e);
             }
             return null;
         };
@@ -207,7 +209,7 @@ public abstract class AbstractX509ClientCertificateAuthenticator implements Auth
             try {
                 return new JcaX509CertificateHolder(certs[0]).getIssuer();
             } catch (CertificateEncodingException e) {
-                logger.warn("Unable to get certificate Issuer", e);
+                LOG.warn("Unable to get certificate Issuer", e);
             }
             return null;
         };
@@ -250,7 +252,7 @@ public abstract class AbstractX509ClientCertificateAuthenticator implements Auth
                         try {
                             return Hex.toHexString(HashUtils.hash(JavaAlgorithm.SHA256, certs[0].getEncoded()));
                         } catch (CertificateEncodingException | HashException e) {
-                            logger.warn("Unable to get certificate's thumbprint", e);
+                            LOG.warn("Unable to get certificate's thumbprint", e);
                         }
                         return null;
                     });
@@ -277,7 +279,7 @@ public abstract class AbstractX509ClientCertificateAuthenticator implements Auth
                     extractor = UserIdentityExtractor.getCertificatePemIdentityExtractor(config);
                     break;
                 default:
-                    logger.warnf("[UserIdentityExtractorBuilder:fromConfig] Unknown or unsupported user identity source: \"%s\"", userIdentitySource.getName());
+                    LOG.warn("[UserIdentityExtractorBuilder:fromConfig] Unknown or unsupported user identity source: \"%s\"", userIdentitySource.getName());
                     break;
             }
             return extractor;
@@ -300,7 +302,7 @@ public abstract class AbstractX509ClientCertificateAuthenticator implements Auth
                     mapper = UserIdentityToModelMapper.getUsernameOrEmailMapper();
                     break;
                 default:
-                    logger.warnf("[UserIdentityToModelMapperBuilder:fromConfig] Unknown or unsupported user identity mapper: \"%s\"", mapperType.getName());
+                    LOG.warn("[UserIdentityToModelMapperBuilder:fromConfig] Unknown or unsupported user identity mapper: \"%s\"", mapperType.getName());
             }
             return mapper;
         }

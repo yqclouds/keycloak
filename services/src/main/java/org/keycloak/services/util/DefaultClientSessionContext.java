@@ -17,7 +17,6 @@
 
 package org.keycloak.services.util;
 
-import org.jboss.logging.Logger;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
@@ -26,6 +25,8 @@ import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.TokenManager;
 import org.keycloak.util.TokenUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,7 +40,7 @@ import java.util.Set;
  */
 public class DefaultClientSessionContext implements ClientSessionContext {
 
-    private static Logger logger = Logger.getLogger(DefaultClientSessionContext.class);
+    private static Logger LOG = LoggerFactory.getLogger(DefaultClientSessionContext.class);
 
     private final AuthenticatedClientSessionModel clientSession;
     private final Set<String> clientScopeIds;
@@ -201,8 +202,8 @@ public class DefaultClientSessionContext implements ClientSessionContext {
                 if (isClientScopePermittedForUser(clientScope)) {
                     clientScopes.add(clientScope);
                 } else {
-                    if (logger.isTraceEnabled()) {
-                        logger.tracef("User '%s' not permitted to have client scope '%s'",
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("User '{}' not permitted to have client scope '{}'",
                                 clientSession.getUserSession().getUser().getUsername(), clientScope.getName());
                     }
                 }
@@ -250,7 +251,7 @@ public class DefaultClientSessionContext implements ClientSessionContext {
 
         // Being rather defensive. But protocol should normally always be there
         if (protocol == null) {
-            logger.warnf("Client '%s' doesn't have protocol set. Fallback to openid-connect. Please fix client configuration", clientSession.getClient().getClientId());
+            LOG.warn("Client '{}' doesn't have protocol set. Fallback to openid-connect. Please fix client configuration", clientSession.getClient().getClientId());
             protocol = OIDCLoginProtocol.LOGIN_PROTOCOL;
         }
 

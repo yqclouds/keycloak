@@ -18,7 +18,8 @@
 
 package org.keycloak.services.x509;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 /**
@@ -31,7 +32,7 @@ public abstract class AbstractClientCertificateFromHttpHeadersLookupFactory impl
     protected final static String CERTIFICATE_CHAIN_LENGTH = "certificateChainLength";
     protected final static String HTTP_HEADER_CLIENT_CERT = "sslClientCert";
     protected final static String HTTP_HEADER_CERT_CHAIN_PREFIX = "sslCertChainPrefix";
-    private final static Logger logger = Logger.getLogger(AbstractClientCertificateFromHttpHeadersLookupFactory.class);
+    private final static Logger LOG = LoggerFactory.getLogger(AbstractClientCertificateFromHttpHeadersLookupFactory.class);
 
     @Value("${sslClientCert}")
     public String sslClientCertHttpHeader = "";

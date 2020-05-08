@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.component.ComponentModel;
@@ -45,7 +45,7 @@ import java.util.Map;
  * @resource User Storage Provider
  */
 public class UserStorageProviderResource {
-    private static final Logger logger = Logger.getLogger(UserStorageProviderResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UserStorageProviderResource.class);
 
     protected RealmModel realm;
 
@@ -126,7 +126,7 @@ public class UserStorageProviderResource {
         UserStorageProviderModel providerModel = new UserStorageProviderModel(model);
 
 
-        logger.debug("Syncing users");
+        LOG.debug("Syncing users");
 
         UserStorageSyncManager syncManager = new UserStorageSyncManager();
         SynchronizationResult syncResult;
@@ -135,10 +135,10 @@ public class UserStorageProviderResource {
         } else if ("triggerChangedUsersSync".equals(action)) {
             syncResult = syncManager.syncChangedUsers(session.getSessionFactory(), realm.getId(), providerModel);
         } else if (action == null || action == "") {
-            logger.debug("Missing action");
+            LOG.debug("Missing action");
             throw new BadRequestException("Missing action");
         } else {
-            logger.debug("Unknown action: " + action);
+            LOG.debug("Unknown action: " + action);
             throw new BadRequestException("Unknown action: " + action);
         }
 
@@ -218,7 +218,7 @@ public class UserStorageProviderResource {
         LDAPStorageProvider ldapProvider = (LDAPStorageProvider) session.getProvider(UserStorageProvider.class, parentModel);
         LDAPStorageMapper mapper = session.getProvider(LDAPStorageMapper.class, mapperModel);
 
-        ServicesLogger.LOGGER.syncingDataForMapper(mapperModel.getName(), mapperModel.getProviderId(), direction);
+//        ServicesLogger.LOGGER.syncingDataForMapper(mapperModel.getName(), mapperModel.getProviderId(), direction);
 
         SynchronizationResult syncResult;
         if ("fedToKeycloak".equals(direction)) {

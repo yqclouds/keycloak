@@ -17,7 +17,6 @@
 
 package org.keycloak.models.sessions.infinispan.events;
 
-import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterListener;
 import org.keycloak.models.KeycloakSession;
@@ -26,13 +25,15 @@ import org.keycloak.models.sessions.infinispan.InfinispanAuthenticationSessionPr
 import org.keycloak.models.sessions.infinispan.InfinispanAuthenticationSessionProviderFactory;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.sessions.AuthenticationSessionProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public abstract class AbstractAuthSessionClusterListener<SE extends SessionClusterEvent> implements ClusterListener {
 
-    private static final Logger log = Logger.getLogger(AbstractAuthSessionClusterListener.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractAuthSessionClusterListener.class);
 
     private final KeycloakSessionFactory sessionFactory;
 
@@ -49,11 +50,11 @@ public abstract class AbstractAuthSessionClusterListener<SE extends SessionClust
             SE sessionEvent = (SE) event;
 
             if (!provider.getCache().getStatus().allowInvocations()) {
-                log.debugf("Cache in state '%s' doesn't allow invocations", provider.getCache().getStatus());
+                LOG.debug("Cache in state '%s' doesn't allow invocations", provider.getCache().getStatus());
                 return;
             }
 
-            log.debugf("Received authentication session event '%s'", sessionEvent.toString());
+            LOG.debug("Received authentication session event '%s'", sessionEvent.toString());
 
             eventReceived(session, provider, sessionEvent);
 

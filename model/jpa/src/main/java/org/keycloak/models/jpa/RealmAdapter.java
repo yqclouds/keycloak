@@ -17,7 +17,6 @@
 
 package org.keycloak.models.jpa;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.enums.SslRequired;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentFactory;
@@ -26,6 +25,8 @@ import org.keycloak.models.*;
 import org.keycloak.models.jpa.entities.*;
 import org.keycloak.models.utils.ComponentUtil;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -45,7 +46,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
      * This just exists for testing purposes
      */
     public static final String COMPONENT_PROVIDER_EXISTS_DISABLED = "component.provider.exists.disabled";
-    protected static final Logger logger = Logger.getLogger(RealmAdapter.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(RealmAdapter.class);
     private static final String BROWSER_HEADER_PREFIX = "_browser_header.";
     protected RealmEntity realm;
     protected EntityManager em;

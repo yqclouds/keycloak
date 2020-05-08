@@ -17,7 +17,6 @@
 
 package org.keycloak.keys;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.crypto.Algorithm;
@@ -26,6 +25,8 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -39,7 +40,7 @@ public class GeneratedHmacKeyProviderFactory extends AbstractGeneratedSecretKeyP
 
     public static final String ID = "hmac-generated";
     public static final int DEFAULT_HMAC_KEY_SIZE = 64;
-    private static final Logger logger = Logger.getLogger(GeneratedHmacKeyProviderFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GeneratedHmacKeyProviderFactory.class);
     private static final String HELP_TEXT = "Generates HMAC secret key";
     private static final List<ProviderConfigProperty> CONFIG_PROPERTIES = SecretKeyProviderUtils.configurationBuilder()
             .property(Attributes.SECRET_SIZE_PROPERTY)
@@ -91,8 +92,8 @@ public class GeneratedHmacKeyProviderFactory extends AbstractGeneratedSecretKeyP
     }
 
     @Override
-    protected Logger logger() {
-        return logger;
+    protected Logger LOG() {
+        return LOG;
     }
 
     @Override

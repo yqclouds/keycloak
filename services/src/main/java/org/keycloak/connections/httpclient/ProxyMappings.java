@@ -18,7 +18,7 @@ package org.keycloak.connections.httpclient;
 
 import org.apache.http.HttpHost;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.*;
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  */
 public class ProxyMappings {
 
-    private static final Logger logger = Logger.getLogger(ProxyMappings.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ProxyMappings.class);
 
     private static final ProxyMappings EMPTY_MAPPING = valueOf(Collections.emptyList());
     private static Map<String, ProxyMapping> hostnameToProxyCache = new ConcurrentHashMap<>();
@@ -182,7 +182,7 @@ public class ProxyMappings {
                         proxyCredentials = new UsernamePasswordCredentials(credencials[0], credencials[1]);
                     }
                 } else {
-                    logger.warn("Invalid proxy credentials: " + userInfo);
+                    LOG.warn("Invalid proxy credentials: " + userInfo);
                 }
             }
             return new ProxyMapping(hostPattern, new HttpHost(uri.getHost(), uri.getPort(), uri.getScheme()), proxyCredentials);

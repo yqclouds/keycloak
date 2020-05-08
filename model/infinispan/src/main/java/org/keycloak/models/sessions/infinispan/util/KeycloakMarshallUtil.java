@@ -19,7 +19,8 @@ package org.keycloak.models.sessions.infinispan.util;
 
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.MarshallUtil;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -46,7 +47,7 @@ public class KeycloakMarshallUtil {
             return MarshallUtil.unmarshallUUID(input, true);
         }
     };
-    private static final Logger log = Logger.getLogger(KeycloakMarshallUtil.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KeycloakMarshallUtil.class);
 
     // MAP
 

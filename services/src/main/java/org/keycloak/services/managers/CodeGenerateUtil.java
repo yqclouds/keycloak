@@ -17,7 +17,6 @@
 
 package org.keycloak.services.managers;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.ClientModel;
@@ -26,6 +25,8 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.CommonClientSessionModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.MessageDigest;
 import java.util.HashMap;
@@ -39,7 +40,7 @@ import java.util.function.Supplier;
  */
 class CodeGenerateUtil {
 
-    private static final Logger logger = Logger.getLogger(CodeGenerateUtil.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CodeGenerateUtil.class);
 
     private static final String ACTIVE_CODE = "active_code";
 
@@ -102,7 +103,7 @@ class CodeGenerateUtil {
                 authSession.setAuthNote(ACTIVE_CODE, actionId);
                 nextCode = actionId;
             } else {
-                logger.debug("Code already generated for authentication session, using same code");
+                LOG.debug("Code already generated for authentication session, using same code");
             }
 
             return nextCode;
@@ -119,7 +120,7 @@ class CodeGenerateUtil {
         public boolean verifyCode(KeycloakSession session, String code, AuthenticationSessionModel authSession) {
             String activeCode = authSession.getAuthNote(ACTIVE_CODE);
             if (activeCode == null) {
-                logger.debug("Active code not found in authentication session");
+                LOG.debug("Active code not found in authentication session");
                 return false;
             }
 

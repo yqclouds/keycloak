@@ -16,19 +16,20 @@
  */
 package org.keycloak.locale;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.util.CookieHelper;
 import org.keycloak.storage.ReadOnlyException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.UriInfo;
 
 public class DefaultLocaleUpdaterProvider implements LocaleUpdaterProvider {
 
-    private static final Logger logger = Logger.getLogger(LocaleSelectorProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LocaleSelectorProvider.class);
 
     private KeycloakSession session;
 
@@ -43,10 +44,10 @@ public class DefaultLocaleUpdaterProvider implements LocaleUpdaterProvider {
                 user.setSingleAttribute(UserModel.LOCALE, locale);
                 updateLocaleCookie(locale);
             } catch (ReadOnlyException e) {
-                logger.debug("Attempt to store 'locale' attribute to read only user model. Ignoring exception", e);
+                LOG.debug("Attempt to store 'locale' attribute to read only user model. Ignoring exception", e);
             }
         }
-        logger.debugv("Setting locale for user {0} to {1}", user.getUsername(), locale);
+        LOG.debug("Setting locale for user {} to {}", user.getUsername(), locale);
     }
 
     @Override
@@ -56,7 +57,7 @@ public class DefaultLocaleUpdaterProvider implements LocaleUpdaterProvider {
 
         boolean secure = realm.getSslRequired().isRequired(uriInfo.getRequestUri().getHost());
         CookieHelper.addCookie(LocaleSelectorProvider.LOCALE_COOKIE, locale, AuthenticationManager.getRealmCookiePath(realm, uriInfo), null, null, -1, secure, true);
-        logger.debugv("Updating locale cookie to {0}", locale);
+        LOG.debug("Updating locale cookie to {}", locale);
     }
 
     @Override

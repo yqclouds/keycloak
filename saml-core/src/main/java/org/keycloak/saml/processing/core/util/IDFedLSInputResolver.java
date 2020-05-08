@@ -16,8 +16,9 @@
  */
 package org.keycloak.saml.processing.core.util;
 
-import org.jboss.logging.Logger;
 import org.keycloak.saml.common.util.SecurityActions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 
@@ -35,7 +36,7 @@ import java.util.*;
  */
 public class IDFedLSInputResolver implements LSResourceResolver {
 
-    protected static final Logger logger = Logger.getLogger(IDFedLSInputResolver.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(IDFedLSInputResolver.class);
 
     private static final Map<String, String> schemaLocationMap;
 
@@ -108,7 +109,7 @@ public class IDFedLSInputResolver implements LSResourceResolver {
         Collection<String> schemaValues = new HashSet<>(schemaLocationMap.values());
         schemaValues.remove("schema/w3c/xmlschema/datatypes.dtd");
         schemaValues.remove("schema/w3c/xmlschema/XMLSchema.dtd");
-        logger.info("Considered the schemas:" + schemaValues);
+        LOG.info("Considered the schemas:" + schemaValues);
         return schemaValues;
     }
 

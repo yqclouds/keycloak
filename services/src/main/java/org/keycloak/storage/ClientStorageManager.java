@@ -16,7 +16,6 @@
  */
 package org.keycloak.storage;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.reflections.Types;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.*;
@@ -24,6 +23,8 @@ import org.keycloak.storage.client.ClientLookupProvider;
 import org.keycloak.storage.client.ClientStorageProvider;
 import org.keycloak.storage.client.ClientStorageProviderFactory;
 import org.keycloak.storage.client.ClientStorageProviderModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -35,7 +36,7 @@ import java.util.Set;
  * @version $Revision: 1 $
  */
 public class ClientStorageManager implements ClientProvider {
-    private static final Logger logger = Logger.getLogger(ClientStorageManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClientStorageManager.class);
 
     protected KeycloakSession session;
 
@@ -86,7 +87,7 @@ public class ClientStorageManager implements ClientProvider {
         for (ClientStorageProviderModel model : getStorageProviders(realm)) {
             ClientStorageProviderFactory factory = (ClientStorageProviderFactory) session.getSessionFactory().getProviderFactory(ClientStorageProvider.class, model.getProviderId());
             if (factory == null) {
-                logger.warnv("Configured ClientStorageProvider {0} of provider id {1} does not exist in realm {2}", model.getName(), model.getProviderId(), realm.getName());
+                LOG.warn("Configured ClientStorageProvider {} of provider id {} does not exist in realm {}", model.getName(), model.getProviderId(), realm.getName());
                 continue;
             }
             if (Types.supports(type, factory, ClientStorageProviderFactory.class)) {
@@ -104,7 +105,7 @@ public class ClientStorageManager implements ClientProvider {
             if (!model.isEnabled()) continue;
             ClientStorageProviderFactory factory = (ClientStorageProviderFactory) session.getSessionFactory().getProviderFactory(ClientStorageProvider.class, model.getProviderId());
             if (factory == null) {
-                logger.warnv("Configured ClientStorageProvider {0} of provider id {1} does not exist in realm {2}", model.getName(), model.getProviderId(), realm.getName());
+                LOG.warn("Configured ClientStorageProvider {} of provider id {} does not exist in realm {}", model.getName(), model.getProviderId(), realm.getName());
                 continue;
             }
             if (Types.supports(type, factory, ClientStorageProviderFactory.class)) {

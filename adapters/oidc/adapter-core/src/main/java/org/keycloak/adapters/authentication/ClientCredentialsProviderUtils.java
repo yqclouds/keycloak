@@ -20,22 +20,17 @@ package org.keycloak.adapters.authentication;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
-import org.jboss.logging.Logger;
 import org.keycloak.adapters.KeycloakDeployment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceConfigurationError;
-import java.util.ServiceLoader;
+import java.util.*;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class ClientCredentialsProviderUtils {
-
-    private static Logger logger = Logger.getLogger(ClientCredentialsProviderUtils.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClientCredentialsProviderUtils.class);
 
     public static ClientCredentialsProvider bootstrapClientAuthenticator(KeycloakDeployment deployment) {
         String clientId = deployment.getResourceName();
@@ -56,7 +51,7 @@ public class ClientCredentialsProviderUtils {
             }
         }
 
-        logger.debugf("Using provider '%s' for authentication of client '%s'", authenticatorId, clientId);
+        LOG.debug("Using provider '{}' for authentication of client '{}'", authenticatorId, clientId);
 
         Map<String, ClientCredentialsProvider> authenticators = new HashMap<>();
         loadAuthenticators(authenticators, ClientCredentialsProviderUtils.class.getClassLoader());
@@ -67,22 +62,20 @@ public class ClientCredentialsProviderUtils {
             throw new RuntimeException("Couldn't find ClientCredentialsProvider implementation class with id: " + authenticatorId + ". Loaded authentication providers: " + authenticators.keySet());
         }
 
-        Object config = (clientCredentials==null) ? null : clientCredentials.get(authenticatorId);
+        Object config = (clientCredentials == null) ? null : clientCredentials.get(authenticatorId);
         authenticator.init(deployment, config);
 
         return authenticator;
     }
 
     private static void loadAuthenticators(Map<String, ClientCredentialsProvider> authenticators, ClassLoader classLoader) {
-        Iterator<ClientCredentialsProvider> iterator = ServiceLoader.load(ClientCredentialsProvider.class, classLoader).iterator();
-        while (iterator.hasNext()) {
+        for (ClientCredentialsProvider clientCredentialsProvider : ServiceLoader.load(ClientCredentialsProvider.class, classLoader)) {
             try {
-                ClientCredentialsProvider authenticator = iterator.next();
-                logger.debugf("Loaded clientCredentialsProvider %s", authenticator.getId());
-                authenticators.put(authenticator.getId(), authenticator);
+                LOG.debug("Loaded clientCredentialsProvider {}", clientCredentialsProvider.getId());
+                authenticators.put(clientCredentialsProvider.getId(), clientCredentialsProvider);
             } catch (ServiceConfigurationError e) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Failed to load clientCredentialsProvider with classloader: " + classLoader, e);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Failed to load clientCredentialsProvider with classloader: " + classLoader, e);
                 }
             }
         }

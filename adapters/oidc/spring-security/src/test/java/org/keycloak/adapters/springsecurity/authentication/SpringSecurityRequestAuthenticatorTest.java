@@ -21,11 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.keycloak.KeycloakPrincipal;
 import org.keycloak.KeycloakSecurityContext;
-import org.keycloak.adapters.AdapterTokenStore;
-import org.keycloak.adapters.KeycloakDeployment;
-import org.keycloak.adapters.OAuthRequestAuthenticator;
-import org.keycloak.adapters.OidcKeycloakAccount;
-import org.keycloak.adapters.RefreshableKeycloakSecurityContext;
+import org.keycloak.adapters.*;
 import org.keycloak.adapters.spi.HttpFacade;
 import org.keycloak.adapters.springsecurity.facade.SimpleHttpFacade;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
@@ -37,14 +33,8 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 /**
  * Spring Security request authenticator tests.

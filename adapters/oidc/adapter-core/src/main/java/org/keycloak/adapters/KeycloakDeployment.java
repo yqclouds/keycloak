@@ -20,7 +20,6 @@ package org.keycloak.adapters;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.jboss.logging.Logger;
 import org.keycloak.adapters.authentication.ClientCredentialsProvider;
 import org.keycloak.adapters.authorization.PolicyEnforcer;
 import org.keycloak.adapters.rotation.PublicKeyLocator;
@@ -32,6 +31,8 @@ import org.keycloak.enums.TokenStore;
 import org.keycloak.protocol.oidc.representations.OIDCConfigurationRepresentation;
 import org.keycloak.representations.adapters.config.AdapterConfig;
 import org.keycloak.util.JsonSerialization;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -45,8 +46,7 @@ import java.util.concurrent.Callable;
  * @version $Revision: 1 $
  */
 public class KeycloakDeployment {
-
-    private static final Logger log = Logger.getLogger(KeycloakDeployment.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KeycloakDeployment.class);
 
     protected RelativeUrlsUsed relativeUrls;
     protected String realm;
@@ -163,7 +163,7 @@ public class KeycloakDeployment {
     /**
      * URLs are loaded lazily when used. This allows adapter to be deployed prior to Keycloak server starting, and will
      * also allow the adapter to retry loading config for each request until the Keycloak server is ready.
-     *
+     * <p>
      * In the future we may want to support reloading config at a configurable interval.
      */
     protected void resolveUrls() {
@@ -173,7 +173,7 @@ public class KeycloakDeployment {
 
                 String discoveryUrl = authUrlBuilder.clone().path(ServiceUrlConstants.DISCOVERY_URL).build(getRealm()).toString();
                 try {
-                    log.debugv("Resolving URLs from {0}", discoveryUrl);
+                    LOG.debug("Resolving URLs from {}", discoveryUrl);
 
                     OIDCConfigurationRepresentation config = getOidcConfiguration(discoveryUrl);
 
@@ -187,17 +187,17 @@ public class KeycloakDeployment {
                     unregisterNodeUrl = authUrlBuilder.clone().path(ServiceUrlConstants.CLIENTS_MANAGEMENT_UNREGISTER_NODE_PATH).build(getRealm()).toString();
                     jwksUrl = config.getJwksUri();
 
-                    log.infov("Loaded URLs from {0}", discoveryUrl);
+                    LOG.info("Loaded URLs from {}", discoveryUrl);
                 } catch (Exception e) {
-                    log.warnv(e, "Failed to load URLs from {0}", discoveryUrl);
+                    LOG.warn("Failed to load URLs from " + discoveryUrl, e);
                 }
             }
         }
     }
 
     protected void resolveUrls(KeycloakUriBuilder authUrlBuilder) {
-        if (log.isDebugEnabled()) {
-            log.debug("resolveUrls");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("resolveUrls");
         }
 
         String login = authUrlBuilder.clone().path(ServiceUrlConstants.AUTH_PATH).build(getRealm()).toString();

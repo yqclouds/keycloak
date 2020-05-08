@@ -19,13 +19,7 @@ package org.keycloak.adapters.springsecurity.authentication;
 
 import org.keycloak.KeycloakPrincipal;
 import org.keycloak.KeycloakSecurityContext;
-import org.keycloak.adapters.AdapterTokenStore;
-import org.keycloak.adapters.AdapterUtils;
-import org.keycloak.adapters.KeycloakDeployment;
-import org.keycloak.adapters.OAuthRequestAuthenticator;
-import org.keycloak.adapters.OidcKeycloakAccount;
-import org.keycloak.adapters.RefreshableKeycloakSecurityContext;
-import org.keycloak.adapters.RequestAuthenticator;
+import org.keycloak.adapters.*;
 import org.keycloak.adapters.spi.HttpFacade;
 import org.keycloak.adapters.spi.KeycloakAccount;
 import org.keycloak.adapters.springsecurity.account.SimpleKeycloakAccount;
@@ -47,16 +41,16 @@ import java.util.Set;
  */
 public class SpringSecurityRequestAuthenticator extends RequestAuthenticator {
 
-    private static final Logger logger = LoggerFactory.getLogger(SpringSecurityRequestAuthenticator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SpringSecurityRequestAuthenticator.class);
     private final HttpServletRequest request;
 
     /**
      * Creates a new Spring Security request authenticator.
      *
-     * @param facade the current <code>HttpFacade</code> (required)
-     * @param request the current <code>HttpServletRequest</code> (required)
-     * @param deployment the <code>KeycloakDeployment</code> (required)
-     * @param tokenStore the <cdoe>AdapterTokenStore</cdoe> (required)
+     * @param facade          the current <code>HttpFacade</code> (required)
+     * @param request         the current <code>HttpServletRequest</code> (required)
+     * @param deployment      the <code>KeycloakDeployment</code> (required)
+     * @param tokenStore      the <cdoe>AdapterTokenStore</cdoe> (required)
      * @param sslRedirectPort the SSL redirect port (required)
      */
     public SpringSecurityRequestAuthenticator(
@@ -93,7 +87,7 @@ public class SpringSecurityRequestAuthenticator extends RequestAuthenticator {
         Set<String> roles = AdapterUtils.getRolesFromSecurityContext(securityContext);
         final KeycloakAccount account = new SimpleKeycloakAccount(principal, roles, securityContext);
 
-        logger.debug("Completing bearer authentication. Bearer roles: {} ",roles);
+        LOG.debug("Completing bearer authentication. Bearer roles: {} ", roles);
 
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(new KeycloakAuthenticationToken(account, false));

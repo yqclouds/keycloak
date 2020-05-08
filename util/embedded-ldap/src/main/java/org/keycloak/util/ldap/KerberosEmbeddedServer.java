@@ -34,7 +34,8 @@ import org.apache.directory.server.protocol.shared.transport.UdpTransport;
 import org.apache.directory.shared.kerberos.KerberosTime;
 import org.apache.directory.shared.kerberos.KerberosUtils;
 import org.apache.directory.shared.kerberos.codec.types.EncryptionType;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.security.auth.kerberos.KerberosPrincipal;
 import java.io.IOException;
@@ -53,7 +54,7 @@ public class KerberosEmbeddedServer extends LDAPEmbeddedServer {
     public static final String PROPERTY_KDC_ENCTYPES = "kerberos.encTypes";
     public static final String DEFAULT_KERBEROS_REALM = "KEYCLOAK.ORG";
     public static final String DEFAULT_KERBEROS_REALM_2 = "KC2.COM";
-    private static final Logger log = Logger.getLogger(KerberosEmbeddedServer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KerberosEmbeddedServer.class);
     private static final String DEFAULT_KERBEROS_LDIF_FILE = "classpath:kerberos/default-users.ldif";
     private static final String DEFAULT_KDC_PORT = "6088";
     private static final String DEFAULT_KDC_ENCRYPTION_TYPES = "aes128-cts-hmac-sha1-96, des-cbc-md5, des3-cbc-sha1-kd";
@@ -92,7 +93,7 @@ public class KerberosEmbeddedServer extends LDAPEmbeddedServer {
     }
 
     public static void configureDefaultPropertiesForRealm(String kerberosRealm, Properties properties) {
-        log.infof("Using kerberos realm: %s", kerberosRealm);
+        LOG.info("Using kerberos realm: {}", kerberosRealm);
         if (DEFAULT_KERBEROS_REALM.equals(kerberosRealm)) {
             // No more configs
         } else if (DEFAULT_KERBEROS_REALM_2.equals(kerberosRealm)) {
@@ -131,7 +132,7 @@ public class KerberosEmbeddedServer extends LDAPEmbeddedServer {
     public void init() throws Exception {
         super.init();
 
-        log.info("Creating KDC server. kerberosRealm: " + kerberosRealm + ", kdcPort: " + kdcPort + ", kdcEncryptionTypes: " + kdcEncryptionTypes);
+        LOG.info("Creating KDC server. kerberosRealm: " + kerberosRealm + ", kdcPort: " + kdcPort + ", kdcEncryptionTypes: " + kdcEncryptionTypes);
         createAndStartKdcServer();
     }
 
@@ -197,7 +198,7 @@ public class KerberosEmbeddedServer extends LDAPEmbeddedServer {
 
 
     protected void stopKerberosServer() {
-        log.info("Stopping Kerberos server.");
+        LOG.info("Stopping Kerberos server.");
         kdcServer.stop();
     }
 

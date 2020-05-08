@@ -23,7 +23,6 @@ package org.keycloak.adapters.spi;
  */
 public interface AuthChallenge {
     /**
-     *
      * @param exchange
      * @return challenge sent
      */

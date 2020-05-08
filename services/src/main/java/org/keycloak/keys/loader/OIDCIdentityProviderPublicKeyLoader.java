@@ -17,7 +17,6 @@
 
 package org.keycloak.keys.loader;
 
-import org.jboss.logging.Logger;
 import org.keycloak.broker.oidc.OIDCIdentityProviderConfig;
 import org.keycloak.common.util.KeyUtils;
 import org.keycloak.common.util.PemUtils;
@@ -31,6 +30,8 @@ import org.keycloak.keys.PublicKeyLoader;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.protocol.oidc.utils.JWKSHttpUtils;
 import org.keycloak.util.JWKSUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.security.PublicKey;
@@ -42,7 +43,7 @@ import java.util.Map;
  */
 public class OIDCIdentityProviderPublicKeyLoader implements PublicKeyLoader {
 
-    private static final Logger logger = Logger.getLogger(OIDCIdentityProviderPublicKeyLoader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(OIDCIdentityProviderPublicKeyLoader.class);
 
     private final KeycloakSession session;
     private final OIDCIdentityProviderConfig config;
@@ -69,7 +70,7 @@ public class OIDCIdentityProviderPublicKeyLoader implements PublicKeyLoader {
                 }
                 return Collections.singletonMap(publicKey.getKid(), publicKey);
             } catch (Exception e) {
-                logger.warnf(e, "Unable to retrieve publicKey for verify signature of identityProvider '%s' . Error details: %s", config.getAlias(), e.getMessage());
+                LOG.warn("Unable to retrieve publicKey for verify signature of identityProvider '{}' . Error details: {}", config.getAlias(), e.getMessage());
                 return Collections.emptyMap();
             }
         }
@@ -90,7 +91,7 @@ public class OIDCIdentityProviderPublicKeyLoader implements PublicKeyLoader {
             keyWrapper.setUse(KeyUse.SIG);
             keyWrapper.setPublicKey(publicKey);
         } else {
-            logger.warnf("No public key saved on identityProvider %s", config.getAlias());
+            LOG.warn("No public key saved on identityProvider {}", config.getAlias());
         }
         return keyWrapper;
     }

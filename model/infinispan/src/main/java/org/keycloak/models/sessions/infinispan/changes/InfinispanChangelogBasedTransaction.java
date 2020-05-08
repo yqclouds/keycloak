@@ -19,7 +19,6 @@ package org.keycloak.models.sessions.infinispan.changes;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
-import org.jboss.logging.Logger;
 import org.keycloak.models.AbstractKeycloakTransaction;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
@@ -27,6 +26,8 @@ import org.keycloak.models.sessions.infinispan.CacheDecorators;
 import org.keycloak.models.sessions.infinispan.entities.SessionEntity;
 import org.keycloak.models.sessions.infinispan.remotestore.RemoteCacheInvoker;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,8 +37,7 @@ import java.util.concurrent.TimeUnit;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class InfinispanChangelogBasedTransaction<K, V extends SessionEntity> extends AbstractKeycloakTransaction {
-
-    public static final Logger logger = Logger.getLogger(InfinispanChangelogBasedTransaction.class);
+    public static final Logger LOG = LoggerFactory.getLogger(InfinispanChangelogBasedTransaction.class);
 
     private final KeycloakSession kcSession;
     private final String cacheName;
@@ -60,7 +60,7 @@ public class InfinispanChangelogBasedTransaction<K, V extends SessionEntity> ext
             // Lookup entity from cache
             SessionEntityWrapper<V> wrappedEntity = cache.get(key);
             if (wrappedEntity == null) {
-                logger.tracef("Not present cache item for key %s", key);
+                LOG.trace("Not present cache item for key {}", key);
                 return;
             }
 
@@ -186,7 +186,7 @@ public class InfinispanChangelogBasedTransaction<K, V extends SessionEntity> ext
             case ADD_IF_ABSENT:
                 SessionEntityWrapper<V> existing = CacheDecorators.skipCacheStore(cache).putIfAbsent(key, sessionWrapper);
                 if (existing != null) {
-                    logger.debugf("Existing entity in cache for key: %s . Will update it", key);
+                    LOG.debug("Existing entity in cache for key: {} . Will update it", key);
 
                     // Apply updates on the existing entity and replace it
                     task.runUpdate(existing.getEntity());
@@ -219,14 +219,14 @@ public class InfinispanChangelogBasedTransaction<K, V extends SessionEntity> ext
 
             // Replace fail. Need to load latest entity from cache, apply updates again and try to replace in cache again
             if (!replaced) {
-                if (logger.isDebugEnabled()) {
-                    logger.debugf("Replace failed for entity: %s, old version %s, new version %s. Will try again", key, oldVersionEntity.getVersion(), newVersionEntity.getVersion());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Replace failed for entity: {}, old version {}, new version {}. Will try again", key, oldVersionEntity.getVersion(), newVersionEntity.getVersion());
                 }
 
                 oldVersionEntity = cache.get(key);
 
                 if (oldVersionEntity == null) {
-                    logger.debugf("Entity %s not found. Maybe removed in the meantime. Replace task will be ignored", key);
+                    LOG.debug("Entity {} not found. Maybe removed in the meantime. Replace task will be ignored", key);
                     return;
                 }
 
@@ -234,14 +234,14 @@ public class InfinispanChangelogBasedTransaction<K, V extends SessionEntity> ext
 
                 task.runUpdate(session);
             } else {
-                if (logger.isTraceEnabled()) {
-                    logger.tracef("Replace SUCCESS for entity: %s . old version: %s, new version: %s", key, oldVersionEntity.getVersion(), newVersionEntity.getVersion());
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Replace SUCCESS for entity: {} . old version: {}, new version: {}", key, oldVersionEntity.getVersion(), newVersionEntity.getVersion());
                 }
             }
         }
 
         if (!replaced) {
-            logger.warnf("Failed to replace entity '%s' in cache '%s'", key, cache.getName());
+            LOG.warn("Failed to replace entity '{}' in cache '{}'", key, cache.getName());
         }
 
     }

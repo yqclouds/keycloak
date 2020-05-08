@@ -51,13 +51,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.startsWith;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Keycloak authentication process filter test cases.
@@ -88,7 +82,7 @@ public class KeycloakAuthenticationProcessingFilterTest {
 
     @Mock
     private AuthenticationFailureHandler failureHandler;
-    
+
     private KeycloakAuthenticationFailureHandler keycloakFailureHandler;
 
     @Mock
@@ -205,13 +199,13 @@ public class KeycloakAuthenticationProcessingFilterTest {
         verify(failureHandler).onAuthenticationFailure(any(HttpServletRequest.class), any(HttpServletResponse.class),
                 any(AuthenticationException.class));
     }
-    
+
     @Test
     public void testDefaultFailureHanlder() throws Exception {
         AuthenticationException exception = new BadCredentialsException("OOPS");
         filter.setAuthenticationFailureHandler(keycloakFailureHandler);
         filter.unsuccessfulAuthentication(request, response, exception);
-        
+
         verify(response).sendError(eq(HttpServletResponse.SC_UNAUTHORIZED), any(String.class));
     }
 
@@ -234,6 +228,6 @@ public class KeycloakAuthenticationProcessingFilterTest {
     }
 
     private void setAuthorizationHeader(MockHttpServletRequest request, String scheme) {
-      request.addHeader(KeycloakAuthenticationProcessingFilter.AUTHORIZATION_HEADER, scheme + " " + UUID.randomUUID().toString());
+        request.addHeader(KeycloakAuthenticationProcessingFilter.AUTHORIZATION_HEADER, scheme + " " + UUID.randomUUID().toString());
     }
 }

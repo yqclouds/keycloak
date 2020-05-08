@@ -80,6 +80,7 @@ public class FluentTestsHelper {
     protected String accessToken;
     protected volatile boolean isInitialized;
     protected Map<String, ClientData> createdClients = new HashMap<>();
+
     /**
      * Creates a new helper instance.
      */

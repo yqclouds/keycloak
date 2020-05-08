@@ -1,6 +1,7 @@
 package org.keycloak.vault;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -30,7 +31,7 @@ import java.util.Optional;
  */
 public class FilesPlainTextVaultProvider extends AbstractVaultProvider {
 
-    private static final Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Path vaultPath;
 
@@ -43,14 +44,14 @@ public class FilesPlainTextVaultProvider extends AbstractVaultProvider {
     public FilesPlainTextVaultProvider(@Nonnull Path path, @Nonnull String realmName, @Nonnull List<VaultKeyResolver> resolvers) {
         super(realmName, resolvers);
         this.vaultPath = path;
-        logger.debugf("PlainTextVaultProvider will operate in %s directory", vaultPath.toAbsolutePath());
+        LOG.debug("PlainTextVaultProvider will operate in {} directory", vaultPath.toAbsolutePath());
     }
 
     @Override
     protected VaultRawSecret obtainSecretInternal(String vaultSecretId) {
         Path secretPath = vaultPath.resolve(vaultSecretId);
         if (!Files.exists(secretPath)) {
-            logger.warnf("Cannot find secret %s in %s", vaultSecretId, secretPath);
+            LOG.warn("Cannot find secret {} in {}", vaultSecretId, secretPath);
             return DefaultVaultRawSecret.forBuffer(Optional.empty());
         }
 

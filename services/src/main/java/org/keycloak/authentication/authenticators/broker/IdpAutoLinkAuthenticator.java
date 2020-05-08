@@ -17,7 +17,7 @@
 
 package org.keycloak.authentication.authenticators.broker;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.authenticators.broker.util.SerializedBrokeredIdentityContext;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
@@ -31,7 +31,7 @@ import org.keycloak.sessions.AuthenticationSessionModel;
  */
 public class IdpAutoLinkAuthenticator extends AbstractIdpAuthenticator {
 
-    private static Logger logger = Logger.getLogger(IdpAutoLinkAuthenticator.class);
+    private static Logger LOG = LoggerFactory.getLogger(IdpAutoLinkAuthenticator.class);
 
     @Override
     protected void authenticateImpl(AuthenticationFlowContext context, SerializedBrokeredIdentityContext serializedCtx, BrokeredIdentityContext brokerContext) {
@@ -41,7 +41,7 @@ public class IdpAutoLinkAuthenticator extends AbstractIdpAuthenticator {
 
         UserModel existingUser = getExistingUser(session, realm, authSession);
 
-        logger.debugf("User '%s' is set to authentication context when link with identity provider '%s' . Identity provider username is '%s' ", existingUser.getUsername(),
+        LOG.debug("User '%s' is set to authentication context when link with identity provider '%s' . Identity provider username is '%s' ", existingUser.getUsername(),
                 brokerContext.getIdpConfig().getAlias(), brokerContext.getUsername());
 
         context.setUser(existingUser);

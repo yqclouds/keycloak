@@ -18,7 +18,7 @@
 package org.keycloak.exportimport.singlefile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.exportimport.ExportProvider;
 import org.keycloak.exportimport.util.ExportImportSessionTask;
 import org.keycloak.exportimport.util.ExportUtils;
@@ -41,7 +41,7 @@ import java.util.List;
  */
 public class SingleFileExportProvider implements ExportProvider {
 
-    private static final Logger logger = Logger.getLogger(SingleFileExportProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SingleFileExportProvider.class);
 
     private File file;
 
@@ -58,7 +58,7 @@ public class SingleFileExportProvider implements ExportProvider {
 
     @Override
     public void exportModel(KeycloakSessionFactory factory) throws IOException {
-        logger.infof("Exporting model into file %s", this.file.getAbsolutePath());
+        LOG.info("Exporting model into file %s", this.file.getAbsolutePath());
         KeycloakModelUtils.runJobInTransaction(factory, new ExportImportSessionTask() {
 
             @Override
@@ -78,7 +78,7 @@ public class SingleFileExportProvider implements ExportProvider {
 
     @Override
     public void exportRealm(KeycloakSessionFactory factory, final String realmName) throws IOException {
-        logger.infof("Exporting realm '%s' into file %s", realmName, this.file.getAbsolutePath());
+        LOG.info("Exporting realm '%s' into file %s", realmName, this.file.getAbsolutePath());
         KeycloakModelUtils.runJobInTransaction(factory, new ExportImportSessionTask() {
 
             @Override

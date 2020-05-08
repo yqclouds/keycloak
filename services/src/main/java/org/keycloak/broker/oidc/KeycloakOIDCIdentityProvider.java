@@ -95,12 +95,12 @@ public class KeycloakOIDCIdentityProvider extends OIDCIdentityProvider {
             try {
                 token = new JWSInput(input);
             } catch (JWSInputException e) {
-                logger.warn("Failed to verify logout request");
+                LOG.warn("Failed to verify logout request");
                 return Response.status(400).build();
             }
 
             if (!verify(token)) {
-                logger.warn("Failed to verify logout request");
+                LOG.warn("Failed to verify logout request");
                 return Response.status(400).build();
             }
 
@@ -129,15 +129,15 @@ public class KeycloakOIDCIdentityProvider extends OIDCIdentityProvider {
 
         protected boolean validateAction(AdminAction action) {
             if (!action.validate()) {
-                logger.warn("admin request failed, not validated" + action.getAction());
+                LOG.warn("admin request failed, not validated" + action.getAction());
                 return false;
             }
             if (action.isExpired()) {
-                logger.warn("admin request failed, expired token");
+                LOG.warn("admin request failed, expired token");
                 return false;
             }
             if (!getConfig().getClientId().equals(action.getResource())) {
-                logger.warn("Resource name does not match");
+                LOG.warn("Resource name does not match");
                 return false;
 
             }

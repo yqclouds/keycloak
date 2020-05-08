@@ -17,17 +17,9 @@
 
 package org.keycloak.adapters.springsecurity.authentication;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import org.apache.http.HttpHeaders;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.keycloak.adapters.AdapterDeploymentContext;
 import org.keycloak.adapters.KeycloakDeployment;
 import org.keycloak.adapters.spi.HttpFacade;
@@ -38,6 +30,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Keycloak authentication entry point tests.
@@ -109,7 +108,7 @@ public class KeycloakAuthenticationEntryPointTest {
     @Test
     public void testCommenceWithCustomRequestMatcher() throws Exception {
         new KeycloakAuthenticationEntryPoint(adapterDeploymentContext, requestMatcher)
-            .commence(request, response, null);
+                .commence(request, response, null);
 
         verify(requestMatcher).matches(request);
     }

@@ -25,9 +25,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import javax.servlet.http.Cookie;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Wrapped HTTP servlet request tests.
@@ -62,7 +60,7 @@ public class WrappedHttpServletRequestTest {
 
         mockHttpServletRequest.addParameter(QUERY_PARM_1, "java");
         mockHttpServletRequest.addParameter(QUERY_PARM_2, "groovy");
-        mockHttpServletRequest.setQueryString(String.format("%s=%s&%s=%s", QUERY_PARM_1, "java", QUERY_PARM_2, "groovy"));
+        mockHttpServletRequest.setQueryString(String.format("{}={}&{}={}", QUERY_PARM_1, "java", QUERY_PARM_2, "groovy"));
         mockHttpServletRequest.setCookies(new Cookie(COOKIE_NAME, "yum"));
 
         mockHttpServletRequest.setContent("All work and no play makes Jack a dull boy".getBytes());
@@ -76,7 +74,7 @@ public class WrappedHttpServletRequestTest {
 
     @Test
     public void testGetURI() throws Exception {
-        assertEquals("https://localhost:80" + REQUEST_URI + "?code=java&code2=groovy" , request.getURI());
+        assertEquals("https://localhost:80" + REQUEST_URI + "?code=java&code2=groovy", request.getURI());
     }
 
     @Test
@@ -96,8 +94,7 @@ public class WrappedHttpServletRequestTest {
     }
 
     @Test
-    public void testGetCookieCookiesNull() throws Exception
-    {
+    public void testGetCookieCookiesNull() throws Exception {
         mockHttpServletRequest.setCookies(null);
         request.getCookie(COOKIE_NAME);
     }

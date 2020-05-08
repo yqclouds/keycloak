@@ -17,10 +17,6 @@
 
 package org.keycloak.adapters.springsecurity.management;
 
-import java.util.List;
-
-import javax.servlet.http.HttpSession;
-
 import org.keycloak.adapters.spi.UserSessionManagement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +24,9 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.web.session.HttpSessionCreatedEvent;
 import org.springframework.security.web.session.HttpSessionDestroyedEvent;
+
+import javax.servlet.http.HttpSession;
+import java.util.List;
 
 /**
  * User session manager for handling logout of Spring Secured sessions.
@@ -37,7 +36,7 @@ import org.springframework.security.web.session.HttpSessionDestroyedEvent;
  */
 public class HttpSessionManager implements ApplicationListener<ApplicationEvent>, UserSessionManagement {
 
-    private static final Logger log = LoggerFactory.getLogger(HttpSessionManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(HttpSessionManager.class);
     private SessionManagementStrategy sessions = new LocalSessionManagementStrategy();
 
     @Override
@@ -45,19 +44,19 @@ public class HttpSessionManager implements ApplicationListener<ApplicationEvent>
         if (event instanceof HttpSessionCreatedEvent) {
             HttpSessionCreatedEvent e = (HttpSessionCreatedEvent) event;
             HttpSession session = e.getSession();
-            log.debug("Session created: {}", session.getId());
+            LOG.debug("Session created: {}", session.getId());
             sessions.store(session);
         } else if (event instanceof HttpSessionDestroyedEvent) {
             HttpSessionDestroyedEvent e = (HttpSessionDestroyedEvent) event;
             HttpSession session = e.getSession();
             sessions.remove(session.getId());
-            log.debug("Session destroyed: {}", session.getId());
+            LOG.debug("Session destroyed: {}", session.getId());
         }
     }
 
     @Override
     public void logoutAll() {
-        log.info("Received request to log out all users.");
+        LOG.info("Received request to log out all users.");
         for (HttpSession session : sessions.getAll()) {
             session.invalidate();
         }
@@ -66,7 +65,7 @@ public class HttpSessionManager implements ApplicationListener<ApplicationEvent>
 
     @Override
     public void logoutHttpSessions(List<String> ids) {
-        log.info("Received request to log out {} session(s): {}", ids.size(), ids);
+        LOG.info("Received request to log out {} session(s): {}", ids.size(), ids);
         for (String id : ids) {
             HttpSession session = sessions.remove(id);
             if (session != null) {

@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.HttpResponse;
 import org.keycloak.common.util.CollectionUtil;
@@ -51,7 +51,7 @@ public class Cors {
     public static final String ACCESS_CONTROL_MAX_AGE = "Access-Control-Max-Age";
     public static final String ACCESS_CONTROL_ALLOW_ORIGIN_WILDCARD = "*";
     public static final String INCLUDE_REDIRECTS = "+";
-    private static final Logger logger = Logger.getLogger(Cors.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Cors.class);
     private HttpRequest request;
     private ResponseBuilder builder;
     private Set<String> allowedOrigins;
@@ -132,13 +132,13 @@ public class Cors {
     public Response build() {
         String origin = request.getHttpHeaders().getRequestHeaders().getFirst(ORIGIN_HEADER);
         if (origin == null) {
-            logger.trace("No origin header ignoring");
+            LOG.trace("No origin header ignoring");
             return builder.build();
         }
 
         if (!preflight && (allowedOrigins == null || (!allowedOrigins.contains(origin) && !allowedOrigins.contains(ACCESS_CONTROL_ALLOW_ORIGIN_WILDCARD)))) {
-            if (logger.isDebugEnabled()) {
-                logger.debugv("Invalid CORS request: origin {0} not in allowed origins {1}", origin, allowedOrigins);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Invalid CORS request: origin {} not in allowed origins {}", origin, allowedOrigins);
             }
             return builder.build();
         }
@@ -171,7 +171,7 @@ public class Cors {
             builder.header(ACCESS_CONTROL_MAX_AGE, DEFAULT_MAX_AGE);
         }
 
-        logger.debug("Added CORS headers to response");
+        LOG.debug("Added CORS headers to response");
 
         return builder.build();
     }
@@ -179,13 +179,13 @@ public class Cors {
     public void build(HttpResponse response) {
         String origin = request.getHttpHeaders().getRequestHeaders().getFirst(ORIGIN_HEADER);
         if (origin == null) {
-            logger.trace("No origin header ignoring");
+            LOG.trace("No origin header ignoring");
             return;
         }
 
         if (!preflight && (allowedOrigins == null || (!allowedOrigins.contains(origin) && !allowedOrigins.contains(ACCESS_CONTROL_ALLOW_ORIGIN_WILDCARD)))) {
-            if (logger.isDebugEnabled()) {
-                logger.debugv("Invalid CORS request: origin {0} not in allowed origins {1}", origin, allowedOrigins);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Invalid CORS request: origin {} not in allowed origins {}", origin, allowedOrigins);
             }
             return;
         }
@@ -222,7 +222,7 @@ public class Cors {
             response.getOutputHeaders().add(ACCESS_CONTROL_MAX_AGE, DEFAULT_MAX_AGE);
         }
 
-        logger.debug("Added CORS headers to response");
+        LOG.debug("Added CORS headers to response");
     }
 
 }

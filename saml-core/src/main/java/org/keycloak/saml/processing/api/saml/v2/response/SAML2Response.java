@@ -64,7 +64,7 @@ import static org.keycloak.saml.common.constants.JBossSAMLURIConstants.PROTOCOL_
  */
 public class SAML2Response {
 
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
     private final long ASSERTION_VALIDITY = 5000; // 5secs in milis
 
     private final long CLOCK_SKEW = 2000; // 2secs
@@ -189,9 +189,9 @@ public class SAML2Response {
         try {
             AssertionUtil.createTimedConditions(assertionType, ASSERTION_VALIDITY, CLOCK_SKEW);
         } catch (ConfigurationException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         } catch (IssueInstantMissingException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
 
         ResponseType responseType = createResponseType(ID, issuerInfo, assertionType);
@@ -264,7 +264,7 @@ public class SAML2Response {
     public EncryptedAssertionType getEncryptedAssertion(InputStream is) throws ParsingException, ConfigurationException,
             ProcessingException {
         if (is == null)
-            throw logger.nullArgumentError("InputStream");
+            throw LOG.nullArgumentError("InputStream");
 
         Document samlDocument = DocumentUtil.getDocument(is);
         SAMLParser samlParser = SAMLParser.getInstance();
@@ -285,7 +285,7 @@ public class SAML2Response {
      */
     public AssertionType getAssertionType(InputStream is) throws ParsingException, ConfigurationException, ProcessingException {
         if (is == null)
-            throw logger.nullArgumentError("InputStream");
+            throw LOG.nullArgumentError("InputStream");
         Document samlDocument = DocumentUtil.getDocument(is);
 
         SAMLParser samlParser = SAMLParser.getInstance();
@@ -312,7 +312,7 @@ public class SAML2Response {
      */
     public ResponseType getResponseType(InputStream is) throws ParsingException, ConfigurationException, ProcessingException {
         if (is == null)
-            throw logger.nullArgumentError("InputStream");
+            throw LOG.nullArgumentError("InputStream");
 
         Document samlResponseDocument = DocumentUtil.getDocument(is);
 
@@ -337,12 +337,12 @@ public class SAML2Response {
     public SAML2Object getSAML2ObjectFromStream(InputStream is) throws ParsingException, ConfigurationException,
             ProcessingException {
         if (is == null)
-            throw logger.nullArgumentError("InputStream");
+            throw LOG.nullArgumentError("InputStream");
 
         Document samlResponseDocument = DocumentUtil.getDocument(is);
 
-        if (logger.isTraceEnabled()) {
-            logger.trace("SAML Response Document: " + DocumentUtil.asString(samlResponseDocument));
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("SAML Response Document: " + DocumentUtil.asString(samlResponseDocument));
         }
 
         SAMLParser samlParser = SAMLParser.getInstance();
@@ -364,7 +364,7 @@ public class SAML2Response {
      */
     public Document convert(EncryptedElementType encryptedElementType) throws ConfigurationException {
         if (encryptedElementType == null)
-            throw logger.nullArgumentError("encryptedElementType");
+            throw LOG.nullArgumentError("encryptedElementType");
         Document doc = DocumentUtil.createDocument();
         Node importedNode = doc.importNode(encryptedElementType.getEncryptedElement(), true);
         doc.appendChild(importedNode);

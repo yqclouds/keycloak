@@ -59,6 +59,6 @@ public class OIDCAuthenticationError implements AuthenticationError {
     public String toString() {
         return "OIDCAuthenticationError [reason=" + reason + ", description=" + description + "]";
     }
-    
-    
+
+
 }

@@ -27,25 +27,24 @@ import java.io.IOException;
 
 /**
  * To return the forbidden code with the corresponding message.
- * 
- * @author emilienbondu
  *
+ * @author emilienbondu
  */
 public class KeycloakAuthenticationFailureHandler implements AuthenticationFailureHandler {
 
-	@Override
-	public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-		// Check that the response was not committed yet (this may happen when another
-		// part of the Keycloak adapter sends a challenge or a redirect).
-		if (!response.isCommitted()) {
-			if (KeycloakCookieBasedRedirect.getRedirectUrlFromCookie(request) != null) {
-				response.addCookie(KeycloakCookieBasedRedirect.createCookieFromRedirectUrl(null));
-			}
-			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unable to authenticate using the Authorization header");
-		} else {
-			if (200 <= response.getStatus() && response.getStatus() < 300) {
-				throw new RuntimeException("Success response was committed while authentication failed!", exception);
-			}
-		}
-	}
+    @Override
+    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
+        // Check that the response was not committed yet (this may happen when another
+        // part of the Keycloak adapter sends a challenge or a redirect).
+        if (!response.isCommitted()) {
+            if (KeycloakCookieBasedRedirect.getRedirectUrlFromCookie(request) != null) {
+                response.addCookie(KeycloakCookieBasedRedirect.createCookieFromRedirectUrl(null));
+            }
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unable to authenticate using the Authorization header");
+        } else {
+            if (200 <= response.getStatus() && response.getStatus() < 300) {
+                throw new RuntimeException("Success response was committed while authentication failed!", exception);
+            }
+        }
+    }
 }

@@ -23,9 +23,10 @@ import org.hibernate.stat.CollectionStatistics;
 import org.hibernate.stat.EntityStatistics;
 import org.hibernate.stat.QueryStatistics;
 import org.hibernate.stat.Statistics;
-import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.timer.ScheduledTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManagerFactory;
 
@@ -35,7 +36,7 @@ import javax.persistence.EntityManagerFactory;
 public class HibernateStatsReporter implements ScheduledTask {
 
     private static final int LIMIT = 100; // Just hardcoded for now
-    private static final Logger logger = Logger.getLogger(HibernateStatsReporter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(HibernateStatsReporter.class);
     private final EntityManagerFactory emf;
 
     public HibernateStatsReporter(EntityManagerFactory emf) {
@@ -62,7 +63,7 @@ public class HibernateStatsReporter implements ScheduledTask {
         logCollections(builder, lineSep, stats);
         logQueries(builder, lineSep, stats);
 
-        logger.infof(builder.toString());
+        LOG.info(builder.toString());
     }
 
 

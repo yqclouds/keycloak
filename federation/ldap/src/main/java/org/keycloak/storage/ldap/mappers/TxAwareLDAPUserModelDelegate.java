@@ -17,18 +17,18 @@
 
 package org.keycloak.storage.ldap.mappers;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.UserModelDelegate;
 import org.keycloak.storage.ldap.LDAPStorageProvider;
 import org.keycloak.storage.ldap.idm.model.LDAPObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public abstract class TxAwareLDAPUserModelDelegate extends UserModelDelegate {
-
-    public static final Logger logger = Logger.getLogger(TxAwareLDAPUserModelDelegate.class);
+    public static final Logger LOG = LoggerFactory.getLogger(TxAwareLDAPUserModelDelegate.class);
 
     protected LDAPStorageProvider provider;
     protected LDAPObject ldapUser;
@@ -42,8 +42,8 @@ public abstract class TxAwareLDAPUserModelDelegate extends UserModelDelegate {
     protected void ensureTransactionStarted() {
         LDAPTransaction transaction = provider.getUserManager().getTransaction(getId());
         if (transaction.getState() == LDAPTransaction.TransactionState.NOT_STARTED) {
-            if (logger.isTraceEnabled()) {
-                logger.trace("Starting and enlisting transaction for object " + ldapUser.getDn().toString());
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Starting and enlisting transaction for object " + ldapUser.getDn().toString());
             }
 
             this.provider.getSession().getTransactionManager().enlistAfterCompletion(transaction);

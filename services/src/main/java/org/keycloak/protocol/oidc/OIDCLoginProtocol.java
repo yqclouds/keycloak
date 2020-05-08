@@ -16,7 +16,6 @@
  */
 package org.keycloak.protocol.oidc;
 
-import org.jboss.logging.Logger;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.TokenIdGenerator;
@@ -37,6 +36,8 @@ import org.keycloak.services.managers.AuthenticationSessionManager;
 import org.keycloak.services.managers.ResourceAdminManager;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.util.TokenUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -105,7 +106,7 @@ public class OIDCLoginProtocol implements LoginProtocol {
     public static final String PKCE_METHOD_PLAIN = "plain";
     public static final String PKCE_METHOD_S256 = "S256";
 
-    private static final Logger logger = Logger.getLogger(OIDCLoginProtocol.class);
+    private static final Logger LOG = LoggerFactory.getLogger(OIDCLoginProtocol.class);
 
     protected KeycloakSession session;
 
@@ -183,7 +184,7 @@ public class OIDCLoginProtocol implements LoginProtocol {
         String redirect = authSession.getRedirectUri();
         OIDCRedirectUriBuilder redirectUri = OIDCRedirectUriBuilder.fromUri(redirect, responseMode);
         String state = authSession.getClientNote(OIDCLoginProtocol.STATE_PARAM);
-        logger.debugv("redirectAccessCode: state: {0}", state);
+        LOG.debug("redirectAccessCode: state: {}", state);
         if (state != null)
             redirectUri.addParam(OAuth2Constants.STATE, state);
 
@@ -294,7 +295,7 @@ public class OIDCLoginProtocol implements LoginProtocol {
             case PASSIVE_LOGIN_REQUIRED:
                 return OAuthErrorException.LOGIN_REQUIRED;
             default:
-                ServicesLogger.LOGGER.untranslatedProtocol(error.name());
+//                ServicesLogger.LOGGER.untranslatedProtocol(error.name());
                 return OAuthErrorException.SERVER_ERROR;
         }
     }
@@ -353,7 +354,7 @@ public class OIDCLoginProtocol implements LoginProtocol {
         int maxAgeInt = Integer.parseInt(maxAge);
 
         if (authTimeInt + maxAgeInt < Time.currentTime()) {
-            logger.debugf("Authentication time is expired, needs to reauthenticate. userSession=%s, clientId=%s, maxAge=%d, authTime=%d", userSession.getId(),
+            LOG.debug("Authentication time is expired, needs to reauthenticate. userSession=%s, clientId=%s, maxAge={}, authTime={}", userSession.getId(),
                     authSession.getClient().getId(), maxAgeInt, authTimeInt);
             return true;
         }
@@ -379,15 +380,15 @@ public class OIDCLoginProtocol implements LoginProtocol {
     public boolean sendPushRevocationPolicyRequest(RealmModel realm, ClientModel resource, int notBefore, String managementUrl) {
         PushNotBeforeAction adminAction = new PushNotBeforeAction(TokenIdGenerator.generateId(), Time.currentTime() + 30, resource.getClientId(), notBefore);
         String token = session.tokens().encode(adminAction);
-        logger.debugv("pushRevocation resource: {0} url: {1}", resource.getClientId(), managementUrl);
+        LOG.debug("pushRevocation resource: {} url: {}", resource.getClientId(), managementUrl);
         URI target = UriBuilder.fromUri(managementUrl).path(AdapterConstants.K_PUSH_NOT_BEFORE).build();
         try {
             int status = httpClientProvider.postText(target.toString(), token);
             boolean success = status == 204 || status == 200;
-            logger.debugf("pushRevocation success for %s: %s", managementUrl, success);
+            LOG.debug("pushRevocation success for %s: %s", managementUrl, success);
             return success;
         } catch (IOException e) {
-            ServicesLogger.LOGGER.failedToSendRevocation(e);
+//            ServicesLogger.LOGGER.failedToSendRevocation(e);
             return false;
         }
     }

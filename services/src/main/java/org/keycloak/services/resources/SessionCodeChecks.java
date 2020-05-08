@@ -17,7 +17,7 @@
 
 package org.keycloak.services.resources;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authentication.AuthenticationProcessor;
 import org.keycloak.common.ClientConnection;
@@ -48,7 +48,7 @@ import java.net.URI;
 
 public class SessionCodeChecks {
 
-    private static final Logger logger = Logger.getLogger(SessionCodeChecks.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SessionCodeChecks.class);
     private final RealmModel realm;
     private final UriInfo uriInfo;
     private final HttpRequest request;
@@ -135,7 +135,7 @@ public class SessionCodeChecks {
         }
 
         // Setup client to be shown on error/info page based on "client_id" parameter
-        logger.debugf("Will use client '%s' in back-to-application link", clientId);
+        LOG.debug("Will use client '{}' in back-to-application link", clientId);
         ClientModel client = null;
         if (clientId != null) {
             client = realm.getClientByClientId(clientId);
@@ -233,7 +233,7 @@ public class SessionCodeChecks {
 
             // Check if we transitted between flows (eg. clicking "register" on login screen)
             if (execution == null && !flowPath.equals(lastFlow)) {
-                logger.debugf("Transition between flows! Current flow: %s, Previous flow: %s", flowPath, lastFlow);
+                LOG.debug("Transition between flows! Current flow: {}, Previous flow: {}", flowPath, lastFlow);
 
                 // Don't allow moving to different flow if I am on requiredActions already
                 if (AuthenticationSessionModel.Action.AUTHENTICATE.name().equals(authSession.getAction())) {
@@ -250,7 +250,7 @@ public class SessionCodeChecks {
 
                 // Allow refresh, but rewrite browser history
                 if (execution == null && lastExecFromSession != null) {
-                    logger.debugf("Parameter 'execution' is not in the request, but flow wasn't changed. Will update browser history");
+                    LOG.debug("Parameter 'execution' is not in the request, but flow wasn't changed. Will update browser history");
                     request.setAttribute(BrowserHistoryHelper.SHOULD_UPDATE_BROWSER_HISTORY, true);
                 }
 
@@ -269,7 +269,7 @@ public class SessionCodeChecks {
                     String latestFlowPath = authSession.getAuthNote(AuthenticationProcessor.CURRENT_FLOW_PATH);
                     URI redirectUri = getLastExecutionUrl(latestFlowPath, execution, tabId);
 
-                    logger.debugf("Invalid action code, but execution matches. So just redirecting to %s", redirectUri);
+                    LOG.debug("Invalid action code, but execution matches. So just redirecting to {}", redirectUri);
                     authSession.setAuthNote(LoginActionsService.FORWARDED_ERROR_MESSAGE_NOTE, Messages.EXPIRED_ACTION);
                     response = Response.status(Response.Status.FOUND).location(redirectUri).build();
                 } else {
@@ -300,11 +300,11 @@ public class SessionCodeChecks {
         if (!clientCode.isValidAction(expectedAction)) {
             AuthenticationSessionModel authSession = getAuthenticationSession();
             if (AuthenticationSessionModel.Action.REQUIRED_ACTIONS.name().equals(authSession.getAction())) {
-                logger.debugf("Incorrect action '%s' . User authenticated already.", authSession.getAction());
+                LOG.debug("Incorrect action '{}' . User authenticated already.", authSession.getAction());
                 response = showPageExpired(authSession);
                 return false;
             } else {
-                logger.errorf("Bad action. Expected action '%s', current action '%s'", expectedAction, authSession.getAction());
+                LOG.error("Bad action. Expected action '{}', current action '{}'", expectedAction, authSession.getAction());
                 response = errorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.EXPIRED_CODE);
                 return false;
             }
@@ -323,7 +323,7 @@ public class SessionCodeChecks {
             authSession.setAuthNote(LoginActionsService.FORWARDED_ERROR_MESSAGE_NOTE, Messages.LOGIN_TIMEOUT);
 
             URI redirectUri = getLastExecutionUrl(LoginActionsService.AUTHENTICATE_PATH, null, tabId);
-            logger.debugf("Flow restart after timeout. Redirecting to %s", redirectUri);
+            LOG.debug("Flow restart after timeout. Redirecting to {}", redirectUri);
             response = Response.status(Response.Status.FOUND).location(redirectUri).build();
             return false;
         }
@@ -337,7 +337,7 @@ public class SessionCodeChecks {
         }
 
         if (!clientCode.isValidAction(AuthenticationSessionModel.Action.REQUIRED_ACTIONS.name())) {
-            logger.debugf("Expected required action, but session action is '%s' . Showing expired page now.", authSession.getAction());
+            LOG.debug("Expected required action, but session action is '{}' . Showing expired page now.", authSession.getAction());
             event.error(Errors.INVALID_CODE);
 
             response = showPageExpired(authSession);
@@ -352,7 +352,7 @@ public class SessionCodeChecks {
         if (actionRequest) {
             String currentRequiredAction = authSession.getAuthNote(AuthenticationProcessor.CURRENT_AUTHENTICATION_EXECUTION);
             if (executedAction == null || !executedAction.equals(currentRequiredAction)) {
-                logger.debug("required action doesn't match current required action");
+                LOG.debug("required action doesn't match current required action");
                 response = redirectToRequiredActions(currentRequiredAction);
                 return false;
             }
@@ -362,13 +362,13 @@ public class SessionCodeChecks {
 
 
     private Response restartAuthenticationSessionFromCookie(RootAuthenticationSessionModel existingRootSession) {
-        logger.debug("Authentication session not found. Trying to restart from cookie.");
+        LOG.debug("Authentication session not found. Trying to restart from cookie.");
         AuthenticationSessionModel authSession = null;
 
         try {
             authSession = RestartLoginCookie.restartSession(session, realm, existingRootSession, clientId);
         } catch (Exception e) {
-            ServicesLogger.LOGGER.failedToParseRestartLoginCookie(e);
+//            ServicesLogger.LOGGER.failedToParseRestartLoginCookie(e);
         }
 
         if (authSession != null) {
@@ -386,7 +386,7 @@ public class SessionCodeChecks {
             }
 
             URI redirectUri = getLastExecutionUrl(flowPath, null, authSession.getTabId());
-            logger.debugf("Authentication session restart from cookie succeeded. Redirecting to %s", redirectUri);
+            LOG.debug("Authentication session restart from cookie succeeded. Redirecting to {}", redirectUri);
             return Response.status(Response.Status.FOUND).location(redirectUri).build();
         } else {
             // Finally need to show error as all the fallbacks failed

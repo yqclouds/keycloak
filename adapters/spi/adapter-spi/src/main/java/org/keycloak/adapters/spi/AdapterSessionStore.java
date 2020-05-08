@@ -23,5 +23,6 @@ package org.keycloak.adapters.spi;
  */
 public interface AdapterSessionStore {
     void saveRequest();
+
     boolean restoreRequest();
 }

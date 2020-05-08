@@ -16,7 +16,6 @@
  */
 package org.keycloak.protocol.oidc;
 
-import org.jboss.logging.Logger;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.common.constants.KerberosConstants;
 import org.keycloak.common.util.UriUtils;
@@ -31,6 +30,8 @@ import org.keycloak.representations.IDToken;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.stereotype.ProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -83,7 +84,7 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
     public static final String PHONE_SCOPE_CONSENT_TEXT = "${phoneScopeConsentText}";
     public static final String OFFLINE_ACCESS_SCOPE_CONSENT_TEXT = Constants.OFFLINE_ACCESS_SCOPE_CONSENT_TEXT;
     public static final String ROLES_SCOPE_CONSENT_TEXT = "${rolesScopeConsentText}";
-    private static final Logger logger = Logger.getLogger(OIDCLoginProtocolFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(OIDCLoginProtocolFactory.class);
     static Map<String, ProtocolMapperModel> builtins = new HashMap<>();
 
     static {
@@ -192,7 +193,7 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
             // 'roles' will be default client scope
             newRealm.addDefaultClientScope(rolesScope, true);
         } else {
-            logger.debugf("Client scope '%s' already exists in realm '%s'. Skip creating it.", ROLES_SCOPE, newRealm.getName());
+            LOG.debug("Client scope '{}' already exists in realm '{}'. Skip creating it.", ROLES_SCOPE, newRealm.getName());
         }
 
         return rolesScope;
@@ -212,7 +213,7 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
             // 'web-origins' will be default client scope
             newRealm.addDefaultClientScope(originsScope, true);
         } else {
-            logger.debugf("Client scope '%s' already exists in realm '%s'. Skip creating it.", WEB_ORIGINS_SCOPE, newRealm.getName());
+            LOG.debug("Client scope '{}' already exists in realm '{}'. Skip creating it.", WEB_ORIGINS_SCOPE, newRealm.getName());
         }
 
         return originsScope;
@@ -237,7 +238,7 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
             microprofileScope.addProtocolMapper(builtins.get(GROUPS));
             newRealm.addDefaultClientScope(microprofileScope, false);
         } else {
-            logger.debugf("Client scope '%s' already exists in realm '%s'. Skip creating it.", MICROPROFILE_JWT_SCOPE, newRealm.getName());
+            LOG.debug("Client scope '{}' already exists in realm '{}'. Skip creating it.", MICROPROFILE_JWT_SCOPE, newRealm.getName());
         }
 
         return microprofileScope;
@@ -346,7 +347,7 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
 
             Set<String> origins = new HashSet<String>();
             String origin = UriUtils.getOrigin(root);
-            logger.debugv("adding default client origin: {0}", origin);
+            LOG.debug("adding default client origin: {}", origin);
             origins.add(origin);
             newClient.setWebOrigins(origins);
         }
@@ -362,7 +363,7 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
 
         // Backwards compatibility only
         if (rep.isDirectGrantsOnly() != null) {
-            ServicesLogger.LOGGER.usingDeprecatedDirectGrantsOnly();
+//            ServicesLogger.LOGGER.usingDeprecatedDirectGrantsOnly();
             newClient.setStandardFlowEnabled(!rep.isDirectGrantsOnly());
             newClient.setDirectAccessGrantsEnabled(rep.isDirectGrantsOnly());
         } else {

@@ -17,7 +17,6 @@
 
 package org.keycloak.storage.ldap.idm.query.internal;
 
-import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.ModelDuplicateException;
 import org.keycloak.models.ModelException;
@@ -44,9 +43,6 @@ import static java.util.Collections.unmodifiableSet;
  * @author Shane Bryzak
  */
 public class LDAPQuery implements AutoCloseable {
-
-    private static final Logger logger = Logger.getLogger(LDAPQuery.class);
-
     private final LDAPStorageProvider ldapFedProvider;
     private final Set<Condition> conditions = new LinkedHashSet<Condition>();
     private final Set<Sort> ordering = new LinkedHashSet<Sort>();

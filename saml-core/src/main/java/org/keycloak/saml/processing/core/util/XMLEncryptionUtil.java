@@ -52,7 +52,7 @@ import java.util.Objects;
 public class XMLEncryptionUtil {
 
     public static final String DS_KEY_INFO = "ds:KeyInfo";
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
     private static final String RSA_ENCRYPTION_SCHEME = Objects.equals(System.getProperty("keycloak.saml.key_trans.rsa_v1.5"), "true")
             ? XMLCipher.RSA_v1dot5
             : XMLCipher.RSA_OAEP;
@@ -92,7 +92,7 @@ public class XMLEncryptionUtil {
             keyCipher.init(XMLCipher.WRAP_MODE, keyUsedToEncryptSecretKey);
             return keyCipher.encryptKey(document, keyToBeEncrypted);
         } catch (XMLEncryptionException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
     }
 
@@ -112,17 +112,17 @@ public class XMLEncryptionUtil {
     public static void encryptElement(QName elementQName, Document document, PublicKey publicKey, SecretKey secretKey,
                                       int keySize, QName wrappingElementQName, boolean addEncryptedKeyInKeyInfo) throws ProcessingException {
         if (elementQName == null)
-            throw logger.nullArgumentError("elementQName");
+            throw LOG.nullArgumentError("elementQName");
         if (document == null)
-            throw logger.nullArgumentError("document");
+            throw LOG.nullArgumentError("document");
         String wrappingElementPrefix = wrappingElementQName.getPrefix();
         if (wrappingElementPrefix == null || "".equals(wrappingElementPrefix))
-            throw logger.wrongTypeError("Wrapping element prefix invalid");
+            throw LOG.wrongTypeError("Wrapping element prefix invalid");
 
         Element documentElement = DocumentUtil.getElement(document, elementQName);
 
         if (documentElement == null)
-            throw logger.domMissingDocElementError(elementQName.toString());
+            throw LOG.domMissingDocElementError(elementQName.toString());
 
         XMLCipher cipher = null;
         EncryptedKey encryptedKey = encryptKey(document, secretKey, publicKey, keySize);
@@ -133,14 +133,14 @@ public class XMLEncryptionUtil {
             cipher = XMLCipher.getInstance(encryptionAlgorithm);
             cipher.init(XMLCipher.ENCRYPT_MODE, secretKey);
         } catch (XMLEncryptionException e1) {
-            throw logger.processingError(e1);
+            throw LOG.processingError(e1);
         }
 
         Document encryptedDoc;
         try {
             encryptedDoc = cipher.doFinal(document, documentElement);
         } catch (Exception e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
 
         // The EncryptedKey element is added
@@ -163,7 +163,7 @@ public class XMLEncryptionUtil {
         // Get Hold of the Cipher Data
         NodeList cipherElements = encryptedDoc.getElementsByTagNameNS(EncryptionConstants.EncryptionSpecNS, EncryptionConstants._TAG_ENCRYPTEDDATA);
         if (cipherElements == null || cipherElements.getLength() == 0)
-            throw logger.domMissingElementError("xenc:EncryptedData");
+            throw LOG.domMissingElementError("xenc:EncryptedData");
         Element encryptedDataElement = (Element) cipherElements.item(0);
 
         Node parentOfEncNode = encryptedDataElement.getParentNode();
@@ -180,7 +180,7 @@ public class XMLEncryptionUtil {
             // Insert the Encrypted key before the CipherData element
             NodeList nodeList = encryptedDoc.getElementsByTagNameNS(EncryptionConstants.EncryptionSpecNS, EncryptionConstants._TAG_CIPHERDATA);
             if (nodeList == null || nodeList.getLength() == 0)
-                throw logger.domMissingElementError("xenc:CipherData");
+                throw LOG.domMissingElementError("xenc:CipherData");
             Element cipherDataElement = (Element) nodeList.item(0);
             Node cipherParent = cipherDataElement.getParentNode();
             cipherParent.insertBefore(sigElement, cipherDataElement);
@@ -233,9 +233,9 @@ public class XMLEncryptionUtil {
     public static void encryptElement(Document document, Element element, PublicKey publicKey, SecretKey secretKey, int keySize)
             throws ProcessingException {
         if (element == null)
-            throw logger.nullArgumentError("element");
+            throw LOG.nullArgumentError("element");
         if (document == null)
-            throw logger.nullArgumentError("document");
+            throw LOG.nullArgumentError("document");
 
         XMLCipher cipher = null;
         EncryptedKey encryptedKey = encryptKey(document, secretKey, publicKey, keySize);
@@ -246,14 +246,14 @@ public class XMLEncryptionUtil {
             cipher = XMLCipher.getInstance(encryptionAlgorithm);
             cipher.init(XMLCipher.ENCRYPT_MODE, secretKey);
         } catch (XMLEncryptionException e1) {
-            throw logger.processingError(e1);
+            throw LOG.processingError(e1);
         }
 
         Document encryptedDoc;
         try {
             encryptedDoc = cipher.doFinal(document, element);
         } catch (Exception e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
 
         // The EncryptedKey element is added
@@ -267,7 +267,7 @@ public class XMLEncryptionUtil {
         // Insert the Encrypted key before the CipherData element
         NodeList nodeList = encryptedDoc.getElementsByTagNameNS(EncryptionConstants.EncryptionSpecNS, EncryptionConstants._TAG_CIPHERDATA);
         if (nodeList == null || nodeList.getLength() == 0)
-            throw logger.domMissingElementError("xenc:CipherData");
+            throw LOG.domMissingElementError("xenc:CipherData");
         Element cipherDataElement = (Element) nodeList.item(0);
         Node cipherParent = cipherDataElement.getParentNode();
         cipherParent.insertBefore(sigElement, cipherDataElement);
@@ -292,7 +292,7 @@ public class XMLEncryptionUtil {
                                                    QName wrappingElementQName, boolean addEncryptedKeyInKeyInfo) throws ProcessingException, ConfigurationException {
         String wrappingElementPrefix = wrappingElementQName.getPrefix();
         if (wrappingElementPrefix == null || "".equals(wrappingElementPrefix))
-            throw logger.wrongTypeError("Wrapping element prefix invalid");
+            throw LOG.wrongTypeError("Wrapping element prefix invalid");
 
         XMLCipher cipher = null;
         EncryptedKey encryptedKey = encryptKey(document, secretKey, publicKey, keySize);
@@ -303,14 +303,14 @@ public class XMLEncryptionUtil {
             cipher = XMLCipher.getInstance(encryptionAlgorithm);
             cipher.init(XMLCipher.ENCRYPT_MODE, secretKey);
         } catch (XMLEncryptionException e1) {
-            throw logger.configurationError(e1);
+            throw LOG.configurationError(e1);
         }
 
         Document encryptedDoc;
         try {
             encryptedDoc = cipher.doFinal(document, document.getDocumentElement());
         } catch (Exception e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
 
         // The EncryptedKey element is added
@@ -345,7 +345,7 @@ public class XMLEncryptionUtil {
             // Insert the Encrypted key before the CipherData element
             NodeList nodeList = encryptedDocRootElement.getElementsByTagNameNS(EncryptionConstants.EncryptionSpecNS, EncryptionConstants._TAG_CIPHERDATA);
             if (nodeList == null || nodeList.getLength() == 0)
-                throw logger.domMissingElementError("xenc:CipherData");
+                throw LOG.domMissingElementError("xenc:CipherData");
 
             Element cipherDataElement = (Element) nodeList.item(0);
             encryptedDocRootElement.insertBefore(sigElement, cipherDataElement);
@@ -367,13 +367,13 @@ public class XMLEncryptionUtil {
     public static Element decryptElementInDocument(Document documentWithEncryptedElement, PrivateKey privateKey)
             throws ProcessingException {
         if (documentWithEncryptedElement == null)
-            throw logger.nullArgumentError("Input document is null");
+            throw LOG.nullArgumentError("Input document is null");
 
         // Look for encrypted data element
         Element documentRoot = documentWithEncryptedElement.getDocumentElement();
         Element encDataElement = getNextElementNode(documentRoot.getFirstChild());
         if (encDataElement == null)
-            throw logger.domMissingElementError("No element representing the encrypted data found");
+            throw LOG.domMissingElementError("No element representing the encrypted data found");
 
         // Look at siblings for the key
         Element encKeyElement = getNextElementNode(encDataElement.getNextSibling());
@@ -382,7 +382,7 @@ public class XMLEncryptionUtil {
             NodeList nodeList = encDataElement.getElementsByTagNameNS(EncryptionConstants.EncryptionSpecNS, EncryptionConstants._TAG_ENCRYPTEDKEY);
 
             if (nodeList == null || nodeList.getLength() == 0)
-                throw logger.nullValueError("Encrypted Key not found in the enc data");
+                throw LOG.nullValueError("Encrypted Key not found in the enc data");
 
             encKeyElement = (Element) nodeList.item(0);
         }
@@ -396,7 +396,7 @@ public class XMLEncryptionUtil {
             encryptedData = cipher.loadEncryptedData(documentWithEncryptedElement, encDataElement);
             encryptedKey = cipher.loadEncryptedKey(documentWithEncryptedElement, encKeyElement);
         } catch (XMLEncryptionException e1) {
-            throw logger.processingError(e1);
+            throw LOG.processingError(e1);
         }
 
         Document decryptedDoc = null;
@@ -412,18 +412,18 @@ public class XMLEncryptionUtil {
 
                 decryptedDoc = cipher.doFinal(documentWithEncryptedElement, encDataElement);
             } catch (Exception e) {
-                throw logger.processingError(e);
+                throw LOG.processingError(e);
             }
         }
 
         if (decryptedDoc == null) {
-            throw logger.nullValueError("decryptedDoc");
+            throw LOG.nullValueError("decryptedDoc");
         }
 
         Element decryptedRoot = decryptedDoc.getDocumentElement();
         Element dataElement = getNextElementNode(decryptedRoot.getFirstChild());
         if (dataElement == null)
-            throw logger.nullValueError("Data Element after encryption is null");
+            throw LOG.nullValueError("Data Element after encryption is null");
 
         decryptedRoot.removeChild(dataElement);
         decryptedDoc.replaceChild(dataElement, decryptedRoot);
@@ -451,7 +451,7 @@ public class XMLEncryptionUtil {
         }
         if (publicKeyAlgo.contains("RSA"))
             return RSA_ENCRYPTION_SCHEME;
-        throw logger.unsupportedType("unsupported publicKey Algo:" + publicKeyAlgo);
+        throw LOG.unsupportedType("unsupported publicKey Algo:" + publicKeyAlgo);
     }
 
     /**
@@ -474,7 +474,7 @@ public class XMLEncryptionUtil {
         }
         if (algo.contains("RSA"))
             return XMLCipher.RSA_v1dot5;
-        throw logger.unsupportedType("Secret Key with unsupported algo:" + algo);
+        throw LOG.unsupportedType("Secret Key with unsupported algo:" + algo);
     }
 
     /**

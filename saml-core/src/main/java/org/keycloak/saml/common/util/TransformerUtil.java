@@ -49,7 +49,7 @@ import java.util.Stack;
  */
 public class TransformerUtil {
 
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
 
     private static TransformerFactory transformerFactory;
 
@@ -64,9 +64,9 @@ public class TransformerUtil {
         try {
             transformer = getTransformerFactory().newTransformer();
         } catch (TransformerConfigurationException e) {
-            throw logger.configurationError(e);
+            throw LOG.configurationError(e);
         } catch (TransformerFactoryConfigurationError e) {
-            throw logger.configurationError(e);
+            throw LOG.configurationError(e);
         }
 
         transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
@@ -96,7 +96,7 @@ public class TransformerUtil {
                     transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
                 } catch (TransformerConfigurationException ignored) {
                     // some platforms don't support this.   For example our testsuite pulls Selenium which requires Xalan 2.7.1
-                    logger.warn("XML External Entity switches are not supported.  You may get XML injection vulnerabilities.");
+                    LOG.warn("XML External Entity switches are not supported.  You may get XML injection vulnerabilities.");
                 }
                 try {
                     transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
@@ -104,7 +104,7 @@ public class TransformerUtil {
                     transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
                 } catch (Exception ignored) {
                     // some platforms don't support this.   For example our testsuite pulls Selenium which requires Xalan 2.7.1
-                    logger.warn("XML External Entity switches are not supported.  You may get XML injection vulnerabilities.");
+                    LOG.warn("XML External Entity switches are not supported.  You may get XML injection vulnerabilities.");
                 }
 
             } finally {
@@ -157,7 +157,7 @@ public class TransformerUtil {
             }
             transformer.transform(source, result);
         } catch (TransformerException e) {
-            throw logger.parserError(e);
+            throw LOG.parserError(e);
         } finally {
             if (tccl_jaxp) {
                 SecurityActions.setTCCL(prevCL);
@@ -172,7 +172,7 @@ public class TransformerUtil {
 
             transformer.transform(jaxbSource, result);
         } catch (Exception e) {
-            throw logger.parserError(e);
+            throw LOG.parserError(e);
         }
     }
 
@@ -185,14 +185,14 @@ public class TransformerUtil {
         @Override
         public void transform(Source xmlSource, Result outputTarget) throws TransformerException {
             if (!(xmlSource instanceof StAXSource))
-                throw logger.wrongTypeError("xmlSource should be a stax source");
+                throw LOG.wrongTypeError("xmlSource should be a stax source");
             if (!(outputTarget instanceof DOMResult))
-                throw logger.wrongTypeError("outputTarget should be a dom result");
+                throw LOG.wrongTypeError("outputTarget should be a dom result");
 
             StAXSource staxSource = (StAXSource) xmlSource;
             XMLEventReader xmlEventReader = staxSource.getXMLEventReader();
             if (xmlEventReader == null)
-                throw new TransformerException(logger.nullValueError("XMLEventReader"));
+                throw new TransformerException(LOG.nullValueError("XMLEventReader"));
 
             DOMResult domResult = (DOMResult) outputTarget;
             Document doc = (Document) domResult.getNode();
@@ -341,8 +341,8 @@ public class TransformerUtil {
                 localPart = attrName.getLocalPart();
                 qual = (prefix != null && !prefix.isEmpty()) ? prefix + ":" + localPart : localPart;
 
-                if (logger.isTraceEnabled()) {
-                    logger.trace("Creating an Attribute Namespace=" + ns + ":" + qual);
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Creating an Attribute Namespace=" + ns + ":" + qual);
                 }
                 doc.createAttributeNS(ns, qual);
                 el.setAttributeNS(ns, qual, attr.getValue());
@@ -361,8 +361,8 @@ public class TransformerUtil {
 
                 if (qual.equals("xmlns"))
                     continue;
-                if (logger.isTraceEnabled()) {
-                    logger.trace("Set Attribute Namespace=" + name.getNamespaceURI() + "::Qual=:" + qual + "::Value="
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Set Attribute Namespace=" + name.getNamespaceURI() + "::Qual=:" + qual + "::Value="
                             + namespace.getNamespaceURI());
                 }
                 if (qual != null && qual.startsWith("xmlns")) {
@@ -389,7 +389,7 @@ public class TransformerUtil {
                         textNode = doc.importNode(textNode, true);
                         el.appendChild(textNode);
                     } catch (Exception e) {
-                        throw logger.parserException(e);
+                        throw LOG.parserException(e);
                     }
                 }
             }

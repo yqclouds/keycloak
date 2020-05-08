@@ -42,7 +42,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class KeycloakLogoutHandler implements LogoutHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(KeycloakLogoutHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KeycloakLogoutHandler.class);
 
     private AdapterDeploymentContext adapterDeploymentContext;
     private AdapterTokenStoreFactory adapterTokenStoreFactory = new SpringSecurityAdapterTokenStoreFactory();
@@ -59,11 +59,10 @@ public class KeycloakLogoutHandler implements LogoutHandler {
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         if (authentication == null) {
-            log.warn("Cannot log out without authentication");
+            LOG.warn("Cannot log out without authentication");
             return;
-        }
-        else if (!KeycloakAuthenticationToken.class.isAssignableFrom(authentication.getClass())) {
-            log.warn("Cannot log out a non-Keycloak authentication: {}", authentication);
+        } else if (!KeycloakAuthenticationToken.class.isAssignableFrom(authentication.getClass())) {
+            LOG.warn("Cannot log out a non-Keycloak authentication: {}", authentication);
             return;
         }
 

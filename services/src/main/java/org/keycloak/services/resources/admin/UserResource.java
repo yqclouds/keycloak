@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authentication.RequiredActionProvider;
@@ -74,7 +74,7 @@ import static org.keycloak.models.ImpersonationSessionNote.IMPERSONATOR_USERNAME
  * @resource Users
  */
 public class UserResource {
-    private static final Logger logger = Logger.getLogger(UserResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UserResource.class);
 
     protected RealmModel realm;
     @Context
@@ -191,12 +191,12 @@ public class UserResource {
         } catch (ReadOnlyException re) {
             return ErrorResponse.exists("User is read only!");
         } catch (ModelException me) {
-            logger.warn("Could not update user!", me);
+            LOG.warn("Could not update user!", me);
             return ErrorResponse.exists("Could not update user!");
         } catch (ForbiddenException fe) {
             throw fe;
         } catch (Exception me) { // JPA
-            logger.warn("Could not update user!", me);// may be committed by JTA which can't
+            LOG.warn("Could not update user!", me);// may be committed by JTA which can't
             return ErrorResponse.exists("Could not update user!");
         }
     }
@@ -734,12 +734,12 @@ public class UserResource {
 
         ClientModel client = realm.getClientByClientId(clientId);
         if (client == null) {
-            logger.debugf("Client %s doesn't exist", clientId);
+            LOG.debug("Client {} doesn't exist", clientId);
             throw new WebApplicationException(
                     ErrorResponse.error("Client doesn't exist", Status.BAD_REQUEST));
         }
         if (!client.isEnabled()) {
-            logger.debugf("Client %s is not enabled", clientId);
+            LOG.debug("Client {} is not enabled", clientId);
             throw new WebApplicationException(
                     ErrorResponse.error("Client is not enabled", Status.BAD_REQUEST));
         }
@@ -776,7 +776,7 @@ public class UserResource {
 
             return Response.ok().build();
         } catch (EmailException e) {
-            ServicesLogger.LOGGER.failedToSendActionsEmail(e);
+//            ServicesLogger.LOGGER.failedToSendActionsEmail(e);
             return ErrorResponse.error("Failed to send execute actions email", Status.INTERNAL_SERVER_ERROR);
         }
     }

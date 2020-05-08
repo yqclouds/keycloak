@@ -17,7 +17,6 @@
 
 package org.keycloak.storage.ldap;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.constants.KerberosConstants;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.CredentialAuthentication;
@@ -54,6 +53,8 @@ import org.keycloak.storage.user.ImportedUserValidation;
 import org.keycloak.storage.user.UserLookupProvider;
 import org.keycloak.storage.user.UserQueryProvider;
 import org.keycloak.storage.user.UserRegistrationProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.naming.AuthenticationException;
@@ -72,7 +73,8 @@ public class LDAPStorageProvider implements UserStorageProvider,
         UserRegistrationProvider,
         UserQueryProvider,
         ImportedUserValidation {
-    private static final Logger logger = Logger.getLogger(LDAPStorageProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LDAPStorageProvider.class);
+
     protected final Set<String> supportedCredentialTypes = new HashSet<>();
     protected LDAPStorageProviderFactory factory;
     protected KeycloakSession session;
@@ -196,7 +198,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
         String dnFromDB = local.getFirstAttribute(LDAPConstants.LDAP_ENTRY_DN);
         String ldapDn = ldapObject.getDn().toString();
         if (!ldapDn.equals(dnFromDB)) {
-            logger.debugf("Updated LDAP DN of user '%s' to '%s'", local.getUsername(), ldapDn);
+            LOG.debug("Updated LDAP DN of user '{}' to '{}'", local.getUsername(), ldapDn);
             local.setSingleAttribute(LDAPConstants.LDAP_ENTRY_DN, ldapDn);
 
             UserCache userCache = session.userCache();
@@ -280,13 +282,13 @@ public class LDAPStorageProvider implements UserStorageProvider,
     @Override
     public boolean removeUser(RealmModel realm, UserModel user) {
         if (editMode == UserStorageProvider.EditMode.READ_ONLY || editMode == UserStorageProvider.EditMode.UNSYNCED) {
-            logger.warnf("User '%s' can't be deleted in LDAP as editMode is '%s'. Deleting user just from Keycloak DB, but he will be re-imported from LDAP again once searched in Keycloak", user.getUsername(), editMode.toString());
+            LOG.warn("User '{}' can't be deleted in LDAP as editMode is '{}'. Deleting user just from Keycloak DB, but he will be re-imported from LDAP again once searched in Keycloak", user.getUsername(), editMode.toString());
             return true;
         }
 
         LDAPObject ldapObject = loadAndValidateUser(realm, user);
         if (ldapObject == null) {
-            logger.warnf("User '%s' can't be deleted from LDAP as it doesn't exist here", user.getUsername());
+            LOG.warn("User '{}' can't be deleted from LDAP as it doesn't exist here", user.getUsername());
             return false;
         }
 
@@ -398,9 +400,9 @@ public class LDAPStorageProvider implements UserStorageProvider,
         for (String username : usernames) {
             UserModel kcUser = session.users().getUserByUsername(username, realm);
             if (kcUser == null) {
-                logger.warnf("User '%s' referenced by membership wasn't found in LDAP", username);
+                LOG.warn("User '{}' referenced by membership wasn't found in LDAP", username);
             } else if (model.isImportEnabled() && !model.getId().equals(kcUser.getFederationLink())) {
-                logger.warnf("Incorrect federation provider of user '%s'", kcUser.getUsername());
+                LOG.warn("Incorrect federation provider of user '{}'", kcUser.getUsername());
             } else {
                 result.add(kcUser);
             }
@@ -476,7 +478,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
         if (ldapUser.getUuid().equals(local.getFirstAttribute(LDAPConstants.LDAP_ID))) {
             return ldapUser;
         } else {
-            logger.warnf("LDAP User invalid. ID doesn't match. ID from LDAP [%s], LDAP ID from local DB: [%s]", ldapUser.getUuid(), local.getFirstAttribute(LDAPConstants.LDAP_ID));
+            LOG.warn("LDAP User invalid. ID doesn't match. ID from LDAP [{}], LDAP ID from local DB: [{}]", ldapUser.getUuid(), local.getFirstAttribute(LDAPConstants.LDAP_ID));
             return null;
         }
     }
@@ -508,8 +510,8 @@ public class LDAPStorageProvider implements UserStorageProvider,
         List<ComponentModel> mappers = realm.getComponents(model.getId(), LDAPStorageMapper.class.getName());
         List<ComponentModel> sortedMappers = mapperManager.sortMappersDesc(mappers);
         for (ComponentModel mapperModel : sortedMappers) {
-            if (logger.isTraceEnabled()) {
-                logger.tracef("Using mapper %s during import user from LDAP", mapperModel);
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Using mapper {} during import user from LDAP", mapperModel);
             }
             LDAPStorageMapper ldapMapper = mapperManager.getMapper(mapperModel);
             ldapMapper.onImportUserFromLDAP(ldapUser, imported, realm, true);
@@ -522,7 +524,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
         if (getLdapIdentityStore().getConfig().isTrustEmail()) {
             imported.setEmailVerified(true);
         }
-        logger.debugf("Imported new user from LDAP to Keycloak DB. Username: [%s], Email: [%s], LDAP_ID: [%s], LDAP Entry DN: [%s]", imported.getUsername(), imported.getEmail(),
+        LOG.debug("Imported new user from LDAP to Keycloak DB. Username: [{}], Email: [{}], LDAP_ID: [{}], LDAP Entry DN: [{}]", imported.getUsername(), imported.getEmail(),
                 ldapUser.getUuid(), userDN);
         UserModel proxy = proxy(realm, imported, ldapUser);
         return proxy;
@@ -594,8 +596,8 @@ public class LDAPStorageProvider implements UserStorageProvider,
                 List<ComponentModel> mappers = realm.getComponents(model.getId(), LDAPStorageMapper.class.getName());
                 List<ComponentModel> sortedMappers = mapperManager.sortMappersDesc(mappers);
                 for (ComponentModel mapperModel : sortedMappers) {
-                    if (logger.isTraceEnabled()) {
-                        logger.tracef("Using mapper %s during import user from LDAP", mapperModel);
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("Using mapper {} during import user from LDAP", mapperModel);
                     }
                     LDAPStorageMapper ldapMapper = mapperManager.getMapper(mapperModel);
                     processed = processed || ldapMapper.onAuthenticationFailure(ldapUser, user, ae, realm);
@@ -700,7 +702,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
                     UserModel user = findOrCreateAuthenticatedUser(realm, username);
 
                     if (user == null) {
-                        logger.warnf("Kerberos/SPNEGO authentication succeeded with username [%s], but couldn't find or create user with federation provider [%s]", username, model.getName());
+                        LOG.warn("Kerberos/SPNEGO authentication succeeded with username [{}], but couldn't find or create user with federation provider [{}]", username, model.getName());
                         return CredentialValidationOutput.failed();
                     } else {
                         String delegationCredential = spnegoAuthenticator.getSerializedDelegationCredential();
@@ -712,11 +714,11 @@ public class LDAPStorageProvider implements UserStorageProvider,
                     }
                 } else if (spnegoAuthenticator.getResponseToken() != null) {
                     // Case when SPNEGO handshake requires multiple steps
-                    logger.tracef("SPNEGO Handshake will continue");
+                    LOG.trace("SPNEGO Handshake will continue");
                     state.put(KerberosConstants.RESPONSE_TOKEN, spnegoAuthenticator.getResponseToken());
                     return new CredentialValidationOutput(null, CredentialValidationOutput.Status.CONTINUE, state);
                 } else {
-                    logger.tracef("SPNEGO Handshake not successful");
+                    LOG.trace("SPNEGO Handshake not successful");
                     return CredentialValidationOutput.failed();
                 }
             }
@@ -739,18 +741,18 @@ public class LDAPStorageProvider implements UserStorageProvider,
     protected UserModel findOrCreateAuthenticatedUser(RealmModel realm, String username) {
         UserModel user = session.userLocalStorage().getUserByUsername(username, realm);
         if (user != null) {
-            logger.debugf("Kerberos authenticated user [%s] found in Keycloak storage", username);
+            LOG.debug("Kerberos authenticated user [{}] found in Keycloak storage", username);
             if (!model.getId().equals(user.getFederationLink())) {
-                logger.warnf("User with username [%s] already exists, but is not linked to provider [%s]", username, model.getName());
+                LOG.warn("User with username [{}] already exists, but is not linked to provider [{}]", username, model.getName());
                 return null;
             } else {
                 LDAPObject ldapObject = loadAndValidateUser(realm, user);
                 if (ldapObject != null) {
                     return proxy(realm, user, ldapObject);
                 } else {
-                    logger.warnf("User with username [%s] aready exists and is linked to provider [%s] but is not valid. Stale LDAP_ID on local user is: %s",
+                    LOG.warn("User with username [{}] aready exists and is linked to provider [{}] but is not valid. Stale LDAP_ID on local user is: {}",
                             username, model.getName(), user.getFirstAttribute(LDAPConstants.LDAP_ID));
-                    logger.warn("Will re-create user");
+                    LOG.warn("Will re-create user");
                     UserCache userCache = session.userCache();
                     if (userCache != null) {
                         userCache.evict(realm, user);
@@ -761,7 +763,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
         }
 
         // Creating user to local storage
-        logger.debugf("Kerberos authenticated user [%s] not in Keycloak storage. Creating him", username);
+        LOG.debug("Kerberos authenticated user [{}] not in Keycloak storage. Creating him", username);
         return getUserByUsername(username, realm);
     }
 

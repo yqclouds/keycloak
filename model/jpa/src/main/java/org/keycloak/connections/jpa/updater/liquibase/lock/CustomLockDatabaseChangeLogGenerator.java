@@ -24,7 +24,8 @@ import liquibase.sql.UnparsedSql;
 import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.LockDatabaseChangeLogGenerator;
 import liquibase.statement.core.LockDatabaseChangeLogStatement;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * We use "SELECT FOR UPDATE" pessimistic locking (Same algorithm like Hibernate LockMode.PESSIMISTIC_WRITE )
@@ -33,7 +34,7 @@ import org.jboss.logging.Logger;
  */
 public class CustomLockDatabaseChangeLogGenerator extends LockDatabaseChangeLogGenerator {
 
-    private static final Logger logger = Logger.getLogger(CustomLockDatabaseChangeLogGenerator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CustomLockDatabaseChangeLogGenerator.class);
 
     @Override
     public int getPriority() {
@@ -72,10 +73,10 @@ public class CustomLockDatabaseChangeLogGenerator extends LockDatabaseChangeLogG
             sql = sqlBase + sqlWhere + " FOR READ ONLY WITH RS USE AND KEEP UPDATE LOCKS";
         } else {
             sql = sqlBase + sqlWhere;
-            logger.warnf("No direct support for database %s . Database lock may not work correctly", database.getClass().getName());
+            LOG.warn("No direct support for database {} . Database lock may not work correctly", database.getClass().getName());
         }
 
-        logger.debugf("SQL command for pessimistic lock: %s", sql);
+        LOG.debug("SQL command for pessimistic lock: {}", sql);
 
         return new UnparsedSql(sql);
     }

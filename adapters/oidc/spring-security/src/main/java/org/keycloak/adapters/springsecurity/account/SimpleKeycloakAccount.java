@@ -36,7 +36,7 @@ public class SimpleKeycloakAccount implements OidcKeycloakAccount, Serializable 
     private Principal principal;
     private RefreshableKeycloakSecurityContext securityContext;
 
-    public SimpleKeycloakAccount(Principal principal, Set<String> roles,  RefreshableKeycloakSecurityContext securityContext) {
+    public SimpleKeycloakAccount(Principal principal, Set<String> roles, RefreshableKeycloakSecurityContext securityContext) {
         this.principal = principal;
         this.roles = roles;
         this.securityContext = securityContext;

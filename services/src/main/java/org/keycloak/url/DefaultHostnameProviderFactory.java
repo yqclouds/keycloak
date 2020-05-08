@@ -1,10 +1,11 @@
 package org.keycloak.url;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.urls.HostnameProvider;
 import org.keycloak.urls.HostnameProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +16,7 @@ import java.net.URISyntaxException;
 @Component("DefaultHostnameProviderFactory")
 @ProviderFactory(id = "default", providerClasses = HostnameProvider.class)
 public class DefaultHostnameProviderFactory implements HostnameProviderFactory {
-    private static final Logger LOGGER = Logger.getLogger(DefaultHostnameProviderFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultHostnameProviderFactory.class);
 
     @Value("${frontendUrl}")
     private String frontendUrl;
@@ -50,7 +51,7 @@ public class DefaultHostnameProviderFactory implements HostnameProviderFactory {
             }
         }
 
-        LOGGER.infov("Frontend: {0}, Admin: {1}, Backend: {2}", frontendUri != null ?
+        LOGGER.info("Frontend: {}, Admin: {}, Backend: {}", frontendUri != null ?
                 frontendUri.toString() : "<request>", adminUri != null ?
                 adminUri.toString() : "<frontend>", forceBackendUrlToFrontendUrl ? "<frontend>" : "<request>");
     }

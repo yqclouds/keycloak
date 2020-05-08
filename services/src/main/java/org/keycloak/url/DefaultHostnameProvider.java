@@ -1,10 +1,11 @@
 package org.keycloak.url;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.urls.HostnameProvider;
 import org.keycloak.urls.UrlType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
@@ -12,7 +13,7 @@ import java.net.URISyntaxException;
 
 public class DefaultHostnameProvider implements HostnameProvider {
 
-    private static final Logger LOGGER = Logger.getLogger(DefaultHostnameProvider.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultHostnameProvider.class);
 
     private final KeycloakSession session;
 

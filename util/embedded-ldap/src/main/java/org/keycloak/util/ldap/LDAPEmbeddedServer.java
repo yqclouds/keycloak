@@ -32,9 +32,10 @@ import org.apache.directory.server.core.factory.PartitionFactory;
 import org.apache.directory.server.ldap.LdapServer;
 import org.apache.directory.server.protocol.shared.transport.TcpTransport;
 import org.apache.directory.server.protocol.shared.transport.Transport;
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.FindFile;
 import org.keycloak.common.util.StreamUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.InputStream;
@@ -57,7 +58,7 @@ public class LDAPEmbeddedServer {
     public static final String DSF_INMEMORY = "mem";
     public static final String DSF_FILE = "file";
     public static final String DEFAULT_DSF = DSF_FILE;
-    private static final Logger log = Logger.getLogger(LDAPEmbeddedServer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LDAPEmbeddedServer.class);
     private static final String DEFAULT_BASE_DN = "dc=keycloak,dc=org";
     private static final String DEFAULT_BIND_HOST = "localhost";
     private static final String DEFAULT_BIND_PORT = "10389";
@@ -134,7 +135,7 @@ public class LDAPEmbeddedServer {
                 try {
                     directoryService.getAdminSession().add(new DefaultEntry(directoryService.getSchemaManager(), ldifEntry.getEntry()));
                 } catch (LdapEntryAlreadyExistsException ignore) {
-                    log.info("Entry " + ldifEntry.getDn() + " already exists. Ignoring");
+                    LOG.info("Entry " + ldifEntry.getDn() + " already exists. Ignoring");
                 }
             }
         } finally {
@@ -157,22 +158,22 @@ public class LDAPEmbeddedServer {
     }
 
     public void init() throws Exception {
-        log.info("Creating LDAP Directory Service. Config: baseDN=" + baseDN + ", bindHost=" + bindHost + ", bindPort=" + bindPort +
+        LOG.info("Creating LDAP Directory Service. Config: baseDN=" + baseDN + ", bindHost=" + bindHost + ", bindPort=" + bindPort +
                 ", ldapSaslPrincipal=" + ldapSaslPrincipal + ", directoryServiceFactory=" + directoryServiceFactory + ", ldif=" + ldifFile);
 
         this.directoryService = createDirectoryService();
 
-        log.info("Importing LDIF: " + ldifFile);
+        LOG.info("Importing LDIF: " + ldifFile);
         importLdif();
 
-        log.info("Creating LDAP Server");
+        LOG.info("Creating LDAP Server");
         this.ldapServer = createLdapServer();
     }
 
     public void start() throws Exception {
-        log.info("Starting LDAP Server");
+        LOG.info("Starting LDAP Server");
         ldapServer.start();
-        log.info("LDAP Server started");
+        LOG.info("LDAP Server started");
     }
 
     protected DirectoryService createDirectoryService() throws Exception {
@@ -265,7 +266,7 @@ public class LDAPEmbeddedServer {
         }
 
         final String ldifContent = StrSubstitutor.replace(StreamUtil.readString(is), map);
-        log.info("Content of LDIF: " + ldifContent);
+        LOG.info("Content of LDIF: " + ldifContent);
         final SchemaManager schemaManager = directoryService.getSchemaManager();
 
         importLdifContent(directoryService, ldifContent);
@@ -278,22 +279,22 @@ public class LDAPEmbeddedServer {
 
 
     protected void stopLdapServer() {
-        log.info("Stopping LDAP server.");
+        LOG.info("Stopping LDAP server.");
         ldapServer.stop();
     }
 
 
     protected void shutdownDirectoryService() throws Exception {
-        log.info("Stopping Directory service.");
+        LOG.info("Stopping Directory service.");
         directoryService.shutdown();
 
         // Delete workfiles just for 'inmemory' implementation used in tests. Normally we want LDAP data to persist
         File instanceDir = directoryService.getInstanceLayout().getInstanceDirectory();
         if (this.directoryServiceFactory.equals(DSF_INMEMORY)) {
-            log.infof("Removing Directory service workfiles: %s", instanceDir.getAbsolutePath());
+            LOG.info("Removing Directory service workfiles: {}", instanceDir.getAbsolutePath());
             FileUtils.deleteDirectory(instanceDir);
         } else {
-            log.info("Working LDAP directory not deleted. Delete it manually if you want to start with fresh LDAP data. Directory location: " + instanceDir.getAbsolutePath());
+            LOG.info("Working LDAP directory not deleted. Delete it manually if you want to start with fresh LDAP data. Directory location: " + instanceDir.getAbsolutePath());
         }
     }
 

@@ -74,7 +74,7 @@ public class OIDCAttributeMapperHelper {
                 return result;
             } else {
                 if (valueAsList.size() > 1) {
-                    ServicesLogger.LOGGER.multipleValuesForMapper(attributeValue.toString(), mappingModel.getName());
+//                    ServicesLogger.LOGGER.multipleValuesForMapper(attributeValue.toString(), mappingModel.getName());
                 }
 
                 attributeValue = valueAsList.iterator().next();

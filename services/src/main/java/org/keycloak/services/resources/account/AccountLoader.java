@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.account;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.events.EventBuilder;
@@ -43,14 +43,14 @@ import java.util.List;
  */
 public class AccountLoader {
 
-    private static final Logger logger = Logger.getLogger(AccountLoader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AccountLoader.class);
 
     public Object getAccountService(KeycloakSession session, EventBuilder event) {
         RealmModel realm = session.getContext().getRealm();
 
         ClientModel client = realm.getClientByClientId(Constants.ACCOUNT_MANAGEMENT_CLIENT_ID);
         if (client == null || !client.isEnabled()) {
-            logger.debug("account management not enabled");
+            LOG.debug("account management not enabled");
             throw new NotFoundException("account management not enabled");
         }
 

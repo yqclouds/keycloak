@@ -17,7 +17,6 @@
 
 package org.keycloak.keys;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.CertificateUtils;
 import org.keycloak.common.util.KeyUtils;
 import org.keycloak.common.util.MultivaluedHashMap;
@@ -31,6 +30,8 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ConfigurationValidationHelper;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.security.KeyPair;
@@ -47,7 +48,7 @@ import java.util.List;
 public class GeneratedRsaKeyProviderFactory extends AbstractRsaKeyProviderFactory {
 
     public static final String ID = "rsa-generated";
-    private static final Logger logger = Logger.getLogger(GeneratedRsaKeyProviderFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GeneratedRsaKeyProviderFactory.class);
     private static final String HELP_TEXT = "Generates RSA keys and creates a self-signed certificate";
 
     private static final List<ProviderConfigProperty> CONFIG_PROPERTIES = AbstractRsaKeyProviderFactory.configurationBuilder()
@@ -103,14 +104,14 @@ public class GeneratedRsaKeyProviderFactory extends AbstractRsaKeyProviderFactor
         if (!(model.contains(Attributes.PRIVATE_KEY_KEY) && model.contains(Attributes.CERTIFICATE_KEY))) {
             generateKeys(realm, model, size);
 
-            logger.debugv("Generated keys for {0}", realm.getName());
+            LOG.debug("Generated keys for {}", realm.getName());
         } else {
             PrivateKey privateKey = PemUtils.decodePrivateKey(model.get(Attributes.PRIVATE_KEY_KEY));
             int currentSize = ((RSAPrivateKey) privateKey).getModulus().bitLength();
             if (currentSize != size) {
                 generateKeys(realm, model, size);
 
-                logger.debugv("Key size changed, generating new keys for {0}", realm.getName());
+                LOG.debug("Key size changed, generating new keys for {}", realm.getName());
             }
         }
     }

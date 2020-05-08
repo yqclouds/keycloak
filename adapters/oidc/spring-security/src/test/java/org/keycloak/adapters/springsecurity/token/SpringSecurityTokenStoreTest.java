@@ -37,9 +37,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import java.security.Principal;
 import java.util.Collections;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Spring Security token store tests.

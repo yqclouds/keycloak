@@ -17,7 +17,6 @@
 
 package org.keycloak.storage;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.reflections.Types;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
@@ -31,6 +30,8 @@ import org.keycloak.services.managers.UserStorageSyncManager;
 import org.keycloak.storage.client.ClientStorageProvider;
 import org.keycloak.storage.federated.UserFederatedStorageProvider;
 import org.keycloak.storage.user.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -42,7 +43,7 @@ import static org.keycloak.models.utils.KeycloakModelUtils.runJobInTransaction;
  */
 public class UserStorageManager implements UserProvider, OnUserCache, OnCreateComponent, OnUpdateComponent {
 
-    private static final Logger logger = Logger.getLogger(UserStorageManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UserStorageManager.class);
 
     protected KeycloakSession session;
 
@@ -76,7 +77,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
         for (UserStorageProviderModel model : getStorageProviders(realm)) {
             UserStorageProviderFactory factory = (UserStorageProviderFactory) session.getSessionFactory().getProviderFactory(UserStorageProvider.class, model.getProviderId());
             if (factory == null) {
-                logger.warnv("Configured UserStorageProvider {0} of provider id {1} does not exist in realm {2}", model.getName(), model.getProviderId(), realm.getName());
+                LOG.warn("Configured UserStorageProvider {} of provider id {} does not exist in realm {}", model.getName(), model.getProviderId(), realm.getName());
                 continue;
             }
             if (Types.supports(type, factory, UserStorageProviderFactory.class)) {
@@ -94,7 +95,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
             if (!model.isEnabled()) continue;
             UserStorageProviderFactory factory = (UserStorageProviderFactory) session.getSessionFactory().getProviderFactory(UserStorageProvider.class, model.getProviderId());
             if (factory == null) {
-                logger.warnv("Configured UserStorageProvider {0} of provider id {1} does not exist in realm {2}", model.getName(), model.getProviderId(), realm.getName());
+                LOG.warn("Configured UserStorageProvider {} of provider id {} does not exist in realm {}", model.getName(), model.getProviderId(), realm.getName());
                 continue;
             }
             if (Types.supports(type, factory, UserStorageProviderFactory.class)) {
@@ -295,7 +296,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
 
         } else if (provider == null) {
             // remove linked user with unknown storage provider.
-            logger.debugf("Removed user with federation link of unknown storage provider '%s'", user.getUsername());
+            LOG.debug("Removed user with federation link of unknown storage provider '{}'", user.getUsername());
             deleteInvalidUser(realm, user);
             return null;
         } else {
@@ -320,7 +321,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
                 UserModel deletedUser = session.userLocalStorage().getUserById(userId, realmModel);
                 if (deletedUser != null) {
                     new UserManager(session).removeUser(realmModel, deletedUser, session.userLocalStorage());
-                    logger.debugf("Removed invalid user '%s'", userName);
+                    LOG.debug("Removed invalid user '{}'", userName);
                 }
             }
 

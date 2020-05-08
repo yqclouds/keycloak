@@ -21,7 +21,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.Config;
 import org.keycloak.common.constants.ServiceAccountConstants;
 import org.keycloak.exportimport.ExportImportConfig;
@@ -43,7 +43,7 @@ import java.util.*;
  */
 public class ImportUtils {
 
-    private static final Logger logger = Logger.getLogger(ImportUtils.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ImportUtils.class);
 
     public static void importRealms(KeycloakSession session, Collection<RealmRepresentation> realms, Strategy strategy) {
         boolean masterImported = false;
@@ -67,7 +67,7 @@ public class ImportUtils {
         if (masterImported) {
             for (RealmModel realm : session.realms().getRealms()) {
                 if (realm.getMasterAdminClient() == null) {
-                    logger.infof("Re-created management client in master realm for realm '%s'", realm.getName());
+                    LOG.info("Re-created management client in master realm for realm '%s'", realm.getName());
                     new RealmManager(session).setupMasterAdminManagement(realm);
                 }
             }
@@ -90,10 +90,10 @@ public class ImportUtils {
 
         if (realm != null) {
             if (strategy == Strategy.IGNORE_EXISTING) {
-                logger.infof("Realm '%s' already exists. Import skipped", realmName);
+                LOG.info("Realm '%s' already exists. Import skipped", realmName);
                 return false;
             } else {
-                logger.infof("Realm '%s' already exists. Removing it before import", realmName);
+                LOG.info("Realm '%s' already exists. Removing it before import", realmName);
                 if (Config.getAdminRealm().equals(realm.getId())) {
                     // Delete all masterAdmin apps due to foreign key constraints
                     for (RealmModel currRealm : model.getRealms()) {
@@ -109,7 +109,7 @@ public class ImportUtils {
         realmManager.importRealm(rep, skipUserDependent);
 
         if (System.getProperty(ExportImportConfig.ACTION) != null) {
-            logger.infof("Realm '%s' imported", realmName);
+            LOG.info("Realm '%s' imported", realmName);
         }
 
         return true;

@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.HttpResponse;
@@ -43,7 +43,7 @@ import javax.ws.rs.core.UriInfo;
  * @version $Revision: 1 $
  */
 public class PublicRealmResource {
-    protected static final Logger logger = Logger.getLogger(PublicRealmResource.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(PublicRealmResource.class);
 
     @Context
     protected HttpRequest request;

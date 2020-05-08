@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.component.ComponentModel;
@@ -38,7 +38,7 @@ import java.util.Map;
  * @resource User Storage Provider
  */
 public class ClientStorageProviderResource {
-    private static final Logger logger = Logger.getLogger(ClientStorageProviderResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClientStorageProviderResource.class);
 
     protected RealmModel realm;
 

@@ -20,8 +20,9 @@ package org.keycloak.models.sessions.infinispan.initializer;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.commons.marshall.SerializeWith;
-import org.jboss.logging.Logger;
 import org.keycloak.models.sessions.infinispan.entities.SessionEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -40,7 +41,7 @@ import java.util.Objects;
 @SerializeWith(InitializerState.ExternalizerImpl.class)
 public class InitializerState extends SessionEntity {
 
-    private static final Logger log = Logger.getLogger(InitializerState.class);
+    private static final Logger LOG = LoggerFactory.getLogger(InitializerState.class);
 
     private final int segmentsCount;
     private final BitSet segments;
@@ -49,7 +50,7 @@ public class InitializerState extends SessionEntity {
         this.segmentsCount = segmentsCount;
         this.segments = new BitSet(segmentsCount);
 
-        log.debugf("segmentsCount: %d", segmentsCount);
+        LOG.debug("segmentsCount: {}", segmentsCount);
     }
 
     private InitializerState(String realmId, int segmentsCount, BitSet segments) {
@@ -57,7 +58,7 @@ public class InitializerState extends SessionEntity {
         this.segmentsCount = segmentsCount;
         this.segments = segments;
 
-        log.debugf("segmentsCount: %d", segmentsCount);
+        LOG.debug("segmentsCount: {}", segmentsCount);
     }
 
     /**

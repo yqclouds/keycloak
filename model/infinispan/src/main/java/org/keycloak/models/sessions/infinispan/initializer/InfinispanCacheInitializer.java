@@ -22,11 +22,12 @@ import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.distexec.DefaultExecutorService;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.remoting.transport.Transport;
-import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.KeycloakSessionTask;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.LinkedList;
@@ -46,7 +47,7 @@ import java.util.concurrent.Future;
  */
 public class InfinispanCacheInitializer extends BaseCacheInitializer {
 
-    private static final Logger log = Logger.getLogger(InfinispanCacheInitializer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(InfinispanCacheInitializer.class);
 
     private final int maxErrors;
 
@@ -102,7 +103,7 @@ public class InfinispanCacheInitializer extends BaseCacheInitializer {
             });
         }
 
-        log.debugf("Start loading with loader: '%s', ctx: '%s' , state: %s",
+        LOG.debug("Start loading with loader: '{}', ctx: '{}' , state: {}",
                 sessionLoader.toString(), ctx[0].toString(), state.toString());
 
         startLoadingImpl(state, ctx[0]);
@@ -134,12 +135,12 @@ public class InfinispanCacheInitializer extends BaseCacheInitializer {
                     distributedWorkersCount = processors * nodesCount;
                 }
 
-                log.debugf("Starting next iteration with %d workers", distributedWorkersCount);
+                LOG.debug("Starting next iteration with {} workers", distributedWorkersCount);
 
                 List<Integer> segments = state.getSegmentsToLoad(segmentToLoad, distributedWorkersCount);
 
-                if (log.isTraceEnabled()) {
-                    log.trace("unfinished segments for this iteration: " + segments);
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("unfinished segments for this iteration: " + segments);
                 }
 
                 List<Future<SessionLoader.WorkerResult>> futures = new LinkedList<>();
@@ -169,19 +170,19 @@ public class InfinispanCacheInitializer extends BaseCacheInitializer {
                                 nextResult = result;
                             }
                         } else {
-                            if (log.isTraceEnabled()) {
-                                log.tracef("Segment %d failed to compute", result.getSegment());
+                            if (LOG.isTraceEnabled()) {
+                                LOG.trace("Segment {} failed to compute", result.getSegment());
                             }
                             anyFailure = true;
                         }
                     } catch (InterruptedException ie) {
                         anyFailure = true;
                         errors++;
-                        log.error("Interruped exception when computed future. Errors: " + errors, ie);
+                        LOG.error("Interruped exception when computed future. Errors: " + errors, ie);
                     } catch (ExecutionException ee) {
                         anyFailure = true;
                         errors++;
-                        log.error("ExecutionException when computed future. Errors: " + errors, ee);
+                        LOG.error("ExecutionException when computed future. Errors: " + errors, ee);
                     }
                 }
 
@@ -195,8 +196,8 @@ public class InfinispanCacheInitializer extends BaseCacheInitializer {
                     firstTryForSegment = true;
                     previousResult = nextResult;
                     nextResult = null;
-                    if (log.isTraceEnabled()) {
-                        log.debugf("New initializer state is: %s", state);
+                    if (LOG.isTraceEnabled()) {
+                        LOG.debug("New initializer state is: {}", state);
                     }
                 } else {
                     // some segments failed, try to load unloaded segments

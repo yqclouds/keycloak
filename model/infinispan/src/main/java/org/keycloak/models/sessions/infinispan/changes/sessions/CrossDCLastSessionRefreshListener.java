@@ -18,7 +18,6 @@
 package org.keycloak.models.sessions.infinispan.changes.sessions;
 
 import org.infinispan.Cache;
-import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterListener;
 import org.keycloak.connections.infinispan.TopologyInfo;
@@ -30,6 +29,8 @@ import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.entities.UserSessionEntity;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
@@ -39,7 +40,7 @@ import java.util.Map;
  */
 public class CrossDCLastSessionRefreshListener implements ClusterListener {
 
-    public static final Logger logger = Logger.getLogger(CrossDCLastSessionRefreshListener.class);
+    public static final Logger LOG = LoggerFactory.getLogger(CrossDCLastSessionRefreshListener.class);
 
     public static final String IGNORE_REMOTE_CACHE_UPDATE = "IGNORE_REMOTE_CACHE_UPDATE";
 
@@ -64,8 +65,8 @@ public class CrossDCLastSessionRefreshListener implements ClusterListener {
     public void eventReceived(ClusterEvent event) {
         Map<String, SessionData> lastSessionRefreshes = ((LastSessionRefreshEvent) event).getLastSessionRefreshes();
 
-        if (logger.isDebugEnabled()) {
-            logger.debugf("Received refreshes. Offline %b, refreshes: %s", offline, lastSessionRefreshes);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Received refreshes. Offline %b, refreshes: {}", offline, lastSessionRefreshes);
         }
 
         lastSessionRefreshes.entrySet().stream().forEach((entry) -> {
@@ -80,7 +81,7 @@ public class CrossDCLastSessionRefreshListener implements ClusterListener {
                     RealmModel realm = kcSession.realms().getRealm(realmId);
                     UserSessionModel userSession = offline ? kcSession.sessions().getOfflineUserSession(realm, sessionId) : kcSession.sessions().getUserSession(realm, sessionId);
                     if (userSession == null) {
-                        logger.debugf("User session '%s' not available on node '%s' offline '%b'", sessionId, topologyInfo.getMyNodeName(), offline);
+                        LOG.debug("User session '{}' not available on node '{}' offline '%b'", sessionId, topologyInfo.getMyNodeName(), offline);
                     } else {
                         // Update just if lastSessionRefresh from event is bigger than ours
                         if (lastSessionRefresh > userSession.getLastSessionRefresh()) {

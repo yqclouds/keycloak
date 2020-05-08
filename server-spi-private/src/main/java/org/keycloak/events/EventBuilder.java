@@ -17,7 +17,7 @@
 
 package org.keycloak.events;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.*;
@@ -33,7 +33,7 @@ import java.util.Objects;
  */
 public class EventBuilder {
 
-    private static final Logger LOG = Logger.getLogger(EventBuilder.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EventBuilder.class);
 
     private List<EventListenerProvider> listeners;
     private RealmModel realm;

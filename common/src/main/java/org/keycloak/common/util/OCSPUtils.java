@@ -39,6 +39,8 @@ import org.bouncycastle.operator.DigestCalculator;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -51,8 +53,6 @@ import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.cert.*;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:brat000012001@gmail.com">Peter Nalyvayko</a>
@@ -63,7 +63,7 @@ import java.util.logging.Logger;
 public final class OCSPUtils {
 
 
-    private final static Logger logger = Logger.getLogger("" + OCSPUtils.class);
+    private final static Logger LOG = LoggerFactory.getLogger("" + OCSPUtils.class);
     private static final int TIME_SKEW = 900000;
     private static int OCSP_CONNECT_TIMEOUT = 10000; // 10 sec
 
@@ -106,11 +106,11 @@ public final class OCSPUtils {
         try {
             responderURIs = getResponderURIs(cert);
         } catch (CertificateEncodingException e) {
-            logger.log(Level.FINE, "CertificateEncodingException: {0}", e.getMessage());
+            LOG.error("CertificateEncodingException: {}", e.getMessage());
             throw new CertPathValidatorException(e.getMessage(), e);
         }
         if (responderURIs.size() == 0) {
-            logger.log(Level.INFO, "No OCSP responders in the specified certificate");
+            LOG.info("No OCSP responders in the specified certificate");
             throw new CertPathValidatorException("No OCSP Responder URI in certificate");
         }
 
@@ -120,7 +120,7 @@ public final class OCSPUtils {
                 URI responderURI = URI.create(value);
                 uris.add(responderURI);
             } catch (IllegalArgumentException ex) {
-                logger.log(Level.FINE, "Malformed responder URI {0}", value);
+                LOG.error("Malformed responder URI {}", value);
             }
         }
         return check(cert, issuerCertificate, Collections.unmodifiableList(uris), responderCert, date);
@@ -220,11 +220,11 @@ public final class OCSPUtils {
             OCSPReq ocspReq = new OCSPReqBuilder().addRequest(certificateID, extensions).build();
 
             URI responderURI = responderURIs.get(0);
-            logger.log(Level.INFO, "OCSP Responder {0}", responderURI);
+            LOG.info("OCSP Responder {}", responderURI);
 
             try {
                 OCSPResp resp = getResponse(ocspReq, responderURI);
-                logger.log(Level.FINE, "Received a response from OCSP responder {0}, the response status is {1}", new Object[]{responderURI, resp.getStatus()});
+                LOG.error("Received a response from OCSP responder {}, the response status is {}", new Object[]{responderURI, resp.getStatus()});
                 switch (resp.getStatus()) {
                     case OCSPResp.SUCCESSFUL:
                         if (resp.getResponseObject() instanceof BasicOCSPResp) {
@@ -248,12 +248,12 @@ public final class OCSPUtils {
                         throw new CertPathValidatorException("OCSP request is malformed. OCSP response error: " + resp.getStatus(), (Throwable) null, (CertPath) null, -1, CertPathValidatorException.BasicReason.UNSPECIFIED);
                 }
             } catch (IOException e) {
-                logger.log(Level.FINE, "OCSP Responder \"{0}\" failed to return a valid OCSP response\n{1}",
+                LOG.error("OCSP Responder \"{}\" failed to return a valid OCSP response\n{}",
                         new Object[]{responderURI, e.getMessage()});
                 throw new CertPathValidatorException("OCSP check failed", e);
             }
         } catch (CertificateNotYetValidException | CertificateExpiredException | OperatorCreationException | OCSPException | CertificateEncodingException | NoSuchAlgorithmException | NoSuchProviderException e) {
-            logger.log(Level.FINE, e.getMessage());
+            LOG.error(e.getMessage());
             throw new CertPathValidatorException(e.getMessage(), e);
         }
     }
@@ -306,7 +306,7 @@ public final class OCSPUtils {
             byte[] responderKey = basicOcspResponse.getResponderId().toASN1Primitive().getKeyHash();
 
             if (responderName != null) {
-                logger.log(Level.INFO, "Responder Name: {0}", responderName.toString());
+                LOG.info("Responder Name: {}", responderName.toString());
                 for (X509CertificateHolder certHolder : certs) {
                     try {
                         X509Certificate tempCert = new JcaX509CertificateConverter()
@@ -314,17 +314,17 @@ public final class OCSPUtils {
                         X500Name respName = new X500Name(tempCert.getSubjectX500Principal().getName());
                         if (responderName.equals(respName)) {
                             signingCert = tempCert;
-                            logger.log(Level.INFO, "Found a certificate whose principal \"{0}\" matches the responder name \"{1}\"",
+                            LOG.info("Found a certificate whose principal \"{}\" matches the responder name \"{}\"",
                                     new Object[]{tempCert.getSubjectDN().getName(), responderName.toString()});
                             break;
                         }
                     } catch (CertificateException e) {
-                        logger.log(Level.FINE, e.getMessage());
+                        LOG.error(e.getMessage());
                     }
                 }
             } else if (responderKey != null) {
                 SubjectKeyIdentifier responderSubjectKey = new SubjectKeyIdentifier(responderKey);
-                logger.log(Level.INFO, "Responder Key: {0}", Arrays.toString(responderKey));
+                LOG.info("Responder Key: {}", Arrays.toString(responderKey));
                 for (X509CertificateHolder certHolder : certs) {
                     try {
                         X509Certificate tempCert = new JcaX509CertificateConverter()
@@ -336,13 +336,13 @@ public final class OCSPUtils {
                         }
 
                         if (subjectKeyIdentifier != null) {
-                            logger.log(Level.INFO, "Certificate: {0}\nSubject Key Id: {1}",
+                            LOG.info("Certificate: {}\nSubject Key Id: {}",
                                     new Object[]{tempCert.getSubjectDN().getName(), Arrays.toString(subjectKeyIdentifier.getKeyIdentifier())});
                         }
 
                         if (subjectKeyIdentifier != null && responderSubjectKey.equals(subjectKeyIdentifier)) {
                             signingCert = tempCert;
-                            logger.log(Level.INFO, "Found a signer certificate \"{0}\" with the subject key extension value matching the responder key",
+                            LOG.info("Found a signer certificate \"{}\" with the subject key extension value matching the responder key",
                                     signingCert.getSubjectDN().getName());
 
                             break;
@@ -351,42 +351,42 @@ public final class OCSPUtils {
                         subjectKeyIdentifier = new JcaX509ExtensionUtils().createSubjectKeyIdentifier(tempCert.getPublicKey());
                         if (responderSubjectKey.equals(subjectKeyIdentifier)) {
                             signingCert = tempCert;
-                            logger.log(Level.INFO, "Found a certificate \"{0}\" with the subject key matching the OCSP responder key", signingCert.getSubjectDN().getName());
+                            LOG.info("Found a certificate \"{}\" with the subject key matching the OCSP responder key", signingCert.getSubjectDN().getName());
                             break;
                         }
 
                     } catch (CertificateException e) {
-                        logger.log(Level.FINE, e.getMessage());
+                        LOG.error(e.getMessage());
                     }
                 }
             }
         }
         if (signingCert != null) {
             if (signingCert.equals(issuerCertificate)) {
-                logger.log(Level.INFO, "OCSP response is signed by the target''s Issuing CA");
+                LOG.info("OCSP response is signed by the target''s Issuing CA");
             } else if (responderCertificate != null && signingCert.equals(responderCertificate)) {
                 // https://www.ietf.org/rfc/rfc2560.txt
                 // 2.6  OCSP Signature Authority Delegation
                 // - The responder certificate is issued to the responder by CA
-                logger.log(Level.INFO, "OCSP response is signed by an authorized responder certificate");
+                LOG.info("OCSP response is signed by an authorized responder certificate");
             } else {
                 // 4.2.2.2  Authorized Responders
                 // 3. Includes a value of id-ad-ocspSigning in an ExtendedKeyUsage
                 // extension and is issued by the CA that issued the certificate in
                 // question."
                 if (!signingCert.getIssuerX500Principal().equals(issuerCertificate.getSubjectX500Principal())) {
-                    logger.log(Level.INFO, "Signer certificate''s Issuer: {0}\nIssuer certificate''s Subject: {1}",
+                    LOG.info("Signer certificate''s Issuer: {}\nIssuer certificate''s Subject: {}",
                             new Object[]{signingCert.getIssuerX500Principal().getName(), issuerCertificate.getSubjectX500Principal().getName()});
                     throw new CertPathValidatorException("Responder\'s certificate is not authorized to sign OCSP responses");
                 }
                 try {
                     List<String> purposes = signingCert.getExtendedKeyUsage();
                     if (purposes == null || !purposes.contains(KeyPurposeId.id_kp_OCSPSigning.getId())) {
-                        logger.log(Level.INFO, "OCSPSigning extended usage is not set");
+                        LOG.info("OCSPSigning extended usage is not set");
                         throw new CertPathValidatorException("Responder\'s certificate not valid for signing OCSP responses");
                     }
                 } catch (CertificateParsingException e) {
-                    logger.log(Level.FINE, "Failed to get certificate''s extended key usage extension\n{0}", e.getMessage());
+                    LOG.info("Failed to get certificate''s extended key usage extension\n{}", e.getMessage());
                 }
                 if (date == null) {
                     signingCert.checkValidity();
@@ -397,14 +397,14 @@ public final class OCSPUtils {
                     Extension noOCSPCheck = new JcaX509CertificateHolder(signingCert).getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck);
                     // TODO If the extension is present, the OCSP client can trust the
                     // responder's certificate for the lifetime of the certificate.
-                    logger.log(Level.INFO, "OCSP no-check extension is {0} present", noOCSPCheck == null ? "not" : "");
+                    LOG.info("OCSP no-check extension is {} present", noOCSPCheck == null ? "not" : "");
                 } catch (CertificateEncodingException e) {
-                    logger.log(Level.FINE, "Certificate encoding exception: {0}", e.getMessage());
+                    LOG.info("Certificate encoding exception: {}", e.getMessage());
                 }
 
                 try {
                     signingCert.verify(issuerCertificate.getPublicKey());
-                    logger.log(Level.INFO, "OCSP response is signed by an Authorized Responder");
+                    LOG.info("OCSP response is signed by an Authorized Responder");
 
                 } catch (GeneralSecurityException ex) {
                     signingCert = null;
@@ -451,9 +451,9 @@ public final class OCSPUtils {
                     .setProvider("BC").build(cert.getPublicKey());
             return basicOcspResponse.isSignatureValid(contentVerifier);
         } catch (OperatorCreationException e) {
-            logger.log(Level.FINE, "Unable to construct OCSP content signature verifier\n{0}", e.getMessage());
+            LOG.info("Unable to construct OCSP content signature verifier\n{}", e.getMessage());
         } catch (OCSPException e) {
-            logger.log(Level.FINE, "Unable to validate OCSP response signature\n{0}", e.getMessage());
+            LOG.info("Unable to validate OCSP response signature\n{}", e.getMessage());
         }
         return false;
     }

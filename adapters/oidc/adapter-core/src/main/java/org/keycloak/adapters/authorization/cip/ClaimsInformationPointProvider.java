@@ -16,16 +16,12 @@
  */
 package org.keycloak.adapters.authorization.cip;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.keycloak.adapters.authorization.ClaimInformationPointProvider;
 import org.keycloak.adapters.authorization.util.PlaceHolders;
 import org.keycloak.adapters.spi.HttpFacade;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>

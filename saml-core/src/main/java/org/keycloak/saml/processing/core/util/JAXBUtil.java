@@ -45,7 +45,7 @@ import java.util.HashMap;
 public class JAXBUtil {
 
     public static final String W3C_XML_SCHEMA_NS_URI = "http://www.w3.org/2001/XMLSchema";
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
     private static final HashMap<String, JAXBContext> jaxbContextHash = new HashMap<String, JAXBContext>();
 
     static {
@@ -81,7 +81,7 @@ public class JAXBUtil {
      */
     public static Marshaller getMarshaller(String pkgName) throws JAXBException {
         if (pkgName == null)
-            throw logger.nullArgumentError("pkgName");
+            throw LOG.nullArgumentError("pkgName");
 
         JAXBContext jc = getJAXBContext(pkgName);
         Marshaller marshaller = jc.createMarshaller();
@@ -99,7 +99,7 @@ public class JAXBUtil {
      */
     public static Unmarshaller getUnmarshaller(String pkgName) throws JAXBException {
         if (pkgName == null)
-            throw logger.nullArgumentError("pkgName");
+            throw LOG.nullArgumentError("pkgName");
         JAXBContext jc = getJAXBContext(pkgName);
         return jc.createUnmarshaller();
     }
@@ -113,7 +113,7 @@ public class JAXBUtil {
      */
     public static Unmarshaller getUnmarshaller(String... pkgNames) throws JAXBException {
         if (pkgNames == null)
-            throw logger.nullArgumentError("pkgName");
+            throw LOG.nullArgumentError("pkgName");
         int len = pkgNames.length;
         if (len == 0)
             return getUnmarshaller(pkgNames[0]);
@@ -145,7 +145,7 @@ public class JAXBUtil {
         StringBuilder builder = new StringBuilder();
         int len = pkgNames.length;
         if (len == 0)
-            throw logger.nullValueError("Packages are empty");
+            throw LOG.nullValueError("Packages are empty");
 
         for (String pkg : pkgNames) {
             builder.append(pkg);
@@ -163,7 +163,7 @@ public class JAXBUtil {
         for (String schemaLocation : schemaLocations) {
             URL schemaURL = SecurityActions.loadResource(JAXBUtil.class, schemaLocation);
             if (schemaURL == null)
-                throw logger.nullValueError("Schema URL :" + schemaLocation);
+                throw LOG.nullValueError("Schema URL :" + schemaLocation);
 
             schemaSources[i++] = new StreamSource(schemaURL.openStream());
         }
@@ -177,7 +177,7 @@ public class JAXBUtil {
     private static Schema getJAXPSchemaInstance(String schemaLocation) throws SAXException {
         URL schemaURL = SecurityActions.loadResource(JAXBUtil.class, schemaLocation);
         if (schemaURL == null)
-            throw logger.nullValueError("Schema URL :" + schemaLocation);
+            throw LOG.nullValueError("Schema URL :" + schemaLocation);
         SchemaFactory scFact = getSchemaFactory();
         Schema schema = scFact.newSchema(schemaURL);
         return schema;
@@ -199,7 +199,7 @@ public class JAXBUtil {
                 builder.append(" System ID=").append(exception.getSystemId());
                 builder.append(" exc=").append(exception.getLocalizedMessage());
 
-                logger.trace("SAX Error:" + builder.toString());
+                LOG.trace("SAX Error:" + builder.toString());
             }
 
             public void fatalError(SAXParseException exception) throws SAXException {
@@ -210,7 +210,7 @@ public class JAXBUtil {
                 builder.append(" System ID=").append(exception.getSystemId());
                 builder.append(" exc=").append(exception.getLocalizedMessage());
 
-                logger.error("SAX Fatal Error:" + builder.toString());
+                LOG.error("SAX Fatal Error:" + builder.toString());
             }
 
             public void warning(SAXParseException exception) throws SAXException {
@@ -221,7 +221,7 @@ public class JAXBUtil {
                 builder.append(" System ID=").append(exception.getSystemId());
                 builder.append(" exc=").append(exception.getLocalizedMessage());
 
-                logger.trace("SAX Warn:" + builder.toString());
+                LOG.trace("SAX Warn:" + builder.toString());
             }
         });
         return scFact;

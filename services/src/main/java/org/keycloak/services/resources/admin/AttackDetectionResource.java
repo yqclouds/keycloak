@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.util.Time;
@@ -45,7 +45,7 @@ import java.util.Map;
  * @resource Attack Detection
  */
 public class AttackDetectionResource {
-    protected static final Logger logger = Logger.getLogger(AttackDetectionResource.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(AttackDetectionResource.class);
     protected AdminPermissionEvaluator auth;
     protected RealmModel realm;
     @Context

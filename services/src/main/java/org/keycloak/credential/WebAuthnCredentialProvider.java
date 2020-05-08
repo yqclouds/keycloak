@@ -26,7 +26,6 @@ import com.webauthn4j.data.attestation.authenticator.AAGUID;
 import com.webauthn4j.data.attestation.authenticator.AttestedCredentialData;
 import com.webauthn4j.data.attestation.authenticator.COSEKey;
 import com.webauthn4j.util.exception.WebAuthnException;
-import org.jboss.logging.Logger;
 import org.keycloak.authentication.requiredactions.WebAuthnRegisterFactory;
 import org.keycloak.common.util.Base64;
 import org.keycloak.common.util.Time;
@@ -35,10 +34,13 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.WebAuthnCredentialModel;
 import org.keycloak.models.credential.dto.WebAuthnCredentialData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -46,7 +48,7 @@ import java.util.stream.Collectors;
  */
 public class WebAuthnCredentialProvider implements CredentialProvider<WebAuthnCredentialModel>, CredentialInputValidator {
 
-    private static final Logger logger = Logger.getLogger(WebAuthnCredentialProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WebAuthnCredentialProvider.class);
 
     private KeycloakSession session;
 
@@ -76,7 +78,7 @@ public class WebAuthnCredentialProvider implements CredentialProvider<WebAuthnCr
 
     @Override
     public boolean deleteCredential(RealmModel realm, UserModel user, String credentialId) {
-        logger.debugv("Delete WebAuthn credential. username = {0}, credentialId = {1}", user.getUsername(), credentialId);
+        LOG.debug("Delete WebAuthn credential. username = {}, credentialId = {}", user.getUsername(), credentialId);
         return getCredentialStore().removeStoredCredential(realm, user, credentialId);
     }
 
@@ -188,7 +190,7 @@ public class WebAuthnCredentialProvider implements CredentialProvider<WebAuthnCr
                     webAuthnManager.validate(authenticationData, authenticationParameters);
 
 
-                    logger.debugv("response.getAuthenticatorData().getFlags() = {0}", authenticationData.getAuthenticatorData().getFlags());
+                    LOG.debug("response.getAuthenticatorData().getFlags() = {}", authenticationData.getAuthenticatorData().getFlags());
 
                     // update authenticator counter
                     long count = auth.getCount();
@@ -197,7 +199,7 @@ public class WebAuthnCredentialProvider implements CredentialProvider<WebAuthnCr
                     webAuthnCredModel.updateCounter(count + 1);
                     getCredentialStore().updateCredential(realm, user, webAuthnCredModel);
 
-                    logger.debugf("Successfully validated WebAuthn credential for user %s", user.getUsername());
+                    LOG.debug("Successfully validated WebAuthn credential for user %s", user.getUsername());
                     dumpCredentialModel(webAuthnCredModel, auth);
 
                     return true;
@@ -227,11 +229,11 @@ public class WebAuthnCredentialProvider implements CredentialProvider<WebAuthnCr
     }
 
     public void dumpCredentialModel(WebAuthnCredentialModel credential, WebAuthnCredentialModelInput auth) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("  Persisted Credential Info::");
-            logger.debug(credential);
-            logger.debug("  Context Credential Info::");
-            logger.debug(auth);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("  Persisted Credential Info::");
+            LOG.debug(Objects.toString(credential));
+            LOG.debug("  Context Credential Info::");
+            LOG.debug(Objects.toString(auth));
         }
     }
 

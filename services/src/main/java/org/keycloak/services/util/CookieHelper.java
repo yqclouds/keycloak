@@ -17,10 +17,11 @@
 
 package org.keycloak.services.util;
 
-import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpResponse;
 import org.keycloak.common.util.Resteasy;
 import org.keycloak.common.util.ServerCookie;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
@@ -38,7 +39,7 @@ public class CookieHelper {
 
     public static final String LEGACY_COOKIE = "_LEGACY";
 
-    private static final Logger logger = Logger.getLogger(CookieHelper.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CookieHelper.class);
 
     /**
      * Set a response cookie.  This solely exists because JAX-RS 1.1 does not support setting HttpOnly cookies
@@ -100,14 +101,14 @@ public class CookieHelper {
         // check for cookies in the request headers
         List<String> cookieHeader = headers.getRequestHeaders().get(HttpHeaders.COOKIE);
         if (cookieHeader != null) {
-            logger.debugv("{1} cookie found in the request's header", name);
+            LOG.debug("{} cookie found in the request's header", name);
             cookieHeader.stream().map(s -> parseCookie(s, name)).forEach(cookiesVal::addAll);
         }
 
         // get cookies from the cookie field
         Cookie cookie = headers.getCookies().get(name);
         if (cookie != null) {
-            logger.debugv("{1} cookie found in the cookie's field", name);
+            LOG.debug("{} cookie found in the cookie's field", name);
             cookiesVal.add(cookie.getValue());
         }
 
@@ -131,7 +132,7 @@ public class CookieHelper {
             return cookie;
         } else {
             String legacy = name + LEGACY_COOKIE;
-            logger.debugv("Couldn't find cookie {0}, trying {0}", name, legacy);
+            LOG.debug("Couldn't find cookie {}, trying {}", name, legacy);
             return cookies.get(legacy);
         }
     }

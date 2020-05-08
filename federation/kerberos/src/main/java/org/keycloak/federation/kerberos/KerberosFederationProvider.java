@@ -17,7 +17,6 @@
 
 package org.keycloak.federation.kerberos;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.constants.KerberosConstants;
 import org.keycloak.credential.CredentialAuthentication;
 import org.keycloak.credential.CredentialInput;
@@ -32,6 +31,8 @@ import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.UserStorageProviderModel;
 import org.keycloak.storage.user.ImportedUserValidation;
 import org.keycloak.storage.user.UserLookupProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -47,9 +48,10 @@ public class KerberosFederationProvider implements UserStorageProvider,
         CredentialInputUpdater,
         CredentialAuthentication,
         ImportedUserValidation {
+    private static final Logger LOG = LoggerFactory.getLogger(KerberosFederationProvider.class);
 
     public static final String KERBEROS_PRINCIPAL = "KERBEROS_PRINCIPAL";
-    private static final Logger logger = Logger.getLogger(KerberosFederationProvider.class);
+
     protected KeycloakSession session;
     protected UserStorageProviderModel model;
     protected KerberosConfig kerberosConfig;
@@ -202,11 +204,11 @@ public class KerberosFederationProvider implements UserStorageProvider,
                 }
             } else if (spnegoAuthenticator.getResponseToken() != null) {
                 // Case when SPNEGO handshake requires multiple steps
-                logger.tracef("SPNEGO Handshake will continue");
+                LOG.trace("SPNEGO Handshake will continue");
                 state.put(KerberosConstants.RESPONSE_TOKEN, spnegoAuthenticator.getResponseToken());
                 return new CredentialValidationOutput(null, CredentialValidationOutput.Status.CONTINUE, state);
             } else {
-                logger.tracef("SPNEGO Handshake not successful");
+                LOG.trace("SPNEGO Handshake not successful");
                 return CredentialValidationOutput.failed();
             }
 
@@ -231,25 +233,25 @@ public class KerberosFederationProvider implements UserStorageProvider,
         UserModel user = session.userLocalStorage().getUserByUsername(username, realm);
         if (user != null) {
             user = session.users().getUserById(user.getId(), realm);  // make sure we get a cached instance
-            logger.debug("Kerberos authenticated user " + username + " found in Keycloak storage");
+            LOG.debug("Kerberos authenticated user " + username + " found in Keycloak storage");
 
             if (!model.getId().equals(user.getFederationLink())) {
-                logger.warn("User with username " + username + " already exists, but is not linked to provider [" + model.getName() + "]");
+                LOG.warn("User with username " + username + " already exists, but is not linked to provider [" + model.getName() + "]");
                 return null;
             } else {
                 UserModel proxied = validate(realm, user);
                 if (proxied != null) {
                     return proxied;
                 } else {
-                    logger.warn("User with username " + username + " already exists and is linked to provider [" + model.getName() +
+                    LOG.warn("User with username " + username + " already exists and is linked to provider [" + model.getName() +
                             "] but kerberos principal is not correct. Kerberos principal on user is: " + user.getFirstAttribute(KERBEROS_PRINCIPAL));
-                    logger.warn("Will re-create user");
+                    LOG.warn("Will re-create user");
                     new UserManager(session).removeUser(realm, user, session.userLocalStorage());
                 }
             }
         }
 
-        logger.debug("Kerberos authenticated user " + username + " not in Keycloak storage. Creating him");
+        LOG.debug("Kerberos authenticated user " + username + " not in Keycloak storage. Creating him");
         return importUserToKeycloak(realm, username);
     }
 
@@ -257,7 +259,7 @@ public class KerberosFederationProvider implements UserStorageProvider,
         // Just guessing email from kerberos realm
         String email = username + "@" + kerberosConfig.getKerberosRealm().toLowerCase();
 
-        logger.debugf("Creating kerberos user: %s, email: %s to local Keycloak storage", username, email);
+        LOG.debug("Creating kerberos user: {}, email: {} to local Keycloak storage", username, email);
         UserModel user = session.userLocalStorage().addUser(realm, username);
         user.setEnabled(true);
         user.setEmail(email);

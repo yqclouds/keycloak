@@ -16,9 +16,9 @@
  */
 package org.keycloak.adapters.authorization.util;
 
-import java.util.List;
-
 import org.keycloak.adapters.spi.HttpFacade;
+
+import java.util.List;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>

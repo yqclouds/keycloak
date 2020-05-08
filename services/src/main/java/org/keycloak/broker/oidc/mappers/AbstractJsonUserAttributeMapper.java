@@ -18,7 +18,6 @@
 package org.keycloak.broker.oidc.mappers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.jboss.logging.Logger;
 import org.keycloak.broker.oidc.OIDCIdentityProvider;
 import org.keycloak.broker.provider.AbstractIdentityProviderMapper;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
@@ -28,6 +27,8 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.protocol.oidc.mappers.OIDCAttributeMapperHelper;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,8 +55,8 @@ public abstract class AbstractJsonUserAttributeMapper extends AbstractIdentityPr
      * Key in {@link BrokeredIdentityContext#getContextData()} where {@link JsonNode} with user profile is stored.
      */
     public static final String CONTEXT_JSON_NODE = OIDCIdentityProvider.USER_INFO;
-    protected static final Logger logger = Logger.getLogger(AbstractJsonUserAttributeMapper.class);
-    protected static final Logger LOGGER_DUMP_USER_PROFILE = Logger.getLogger("org.keycloak.social.user_profile_dump");
+    protected static final Logger LOG = LoggerFactory.getLogger(AbstractJsonUserAttributeMapper.class);
+    protected static final Logger LOGGER_DUMP_USER_PROFILE = LoggerFactory.getLogger("org.keycloak.social.user_profile_dump");
     private static final String JSON_PATH_DELIMITER = ".";
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
 
@@ -77,7 +78,7 @@ public abstract class AbstractJsonUserAttributeMapper extends AbstractIdentityPr
     }
 
     /**
-     * Store used profile JsonNode into user context for later use by this mapper. Profile data are dumped into special logger if enabled also to allow investigation of the structure.
+     * Store used profile JsonNode into user context for later use by this mapper. Profile data are dumped into special LOG if enabled also to allow investigation of the structure.
      *
      * @param user     context to store profile data into
      * @param profile  to store into context
@@ -95,13 +96,13 @@ public abstract class AbstractJsonUserAttributeMapper extends AbstractIdentityPr
 
         String jsonField = mapperModel.getConfig().get(CONF_JSON_FIELD);
         if (jsonField == null || jsonField.trim().isEmpty()) {
-            logger.warnf("JSON field path is not configured for mapper %s", mapperModel.getName());
+            LOG.warn("JSON field path is not configured for mapper {}", mapperModel.getName());
             return null;
         }
         jsonField = jsonField.trim();
 
         if (jsonField.startsWith(JSON_PATH_DELIMITER) || jsonField.endsWith(JSON_PATH_DELIMITER) || jsonField.startsWith("[")) {
-            logger.warnf("JSON field path is invalid %s", jsonField);
+            LOG.warn("JSON field path is invalid {}", jsonField);
             return null;
         }
 
@@ -110,19 +111,19 @@ public abstract class AbstractJsonUserAttributeMapper extends AbstractIdentityPr
         Object value = getJsonValue(profileJsonNode, jsonField);
 
         if (value == null) {
-            logger.debugf("User profile JSON value '%s' is not available.", jsonField);
+            LOG.debug("User profile JSON value '{}' is not available.", jsonField);
         }
 
         return value;
     }
 
     public static Object getJsonValue(JsonNode baseNode, String fieldPath) {
-        logger.debug("Going to process JsonNode path " + fieldPath + " on data " + baseNode);
+        LOG.debug("Going to process JsonNode path " + fieldPath + " on data " + baseNode);
         if (baseNode != null) {
 
             List<String> fields = OIDCAttributeMapperHelper.splitClaimPath(fieldPath);
             if (fields.isEmpty() || fieldPath.endsWith(".")) {
-                logger.debug("JSON path is invalid " + fieldPath);
+                LOG.debug("JSON path is invalid " + fieldPath);
                 return null;
             }
 
@@ -135,7 +136,7 @@ public abstract class AbstractJsonUserAttributeMapper extends AbstractIdentityPr
                 if (currentFieldName.endsWith("]")) {
                     int bi = currentFieldName.indexOf("[");
                     if (bi == -1) {
-                        logger.debug("Invalid array index construct in " + currentFieldName);
+                        LOG.debug("Invalid array index construct in " + currentFieldName);
                         return null;
                     }
                     try {
@@ -143,7 +144,7 @@ public abstract class AbstractJsonUserAttributeMapper extends AbstractIdentityPr
                         arrayIndex = Integer.parseInt(is);
                         if (arrayIndex < 0) throw new ArrayIndexOutOfBoundsException();
                     } catch (Exception e) {
-                        logger.debug("Invalid array index construct in " + currentFieldName);
+                        LOG.debug("Invalid array index construct in " + currentFieldName);
                         return null;
                     }
                     currentNodeName = currentFieldName.substring(0, bi).trim();
@@ -151,12 +152,12 @@ public abstract class AbstractJsonUserAttributeMapper extends AbstractIdentityPr
 
                 currentNode = currentNode.get(currentNodeName);
                 if (arrayIndex > -1 && currentNode.isArray()) {
-                    logger.debug("Going to take array node at index " + arrayIndex);
+                    LOG.debug("Going to take array node at index " + arrayIndex);
                     currentNode = currentNode.get(arrayIndex);
                 }
 
                 if (currentNode == null) {
-                    logger.debug("JsonNode not found for name " + currentFieldName);
+                    LOG.debug("JsonNode not found for name " + currentFieldName);
                     return null;
                 }
 
@@ -166,7 +167,7 @@ public abstract class AbstractJsonUserAttributeMapper extends AbstractIdentityPr
                         if (childNode.isTextual()) {
                             values.add(childNode.textValue());
                         } else {
-                            logger.warn("JsonNode in array is not text value " + childNode);
+                            LOG.warn("JsonNode in array is not text value " + childNode);
                         }
                     }
                     if (values.isEmpty()) {
@@ -175,7 +176,7 @@ public abstract class AbstractJsonUserAttributeMapper extends AbstractIdentityPr
                     return values;
                 } else if (currentNode.isNull()) {
 
-                    logger.debug("JsonNode is null node for name " + currentFieldName);
+                    LOG.debug("JsonNode is null node for name " + currentFieldName);
                     return null;
                 } else if (currentNode.isValueNode()) {
                     String ret = currentNode.asText();
@@ -216,7 +217,7 @@ public abstract class AbstractJsonUserAttributeMapper extends AbstractIdentityPr
     public void preprocessFederatedIdentity(KeycloakSession session, RealmModel realm, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
         String attribute = mapperModel.getConfig().get(CONF_USER_ATTRIBUTE);
         if (attribute == null || attribute.trim().isEmpty()) {
-            logger.warnf("Attribute is not configured for mapper %s", mapperModel.getName());
+            LOG.warn("Attribute is not configured for mapper {}", mapperModel.getName());
             return;
         }
         attribute = attribute.trim();

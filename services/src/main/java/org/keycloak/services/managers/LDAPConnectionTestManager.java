@@ -16,13 +16,14 @@
  */
 package org.keycloak.services.managers;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.LDAPConstants;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.storage.ldap.LDAPConfig;
 import org.keycloak.storage.ldap.idm.store.ldap.LDAPContextManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -31,12 +32,12 @@ public class LDAPConnectionTestManager {
 
     public static final String TEST_CONNECTION = "testConnection";
     public static final String TEST_AUTHENTICATION = "testAuthentication";
-    private static final Logger logger = Logger.getLogger(LDAPConnectionTestManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LDAPConnectionTestManager.class);
 
     public static boolean testLDAP(KeycloakSession session, String action, String connectionUrl, String bindDn,
                                    String bindCredential, String useTruststoreSpi, String connectionTimeout, String tls) {
         if (!TEST_CONNECTION.equals(action) && !TEST_AUTHENTICATION.equals(action)) {
-            ServicesLogger.LOGGER.unknownAction(action);
+//            ServicesLogger.LOGGER.unknownAction(action);
             return false;
         }
 
@@ -45,7 +46,7 @@ public class LDAPConnectionTestManager {
         MultivaluedHashMap<String, String> ldapConfig = new MultivaluedHashMap<>();
 
         if (connectionUrl == null) {
-            logger.errorf("Unknown connection URL");
+            LOG.error("Unknown connection URL");
             return false;
         }
         ldapConfig.putSingle(LDAPConstants.CONNECTION_URL, connectionUrl);
@@ -59,7 +60,7 @@ public class LDAPConnectionTestManager {
             // tls is true
 
             if (bindDn == null) {
-                logger.error("Unknown bind DN");
+                LOG.error("Unknown bind DN");
                 return false;
             }
 
@@ -78,7 +79,7 @@ public class LDAPConnectionTestManager {
             return true;
         } catch (Exception ne) {
             String errorMessage = (TEST_AUTHENTICATION.equals(action)) ? "Error when authenticating to LDAP: " : "Error when connecting to LDAP: ";
-            ServicesLogger.LOGGER.errorAuthenticating(ne, errorMessage + ne.getMessage());
+//            ServicesLogger.LOGGER.errorAuthenticating(ne, errorMessage + ne.getMessage());
             return false;
         }
     }

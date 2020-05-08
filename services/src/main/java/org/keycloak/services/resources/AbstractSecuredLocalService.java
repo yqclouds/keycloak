@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.spi.BadRequestException;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.AbstractOAuthClient;
@@ -50,7 +50,7 @@ import java.util.Set;
  * @version $Revision: 1 $
  */
 public abstract class AbstractSecuredLocalService {
-    private static final Logger logger = Logger.getLogger(AbstractSecuredLocalService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractSecuredLocalService.class);
 
     protected final ClientModel client;
     protected RealmModel realm;
@@ -89,7 +89,7 @@ public abstract class AbstractSecuredLocalService {
                     session.getContext().setClient(client);
                     return loginFormsProvider.setError(Messages.NO_ACCESS).createErrorPage(Response.Status.FORBIDDEN);
                 } else {
-                    logger.debug("error from oauth");
+                    LOG.debug("error from oauth");
                     throw new ForbiddenException("error");
                 }
             }
@@ -97,19 +97,19 @@ public abstract class AbstractSecuredLocalService {
                 throw new BadRequestException("Invalid path");
             }
             if (!realm.isEnabled()) {
-                logger.debug("realm not enabled");
+                LOG.debug("realm not enabled");
                 throw new ForbiddenException();
             }
             if (!client.isEnabled()) {
-                logger.debug("account management app not enabled");
+                LOG.debug("account management app not enabled");
                 throw new ForbiddenException();
             }
             if (code == null) {
-                logger.debug("code not specified");
+                LOG.debug("code not specified");
                 throw new BadRequestException("code not specified");
             }
             if (state == null) {
-                logger.debug("state not specified");
+                LOG.debug("state not specified");
                 throw new BadRequestException("state not specified");
             }
             KeycloakUriBuilder redirect = KeycloakUriBuilder.fromUri(getBaseRedirectUri());
@@ -182,8 +182,8 @@ public abstract class AbstractSecuredLocalService {
             URI url = uriBuilder.build();
 
             NewCookie cookie = new NewCookie(getStateCookieName(), state, getStateCookiePath(uriInfo), null, null, -1, isSecure, true);
-            logger.debug("NewCookie: " + cookie.toString());
-            logger.debug("Oauth Redirect to: " + url);
+            LOG.debug("NewCookie: " + cookie.toString());
+            LOG.debug("Oauth Redirect to: " + url);
             return Response.status(302)
                     .location(url)
                     .cookie(cookie).build();

@@ -22,7 +22,6 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.context.Flag;
 import org.infinispan.stream.CacheCollectors;
-import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.common.util.Retry;
 import org.keycloak.common.util.Time;
@@ -46,6 +45,8 @@ import org.keycloak.models.sessions.infinispan.util.FuturesHelper;
 import org.keycloak.models.sessions.infinispan.util.InfinispanKeyGenerator;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
 import org.keycloak.models.utils.SessionTimeoutHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.*;
@@ -62,8 +63,7 @@ import java.util.stream.Stream;
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class InfinispanUserSessionProvider implements UserSessionProvider {
-
-    private static final Logger log = Logger.getLogger(InfinispanUserSessionProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(InfinispanUserSessionProvider.class);
 
     protected final KeycloakSession session;
 
@@ -346,7 +346,7 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
 
         // We have userSession, which passes predicate. No need for remote lookup.
         if (predicate.test(userSession)) {
-            log.debugf("getUserSessionWithPredicate(%s): found in local cache", id);
+            LOG.debug("getUserSessionWithPredicate({}): found in local cache", id);
             return userSession;
         }
 
@@ -358,7 +358,7 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
             SessionEntityWrapper<UserSessionEntity> remoteSessionEntityWrapper = (SessionEntityWrapper<UserSessionEntity>) remoteCache.get(id);
             if (remoteSessionEntityWrapper != null) {
                 UserSessionEntity remoteSessionEntity = remoteSessionEntityWrapper.getEntity();
-                log.debugf("getUserSessionWithPredicate(%s): remote cache contains session entity %s", id, remoteSessionEntity);
+                LOG.debug("getUserSessionWithPredicate({}): remote cache contains session entity {}", id, remoteSessionEntity);
 
                 UserSessionModel remoteSessionAdapter = wrap(realm, remoteSessionEntity, offline);
                 if (predicate.test(remoteSessionAdapter)) {
@@ -377,12 +377,12 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
                     // Recursion. We should have it locally now
                     return getUserSessionWithPredicate(realm, id, offline, predicate);
                 } else {
-                    log.debugf("getUserSessionWithPredicate(%s): found, but predicate doesn't pass", id);
+                    LOG.debug("getUserSessionWithPredicate({}): found, but predicate doesn't pass", id);
 
                     return null;
                 }
             } else {
-                log.debugf("getUserSessionWithPredicate(%s): not found", id);
+                LOG.debug("getUserSessionWithPredicate({}): not found", id);
 
                 // Session not available on remoteCache. Was already removed there. So removing locally too.
                 // TODO: Can be optimized to skip calling remoteCache.remove
@@ -392,7 +392,7 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
             }
         } else {
 
-            log.debugf("getUserSessionWithPredicate(%s): remote cache not available", id);
+            LOG.debug("getUserSessionWithPredicate({}): remote cache not available", id);
 
             return null;
         }
@@ -458,7 +458,7 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
 
     @Override
     public void removeExpired(RealmModel realm) {
-        log.debugf("Removing expired sessions");
+        LOG.debug("Removing expired sessions");
         removeExpiredUserSessions(realm);
         removeExpiredOfflineUserSessions(realm);
     }
@@ -526,7 +526,7 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
 
         futures.waitForAllToFinish();
 
-        log.debugf("Removed %d expired user sessions and %d expired client sessions for realm '%s'", userSessionsSize.get(),
+        LOG.debug("Removed {} expired user sessions and {} expired client sessions for realm '{}'", userSessionsSize.get(),
                 clientSessionsSize.get(), realm.getName());
     }
 
@@ -591,7 +591,7 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
 
         futures.waitForAllToFinish();
 
-        log.debugf("Removed %d expired offline user sessions and %d expired offline client sessions for realm '%s'",
+        LOG.debug("Removed {} expired offline user sessions and {} expired offline client sessions for realm '{}'",
                 userSessionsSize.get(), clientSessionsSize.get(), realm.getName());
     }
 
@@ -644,7 +644,7 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
 
         futures.waitForAllToFinish();
 
-        log.debugf("Removed %d sessions in realm %s. Offline: %b", (Object) userSessionsSize.get(), realmId, offline);
+        LOG.debug("Removed {} sessions in realm {}. Offline: %b", (Object) userSessionsSize.get(), realmId, offline);
     }
 
     @Override
@@ -710,7 +710,7 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
 
         futures.waitForAllToFinish();
 
-        log.debugf("Removed %d login failures in realm %s", futures.size(), realmId);
+        LOG.debug("Removed {} login failures in realm {}", futures.size(), realmId);
     }
 
     @Override
@@ -908,8 +908,8 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
                 try {
                     remoteCache.putAll(sessionsByIdForTransport);
                 } catch (HotRodClientException re) {
-                    if (log.isDebugEnabled()) {
-                        log.debugf(re, "Failed to put import %d sessions to remoteCache. Iteration '%s'. Will try to retry the task",
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Failed to put import {} sessions to remoteCache. Iteration '{}'. Will try to retry the task",
                                 sessionsByIdForTransport.size(), iteration);
                     }
 
@@ -938,8 +938,8 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
                 try {
                     remoteCacheClientSessions.putAll(sessionsByIdForTransport);
                 } catch (HotRodClientException re) {
-                    if (log.isDebugEnabled()) {
-                        log.debugf(re, "Failed to put import %d client sessions to remoteCache. Iteration '%s'. Will try to retry the task",
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Failed to put import {} client sessions to remoteCache. Iteration '{}'. Will try to retry the task",
                                 sessionsByIdForTransport.size(), iteration);
                     }
 

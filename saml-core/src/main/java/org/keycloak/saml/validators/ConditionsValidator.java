@@ -16,10 +16,11 @@
  */
 package org.keycloak.saml.validators;
 
-import org.jboss.logging.Logger;
 import org.keycloak.dom.saml.common.CommonConditionsType;
 import org.keycloak.dom.saml.v2.assertion.*;
 import org.keycloak.saml.processing.core.saml.v2.util.XMLTimeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -33,7 +34,7 @@ import java.util.*;
  */
 public class ConditionsValidator {
 
-    private static final Logger LOG = Logger.getLogger(ConditionsValidator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ConditionsValidator.class);
     private final CommonConditionsType conditions;
 
     ;
@@ -63,10 +64,10 @@ public class ConditionsValidator {
             res = validateConditions((ConditionsType) conditions, res);
         } else {
             res = Result.INDETERMINATE;
-            LOG.infof("Unknown conditions in assertion %s: %s", assertionId, conditions == null ? "<null>" : conditions.getClass().getSimpleName());
+            LOG.info("Unknown conditions in assertion {}: {}", assertionId, conditions == null ? "<null>" : conditions.getClass().getSimpleName());
         }
 
-        LOG.debugf("Assertion %s validity is %s", assertionId, res.name());
+        LOG.debug("Assertion {} validity is {}", assertionId, res.name());
 
         return Result.VALID == res;
     }
@@ -87,7 +88,7 @@ public class ConditionsValidator {
                 r = validateProxyRestriction((ProxyRestrictionType) cond);
             } else {
                 r = Result.INDETERMINATE;
-                LOG.infof("Unknown condition in assertion %s: %s", assertionId, cond == null ? "<null>" : cond.getClass());
+                LOG.info("Unknown condition in assertion {}: {}", assertionId, cond == null ? "<null>" : cond.getClass());
             }
 
             res = r.joinResult(res);
@@ -116,11 +117,11 @@ public class ConditionsValidator {
         XMLGregorianCalendar updatedNotBefore = XMLTimeUtil.subtract(notBefore, clockSkewInMillis);
         XMLGregorianCalendar updatedOnOrAfter = XMLTimeUtil.add(notOnOrAfter, clockSkewInMillis);
 
-        LOG.debugf("Evaluating Conditions of Assertion %s. notBefore=%s, notOnOrAfter=%s, updatedNotBefore: %s, updatedOnOrAfter=%s, now: %s",
+        LOG.debug("Evaluating Conditions of Assertion {}. notBefore={}, notOnOrAfter={}, updatedNotBefore: {}, updatedOnOrAfter={}, now: {}",
                 assertionId, notBefore, notOnOrAfter, updatedNotBefore, updatedOnOrAfter, now);
         boolean valid = XMLTimeUtil.isValid(now, updatedNotBefore, updatedOnOrAfter);
         if (!valid) {
-            LOG.infof("Assertion %s expired.", assertionId);
+            LOG.info("Assertion {} expired.", assertionId);
         }
 
         return valid ? Result.VALID : Result.INVALID;
@@ -140,8 +141,8 @@ public class ConditionsValidator {
             }
         }
 
-        LOG.infof("Assertion %s is not addressed to this SP.", assertionId);
-        LOG.debugf("Allowed audiences are: %s", allowedAudiences);
+        LOG.info("Assertion {} is not addressed to this SP.", assertionId);
+        LOG.debug("Allowed audiences are: {}", allowedAudiences);
 
         return Result.INVALID;
     }

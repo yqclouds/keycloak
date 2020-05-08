@@ -18,7 +18,6 @@
 package org.keycloak.cluster.infinispan;
 
 import org.infinispan.Cache;
-import org.jboss.logging.Logger;
 import org.junit.Assert;
 import org.keycloak.common.util.Time;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
@@ -26,6 +25,8 @@ import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.entities.AuthenticatedClientSessionEntity;
 import org.keycloak.models.sessions.infinispan.entities.UserSessionEntity;
 import org.keycloak.models.sessions.infinispan.initializer.DistributedCacheConcurrentWritesTest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,9 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class ConcurrencyDistributedRemoveSessionTest {
-
-
-    protected static final Logger logger = Logger.getLogger(ConcurrencyJDGRemoveSessionTest.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(ConcurrencyJDGRemoveSessionTest.class);
 
     private static final int ITERATIONS = 10000;
 
@@ -69,7 +68,7 @@ public class ConcurrencyDistributedRemoveSessionTest {
             removalCounts.put(sessionId, new AtomicInteger(0));
         }
 
-        logger.info("SESSIONS CREATED");
+        LOG.info("SESSIONS CREATED");
 
         // Create 100 initial sessions
         for (int i = 0; i < ITERATIONS; i++) {
@@ -78,7 +77,7 @@ public class ConcurrencyDistributedRemoveSessionTest {
             Assert.assertNotNull("Loaded wrapper for key " + sessionId, loadedWrapper);
         }
 
-        logger.info("SESSIONS AVAILABLE ON DC2");
+        LOG.info("SESSIONS AVAILABLE ON DC2");
 
 
         long start = System.currentTimeMillis();
@@ -94,7 +93,7 @@ public class ConcurrencyDistributedRemoveSessionTest {
             worker3.join();
             worker4.join();
 
-            logger.info("SESSIONS REMOVED");
+            LOG.info("SESSIONS REMOVED");
 
             Map<Integer, Integer> histogram = new HashMap<>();
             for (Map.Entry<String, AtomicInteger> entry : removalCounts.entrySet()) {
@@ -105,11 +104,11 @@ public class ConcurrencyDistributedRemoveSessionTest {
                 histogram.put(count, current);
             }
 
-            logger.infof("Histogram: %s", histogram.toString());
-            logger.infof("Errors: %d", errorsCounter.get());
+            LOG.info("Histogram: {}", histogram.toString());
+            LOG.info("Errors: {}", errorsCounter.get());
 
             long took = System.currentTimeMillis() - start;
-            logger.infof("took %d ms", took);
+            LOG.info("took {} ms", took);
 
 
         } finally {

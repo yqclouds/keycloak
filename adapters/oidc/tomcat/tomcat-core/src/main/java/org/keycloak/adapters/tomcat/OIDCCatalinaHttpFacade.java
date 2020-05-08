@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class OIDCCatalinaHttpFacade extends CatalinaHttpFacade implements OIDCHttpFacade{
+public class OIDCCatalinaHttpFacade extends CatalinaHttpFacade implements OIDCHttpFacade {
 
     public OIDCCatalinaHttpFacade(org.apache.catalina.connector.Request request, HttpServletResponse response) {
         super(response, request);
@@ -34,7 +34,7 @@ public class OIDCCatalinaHttpFacade extends CatalinaHttpFacade implements OIDCHt
 
     @Override
     public KeycloakSecurityContext getSecurityContext() {
-        return (KeycloakSecurityContext)request.getAttribute(KeycloakSecurityContext.class.getName());
+        return (KeycloakSecurityContext) request.getAttribute(KeycloakSecurityContext.class.getName());
     }
 
 }

@@ -17,8 +17,6 @@
 
 package org.keycloak.adapters.springsecurity.authentication;
 
-import org.apache.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import javax.servlet.http.HttpServletRequest;

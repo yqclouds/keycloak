@@ -17,7 +17,7 @@
 
 package org.keycloak.authentication.authenticators.broker;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.actiontoken.idpverifyemail.IdpVerifyAccountLinkActionToken;
@@ -56,7 +56,7 @@ import java.util.concurrent.TimeUnit;
 public class IdpEmailVerificationAuthenticator extends AbstractIdpAuthenticator {
 
     public static final String VERIFY_ACCOUNT_IDP_USERNAME = "VERIFY_ACCOUNT_IDP_USERNAME";
-    private static Logger logger = Logger.getLogger(IdpEmailVerificationAuthenticator.class);
+    private static Logger LOG = LoggerFactory.getLogger(IdpEmailVerificationAuthenticator.class);
 
     @Autowired
     private EmailTemplateProvider emailTemplateProvider;
@@ -68,7 +68,7 @@ public class IdpEmailVerificationAuthenticator extends AbstractIdpAuthenticator 
         AuthenticationSessionModel authSession = context.getAuthenticationSession();
 
         if (realm.getSmtpConfig().isEmpty()) {
-            ServicesLogger.LOGGER.smtpNotConfigured();
+//            ServicesLogger.LOGGER.smtpNotConfigured();
             context.attempted();
             return;
         }
@@ -76,7 +76,7 @@ public class IdpEmailVerificationAuthenticator extends AbstractIdpAuthenticator 
         if (Objects.equals(authSession.getAuthNote(VERIFY_ACCOUNT_IDP_USERNAME), brokerContext.getUsername())) {
             UserModel existingUser = getExistingUser(session, realm, authSession);
 
-            logger.debugf("User '%s' confirmed that wants to link with identity provider '%s' . Identity provider username is '%s' ", existingUser.getUsername(),
+            LOG.debug("User '%s' confirmed that wants to link with identity provider '%s' . Identity provider username is '%s' ", existingUser.getUsername(),
                     brokerContext.getIdpConfig().getAlias(), brokerContext.getUsername());
 
             context.setUser(existingUser);
@@ -97,7 +97,7 @@ public class IdpEmailVerificationAuthenticator extends AbstractIdpAuthenticator 
 
     @Override
     protected void actionImpl(AuthenticationFlowContext context, SerializedBrokeredIdentityContext serializedCtx, BrokeredIdentityContext brokerContext) {
-        logger.debugf("Re-sending email requested for user, details follow");
+        LOG.debug("Re-sending email requested for user, details follow");
 
         // This will allow user to re-send email again
         context.getAuthenticationSession().removeAuthNote(Constants.VERIFY_EMAIL_KEY);
@@ -154,7 +154,7 @@ public class IdpEmailVerificationAuthenticator extends AbstractIdpAuthenticator 
         } catch (EmailException e) {
             event.error(Errors.EMAIL_SEND_FAILED);
 
-            ServicesLogger.LOGGER.confirmBrokerEmailFailed(e);
+//            ServicesLogger.LOGGER.confirmBrokerEmailFailed(e);
             Response challenge = context.form()
                     .setError(Messages.EMAIL_SENT_ERROR)
                     .createErrorPage(Response.Status.INTERNAL_SERVER_ERROR);

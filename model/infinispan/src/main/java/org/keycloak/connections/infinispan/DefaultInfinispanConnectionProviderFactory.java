@@ -33,11 +33,12 @@ import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.transaction.TransactionMode;
 import org.infinispan.transaction.lookup.EmbeddedTransactionManagerLookup;
-import org.jboss.logging.Logger;
 import org.jgroups.JChannel;
 import org.keycloak.cluster.infinispan.KeycloakHotRodMarshallerFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -51,7 +52,8 @@ import java.util.concurrent.TimeUnit;
 @Component
 @ProviderFactory(id = "default", providerClasses = InfinispanConnectionProvider.class)
 public class DefaultInfinispanConnectionProviderFactory implements InfinispanConnectionProviderFactory {
-    protected static final Logger logger = Logger.getLogger(DefaultInfinispanConnectionProviderFactory.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(DefaultInfinispanConnectionProviderFactory.class);
+
     private static final Object CHANNEL_INIT_SYNCHRONIZER = new Object();
     protected EmbeddedCacheManager cacheManager;
     protected RemoteCacheProvider remoteCacheProvider;
@@ -88,7 +90,7 @@ public class DefaultInfinispanConnectionProviderFactory implements InfinispanCon
                 if (cacheManager == null) {
                     initEmbedded();
 
-                    logger.infof(topologyInfo.toString());
+                    LOG.info(topologyInfo.toString());
 
                     remoteCacheProvider = new RemoteCacheProvider(cacheManager);
                 }
@@ -129,7 +131,7 @@ public class DefaultInfinispanConnectionProviderFactory implements InfinispanCon
         cacheManager = new DefaultCacheManager(gcb.build());
         containerManaged = false;
 
-        logger.debug("Started embedded Infinispan cache container");
+        LOG.debug("Started embedded Infinispan cache container");
 
         ConfigurationBuilder modelCacheConfigBuilder = new ConfigurationBuilder();
         Configuration modelCacheConfiguration = modelCacheConfigBuilder.build();
@@ -149,7 +151,7 @@ public class DefaultInfinispanConnectionProviderFactory implements InfinispanCon
             }
 
             int owners = this.sessionsOwners;
-            logger.debugf("Session owners: %d", owners);
+            LOG.debug("Session owners: {}", owners);
 
             int l1Lifespan = this.l1Lifespan;
             boolean l1Enabled = l1Lifespan > 0;
@@ -346,7 +348,7 @@ public class DefaultInfinispanConnectionProviderFactory implements InfinispanCon
             hotrodVersion = ProtocolVersion.DEFAULT_PROTOCOL_VERSION;
         }
 
-        logger.debugf("HotRod protocol version: %s", hotrodVersion);
+        LOG.debug("HotRod protocol version: {}", hotrodVersion);
 
         return hotrodVersion;
     }
@@ -405,7 +407,7 @@ public class DefaultInfinispanConnectionProviderFactory implements InfinispanCon
                             .enable()
                     ;
 
-                    logger.infof("Configured jgroups transport with the channel name: %s", nodeName);
+                    LOG.info("Configured jgroups transport with the channel name: {}", nodeName);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 } finally {

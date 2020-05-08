@@ -18,13 +18,14 @@
 package org.keycloak.email;
 
 import com.sun.mail.smtp.SMTPMessage;
-import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.truststore.HostnameVerificationPolicy;
 import org.keycloak.truststore.JSSETruststoreConfigurator;
 import org.keycloak.vault.VaultStringSecret;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.mail.*;
 import javax.mail.internet.AddressException;
@@ -44,7 +45,7 @@ import java.util.Properties;
  */
 public class DefaultEmailSenderProvider implements EmailSenderProvider {
 
-    private static final Logger logger = Logger.getLogger(DefaultEmailSenderProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultEmailSenderProvider.class);
 
     private final KeycloakSession session;
 
@@ -140,14 +141,14 @@ public class DefaultEmailSenderProvider implements EmailSenderProvider {
             }
             transport.sendMessage(msg, new InternetAddress[]{new InternetAddress(address)});
         } catch (Exception e) {
-            ServicesLogger.LOGGER.failedToSendEmail(e);
+//            ServicesLogger.LOGGER.failedToSendEmail(e);
             throw new EmailException(e);
         } finally {
             if (transport != null) {
                 try {
                     transport.close();
                 } catch (MessagingException e) {
-                    logger.warn("Failed to close transport", e);
+                    LOG.warn("Failed to close transport", e);
                 }
             }
         }

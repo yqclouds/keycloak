@@ -19,7 +19,6 @@ package org.keycloak.events.jpa;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.jboss.logging.Logger;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventQuery;
 import org.keycloak.events.EventStoreProvider;
@@ -28,6 +27,8 @@ import org.keycloak.events.admin.AdminEvent;
 import org.keycloak.events.admin.AdminEventQuery;
 import org.keycloak.events.admin.AuthDetails;
 import org.keycloak.events.admin.OperationType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import java.io.IOException;
@@ -43,7 +44,7 @@ public class JpaEventStoreProvider implements EventStoreProvider {
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final TypeReference<Map<String, String>> mapType = new TypeReference<Map<String, String>>() {
     };
-    private static final Logger logger = Logger.getLogger(JpaEventStoreProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JpaEventStoreProvider.class);
 
     private final EntityManager em;
     private final int maxDetailLength;
@@ -67,7 +68,7 @@ public class JpaEventStoreProvider implements EventStoreProvider {
             Map<String, String> details = mapper.readValue(eventEntity.getDetailsJson(), mapType);
             event.setDetails(details);
         } catch (IOException ex) {
-            logger.error("Failed to read log details", ex);
+            LOG.error("Failed to read log details", ex);
         }
         return event;
     }
@@ -204,7 +205,7 @@ public class JpaEventStoreProvider implements EventStoreProvider {
                 eventEntity.setDetailsJson(mapper.writeValueAsString(event.getDetails()));
             }
         } catch (IOException ex) {
-            logger.error("Failed to write log details", ex);
+            LOG.error("Failed to write log details", ex);
         }
         return eventEntity;
     }
@@ -213,7 +214,7 @@ public class JpaEventStoreProvider implements EventStoreProvider {
         if (detail != null && detail.length() > maxDetailLength) {
             // (maxDetailLength - 3) takes "..." into account
             String result = detail.substring(0, maxDetailLength - 3).concat("...");
-            logger.warn("Detail was truncated to " + result);
+            LOG.warn("Detail was truncated to " + result);
             return result;
         } else {
             return detail;

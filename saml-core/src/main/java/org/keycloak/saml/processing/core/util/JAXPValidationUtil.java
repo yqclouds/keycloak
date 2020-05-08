@@ -46,7 +46,7 @@ import java.util.List;
  */
 public class JAXPValidationUtil {
 
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
 
     protected static Validator validator;
 
@@ -71,7 +71,7 @@ public class JAXPValidationUtil {
             try {
                 JAXPValidationUtil.validate(DocumentUtil.getNodeAsStream(samlDocument));
             } catch (Exception e) {
-                throw logger.processingError(e);
+                throw LOG.processingError(e);
             }
         }
     }
@@ -82,7 +82,7 @@ public class JAXPValidationUtil {
         if (validator == null) {
             Schema schema = getSchema();
             if (schema == null)
-                throw logger.nullValueError("schema");
+                throw LOG.nullValueError("schema");
 
             validator = schema.newValidator();
             validator.setErrorHandler(new CustomErrorHandler());
@@ -111,7 +111,7 @@ public class JAXPValidationUtil {
         try {
             schemaGrammar = schemaFactory.newSchema(sources());
         } catch (SAXException e) {
-            logger.xmlCouldNotGetSchema(e);
+            LOG.xmlCouldNotGetSchema(e);
         }
         return schemaGrammar;
     }
@@ -125,7 +125,7 @@ public class JAXPValidationUtil {
         for (String schema : schemas) {
             URL url = SecurityActions.loadResource(JAXPValidationUtil.class, schema);
             if (url == null)
-                throw logger.nullValueError("schema url:" + schema);
+                throw LOG.nullValueError("schema url:" + schema);
             sourceArr[i++] = new StreamSource(url.openStream());
         }
         return sourceArr;
@@ -152,13 +152,13 @@ public class JAXPValidationUtil {
         private void logException(SAXParseException sax) {
             StringBuilder builder = new StringBuilder();
 
-            if (logger.isTraceEnabled()) {
+            if (LOG.isTraceEnabled()) {
                 builder.append("[line:").append(sax.getLineNumber()).append(",").append("::col=").append(sax.getColumnNumber())
                         .append("]");
                 builder.append("[publicID:").append(sax.getPublicId()).append(",systemId=").append(sax.getSystemId())
                         .append("]");
                 builder.append(":").append(sax.getLocalizedMessage());
-                logger.trace(builder.toString());
+                LOG.trace(builder.toString());
             }
         }
     }

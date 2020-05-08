@@ -2,14 +2,14 @@ package org.keycloak.models.credential.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.common.util.Base64;
 
 import java.io.IOException;
 
 public class PasswordSecretData {
 
-    public static final Logger logger = Logger.getLogger(PasswordSecretData.class);
+    public static final Logger LOG = LoggerFactory.getLogger(PasswordSecretData.class);
 
     private final String value;
     private final byte[] salt;

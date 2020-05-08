@@ -18,7 +18,7 @@
 package org.keycloak.services.resources.admin;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.models.*;
@@ -46,7 +46,7 @@ import static org.keycloak.protocol.ProtocolMapperUtils.isEnabled;
  */
 public class ClientScopeEvaluateResource {
 
-    protected static final Logger logger = Logger.getLogger(ClientScopeEvaluateResource.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(ClientScopeEvaluateResource.class);
 
     private final RealmModel realm;
     private final ClientModel client;
@@ -157,7 +157,7 @@ public class ClientScopeEvaluateResource {
             throw new NotFoundException("No user found");
         }
 
-        logger.debugf("generateExampleAccessToken invoked. User: %s, Scope param: %s", user.getUsername(), scopeParam);
+        LOG.debug("generateExampleAccessToken invoked. User: {}, Scope param: {}", user.getUsername(), scopeParam);
 
         AccessToken token = generateToken(user, scopeParam);
         return token;

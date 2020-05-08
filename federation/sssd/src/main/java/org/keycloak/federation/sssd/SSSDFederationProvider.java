@@ -17,7 +17,7 @@
 
 package org.keycloak.federation.sssd;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.credential.CredentialInput;
 import org.keycloak.credential.CredentialInputUpdater;
 import org.keycloak.credential.CredentialInputValidator;
@@ -50,7 +50,7 @@ public class SSSDFederationProvider implements UserStorageProvider,
         ImportedUserValidation {
 
     protected static final Set<String> supportedCredentialTypes = new HashSet<>();
-    private static final Logger logger = Logger.getLogger(SSSDFederationProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SSSDFederationProvider.class);
 
     static {
         supportedCredentialTypes.add(PasswordCredentialModel.TYPE);
@@ -86,32 +86,32 @@ public class SSSDFederationProvider implements UserStorageProvider,
     protected UserModel findOrCreateAuthenticatedUser(RealmModel realm, String username) {
         UserModel user = session.userLocalStorage().getUserByUsername(username, realm);
         if (user != null) {
-            logger.debug("SSSD authenticated user " + username + " found in Keycloak storage");
+            LOG.debug("SSSD authenticated user " + username + " found in Keycloak storage");
 
             if (!model.getId().equals(user.getFederationLink())) {
-                logger.warn("User with username " + username + " already exists, but is not linked to provider [" + model.getName() + "]");
+                LOG.warn("User with username " + username + " already exists, but is not linked to provider [" + model.getName() + "]");
                 return null;
             } else {
                 UserModel proxied = validateAndProxy(realm, user);
                 if (proxied != null) {
                     return proxied;
                 } else {
-                    logger.warn("User with username " + username + " already exists and is linked to provider [" + model.getName() +
+                    LOG.warn("User with username " + username + " already exists and is linked to provider [" + model.getName() +
                             "] but principal is not correct.");
-                    logger.warn("Will re-create user");
+                    LOG.warn("Will re-create user");
                     new UserManager(session).removeUser(realm, user, session.userLocalStorage());
                 }
             }
         }
 
-        logger.debug("SSSD authenticated user " + username + " not in Keycloak storage. Creating...");
+        LOG.debug("SSSD authenticated user " + username + " not in Keycloak storage. Creating...");
         return importUserToKeycloak(realm, username);
     }
 
     protected UserModel importUserToKeycloak(RealmModel realm, String username) {
         Sssd sssd = new Sssd(username);
         User sssdUser = sssd.getUser();
-        logger.debugf("Creating SSSD user: %s to local Keycloak storage", username);
+        LOG.debug("Creating SSSD user: {} to local Keycloak storage", username);
         UserModel user = session.userLocalStorage().addUser(realm, username);
         user.setEnabled(true);
         user.setEmail(sssdUser.getEmail());

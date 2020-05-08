@@ -17,7 +17,6 @@
 
 package org.keycloak.storage.ldap;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.UserModelDelegate;
 
@@ -26,8 +25,6 @@ import org.keycloak.models.utils.UserModelDelegate;
  * @version $Revision: 1 $
  */
 public class UnsyncedLDAPUserModelDelegate extends UserModelDelegate implements UserModel {
-    private static final Logger logger = Logger.getLogger(UnsyncedLDAPUserModelDelegate.class);
-
     protected LDAPStorageProvider provider;
 
     public UnsyncedLDAPUserModelDelegate(UserModel delegate, LDAPStorageProvider provider) {

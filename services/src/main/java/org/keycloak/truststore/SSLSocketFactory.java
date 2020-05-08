@@ -17,7 +17,7 @@
 
 package org.keycloak.truststore;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -38,7 +38,7 @@ import java.net.Socket;
 
 public class SSLSocketFactory extends javax.net.ssl.SSLSocketFactory {
 
-    private static final Logger log = Logger.getLogger(SSLSocketFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SSLSocketFactory.class);
 
     private static SSLSocketFactory instance;
 
@@ -53,7 +53,7 @@ public class SSLSocketFactory extends javax.net.ssl.SSLSocketFactory {
         }
 
         if (sf == null) {
-            log.info("No truststore provider found - using default SSLSocketFactory");
+            LOG.info("No truststore provider found - using default SSLSocketFactory");
             sf = (javax.net.ssl.SSLSocketFactory) javax.net.ssl.SSLSocketFactory.getDefault();
         }
 

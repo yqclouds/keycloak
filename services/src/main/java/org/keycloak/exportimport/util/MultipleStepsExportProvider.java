@@ -17,7 +17,7 @@
 
 package org.keycloak.exportimport.util;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.exportimport.ExportImportConfig;
 import org.keycloak.exportimport.ExportProvider;
 import org.keycloak.exportimport.UsersExportStrategy;
@@ -34,7 +34,7 @@ import java.util.List;
  */
 public abstract class MultipleStepsExportProvider implements ExportProvider {
 
-    protected final Logger logger = Logger.getLogger(getClass());
+    protected final Logger LOG = LoggerFactory.getLogger(getClass());
 
     @Override
     public void exportModel(KeycloakSessionFactory factory) throws IOException {
@@ -77,7 +77,7 @@ public abstract class MultipleStepsExportProvider implements ExportProvider {
                 RealmModel realm = session.realms().getRealmByName(realmName);
                 RealmRepresentation rep = exportUtils.exportRealm(session, realm, exportUsersIntoRealmFile, true);
                 writeRealm(realmName + "-realm.json", rep);
-                logger.info("Realm '" + realmName + "' - data exported");
+                LOG.info("Realm '" + realmName + "' - data exported");
 
                 // Count total number of users
                 if (!exportUsersIntoRealmFile) {
@@ -111,7 +111,7 @@ public abstract class MultipleStepsExportProvider implements ExportProvider {
 
                         writeUsers(realmName + "-users-" + (usersHolder.currentPageStart / countPerPage) + ".json", session, realm, usersHolder.users);
 
-                        logger.info("Users " + usersHolder.currentPageStart + "-" + (usersHolder.currentPageEnd - 1) + " exported");
+                        LOG.info("Users " + usersHolder.currentPageStart + "-" + (usersHolder.currentPageEnd - 1) + " exported");
                     }
 
                 });
@@ -142,7 +142,7 @@ public abstract class MultipleStepsExportProvider implements ExportProvider {
 
                         writeFederatedUsers(realmName + "-federated-users-" + (federatedUsersHolder.currentPageStart / countPerPage) + ".json", session, realm, federatedUsersHolder.users);
 
-                        logger.info("Users " + federatedUsersHolder.currentPageStart + "-" + (federatedUsersHolder.currentPageEnd - 1) + " exported");
+                        LOG.info("Users " + federatedUsersHolder.currentPageStart + "-" + (federatedUsersHolder.currentPageEnd - 1) + " exported");
                     }
 
                 });

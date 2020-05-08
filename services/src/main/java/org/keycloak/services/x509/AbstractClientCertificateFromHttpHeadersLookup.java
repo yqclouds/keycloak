@@ -18,9 +18,10 @@
 
 package org.keycloak.services.x509;
 
-import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.common.util.PemException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
@@ -35,7 +36,7 @@ import java.util.List;
 
 public abstract class AbstractClientCertificateFromHttpHeadersLookup implements X509ClientCertificateLookup {
 
-    protected static final Logger logger = Logger.getLogger(AbstractClientCertificateFromHttpHeadersLookup.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(AbstractClientCertificateFromHttpHeadersLookup.class);
 
     protected final String sslClientCertHttpHeader;
     protected final String sslCertChainHttpHeaderPrefix;
@@ -68,7 +69,7 @@ public abstract class AbstractClientCertificateFromHttpHeadersLookup implements 
         int len = quotedString.length();
         if (len > 1 && quotedString.charAt(0) == '"' &&
                 quotedString.charAt(len - 1) == '"') {
-            logger.trace("Detected a certificate enclosed in double quotes");
+            LOG.trace("Detected a certificate enclosed in double quotes");
             return quotedString.substring(1, len - 1);
         }
         return quotedString;
@@ -90,22 +91,22 @@ public abstract class AbstractClientCertificateFromHttpHeadersLookup implements 
 
         if (encodedCertificate == null ||
                 encodedCertificate.trim().length() == 0) {
-            logger.warnf("HTTP header \"%s\" is empty", httpHeader);
+            LOG.warn("HTTP header \"{}\" is empty", httpHeader);
             return null;
         }
 
         try {
             X509Certificate cert = decodeCertificateFromPem(encodedCertificate);
             if (cert == null) {
-                logger.warnf("HTTP header \"%s\" does not contain a valid x.509 certificate\n%s",
+                LOG.warn("HTTP header \"{}\" does not contain a valid x.509 certificate\n{}",
                         httpHeader, encodedCertificate);
             } else {
-                logger.debugf("Found a valid x.509 certificate in \"%s\" HTTP header",
+                LOG.debug("Found a valid x.509 certificate in \"{}\" HTTP header",
                         httpHeader);
             }
             return cert;
         } catch (PemException e) {
-            logger.error(e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
             throw new GeneralSecurityException(e);
         }
     }
@@ -128,7 +129,7 @@ public abstract class AbstractClientCertificateFromHttpHeadersLookup implements 
                         chain.add(cert);
                     }
                 } catch (GeneralSecurityException e) {
-                    logger.warn(e.getMessage(), e);
+                    LOG.warn(e.getMessage(), e);
                 }
             }
         }

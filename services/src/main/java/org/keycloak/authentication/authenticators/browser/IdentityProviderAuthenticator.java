@@ -17,7 +17,7 @@
 
 package org.keycloak.authentication.authenticators.browser;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationProcessor;
@@ -42,25 +42,25 @@ import java.util.List;
 public class IdentityProviderAuthenticator implements Authenticator {
 
     protected static final String ACCEPTS_PROMPT_NONE = "acceptsPromptNoneForwardFromClient";
-    private static final Logger LOG = Logger.getLogger(IdentityProviderAuthenticator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IdentityProviderAuthenticator.class);
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
         if (context.getUriInfo().getQueryParameters().containsKey(AdapterConstants.KC_IDP_HINT)) {
             String providerId = context.getUriInfo().getQueryParameters().getFirst(AdapterConstants.KC_IDP_HINT);
             if (providerId == null || providerId.equals("")) {
-                LOG.tracef("Skipping: kc_idp_hint query parameter is empty");
+                LOG.trace("Skipping: kc_idp_hint query parameter is empty");
                 context.attempted();
             } else {
-                LOG.tracef("Redirecting: %s set to %s", AdapterConstants.KC_IDP_HINT, providerId);
+                LOG.trace("Redirecting: {} set to {}", AdapterConstants.KC_IDP_HINT, providerId);
                 redirect(context, providerId);
             }
         } else if (context.getAuthenticatorConfig() != null && context.getAuthenticatorConfig().getConfig().containsKey(IdentityProviderAuthenticatorFactory.DEFAULT_PROVIDER)) {
             String defaultProvider = context.getAuthenticatorConfig().getConfig().get(IdentityProviderAuthenticatorFactory.DEFAULT_PROVIDER);
-            LOG.tracef("Redirecting: default provider set to %s", defaultProvider);
+            LOG.trace("Redirecting: default provider set to {}", defaultProvider);
             redirect(context, defaultProvider);
         } else {
-            LOG.tracef("No default provider set or %s query parameter provided", AdapterConstants.KC_IDP_HINT);
+            LOG.trace("No default provider set or {} query parameter provided", AdapterConstants.KC_IDP_HINT);
             context.attempted();
         }
     }
@@ -83,13 +83,13 @@ public class IdentityProviderAuthenticator implements Authenticator {
                         Boolean.valueOf(identityProvider.getConfig().get(ACCEPTS_PROMPT_NONE))) {
                     context.getAuthenticationSession().setAuthNote(AuthenticationProcessor.FORWARDED_PASSIVE_LOGIN, "true");
                 }
-                LOG.debugf("Redirecting to %s", providerId);
+                LOG.debug("Redirecting to {}", providerId);
                 context.forceChallenge(response);
                 return;
             }
         }
 
-        LOG.warnf("Provider not found or not enabled for realm %s", providerId);
+        LOG.warn("Provider not found or not enabled for realm {}", providerId);
         context.attempted();
     }
 

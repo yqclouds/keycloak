@@ -17,7 +17,7 @@
 package org.keycloak.services.resources.admin;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.HttpResponse;
@@ -54,7 +54,7 @@ import java.util.*;
  * @version $Revision: 1 $
  */
 public class AdminConsole {
-    protected static final Logger logger = Logger.getLogger(AdminConsole.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(AdminConsole.class);
 
     @Context
     protected ClientConnection clientConnection;
@@ -129,11 +129,11 @@ public class AdminConsole {
             throw new NotFoundException("No realm found");
         boolean createRealm = false;
         if (realm.equals(masterRealm)) {
-            logger.debug("setting up realm access for a master realm user");
+            LOG.debug("setting up realm access for a master realm user");
             createRealm = user.hasRole(masterRealm.getRole(AdminRoles.CREATE_REALM));
             addMasterRealmAccess(realm, user, realmAccess);
         } else {
-            logger.debug("setting up realm access for a realm user");
+            LOG.debug("setting up realm access for a realm user");
             addRealmAccess(realm, user, realmAccess);
         }
 

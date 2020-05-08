@@ -17,12 +17,13 @@
 
 package org.keycloak.models.jpa.session;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.*;
 import org.keycloak.models.session.*;
 import org.keycloak.models.utils.SessionTimeoutHelper;
 import org.keycloak.storage.StorageId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -36,7 +37,7 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class JpaUserSessionPersisterProvider implements UserSessionPersisterProvider {
-    private static final Logger logger = Logger.getLogger(JpaUserSessionPersisterProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JpaUserSessionPersisterProvider.class);
 
     private final KeycloakSession session;
     private final EntityManager em;
@@ -194,7 +195,7 @@ public class JpaUserSessionPersisterProvider implements UserSessionPersisterProv
                 .setParameter("userSessionIds", userSessionIds)
                 .executeUpdate();
 
-        logger.debugf("Updated lastSessionRefresh of %d user sessions in realm '%s'", us, realm.getName());
+        LOG.debug("Updated lastSessionRefresh of {} user sessions in realm '%s'", us, realm.getName());
     }
 
     @Override
@@ -203,7 +204,7 @@ public class JpaUserSessionPersisterProvider implements UserSessionPersisterProv
 
         String offlineStr = offlineToString(true);
 
-        logger.tracef("Trigger removing expired user sessions for realm '%s'", realm.getName());
+        LOG.trace("Trigger removing expired user sessions for realm '%s'", realm.getName());
 
         int cs = em.createNamedQuery("deleteExpiredClientSessions")
                 .setParameter("realmId", realm.getId())
@@ -217,7 +218,7 @@ public class JpaUserSessionPersisterProvider implements UserSessionPersisterProv
                 .setParameter("offline", offlineStr)
                 .executeUpdate();
 
-        logger.debugf("Removed %d expired user sessions and %d expired client sessions in realm '%s'", us, cs, realm.getName());
+        LOG.debug("Removed {} expired user sessions and {} expired client sessions in realm '%s'", us, cs, realm.getName());
 
     }
 

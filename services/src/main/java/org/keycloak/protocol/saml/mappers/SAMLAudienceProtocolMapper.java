@@ -17,7 +17,6 @@
 
 package org.keycloak.protocol.saml.mappers;
 
-import org.jboss.logging.Logger;
 import org.keycloak.dom.saml.v2.assertion.AudienceRestrictionType;
 import org.keycloak.dom.saml.v2.protocol.ResponseType;
 import org.keycloak.models.ClientSessionContext;
@@ -27,6 +26,8 @@ import org.keycloak.models.UserSessionModel;
 import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
@@ -48,7 +49,7 @@ public class SAMLAudienceProtocolMapper extends AbstractSAMLProtocolMapper imple
     public static final String AUDIENCE_CATEGORY = "Audience mapper";
     public static final String INCLUDED_CLIENT_AUDIENCE = "included.client.audience";
     public static final String INCLUDED_CUSTOM_AUDIENCE = "included.custom.audience";
-    protected static final Logger logger = Logger.getLogger(SAMLAudienceProtocolMapper.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(SAMLAudienceProtocolMapper.class);
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
     private static final String INCLUDED_CLIENT_AUDIENCE_LABEL = "included.client.audience.label";
     private static final String INCLUDED_CLIENT_AUDIENCE_HELP_TEXT = "included.client.audience.tooltip";
@@ -80,7 +81,7 @@ public class SAMLAudienceProtocolMapper extends AbstractSAMLProtocolMapper imple
                     .map(AudienceRestrictionType.class::cast)
                     .findFirst().orElse(null);
         } catch (NullPointerException | IndexOutOfBoundsException e) {
-            logger.warn("Invalid SAML ResponseType to add the audience restriction", e);
+            LOG.warn("Invalid SAML ResponseType to add the audience restriction", e);
             return null;
         }
     }
@@ -123,11 +124,11 @@ public class SAMLAudienceProtocolMapper extends AbstractSAMLProtocolMapper imple
         if (audience != null && !audience.isEmpty()) {
             AudienceRestrictionType aud = locateAudienceRestriction(response);
             if (aud != null) {
-                logger.debugf("adding audience: %s", audience);
+                LOG.debug("adding audience: {}", audience);
                 try {
                     aud.addAudience(URI.create(audience));
                 } catch (IllegalArgumentException e) {
-                    logger.warnf(e, "Invalid URI syntax for audience: %s", audience);
+                    LOG.warn("Invalid URI syntax for audience: {}", audience);
                 }
             }
         }

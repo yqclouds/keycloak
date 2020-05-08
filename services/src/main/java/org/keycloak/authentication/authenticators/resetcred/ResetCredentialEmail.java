@@ -17,7 +17,7 @@
 
 package org.keycloak.authentication.authenticators.resetcred;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
@@ -68,7 +68,7 @@ public class ResetCredentialEmail implements Authenticator, AuthenticatorFactory
     public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
             AuthenticationExecutionModel.Requirement.REQUIRED
     };
-    private static final Logger logger = Logger.getLogger(ResetCredentialEmail.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ResetCredentialEmail.class);
 
     @Autowired
     private EmailTemplateProvider emailTemplateProvider;
@@ -96,7 +96,7 @@ public class ResetCredentialEmail implements Authenticator, AuthenticatorFactory
 
         String actionTokenUserId = authenticationSession.getAuthNote(DefaultActionTokenKey.ACTION_TOKEN_USER_ID);
         if (actionTokenUserId != null && Objects.equals(user.getId(), actionTokenUserId)) {
-            logger.debugf("Forget-password triggered when reauthenticating user after authentication via action token. Skipping " + PROVIDER_ID + " screen and using user '%s' ", user.getUsername());
+            LOG.debug("Forget-password triggered when reauthenticating user after authentication via action token. Skipping " + PROVIDER_ID + " screen and using user '{}' ", user.getUsername());
             context.success();
             return;
         }
@@ -137,7 +137,7 @@ public class ResetCredentialEmail implements Authenticator, AuthenticatorFactory
                     .detail(Details.USERNAME, username)
                     .user(user)
                     .error(Errors.EMAIL_SEND_FAILED);
-            ServicesLogger.LOGGER.failedToSendPwdResetEmail(e);
+//            ServicesLogger.LOGGER.failedToSendPwdResetEmail(e);
             Response challenge = context.form()
                     .setError(Messages.EMAIL_SENT_ERROR)
                     .createErrorPage(Response.Status.INTERNAL_SERVER_ERROR);

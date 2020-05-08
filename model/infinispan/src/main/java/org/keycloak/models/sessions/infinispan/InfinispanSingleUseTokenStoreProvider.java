@@ -19,10 +19,11 @@ package org.keycloak.models.sessions.infinispan;
 
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.commons.api.BasicCache;
-import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.SingleUseTokenStoreProvider;
 import org.keycloak.models.sessions.infinispan.entities.ActionTokenValueEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -34,8 +35,7 @@ import java.util.function.Supplier;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class InfinispanSingleUseTokenStoreProvider implements SingleUseTokenStoreProvider {
-
-    public static final Logger logger = Logger.getLogger(InfinispanSingleUseTokenStoreProvider.class);
+    public static final Logger LOG = LoggerFactory.getLogger(InfinispanSingleUseTokenStoreProvider.class);
 
     private final Supplier<BasicCache<String, ActionTokenValueEntity>> tokenCache;
     private final KeycloakSession session;
@@ -59,11 +59,10 @@ public class InfinispanSingleUseTokenStoreProvider implements SingleUseTokenStor
         } catch (HotRodClientException re) {
             // No need to retry. The hotrod (remoteCache) has some retries in itself in case of some random network error happened.
             // In case of lock conflict, we don't want to retry anyway as there was likely an attempt to use the token from different place.
-            logger.debugf(re, "Failed when adding token %s", tokenId);
+            LOG.debug("Failed when adding token {}", tokenId);
 
             return false;
         }
-
     }
 
     @Override

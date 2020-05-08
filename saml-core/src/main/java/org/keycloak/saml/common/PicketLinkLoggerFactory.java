@@ -18,10 +18,10 @@
 package org.keycloak.saml.common;
 
 /**
- * <p> Factory class to create {@link PicketLinkLogger} instances. </p> <p> The logger instances are created based on
+ * <p> Factory class to create {@link PicketLinkLogger} instances. </p> <p> The LOG instances are created based on
  * the following patterns: <br/> <ul> <li>Tries to load a class with the same full qualified name of {@link
  * PicketLinkLogger} plus the "Impl" suffix;</li> <li>If no class is found fallback to the {@link
- * DefaultPicketLinkLogger} as the default logger implementation.</li> </ul> </p>
+ * DefaultPicketLinkLogger} as the default LOG implementation.</li> </ul> </p>
  *
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  */

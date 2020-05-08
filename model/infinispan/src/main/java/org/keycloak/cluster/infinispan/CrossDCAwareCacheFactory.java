@@ -22,7 +22,8 @@ import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.commons.api.BasicCache;
 import org.infinispan.persistence.remote.RemoteStore;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -31,18 +32,17 @@ import java.util.Set;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 abstract class CrossDCAwareCacheFactory {
-
-    protected static final Logger logger = Logger.getLogger(CrossDCAwareCacheFactory.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(CrossDCAwareCacheFactory.class);
 
     static CrossDCAwareCacheFactory getFactory(Cache<String, Serializable> workCache, Set<RemoteStore> remoteStores) {
         if (remoteStores.isEmpty()) {
-            logger.debugf("No configured remoteStore available. Cross-DC scenario is not used");
+            LOG.debug("No configured remoteStore available. Cross-DC scenario is not used");
             return new InfinispanCacheWrapperFactory(workCache);
         } else {
-            logger.debugf("RemoteStore is available. Cross-DC scenario will be used");
+            LOG.debug("RemoteStore is available. Cross-DC scenario will be used");
 
             if (remoteStores.size() > 1) {
-                logger.warnf("More remoteStores configured for work cache. Will use just the first one");
+                LOG.warn("More remoteStores configured for work cache. Will use just the first one");
             }
 
             // For cross-DC scenario, we need to return underlying remoteCache for atomic operations to work properly

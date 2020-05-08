@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.TokenVerifier;
@@ -94,7 +94,7 @@ public class LoginActionsService {
     public static final String SESSION_CODE = "session_code";
     public static final String AUTH_SESSION_ID = "auth_session_id";
     public static final String CANCEL_AIA = "cancel-aia";
-    private static final Logger logger = Logger.getLogger(LoginActionsService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LoginActionsService.class);
     @Context
     protected HttpHeaders headers;
     @Context
@@ -160,7 +160,7 @@ public class LoginActionsService {
         String tabId = authSession.getTabId();
         URI redirect = firstBrokerLogin ? Urls.identityProviderAfterFirstBrokerLogin(uriInfo.getBaseUri(), realm.getName(), accessCode.getOrGenerateCode(), clientId, tabId) :
                 Urls.identityProviderAfterPostBrokerLogin(uriInfo.getBaseUri(), realm.getName(), accessCode.getOrGenerateCode(), clientId, tabId);
-        logger.debugf("Redirecting to '%s' ", redirect);
+        LOG.debug("Redirecting to '%s' ", redirect);
 
         return Response.status(302).location(redirect).build();
     }
@@ -210,7 +210,7 @@ public class LoginActionsService {
         AuthenticationProcessor.resetFlow(authSession, flowPath);
 
         URI redirectUri = getLastExecutionUrl(flowPath, null, authSession.getClient().getClientId(), tabId);
-        logger.debugf("Flow restart requested. Redirecting to %s", redirectUri);
+        LOG.debug("Flow restart requested. Redirecting to %s", redirectUri);
         return Response.status(Response.Status.FOUND).location(redirectUri).build();
     }
 
@@ -537,7 +537,7 @@ public class LoginActionsService {
             } else if (tokenAuthSessionCompoundId == null ||
                     !loginActionsServiceChecks.doesAuthenticationSessionFromCookieMatchOneFromToken(tokenContext, authSession, tokenAuthSessionCompoundId)) {
                 // There exists an authentication session but no auth session ID was received in the action token
-                logger.debugf("Authentication session in progress but no authentication session ID was found in action token %s, restarting.", token.getId());
+                LOG.debug("Authentication session in progress but no authentication session ID was found in action token %s, restarting.", token.getId());
                 authenticationSessionManager.removeAuthenticationSession(realm, authSession, false);
 
                 authSession = handler.startFreshAuthenticationSession(token, tokenContext);
@@ -740,7 +740,7 @@ public class LoginActionsService {
         String noteKey = firstBrokerLogin ? AbstractIdpAuthenticator.BROKERED_CONTEXT_NOTE : PostBrokerLoginConstants.PBL_BROKERED_IDENTITY_CONTEXT;
         SerializedBrokeredIdentityContext serializedCtx = SerializedBrokeredIdentityContext.readFromAuthenticationSession(authSession, noteKey);
         if (serializedCtx == null) {
-            ServicesLogger.LOGGER.notFoundSerializedCtxInClientSession(noteKey);
+//            ServicesLogger.LOGGER.notFoundSerializedCtxInClientSession(noteKey);
             throw new WebApplicationException(errorPage.error(session, authSession, Response.Status.BAD_REQUEST, "Not found serialized context in authenticationSession."));
         }
         BrokeredIdentityContext brokerContext = serializedCtx.deserialize(session, authSession);
@@ -748,12 +748,12 @@ public class LoginActionsService {
 
         String flowId = firstBrokerLogin ? brokerContext.getIdpConfig().getFirstBrokerLoginFlowId() : brokerContext.getIdpConfig().getPostBrokerLoginFlowId();
         if (flowId == null) {
-            ServicesLogger.LOGGER.flowNotConfigForIDP(identityProviderAlias);
+//            ServicesLogger.LOGGER.flowNotConfigForIDP(identityProviderAlias);
             throw new WebApplicationException(errorPage.error(session, authSession, Response.Status.BAD_REQUEST, "Flow not configured for identity provider"));
         }
         AuthenticationFlowModel brokerLoginFlow = realm.getAuthenticationFlowById(flowId);
         if (brokerLoginFlow == null) {
-            ServicesLogger.LOGGER.flowNotFoundForIDP(flowId, identityProviderAlias);
+//            ServicesLogger.LOGGER.flowNotFoundForIDP(flowId, identityProviderAlias);
             throw new WebApplicationException(errorPage.error(session, authSession, Response.Status.BAD_REQUEST, "Flow not found for identity provider"));
         }
 
@@ -768,7 +768,7 @@ public class LoginActionsService {
                 if (challenge != null) {
                     if ("true".equals(authenticationSession.getAuthNote(FORWARDED_PASSIVE_LOGIN))) {
                         // forwarded passive login is incompatible with challenges created by the broker flows.
-                        logger.errorf("Challenge encountered when executing %s flow. Auth requests with prompt=none are incompatible with challenges", flowPath);
+                        LOG.error("Challenge encountered when executing %s flow. Auth requests with prompt=none are incompatible with challenges", flowPath);
                         LoginProtocol protocol = session.getProvider(LoginProtocol.class, authSession.getProtocol());
                         protocol.setRealm(realm)
                                 .setHttpHeaders(headers)
@@ -856,7 +856,7 @@ public class LoginActionsService {
                     updateConsentRequired = true;
                 }
             } else {
-                logger.warnf("Client scope or client with ID '%s' not found", clientScopeId);
+                LOG.warn("Client scope or client with ID '%s' not found", clientScopeId);
             }
         }
 
@@ -955,7 +955,7 @@ public class LoginActionsService {
 
         RequiredActionFactory factory = (RequiredActionFactory) session.getSessionFactory().getProviderFactory(RequiredActionProvider.class, action);
         if (factory == null) {
-            ServicesLogger.LOGGER.actionProviderNull();
+//            ServicesLogger.LOGGER.actionProviderNull();
             event.error(Errors.INVALID_CODE);
             throw new WebApplicationException(errorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.INVALID_CODE));
         }

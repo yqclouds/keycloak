@@ -17,7 +17,7 @@
 
 package org.keycloak.models.utils;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.Constants;
 import org.keycloak.models.RealmModel;
@@ -29,7 +29,7 @@ public class SystemClientUtil {
 
     public static final String SYSTEM_CLIENT_ID = "_system";
 
-    private static final Logger logger = Logger.getLogger(SystemClientUtil.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SystemClientUtil.class);
 
 
     /**
@@ -49,7 +49,7 @@ public class SystemClientUtil {
             return client;
         } else {
             // Return system client
-            logger.warnf("Client '%s' not available. Creating system client '%s' for system operations", Constants.ACCOUNT_MANAGEMENT_CLIENT_ID, SYSTEM_CLIENT_ID);
+            LOG.warn("Client '%s' not available. Creating system client '%s' for system operations", Constants.ACCOUNT_MANAGEMENT_CLIENT_ID, SYSTEM_CLIENT_ID);
             client = realm.addClient(SYSTEM_CLIENT_ID);
             client.setName(SYSTEM_CLIENT_ID);
             return client;

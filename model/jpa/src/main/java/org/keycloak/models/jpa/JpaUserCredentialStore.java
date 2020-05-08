@@ -16,7 +16,6 @@
  */
 package org.keycloak.models.jpa;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.Base64;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.credential.UserCredentialStore;
@@ -26,6 +25,8 @@ import org.keycloak.models.UserModel;
 import org.keycloak.models.jpa.entities.CredentialEntity;
 import org.keycloak.models.jpa.entities.UserEntity;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -43,7 +44,7 @@ public class JpaUserCredentialStore implements UserCredentialStore {
     // Typical priority difference between 2 credentials
     public static final int PRIORITY_DIFFERENCE = 10;
 
-    protected static final Logger logger = Logger.getLogger(JpaUserCredentialStore.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(JpaUserCredentialStore.class);
     protected final EntityManager em;
     private final KeycloakSession session;
 
@@ -202,12 +203,12 @@ public class JpaUserCredentialStore implements UserCredentialStore {
         }
 
         if (ourCredentialIndex == -1) {
-            logger.warnf("Not found credential with id [%s] of user [%s]", id, user.getUsername());
+            LOG.warn("Not found credential with id [%s] of user [%s]", id, user.getUsername());
             return false;
         }
 
         if (newPreviousCredentialId != null && newPreviousCredentialIndex == -1) {
-            logger.warnf("Can't move up credential with id [%s] of user [%s]", id, user.getUsername());
+            LOG.warn("Can't move up credential with id [%s] of user [%s]", id, user.getUsername());
             return false;
         }
 
@@ -226,7 +227,7 @@ public class JpaUserCredentialStore implements UserCredentialStore {
             if (credential.getPriority() != expectedPriority) {
                 credential.setPriority(expectedPriority);
 
-                logger.tracef("Priority of credential [%s] of user [%s] changed to [%d]", credential.getId(), user.getUsername(), expectedPriority);
+                LOG.trace("Priority of credential [%s] of user [%s] changed to [{}]", credential.getId(), user.getUsername(), expectedPriority);
             }
         }
         return true;

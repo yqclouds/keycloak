@@ -89,7 +89,7 @@ public class IdpUsernamePasswordForm extends UsernamePasswordForm {
         try {
             return Optional.of(AbstractIdpAuthenticator.getExistingUser(context.getSession(), context.getRealm(), context.getAuthenticationSession()));
         } catch (AuthenticationFlowException ex) {
-            log.debug("No existing user in authSession", ex);
+            LOG.debug("No existing user in authSession", ex);
             return Optional.empty();
         }
     }

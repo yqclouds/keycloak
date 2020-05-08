@@ -18,7 +18,6 @@
 package org.keycloak.models.cache.infinispan;
 
 import org.infinispan.Cache;
-import org.jboss.logging.Logger;
 import org.keycloak.models.cache.infinispan.entities.Revisioned;
 import org.keycloak.models.cache.infinispan.events.InvalidationEvent;
 import org.keycloak.models.cache.infinispan.events.UserCacheInvalidationEvent;
@@ -31,9 +30,6 @@ import java.util.Set;
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class UserCacheManager extends CacheManager {
-
-    private static final Logger logger = Logger.getLogger(UserCacheManager.class);
-
     protected volatile boolean enabled = true;
 
     public UserCacheManager(Cache<String, Revisioned> cache, Cache<String, Long> revisions) {
@@ -41,16 +37,10 @@ public class UserCacheManager extends CacheManager {
     }
 
     @Override
-    protected Logger getLogger() {
-        return logger;
-    }
-
-    @Override
     public void clear() {
         cache.clear();
         revisions.clear();
     }
-
 
     public void userUpdatedInvalidations(String userId, String username, String email, String realmId, Set<String> invalidations) {
         invalidations.add(userId);

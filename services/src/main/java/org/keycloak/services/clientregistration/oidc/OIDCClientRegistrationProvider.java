@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.clientregistration.oidc;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.ClientModel;
@@ -50,7 +50,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class OIDCClientRegistrationProvider extends AbstractClientRegistrationProvider {
 
-    private static final Logger logger = Logger.getLogger(OIDCClientRegistrationProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(OIDCClientRegistrationProvider.class);
 
     public OIDCClientRegistrationProvider(KeycloakSession session) {
         super(session);
@@ -84,7 +84,7 @@ public class OIDCClientRegistrationProvider extends AbstractClientRegistrationPr
             clientOIDC.setClientIdIssuedAt(Time.currentTime());
             return Response.created(uri).entity(clientOIDC).build();
         } catch (ClientRegistrationException cre) {
-            ServicesLogger.LOGGER.clientRegistrationException(cre.getMessage());
+//            ServicesLogger.LOGGER.clientRegistrationException(cre.getMessage());
             throw new ErrorResponseException(ErrorCodes.INVALID_CLIENT_METADATA, "Client metadata invalid", Response.Status.BAD_REQUEST);
         }
     }
@@ -119,7 +119,7 @@ public class OIDCClientRegistrationProvider extends AbstractClientRegistrationPr
             clientOIDC = DescriptionConverter.toExternalResponse(session, client, uri);
             return Response.ok(clientOIDC).build();
         } catch (ClientRegistrationException cre) {
-            ServicesLogger.LOGGER.clientRegistrationException(cre.getMessage());
+//            ServicesLogger.LOGGER.clientRegistrationException(cre.getMessage());
             throw new ErrorResponseException(ErrorCodes.INVALID_CLIENT_METADATA, "Client metadata invalid", Response.Status.BAD_REQUEST);
         }
     }

@@ -64,7 +64,7 @@ import java.util.Set;
  */
 public class AssertionUtil {
 
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
 
     /**
      * Given {@code AssertionType}, convert it into a String
@@ -96,7 +96,7 @@ public class AssertionUtil {
         try {
             return DocumentUtil.getDocument(new ByteArrayInputStream(baos.toByteArray()));
         } catch (Exception e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
     }
 
@@ -202,7 +202,7 @@ public class AssertionUtil {
             throws ConfigurationException, IssueInstantMissingException {
         XMLGregorianCalendar issueInstant = assertion.getIssueInstant();
         if (issueInstant == null)
-            throw logger.samlIssueInstantMissingError();
+            throw LOG.samlIssueInstantMissingError();
         XMLGregorianCalendar assertionValidityLength = XMLTimeUtil.add(issueInstant, durationInMilis + clockSkew);
 
         ConditionsType conditionsType = new ConditionsType();
@@ -267,7 +267,7 @@ public class AssertionUtil {
                 return XMLSignatureUtil.validateSingleNode(signature, keyLocator);
             }
         } catch (Exception e) {
-            logger.signatureAssertionValidationError(e);
+            LOG.signatureAssertionValidationError(e);
         }
         return false;
     }
@@ -306,17 +306,17 @@ public class AssertionUtil {
             XMLGregorianCalendar notOnOrAfter = conditionsType.getNotOnOrAfter();
 
             if (notBefore != null) {
-                logger.trace("Assertion: " + assertion.getID() + " ::Now=" + now.toXMLFormat() + " ::notBefore=" + notBefore.toXMLFormat());
+                LOG.trace("Assertion: " + assertion.getID() + " ::Now=" + now.toXMLFormat() + " ::notBefore=" + notBefore.toXMLFormat());
             }
 
             if (notOnOrAfter != null) {
-                logger.trace("Assertion: " + assertion.getID() + " ::Now=" + now.toXMLFormat() + " ::notOnOrAfter=" + notOnOrAfter);
+                LOG.trace("Assertion: " + assertion.getID() + " ::Now=" + now.toXMLFormat() + " ::notOnOrAfter=" + notOnOrAfter);
             }
 
             expiry = !XMLTimeUtil.isValid(now, notBefore, notOnOrAfter);
 
             if (expiry) {
-                logger.samlAssertionExpired(assertion.getID());
+                LOG.samlAssertionExpired(assertion.getID());
             }
         }
 
@@ -346,10 +346,10 @@ public class AssertionUtil {
             XMLGregorianCalendar notOnOrAfter = conditionsType.getNotOnOrAfter();
             XMLGregorianCalendar updatedOnOrAfter = XMLTimeUtil.add(notOnOrAfter, clockSkewInMilis);
 
-            logger.trace("Now=" + now.toXMLFormat() + " ::notBefore=" + notBefore.toXMLFormat() + " ::notOnOrAfter=" + notOnOrAfter);
+            LOG.trace("Now=" + now.toXMLFormat() + " ::notBefore=" + notBefore.toXMLFormat() + " ::notOnOrAfter=" + notOnOrAfter);
             expiry = !XMLTimeUtil.isValid(now, updatedNotBefore, updatedOnOrAfter);
             if (expiry) {
-                logger.samlAssertionExpired(assertion.getID());
+                LOG.samlAssertionExpired(assertion.getID());
             }
         }
 
@@ -374,11 +374,11 @@ public class AssertionUtil {
             XMLGregorianCalendar notBefore = conditionsType.getNotBefore();
             XMLGregorianCalendar notOnOrAfter = conditionsType.getNotOnOrAfter();
 
-            logger.trace("Now=" + now.toXMLFormat() + " ::notBefore=" + notBefore.toXMLFormat() + " ::notOnOrAfter=" + notOnOrAfter);
+            LOG.trace("Now=" + now.toXMLFormat() + " ::notBefore=" + notBefore.toXMLFormat() + " ::notOnOrAfter=" + notOnOrAfter);
 
             expiry = !XMLTimeUtil.isValid(now, notBefore, notOnOrAfter);
             if (expiry) {
-                logger.samlAssertionExpired(assertion.getID());
+                LOG.samlAssertionExpired(assertion.getID());
             }
         }
 
@@ -408,11 +408,11 @@ public class AssertionUtil {
             XMLGregorianCalendar notOnOrAfter = conditionsType.getNotOnOrAfter();
             XMLGregorianCalendar updatedOnOrAfter = XMLTimeUtil.add(notOnOrAfter, clockSkewInMilis);
 
-            logger.trace("Now=" + now.toXMLFormat() + " ::notBefore=" + notBefore.toXMLFormat() + " ::notOnOrAfter=" + notOnOrAfter);
+            LOG.trace("Now=" + now.toXMLFormat() + " ::notBefore=" + notBefore.toXMLFormat() + " ::notOnOrAfter=" + notOnOrAfter);
 
             expiry = !XMLTimeUtil.isValid(now, updatedNotBefore, updatedOnOrAfter);
             if (expiry) {
-                logger.samlAssertionExpired(assertion.getID());
+                LOG.samlAssertionExpired(assertion.getID());
             }
         }
 
@@ -465,7 +465,7 @@ public class AssertionUtil {
                                 Node roleNode = (Node) attrValue;
                                 roles.add(roleNode.getFirstChild().getNodeValue());
                             } else
-                                throw logger.unknownObjectType(attrValue);
+                                throw LOG.unknownObjectType(attrValue);
                         }
                     }
                 }
@@ -502,7 +502,7 @@ public class AssertionUtil {
                                 Node roleNode = (Node) attrValue;
                                 roles.add(roleNode.getFirstChild().getNodeValue());
                             } else
-                                throw logger.unknownObjectType(attrValue);
+                                throw LOG.unknownObjectType(attrValue);
                         }
                     }
                 }

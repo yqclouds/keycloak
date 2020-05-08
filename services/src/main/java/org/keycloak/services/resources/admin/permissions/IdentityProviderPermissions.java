@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.admin.permissions;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.common.ClientModelIdentity;
 import org.keycloak.authorization.common.DefaultEvaluationContext;
@@ -41,7 +41,7 @@ import static org.keycloak.services.resources.admin.permissions.AdminPermissionM
  * @version $Revision: 1 $
  */
 class IdentityProviderPermissions implements IdentityProviderPermissionManagement {
-    private static final Logger logger = Logger.getLogger(IdentityProviderPermissions.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IdentityProviderPermissions.class);
     protected final KeycloakSession session;
     protected final RealmModel realm;
     protected final AuthorizationProvider authz;
@@ -145,32 +145,32 @@ class IdentityProviderPermissions implements IdentityProviderPermissionManagemen
         if (!authorizedClient.equals(to)) {
             ResourceServer server = root.initializeRealmResourceServer();
             if (server == null) {
-                logger.debug("No resource server set up for target idp");
+                LOG.debug("No resource server set up for target idp");
                 return false;
             }
 
             Resource resource = authz.getStoreFactory().getResourceStore().findByName(getResourceName(to), server.getId());
             if (resource == null) {
-                logger.debug("No resource object set up for target idp");
+                LOG.debug("No resource object set up for target idp");
                 return false;
             }
 
             Policy policy = authz.getStoreFactory().getPolicyStore().findByName(getExchangeToPermissionName(to), server.getId());
             if (policy == null) {
-                logger.debug("No permission object set up for target idp");
+                LOG.debug("No permission object set up for target idp");
                 return false;
             }
 
             Set<Policy> associatedPolicies = policy.getAssociatedPolicies();
             // if no policies attached to permission then just do default behavior
             if (associatedPolicies == null || associatedPolicies.isEmpty()) {
-                logger.debug("No policies set up for permission on target idp");
+                LOG.debug("No policies set up for permission on target idp");
                 return false;
             }
 
             Scope scope = exchangeToScope(server);
             if (scope == null) {
-                logger.debug(TOKEN_EXCHANGE + " not initialized");
+                LOG.debug(TOKEN_EXCHANGE + " not initialized");
                 return false;
             }
             ClientModelIdentity identity = new ClientModelIdentity(session, authorizedClient);

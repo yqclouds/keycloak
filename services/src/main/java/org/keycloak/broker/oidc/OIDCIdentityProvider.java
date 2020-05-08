@@ -17,7 +17,6 @@
 package org.keycloak.broker.oidc;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.jboss.logging.Logger;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.broker.oidc.mappers.AbstractJsonUserAttributeMapper;
@@ -51,6 +50,8 @@ import org.keycloak.services.resources.RealmsResource;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.util.JsonSerialization;
 import org.keycloak.vault.VaultStringSecret;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.GET;
@@ -71,7 +72,7 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
     public static final String VALIDATED_ID_TOKEN = "VALIDATED_ID_TOKEN";
     public static final String ACCESS_TOKEN_EXPIRATION = "accessTokenExpiration";
     public static final String EXCHANGE_PROVIDER = "EXCHANGE_PROVIDER";
-    protected static final Logger logger = Logger.getLogger(OIDCIdentityProvider.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(OIDCIdentityProvider.class);
     private static final String BROKER_NONCE_PARAM = "BROKER_NONCE";
     private static final MediaType APPLICATION_JWT_TYPE = MediaType.valueOf("application/jwt");
 
@@ -128,10 +129,10 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
             int status = simpleHttp.doGet(url, session).asStatus();
             boolean success = status >= 200 && status < 400;
             if (!success) {
-                logger.warn("Failed backchannel broker logout to: " + url);
+                LOG.warn("Failed backchannel broker logout to: " + url);
             }
         } catch (Exception e) {
-            logger.warn("Failed backchannel broker logout to: " + url, e);
+            LOG.warn("Failed backchannel broker logout to: " + url, e);
         }
     }
 
@@ -176,7 +177,7 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
                 String response = getRefreshTokenRequest(session, tokenResponse.getRefreshToken(),
                         getConfig().getClientId(), vaultStringSecret.get().orElse(getConfig().getClientSecret())).asString();
                 if (response.contains("error")) {
-                    logger.debugv("Error refreshing token, refresh token expiration?: {0}", response);
+                    LOG.debug("Error refreshing token, refresh token expiration?: {}", response);
                     model.setToken(null);
                     session.users().updateFederatedIdentity(authorizedClient.getRealm(), tokenSubject, model);
                     event.detail(Details.REASON, "requested_issuer token expired");
@@ -280,7 +281,7 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
             }
             String response = getRefreshTokenRequest(session, refreshToken, getConfig().getClientId(), vaultStringSecret.get().orElse(getConfig().getClientSecret())).asString();
             if (response.contains("error")) {
-                logger.debugv("Error refreshing token, refresh token expiration?: {0}", response);
+                LOG.debug("Error refreshing token, refresh token expiration?: {}", response);
                 event.detail(Details.REASON, "requested_issuer token expired");
                 event.error(Errors.INVALID_TOKEN);
                 return exchangeTokenExpired(uriInfo, authorizedClient, tokenUserSession, tokenSubject);
@@ -461,7 +462,7 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
 
             return publicKey != null && RSAProvider.verify(jws, publicKey);
         } catch (Exception e) {
-            logger.debug("Failed to verify token", e);
+            LOG.debug("Failed to verify token", e);
             return false;
         }
     }
@@ -627,7 +628,7 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
         try {
             parsedToken = validateToken(subjectToken, true);
         } catch (IdentityBrokerException e) {
-            logger.debug("Unable to validate token for exchange", e);
+            LOG.debug("Unable to validate token for exchange", e);
             event.detail(Details.REASON, "token validation failure");
             event.error(Errors.INVALID_TOKEN);
             throw new ErrorResponseException(OAuthErrorException.INVALID_TOKEN, "invalid token", Response.Status.BAD_REQUEST);
@@ -653,7 +654,7 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
             context.setIdpConfig(getConfig());
             return context;
         } catch (IOException e) {
-            logger.debug("Unable to extract identity from identity token", e);
+            LOG.debug("Unable to extract identity from identity token", e);
             throw new ErrorResponseException(OAuthErrorException.INVALID_TOKEN, "invalid token", Response.Status.BAD_REQUEST);
         }
 
@@ -731,7 +732,7 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
         @Path("logout_response")
         public Response logoutResponse(@QueryParam("state") String state) {
             if (state == null) {
-                logger.error("no state parameter returned");
+                LOG.error("no state parameter returned");
                 EventBuilder event = new EventBuilder(realm, session, clientConnection);
                 event.event(EventType.LOGOUT);
                 event.error(Errors.USER_SESSION_NOT_FOUND);
@@ -740,14 +741,14 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
             }
             UserSessionModel userSession = session.sessions().getUserSession(realm, state);
             if (userSession == null) {
-                logger.error("no valid user session");
+                LOG.error("no valid user session");
                 EventBuilder event = new EventBuilder(realm, session, clientConnection);
                 event.event(EventType.LOGOUT);
                 event.error(Errors.USER_SESSION_NOT_FOUND);
                 return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.IDENTITY_PROVIDER_UNEXPECTED_ERROR);
             }
             if (userSession.getState() != UserSessionModel.State.LOGGING_OUT) {
-                logger.error("usersession in different state");
+                LOG.error("usersession in different state");
                 EventBuilder event = new EventBuilder(realm, session, clientConnection);
                 event.event(EventType.LOGOUT);
                 event.error(Errors.USER_SESSION_NOT_FOUND);

@@ -16,12 +16,12 @@
  */
 package org.keycloak.adapters.authorization.util;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import org.keycloak.util.JsonSerialization;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import org.keycloak.util.JsonSerialization;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>

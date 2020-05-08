@@ -17,7 +17,8 @@
 
 package org.keycloak.storage.ldap.idm.model;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -25,8 +26,8 @@ import java.util.*;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class LDAPObject {
+    private static final Logger LOG = LoggerFactory.getLogger(LDAPObject.class);
 
-    private static final Logger logger = Logger.getLogger(LDAPObject.class);
     private final List<String> objectClasses = new LinkedList<>();
     // NOTE: names of read-only attributes are lower-cased to avoid case sensitivity issues
     private final List<String> readOnlyAttributeNames = new LinkedList<>();
@@ -101,7 +102,7 @@ public class LDAPObject {
         if (attrValue == null || attrValue.size() == 0) {
             return null;
         } else if (attrValue.size() > 1) {
-            logger.warnf("Expected String but attribute '%s' has more values '%s' on object '%s' . Returning just first value", name, attrValue, dn);
+            LOG.warn("Expected String but attribute '{}' has more values '{}' on object '{}' . Returning just first value", name, attrValue, dn);
         }
 
         return attrValue.iterator().next();

@@ -17,7 +17,6 @@
 
 package org.keycloak.protocol.oidc.endpoints;
 
-import org.jboss.logging.Logger;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.authentication.AuthenticationProcessor;
@@ -48,6 +47,8 @@ import org.keycloak.services.resources.LoginActionsService;
 import org.keycloak.services.util.CacheControlUtil;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.util.TokenUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.Consumes;
@@ -72,7 +73,7 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
      * @see AuthenticationSessionModel#getClientNote(String)
      */
     public static final String LOGIN_SESSION_NOTE_ADDITIONAL_REQ_PARAMS_PREFIX = "client_request_param_";
-    private static final Logger logger = Logger.getLogger(AuthorizationEndpoint.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AuthorizationEndpoint.class);
     // https://tools.ietf.org/html/rfc7636#section-4.2
     private static final Pattern VALID_CODE_CHALLENGE_PATTERN = Pattern.compile("^[0-9a-zA-Z\\-\\.~_]+$");
     private ClientModel client;
@@ -82,6 +83,7 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
     private OIDCResponseMode parsedResponseMode;
     private AuthorizationEndpointRequest request;
     private String redirectUri;
+
     public AuthorizationEndpoint(RealmModel realm, EventBuilder event) {
         super(realm, event);
         event.event(EventType.LOGIN);
@@ -90,13 +92,13 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response buildPost() {
-        logger.trace("Processing @POST request");
+        LOG.trace("Processing @POST request");
         return process(httpRequest.getDecodedFormParameters());
     }
 
     @GET
     public Response buildGet() {
-        logger.trace("Processing @GET request");
+        LOG.trace("Processing @GET request");
         return process(session.getContext().getUri().getQueryParameters());
     }
 
@@ -124,7 +126,7 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
         }
 
         if (!TokenUtil.isOIDCRequest(request.getScope())) {
-            ServicesLogger.LOGGER.oidcScopeMissing();
+//            ServicesLogger.LOGGER.oidcScopeMissing();
         }
 
         errorResponse = checkOIDCParams();
@@ -203,7 +205,7 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
 
         String protocol = client.getProtocol();
         if (protocol == null) {
-            logger.warnf("Client '%s' doesn't have protocol set. Fallback to openid-connect. Please fix client configuration", clientId);
+            LOG.warn("Client '%s' doesn't have protocol set. Fallback to openid-connect. Please fix client configuration", clientId);
             protocol = OIDCLoginProtocol.LOGIN_PROTOCOL;
         }
         if (!protocol.equals(OIDCLoginProtocol.LOGIN_PROTOCOL)) {
@@ -218,7 +220,7 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
         String responseType = request.getResponseType();
 
         if (responseType == null) {
-            ServicesLogger.LOGGER.missingParameter(OAuth2Constants.RESPONSE_TYPE);
+//            ServicesLogger.LOGGER.missingParameter(OAuth2Constants.RESPONSE_TYPE);
             event.error(Errors.INVALID_REQUEST);
             return redirectErrorToClient(OIDCResponseMode.QUERY, OAuthErrorException.INVALID_REQUEST, "Missing parameter: response_type");
         }
@@ -239,7 +241,7 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
         try {
             parsedResponseMode = OIDCResponseMode.parse(request.getResponseMode(), parsedResponseType);
         } catch (IllegalArgumentException iae) {
-            ServicesLogger.LOGGER.invalidParameter(OIDCLoginProtocol.RESPONSE_MODE_PARAM);
+//            ServicesLogger.LOGGER.invalidParameter(OIDCLoginProtocol.RESPONSE_MODE_PARAM);
             event.error(Errors.INVALID_REQUEST);
             return redirectErrorToClient(OIDCResponseMode.QUERY, OAuthErrorException.INVALID_REQUEST, "Invalid parameter: response_mode");
         }
@@ -248,19 +250,19 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
 
         // Disallowed by OIDC specs
         if (parsedResponseType.isImplicitOrHybridFlow() && parsedResponseMode == OIDCResponseMode.QUERY) {
-            ServicesLogger.LOGGER.responseModeQueryNotAllowed();
+//            ServicesLogger.LOGGER.responseModeQueryNotAllowed();
             event.error(Errors.INVALID_REQUEST);
             return redirectErrorToClient(OIDCResponseMode.QUERY, OAuthErrorException.INVALID_REQUEST, "Response_mode 'query' not allowed for implicit or hybrid flow");
         }
 
         if ((parsedResponseType.hasResponseType(OIDCResponseType.CODE) || parsedResponseType.hasResponseType(OIDCResponseType.NONE)) && !client.isStandardFlowEnabled()) {
-            ServicesLogger.LOGGER.flowNotAllowed("Standard");
+//            ServicesLogger.LOGGER.flowNotAllowed("Standard");
             event.error(Errors.NOT_ALLOWED);
             return redirectErrorToClient(parsedResponseMode, OAuthErrorException.UNAUTHORIZED_CLIENT, "Client is not allowed to initiate browser login with given response_type. Standard flow is disabled for the client.");
         }
 
         if (parsedResponseType.isImplicitOrHybridFlow() && !client.isImplicitFlowEnabled()) {
-            ServicesLogger.LOGGER.flowNotAllowed("Implicit");
+//            ServicesLogger.LOGGER.flowNotAllowed("Implicit");
             event.error(Errors.NOT_ALLOWED);
             return redirectErrorToClient(parsedResponseMode, OAuthErrorException.UNAUTHORIZED_CLIENT, "Client is not allowed to initiate browser login with given response_type. Implicit flow is disabled for the client.");
         }
@@ -278,7 +280,7 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
         }
 
         if (parsedResponseType.isImplicitOrHybridFlow() && request.getNonce() == null) {
-            ServicesLogger.LOGGER.missingParameter(OIDCLoginProtocol.NONCE_PARAM);
+//            ServicesLogger.LOGGER.missingParameter(OIDCLoginProtocol.NONCE_PARAM);
             event.error(Errors.INVALID_REQUEST);
             return redirectErrorToClient(parsedResponseMode, OAuthErrorException.INVALID_REQUEST, "Missing parameter: nonce");
         }
@@ -310,11 +312,11 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
     // https://tools.ietf.org/html/rfc7636#section-4
     private boolean isValidPkceCodeChallenge(String codeChallenge) {
         if (codeChallenge.length() < OIDCLoginProtocol.PKCE_CODE_CHALLENGE_MIN_LENGTH) {
-            logger.debugf("PKCE codeChallenge length under lower limit , codeChallenge = %s", codeChallenge);
+            LOG.debug("PKCE codeChallenge length under lower limit , codeChallenge = %s", codeChallenge);
             return false;
         }
         if (codeChallenge.length() > OIDCLoginProtocol.PKCE_CODE_CHALLENGE_MAX_LENGTH) {
-            logger.debugf("PKCE codeChallenge length over upper limit , codeChallenge = %s", codeChallenge);
+            LOG.debug("PKCE codeChallenge length over upper limit , codeChallenge = %s", codeChallenge);
             return false;
         }
         Matcher m = VALID_CODE_CHALLENGE_PATTERN.matcher(codeChallenge);
@@ -324,25 +326,25 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
     private Response checkParamsForPkceEnforcedClient(String codeChallengeMethod, String pkceCodeChallengeMethod, String codeChallenge) {
         // check whether code challenge method is specified
         if (codeChallengeMethod == null) {
-            logger.info("PKCE enforced Client without code challenge method.");
+            LOG.info("PKCE enforced Client without code challenge method.");
             event.error(Errors.INVALID_REQUEST);
             return redirectErrorToClient(parsedResponseMode, OAuthErrorException.INVALID_REQUEST, "Missing parameter: code_challenge_method");
         }
         // check whether specified code challenge method is configured one in advance
         if (!codeChallengeMethod.equals(pkceCodeChallengeMethod)) {
-            logger.info("PKCE enforced Client code challenge method is not configured one.");
+            LOG.info("PKCE enforced Client code challenge method is not configured one.");
             event.error(Errors.INVALID_REQUEST);
             return redirectErrorToClient(parsedResponseMode, OAuthErrorException.INVALID_REQUEST, "Invalid parameter: code challenge method is not configured one");
         }
         // check whether code challenge is specified
         if (codeChallenge == null) {
-            logger.info("PKCE supporting Client without code challenge");
+            LOG.info("PKCE supporting Client without code challenge");
             event.error(Errors.INVALID_REQUEST);
             return redirectErrorToClient(parsedResponseMode, OAuthErrorException.INVALID_REQUEST, "Missing parameter: code_challenge");
         }
         // check whether code challenge is formatted along with the PKCE specification
         if (!isValidPkceCodeChallenge(codeChallenge)) {
-            logger.infof("PKCE supporting Client with invalid code challenge specified in PKCE, codeChallenge = %s", codeChallenge);
+            LOG.info("PKCE supporting Client with invalid code challenge specified in PKCE, codeChallenge = %s", codeChallenge);
             event.error(Errors.INVALID_REQUEST);
             return redirectErrorToClient(parsedResponseMode, OAuthErrorException.INVALID_REQUEST, "Invalid parameter: code_challenge");
         }
@@ -351,14 +353,14 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
 
     private Response checkParamsForPkceNotEnforcedClient(String codeChallengeMethod, String pkceCodeChallengeMethod, String codeChallenge) {
         if (codeChallenge == null && codeChallengeMethod != null) {
-            logger.info("PKCE supporting Client without code challenge");
+            LOG.info("PKCE supporting Client without code challenge");
             event.error(Errors.INVALID_REQUEST);
             return redirectErrorToClient(parsedResponseMode, OAuthErrorException.INVALID_REQUEST, "Missing parameter: code_challenge");
         }
 
         // based on code_challenge value decide whether this client(RP) supports PKCE
         if (codeChallenge == null) {
-            logger.debug("PKCE non-supporting Client");
+            LOG.debug("PKCE non-supporting Client");
             return null;
         }
 
@@ -366,7 +368,7 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
             // https://tools.ietf.org/html/rfc7636#section-4.2
             // plain or S256
             if (!codeChallengeMethod.equals(OIDCLoginProtocol.PKCE_METHOD_S256) && !codeChallengeMethod.equals(OIDCLoginProtocol.PKCE_METHOD_PLAIN)) {
-                logger.infof("PKCE supporting Client with invalid code challenge method not specified in PKCE, codeChallengeMethod = %s", codeChallengeMethod);
+                LOG.info("PKCE supporting Client with invalid code challenge method not specified in PKCE, codeChallengeMethod = %s", codeChallengeMethod);
                 event.error(Errors.INVALID_REQUEST);
                 return redirectErrorToClient(parsedResponseMode, OAuthErrorException.INVALID_REQUEST, "Invalid parameter: code_challenge_method");
             }
@@ -377,7 +379,7 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
         }
 
         if (!isValidPkceCodeChallenge(codeChallenge)) {
-            logger.infof("PKCE supporting Client with invalid code challenge specified in PKCE, codeChallenge = %s", codeChallenge);
+            LOG.info("PKCE supporting Client with invalid code challenge specified in PKCE, codeChallenge = %s", codeChallenge);
             event.error(Errors.INVALID_REQUEST);
             return redirectErrorToClient(parsedResponseMode, OAuthErrorException.INVALID_REQUEST, "Invalid parameter: code_challenge");
         }

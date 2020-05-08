@@ -21,9 +21,10 @@ import org.infinispan.client.hotrod.event.ClientCacheEntryCreatedEvent;
 import org.infinispan.client.hotrod.event.ClientCacheEntryModifiedEvent;
 import org.infinispan.client.hotrod.event.ClientCacheEntryRemovedEvent;
 import org.infinispan.client.hotrod.event.ClientEvent;
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.common.util.Time;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +40,7 @@ import static org.infinispan.client.hotrod.event.ClientEvent.Type.CLIENT_CACHE_E
  */
 public class ClientListenerExecutorDecorator<K> {
 
-    private static final Logger logger = Logger.getLogger(ClientListenerExecutorDecorator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClientListenerExecutorDecorator.class);
 
     private final Object lock = new Object();
 
@@ -96,14 +97,14 @@ public class ClientListenerExecutorDecorator<K> {
 
     // Assume it's called from the synchronized block
     private void submitImpl(K key, MyClientEvent event, Runnable r) {
-        logger.debugf("Submitting event to the executor: %s . eventsInProgress size: %d, eventsQueue size: %d", event.toString(), eventsInProgress.size(), eventsQueue.size());
+        LOG.debug("Submitting event to the executor: {} . eventsInProgress size: %d, eventsQueue size: %d", event.toString(), eventsInProgress.size(), eventsQueue.size());
 
         eventsInProgress.put(key, event);
 
         Runnable decoratedRunnable = () -> {
             Long start = null;
             try {
-                if (logger.isDebugEnabled()) {
+                if (LOG.isDebugEnabled()) {
                     start = Time.currentTimeMillis();
                 }
 
@@ -112,9 +113,9 @@ public class ClientListenerExecutorDecorator<K> {
                 synchronized (lock) {
                     eventsInProgress.remove(key);
 
-                    if (logger.isDebugEnabled()) {
+                    if (LOG.isDebugEnabled()) {
                         long took = Time.currentTimeMillis() - start;
-                        logger.debugf("Finished processing event by the executor: %s, took: %d ms. EventsInProgress size: %d", event.toString(), took, eventsInProgress.size());
+                        LOG.debug("Finished processing event by the executor: {}, took: %d ms. EventsInProgress size: %d", event.toString(), took, eventsInProgress.size());
                     }
 
                     pollQueue(key);
@@ -127,7 +128,7 @@ public class ClientListenerExecutorDecorator<K> {
         } catch (RejectedExecutionException ree) {
             eventsInProgress.remove(key);
 
-            logger.errorf("Rejected execution of task for the event '%s' . Try to increase the pool size. Pool is '%s'", event.toString(), decorated.toString());
+            LOG.error("Rejected execution of task for the event '{}' . Try to increase the pool size. Pool is '{}'", event.toString(), decorated.toString());
             throw ree;
         }
     }
@@ -158,7 +159,7 @@ public class ClientListenerExecutorDecorator<K> {
 
     // Assume it's called from the synchronized block
     private void putEventToTheQueue(K key, MyClientEvent event, Runnable r) {
-        logger.debugf("Calling putEventToTheQueue: %s", event.toString());
+        LOG.debug("Calling putEventToTheQueue: {}", event.toString());
 
         if (!eventsQueue.containsKey(key)) {
             eventsQueue.putSingle(key, new MyClientEventContext(event, r));
@@ -225,7 +226,7 @@ public class ClientListenerExecutorDecorator<K> {
 
         }
 
-        logger.debugf("Event queued. Current events for the key '%s': %s", key.toString(), eventsQueue.getList(key));
+        LOG.debug("Event queued. Current events for the key '{}': {}", key.toString(), eventsQueue.getList(key));
     }
 
 

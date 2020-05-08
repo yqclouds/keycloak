@@ -18,8 +18,6 @@ package org.keycloak.adapters.authorization;
 
 import java.util.Map;
 
-import org.keycloak.adapters.spi.HttpFacade;
-
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */

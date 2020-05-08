@@ -17,7 +17,7 @@
 
 package org.keycloak.services.clientregistration.policy.impl;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientScopeModel;
@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  */
 public class ClientScopesClientRegistrationPolicy implements ClientRegistrationPolicy {
 
-    private static final Logger logger = Logger.getLogger(ClientScopesClientRegistrationPolicy.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClientScopesClientRegistrationPolicy.class);
 
     private final KeycloakSession session;
     private final RealmModel realm;
@@ -105,7 +105,7 @@ public class ClientScopesClientRegistrationPolicy implements ClientRegistrationP
         if (requestedScopes != null) {
             for (String requested : requestedScopes) {
                 if (!allowedScopes.contains(requested)) {
-                    logger.warnf("Requested scope '%s' not trusted in the list: %s", requested, allowedScopes.toString());
+                    LOG.warn("Requested scope '%s' not trusted in the list: %s", requested, allowedScopes.toString());
                     throw new ClientRegistrationPolicyException("Not permitted to use specified clientScope");
                 }
             }

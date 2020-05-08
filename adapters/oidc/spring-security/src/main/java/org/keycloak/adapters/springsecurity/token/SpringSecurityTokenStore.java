@@ -18,11 +18,7 @@
 package org.keycloak.adapters.springsecurity.token;
 
 import org.keycloak.KeycloakSecurityContext;
-import org.keycloak.adapters.AdapterTokenStore;
-import org.keycloak.adapters.KeycloakDeployment;
-import org.keycloak.adapters.OidcKeycloakAccount;
-import org.keycloak.adapters.RefreshableKeycloakSecurityContext;
-import org.keycloak.adapters.RequestAuthenticator;
+import org.keycloak.adapters.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -41,7 +37,7 @@ import javax.servlet.http.HttpSession;
  */
 public class SpringSecurityTokenStore implements AdapterTokenStore {
 
-    private final Logger logger = LoggerFactory.getLogger(SpringSecurityTokenStore.class);
+    private final Logger LOG = LoggerFactory.getLogger(SpringSecurityTokenStore.class);
 
     private final KeycloakDeployment deployment;
     private final HttpServletRequest request;
@@ -61,7 +57,7 @@ public class SpringSecurityTokenStore implements AdapterTokenStore {
     @Override
     public boolean isCached(RequestAuthenticator authenticator) {
 
-        logger.debug("Checking if {} is cached", authenticator);
+        LOG.debug("Checking if {} is cached", authenticator);
         SecurityContext context = SecurityContextHolder.getContext();
         KeycloakAuthenticationToken token;
         KeycloakSecurityContext keycloakSecurityContext;
@@ -71,22 +67,22 @@ public class SpringSecurityTokenStore implements AdapterTokenStore {
         }
 
         if (!KeycloakAuthenticationToken.class.isAssignableFrom(context.getAuthentication().getClass())) {
-            logger.warn("Expected a KeycloakAuthenticationToken, but found {}", context.getAuthentication());
+            LOG.warn("Expected a KeycloakAuthenticationToken, but found {}", context.getAuthentication());
             return false;
         }
 
-        logger.debug("Remote logged in already. Establishing state from security context.");
+        LOG.debug("Remote logged in already. Establishing state from security context.");
         token = (KeycloakAuthenticationToken) context.getAuthentication();
         keycloakSecurityContext = token.getAccount().getKeycloakSecurityContext();
 
         if (!deployment.getRealm().equals(keycloakSecurityContext.getRealm())) {
-            logger.debug("Account from security context is from a different realm than for the request.");
+            LOG.debug("Account from security context is from a different realm than for the request.");
             logout();
             return false;
         }
 
         if (keycloakSecurityContext.getToken().isExpired()) {
-            logger.warn("Security token expired ... not returning from cache");
+            LOG.warn("Security token expired ... not returning from cache");
             return false;
         }
 
@@ -104,7 +100,7 @@ public class SpringSecurityTokenStore implements AdapterTokenStore {
             throw new IllegalStateException(String.format("Went to save Keycloak account %s, but already have %s", account, authentication));
         }
 
-        logger.debug("Saving account info {}", account);
+        LOG.debug("Saving account info {}", account);
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(new KeycloakAuthenticationToken(account, true));
         SecurityContextHolder.setContext(context);
@@ -113,7 +109,7 @@ public class SpringSecurityTokenStore implements AdapterTokenStore {
     @Override
     public void logout() {
 
-        logger.debug("Handling logout request");
+        LOG.debug("Handling logout request");
         HttpSession session = request.getSession(false);
 
         if (session != null) {

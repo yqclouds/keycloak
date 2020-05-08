@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.TokenVerifier.Predicate;
 import org.keycloak.authentication.AuthenticationProcessor;
 import org.keycloak.authentication.ExplainedVerificationException;
@@ -43,7 +43,7 @@ import java.util.function.Consumer;
  */
 public class LoginActionsServiceChecks {
 
-    private static final Logger LOG = Logger.getLogger(LoginActionsServiceChecks.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(LoginActionsServiceChecks.class.getName());
 
     @Autowired
     private LoginFormsProvider loginFormsProvider;
@@ -196,7 +196,7 @@ public class LoginActionsServiceChecks {
         // It's the correct browser. We won't continue login
         // from the login form (browser flow) but from the token's flow
         // Don't expire KC_RESTART cookie at this point
-        LOG.debugf("Switched to forked tab: %s from: %s . Root session: %s", authSessionFromParent.getTabId(), authSessionFromCookie.getTabId(), authSessionFromCookie.getParentSession().getId());
+        LOG.debug("Switched to forked tab: %s from: %s . Root session: %s", authSessionFromParent.getTabId(), authSessionFromCookie.getTabId(), authSessionFromCookie.getParentSession().getId());
 
         context.setAuthenticationSession(authSessionFromParent, false);
         context.setExecutionId(authSessionFromParent.getAuthNote(AuthenticationProcessor.LAST_PROCESSED_EXECUTION));

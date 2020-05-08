@@ -1,6 +1,5 @@
 package org.keycloak.protocol.saml.mappers;
 
-import org.jboss.logging.Logger;
 import org.keycloak.dom.saml.v2.assertion.AttributeStatementType;
 import org.keycloak.dom.saml.v2.assertion.AttributeType;
 import org.keycloak.models.*;
@@ -11,6 +10,8 @@ import org.keycloak.scripting.EvaluatableScriptAdapter;
 import org.keycloak.scripting.ScriptCompilationException;
 import org.keycloak.scripting.ScriptingProvider;
 import org.keycloak.stereotype.ProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +35,7 @@ public class ScriptBasedMapper extends AbstractSAMLProtocolMapper implements SAM
     public static final String PROVIDER_ID = "saml-javascript-mapper";
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
     private static final String SINGLE_VALUE_ATTRIBUTE = "single";
-    private static final Logger LOGGER = Logger.getLogger(ScriptBasedMapper.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScriptBasedMapper.class);
 
     /*
      * This static property block is used to determine the elements available to the mapper. This is determinant
@@ -200,7 +201,7 @@ public class ScriptBasedMapper extends AbstractSAMLProtocolMapper implements SAM
         try {
             scriptingProvider.prepareEvaluatableScript(scriptModel);
         } catch (ScriptCompilationException ex) {
-            throw new ProtocolMapperConfigException("error", "{0}", ex.getMessage());
+            throw new ProtocolMapperConfigException("error", "{}", ex.getMessage());
         }
     }
 }

@@ -17,7 +17,7 @@
 
 package org.keycloak.utils;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.authentication.*;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.credential.CredentialProvider;
@@ -33,7 +33,7 @@ import org.keycloak.representations.idm.CredentialRepresentation;
  */
 public class CredentialHelper {
 
-    private static final Logger logger = Logger.getLogger(CredentialHelper.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CredentialHelper.class);
 
     public static void setRequiredCredential(KeycloakSession session, String type, RealmModel realm) {
         AuthenticationExecutionModel.Requirement requirement = AuthenticationExecutionModel.Requirement.REQUIRED;
@@ -55,9 +55,9 @@ public class CredentialHelper {
                     if (currentRequirement == null || currentRequirement.equals(execution.getRequirement())) {
                         execution.setRequirement(requirement);
                         realm.updateAuthenticatorExecution(execution);
-                        logger.debugf("Authenticator execution '%s' switched to '%s'", execution.getAuthenticator(), requirement.toString());
+                        LOG.debug("Authenticator execution '{}' switched to '{}'", execution.getAuthenticator(), requirement.toString());
                     } else {
-                        logger.debugf("Skip switch authenticator execution '%s' to '%s' as it's in state %s", execution.getAuthenticator(), requirement.toString(), execution.getRequirement());
+                        LOG.debug("Skip switch authenticator execution '{}' to '{}' as it's in state {}", execution.getAuthenticator(), requirement.toString(), execution.getRequirement());
                     }
                 }
             }
@@ -89,7 +89,7 @@ public class CredentialHelper {
 
         String credentialId = null;
         if (userStorageCreated) {
-            logger.debugf("Created OTP credential for user '%s' in the user storage", user.getUsername());
+            LOG.debug("Created OTP credential for user '{}' in the user storage", user.getUsername());
         } else {
             CredentialModel createdCredential = otpCredentialProvider.createCredential(realm, user, credentialModel);
             credentialId = createdCredential.getId();
@@ -106,7 +106,7 @@ public class CredentialHelper {
 
         // This can usually happened when credential is stored in the userStorage. Propagate to "disable" credential in the userStorage
         if (!removed) {
-            logger.debug("Removing OTP credential from userStorage");
+            LOG.debug("Removing OTP credential from userStorage");
             session.userCredentialManager().disableCredentialType(realm, user, OTPCredentialModel.TYPE);
         }
     }

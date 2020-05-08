@@ -1,11 +1,12 @@
 package org.keycloak.models.cache.infinispan;
 
 import org.infinispan.Cache;
-import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.cache.infinispan.entities.Revisioned;
 import org.keycloak.models.cache.infinispan.events.InvalidationEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
@@ -50,6 +51,7 @@ import java.util.function.Predicate;
  * @version $Revision: 1 $
  */
 public abstract class CacheManager {
+    private static final Logger LOG = LoggerFactory.getLogger(CacheManager.class);
 
     protected final Cache<String, Long> revisions;
     protected final Cache<String, Revisioned> cache;
@@ -62,8 +64,6 @@ public abstract class CacheManager {
         this.cache = cache;
         this.revisions = revisions;
     }
-
-    protected abstract Logger getLogger();
 
     public Cache<String, Revisioned> getCache() {
         return cache;
@@ -97,15 +97,15 @@ public abstract class CacheManager {
         }
         Long rev = revisions.get(id);
         if (rev == null) {
-            if (getLogger().isTraceEnabled()) {
-                getLogger().tracev("get() missing rev {0}", id);
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("get() missing rev {}", id);
             }
             return null;
         }
         long oRev = o.getRevision() == null ? -1L : o.getRevision().longValue();
         if (rev > oRev) {
-            if (getLogger().isTraceEnabled()) {
-                getLogger().tracev("get() rev: {0} o.rev: {1}", rev.longValue(), oRev);
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("get() rev: {} o.rev: {}", rev, oRev);
             }
             return null;
         }
@@ -115,8 +115,8 @@ public abstract class CacheManager {
     public Object invalidateObject(String id) {
         Revisioned removed = (Revisioned) cache.remove(id);
 
-        if (getLogger().isTraceEnabled()) {
-            getLogger().tracef("Removed key='%s', value='%s' from cache", id, removed);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Removed key='{}', value='{}' from cache", id, removed);
         }
 
         bumpVersion(id);
@@ -144,8 +144,8 @@ public abstract class CacheManager {
             }
             revisions.startBatch();
             if (!revisions.getAdvancedCache().lock(id)) {
-                if (getLogger().isTraceEnabled()) {
-                    getLogger().tracev("Could not obtain version lock: {0}", id);
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Could not obtain version lock: {}", id);
                 }
                 return;
             }
@@ -154,8 +154,8 @@ public abstract class CacheManager {
                 return;
             }
             if (rev > startupRevision) { // revision is ahead transaction start. Other transaction updated in the meantime. Don't cache
-                if (getLogger().isTraceEnabled()) {
-                    getLogger().tracev("Skipped cache. Current revision {0}, Transaction start revision {1}", object.getRevision(), startupRevision);
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Skipped cache. Current revision {}, Transaction start revision {}", object.getRevision(), startupRevision);
                 }
                 return;
             }
@@ -164,8 +164,8 @@ public abstract class CacheManager {
                 return;
             }
             if (rev > object.getRevision()) { // revision is ahead, don't cache
-                if (getLogger().isTraceEnabled())
-                    getLogger().tracev("Skipped cache. Object revision {0}, Cache revision {1}", object.getRevision(), rev);
+                if (LOG.isTraceEnabled())
+                    LOG.trace("Skipped cache. Object revision {}, Cache revision {}", object.getRevision(), rev);
                 return;
             }
             // revisions cache has a lower value than the object.revision, so update revision and add it to cache
@@ -211,7 +211,7 @@ public abstract class CacheManager {
 
         addInvalidationsFromEvent(event, invalidations);
 
-        getLogger().debugf("[%s] Invalidating %d cache items after received event %s", cache.getCacheManager().getAddress(), invalidations.size(), event);
+        LOG.debug("[{}] Invalidating {} cache items after received event {}", cache.getCacheManager().getAddress(), invalidations.size(), event);
 
         for (String invalidation : invalidations) {
             invalidateObject(invalidation);

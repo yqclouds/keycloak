@@ -17,7 +17,7 @@
 
 package org.keycloak.models.utils;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.Config;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.authorization.AuthorizationProvider;
@@ -54,7 +54,7 @@ import java.util.stream.Collectors;
 public class RepresentationToModel {
 
     public static final String OIDC = "openid-connect";
-    private static Logger logger = Logger.getLogger(RepresentationToModel.class);
+    private static Logger LOG = LoggerFactory.getLogger(RepresentationToModel.class);
 
     public static OTPPolicy toPolicy(RealmRepresentation rep) {
         OTPPolicy policy = new OTPPolicy();
@@ -205,7 +205,7 @@ public class RepresentationToModel {
                 if (clientScope != null) {
                     newRealm.addDefaultClientScope(clientScope, true);
                 } else {
-                    logger.warnf("Referenced client scope '%s' doesn't exists", clientScopeName);
+                    LOG.warn("Referenced client scope '{}' doesn't exists", clientScopeName);
                 }
             }
         }
@@ -215,7 +215,7 @@ public class RepresentationToModel {
                 if (clientScope != null) {
                     newRealm.addDefaultClientScope(clientScope, false);
                 } else {
-                    logger.warnf("Referenced client scope '%s' doesn't exists", clientScopeName);
+                    LOG.warn("Referenced client scope '{}' doesn't exists", clientScopeName);
                 }
             }
         }
@@ -994,7 +994,7 @@ public class RepresentationToModel {
     }
 
     private static ClientModel createClient(KeycloakSession session, RealmModel realm, ClientRepresentation resourceRep, boolean addDefaultRoles, Map<String, String> mappedFlows) {
-        logger.debugv("Create client: {0}", resourceRep.getClientId());
+        LOG.debug("Create client: {}", resourceRep.getClientId());
 
         ClientModel client = resourceRep.getId() != null ? realm.addClient(resourceRep.getId(), resourceRep.getClientId()) : realm.addClient(resourceRep.getClientId());
         if (resourceRep.getName() != null) client.setName(resourceRep.getName());
@@ -1012,7 +1012,7 @@ public class RepresentationToModel {
 
         // Backwards compatibility only
         if (resourceRep.isDirectGrantsOnly() != null) {
-            logger.warn("Using deprecated 'directGrantsOnly' configuration in JSON representation. It will be removed in future versions");
+            LOG.warn("Using deprecated 'directGrantsOnly' configuration in JSON representation. It will be removed in future versions");
             client.setStandardFlowEnabled(!resourceRep.isDirectGrantsOnly());
             client.setDirectAccessGrantsEnabled(resourceRep.isDirectGrantsOnly());
         }
@@ -1090,7 +1090,7 @@ public class RepresentationToModel {
         }
         if (resourceRep.getWebOrigins() != null) {
             for (String webOrigin : resourceRep.getWebOrigins()) {
-                logger.debugv("Client: {0} webOrigin: {1}", resourceRep.getClientId(), webOrigin);
+                LOG.debug("Client: {} webOrigin: {}", resourceRep.getClientId(), webOrigin);
                 client.addWebOrigin(webOrigin);
             }
         } else {
@@ -1098,10 +1098,10 @@ public class RepresentationToModel {
             if (resourceRep.getRedirectUris() != null) {
                 Set<String> origins = new HashSet<String>();
                 for (String redirectUri : resourceRep.getRedirectUris()) {
-                    logger.debugv("add redirect-uri to origin: {0}", redirectUri);
+                    LOG.debug("add redirect-uri to origin: {}", redirectUri);
                     if (redirectUri.startsWith("http")) {
                         String origin = UriUtils.getOrigin(redirectUri);
-                        logger.debugv("adding default client origin: {0}", origin);
+                        LOG.debug("adding default client origin: {}", origin);
                         origins.add(origin);
                     }
                 }
@@ -1177,7 +1177,7 @@ public class RepresentationToModel {
         if (clientScope != null) {
             client.addClientScope(clientScope, defaultScope);
         } else {
-            logger.warnf("Referenced client scope '%s' doesn't exists. Ignoring", clientScopeName);
+            LOG.warn("Referenced client scope '{}' doesn't exists. Ignoring", clientScopeName);
         }
     }
 
@@ -1305,7 +1305,7 @@ public class RepresentationToModel {
     }
 
     public static ClientScopeModel createClientScope(KeycloakSession session, RealmModel realm, ClientScopeRepresentation resourceRep) {
-        logger.debug("Create client scope: {0}" + resourceRep.getName());
+        LOG.debug("Create client scope: {}" + resourceRep.getName());
 
         ClientScopeModel clientScope = resourceRep.getId() != null ? realm.addClientScope(resourceRep.getId(), resourceRep.getName()) : realm.addClientScope(resourceRep.getName());
         if (resourceRep.getName() != null) clientScope.setName(resourceRep.getName());
@@ -1702,7 +1702,7 @@ public class RepresentationToModel {
             if (consentRep.getGrantedRealmRoles().contains(OAuth2Constants.OFFLINE_ACCESS)) {
                 ClientScopeModel offlineScope = client.getClientScopes(false, true).get(OAuth2Constants.OFFLINE_ACCESS);
                 if (offlineScope == null) {
-                    logger.warn("Unable to find offline_access scope referenced in grantedRoles of user");
+                    LOG.warn("Unable to find offline_access scope referenced in grantedRoles of user");
                 }
                 consentModel.addGrantedClientScope(offlineScope);
             }

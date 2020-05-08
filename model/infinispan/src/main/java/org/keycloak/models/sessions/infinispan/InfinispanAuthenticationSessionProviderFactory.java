@@ -17,7 +17,6 @@
 
 package org.keycloak.models.sessions.infinispan;
 
-import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
@@ -29,6 +28,8 @@ import org.keycloak.models.utils.PostMigrationEvent;
 import org.keycloak.sessions.AuthenticationSessionProvider;
 import org.keycloak.sessions.AuthenticationSessionProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
@@ -42,11 +43,12 @@ import javax.annotation.PostConstruct;
 @ProviderFactory(id = "infinispan", providerClasses = AuthenticationSessionProvider.class)
 @ConditionalOnBean(value = {KeycloakSessionFactory.class})
 public class InfinispanAuthenticationSessionProviderFactory implements AuthenticationSessionProviderFactory {
+    private static final Logger LOG = LoggerFactory.getLogger(InfinispanAuthenticationSessionProviderFactory.class);
+
     public static final String PROVIDER_ID = "infinispan";
     public static final String AUTHENTICATION_SESSION_EVENTS = "AUTHENTICATION_SESSION_EVENTS";
     public static final String REALM_REMOVED_AUTHSESSION_EVENT = "REALM_REMOVED_EVENT_AUTHSESSIONS";
     public static final String CLIENT_REMOVED_AUTHSESSION_EVENT = "CLIENT_REMOVED_SESSION_AUTHSESSIONS";
-    private static final Logger log = Logger.getLogger(InfinispanAuthenticationSessionProviderFactory.class);
 
     @Autowired
     private KeycloakSessionFactory sessionFactory;
@@ -84,7 +86,7 @@ public class InfinispanAuthenticationSessionProviderFactory implements Authentic
             }
         });
 
-        log.debug("Registered cluster listeners");
+        LOG.debug("Registered cluster listeners");
     }
 
     @Override

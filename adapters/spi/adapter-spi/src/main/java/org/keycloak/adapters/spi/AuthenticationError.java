@@ -22,7 +22,6 @@ package org.keycloak.adapters.spi;
  * to extract this error from the HttpServletRequest.getAttribute(AuthenticationError.class.getName()).  Each protocol
  * will have their own subclass of this interface.
  *
- *
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */

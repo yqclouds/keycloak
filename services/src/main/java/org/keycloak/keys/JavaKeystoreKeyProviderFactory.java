@@ -17,7 +17,6 @@
 
 package org.keycloak.keys;
 
-import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
 import org.keycloak.models.KeycloakSession;
@@ -25,6 +24,8 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ConfigurationValidationHelper;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -38,7 +39,7 @@ import static org.keycloak.provider.ProviderConfigProperty.STRING_TYPE;
 @ProviderFactory(id = "java-keystore", providerClasses = KeyProvider.class)
 public class JavaKeystoreKeyProviderFactory extends AbstractRsaKeyProviderFactory {
     public static final String ID = "java-keystore";
-    private static final Logger logger = Logger.getLogger(JavaKeystoreKeyProviderFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JavaKeystoreKeyProviderFactory.class);
     private static final String HELP_TEXT = "Loads keys from a Java keys file";
     public static String KEYSTORE_KEY = "keystore";
     public static ProviderConfigProperty KEYSTORE_PROPERTY = new ProviderConfigProperty(KEYSTORE_KEY, "Keystore", "Path to keys file", STRING_TYPE, null);
@@ -74,7 +75,7 @@ public class JavaKeystoreKeyProviderFactory extends AbstractRsaKeyProviderFactor
             new JavaKeystoreKeyProvider(session.getContext().getRealm(), model)
                     .loadKey(session.getContext().getRealm(), model);
         } catch (Throwable t) {
-            logger.error("Failed to load keys.", t);
+            LOG.error("Failed to load keys.", t);
             throw new ComponentValidationException("Failed to load keys. " + t.getMessage(), t);
         }
     }

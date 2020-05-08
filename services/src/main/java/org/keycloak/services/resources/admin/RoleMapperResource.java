@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.events.admin.OperationType;
@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
  */
 public class RoleMapperResource {
 
-    protected static final Logger logger = Logger.getLogger(RoleMapperResource.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(RoleMapperResource.class);
 
     protected RealmModel realm;
     protected AdminPermissionEvaluator.RequirePermissionCheck managePermission;
@@ -193,7 +193,7 @@ public class RoleMapperResource {
     public void addRealmRoleMappings(List<RoleRepresentation> roles) {
         managePermission.require();
 
-        logger.debugv("** addRealmRoleMappings: {0}", roles);
+        LOG.debug("** addRealmRoleMappings: {}", roles);
 
         for (RoleRepresentation role : roles) {
             RoleModel roleModel = realm.getRole(role.getName());
@@ -218,7 +218,7 @@ public class RoleMapperResource {
     public void deleteRealmRoleMappings(List<RoleRepresentation> roles) {
         managePermission.require();
 
-        logger.debug("deleteRealmRoleMappings");
+        LOG.debug("deleteRealmRoleMappings");
         if (roles == null) {
             Set<RoleModel> roleModels = roleMapper.getRealmRoleMappings();
             roles = new LinkedList<>();

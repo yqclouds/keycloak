@@ -17,7 +17,6 @@
 
 package org.keycloak.protocol.oidc.utils;
 
-import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authentication.AuthenticationProcessor;
 import org.keycloak.authentication.ClientAuthenticator;
@@ -31,6 +30,8 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.services.ErrorResponseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
@@ -42,7 +43,7 @@ import java.util.Map;
  */
 public class AuthorizeClientUtil {
 
-    private static final Logger logger = Logger.getLogger(AuthorizeClientUtil.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AuthorizeClientUtil.class);
 
     public static ClientAuthResult authorizeClient(KeycloakSession session, EventBuilder event) {
         AuthenticationProcessor processor = getAuthenticationProcessor(session, event);
@@ -59,7 +60,7 @@ public class AuthorizeClientUtil {
 
         String protocol = client.getProtocol();
         if (protocol == null) {
-            logger.warnf("Client '%s' doesn't have protocol set. Fallback to openid-connect. Please fix client configuration", client.getClientId());
+            LOG.warn("Client '%s' doesn't have protocol set. Fallback to openid-connect. Please fix client configuration", client.getClientId());
             protocol = OIDCLoginProtocol.LOGIN_PROTOCOL;
         }
 

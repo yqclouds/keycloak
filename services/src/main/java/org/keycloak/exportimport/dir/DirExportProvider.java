@@ -44,14 +44,14 @@ public class DirExportProvider extends MultipleStepsExportProvider {
         this.rootDirectory = new File(tempDir + "/keycloak-export");
         this.rootDirectory.mkdirs();
 
-        logger.infof("Exporting into directory %s", this.rootDirectory.getAbsolutePath());
+        LOG.info("Exporting into directory %s", this.rootDirectory.getAbsolutePath());
     }
 
     public DirExportProvider(File rootDirectory) {
         this.rootDirectory = rootDirectory;
         this.rootDirectory.mkdirs();
 
-        logger.infof("Exporting into directory %s", this.rootDirectory.getAbsolutePath());
+        LOG.info("Exporting into directory %s", this.rootDirectory.getAbsolutePath());
     }
 
     public static boolean recursiveDeleteDir(File dirPath) {

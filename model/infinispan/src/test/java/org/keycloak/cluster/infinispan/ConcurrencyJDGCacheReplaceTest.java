@@ -28,7 +28,6 @@ import org.infinispan.client.hotrod.event.ClientCacheEntryModifiedEvent;
 import org.infinispan.context.Flag;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.persistence.remote.configuration.RemoteStoreConfigurationBuilder;
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
@@ -36,6 +35,8 @@ import org.keycloak.models.sessions.infinispan.entities.AuthenticatedClientSessi
 import org.keycloak.models.sessions.infinispan.entities.SessionEntity;
 import org.keycloak.models.sessions.infinispan.entities.UserSessionEntity;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,8 +53,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class ConcurrencyJDGCacheReplaceTest {
-
-    protected static final Logger logger = Logger.getLogger(ConcurrencyJDGCacheReplaceTest.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(ConcurrencyJDGCacheReplaceTest.class);
 
     private static final int ITERATION_PER_WORKER = 1000;
     private static final AtomicInteger failedReplaceCounter = new AtomicInteger(0);
@@ -93,52 +93,52 @@ public class ConcurrencyJDGCacheReplaceTest {
         SessionEntityWrapper<UserSessionEntity> wrappedSession = new SessionEntityWrapper<>(session);
 
         // Some dummy testing of remoteStore behaviour
-        logger.info("Before put");
+        LOG.info("Before put");
 
         cache1
                 .getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL) // will still invoke remoteStore . Just doesn't propagate to cluster
                 .put("123", wrappedSession);
 
-        logger.info("After put");
+        LOG.info("After put");
 
         cache1.replace("123", wrappedSession);
 
-        logger.info("After replace");
+        LOG.info("After replace");
 
         cache1.get("123");
 
-        logger.info("After cache1.get");
+        LOG.info("After cache1.get");
 
         cache2.get("123");
 
-        logger.info("After cache2.get");
+        LOG.info("After cache2.get");
 
         cache1.get("123");
 
-        logger.info("After cache1.get - second call");
+        LOG.info("After cache1.get - second call");
 
         cache2.get("123");
 
-        logger.info("After cache2.get - second call");
+        LOG.info("After cache2.get - second call");
 
         cache2.replace("123", wrappedSession);
 
-        logger.info("After replace - second call");
+        LOG.info("After replace - second call");
 
         cache1.get("123");
 
-        logger.info("After cache1.get - third call");
+        LOG.info("After cache1.get - third call");
 
         cache2.get("123");
 
-        logger.info("After cache2.get - third call");
+        LOG.info("After cache2.get - third call");
 
         cache1
                 .getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD)
                 .entrySet().stream().forEach(e -> {
         });
 
-        logger.info("After cache1.stream");
+        LOG.info("After cache1.stream");
 
         // Explicitly call put on remoteCache (KcRemoteCache.write ignores remote writes)
         InfinispanUtil.getRemoteCache(cache1).put("123", session);
@@ -276,7 +276,7 @@ public class ConcurrencyJDGCacheReplaceTest {
                 SessionEntityWrapper sessionWrapper = new SessionEntityWrapper(session);
 
                 if (listenerCount.get() % 100 == 0) {
-                    logger.infof("Listener count: " + listenerCount.get());
+                    LOG.info("Listener count: " + listenerCount.get());
                 }
 
                 // TODO: for distributed caches, ensure that it is executed just on owner OR if event.isCommandRetried

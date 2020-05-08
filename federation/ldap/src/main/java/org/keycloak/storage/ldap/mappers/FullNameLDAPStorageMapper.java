@@ -104,8 +104,8 @@ public class FullNameLDAPStorageMapper extends AbstractLDAPStorageMapper {
 
                 private void setFullNameToLDAPObject() {
                     String fullName = getFullNameForWriteToLDAP(getFirstName(), getLastName(), getUsername());
-                    if (logger.isTraceEnabled()) {
-                        logger.tracef("Pushing full name attribute to LDAP. Full name: %s", fullName);
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("Pushing full name attribute to LDAP. Full name: {}", fullName);
                     }
 
                     ensureTransactionStarted();

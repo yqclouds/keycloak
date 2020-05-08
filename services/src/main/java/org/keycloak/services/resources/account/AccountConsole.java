@@ -1,6 +1,6 @@
 package org.keycloak.services.resources.account;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.common.Version;
 import org.keycloak.events.EventStoreProvider;
@@ -43,7 +43,7 @@ import java.util.regex.Pattern;
  * Created by st on 29/03/17.
  */
 public class AccountConsole {
-    private static final Logger logger = Logger.getLogger(AccountConsole.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AccountConsole.class);
 
     private final Pattern bundleParamPattern = Pattern.compile("(\\{\\s*(\\d+)\\s*\\})");
     private final AppAuthManager authManager;
@@ -152,7 +152,7 @@ public class AccountConsole {
     }
 
     // Put java resource bundle params in ngx-translate format
-    // Do you like {0} and {1} ?
+    // Do you like {} and {} ?
     //    becomes
     // Do you like {{param_0}} and {{param_1}} ?
     private String putJavaParamsInNgTranslateFormat(String propertyValue) {

@@ -16,7 +16,7 @@
  */
 package org.keycloak.services;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakTransaction;
 import org.keycloak.models.KeycloakTransactionManager;
@@ -33,7 +33,7 @@ import java.util.List;
  */
 public class DefaultKeycloakTransactionManager implements KeycloakTransactionManager {
 
-    private static final Logger logger = Logger.getLogger(DefaultKeycloakTransactionManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultKeycloakTransactionManager.class);
     // Used to prevent double committing/rollback if there is an uncaught exception
     protected boolean completed;
     private List<KeycloakTransaction> prepare = new LinkedList<KeycloakTransaction>();
@@ -155,7 +155,7 @@ public class DefaultKeycloakTransactionManager implements KeycloakTransactionMan
                 try {
                     tx.rollback();
                 } catch (RuntimeException e) {
-                    ServicesLogger.LOGGER.exceptionDuringRollback(e);
+//                    ServicesLogger.LOGGER.exceptionDuringRollback(e);
                 }
             }
         }

@@ -17,7 +17,6 @@
 
 package org.keycloak.protocol.saml;
 
-import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.common.VerificationException;
@@ -63,6 +62,8 @@ import org.keycloak.services.resources.RealmsResource;
 import org.keycloak.services.util.CacheControlUtil;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.utils.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
@@ -83,7 +84,7 @@ import java.util.*;
  */
 public class SamlService extends AuthorizationEndpointBase {
 
-    protected static final Logger logger = Logger.getLogger(SamlService.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(SamlService.class);
 
     private final DestinationValidator destinationValidator;
 
@@ -98,7 +99,7 @@ public class SamlService extends AuthorizationEndpointBase {
         try {
             template = StreamUtil.readString(is, StandardCharsets.UTF_8);
         } catch (IOException ex) {
-            logger.error("Cannot generate IdP metadata", ex);
+            LOG.error("Cannot generate IdP metadata", ex);
             return "";
         }
         Properties props = new Properties();
@@ -141,7 +142,7 @@ public class SamlService extends AuthorizationEndpointBase {
      */
     @GET
     public Response redirectBinding(@QueryParam(GeneralConstants.SAML_REQUEST_KEY) String samlRequest, @QueryParam(GeneralConstants.SAML_RESPONSE_KEY) String samlResponse, @QueryParam(GeneralConstants.RELAY_STATE) String relayState) {
-        logger.debug("SAML GET");
+        LOG.debug("SAML GET");
         CacheControlUtil.noBackButtonCacheControlHeader();
         return new RedirectBindingProtocol().execute(samlRequest, samlResponse, relayState);
     }
@@ -153,7 +154,7 @@ public class SamlService extends AuthorizationEndpointBase {
     @NoCache
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response postBinding(@FormParam(GeneralConstants.SAML_REQUEST_KEY) String samlRequest, @FormParam(GeneralConstants.SAML_RESPONSE_KEY) String samlResponse, @FormParam(GeneralConstants.RELAY_STATE) String relayState) {
-        logger.debug("SAML POST");
+        LOG.debug("SAML POST");
         PostBindingProtocol postBindingProtocol = new PostBindingProtocol();
         // this is to support back button on browser
         // if true, we redirect to authenticate URL otherwise back button behavior has bad side effects
@@ -215,7 +216,7 @@ public class SamlService extends AuthorizationEndpointBase {
 
         AuthenticationSessionModel authSession = getOrCreateLoginSessionForIdpInitiatedSso(this.session, this.realm, client, relayState);
         if (authSession == null) {
-            logger.error("SAML assertion consumer url not set up");
+            LOG.error("SAML assertion consumer url not set up");
             event.error(Errors.INVALID_REDIRECT_URI);
             return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.INVALID_REDIRECT_URI);
         }
@@ -345,7 +346,7 @@ public class SamlService extends AuthorizationEndpointBase {
 
             AuthenticationManager.AuthResult authResult = authManager.authenticateIdentityCookie(session, realm, false);
             if (authResult == null) {
-                logger.warn("Unknown saml response.");
+                LOG.warn("Unknown saml response.");
                 event.event(EventType.LOGOUT);
                 event.error(Errors.INVALID_TOKEN);
                 return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.INVALID_REQUEST);
@@ -353,8 +354,8 @@ public class SamlService extends AuthorizationEndpointBase {
             // assume this is a logout response
             UserSessionModel userSession = authResult.getSession();
             if (userSession.getState() != UserSessionModel.State.LOGGING_OUT) {
-                logger.warn("Unknown saml response.");
-                logger.warn("UserSession is not tagged as logging out.");
+                LOG.warn("Unknown saml response.");
+                LOG.warn("UserSession is not tagged as logging out.");
                 event.event(EventType.LOGOUT);
                 event.error(Errors.INVALID_SAML_LOGOUT_RESPONSE);
                 return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.INVALID_REQUEST);
@@ -375,7 +376,7 @@ public class SamlService extends AuthorizationEndpointBase {
             }
 
             session.getContext().setClient(client);
-            logger.debug("logout response");
+            LOG.debug("logout response");
             Response response = authManager.browserLogout(session, realm, userSession, session.getContext().getUri(), clientConnection, headers, null);
             event.success();
             return response;
@@ -435,20 +436,20 @@ public class SamlService extends AuthorizationEndpointBase {
             try {
                 verifySignature(documentHolder, client);
             } catch (VerificationException e) {
-                SamlService.logger.error("request validation failed", e);
+                SamlService.LOG.error("request validation failed", e);
                 event.event(EventType.LOGIN);
                 event.error(Errors.INVALID_SIGNATURE);
                 return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.INVALID_REQUESTER);
             }
-            logger.debug("verified request");
+            LOG.debug("verified request");
             if (samlObject instanceof AuthnRequestType) {
-                logger.debug("** login request");
+                LOG.debug("** login request");
                 event.event(EventType.LOGIN);
                 // Get the SAML Request Message
                 AuthnRequestType authn = (AuthnRequestType) samlObject;
                 return loginRequest(relayState, authn, client);
             } else if (samlObject instanceof LogoutRequestType) {
-                logger.debug("** logout request");
+                LOG.debug("** logout request");
                 event.event(EventType.LOGOUT);
                 LogoutRequestType logout = (LogoutRequestType) samlObject;
                 return logoutRequest(logout, client, relayState);
@@ -628,7 +629,7 @@ public class SamlService extends AuthorizationEndpointBase {
                     logoutRequest = it.next().beforeProcessingLogoutRequest(logoutRequest, userSession, clientSession);
                 }
 
-                logger.debug("browser Logout");
+                LOG.debug("browser Logout");
                 return authManager.browserLogout(session, realm, userSession, session.getContext().getUri(), clientConnection, headers, null);
             } else if (logoutRequest.getSessionIndex() != null) {
                 for (String sessionIndex : logoutRequest.getSessionIndex()) {
@@ -649,7 +650,7 @@ public class SamlService extends AuthorizationEndpointBase {
                     try {
                         authManager.backchannelLogout(session, realm, userSession, session.getContext().getUri(), clientConnection, headers, true);
                     } catch (Exception e) {
-                        logger.warn("Failure with backchannel logout", e);
+                        LOG.warn("Failure with backchannel logout", e);
                     }
 
                 }

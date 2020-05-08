@@ -17,18 +17,9 @@
 
 package org.keycloak.adapters.springsecurity.token;
 
-import java.util.Set;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.keycloak.KeycloakPrincipal;
 import org.keycloak.KeycloakSecurityContext;
-import org.keycloak.adapters.AdapterUtils;
-import org.keycloak.adapters.CookieTokenStore;
-import org.keycloak.adapters.KeycloakDeployment;
-import org.keycloak.adapters.OIDCHttpFacade;
-import org.keycloak.adapters.OidcKeycloakAccount;
-import org.keycloak.adapters.RefreshableKeycloakSecurityContext;
-import org.keycloak.adapters.RequestAuthenticator;
+import org.keycloak.adapters.*;
 import org.keycloak.adapters.spi.HttpFacade;
 import org.keycloak.adapters.springsecurity.account.SimpleKeycloakAccount;
 import org.keycloak.adapters.springsecurity.facade.SimpleHttpFacade;
@@ -37,6 +28,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.Assert;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Set;
+
 /**
  * Extension of {@link SpringSecurityTokenStore} that stores the obtains tokens in a cookie.
  *
@@ -44,7 +39,7 @@ import org.springframework.util.Assert;
  */
 public class SpringSecurityCookieTokenStore extends SpringSecurityTokenStore {
 
-    private final Logger logger = LoggerFactory.getLogger(SpringSecurityCookieTokenStore.class);
+    private final Logger LOG = LoggerFactory.getLogger(SpringSecurityCookieTokenStore.class);
 
     private final KeycloakDeployment deployment;
     private final HttpFacade facade;
@@ -120,7 +115,7 @@ public class SpringSecurityCookieTokenStore extends SpringSecurityTokenStore {
         KeycloakPrincipal<RefreshableKeycloakSecurityContext> principal =
                 CookieTokenStore.getPrincipalFromCookie(deployment, facade, this);
         if (principal == null) {
-            logger.debug("Account was not in cookie or was invalid");
+            LOG.debug("Account was not in cookie or was invalid");
             return null;
         }
 
@@ -133,7 +128,7 @@ public class SpringSecurityCookieTokenStore extends SpringSecurityTokenStore {
             return principal;
         }
 
-        logger.debug(
+        LOG.debug(
                 "Cleanup and expire cookie for user {} after failed refresh", principal.getName());
         CookieTokenStore.removeCookie(deployment, facade);
         return null;

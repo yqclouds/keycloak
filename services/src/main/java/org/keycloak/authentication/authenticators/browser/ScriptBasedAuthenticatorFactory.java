@@ -16,7 +16,7 @@
  */
 package org.keycloak.authentication.authenticators.browser;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.common.Profile;
@@ -51,7 +51,7 @@ public class ScriptBasedAuthenticatorFactory implements AuthenticatorFactory, En
             AuthenticationExecutionModel.Requirement.ALTERNATIVE,
             AuthenticationExecutionModel.Requirement.DISABLED};
     static final ScriptBasedAuthenticator SINGLETON = new ScriptBasedAuthenticator();
-    private static final Logger LOGGER = Logger.getLogger(ScriptBasedAuthenticatorFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScriptBasedAuthenticatorFactory.class);
 
     @Override
     public Authenticator create(KeycloakSession session) {
@@ -124,7 +124,7 @@ public class ScriptBasedAuthenticatorFactory implements AuthenticatorFactory, En
         try {
             scriptTemplate = StreamUtil.readString(getClass().getResourceAsStream("/scripts/authenticator-template.js"));
         } catch (IOException ioe) {
-            LOGGER.warn(ioe);
+            LOGGER.warn("", ioe);
         }
         script.setDefaultValue(scriptTemplate);
         script.setHelpText("The script used to authenticate. Scripts must at least define a function with the name 'authenticate(context)' that accepts a context (AuthenticationFlowContext) parameter.\n" +

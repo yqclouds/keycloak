@@ -17,10 +17,11 @@
 
 package org.keycloak.models;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.credential.OTPCredentialModel;
 import org.keycloak.models.utils.Base32;
 import org.keycloak.models.utils.HmacOTP;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -36,7 +37,7 @@ import java.util.Map;
  */
 public class OTPPolicy implements Serializable {
 
-    protected static final Logger logger = Logger.getLogger(OTPPolicy.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(OTPPolicy.class);
     private static final Map<String, String> algToKeyUriAlg = new HashMap<>();
     private static final OtpApp[] allApplications = new OtpApp[]{new FreeOTP(), new GoogleAuthenticator()};
     public static OTPPolicy DEFAULT_POLICY = new OTPPolicy(OTPCredentialModel.TOTP, HmacOTP.HMAC_SHA1, 0, 6, 1, 30);

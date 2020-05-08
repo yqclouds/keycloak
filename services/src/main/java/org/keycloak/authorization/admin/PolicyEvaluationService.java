@@ -18,7 +18,7 @@
 package org.keycloak.authorization.admin;
 
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.admin.representation.PolicyEvaluationResponseBuilder;
@@ -61,7 +61,7 @@ import java.util.stream.Stream;
  */
 public class PolicyEvaluationService {
 
-    private static final Logger logger = Logger.getLogger(PolicyEvaluationService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PolicyEvaluationService.class);
 
     private final AuthorizationProvider authorization;
     private final AdminPermissionEvaluator auth;
@@ -99,7 +99,7 @@ public class PolicyEvaluationService {
 
             return Response.ok(PolicyEvaluationResponseBuilder.build(evaluate(evaluationRequest, createEvaluationContext(evaluationRequest, identity), request), resourceServer, authorization, identity)).build();
         } catch (Exception e) {
-            logger.error("Error while evaluating permissions", e);
+            LOG.error("Error while evaluating permissions", e);
             throw new ErrorResponseException(OAuthErrorException.SERVER_ERROR, "Error while evaluating permissions.", Status.INTERNAL_SERVER_ERROR);
         } finally {
             identity.close();

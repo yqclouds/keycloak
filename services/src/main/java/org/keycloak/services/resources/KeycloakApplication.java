@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.common.util.Resteasy;
 import org.keycloak.services.error.KeycloakErrorHandler;
 import org.keycloak.services.filters.KeycloakTransactionCommitter;
@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @version $Revision: 1 $
  */
 public class KeycloakApplication extends Application {
-    private static final Logger LOG = Logger.getLogger(KeycloakApplication.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KeycloakApplication.class);
 
     public static final AtomicBoolean BOOTSTRAP_ADMIN_USER = new AtomicBoolean(false);
 
@@ -41,7 +41,7 @@ public class KeycloakApplication extends Application {
     protected Set<Class<?>> classes = new HashSet<>();
 
     public KeycloakApplication() {
-        LOG.debugv("RestEasy provider: {0}", Resteasy.getProvider().getClass().getName());
+        LOG.debug("RestEasy provider: {}", Resteasy.getProvider().getClass().getName());
 
         Resteasy.pushDefaultContextObject(KeycloakApplication.class, this);
         Resteasy.pushContext(KeycloakApplication.class, this); // for injection

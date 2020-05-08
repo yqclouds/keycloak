@@ -18,7 +18,6 @@
 package org.keycloak.models.cache.infinispan;
 
 import org.infinispan.Cache;
-import org.jboss.logging.Logger;
 import org.keycloak.models.cache.infinispan.entities.Revisioned;
 import org.keycloak.models.cache.infinispan.events.InvalidationEvent;
 import org.keycloak.models.cache.infinispan.events.RealmCacheInvalidationEvent;
@@ -35,16 +34,8 @@ import java.util.Set;
  */
 @Component
 public class RealmCacheManager extends CacheManager {
-
-    private static final Logger logger = Logger.getLogger(RealmCacheManager.class);
-
     public RealmCacheManager(Cache<String, Revisioned> cache, Cache<String, Long> revisions) {
         super(cache, revisions);
-    }
-
-    @Override
-    protected Logger getLogger() {
-        return logger;
     }
 
     public void realmUpdated(String id, String name, Set<String> invalidations) {

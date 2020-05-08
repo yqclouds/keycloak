@@ -47,7 +47,7 @@ import java.io.IOException;
  */
 public class KeycloakPreAuthActionsFilter extends GenericFilterBean implements ApplicationContextAware {
 
-    private static final Logger log = LoggerFactory.getLogger(KeycloakPreAuthActionsFilter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KeycloakPreAuthActionsFilter.class);
 
     private NodesRegistrationManagement nodesRegistrationManagement = new NodesRegistrationManagement();
     private ApplicationContext applicationContext;
@@ -70,7 +70,7 @@ public class KeycloakPreAuthActionsFilter extends GenericFilterBean implements A
 
     @Override
     public void destroy() {
-        log.debug("Unregistering deployment");
+        LOG.debug("Unregistering deployment");
         nodesRegistrationManagement.stop();
     }
 
@@ -78,9 +78,9 @@ public class KeycloakPreAuthActionsFilter extends GenericFilterBean implements A
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
-        HttpFacade facade = new SimpleHttpFacade((HttpServletRequest)request, (HttpServletResponse)response);
+        HttpFacade facade = new SimpleHttpFacade((HttpServletRequest) request, (HttpServletResponse) response);
         KeycloakDeployment deployment = deploymentContext.resolveDeployment(facade);
-        
+
         if (deployment == null) {
             return;
         }
@@ -91,7 +91,7 @@ public class KeycloakPreAuthActionsFilter extends GenericFilterBean implements A
 
         PreAuthActionsHandler handler = preAuthActionsHandlerFactory.createPreAuthActionsHandler(facade);
         if (handler.handleRequest()) {
-            log.debug("Pre-auth filter handled request: {}", ((HttpServletRequest) request).getRequestURI());
+            LOG.debug("Pre-auth filter handled request: {}", ((HttpServletRequest) request).getRequestURI());
         } else {
             chain.doFilter(request, response);
         }
@@ -105,18 +105,18 @@ public class KeycloakPreAuthActionsFilter extends GenericFilterBean implements A
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
-    
+
     void setNodesRegistrationManagement(NodesRegistrationManagement nodesRegistrationManagement) {
         this.nodesRegistrationManagement = nodesRegistrationManagement;
     }
-    
+
     void setPreAuthActionsHandlerFactory(PreAuthActionsHandlerFactory preAuthActionsHandlerFactory) {
         this.preAuthActionsHandlerFactory = preAuthActionsHandlerFactory;
     }
-    
+
     /**
      * Creates {@link PreAuthActionsHandler}s.
-     * 
+     * <p>
      * Package-private class to enable mocking.
      */
     class PreAuthActionsHandlerFactory {

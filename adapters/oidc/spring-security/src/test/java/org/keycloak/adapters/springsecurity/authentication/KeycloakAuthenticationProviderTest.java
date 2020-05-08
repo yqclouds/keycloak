@@ -32,10 +32,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import java.security.Principal;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -82,7 +79,7 @@ public class KeycloakAuthenticationProviderTest {
 
         Authentication result = provider.authenticate(token);
         assertEquals(Sets.newSet("ROLE_USER", "ROLE_ADMIN"),
-            AuthorityUtils.authorityListToSet(result.getAuthorities()));
+                AuthorityUtils.authorityListToSet(result.getAuthorities()));
     }
 
     private void assertAuthenticationResult(Authentication result) {

@@ -19,7 +19,7 @@ package org.keycloak.policy;
 
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
@@ -72,7 +72,7 @@ public class BlacklistPasswordPolicyProviderFactory implements PasswordPolicyPro
     public static final String BLACKLISTS_PATH_PROPERTY = "blacklistsPath";
     public static final String JBOSS_SERVER_DATA_DIR = "jboss.server.data.dir";
     public static final String PASSWORD_BLACKLISTS_FOLDER = "password-blacklists/";
-    private static final Logger LOG = Logger.getLogger(BlacklistPasswordPolicyProviderFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BlacklistPasswordPolicyProviderFactory.class);
     private ConcurrentMap<String, FileBasedPasswordBlacklist> blacklistRegistry = new ConcurrentHashMap<>();
 
     private volatile Path blacklistsBasePath;
@@ -241,7 +241,7 @@ public class BlacklistPasswordPolicyProviderFactory implements PasswordPolicyPro
             String pathFromJbossDataPath = System.getProperty(JBOSS_SERVER_DATA_DIR) + "/" + PASSWORD_BLACKLISTS_FOLDER;
             if (!Files.exists(Paths.get(pathFromJbossDataPath))) {
                 if (!Paths.get(pathFromJbossDataPath).toFile().mkdirs()) {
-                    LOG.errorf("Could not create folder for password blacklists: %s", pathFromJbossDataPath);
+                    LOG.error("Could not create folder for password blacklists: %s", pathFromJbossDataPath);
                 }
             }
             return ensureExists(Paths.get(pathFromJbossDataPath));
@@ -283,7 +283,7 @@ public class BlacklistPasswordPolicyProviderFactory implements PasswordPolicyPro
         private BloomFilter<String> load() {
 
             try {
-                LOG.infof("Loading blacklist with name %s from %s - start", name, path);
+                LOG.info("Loading blacklist with name %s from %s - start", name, path);
 
                 long passwordCount = getPasswordCount();
 
@@ -296,7 +296,7 @@ public class BlacklistPasswordPolicyProviderFactory implements PasswordPolicyPro
                     br.lines().forEach(filter::put);
                 }
 
-                LOG.infof("Loading blacklist with name %s from %s - end", name, path);
+                LOG.info("Loading blacklist with name %s from %s - end", name, path);
 
                 return filter;
             } catch (IOException e) {

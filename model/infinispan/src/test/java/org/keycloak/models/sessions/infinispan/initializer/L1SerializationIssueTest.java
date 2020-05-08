@@ -25,9 +25,10 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.logging.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 
@@ -39,7 +40,7 @@ import java.io.Serializable;
 @Ignore
 public class L1SerializationIssueTest {
 
-    protected static final Logger logger = Logger.getLogger(L1SerializationIssueTest.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(L1SerializationIssueTest.class);
 
     // Conf
     private static final boolean L1_ENABLED = true;  // Workaround 1 : If it's disabled, the exception won't happen
@@ -63,15 +64,15 @@ public class L1SerializationIssueTest {
 
             node1 = createManager();
             Cache<String, Object> node1Cache = node1.getCache(CACHE_NAME);
-            logger.info("Node1Cache started");
+            LOG.info("Node1Cache started");
 
             node2 = createManager();
             Cache<String, Object> node2Cache = node2.getCache(CACHE_NAME);
-            logger.info("Node2Cache started");
+            LOG.info("Node2Cache started");
 
             node3 = createManager();
             Cache<String, Object> node3Cache = node3.getCache(CACHE_NAME);
-            logger.info("Node3Cache started");
+            LOG.info("Node3Cache started");
 
             // Put some items on node1
             writeItems(node1Cache);
@@ -89,17 +90,17 @@ public class L1SerializationIssueTest {
             node3.stop();
 
             // Wait
-            logger.infof("Stopped node3. Will wait %d milliseconds", TIME_BEFORE_RESTORE_NODE);
+            LOG.info("Stopped node3. Will wait {} milliseconds", TIME_BEFORE_RESTORE_NODE);
             Thread.sleep(TIME_BEFORE_RESTORE_NODE);
 
             // Start node3 again
-            logger.info("Going to start node3 again");
+            LOG.info("Going to start node3 again");
 
             node3 = createManager();
             node3Cache = node3.getCache(CACHE_NAME);
-            logger.info("Node3Cache started again");
+            LOG.info("Node3Cache started again");
 
-            logger.info("Test finished successfuly");
+            LOG.info("Test finished successfuly");
         } finally {
             if (node1 != null) node1.stop();
             if (node2 != null) node2.stop();
@@ -114,7 +115,7 @@ public class L1SerializationIssueTest {
             String key = "key-" + i;
             cache.put(key, new MySerializable());
         }
-        logger.infof("Write %d items in %d ms", ITEMS_COUNT, System.currentTimeMillis() - start);
+        LOG.info("Write {} items in {} ms", ITEMS_COUNT, System.currentTimeMillis() - start);
     }
 
 
@@ -124,7 +125,7 @@ public class L1SerializationIssueTest {
             String key = "key-" + i;
             cache.get(key);
         }
-        logger.infof("Read %d items in %d ms", ITEMS_COUNT, System.currentTimeMillis() - start);
+        LOG.info("Read {} items in {} ms", ITEMS_COUNT, System.currentTimeMillis() - start);
     }
 
 

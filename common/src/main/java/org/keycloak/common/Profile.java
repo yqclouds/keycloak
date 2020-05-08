@@ -17,7 +17,8 @@
 
 package org.keycloak.common;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,8 +34,8 @@ import static org.keycloak.common.Profile.Type.DEPRECATED;
  * @version $Revision: 1 $
  */
 public class Profile {
+    private static final Logger LOG = LoggerFactory.getLogger(Profile.class);
 
-    private static final Logger logger = Logger.getLogger(Profile.class);
     private static Profile CURRENT = new Profile();
     private final ProductValue product;
     private final ProfileValue profile;
@@ -65,11 +66,11 @@ public class Profile {
                     if (enabled == null || !enabled) {
                         disabledFeatures.add(f);
                     } else if (DEPRECATED.equals(type)) {
-                        logger.warnf("Deprecated feature enabled: " + f.name().toLowerCase());
+                        LOG.warn("Deprecated feature enabled: {}", f.name().toLowerCase());
                         if (Feature.UPLOAD_SCRIPTS.equals(f)) {
                             previewFeatures.add(Feature.SCRIPTS);
                             disabledFeatures.remove(Feature.SCRIPTS);
-                            logger.warnf("Preview feature enabled: " + Feature.SCRIPTS.name().toLowerCase());
+                            LOG.warn("Preview feature enabled: {}", Feature.SCRIPTS.name().toLowerCase());
                         }
                     }
                     break;
@@ -78,7 +79,7 @@ public class Profile {
                     if ((enabled == null || !enabled) && !profile.equals(ProfileValue.PREVIEW)) {
                         disabledFeatures.add(f);
                     } else {
-                        logger.info("Preview feature enabled: " + f.name().toLowerCase());
+                        LOG.info("Preview feature enabled: " + f.name().toLowerCase());
                     }
                     break;
                 case EXPERIMENTAL:
@@ -86,7 +87,7 @@ public class Profile {
                     if (enabled == null || !enabled) {
                         disabledFeatures.add(f);
                     } else {
-                        logger.warn("Experimental feature enabled: " + f.name().toLowerCase());
+                        LOG.warn("Experimental feature enabled: " + f.name().toLowerCase());
                     }
                     break;
             }

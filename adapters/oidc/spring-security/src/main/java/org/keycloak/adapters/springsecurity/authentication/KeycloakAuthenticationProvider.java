@@ -56,8 +56,8 @@ public class KeycloakAuthenticationProvider implements AuthenticationProvider {
     private Collection<? extends GrantedAuthority> mapAuthorities(
             Collection<? extends GrantedAuthority> authorities) {
         return grantedAuthoritiesMapper != null
-            ? grantedAuthoritiesMapper.mapAuthorities(authorities)
-            : authorities;
+                ? grantedAuthoritiesMapper.mapAuthorities(authorities)
+                : authorities;
     }
 
     @Override

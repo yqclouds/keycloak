@@ -17,7 +17,7 @@
 
 package org.keycloak.authentication.requiredactions;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.authentication.ConsoleDisplayMode;
 import org.keycloak.authentication.RequiredActionContext;
 import org.keycloak.authentication.RequiredActionProvider;
@@ -49,14 +49,14 @@ import java.util.Map;
  */
 public class ConsoleVerifyEmail implements RequiredActionProvider {
     public static final ConsoleVerifyEmail SINGLETON = new ConsoleVerifyEmail();
-    private static final Logger logger = Logger.getLogger(ConsoleVerifyEmail.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ConsoleVerifyEmail.class);
     public static String EMAIL_CODE = "email_code";
 
     @Override
     public void evaluateTriggers(RequiredActionContext context) {
         if (context.getRealm().isVerifyEmail() && !context.getUser().isEmailVerified()) {
             context.getUser().addRequiredAction(UserModel.RequiredAction.VERIFY_EMAIL);
-            logger.debug("User is required to verify email");
+            LOG.debug("User is required to verify email");
         }
     }
 
@@ -138,7 +138,7 @@ public class ConsoleVerifyEmail implements RequiredActionProvider {
                     .send("emailVerificationSubject", "email-verification-with-code.ftl", attributes);
             event.success();
         } catch (EmailException e) {
-            logger.error("Failed to send verification email", e);
+            LOG.error("Failed to send verification email", e);
             event.error(Errors.EMAIL_SEND_FAILED);
         }
 

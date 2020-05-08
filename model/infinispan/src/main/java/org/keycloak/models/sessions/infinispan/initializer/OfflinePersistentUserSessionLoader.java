@@ -20,12 +20,13 @@ package org.keycloak.models.sessions.infinispan.initializer;
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.context.Flag;
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.Retry;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserSessionModel;
 import org.keycloak.models.session.UserSessionPersisterProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.Serializable;
@@ -43,7 +44,7 @@ public class OfflinePersistentUserSessionLoader implements SessionLoader<Offline
     public static final String PERSISTENT_SESSIONS_LOADED_IN_CURRENT_DC = "PERSISTENT_SESSIONS_LOADED_IN_CURRENT_DC";
     // Placeholder String used in the searching conditions to identify very first session
     private static final String FIRST_SESSION_ID = "000";
-    private static final Logger log = Logger.getLogger(OfflinePersistentUserSessionLoader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(OfflinePersistentUserSessionLoader.class);
     private final int sessionsPerSegment;
 
     public OfflinePersistentUserSessionLoader(int sessionsPerSegment) {
@@ -93,11 +94,11 @@ public class OfflinePersistentUserSessionLoader implements SessionLoader<Offline
     public OfflinePersistentWorkerResult loadSessions(KeycloakSession session, OfflinePersistentLoaderContext loaderContext, OfflinePersistentWorkerContext ctx) {
         int first = ctx.getWorkerId() * sessionsPerSegment;
 
-        log.tracef("Loading sessions for segment=%d createdOn=%d lastSessionId=%s", ctx.getSegment(), ctx.getLastCreatedOn(), ctx.getLastSessionId());
+        LOG.trace("Loading sessions for segment={} createdOn={} lastSessionId={}", ctx.getSegment(), ctx.getLastCreatedOn(), ctx.getLastSessionId());
 
         List<UserSessionModel> sessions = userSessionPersisterProvider.loadUserSessions(first, sessionsPerSegment, true, ctx.getLastCreatedOn(), ctx.getLastSessionId());
 
-        log.tracef("Sessions loaded from DB - segment=%d createdOn=%d lastSessionId=%s", ctx.getSegment(), ctx.getLastCreatedOn(), ctx.getLastSessionId());
+        LOG.trace("Sessions loaded from DB - segment={} createdOn={} lastSessionId={}", ctx.getSegment(), ctx.getLastCreatedOn(), ctx.getLastSessionId());
 
         UserSessionModel lastSession = null;
         if (!sessions.isEmpty()) {
@@ -110,7 +111,7 @@ public class OfflinePersistentUserSessionLoader implements SessionLoader<Offline
         int lastCreatedOn = lastSession == null ? Time.currentTime() + 100000 : lastSession.getStarted();
         String lastSessionId = lastSession == null ? FIRST_SESSION_ID : lastSession.getId();
 
-        log.tracef("Sessions imported to infinispan - segment: %d, lastCreatedOn: %d, lastSessionId: %s", ctx.getSegment(), lastCreatedOn, lastSessionId);
+        LOG.trace("Sessions imported to infinispan - segment: {}, lastCreatedOn: {}, lastSessionId: {}", ctx.getSegment(), lastCreatedOn, lastSessionId);
 
         return new OfflinePersistentWorkerResult(true, ctx.getSegment(), ctx.getWorkerId(), lastCreatedOn, lastSessionId);
     }
@@ -122,10 +123,10 @@ public class OfflinePersistentUserSessionLoader implements SessionLoader<Offline
         Boolean sessionsLoaded = (Boolean) workCache.get(PERSISTENT_SESSIONS_LOADED);
 
         if (sessionsLoaded != null && sessionsLoaded) {
-            log.debugf("Persistent sessions loaded already.");
+            LOG.debug("Persistent sessions loaded already.");
             return true;
         } else {
-            log.debugf("Persistent sessions not yet loaded.");
+            LOG.debug("Persistent sessions not yet loaded.");
             return false;
         }
     }
@@ -146,7 +147,7 @@ public class OfflinePersistentUserSessionLoader implements SessionLoader<Offline
                         .put(PERSISTENT_SESSIONS_LOADED, true);
 
             } catch (HotRodClientException re) {
-                log.warnf(re, "Failed to write flag PERSISTENT_SESSIONS_LOADED in iteration '%d' . Retrying", iteration);
+                LOG.warn("Failed to write flag PERSISTENT_SESSIONS_LOADED in iteration '{}' . Retrying", iteration);
 
                 // Rethrow the exception. Retry will take care of handle the exception and eventually retry the operation.
                 throw re;
@@ -160,7 +161,7 @@ public class OfflinePersistentUserSessionLoader implements SessionLoader<Offline
                 .put(PERSISTENT_SESSIONS_LOADED_IN_CURRENT_DC, true);
 
 
-        log.debugf("Persistent sessions loaded successfully!");
+        LOG.debug("Persistent sessions loaded successfully!");
     }
 
 

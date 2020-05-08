@@ -16,7 +16,6 @@
  */
 package org.keycloak.services.resources.admin.permissions;
 
-import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.model.Policy;
@@ -27,6 +26,8 @@ import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.models.*;
 import org.keycloak.representations.idm.authorization.DecisionStrategy;
 import org.keycloak.services.ForbiddenException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -38,7 +39,7 @@ import java.util.Set;
  * @version $Revision: 1 $
  */
 class RolePermissions implements RolePermissionEvaluator, RolePermissionManagement {
-    private static final Logger logger = Logger.getLogger(RolePermissions.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RolePermissions.class);
     protected final KeycloakSession session;
     protected final RealmModel realm;
     protected final AuthorizationProvider authz;
@@ -271,7 +272,7 @@ class RolePermissions implements RolePermissionEvaluator, RolePermissionManageme
     }
 
     private boolean adminConflictMessage(RoleModel role) {
-        logger.debug("Trying to assign admin privileges of role: " + role.getName() + " but admin doesn't have same privilege");
+        LOG.debug("Trying to assign admin privileges of role: " + role.getName() + " but admin doesn't have same privilege");
         return false;
     }
 

@@ -17,17 +17,17 @@
 
 package org.keycloak.storage.ldap.mappers;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.AbstractKeycloakTransaction;
 import org.keycloak.storage.ldap.LDAPStorageProvider;
 import org.keycloak.storage.ldap.idm.model.LDAPObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class LDAPTransaction extends AbstractKeycloakTransaction {
-
-    public static final Logger logger = Logger.getLogger(LDAPTransaction.class);
+    public static final Logger LOG = LoggerFactory.getLogger(LDAPTransaction.class);
 
     private final LDAPStorageProvider ldapProvider;
     private final LDAPObject ldapUser;
@@ -40,8 +40,8 @@ public class LDAPTransaction extends AbstractKeycloakTransaction {
 
     @Override
     protected void commitImpl() {
-        if (logger.isTraceEnabled()) {
-            logger.trace("Transaction commit! Updating LDAP attributes for object " + ldapUser.getDn().toString() + ", attributes: " + ldapUser.getAttributes());
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Transaction commit! Updating LDAP attributes for object " + ldapUser.getDn().toString() + ", attributes: " + ldapUser.getAttributes());
         }
 
         ldapProvider.getLdapIdentityStore().update(ldapUser);
@@ -50,7 +50,7 @@ public class LDAPTransaction extends AbstractKeycloakTransaction {
 
     @Override
     protected void rollbackImpl() {
-        logger.warn("Transaction rollback! Ignoring LDAP updates for object " + ldapUser.getDn().toString());
+        LOG.warn("Transaction rollback! Ignoring LDAP updates for object " + ldapUser.getDn().toString());
     }
 
 }

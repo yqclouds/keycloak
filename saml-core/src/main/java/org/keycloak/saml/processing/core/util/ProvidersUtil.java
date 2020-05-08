@@ -33,7 +33,7 @@ import java.security.Security;
  */
 public class ProvidersUtil {
 
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
 
     /**
      * No-op call such that the default system properties are set
@@ -55,7 +55,7 @@ public class ProvidersUtil {
             Class<?> clazz = SecurityActions
                     .loadClass(XMLSignatureUtil.class, "org.apache.jcp.xml.dsig.internal.dom.XMLDSigRI");
             if (clazz == null)
-                throw logger.classNotLoadedError("org.apache.jcp.xml.dsig.internal.dom.XMLDSigRI");
+                throw LOG.classNotLoadedError("org.apache.jcp.xml.dsig.internal.dom.XMLDSigRI");
             addJceProvider("ApacheXMLDSig", (Provider) clazz.newInstance());
         } catch (Throwable t) {
             // ignore - may be a NoClassDefFound if XMLDSigRI isn't avail
@@ -91,14 +91,14 @@ public class ProvidersUtil {
                 if (ret == 0) {
                     ret = Security.insertProviderAt(provider, 2);
                 }
-                if (logger.isDebugEnabled()) {
-                    logger.debug("The provider " + provider.getName() + " - " + provider.getVersion() + " was added at position: "
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("The provider " + provider.getName() + " - " + provider.getVersion() + " was added at position: "
                             + ret);
                 }
                 return provider.getName();
             } catch (Throwable t) {
-                if (logger.isDebugEnabled()) {
-                    logger.jceProviderCouldNotBeLoaded(name, t);
+                if (LOG.isDebugEnabled()) {
+                    LOG.jceProviderCouldNotBeLoaded(name, t);
                 }
                 return null;
             }
@@ -115,8 +115,8 @@ public class ProvidersUtil {
                 Provider provider = clazz.newInstance();
                 return addJceProvider(name, provider);
             } catch (Throwable t) {
-                if (logger.isDebugEnabled()) {
-                    logger.jceProviderCouldNotBeLoaded(name, t);
+                if (LOG.isDebugEnabled()) {
+                    LOG.jceProviderCouldNotBeLoaded(name, t);
                 }
                 return null;
             }

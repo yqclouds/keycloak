@@ -17,7 +17,6 @@
 
 package org.keycloak.adapters.jaas;
 
-import org.jboss.logging.Logger;
 import org.keycloak.KeycloakPrincipal;
 import org.keycloak.adapters.AdapterUtils;
 import org.keycloak.adapters.KeycloakDeployment;
@@ -28,16 +27,13 @@ import org.keycloak.common.VerificationException;
 import org.keycloak.common.util.FindFile;
 import org.keycloak.common.util.reflections.Reflections;
 import org.keycloak.representations.AccessToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.callback.*;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
@@ -54,6 +50,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public abstract class AbstractKeycloakLoginModule implements LoginModule {
+    private static final Logger LOG = LoggerFactory.getLogger(BearerTokenLoginModule.class);
 
     public static final String KEYCLOAK_CONFIG_FILE_OPTION = "keycloak-config-file";
     public static final String ROLE_PRINCIPAL_CLASS_OPTION = "role-principal-class";
@@ -72,9 +69,9 @@ public abstract class AbstractKeycloakLoginModule implements LoginModule {
         this.subject = subject;
         this.callbackHandler = callbackHandler;
 
-        String configFile = (String)options.get(KEYCLOAK_CONFIG_FILE_OPTION);
-        rolePrincipalClass = (String)options.get(ROLE_PRINCIPAL_CLASS_OPTION);
-        getLogger().debug("Declared options: " + KEYCLOAK_CONFIG_FILE_OPTION + "=" + configFile + ", " + ROLE_PRINCIPAL_CLASS_OPTION + "=" + rolePrincipalClass);
+        String configFile = (String) options.get(KEYCLOAK_CONFIG_FILE_OPTION);
+        rolePrincipalClass = (String) options.get(ROLE_PRINCIPAL_CLASS_OPTION);
+        LOG.debug("Declared options: " + KEYCLOAK_CONFIG_FILE_OPTION + "=" + configFile + ", " + ROLE_PRINCIPAL_CLASS_OPTION + "=" + rolePrincipalClass);
 
         if (configFile != null) {
             deployment = deployments.get(configFile);
@@ -104,11 +101,11 @@ public abstract class AbstractKeycloakLoginModule implements LoginModule {
             return kd;
 
         } catch (RuntimeException e) {
-            getLogger().debug("Unable to find or parse file " + keycloakConfigFile + " due to " + e.getMessage(), e);
+            LOG.debug("Unable to find or parse file " + keycloakConfigFile + " due to " + e.getMessage(), e);
             throw e;
         }
     }
-    
+
 
     @Override
     public boolean login() throws LoginException {
@@ -132,7 +129,7 @@ public abstract class AbstractKeycloakLoginModule implements LoginModule {
                 return false;
             }
         } catch (UnsupportedCallbackException uce) {
-            getLogger().warn("Error: " + uce.getCallback().toString()
+            LOG.warn("Error: " + uce.getCallback().toString()
                     + " not available to gather authentication information from the user");
             return false;
         } catch (Exception e) {
@@ -169,7 +166,7 @@ public abstract class AbstractKeycloakLoginModule implements LoginModule {
                 Constructor<Principal> constructor = clazz.getDeclaredConstructor(String.class);
                 return constructor.newInstance(roleName);
             } catch (Exception e) {
-                getLogger().warn("Unable to create declared roleClass " + rolePrincipalClass + " due to " + e.getMessage());
+                LOG.warn("Unable to create declared roleClass " + rolePrincipalClass + " due to " + e.getMessage());
             }
         }
 
@@ -209,7 +206,6 @@ public abstract class AbstractKeycloakLoginModule implements LoginModule {
 
     /**
      * Called after accessToken was verified (including signature, expiration etc)
-     *
      */
     protected Auth postTokenVerification(String tokenString, AccessToken token) {
         boolean verifyCaller;
@@ -231,9 +227,6 @@ public abstract class AbstractKeycloakLoginModule implements LoginModule {
 
 
     protected abstract Auth doAuth(String username, String password) throws Exception;
-
-    protected abstract Logger getLogger();
-
 
     public static class Auth {
         private final KeycloakPrincipal<RefreshableKeycloakSecurityContext> principal;

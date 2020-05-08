@@ -16,10 +16,10 @@
  */
 package org.keycloak.adapters.authorization.cip;
 
-import java.util.Map;
-
 import org.keycloak.adapters.authorization.ClaimInformationPointProviderFactory;
 import org.keycloak.adapters.authorization.PolicyEnforcer;
+
+import java.util.Map;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>

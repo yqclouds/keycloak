@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  * @resource Client Role Mappings
  */
 public class ClientRoleMappingsResource {
-    protected static final Logger logger = Logger.getLogger(ClientRoleMappingsResource.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(ClientRoleMappingsResource.class);
 
     protected KeycloakSession session;
     protected RealmModel realm;

@@ -17,7 +17,7 @@
 
 package org.keycloak.authentication.authenticators.broker;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.authenticators.broker.util.SerializedBrokeredIdentityContext;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
@@ -41,7 +41,7 @@ import java.util.List;
  */
 public class IdpReviewProfileAuthenticator extends AbstractIdpAuthenticator {
 
-    private static final Logger logger = Logger.getLogger(IdpReviewProfileAuthenticator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IdpReviewProfileAuthenticator.class);
 
     @Override
     public boolean requiresUser() {
@@ -54,7 +54,7 @@ public class IdpReviewProfileAuthenticator extends AbstractIdpAuthenticator {
 
         if (requiresUpdateProfilePage(context, userCtx, brokerContext)) {
 
-            logger.debugf("Identity provider '%s' requires update profile action for broker user '%s'.", idpConfig.getAlias(), userCtx.getUsername());
+            LOG.debug("Identity provider '%s' requires update profile action for broker user '%s'.", idpConfig.getAlias(), userCtx.getUsername());
 
             // No formData for first render. The profile is rendered from userCtx
             Response challengeResponse = context.form()
@@ -113,8 +113,8 @@ public class IdpReviewProfileAuthenticator extends AbstractIdpAuthenticator {
 
         String email = formData.getFirst(UserModel.EMAIL);
         if (!ObjectUtil.isEqualOrBothNull(email, userCtx.getEmail())) {
-            if (logger.isTraceEnabled()) {
-                logger.tracef("Email updated on updateProfile page to '%s' ", email);
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Email updated on updateProfile page to '%s' ", email);
             }
 
             userCtx.setEmail(email);
@@ -125,7 +125,7 @@ public class IdpReviewProfileAuthenticator extends AbstractIdpAuthenticator {
 
         userCtx.saveToAuthenticationSession(context.getAuthenticationSession(), BROKERED_CONTEXT_NOTE);
 
-        logger.debugf("Profile updated successfully after first authentication with identity provider '%s' for broker user '%s'.", brokerContext.getIdpConfig().getAlias(), userCtx.getUsername());
+        LOG.debug("Profile updated successfully after first authentication with identity provider '%s' for broker user '%s'.", brokerContext.getIdpConfig().getAlias(), userCtx.getUsername());
 
         event.detail(Details.UPDATED_EMAIL, email);
 

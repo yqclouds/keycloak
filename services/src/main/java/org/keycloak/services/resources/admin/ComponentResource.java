@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.component.ComponentFactory;
@@ -53,7 +53,7 @@ import java.util.*;
  * @resource Component
  */
 public class ComponentResource {
-    protected static final Logger logger = Logger.getLogger(ComponentResource.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(ComponentResource.class);
 
     protected RealmModel realm;
     @Context
@@ -96,7 +96,7 @@ public class ComponentResource {
             try {
                 rep = ModelToRepresentation.toRepresentation(session, component, false);
             } catch (Exception e) {
-                logger.error("Failed to get component list for component model" + component.getName() + "of realm " + realm.getName());
+                LOG.error("Failed to get component list for component model" + component.getName() + "of realm " + realm.getName());
                 rep = ModelToRepresentation.toRepresentationWithoutConfig(component);
             }
             reps.add(rep);

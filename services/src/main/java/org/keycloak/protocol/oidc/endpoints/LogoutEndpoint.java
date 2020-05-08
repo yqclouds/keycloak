@@ -17,7 +17,6 @@
 
 package org.keycloak.protocol.oidc.endpoints;
 
-import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.OAuth2Constants;
@@ -45,6 +44,8 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.Cors;
 import org.keycloak.services.util.MtlsHoKTokenUtil;
 import org.keycloak.util.TokenUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.Consumes;
@@ -57,7 +58,7 @@ import javax.ws.rs.core.*;
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class LogoutEndpoint {
-    private static final Logger logger = Logger.getLogger(LogoutEndpoint.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LogoutEndpoint.class);
 
     @Context
     private KeycloakSession session;
@@ -249,9 +250,9 @@ public class LogoutEndpoint {
         if (redirect != null) userSession.setNote(OIDCLoginProtocol.LOGOUT_REDIRECT_URI, redirect);
         if (state != null) userSession.setNote(OIDCLoginProtocol.LOGOUT_STATE_PARAM, state);
         userSession.setNote(AuthenticationManager.KEYCLOAK_LOGOUT_PROTOCOL, OIDCLoginProtocol.LOGIN_PROTOCOL);
-        logger.debug("Initiating OIDC browser logout");
+        LOG.debug("Initiating OIDC browser logout");
         Response response = AuthenticationManager.browserLogout(session, realm, userSession, session.getContext().getUri(), clientConnection, headers, initiatingIdp);
-        logger.debug("finishing OIDC browser logout");
+        LOG.debug("finishing OIDC browser logout");
         return response;
     }
 }

@@ -16,7 +16,6 @@
  */
 package org.keycloak.authorization.client.util;
 
-import org.jboss.logging.Logger;
 import org.keycloak.authorization.client.Configuration;
 import org.keycloak.authorization.client.representation.ServerConfiguration;
 import org.keycloak.common.util.Time;
@@ -25,12 +24,14 @@ import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.RefreshToken;
 import org.keycloak.util.JsonSerialization;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Callable;
 
 public class TokenCallable implements Callable<String> {
+    private static final Logger LOG = LoggerFactory.getLogger(TokenCallable.class);
 
-    private static Logger log = Logger.getLogger(TokenCallable.class);
     private final String userName;
     private final String password;
     private final Http http;
@@ -63,7 +64,7 @@ public class TokenCallable implements Callable<String> {
             try {
                 RefreshToken refreshToken = JsonSerialization.readValue(new JWSInput(refreshTokenValue).getContent(), RefreshToken.class);
                 if (!refreshToken.isActive() || !isTokenTimeToLiveSufficient(refreshToken)) {
-                    log.debug("Refresh token is expired.");
+                    LOG.debug("Refresh token is expired.");
                     if (userName == null || password == null) {
                         clientToken = obtainAccessToken();
                     } else {
@@ -84,7 +85,7 @@ public class TokenCallable implements Callable<String> {
             if (accessToken.isActive() && this.isTokenTimeToLiveSufficient(accessToken)) {
                 return token;
             } else {
-                log.debug("Access token is expired.");
+                LOG.debug("Access token is expired.");
             }
 
             clientToken = http.<AccessTokenResponse>post(serverConfiguration.getTokenEndpoint())

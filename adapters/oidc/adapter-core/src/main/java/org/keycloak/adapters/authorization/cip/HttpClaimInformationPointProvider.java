@@ -16,19 +16,6 @@
  */
 package org.keycloak.adapters.authorization.cip;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -44,6 +31,14 @@ import org.keycloak.adapters.spi.HttpFacade;
 import org.keycloak.authorization.client.util.HttpResponseException;
 import org.keycloak.common.util.StreamUtil;
 import org.keycloak.util.JsonSerialization;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>

@@ -19,7 +19,7 @@ package org.keycloak.authorization.protection.introspect;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.protocol.oidc.AccessTokenIntrospectionProvider;
 import org.keycloak.representations.AccessToken;
@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
  */
 public class RPTIntrospectionProvider extends AccessTokenIntrospectionProvider {
 
-    protected static final Logger LOGGER = Logger.getLogger(RPTIntrospectionProvider.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(RPTIntrospectionProvider.class);
 
     public RPTIntrospectionProvider(KeycloakSession session) {
         super(session);

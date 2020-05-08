@@ -17,7 +17,6 @@
 
 package org.keycloak.storage.ldap.mappers;
 
-import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
@@ -25,6 +24,8 @@ import org.keycloak.models.utils.UserModelDelegate;
 import org.keycloak.storage.ldap.LDAPStorageProvider;
 import org.keycloak.storage.ldap.idm.model.LDAPObject;
 import org.keycloak.storage.ldap.idm.query.internal.LDAPQuery;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
@@ -34,7 +35,7 @@ import java.util.Set;
 public class HardcodedLDAPRoleStorageMapper extends AbstractLDAPStorageMapper {
 
     public static final String ROLE = "role";
-    private static final Logger logger = Logger.getLogger(HardcodedLDAPRoleStorageMapper.class);
+    private static final Logger LOG = LoggerFactory.getLogger(HardcodedLDAPRoleStorageMapper.class);
 
     public HardcodedLDAPRoleStorageMapper(ComponentModel mapperModel, LDAPStorageProvider ldapProvider) {
         super(mapperModel, ldapProvider);
@@ -114,7 +115,7 @@ public class HardcodedLDAPRoleStorageMapper extends AbstractLDAPStorageMapper {
         String roleName = mapperModel.getConfig().getFirst(HardcodedLDAPRoleStorageMapper.ROLE);
         RoleModel role = KeycloakModelUtils.getRoleFromString(realm, roleName);
         if (role == null) {
-            logger.warnf("Hardcoded role '%s' configured in mapper '%s' is not available anymore");
+            LOG.warn("Hardcoded role '{}' configured in mapper '{}' is not available anymore");
         }
         return role;
     }

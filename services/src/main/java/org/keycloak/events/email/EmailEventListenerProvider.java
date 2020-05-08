@@ -17,7 +17,6 @@
 
 package org.keycloak.events.email;
 
-import org.jboss.logging.Logger;
 import org.keycloak.email.EmailException;
 import org.keycloak.email.EmailTemplateProvider;
 import org.keycloak.events.Event;
@@ -28,6 +27,8 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RealmProvider;
 import org.keycloak.models.UserModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
@@ -36,7 +37,7 @@ import java.util.Set;
  */
 public class EmailEventListenerProvider implements EventListenerProvider {
 
-    private static final Logger log = Logger.getLogger(EmailEventListenerProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EmailEventListenerProvider.class);
 
     private KeycloakSession session;
     private RealmProvider model;
@@ -60,7 +61,7 @@ public class EmailEventListenerProvider implements EventListenerProvider {
                     try {
                         emailTemplateProvider.setRealm(realm).setUser(user).sendEvent(event);
                     } catch (EmailException e) {
-                        log.error("Failed to send type mail", e);
+                        LOG.error("Failed to send type mail", e);
                     }
                 }
             }

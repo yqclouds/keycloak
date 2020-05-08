@@ -36,6 +36,7 @@ public interface HttpFacade {
     interface Request {
 
         String getMethod();
+
         /**
          * Full request URI with query params
          *
@@ -64,31 +65,45 @@ public interface HttpFacade {
          * @return
          */
         String getFirstParam(String param);
+
         String getQueryParamValue(String param);
+
         Cookie getCookie(String cookieName);
+
         String getHeader(String name);
+
         List<String> getHeaders(String name);
+
         InputStream getInputStream();
+
         InputStream getInputStream(boolean buffered);
 
         String getRemoteAddr();
+
         void setError(AuthenticationError error);
+
         void setError(LogoutError error);
     }
 
     interface Response {
         void setStatus(int status);
+
         void addHeader(String name, String value);
+
         void setHeader(String name, String value);
+
         void resetCookie(String name, String path);
+
         void setCookie(String name, String value, String path, String domain, int maxAge, boolean secure, boolean httpOnly);
+
         OutputStream getOutputStream();
+
         void sendError(int code);
+
         void sendError(int code, String message);
 
         /**
          * If the response is finished, end it.
-         *
          */
         void end();
     }

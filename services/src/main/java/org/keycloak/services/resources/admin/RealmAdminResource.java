@@ -17,7 +17,7 @@
 package org.keycloak.services.resources.admin;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.Config;
@@ -85,7 +85,7 @@ import static org.keycloak.util.JsonSerialization.readValue;
  * @resource Realms Admin
  */
 public class RealmAdminResource {
-    protected static final Logger logger = Logger.getLogger(RealmAdminResource.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(RealmAdminResource.class);
     protected AdminPermissionEvaluator auth;
     protected RealmModel realm;
     @Context
@@ -359,7 +359,7 @@ public class RealmAdminResource {
     public Response updateRealm(final RealmRepresentation rep) {
         auth.realm().requireManageRealm();
 
-        logger.debug("updating realm: " + realm.getName());
+        LOG.debug("updating realm: " + realm.getName());
 
         if (Config.getAdminRealm().equals(realm.getName()) && (rep.getRealm() != null && !rep.getRealm().equals(Config.getAdminRealm()))) {
             return ErrorResponse.error("Can't rename master realm", Status.BAD_REQUEST);
@@ -409,7 +409,7 @@ public class RealmAdminResource {
         } catch (ModelException e) {
             return ErrorResponse.error(e.getMessage(), Status.BAD_REQUEST);
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
             return ErrorResponse.error("Failed to update realm", Response.Status.INTERNAL_SERVER_ERROR);
         }
     }
@@ -640,7 +640,7 @@ public class RealmAdminResource {
     public void updateRealmEventsConfig(final RealmEventsConfigRepresentation rep) {
         auth.realm().requireManageEvents();
 
-        logger.debug("updating realm events config: " + realm.getName());
+        LOG.debug("updating realm events config: " + realm.getName());
         new RealmManager(session).updateRealmEventsConfig(rep, realm);
         adminEvent.operation(OperationType.UPDATE).resource(ResourceType.REALM).realm(realm)
                 .resourcePath(session.getContext().getUri()).representation(rep)
@@ -958,7 +958,7 @@ public class RealmAdminResource {
             emailTemplateProvider.sendSmtpTestEmail(settings, user);
         } catch (Exception e) {
             e.printStackTrace();
-            logger.errorf("Failed to send email \n %s", e.getCause());
+            LOG.error("Failed to send email \n {}", e.getCause());
             return ErrorResponse.error("Failed to send email", Response.Status.INTERNAL_SERVER_ERROR);
         }
 

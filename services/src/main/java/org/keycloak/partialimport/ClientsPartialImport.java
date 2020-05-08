@@ -17,7 +17,7 @@
 
 package org.keycloak.partialimport;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.RepresentationToModel;
@@ -36,7 +36,7 @@ public class ClientsPartialImport extends AbstractPartialImport<ClientRepresenta
 
     private static Set<String> INTERNAL_CLIENTS = Collections.unmodifiableSet(new HashSet(Constants.defaultClients));
 
-    private static Logger logger = Logger.getLogger(ClientsPartialImport.class);
+    private static Logger LOG = LoggerFactory.getLogger(ClientsPartialImport.class);
 
     public static boolean isInternalClient(String clientId) {
         if (clientId != null && clientId.endsWith("-realm")) {
@@ -59,7 +59,7 @@ public class ClientsPartialImport extends AbstractPartialImport<ClientRepresenta
             if (!isInternalClient(c.getClientId())) {
                 ret.add(c);
             } else {
-                logger.debugv("Internal client {0} will not be processed", c.getClientId());
+                LOG.debug("Internal client {} will not be processed", c.getClientId());
             }
         }
         return ret;

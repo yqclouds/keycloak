@@ -25,7 +25,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.common.util.EnvUtil;
 import org.keycloak.common.util.KeystoreUtil;
 import org.keycloak.models.KeycloakSession;
@@ -65,7 +65,7 @@ import java.util.concurrent.TimeUnit;
 @ProviderFactory(id = "default", providerClasses = HttpClientProvider.class)
 public class DefaultHttpClientFactory implements HttpClientFactory {
 
-    private static final Logger logger = Logger.getLogger(DefaultHttpClientFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultHttpClientFactory.class);
 
     @Value("${socket-timeout-millis}")
     private long socketTimeout = -1L;
@@ -174,7 +174,7 @@ public class DefaultHttpClientFactory implements HttpClientFactory {
                     boolean disableTruststoreProvider = truststoreProvider == null || truststoreProvider.getTruststore() == null;
 
                     if (disableTruststoreProvider) {
-                        logger.warn("TruststoreProvider is disabled");
+                        LOG.warn("TruststoreProvider is disabled");
                     } else {
                         builder.hostnameVerification(HttpClientBuilder.HostnameVerificationPolicy.valueOf(truststoreProvider.getPolicy().name()));
                         try {
@@ -185,7 +185,7 @@ public class DefaultHttpClientFactory implements HttpClientFactory {
                     }
 
                     if (disableTrustManager) {
-                        logger.warn("TrustManager is disabled");
+                        LOG.warn("TrustManager is disabled");
                         builder.disableTrustManager();
                     }
 

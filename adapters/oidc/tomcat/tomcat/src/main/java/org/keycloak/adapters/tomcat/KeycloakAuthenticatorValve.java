@@ -42,25 +42,25 @@ import java.util.List;
  * @version $Revision: 1 $
  */
 public class KeycloakAuthenticatorValve extends AbstractKeycloakAuthenticatorValve {
-    
+
     /**
      * Method called by Tomcat < 8.5.5
      */
     public boolean authenticate(Request request, HttpServletResponse response) throws IOException {
-       return authenticateInternal(request, response, request.getContext().getLoginConfig());
+        return authenticateInternal(request, response, request.getContext().getLoginConfig());
     }
-    
+
     /**
      * Method called by Tomcat >= 8.5.5
      */
     protected boolean doAuthenticate(Request request, HttpServletResponse response) throws IOException {
-       return this.authenticate(request, response);
+        return this.authenticate(request, response);
     }
 
     @Override
     protected boolean forwardToErrorPageInternal(Request request, HttpServletResponse response, Object loginConfig) throws IOException {
         if (loginConfig == null) return false;
-        LoginConfig config = (LoginConfig)loginConfig;
+        LoginConfig config = (LoginConfig) loginConfig;
         if (config.getErrorPage() == null) return false;
         // had to do this to get around compiler/IDE issues :(
         try {

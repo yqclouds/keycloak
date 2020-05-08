@@ -17,7 +17,6 @@
 
 package org.keycloak.models.sessions.infinispan.changes.sessions;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserSessionModel;
@@ -25,6 +24,8 @@ import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.changes.SessionUpdateTask;
 import org.keycloak.models.sessions.infinispan.entities.AuthenticatedClientSessionEntity;
 import org.keycloak.models.sessions.infinispan.entities.UserSessionEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
@@ -33,7 +34,7 @@ import java.util.UUID;
  */
 public class CrossDCLastSessionRefreshChecker {
 
-    public static final Logger logger = Logger.getLogger(CrossDCLastSessionRefreshChecker.class);
+    public static final Logger LOG = LoggerFactory.getLogger(CrossDCLastSessionRefreshChecker.class);
 
     private final CrossDCLastSessionRefreshStore store;
     private final CrossDCLastSessionRefreshStore offlineStore;
@@ -62,14 +63,14 @@ public class CrossDCLastSessionRefreshChecker {
             }
 
             if (lsrr + (realm.getOfflineSessionIdleTimeout() / 2) <= newLastSessionRefresh) {
-                logger.debugf("We are going to write remotely userSession %s. Remote last session refresh: %d, New last session refresh: %d",
+                LOG.debug("We are going to write remotely userSession {}. Remote last session refresh: {}, New last session refresh: {}",
                         userSessionId, lsrr, newLastSessionRefresh);
                 return SessionUpdateTask.CrossDCMessageStatus.SYNC;
             }
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debugf("Skip writing last session refresh to the remoteCache. Session %s newLastSessionRefresh %d", userSessionId, newLastSessionRefresh);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Skip writing last session refresh to the remoteCache. Session {} newLastSessionRefresh {}", userSessionId, newLastSessionRefresh);
         }
 
         CrossDCLastSessionRefreshStore storeToUse = offline ? offlineStore : store;
@@ -96,14 +97,14 @@ public class CrossDCLastSessionRefreshChecker {
             }
 
             if (lsrr + (realm.getOfflineSessionIdleTimeout() / 2) <= newTimestamp) {
-                logger.debugf("We are going to write remotely for clientSession %s. Remote timestamp: %d, New timestamp: %d",
+                LOG.debug("We are going to write remotely for clientSession {}. Remote timestamp: {}, New timestamp: {}",
                         clientSessionId, lsrr, newTimestamp);
                 return SessionUpdateTask.CrossDCMessageStatus.SYNC;
             }
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debugf("Skip writing timestamp to the remoteCache. ClientSession %s timestamp %d", clientSessionId, newTimestamp);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Skip writing timestamp to the remoteCache. ClientSession {} timestamp %d", clientSessionId, newTimestamp);
         }
 
         return SessionUpdateTask.CrossDCMessageStatus.NOT_NEEDED;

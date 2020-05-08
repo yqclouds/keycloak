@@ -17,13 +17,14 @@
 
 package org.keycloak.theme;
 
-import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.common.Version;
 import org.keycloak.common.util.StringPropertyReplacer;
 import org.keycloak.common.util.SystemEnvProperties;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ThemeManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
@@ -37,7 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DefaultThemeManager implements ThemeManager {
 
-    private static final Logger log = Logger.getLogger(DefaultThemeManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultThemeManager.class);
 
     private final DefaultThemeManagerFactory factory;
     private final KeycloakSession session;
@@ -89,7 +90,7 @@ public class DefaultThemeManager implements ThemeManager {
                 if (theme == null) {
                     theme = loadTheme("base", type);
                 }
-                log.errorv("Failed to find {0} theme {1}, using built-in themes", type, name);
+                LOG.error("Failed to find {} theme {}, using built-in themes", type, name);
             } else {
                 theme = factory.addCachedTheme(name, type, theme);
             }
@@ -142,7 +143,7 @@ public class DefaultThemeManager implements ThemeManager {
                 try {
                     return p.getTheme(name, type);
                 } catch (IOException e) {
-                    log.errorv(e, p.getClass() + " failed to load theme, type={0}, name={1}", type, name);
+                    LOG.error(p.getClass() + " failed to load theme, type={}, name={}", type, name);
                 }
             }
         }

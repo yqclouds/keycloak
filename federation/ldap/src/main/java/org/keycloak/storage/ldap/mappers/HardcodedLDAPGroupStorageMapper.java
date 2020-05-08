@@ -17,7 +17,6 @@
 
 package org.keycloak.storage.ldap.mappers;
 
-import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.GroupModel;
 import org.keycloak.models.ModelException;
@@ -28,6 +27,8 @@ import org.keycloak.models.utils.UserModelDelegate;
 import org.keycloak.storage.ldap.LDAPStorageProvider;
 import org.keycloak.storage.ldap.idm.model.LDAPObject;
 import org.keycloak.storage.ldap.idm.query.internal.LDAPQuery;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -36,9 +37,9 @@ import java.util.Set;
  * @author <a href="mailto:jean-loup.maillet@yesitis.fr">Jean-Loup Maillet</a>
  */
 public class HardcodedLDAPGroupStorageMapper extends AbstractLDAPStorageMapper {
+    private static final Logger LOG = LoggerFactory.getLogger(HardcodedLDAPGroupStorageMapper.class);
 
     public static final String GROUP = "group";
-    private static final Logger logger = Logger.getLogger(HardcodedLDAPGroupStorageMapper.class);
 
     public HardcodedLDAPGroupStorageMapper(ComponentModel mapperModel, LDAPStorageProvider ldapProvider) {
         super(mapperModel, ldapProvider);
@@ -54,7 +55,7 @@ public class HardcodedLDAPGroupStorageMapper extends AbstractLDAPStorageMapper {
 
             @Override
             public Set<GroupModel> getGroups() {
-                Set<GroupModel> groups = new HashSet<GroupModel>(super.getGroups());
+                Set<GroupModel> groups = new HashSet<>(super.getGroups());
 
                 GroupModel group = getGroup(realm);
                 if (group != null) {
@@ -94,7 +95,7 @@ public class HardcodedLDAPGroupStorageMapper extends AbstractLDAPStorageMapper {
         String groupName = mapperModel.getConfig().getFirst(HardcodedLDAPGroupStorageMapper.GROUP);
         GroupModel group = KeycloakModelUtils.findGroupByPath(realm, groupName);
         if (group == null) {
-            logger.warnf("Hardcoded group '%s' configured in mapper '%s' is not available anymore");
+            LOG.warn("Hardcoded group '{}' configured in mapper '{}' is not available anymore");
         }
         return group;
     }

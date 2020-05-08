@@ -27,7 +27,7 @@ import org.keycloak.saml.common.PicketLinkLoggerFactory;
  */
 public class StringUtil {
 
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
 
     /**
      * Check whether the passed string is null or empty
@@ -57,6 +57,6 @@ public class StringUtil {
      */
     public static void match(String first, String second) {
         if (!first.equals(second))
-            throw logger.notEqualError(first, second);
+            throw LOG.notEqualError(first, second);
     }
 }

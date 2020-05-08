@@ -37,12 +37,12 @@ public class KeycloakSanitizerPolicy {
 
     // HTML/CSS Spec allows 3 or 6 digit hex to specify color
     private static final Pattern COLOR_CODE = Pattern.compile(
-            "(?:#(?:[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?))");
+            "(?:#(?:[0-9a-fA-F]{}(?:[0-9a-fA-F]{})?))");
 
     private static final Pattern NUMBER_OR_PERCENT = Pattern.compile(
             "[0-9]+%?");
     private static final Pattern PARAGRAPH = Pattern.compile(
-            "(?:[\\p{L}\\p{N},'\\.\\s\\-_\\(\\)]|&[0-9]{2};)*");
+            "(?:[\\p{L}\\p{N},'\\.\\s\\-_\\(\\)]|&[0-9]{};)*");
     private static final Pattern HTML_ID = Pattern.compile(
             "[a-zA-Z0-9\\:\\-_\\.]+");
     // force non-empty with a '+' at the end instead of '*'

@@ -20,7 +20,6 @@ package org.keycloak.adapters;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.client.HttpClient;
-import org.jboss.logging.Logger;
 import org.keycloak.adapters.authentication.ClientCredentialsProviderUtils;
 import org.keycloak.adapters.authorization.PolicyEnforcer;
 import org.keycloak.adapters.rotation.HardcodedPublicKeyLocator;
@@ -44,14 +43,10 @@ import java.util.concurrent.Callable;
  * @version $Revision: 1 $
  */
 public class KeycloakDeploymentBuilder {
-
-    private static final Logger log = Logger.getLogger(KeycloakDeploymentBuilder.class);
-
     protected KeycloakDeployment deployment = new KeycloakDeployment();
 
     protected KeycloakDeploymentBuilder() {
     }
-
 
     protected KeycloakDeployment internalBuild(final AdapterConfig adapterConfig) {
         if (adapterConfig.getRealm() == null) throw new RuntimeException("Must set 'realm' in config");
@@ -93,7 +88,8 @@ public class KeycloakDeploymentBuilder {
         if (adapterConfig.getTokenCookiePath() != null) {
             deployment.setAdapterStateCookiePath(adapterConfig.getTokenCookiePath());
         }
-        if (adapterConfig.getPrincipalAttribute() != null) deployment.setPrincipalAttribute(adapterConfig.getPrincipalAttribute());
+        if (adapterConfig.getPrincipalAttribute() != null)
+            deployment.setPrincipalAttribute(adapterConfig.getPrincipalAttribute());
 
         deployment.setResourceCredentials(adapterConfig.getCredentials());
         deployment.setClientAuthenticator(ClientCredentialsProviderUtils.bootstrapClientAuthenticator(deployment));
@@ -146,6 +142,7 @@ public class KeycloakDeploymentBuilder {
         if (policyEnforcerConfig != null) {
             deployment.setPolicyEnforcer(new Callable<PolicyEnforcer>() {
                 PolicyEnforcer policyEnforcer;
+
                 @Override
                 public PolicyEnforcer call() {
                     if (policyEnforcer == null) {
@@ -166,6 +163,7 @@ public class KeycloakDeploymentBuilder {
     private Callable<HttpClient> createHttpClientProducer(final AdapterConfig adapterConfig) {
         return new Callable<HttpClient>() {
             private HttpClient client;
+
             @Override
             public HttpClient call() {
                 if (client == null) {

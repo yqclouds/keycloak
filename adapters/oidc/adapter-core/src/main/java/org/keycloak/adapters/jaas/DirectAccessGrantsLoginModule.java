@@ -24,7 +24,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
-import org.jboss.logging.Logger;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.adapters.authentication.ClientCredentialsProviderUtils;
 import org.keycloak.adapters.rotation.AdapterTokenVerifier;
@@ -34,6 +33,8 @@ import org.keycloak.constants.ServiceUrlConstants;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.OAuth2ErrorRepresentation;
 import org.keycloak.util.JsonSerialization;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
@@ -54,8 +55,7 @@ import java.util.Map;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class DirectAccessGrantsLoginModule extends AbstractKeycloakLoginModule {
-
-    private static final Logger log = Logger.getLogger(DirectAccessGrantsLoginModule.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DirectAccessGrantsLoginModule.class);
 
     public static final String SCOPE_OPTION = "scope";
 
@@ -65,7 +65,7 @@ public class DirectAccessGrantsLoginModule extends AbstractKeycloakLoginModule {
     @Override
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
         super.initialize(subject, callbackHandler, sharedState, options);
-        this.scope = (String)options.get(SCOPE_OPTION);
+        this.scope = (String) options.get(SCOPE_OPTION);
 
         // This is used just for logout
         Iterator<RefreshTokenHolder> iterator = subject.getPrivateCredentials(RefreshTokenHolder.class).iterator();
@@ -77,11 +77,6 @@ public class DirectAccessGrantsLoginModule extends AbstractKeycloakLoginModule {
     @Override
     protected Auth doAuth(String username, String password) throws IOException, VerificationException {
         return directGrantAuth(username, password);
-    }
-
-    @Override
-    protected Logger getLogger() {
-        return log;
     }
 
     protected Auth directGrantAuth(String username, String password) throws IOException, VerificationException {
@@ -116,7 +111,7 @@ public class DirectAccessGrantsLoginModule extends AbstractKeycloakLoginModule {
                         .append(", Error description: " + errorRep.getErrorDescription());
             }
             String error = errorBuilder.toString();
-            log.warn(error);
+            LOG.warn(error);
             throw new IOException(error);
         }
 
@@ -181,10 +176,10 @@ public class DirectAccessGrantsLoginModule extends AbstractKeycloakLoginModule {
                     }
 
                     // Should do something better than warn if logout failed? Perhaps update of refresh tokens on existing subject might be supported too...
-                    log.warn(errorBuilder.toString());
+                    LOG.warn(errorBuilder.toString());
                 }
             } catch (IOException ioe) {
-                log.warn(ioe);
+                LOG.warn("", ioe);
             }
         }
 

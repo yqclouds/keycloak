@@ -38,7 +38,7 @@ import javax.xml.stream.XMLStreamWriter;
  */
 public class StaxWriterUtil {
 
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
 
     /**
      * Write the {@link org.keycloak.dom.xmlsec.w3.xmldsig.KeyInfoType}
@@ -49,7 +49,7 @@ public class StaxWriterUtil {
      */
     public static void writeKeyInfo(XMLStreamWriter writer, KeyInfoType keyInfo) throws ProcessingException {
         if (keyInfo.getContent() == null || keyInfo.getContent().size() == 0)
-            throw logger.writerInvalidKeyInfoNullContentError();
+            throw LOG.writerInvalidKeyInfoNullContentError();
         StaxUtil.writeStartElement(writer, WSTrustConstants.XMLDSig.DSIG_PREFIX, WSTrustConstants.XMLDSig.KEYINFO,
                 WSTrustConstants.XMLDSig.DSIG_NS);
         StaxUtil.writeNameSpace(writer, WSTrustConstants.XMLDSig.DSIG_PREFIX, WSTrustConstants.XMLDSig.DSIG_NS);
@@ -61,7 +61,7 @@ public class StaxWriterUtil {
         } else if (content instanceof X509DataType) {
             X509DataType type = (X509DataType) content;
             if (type.getDataObjects().size() == 0)
-                throw logger.writerNullValueError("X509Data");
+                throw LOG.writerNullValueError("X509Data");
             StaxUtil.writeStartElement(writer, WSTrustConstants.XMLDSig.DSIG_PREFIX, WSTrustConstants.XMLDSig.X509DATA,
                     WSTrustConstants.XMLDSig.DSIG_NS);
             Object obj = type.getDataObjects().get(0);

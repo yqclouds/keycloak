@@ -17,7 +17,8 @@
 
 package org.keycloak.models;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handles some common transaction logic related to start, rollback-only etc.
@@ -26,7 +27,7 @@ import org.jboss.logging.Logger;
  */
 public abstract class AbstractKeycloakTransaction implements KeycloakTransaction {
 
-    public static final Logger logger = Logger.getLogger(AbstractKeycloakTransaction.class);
+    public static final Logger LOG = LoggerFactory.getLogger(AbstractKeycloakTransaction.class);
 
     protected TransactionState state = TransactionState.NOT_STARTED;
 

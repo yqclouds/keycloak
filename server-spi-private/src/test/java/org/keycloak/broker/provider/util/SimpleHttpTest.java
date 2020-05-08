@@ -38,7 +38,7 @@ public final class SimpleHttpTest {
             this.entity = new StringEntity(original, ContentType.create("text/plain", charset));
         }
 
-        @Parameters(name = "{index}: withCharset({0}, {1}) = {2}")
+        @Parameters(name = "{index}: withCharset({}, {}) = {}")
         public static Collection<Object[]> entities() {
             return Arrays.asList(new Object[][]{
                     {"English", StandardCharsets.UTF_8, true},

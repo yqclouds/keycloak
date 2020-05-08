@@ -24,11 +24,12 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.logging.Logger;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +44,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Ignore
 public class OutdatedTopologyExceptionReproducerTest {
 
-    protected static final Logger logger = Logger.getLogger(OutdatedTopologyExceptionReproducerTest.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(OutdatedTopologyExceptionReproducerTest.class);
 
     private static final int THREADS_COUNT = 20;
 
@@ -55,7 +56,7 @@ public class OutdatedTopologyExceptionReproducerTest {
         try {
             node1 = createManager();
             Cache<String, Object> node1Cache = node1.getCache(InfinispanConnectionProvider.REALM_CACHE_NAME);
-            logger.info("Node1Cache started");
+            LOG.info("Node1Cache started");
 
             List<CacheOperations> cacheOpsList = new ArrayList<>();
             AtomicReference<Exception> exceptionHolder = new AtomicReference<>();
@@ -66,11 +67,11 @@ public class OutdatedTopologyExceptionReproducerTest {
                 cacheOps.start();
                 cacheOpsList.add(cacheOps);
             }
-            logger.infof("All CacheOperations threads started");
+            LOG.info("All CacheOperations threads started");
 
             node2 = createManager();
             Cache<String, Object> node2Cache = node2.getCache(InfinispanConnectionProvider.REALM_CACHE_NAME);
-            logger.info("Node2Cache started");
+            LOG.info("Node2Cache started");
 
             for (CacheOperations cacheOps : cacheOpsList) {
                 cacheOps.stopMe();
@@ -79,14 +80,14 @@ public class OutdatedTopologyExceptionReproducerTest {
                 cacheOps.join();
             }
 
-            logger.info("All CacheOperations threads stopped");
+            LOG.info("All CacheOperations threads stopped");
 
             Exception ex = exceptionHolder.get();
             if (ex != null) {
                 Assert.fail("Some exception was thrown. It was: " + ex.getClass().getName() + ": " + ex.getMessage());
             }
 
-            logger.info("Test finished successfuly");
+            LOG.info("Test finished successfuly");
         } finally {
             node2.stop();
             node1.stop();

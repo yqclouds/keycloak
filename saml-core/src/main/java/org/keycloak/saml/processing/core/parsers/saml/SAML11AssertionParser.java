@@ -48,7 +48,7 @@ import javax.xml.stream.events.XMLEvent;
  */
 public class SAML11AssertionParser implements StaxParser {
 
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
 
     private final String ASSERTION = JBossSAMLConstants.ASSERTION.get();
 
@@ -87,7 +87,7 @@ public class SAML11AssertionParser implements StaxParser {
                 if (endElementTag.equals(JBossSAMLConstants.ASSERTION.get()))
                     break;
                 else
-                    throw logger.parserUnknownEndElement(endElementTag, xmlEvent.getLocation());
+                    throw LOG.parserUnknownEndElement(endElementTag, xmlEvent.getLocation());
             }
 
             StartElement peekedElement = null;
@@ -132,7 +132,7 @@ public class SAML11AssertionParser implements StaxParser {
                         .parseSAML11AuthorizationDecisionStatement(xmlEventReader);
                 assertion.add(authzStat);
             } else
-                throw logger.parserUnknownTag(tag, peekedElement.getLocation());
+                throw LOG.parserUnknownTag(tag, peekedElement.getLocation());
         }
         return assertion;
     }
@@ -141,7 +141,7 @@ public class SAML11AssertionParser implements StaxParser {
     private SAML11AssertionType parseBaseAttributes(StartElement nextElement) throws ParsingException {
         Attribute idAttribute = nextElement.getAttributeByName(new QName(SAML11Constants.ASSERTIONID));
         if (idAttribute == null)
-            throw logger.parserRequiredAttribute("AssertionID");
+            throw LOG.parserRequiredAttribute("AssertionID");
         String id = StaxParserUtil.getAttributeValue(idAttribute);
 
         Attribute majVersionAttribute = nextElement.getAttributeByName(new QName(SAML11Constants.MAJOR_VERSION));

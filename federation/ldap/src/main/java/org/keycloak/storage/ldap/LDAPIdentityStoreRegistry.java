@@ -17,13 +17,14 @@
 
 package org.keycloak.storage.ldap;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.storage.ldap.idm.store.ldap.LDAPIdentityStore;
 import org.keycloak.storage.ldap.mappers.LDAPConfigDecorator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -33,8 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class LDAPIdentityStoreRegistry {
-
-    private static final Logger logger = Logger.getLogger(LDAPIdentityStoreRegistry.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LDAPIdentityStoreRegistry.class);
 
     private Map<String, LDAPIdentityStoreContext> ldapStores = new ConcurrentHashMap<>();
 
@@ -89,23 +89,19 @@ public class LDAPIdentityStoreRegistry {
 
     // Don't log LDAP password
     private void logLDAPConfig(KeycloakSession session, ComponentModel ldapModel, LDAPConfig ldapConfig) {
-        logger.infof("Creating new LDAP Store for the LDAP storage provider: '%s', LDAP Configuration: %s", ldapModel.getName(), ldapConfig.toString());
+        LOG.info("Creating new LDAP Store for the LDAP storage provider: '{}', LDAP Configuration: {}", ldapModel.getName(), ldapConfig.toString());
 
-        if (logger.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             RealmModel realm = session.realms().getRealm(ldapModel.getParentId());
             List<ComponentModel> mappers = realm.getComponents(ldapModel.getId());
-            mappers.stream().forEach((ComponentModel c) -> {
-
-                logger.debugf("Mapper for provider: %s, Mapper name: %s, Provider: %s, Mapper configuration: %s", ldapModel.getName(), c.getName(), c.getProviderId(), c.getConfig().toString());
-
-            });
+            mappers.stream().forEach((ComponentModel c) -> LOG.debug("Mapper for provider: {}, Mapper name: {}, Provider: {}, Mapper configuration: {}", ldapModel.getName(), c.getName(), c.getProviderId(), c.getConfig().toString()));
         }
     }
 
     private class LDAPIdentityStoreContext {
-
         private LDAPConfig config;
         private LDAPIdentityStore store;
+
         private LDAPIdentityStoreContext(LDAPConfig config, LDAPIdentityStore store) {
             this.config = config;
             this.store = store;

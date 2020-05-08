@@ -35,7 +35,10 @@ import org.keycloak.protocol.LoginProtocol;
 import org.keycloak.protocol.LoginProtocolFactory;
 import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.provider.*;
-import org.keycloak.representations.idm.*;
+import org.keycloak.representations.idm.ComponentTypeRepresentation;
+import org.keycloak.representations.idm.PasswordPolicyTypeRepresentation;
+import org.keycloak.representations.idm.ProtocolMapperRepresentation;
+import org.keycloak.representations.idm.ProtocolMapperTypeRepresentation;
 import org.keycloak.representations.info.*;
 import org.keycloak.theme.Theme;
 

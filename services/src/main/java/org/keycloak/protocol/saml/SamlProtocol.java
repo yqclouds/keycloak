@@ -24,7 +24,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
-import org.jboss.logging.Logger;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.dom.saml.v2.assertion.AssertionType;
 import org.keycloak.dom.saml.v2.assertion.AttributeStatementType;
@@ -58,6 +57,8 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.RealmsResource;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.CommonClientSessionModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.w3c.dom.Document;
 
@@ -105,7 +106,7 @@ public class SamlProtocol implements LoginProtocol {
     public static final String SAML_IDP_INITIATED_SSO_URL_NAME = "saml_idp_initiated_sso_url_name";
     public static final String SAML_LOGIN_REQUEST_FORCEAUTHN = "SAML_LOGIN_REQUEST_FORCEAUTHN";
     public static final String SAML_FORCEAUTHN_REQUIREMENT = "true";
-    protected static final Logger logger = Logger.getLogger(SamlProtocol.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(SamlProtocol.class);
     protected KeycloakSession session;
 
     protected RealmModel realm;
@@ -238,7 +239,7 @@ public class SamlProtocol implements LoginProtocol {
             case PASSIVE_LOGIN_REQUIRED:
                 return JBossSAMLURIConstants.STATUS_NO_PASSIVE;
             default:
-                logger.warn("Untranslated protocol Error: " + error.name() + " so we return default SAML error");
+                LOG.warn("Untranslated protocol Error: " + error.name() + " so we return default SAML error");
                 return JBossSAMLURIConstants.STATUS_REQUEST_DENIED;
         }
     }
@@ -251,7 +252,7 @@ public class SamlProtocol implements LoginProtocol {
             case PASSIVE_LOGIN_REQUIRED:
                 return Messages.UNEXPECTED_ERROR_HANDLING_REQUEST;
             default:
-                logger.warn("Untranslated protocol Error: " + error.name() + " so we return default error message");
+                LOG.warn("Untranslated protocol Error: " + error.name() + " so we return default error message");
                 return Messages.UNEXPECTED_ERROR_HANDLING_REQUEST;
         }
     }
@@ -314,7 +315,7 @@ public class SamlProtocol implements LoginProtocol {
         if (nameIdFormat.equals(JBossSAMLURIConstants.NAMEID_FORMAT_EMAIL.get())) {
             final String email = userSession.getUser().getEmail();
             if (email == null) {
-                logger.debugf("E-mail of the user %s has to be set for %s NameIDFormat", userSession.getUser().getUsername(), JBossSAMLURIConstants.NAMEID_FORMAT_EMAIL.get());
+                LOG.debug("E-mail of the user %s has to be set for %s NameIDFormat", userSession.getUser().getUsername(), JBossSAMLURIConstants.NAMEID_FORMAT_EMAIL.get());
             }
             return email;
         } else if (nameIdFormat.equals(JBossSAMLURIConstants.NAMEID_FORMAT_TRANSIENT.get())) {
@@ -455,7 +456,7 @@ public class SamlProtocol implements LoginProtocol {
             samlModel = transformLoginResponse(loginResponseMappers, samlModel, session, userSession, clientSessionCtx);
             samlDocument = builder.buildDocument(samlModel);
         } catch (Exception e) {
-            logger.error("failed", e);
+            LOG.error("failed", e);
             return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.FAILED_TO_PROCESS_RESPONSE);
         }
 
@@ -481,7 +482,7 @@ public class SamlProtocol implements LoginProtocol {
             try {
                 publicKey = SamlProtocolUtils.getEncryptionKey(client);
             } catch (Exception e) {
-                logger.error("failed", e);
+                LOG.error("failed", e);
                 return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.FAILED_TO_PROCESS_RESPONSE);
             }
             bindingBuilder.encrypt(publicKey);
@@ -489,7 +490,7 @@ public class SamlProtocol implements LoginProtocol {
         try {
             return buildAuthenticatedResponse(clientSession, redirectUri, samlDocument, bindingBuilder);
         } catch (Exception e) {
-            logger.error("failed", e);
+            LOG.error("failed", e);
             return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.FAILED_TO_PROCESS_RESPONSE);
         }
     }
@@ -540,7 +541,7 @@ public class SamlProtocol implements LoginProtocol {
             boolean postBinding = isLogoutPostBindingForClient(clientSession);
             String bindingUri = getLogoutServiceUrl(session, client, postBinding ? SAML_POST_BINDING : SAML_REDIRECT_BINDING);
             if (bindingUri == null) {
-                logger.warnf("Failed to logout client %s, skipping this client.  Please configure the logout service url in the admin console for your client applications.", client.getClientId());
+                LOG.warn("Failed to logout client %s, skipping this client.  Please configure the logout service url in the admin console for your client applications.", client.getClientId());
                 return null;
             }
 
@@ -550,7 +551,7 @@ public class SamlProtocol implements LoginProtocol {
                 JaxrsSAML2BindingBuilder binding = createBindingBuilder(samlClient);
                 return binding.postBinding(SAML2Request.convert(logoutRequest)).request(bindingUri);
             } else {
-                logger.debug("frontchannel redirect binding");
+                LOG.debug("frontchannel redirect binding");
                 NodeGenerator[] extensions;
                 if (samlClient.requiresRealmSignature() && samlClient.addExtensionsElementWithKeyInfo()) {
                     KeyManager.ActiveRsaKey keys = session.keys().getActiveRsaKey(realm);
@@ -580,10 +581,10 @@ public class SamlProtocol implements LoginProtocol {
 
     @Override
     public Response finishLogout(UserSessionModel userSession) {
-        logger.debug("finishLogout");
+        LOG.debug("finishLogout");
         String logoutBindingUri = userSession.getNote(SAML_LOGOUT_BINDING_URI);
         if (logoutBindingUri == null) {
-            logger.error("Can't finish SAML logout as there is no logout binding set.  Please configure the logout service url in the admin console for your client applications.");
+            LOG.error("Can't finish SAML logout as there is no logout binding set.  Please configure the logout service url in the admin console for your client applications.");
             return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.FAILED_LOGOUT);
         }
         String logoutRelayState = userSession.getNote(SAML_LOGOUT_RELAY_STATE);
@@ -650,7 +651,7 @@ public class SamlProtocol implements LoginProtocol {
         SamlClient samlClient = new SamlClient(client);
         String logoutUrl = getLogoutServiceUrl(session, client, SAML_POST_BINDING);
         if (logoutUrl == null) {
-            logger.warnf("Can't do backchannel logout. No SingleLogoutService POST Binding registered for client: %s", client.getClientId());
+            LOG.warn("Can't do backchannel logout. No SingleLogoutService POST Binding registered for client: %s", client.getClientId());
             return;
         }
 
@@ -661,7 +662,7 @@ public class SamlProtocol implements LoginProtocol {
             // This is POST binding, hence KeyID is included in dsig:KeyInfo/dsig:KeyName, no need to add <samlp:Extensions> element
             logoutRequestString = binding.postBinding(SAML2Request.convert(logoutRequest)).encoded();
         } catch (Exception e) {
-            logger.warn("failed to send saml logout", e);
+            LOG.warn("failed to send saml logout", e);
             return;
         }
 
@@ -697,7 +698,7 @@ public class SamlProtocol implements LoginProtocol {
 
                 }
             } catch (IOException e) {
-                logger.warn("failed to send saml logout", e);
+                LOG.warn("failed to send saml logout", e);
             }
             break;
         }

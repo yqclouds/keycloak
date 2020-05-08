@@ -44,7 +44,7 @@ public class DockerAccess {
                 final String[] parts = unencoded.split(":");
                 if (parts.length != 3) {
                     throw new IllegalArgumentException(String.format("Expecting input string to have %d parts delineated by a ':' character.  " +
-                            "Found %d parts: %s", 3, parts.length, unencoded));
+                            "Found %d parts: {}", 3, parts.length, unencoded));
                 }
 
                 type = parts[ACCESS_TYPE];

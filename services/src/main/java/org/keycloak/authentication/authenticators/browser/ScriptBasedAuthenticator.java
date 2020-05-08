@@ -16,7 +16,7 @@
  */
 package org.keycloak.authentication.authenticators.browser;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
@@ -91,7 +91,7 @@ public class ScriptBasedAuthenticator implements Authenticator {
     static final String SCRIPT_DESCRIPTION = "scriptDescription";
     static final String ACTION_FUNCTION_NAME = "action";
     static final String AUTHENTICATE_FUNCTION_NAME = "authenticate";
-    private static final Logger LOGGER = Logger.getLogger(ScriptBasedAuthenticator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ScriptBasedAuthenticator.class);
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
@@ -122,7 +122,7 @@ public class ScriptBasedAuthenticator implements Authenticator {
             //should context be wrapped in a read-only wrapper?
             invocableScriptAdapter.invokeFunction(functionName, context);
         } catch (ScriptExecutionException e) {
-            LOGGER.error(e);
+            LOG.error("", e);
             context.failure(AuthenticationFlowError.INTERNAL_ERROR);
         }
     }
@@ -164,7 +164,7 @@ public class ScriptBasedAuthenticator implements Authenticator {
             bindings.put("session", context.getSession());
             bindings.put("httpRequest", context.getHttpRequest());
             bindings.put("authenticationSession", context.getAuthenticationSession());
-            bindings.put("LOG", LOGGER);
+            bindings.put("LOG", LOG);
         });
     }
 

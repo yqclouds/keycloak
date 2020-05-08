@@ -17,7 +17,6 @@
 
 package org.keycloak.keys;
 
-import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.crypto.Algorithm;
 import org.keycloak.crypto.KeyUse;
@@ -26,6 +25,8 @@ import org.keycloak.models.KeyManager;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.crypto.SecretKey;
 import java.security.PrivateKey;
@@ -38,7 +39,7 @@ import java.util.*;
  */
 public class DefaultKeyManager implements KeyManager {
 
-    private static final Logger logger = Logger.getLogger(DefaultKeyManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultKeyManager.class);
 
     private final KeycloakSession session;
     private final Map<String, List<KeyProvider>> providersMap = new HashMap<>();
@@ -54,7 +55,7 @@ public class DefaultKeyManager implements KeyManager {
             return activeKey;
         }
 
-        logger.debugv("Failed to find active key for realm, trying fallback: realm={0} algorithm={1} use={2}", realm.getName(), algorithm, use.name());
+        LOG.debug("Failed to find active key for realm, trying fallback: realm={} algorithm={} use={}", realm.getName(), algorithm, use.name());
 
         for (ProviderFactory f : session.getSessionFactory().getProviderFactories(KeyProvider.class)) {
             KeyProviderFactory kf = (KeyProviderFactory) f;
@@ -63,7 +64,7 @@ public class DefaultKeyManager implements KeyManager {
                 List<KeyProvider> providers = getProviders(realm);
                 activeKey = getActiveKey(providers, realm, use, algorithm);
                 if (activeKey != null) {
-                    logger.warnv("Fallback key created: realm={0} algorithm={1} use={2}", realm.getName(), algorithm, use.name());
+                    LOG.warn("Fallback key created: realm={} algorithm={} use={}", realm.getName(), algorithm, use.name());
                     return activeKey;
                 } else {
                     break;
@@ -71,7 +72,7 @@ public class DefaultKeyManager implements KeyManager {
             }
         }
 
-        logger.errorv("Failed to create fallback key for realm: realm={0} algorithm={1} use={2", realm.getName(), algorithm, use.name());
+        LOG.error("Failed to create fallback key for realm: realm={} algorithm={} use={2", realm.getName(), algorithm, use.name());
         throw new RuntimeException("Failed to find key: realm=" + realm.getName() + " algorithm=" + algorithm + " use=" + use.name());
     }
 
@@ -79,8 +80,8 @@ public class DefaultKeyManager implements KeyManager {
         for (KeyProvider p : providers) {
             for (KeyWrapper key : p.getKeys()) {
                 if (key.getStatus().isActive() && matches(key, use, algorithm)) {
-                    if (logger.isTraceEnabled()) {
-                        logger.tracev("Active key found: realm={0} kid={1} algorithm={2} use={3}", realm.getName(), key.getKid(), algorithm, use.name());
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("Active key found: realm={} kid={} algorithm={} use={}", realm.getName(), key.getKid(), algorithm, use.name());
                     }
 
                     return key;
@@ -93,15 +94,15 @@ public class DefaultKeyManager implements KeyManager {
     @Override
     public KeyWrapper getKey(RealmModel realm, String kid, KeyUse use, String algorithm) {
         if (kid == null) {
-            logger.warnv("kid is null, can't find public key", realm.getName(), kid);
+            LOG.warn("kid is null, can't find public key", realm.getName(), kid);
             return null;
         }
 
         for (KeyProvider p : getProviders(realm)) {
             for (KeyWrapper key : p.getKeys()) {
                 if (key.getKid().equals(kid) && key.getStatus().isEnabled() && matches(key, use, algorithm)) {
-                    if (logger.isTraceEnabled()) {
-                        logger.tracev("Found key: realm={0} kid={1} algorithm={2} use={3}", realm.getName(), key.getKid(), algorithm, use.name());
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("Found key: realm={} kid={} algorithm={} use={}", realm.getName(), key.getKid(), algorithm, use.name());
                     }
 
                     return key;
@@ -109,8 +110,8 @@ public class DefaultKeyManager implements KeyManager {
             }
         }
 
-        if (logger.isTraceEnabled()) {
-            logger.tracev("Failed to find public key: realm={0} kid={1} algorithm={2} use={3}", realm.getName(), kid, algorithm, use.name());
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Failed to find public key: realm={} kid={} algorithm={} use={}", realm.getName(), kid, algorithm, use.name());
         }
 
         return null;
@@ -255,7 +256,7 @@ public class DefaultKeyManager implements KeyManager {
                     session.enlistForClose(provider);
                     providers.add(provider);
                 } catch (Throwable t) {
-                    logger.errorv(t, "Failed to load provider {0}", c.getId());
+                    LOG.error("Failed to load provider {}", c.getId());
                 }
             }
 

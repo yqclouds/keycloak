@@ -22,11 +22,12 @@ import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.context.Flag;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.persistence.remote.configuration.RemoteStoreConfigurationBuilder;
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.entities.UserSessionEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -34,8 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class ConcurrencyJDGOfflineBackupsTest {
-
-    protected static final Logger logger = Logger.getLogger(ConcurrencyJDGOfflineBackupsTest.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(ConcurrencyJDGOfflineBackupsTest.class);
 
     public static void main(String[] args) throws Exception {
 
@@ -65,7 +65,7 @@ public class ConcurrencyJDGOfflineBackupsTest {
             SessionEntityWrapper<UserSessionEntity> wrappedSession = new SessionEntityWrapper<>(session);
 
             // Some dummy testing of remoteStore behaviour
-            logger.info("Before put");
+            LOG.info("Before put");
 
 
             AtomicInteger successCount = new AtomicInteger(0);
@@ -77,28 +77,28 @@ public class ConcurrencyJDGOfflineBackupsTest {
                             .put("123", wrappedSession);
                     successCount.incrementAndGet();
                     Thread.sleep(1000);
-                    logger.infof("Success in the iteration: %d", i);
+                    LOG.info("Success in the iteration: {}", i);
                 } catch (HotRodClientException hrce) {
-                    logger.errorf("Failed to put the item in the iteration: %d ", i);
+                    LOG.error("Failed to put the item in the iteration: {} ", i);
                     errorsCount.incrementAndGet();
                 }
             }
 
-            logger.infof("SuccessCount: %d, ErrorsCount: %d", successCount.get(), errorsCount.get());
+            LOG.info("SuccessCount: {}, ErrorsCount: {}", successCount.get(), errorsCount.get());
 
-//            logger.info("After put");
+//            LOG.info("After put");
 //
 //            cache1.replace("123", wrappedSession);
 //
-//            logger.info("After replace");
+//            LOG.info("After replace");
 //
 //            cache1.get("123");
 //
-//            logger.info("After cache1.get");
+//            LOG.info("After cache1.get");
 
 //        cache2.get("123");
 //
-//        logger.info("After cache2.get");
+//        LOG.info("After cache2.get");
 
         } finally {
             // Finish JVM

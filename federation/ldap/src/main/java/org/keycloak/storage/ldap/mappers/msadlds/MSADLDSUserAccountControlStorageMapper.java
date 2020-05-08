@@ -17,7 +17,6 @@
 
 package org.keycloak.storage.ldap.mappers.msadlds;
 
-import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.UserModelDelegate;
@@ -28,6 +27,8 @@ import org.keycloak.storage.ldap.idm.query.internal.LDAPQuery;
 import org.keycloak.storage.ldap.mappers.AbstractLDAPStorageMapper;
 import org.keycloak.storage.ldap.mappers.LDAPOperationDecorator;
 import org.keycloak.storage.ldap.mappers.PasswordUpdateCallback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.naming.AuthenticationException;
 import java.util.HashSet;
@@ -43,8 +44,7 @@ import java.util.regex.Pattern;
  * @author <a href="mailto:slawomir@dabek.name">Slawomir Dabek</a>
  */
 public class MSADLDSUserAccountControlStorageMapper extends AbstractLDAPStorageMapper implements PasswordUpdateCallback {
-
-    private static final Logger logger = Logger.getLogger(MSADLDSUserAccountControlStorageMapper.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MSADLDSUserAccountControlStorageMapper.class);
 
     private static final Pattern AUTH_EXCEPTION_REGEX = Pattern.compile(".*AcceptSecurityContext error, data ([0-9a-f]*), v.*");
     private static final Pattern AUTH_INVALID_NEW_PASSWORD = Pattern.compile("(?s).*problem 1005 \\(CONSTRAINT_ATT_TYPE\\), data [0-9a-f]*, Att 23 \\(userPassword\\).*");
@@ -74,7 +74,7 @@ public class MSADLDSUserAccountControlStorageMapper extends AbstractLDAPStorageM
 
     @Override
     public void passwordUpdated(UserModel user, LDAPObject ldapUser, UserCredentialModel password) {
-        logger.debugf("Going to update pwdLastSet for ldap user '%s' after successful password update", ldapUser.getDn().toString());
+        LOG.debug("Going to update pwdLastSet for ldap user '{}' after successful password update", ldapUser.getDn().toString());
 
         // Normally it's read-only
         ldapUser.removeReadOnlyAttributeName(LDAPConstants.PWD_LAST_SET);
@@ -84,7 +84,7 @@ public class MSADLDSUserAccountControlStorageMapper extends AbstractLDAPStorageM
         if (user.isEnabled()) {
             // TODO: Use removeAttribute once available
             ldapUser.setSingleAttribute(LDAPConstants.MSDS_USER_ACCOUNT_DISABLED, "FALSE");
-            logger.debugf("Removing msDS-UserPasswordExpired of user '%s'", ldapUser.getDn().toString());
+            LOG.debug("Removing msDS-UserPasswordExpired of user '{}'", ldapUser.getDn().toString());
         }
 
         ldapProvider.getLdapIdentityStore().update(ldapUser);
@@ -123,7 +123,7 @@ public class MSADLDSUserAccountControlStorageMapper extends AbstractLDAPStorageM
     }
 
     protected boolean processAuthErrorCode(String errorCode, UserModel user) {
-        logger.debugf("MSAD LDS Error code is '%s' after failed LDAP login of user '%s'", errorCode, user.getUsername());
+        LOG.debug("MSAD LDS Error code is '{}' after failed LDAP login of user '{}'", errorCode, user.getUsername());
 
         if (ldapProvider.getEditMode() == UserStorageProvider.EditMode.WRITABLE) {
             if (errorCode.equals("532") || errorCode.equals("773")) {
@@ -139,7 +139,7 @@ public class MSADLDSUserAccountControlStorageMapper extends AbstractLDAPStorageM
                 }
                 return true;
             } else if (errorCode.equals("775")) {
-                logger.warnf("Locked user '%s' attempt to login", user.getUsername());
+                LOG.warn("Locked user '{}' attempt to login", user.getUsername());
             }
         }
 
@@ -192,11 +192,11 @@ public class MSADLDSUserAccountControlStorageMapper extends AbstractLDAPStorageM
 
             if (ldapProvider.getEditMode() == UserStorageProvider.EditMode.WRITABLE && getPwdLastSet() > 0) {
                 if (enabled) {
-                    logger.debugf("Removing msDS-UserAccountDisabled of user '%s'", ldapUser.getDn().toString());
+                    LOG.debug("Removing msDS-UserAccountDisabled of user '{}'", ldapUser.getDn().toString());
                     // TODO: Use removeAttribute once available
                     ldapUser.setSingleAttribute(LDAPConstants.MSDS_USER_ACCOUNT_DISABLED, "FALSE");
                 } else {
-                    logger.debugf("Setting msDS-UserAccountDisabled of user '%s' to value 'TRUE'", ldapUser.getDn().toString());
+                    LOG.debug("Setting msDS-UserAccountDisabled of user '{}' to value 'TRUE'", ldapUser.getDn().toString());
                     ldapUser.setSingleAttribute(LDAPConstants.MSDS_USER_ACCOUNT_DISABLED, "TRUE");
                 }
 
@@ -216,7 +216,7 @@ public class MSADLDSUserAccountControlStorageMapper extends AbstractLDAPStorageM
             super.addRequiredAction(action);
 
             if (ldapProvider.getEditMode() == UserStorageProvider.EditMode.WRITABLE && RequiredAction.UPDATE_PASSWORD.toString().equals(action)) {
-                logger.debugf("Going to propagate required action UPDATE_PASSWORD to MSAD for ldap user '%s' ", ldapUser.getDn().toString());
+                LOG.debug("Going to propagate required action UPDATE_PASSWORD to MSAD for ldap user '{}' ", ldapUser.getDn().toString());
 
                 // Normally it's read-only
                 ldapUser.removeReadOnlyAttributeName(LDAPConstants.PWD_LAST_SET);
@@ -241,7 +241,7 @@ public class MSADLDSUserAccountControlStorageMapper extends AbstractLDAPStorageM
 
                 // Don't set pwdLastSet in MSAD LDS when it is new user
                 if (!Boolean.parseBoolean(ldapUser.getAttributeAsString(LDAPConstants.MSDS_USER_PASSWORD_NOTREQD))) {
-                    logger.debugf("Going to remove required action UPDATE_PASSWORD from MSAD LDS for ldap user '%s' ", ldapUser.getDn().toString());
+                    LOG.debug("Going to remove required action UPDATE_PASSWORD from MSAD LDS for ldap user '{}' ", ldapUser.getDn().toString());
 
                     // Normally it's read-only
                     ldapUser.removeReadOnlyAttributeName(LDAPConstants.PWD_LAST_SET);

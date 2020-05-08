@@ -16,7 +16,7 @@ AuthenticationFlowError = Java.type("org.keycloak.authentication.AuthenticationF
  * httpRequest - current HttpRequest {@see org.jboss.resteasy.spi.HttpRequest}
  * script - current script {@see org.keycloak.models.ScriptModel}
  * authenticationSession - current authentication session {@see org.keycloak.sessions.AuthenticationSessionModel}
- * LOG - current logger {@see org.jboss.logging.Logger}
+ * LOG - current LOG {@see org.jboss.logging.Logger}
  *
  * You one can extract current http request headers via:
  * httpRequest.getHttpHeaders().getHeaderString("Forwarded")

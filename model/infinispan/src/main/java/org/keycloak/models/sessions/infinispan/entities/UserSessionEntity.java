@@ -20,11 +20,12 @@ package org.keycloak.models.sessions.infinispan.entities;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.commons.marshall.SerializeWith;
-import org.jboss.logging.Logger;
 import org.keycloak.models.UserSessionModel;
 import org.keycloak.models.UserSessionModel.State;
 import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.util.KeycloakMarshallUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -42,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @SerializeWith(UserSessionEntity.ExternalizerImpl.class)
 public class UserSessionEntity extends SessionEntity {
 
-    public static final Logger logger = Logger.getLogger(UserSessionEntity.class);
+    public static final Logger LOG = LoggerFactory.getLogger(UserSessionEntity.class);
 
     // Metadata attribute, which contains the lastSessionRefresh available on remoteCache. Used in decide whether we need to write to remoteCache (DC) or not
     public static final String LAST_SESSION_REFRESH_REMOTE = "lsrr";
@@ -217,7 +218,7 @@ public class UserSessionEntity extends SessionEntity {
 
         entityWrapper.putLocalMetadataNoteInt(LAST_SESSION_REFRESH_REMOTE, lsrRemote);
 
-        logger.debugf("Updating session entity '%s'. lastSessionRefresh=%d, lastSessionRefreshRemote=%d", getId(), getLastSessionRefresh(), lsrRemote);
+        LOG.debug("Updating session entity '{}'. lastSessionRefresh={}, lastSessionRefreshRemote={}", getId(), getLastSessionRefresh(), lsrRemote);
 
         return entityWrapper;
     }

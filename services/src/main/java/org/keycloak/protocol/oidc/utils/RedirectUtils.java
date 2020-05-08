@@ -17,11 +17,12 @@
 
 package org.keycloak.protocol.oidc.utils;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.UriUtils;
 import org.keycloak.models.*;
 import org.keycloak.services.Urls;
 import org.keycloak.services.util.ResolveRelative;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.Collection;
@@ -33,7 +34,7 @@ import java.util.Set;
  */
 public class RedirectUtils {
 
-    private static final Logger logger = Logger.getLogger(RedirectUtils.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RedirectUtils.class);
 
     public static String verifyRealmRedirectUri(KeycloakSession session, String redirectUri) {
         Set<String> validRedirects = getValidateRedirectUris(session);
@@ -56,7 +57,7 @@ public class RedirectUtils {
         for (String validRedirect : validRedirects) {
             if (validRedirect.startsWith("/")) {
                 validRedirect = relativeToAbsoluteURI(session, rootUrl, validRedirect);
-                logger.debugv("replacing relative valid redirect with: {0}", validRedirect);
+                LOG.debug("replacing relative valid redirect with: {}", validRedirect);
                 resolveValidRedirects.add(validRedirect);
             } else {
                 resolveValidRedirects.add(validRedirect);
@@ -84,10 +85,10 @@ public class RedirectUtils {
                 URI uri = URI.create(redirectUri);
                 redirectUri = uri.normalize().toString();
             } catch (IllegalArgumentException cause) {
-                logger.debug("Invalid redirect uri", cause);
+                LOG.debug("Invalid redirect uri", cause);
                 return null;
             } catch (Exception cause) {
-                logger.debug("Unexpected error when parsing redirect uri", cause);
+                LOG.debug("Unexpected error when parsing redirect uri", cause);
                 return null;
             }
         }
@@ -98,11 +99,11 @@ public class RedirectUtils {
             }
 
             if (redirectUri == null) {
-                logger.debug("No Redirect URI parameter specified");
+                LOG.debug("No Redirect URI parameter specified");
                 return null;
             }
         } else if (validRedirects.isEmpty()) {
-            logger.debug("No Redirect URIs supplied");
+            LOG.debug("No Redirect URIs supplied");
             redirectUri = null;
         } else {
             redirectUri = lowerCaseHostname(redirectUri);

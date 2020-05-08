@@ -16,7 +16,6 @@
  */
 package org.keycloak.keys;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.Base64;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentModel;
@@ -28,6 +27,8 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ConfigurationValidationHelper;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.security.KeyPair;
@@ -40,7 +41,7 @@ public class GeneratedEcdsaKeyProviderFactory extends AbstractEcdsaKeyProviderFa
     public static final String ID = "ecdsa-generated";
     // secp256r1,NIST P-256,X9.62 prime256v1,1.2.840.10045.3.1.7
     public static final String DEFAULT_ECDSA_ELLIPTIC_CURVE = "P-256";
-    private static final Logger logger = Logger.getLogger(GeneratedEcdsaKeyProviderFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GeneratedEcdsaKeyProviderFactory.class);
     private static final String HELP_TEXT = "Generates ECDSA keys";
     private static final List<ProviderConfigProperty> CONFIG_PROPERTIES = AbstractEcdsaKeyProviderFactory.configurationBuilder()
             .property(ECDSA_ELLIPTIC_CURVE_PROPERTY)
@@ -101,12 +102,12 @@ public class GeneratedEcdsaKeyProviderFactory extends AbstractEcdsaKeyProviderFa
 
         if (!(model.contains(ECDSA_PRIVATE_KEY_KEY) && model.contains(ECDSA_PUBLIC_KEY_KEY))) {
             generateKeys(model, ecInNistRep);
-            logger.debugv("Generated keys for {0}", realm.getName());
+            LOG.debug("Generated keys for {}", realm.getName());
         } else {
             String currentEc = model.get(ECDSA_ELLIPTIC_CURVE_KEY);
             if (!ecInNistRep.equals(currentEc)) {
                 generateKeys(model, ecInNistRep);
-                logger.debugv("Elliptic Curve changed, generating new keys for {0}", realm.getName());
+                LOG.debug("Elliptic Curve changed, generating new keys for {}", realm.getName());
             }
         }
     }

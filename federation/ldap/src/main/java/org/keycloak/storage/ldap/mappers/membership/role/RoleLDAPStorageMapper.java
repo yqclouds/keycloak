@@ -17,7 +17,6 @@
 
 package org.keycloak.storage.ldap.mappers.membership.role;
 
-import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.RoleUtils;
@@ -35,6 +34,8 @@ import org.keycloak.storage.ldap.mappers.membership.CommonLDAPGroupMapperConfig;
 import org.keycloak.storage.ldap.mappers.membership.LDAPGroupMapperMode;
 import org.keycloak.storage.ldap.mappers.membership.UserRolesRetrieveStrategy;
 import org.keycloak.storage.user.SynchronizationResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -44,8 +45,7 @@ import java.util.*;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class RoleLDAPStorageMapper extends AbstractLDAPStorageMapper implements CommonLDAPGroupMapper {
-
-    private static final Logger logger = Logger.getLogger(RoleLDAPStorageMapper.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RoleLDAPStorageMapper.class);
 
     private final RoleMapperConfig config;
     private final RoleLDAPStorageMapperFactory factory;
@@ -66,7 +66,6 @@ public class RoleLDAPStorageMapper extends AbstractLDAPStorageMapper implements 
     public CommonLDAPGroupMapperConfig getConfig() {
         return config;
     }
-
 
     @Override
     public void onImportUserFromLDAP(LDAPObject ldapUser, UserModel user, RealmModel realm, boolean isCreate) {
@@ -89,7 +88,7 @@ public class RoleLDAPStorageMapper extends AbstractLDAPStorageMapper implements 
                     role = roleContainer.addRole(roleName);
                 }
 
-                logger.debugf("Granting role [%s] to user [%s] during import from LDAP", roleName, user.getUsername());
+                LOG.debug("Granting role [{}] to user [{}] during import from LDAP", roleName, user.getUsername());
                 user.grantRole(role);
             }
         }
@@ -112,7 +111,7 @@ public class RoleLDAPStorageMapper extends AbstractLDAPStorageMapper implements 
 
         };
 
-        logger.debugf("Syncing roles from LDAP into Keycloak DB. Mapper is [%s], LDAP provider is [%s]", mapperModel.getName(), ldapProvider.getModel().getName());
+        LOG.debug("Syncing roles from LDAP into Keycloak DB. Mapper is [{}], LDAP provider is [{}]", mapperModel.getName(), ldapProvider.getModel().getName());
 
         // Send LDAP query to load all roles
         try (LDAPQuery ldapRoleQuery = createRoleQuery(false)) {
@@ -124,7 +123,7 @@ public class RoleLDAPStorageMapper extends AbstractLDAPStorageMapper implements 
                 String roleName = ldapRole.getAttributeAsString(rolesRdnAttr);
 
                 if (roleContainer.getRole(roleName) == null) {
-                    logger.debugf("Syncing role [%s] from LDAP to keycloak DB", roleName);
+                    LOG.debug("Syncing role [{}] from LDAP to keycloak DB", roleName);
                     roleContainer.addRole(roleName);
                     syncResult.increaseAdded();
                 } else {
@@ -150,11 +149,11 @@ public class RoleLDAPStorageMapper extends AbstractLDAPStorageMapper implements 
         };
 
         if (config.getMode() != LDAPGroupMapperMode.LDAP_ONLY) {
-            logger.warnf("Ignored sync for federation mapper '%s' as it's mode is '%s'", mapperModel.getName(), config.getMode().toString());
+            LOG.warn("Ignored sync for federation mapper '{}' as it's mode is '{}'", mapperModel.getName(), config.getMode().toString());
             return syncResult;
         }
 
-        logger.debugf("Syncing roles from Keycloak into LDAP. Mapper is [%s], LDAP provider is [%s]", mapperModel.getName(), ldapProvider.getModel().getName());
+        LOG.debug("Syncing roles from Keycloak into LDAP. Mapper is [{}], LDAP provider is [{}]", mapperModel.getName(), ldapProvider.getModel().getName());
 
         // Send LDAP query to see which roles exists there
         try (LDAPQuery ldapQuery = createRoleQuery(false)) {
@@ -176,7 +175,7 @@ public class RoleLDAPStorageMapper extends AbstractLDAPStorageMapper implements 
                 if (ldapRoleNames.contains(roleName)) {
                     syncResult.increaseUpdated();
                 } else {
-                    logger.debugf("Syncing role [%s] from Keycloak to LDAP", roleName);
+                    LOG.debug("Syncing role [{}] from Keycloak to LDAP", roleName);
                     createLDAPRole(roleName);
                     syncResult.increaseAdded();
                 }
@@ -240,7 +239,7 @@ public class RoleLDAPStorageMapper extends AbstractLDAPStorageMapper implements 
         LDAPObject ldapRole = LDAPUtils.createLDAPGroup(ldapProvider, roleName, config.getRoleNameLdapAttribute(), config.getRoleObjectClasses(ldapProvider),
                 config.getRolesDn(), Collections.<String, Set<String>>emptyMap(), config.getMembershipLdapAttribute());
 
-        logger.debugf("Creating role [%s] to LDAP with DN [%s]", roleName, ldapRole.getDn().toString());
+        LOG.debug("Creating role [{}] to LDAP with DN [{}]", roleName, ldapRole.getDn().toString());
         return ldapRole;
     }
 

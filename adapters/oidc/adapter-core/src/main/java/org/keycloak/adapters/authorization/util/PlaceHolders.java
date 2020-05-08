@@ -16,6 +16,8 @@
  */
 package org.keycloak.adapters.authorization.util;
 
+import org.keycloak.adapters.spi.HttpFacade;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -23,8 +25,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.keycloak.adapters.spi.HttpFacade;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>

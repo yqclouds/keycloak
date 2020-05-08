@@ -22,10 +22,11 @@ import org.apache.catalina.Valve;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.ValveBase;
-import org.jboss.logging.Logger;
 import org.keycloak.adapters.AdapterDeploymentContext;
 import org.keycloak.adapters.AuthenticatedActionsHandler;
 import org.keycloak.adapters.KeycloakDeployment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -42,7 +43,7 @@ import java.io.IOException;
  * @version $Revision: 1 $
  */
 public abstract class AbstractAuthenticatedActionsValve extends ValveBase {
-    private static final Logger log = Logger.getLogger(AbstractAuthenticatedActionsValve.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractAuthenticatedActionsValve.class);
     protected AdapterDeploymentContext deploymentContext;
 
     public AbstractAuthenticatedActionsValve(AdapterDeploymentContext deploymentContext, Valve next, Container container) {
@@ -54,7 +55,7 @@ public abstract class AbstractAuthenticatedActionsValve extends ValveBase {
 
     @Override
     public void invoke(Request request, Response response) throws IOException, ServletException {
-        log.debugv("AuthenticatedActionsValve.invoke {0}", request.getRequestURI());
+        LOG.debug("AuthenticatedActionsValve.invoke {}", request.getRequestURI());
         CatalinaHttpFacade facade = new OIDCCatalinaHttpFacade(request, response);
         KeycloakDeployment deployment = deploymentContext.resolveDeployment(facade);
         if (deployment != null && deployment.isConfigured()) {

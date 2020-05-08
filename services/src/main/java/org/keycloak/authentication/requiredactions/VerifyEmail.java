@@ -17,7 +17,7 @@
 
 package org.keycloak.authentication.requiredactions;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.authentication.DisplayTypeRequiredActionFactory;
 import org.keycloak.authentication.RequiredActionContext;
@@ -58,13 +58,13 @@ import java.util.concurrent.TimeUnit;
 @Component("VerifyEmail")
 @ProviderFactory(id = "VERIFY_EMAIL", providerClasses = RequiredActionProvider.class)
 public class VerifyEmail implements RequiredActionProvider, RequiredActionFactory, DisplayTypeRequiredActionFactory {
-    private static final Logger logger = Logger.getLogger(VerifyEmail.class);
+    private static final Logger LOG = LoggerFactory.getLogger(VerifyEmail.class);
 
     @Override
     public void evaluateTriggers(RequiredActionContext context) {
         if (context.getRealm().isVerifyEmail() && !context.getUser().isEmailVerified()) {
             context.getUser().addRequiredAction(UserModel.RequiredAction.VERIFY_EMAIL);
-            logger.debug("User is required to verify email");
+            LOG.debug("User is required to verify email");
         }
     }
 
@@ -102,7 +102,7 @@ public class VerifyEmail implements RequiredActionProvider, RequiredActionFactor
 
     @Override
     public void processAction(RequiredActionContext context) {
-        logger.debugf("Re-sending email requested for user: %s", context.getUser().getUsername());
+        LOG.debug("Re-sending email requested for user: {}", context.getUser().getUsername());
 
         // This will allow user to re-send email again
         context.getAuthenticationSession().removeAuthNote(Constants.VERIFY_EMAIL_KEY);
@@ -163,7 +163,7 @@ public class VerifyEmail implements RequiredActionProvider, RequiredActionFactor
                     .sendVerifyEmail(link, expirationInMinutes);
             event.success();
         } catch (EmailException e) {
-            logger.error("Failed to send verification email", e);
+            LOG.error("Failed to send verification email", e);
             event.error(Errors.EMAIL_SEND_FAILED);
         }
 

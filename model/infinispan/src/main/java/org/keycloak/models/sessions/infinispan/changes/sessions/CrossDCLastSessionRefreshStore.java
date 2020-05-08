@@ -17,9 +17,10 @@
 
 package org.keycloak.models.sessions.infinispan.changes.sessions;
 
-import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.models.KeycloakSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
@@ -34,7 +35,7 @@ import java.util.Map;
  */
 public class CrossDCLastSessionRefreshStore extends AbstractLastSessionRefreshStore {
 
-    protected static final Logger logger = Logger.getLogger(CrossDCLastSessionRefreshStore.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(CrossDCLastSessionRefreshStore.class);
 
     private final String eventKey;
 
@@ -50,8 +51,8 @@ public class CrossDCLastSessionRefreshStore extends AbstractLastSessionRefreshSt
     protected void sendMessage(KeycloakSession kcSession, Map<String, SessionData> refreshesToSend) {
         LastSessionRefreshEvent event = new LastSessionRefreshEvent(refreshesToSend);
 
-        if (logger.isDebugEnabled()) {
-            logger.debugf("Sending lastSessionRefreshes for key '%s'. Refreshes: %s", eventKey, event.getLastSessionRefreshes().toString());
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Sending lastSessionRefreshes for key '{}'. Refreshes: {}", eventKey, event.getLastSessionRefreshes().toString());
         }
 
         // Don't notify local DC about the lastSessionRefreshes. They were processed here already

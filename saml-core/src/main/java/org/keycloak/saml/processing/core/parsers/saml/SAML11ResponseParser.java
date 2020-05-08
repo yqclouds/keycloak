@@ -47,7 +47,7 @@ import javax.xml.stream.events.XMLEvent;
  */
 public class SAML11ResponseParser implements StaxParser {
 
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
 
     private final String RESPONSE = JBossSAMLConstants.RESPONSE__PROTOCOL.get();
 
@@ -61,12 +61,12 @@ public class SAML11ResponseParser implements StaxParser {
 
         Attribute idAttr = startElement.getAttributeByName(new QName(SAML11Constants.RESPONSE_ID));
         if (idAttr == null)
-            throw logger.parserRequiredAttribute(SAML11Constants.RESPONSE_ID);
+            throw LOG.parserRequiredAttribute(SAML11Constants.RESPONSE_ID);
         String id = StaxParserUtil.getAttributeValue(idAttr);
 
         Attribute issueInstant = startElement.getAttributeByName(new QName(SAML11Constants.ISSUE_INSTANT));
         if (issueInstant == null)
-            throw logger.parserRequiredAttribute(SAML11Constants.ISSUE_INSTANT);
+            throw LOG.parserRequiredAttribute(SAML11Constants.ISSUE_INSTANT);
         XMLGregorianCalendar issueInstantVal = XMLTimeUtil.parse(StaxParserUtil.getAttributeValue(issueInstant));
 
         SAML11ResponseType response = new SAML11ResponseType(id, issueInstantVal);
@@ -86,7 +86,7 @@ public class SAML11ResponseParser implements StaxParser {
             } else if (JBossSAMLConstants.STATUS.get().equals(elementName)) {
                 response.setStatus(parseStatus(xmlEventReader));
             } else
-                throw logger.parserUnknownStartElement(elementName, startElement.getLocation());
+                throw LOG.parserUnknownStartElement(elementName, startElement.getLocation());
         }
 
         return response;
@@ -170,7 +170,7 @@ public class SAML11ResponseParser implements StaxParser {
                 if (StaxParserUtil.matches(endElement, STATUS))
                     break;
                 else
-                    throw logger.parserUnknownEndElement(StaxParserUtil.getElementName(endElement), xmlEvent.getLocation());
+                    throw LOG.parserUnknownEndElement(StaxParserUtil.getElementName(endElement), xmlEvent.getLocation());
             } else
                 break;
         }

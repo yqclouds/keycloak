@@ -182,7 +182,7 @@ public class SAMLParser extends AbstractParser {
 
                 ParserFactory pf = PARSERS.get(name);
                 if (pf == null) {
-                    throw logger.parserException(new RuntimeException(ErrorCodes.UNKNOWN_START_ELEMENT + name + "::location="
+                    throw LOG.parserException(new RuntimeException(ErrorCodes.UNKNOWN_START_ELEMENT + name + "::location="
                             + startElement.getLocation()));
                 }
 

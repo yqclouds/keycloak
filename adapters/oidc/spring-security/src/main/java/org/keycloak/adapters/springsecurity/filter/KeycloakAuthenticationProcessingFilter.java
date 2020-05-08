@@ -17,13 +17,6 @@
 
 package org.keycloak.adapters.springsecurity.filter;
 
-import java.io.IOException;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.keycloak.OAuth2Constants;
 import org.keycloak.adapters.AdapterDeploymentContext;
 import org.keycloak.adapters.AdapterTokenStore;
@@ -33,11 +26,7 @@ import org.keycloak.adapters.spi.AuthChallenge;
 import org.keycloak.adapters.spi.AuthOutcome;
 import org.keycloak.adapters.spi.HttpFacade;
 import org.keycloak.adapters.springsecurity.KeycloakAuthenticationException;
-import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationEntryPoint;
-import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationFailureHandler;
-import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationSuccessHandler;
-import org.keycloak.adapters.springsecurity.authentication.RequestAuthenticatorFactory;
-import org.keycloak.adapters.springsecurity.authentication.SpringSecurityRequestAuthenticatorFactory;
+import org.keycloak.adapters.springsecurity.authentication.*;
 import org.keycloak.adapters.springsecurity.facade.SimpleHttpFacade;
 import org.keycloak.adapters.springsecurity.token.AdapterTokenStoreFactory;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
@@ -61,6 +50,12 @@ import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 /**
  * Provides a Keycloak authentication processing filter.
  *
@@ -82,7 +77,7 @@ public class KeycloakAuthenticationProcessingFilter extends AbstractAuthenticati
                     new AdapterStateCookieRequestMatcher()
             );
 
-    private static final Logger log = LoggerFactory.getLogger(KeycloakAuthenticationProcessingFilter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KeycloakAuthenticationProcessingFilter.class);
 
     private ApplicationContext applicationContext;
     private AdapterDeploymentContext adapterDeploymentContext;
@@ -107,17 +102,15 @@ public class KeycloakAuthenticationProcessingFilter extends AbstractAuthenticati
      * Creates a new Keycloak authentication processing filter with given {@link AuthenticationManager} and
      * {@link RequestMatcher}.
      * <p>
-     *     Note: the given request matcher must support matching the <code>Authorization</code> header if
-     *     bearer token authentication is to be accepted.
+     * Note: the given request matcher must support matching the <code>Authorization</code> header if
+     * bearer token authentication is to be accepted.
      * </p>
      *
-     * @param authenticationManager the {@link AuthenticationManager} to authenticate requests (cannot be null)
+     * @param authenticationManager                the {@link AuthenticationManager} to authenticate requests (cannot be null)
      * @param requiresAuthenticationRequestMatcher the {@link RequestMatcher} used to determine if authentication
-     *  is required (cannot be null)
-     *
-     *  @see RequestHeaderRequestMatcher
-     *  @see OrRequestMatcher
-     *
+     *                                             is required (cannot be null)
+     * @see RequestHeaderRequestMatcher
+     * @see OrRequestMatcher
      */
     public KeycloakAuthenticationProcessingFilter(AuthenticationManager authenticationManager, RequestMatcher
             requiresAuthenticationRequestMatcher) {
@@ -139,7 +132,7 @@ public class KeycloakAuthenticationProcessingFilter extends AbstractAuthenticati
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
             throws AuthenticationException, IOException, ServletException {
 
-        log.debug("Attempting Keycloak authentication");
+        LOG.debug("Attempting Keycloak authentication");
 
         HttpFacade facade = new SimpleHttpFacade(request, response);
         KeycloakDeployment deployment = adapterDeploymentContext.resolveDeployment(facade);
@@ -152,7 +145,7 @@ public class KeycloakAuthenticationProcessingFilter extends AbstractAuthenticati
                 = requestAuthenticatorFactory.createRequestAuthenticator(facade, request, deployment, tokenStore, -1);
 
         AuthOutcome result = authenticator.authenticate();
-        log.debug("Auth outcome: {}", result);
+        LOG.debug("Auth outcome: {}", result);
 
         if (AuthOutcome.FAILED.equals(result)) {
             AuthChallenge challenge = authenticator.getChallenge();
@@ -174,14 +167,11 @@ public class KeycloakAuthenticationProcessingFilter extends AbstractAuthenticati
                 // let continue if challenged, it may redirect
                 return null;
             }
-        }
-
-        else if (AuthOutcome.AUTHENTICATED.equals(result)) {
+        } else if (AuthOutcome.AUTHENTICATED.equals(result)) {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             Assert.notNull(authentication, "Authentication SecurityContextHolder was null");
             return authenticationManager.authenticate(authentication);
-        }
-        else {
+        } else {
             AuthChallenge challenge = authenticator.getChallenge();
             if (challenge != null) {
                 challenge.challenge(facade);
@@ -198,8 +188,8 @@ public class KeycloakAuthenticationProcessingFilter extends AbstractAuthenticati
             return;
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("Authentication success using bearer token/basic authentication. Updating SecurityContextHolder to contain: {}", authResult);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Authentication success using bearer token/basic authentication. Updating SecurityContextHolder to contain: {}", authResult);
         }
 
         SecurityContext context = SecurityContextHolder.createEmptyContext();

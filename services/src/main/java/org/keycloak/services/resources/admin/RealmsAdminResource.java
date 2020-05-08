@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.common.ClientConnection;
@@ -47,7 +47,7 @@ import java.util.List;
  */
 public class RealmsAdminResource {
     public static final CacheControl noCache = new CacheControl();
-    protected static final Logger logger = Logger.getLogger(RealmsAdminResource.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(RealmsAdminResource.class);
 
     static {
         noCache.setNoCache(true);
@@ -87,7 +87,7 @@ public class RealmsAdminResource {
             throw new ForbiddenException();
         }
 
-        logger.debug(("getRealms()"));
+        LOG.debug(("getRealms()"));
         return reps;
     }
 
@@ -115,21 +115,21 @@ public class RealmsAdminResource {
         RealmManager realmManager = new RealmManager(session);
         AdminPermissions.realms(session, auth).requireCreateRealm();
 
-        logger.debugv("importRealm: {0}", rep.getRealm());
+        LOG.debug("importRealm: {}", rep.getRealm());
 
         try {
             RealmModel realm = realmManager.importRealm(rep);
             grantPermissionsToRealmCreator(realm);
 
             URI location = AdminRoot.realmsUrl(session.getContext().getUri()).path(realm.getName()).build();
-            logger.debugv("imported realm success, sending back: {0}", location.toString());
+            LOG.debug("imported realm success, sending back: {}", location.toString());
 
             return Response.created(location).build();
         } catch (ModelDuplicateException e) {
-            logger.error("Conflict detected", e);
+            LOG.error("Conflict detected", e);
             return ErrorResponse.exists("Conflict detected. See logs for details");
         } catch (PasswordPolicyNotMetException e) {
-            logger.error("Password policy not met for user " + e.getUsername(), e);
+            LOG.error("Password policy not met for user " + e.getUsername(), e);
             if (session.getTransactionManager().isActive()) session.getTransactionManager().setRollbackOnly();
             return ErrorResponse.error("Password policy not met. See logs for details", Response.Status.BAD_REQUEST);
         }

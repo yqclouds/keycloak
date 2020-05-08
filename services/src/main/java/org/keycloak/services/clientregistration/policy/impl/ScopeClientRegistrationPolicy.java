@@ -17,7 +17,7 @@
 
 package org.keycloak.services.clientregistration.policy.impl;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
@@ -31,7 +31,7 @@ import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicyE
  */
 public class ScopeClientRegistrationPolicy implements ClientRegistrationPolicy {
 
-    private static final Logger logger = Logger.getLogger(ScopeClientRegistrationPolicy.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ScopeClientRegistrationPolicy.class);
 
     private final KeycloakSession session;
     private final ComponentModel componentModel;

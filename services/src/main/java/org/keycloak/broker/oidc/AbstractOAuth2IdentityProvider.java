@@ -18,7 +18,6 @@ package org.keycloak.broker.oidc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.jboss.logging.Logger;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.broker.provider.*;
@@ -43,6 +42,8 @@ import org.keycloak.services.Urls;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.vault.VaultStringSecret;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.crypto.SecretKey;
@@ -76,7 +77,7 @@ public abstract class AbstractOAuth2IdentityProvider<C extends OAuth2IdentityPro
     public static final String OAUTH2_PARAMETER_CLIENT_ID = "client_id";
     public static final String OAUTH2_PARAMETER_CLIENT_SECRET = "client_secret";
     public static final String OAUTH2_PARAMETER_GRANT_TYPE = "grant_type";
-    protected static final Logger logger = Logger.getLogger(AbstractOAuth2IdentityProvider.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(AbstractOAuth2IdentityProvider.class);
     protected static ObjectMapper mapper = new ObjectMapper();
 
 
@@ -424,10 +425,10 @@ public abstract class AbstractOAuth2IdentityProvider<C extends OAuth2IdentityPro
             response = buildUserInfoRequest(subjectToken, userInfoUrl).asResponse();
             status = response.getStatus();
         } catch (IOException e) {
-            logger.debug("Failed to invoke user info for external exchange", e);
+            LOG.debug("Failed to invoke user info for external exchange", e);
         }
         if (status != 200) {
-            logger.debug("Failed to invoke user info status: " + status);
+            LOG.debug("Failed to invoke user info status: " + status);
             event.detail(Details.REASON, "user info call failure");
             event.error(Errors.INVALID_TOKEN);
             throw new ErrorResponseException(OAuthErrorException.INVALID_TOKEN, "invalid token", Response.Status.BAD_REQUEST);
@@ -541,7 +542,7 @@ public abstract class AbstractOAuth2IdentityProvider<C extends OAuth2IdentityPro
                                      @QueryParam(AbstractOAuth2IdentityProvider.OAUTH2_PARAMETER_CODE) String authorizationCode,
                                      @QueryParam(OAuth2Constants.ERROR) String error) {
             if (error != null) {
-                logger.error(error + " for broker login " + getConfig().getProviderId());
+                LOG.error(error + " for broker login " + getConfig().getProviderId());
                 if (error.equals(ACCESS_DENIED)) {
                     return callback.cancelled(state);
                 } else if (error.equals(OAuthErrorException.LOGIN_REQUIRED) || error.equals(OAuthErrorException.INTERACTION_REQUIRED)) {
@@ -573,7 +574,7 @@ public abstract class AbstractOAuth2IdentityProvider<C extends OAuth2IdentityPro
             } catch (WebApplicationException e) {
                 return e.getResponse();
             } catch (Exception e) {
-                logger.error("Failed to make identity provider oauth callback", e);
+                LOG.error("Failed to make identity provider oauth callback", e);
             }
             event.event(EventType.LOGIN);
             event.error(Errors.IDENTITY_PROVIDER_LOGIN_FAILURE);

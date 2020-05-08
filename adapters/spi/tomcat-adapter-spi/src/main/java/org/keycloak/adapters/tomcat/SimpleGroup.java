@@ -29,6 +29,7 @@ public class SimpleGroup extends SimplePrincipal implements Group {
 
     /**
      * Creates a new group with the given name.
+     *
      * @param name Group name.
      */
     public SimpleGroup(final String name) {
@@ -50,7 +51,7 @@ public class SimpleGroup extends SimplePrincipal implements Group {
     public boolean removeMember(final Principal user) {
         return this.members.remove(user);
     }
-    
+
     public String toString() {
         return super.toString() + ": " + members.toString();
     }

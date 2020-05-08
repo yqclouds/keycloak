@@ -23,7 +23,7 @@ import com.webauthn4j.data.client.challenge.Challenge;
 import com.webauthn4j.data.client.challenge.DefaultChallenge;
 import com.webauthn4j.server.ServerProperty;
 import com.webauthn4j.util.exception.WebAuthnException;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.WebAuthnConstants;
 import org.keycloak.authentication.*;
 import org.keycloak.authentication.requiredactions.WebAuthnRegisterFactory;
@@ -56,7 +56,7 @@ import static org.keycloak.services.messages.Messages.*;
  */
 public class WebAuthnAuthenticator implements Authenticator, CredentialValidator<WebAuthnCredentialProvider> {
 
-    private static final Logger logger = Logger.getLogger(WebAuthnAuthenticator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WebAuthnAuthenticator.class);
     private static final String ERR_LABEL = "web_authn_authentication_error";
     private static final String ERR_DETAIL_LABEL = "web_authn_authentication_error_detail";
     private KeycloakSession session;
@@ -203,7 +203,7 @@ public class WebAuthnAuthenticator implements Authenticator, CredentialValidator
         String encodedCredentialID = Base64Url.encode(credentialId);
         if (result) {
             String isUVChecked = Boolean.toString(isUVFlagChecked);
-            logger.debugv("WebAuthn Authentication successed. isUserVerificationChecked = {0}, PublicKeyCredentialID = {1}", isUVChecked, encodedCredentialID);
+            LOG.debug("WebAuthn Authentication successed. isUserVerificationChecked = {}, PublicKeyCredentialID = {}", isUVChecked, encodedCredentialID);
             context.setUser(user);
             context.getEvent()
                     .detail("web_authn_authenticator_user_verification_checked", isUVChecked)
@@ -250,7 +250,7 @@ public class WebAuthnAuthenticator implements Authenticator, CredentialValidator
         Response errorResponse = null;
         switch (errorCase) {
             case WEBAUTHN_ERROR_REGISTRATION:
-                logger.warn(errorCase);
+                LOG.warn(errorCase);
                 context.getEvent()
                         .detail(ERR_LABEL, errorCase)
                         .error(Errors.INVALID_USER_CREDENTIALS);
@@ -258,7 +258,7 @@ public class WebAuthnAuthenticator implements Authenticator, CredentialValidator
                 context.failure(AuthenticationFlowError.INVALID_CREDENTIALS, errorResponse);
                 break;
             case WEBAUTHN_ERROR_API_GET:
-                logger.warnv("error returned from navigator.credentials.get(). {0}", errorMessage);
+                LOG.warn("error returned from navigator.credentials.get(). {}", errorMessage);
                 context.getEvent()
                         .detail(ERR_LABEL, errorCase)
                         .detail(ERR_DETAIL_LABEL, errorMessage)
@@ -267,7 +267,7 @@ public class WebAuthnAuthenticator implements Authenticator, CredentialValidator
                 context.failure(AuthenticationFlowError.INVALID_USER, errorResponse);
                 break;
             case WEBAUTHN_ERROR_DIFFERENT_USER:
-                logger.warn(errorCase);
+                LOG.warn(errorCase);
                 context.getEvent()
                         .detail(ERR_LABEL, errorCase)
                         .error(Errors.DIFFERENT_USER_AUTHENTICATED);
@@ -275,7 +275,7 @@ public class WebAuthnAuthenticator implements Authenticator, CredentialValidator
                 context.failure(AuthenticationFlowError.USER_CONFLICT, errorResponse);
                 break;
             case WEBAUTHN_ERROR_AUTH_VERIFICATION:
-                logger.warnv("WebAuthn API .get() response validation failure. {0}", errorMessage);
+                LOG.warn("WebAuthn API .get() response validation failure. {}", errorMessage);
                 context.getEvent()
                         .detail(ERR_LABEL, errorCase)
                         .detail(ERR_DETAIL_LABEL, errorMessage)
@@ -284,7 +284,7 @@ public class WebAuthnAuthenticator implements Authenticator, CredentialValidator
                 context.failure(AuthenticationFlowError.INVALID_USER, errorResponse);
                 break;
             case WEBAUTHN_ERROR_USER_NOT_FOUND:
-                logger.warn(errorCase);
+                LOG.warn(errorCase);
                 context.getEvent()
                         .detail(ERR_LABEL, errorCase)
                         .error(Errors.USER_NOT_FOUND);

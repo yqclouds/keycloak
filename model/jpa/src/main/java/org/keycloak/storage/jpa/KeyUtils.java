@@ -16,7 +16,8 @@
  */
 package org.keycloak.storage.jpa;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.regex.Pattern;
 
@@ -31,7 +32,7 @@ public class KeyUtils {
                     + "|"
                     + "f:" + UUID_PATTERN.pattern() + ":.*"
     );
-    private static final Logger LOG = Logger.getLogger(KeyUtils.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KeyUtils.class);
 
     /**
      * Returns {@code} true when the key is {@code null} or either a plain UUID or a key formatted as "f:[UUID]:any_string"
@@ -50,7 +51,7 @@ public class KeyUtils {
      */
     public static void assertValidKey(String key) throws IllegalArgumentException {
         if (!isValidKey(key)) {
-            LOG.warnf("The given key is not a valid key per specification, future migration might fail: %s", key);
+            LOG.warn("The given key is not a valid key per specification, future migration might fail: {}", key);
         }
     }
 }

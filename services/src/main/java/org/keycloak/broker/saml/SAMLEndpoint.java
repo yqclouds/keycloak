@@ -17,7 +17,6 @@
 
 package org.keycloak.broker.saml;
 
-import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.IdentityBrokerException;
@@ -60,6 +59,8 @@ import org.keycloak.saml.validators.DestinationValidator;
 import org.keycloak.services.ErrorPage;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.messages.Messages;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -91,7 +92,7 @@ public class SAMLEndpoint {
     public static final String SAML_ASSERTION = "SAML_ASSERTION";
     public static final String SAML_IDP_INITIATED_CLIENT_ID = "SAML_IDP_INITIATED_CLIENT_ID";
     public static final String SAML_AUTHN_STATEMENT = "SAML_AUTHN_STATEMENT";
-    protected static final Logger logger = Logger.getLogger(SAMLEndpoint.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(SAMLEndpoint.class);
     private final DestinationValidator destinationValidator;
     protected RealmModel realm;
     protected EventBuilder event;
@@ -273,7 +274,7 @@ public class SAMLEndpoint {
                     cert.checkValidity();
                     keys.add(cert.getPublicKey());
                 } catch (CertificateException e) {
-                    logger.warnf("Ignoring invalid certificate: %s", cert);
+                    LOG.warn("Ignoring invalid certificate: {}", cert);
                 } catch (ProcessingException e) {
                     throw new RuntimeException(e);
                 }
@@ -304,7 +305,7 @@ public class SAMLEndpoint {
                 try {
                     verifySignature(GeneralConstants.SAML_REQUEST_KEY, holder);
                 } catch (VerificationException e) {
-                    logger.error("validation failed", e);
+                    LOG.error("validation failed", e);
                     event.event(EventType.IDENTITY_PROVIDER_RESPONSE);
                     event.error(Errors.INVALID_SIGNATURE);
                     return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.INVALID_REQUESTER);
@@ -312,7 +313,7 @@ public class SAMLEndpoint {
             }
 
             if (requestAbstractType instanceof LogoutRequestType) {
-                logger.debug("** logout request");
+                LOG.debug("** logout request");
                 event.event(EventType.LOGOUT);
                 LogoutRequestType logout = (LogoutRequestType) requestAbstractType;
                 return logoutRequest(logout, relayState);
@@ -340,7 +341,7 @@ public class SAMLEndpoint {
                     try {
                         AuthenticationManager.backchannelLogout(session, realm, userSession, session.getContext().getUri(), clientConnection, headers, false);
                     } catch (Exception e) {
-                        logger.warn("failed to do backchannel logout for userSession", e);
+                        LOG.warn("failed to do backchannel logout for userSession", e);
                     }
                 }
 
@@ -360,7 +361,7 @@ public class SAMLEndpoint {
                         try {
                             AuthenticationManager.backchannelLogout(session, realm, userSession, session.getContext().getUri(), clientConnection, headers, false);
                         } catch (Exception e) {
-                            logger.warn("failed to do backchannel logout for userSession", e);
+                            LOG.warn("failed to do backchannel logout for userSession", e);
                         }
                     }
                 }
@@ -419,7 +420,7 @@ public class SAMLEndpoint {
                 boolean assertionIsEncrypted = AssertionUtil.isAssertionEncrypted(responseType);
 
                 if (config.isWantAssertionsEncrypted() && !assertionIsEncrypted) {
-                    logger.error("The assertion is not encrypted, which is required.");
+                    LOG.error("The assertion is not encrypted, which is required.");
                     event.event(EventType.IDENTITY_PROVIDER_RESPONSE);
                     event.error(Errors.INVALID_SAML_RESPONSE);
                     return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.INVALID_REQUESTER);
@@ -442,7 +443,7 @@ public class SAMLEndpoint {
                 final boolean hasNoSignatureWhenRequired = !signed && config.isValidateSignature() && !containsUnencryptedSignature(holder);
 
                 if (assertionSignatureNotExistsWhenRequired || signatureNotValid || hasNoSignatureWhenRequired) {
-                    logger.error("validation failed");
+                    LOG.error("validation failed");
                     event.event(EventType.IDENTITY_PROVIDER_RESPONSE);
                     event.error(Errors.INVALID_SIGNATURE);
                     return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.INVALID_REQUESTER);
@@ -456,7 +457,7 @@ public class SAMLEndpoint {
                 String principal = getPrincipal(assertion);
 
                 if (principal == null) {
-                    logger.errorf("no principal in assertion; expected: %s", expectedPrincipalType());
+                    LOG.error("no principal in assertion; expected: {}", expectedPrincipalType());
                     event.event(EventType.IDENTITY_PROVIDER_RESPONSE);
                     event.error(Errors.INVALID_SAML_RESPONSE);
                     return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.INVALID_REQUESTER);
@@ -494,7 +495,7 @@ public class SAMLEndpoint {
                     // warning has been already emitted in DeploymentBuilder
                 }
                 if (!cvb.build().isValid()) {
-                    logger.error("Assertion expired.");
+                    LOG.error("Assertion expired.");
                     event.event(EventType.IDENTITY_PROVIDER_RESPONSE);
                     event.error(Errors.INVALID_SAML_RESPONSE);
                     return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.EXPIRED_CODE);
@@ -562,7 +563,7 @@ public class SAMLEndpoint {
                 try {
                     verifySignature(GeneralConstants.SAML_RESPONSE_KEY, holder);
                 } catch (VerificationException e) {
-                    logger.error("validation failed", e);
+                    LOG.error("validation failed", e);
                     event.event(EventType.IDENTITY_PROVIDER_RESPONSE);
                     event.error(Errors.INVALID_SIGNATURE);
                     return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.INVALID_FEDERATED_IDENTITY_ACTION);
@@ -581,20 +582,20 @@ public class SAMLEndpoint {
 
         protected Response handleLogoutResponse(SAMLDocumentHolder holder, StatusResponseType responseType, String relayState) {
             if (relayState == null) {
-                logger.error("no valid user session");
+                LOG.error("no valid user session");
                 event.event(EventType.LOGOUT);
                 event.error(Errors.USER_SESSION_NOT_FOUND);
                 return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.IDENTITY_PROVIDER_UNEXPECTED_ERROR);
             }
             UserSessionModel userSession = session.sessions().getUserSession(realm, relayState);
             if (userSession == null) {
-                logger.error("no valid user session");
+                LOG.error("no valid user session");
                 event.event(EventType.LOGOUT);
                 event.error(Errors.USER_SESSION_NOT_FOUND);
                 return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.IDENTITY_PROVIDER_UNEXPECTED_ERROR);
             }
             if (userSession.getState() != UserSessionModel.State.LOGGING_OUT) {
-                logger.error("usersession in different state");
+                LOG.error("usersession in different state");
                 event.event(EventType.LOGOUT);
                 event.error(Errors.USER_SESSION_NOT_FOUND);
                 return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.SESSION_NOT_ACTIVE);

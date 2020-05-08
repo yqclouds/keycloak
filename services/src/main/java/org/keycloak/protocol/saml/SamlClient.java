@@ -17,12 +17,13 @@
 
 package org.keycloak.protocol.saml;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.ClientConfigResolver;
 import org.keycloak.models.ClientModel;
 import org.keycloak.saml.SignatureAlgorithm;
 import org.keycloak.saml.common.constants.JBossSAMLURIConstants;
 import org.keycloak.saml.common.util.XmlKeyInfoKeyNameTransformer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Configuration of a SAML-enabled client.
@@ -33,7 +34,7 @@ import org.keycloak.saml.common.util.XmlKeyInfoKeyNameTransformer;
 public class SamlClient extends ClientConfigResolver {
 
     public static final XmlKeyInfoKeyNameTransformer DEFAULT_XML_KEY_INFO_KEY_NAME_TRANSFORMER = XmlKeyInfoKeyNameTransformer.KEY_ID;
-    protected static final Logger logger = Logger.getLogger(SamlClient.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(SamlClient.class);
 
     public SamlClient(ClientModel client) {
         super(client);
@@ -240,7 +241,7 @@ public class SamlClient extends ClientConfigResolver {
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {
-            logger.warnf("Invalid numeric value for saml attribute \"%s\": %s", SamlConfigAttributes.SAML_ASSERTION_LIFESPAN, value);
+            LOG.warn("Invalid numeric value for saml attribute \"%s\": %s", SamlConfigAttributes.SAML_ASSERTION_LIFESPAN, value);
             return -1;
         }
     }

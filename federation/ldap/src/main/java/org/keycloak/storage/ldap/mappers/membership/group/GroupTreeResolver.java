@@ -17,7 +17,8 @@
 
 package org.keycloak.storage.ldap.mappers.membership.group;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -25,9 +26,7 @@ import java.util.*;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class GroupTreeResolver {
-
-    private static final Logger logger = Logger.getLogger(GroupTreeResolver.class);
-
+    private static final Logger LOG = LoggerFactory.getLogger(GroupTreeResolver.class);
 
     /**
      * Fully resolves list of group trees to be used in Keycloak. The input is group info (usually from LDAP) where each "Group" object contains
@@ -111,7 +110,7 @@ public class GroupTreeResolver {
                 } else if (ignoreMissingGroups) {
                     // Need to remove the missing group
                     iterator.remove();
-                    logger.debug("Group '" + child + "' referenced as member of group '" + group.getGroupName() + "' doesn't exists. Ignoring.");
+                    LOG.debug("Group '" + child + "' referenced as member of group '" + group.getGroupName() + "' doesn't exists. Ignoring.");
                 } else {
                     throw new GroupTreeResolveException("Group '" + child + "' referenced as member of group '" + group.getGroupName() + "' doesn't exists");
                 }

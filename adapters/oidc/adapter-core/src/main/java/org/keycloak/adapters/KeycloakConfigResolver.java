@@ -21,17 +21,17 @@ import org.keycloak.adapters.spi.HttpFacade.Request;
 /**
  * On multi-tenant scenarios, Keycloak will defer the resolution of a
  * KeycloakDeployment to the target application at the request-phase.
- *
+ * <p>
  * A Request object is passed to the resolver and callers expect a complete
  * KeycloakDeployment. Based on this KeycloakDeployment, Keycloak will resume
  * authenticating and authorizing the request.
- *
+ * <p>
  * The easiest way to build a KeycloakDeployment is to use
  * KeycloakDeploymentBuilder , passing the InputStream of an existing
- * keycloak.json to the build() method. 
+ * keycloak.json to the build() method.
  *
- * @see KeycloakDeploymentBuilder
  * @author Juraci Paixão Kröhling <juraci at kroehling.de>
+ * @see KeycloakDeploymentBuilder
  */
 public interface KeycloakConfigResolver {
 

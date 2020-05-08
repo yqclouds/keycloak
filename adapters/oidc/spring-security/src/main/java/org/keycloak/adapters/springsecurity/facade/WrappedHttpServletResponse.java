@@ -35,7 +35,7 @@ import java.lang.reflect.Method;
  */
 class WrappedHttpServletResponse implements Response {
 
-    private static final Logger log = LoggerFactory.getLogger(WrappedHttpServletResponse.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WrappedHttpServletResponse.class);
     private final HttpServletResponse response;
 
     /**
@@ -82,9 +82,9 @@ class WrappedHttpServletResponse implements Response {
             method = Cookie.class.getMethod("setHttpOnly", boolean.class);
             method.invoke(cookie, httpOnly);
         } catch (NoSuchMethodException e) {
-            log.warn("Unable to set httpOnly on cookie [{}]; no such method on javax.servlet.http.Cookie", cookie.getName());
+            LOG.warn("Unable to set httpOnly on cookie [{}]; no such method on javax.servlet.http.Cookie", cookie.getName());
         } catch (ReflectiveOperationException e) {
-            log.error("Unable to set httpOnly on cookie [{}]", cookie.getName(), e);
+            LOG.error("Unable to set httpOnly on cookie [{}]", cookie.getName(), e);
         }
     }
 

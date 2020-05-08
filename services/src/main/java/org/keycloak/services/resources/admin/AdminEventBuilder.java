@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.util.Time;
 import org.keycloak.events.EventListenerProvider;
@@ -41,7 +41,7 @@ import java.util.Set;
 
 public class AdminEventBuilder {
 
-    protected static final Logger logger = Logger.getLogger(AdminEventBuilder.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(AdminEventBuilder.class);
 
     @Autowired(required = false)
     private EventStoreProvider eventStoreProvider;
@@ -89,7 +89,7 @@ public class AdminEventBuilder {
     private AdminEventBuilder updateStore(KeycloakSession session) {
         if (realm.isAdminEventsEnabled() && eventStoreProvider == null) {
             if (eventStoreProvider == null) {
-                ServicesLogger.LOGGER.noEventStoreProvider();
+                // ServicesLogger.LOGGER.noEventStoreProvider();
             }
         }
         return this;
@@ -104,7 +104,7 @@ public class AdminEventBuilder {
                     if (listener != null) {
                         listeners.put(id, listener);
                     } else {
-                        ServicesLogger.LOGGER.providerNotFound(id);
+                        // ServicesLogger.LOGGER.providerNotFound(id);
                     }
                 }
             }
@@ -248,7 +248,7 @@ public class AdminEventBuilder {
             try {
                 eventStoreProvider.onEvent(adminEvent, includeRepresentation);
             } catch (Throwable t) {
-                ServicesLogger.LOGGER.failedToSaveEvent(t);
+                // ServicesLogger.LOGGER.failedToSaveEvent(t);
             }
         }
 
@@ -257,7 +257,7 @@ public class AdminEventBuilder {
                 try {
                     l.onEvent(adminEvent, includeRepresentation);
                 } catch (Throwable t) {
-                    ServicesLogger.LOGGER.failedToSendType(t, l);
+                    // ServicesLogger.LOGGER.failedToSendType(t, l);
                 }
             }
         }

@@ -51,7 +51,7 @@ import static org.keycloak.saml.common.constants.JBossSAMLURIConstants.PROTOCOL_
  */
 public class BaseWriter {
 
-    protected static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    protected static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
 
     protected static String PROTOCOL_PREFIX = "samlp";
 
@@ -164,7 +164,7 @@ public class BaseWriter {
                     } else if (attributeValue instanceof NameIDType) {
                         writeNameIDTypeAttributeValue((NameIDType) attributeValue);
                     } else
-                        throw logger.writerUnsupportedAttributeValueError(attributeValue.getClass().getName());
+                        throw LOG.writerUnsupportedAttributeValueError(attributeValue.getClass().getName());
                 } else {
                     writeStringAttributeValue(null);
                 }
@@ -254,7 +254,7 @@ public class BaseWriter {
                 SamlProtocolExtensionsAwareBuilder.NodeGenerator ng = (SamlProtocolExtensionsAwareBuilder.NodeGenerator) o;
                 ng.write(writer);
             } else {
-                throw logger.samlExtensionUnknownChild(o == null ? null : o.getClass());
+                throw LOG.samlExtensionUnknownChild(o == null ? null : o.getClass());
             }
         }
 
@@ -342,6 +342,6 @@ public class BaseWriter {
     }
 
     private void write(BaseIDAbstractType baseId) throws ProcessingException {
-        throw logger.notImplementedYet("Method not implemented.");
+        throw LOG.notImplementedYet("Method not implemented.");
     }
 }

@@ -104,7 +104,7 @@ public class SAML11AssertionWriter extends BaseSAML11Writer {
 
         SAML11AdviceType advice = assertion.getAdvice();
         if (advice != null)
-            throw logger.notImplementedYet("Advice");
+            throw LOG.notImplementedYet("Advice");
 
         List<SAML11StatementAbstractType> statements = assertion.getStatements();
         if (statements != null) {
@@ -118,7 +118,7 @@ public class SAML11AssertionWriter extends BaseSAML11Writer {
                 } else if (statement instanceof SAML11SubjectStatementType) {
                     write((SAML11SubjectStatementType) statement);
                 } else
-                    throw logger.writerUnknownTypeError(statement.getClass().getName());
+                    throw LOG.writerUnknownTypeError(statement.getClass().getName());
             }
         }
 
@@ -138,11 +138,11 @@ public class SAML11AssertionWriter extends BaseSAML11Writer {
      * @throws ProcessingException
      */
     public void write(StatementAbstractType statement) throws ProcessingException {
-        throw logger.notImplementedYet("StatementAbstractType");
+        throw LOG.notImplementedYet("StatementAbstractType");
     }
 
     public void write(SAML11SubjectStatementType statement) throws ProcessingException {
-        throw logger.notImplementedYet("SAML11SubjectStatementType");
+        throw LOG.notImplementedYet("SAML11SubjectStatementType");
     }
 
     public void write(SAML11AttributeStatementType statement) throws ProcessingException {
@@ -313,7 +313,7 @@ public class SAML11AssertionWriter extends BaseSAML11Writer {
     }
 
     public void writeSubjectConfirmationData(Object scData) throws ProcessingException {
-        throw logger.notImplementedYet("SubjectConfirmationData");
+        throw LOG.notImplementedYet("SubjectConfirmationData");
     }
 
     public void write(SAML11NameIdentifierType nameid) throws ProcessingException {
@@ -354,12 +354,12 @@ public class SAML11AssertionWriter extends BaseSAML11Writer {
     public void writeAttributeTypeWithoutRootTag(SAML11AttributeType attributeType) throws ProcessingException {
         String attributeName = attributeType.getAttributeName();
         if (StringUtil.isNullOrEmpty(attributeName))
-            throw logger.writerNullValueError("attribute name");
+            throw LOG.writerNullValueError("attribute name");
         StaxUtil.writeAttribute(writer, SAML11Constants.ATTRIBUTE_NAME, attributeName);
 
         String attributeNamespace = attributeType.getAttributeNamespace().toString();
         if (StringUtil.isNullOrEmpty(attributeNamespace))
-            throw logger.writerNullValueError("attribute namespace");
+            throw LOG.writerNullValueError("attribute namespace");
         StaxUtil.writeAttribute(writer, SAML11Constants.ATTRIBUTE_NAMESPACE, attributeNamespace);
 
         List<Object> attributeValues = attributeType.get();
@@ -368,7 +368,7 @@ public class SAML11AssertionWriter extends BaseSAML11Writer {
                 if (attributeValue instanceof String) {
                     writeStringAttributeValue((String) attributeValue);
                 } else
-                    throw logger.writerUnsupportedAttributeValueError(attributeValue.getClass().getName());
+                    throw LOG.writerUnsupportedAttributeValueError(attributeValue.getClass().getName());
             }
         }
     }

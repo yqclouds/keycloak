@@ -50,7 +50,7 @@ public class HttpHeaderInspectingApiRequestMatcherTest {
         request.addHeader(
                 HttpHeaderInspectingApiRequestMatcher.X_REQUESTED_WITH_HEADER,
                 HttpHeaderInspectingApiRequestMatcher.X_REQUESTED_WITH_HEADER_AJAX_VALUE);
-        
+
         assertTrue(apiRequestMatcher.matches(request));
     }
 }

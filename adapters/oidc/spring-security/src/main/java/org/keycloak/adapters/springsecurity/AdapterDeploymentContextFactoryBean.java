@@ -39,8 +39,8 @@ import java.util.Objects;
  */
 public class AdapterDeploymentContextFactoryBean
         implements FactoryBean<AdapterDeploymentContext>, InitializingBean {
-    private static final Logger log =
-        LoggerFactory.getLogger(AdapterDeploymentContextFactoryBean.class);
+    private static final Logger LOG =
+            LoggerFactory.getLogger(AdapterDeploymentContextFactoryBean.class);
     private final Resource keycloakConfigFileResource;
     private final KeycloakConfigResolver keycloakConfigResolver;
     private AdapterDeploymentContext adapterDeploymentContext;
@@ -69,9 +69,8 @@ public class AdapterDeploymentContextFactoryBean
     public void afterPropertiesSet() throws Exception {
         if (keycloakConfigResolver != null) {
             adapterDeploymentContext = new AdapterDeploymentContext(keycloakConfigResolver);
-        }
-        else {
-            log.info("Loading Keycloak deployment from configuration file: {}", keycloakConfigFileResource);
+        } else {
+            LOG.info("Loading Keycloak deployment from configuration file: {}", keycloakConfigFileResource);
 
             KeycloakDeployment deployment = loadKeycloakDeployment();
             adapterDeploymentContext = new AdapterDeploymentContext(deployment);

@@ -52,6 +52,7 @@ public class RangedAttributeInterceptor extends BaseInterceptor {
 
     private final String name;
     private final int max;
+
     public RangedAttributeInterceptor(String name, int max) {
         this.name = name;
         this.max = max - 1;

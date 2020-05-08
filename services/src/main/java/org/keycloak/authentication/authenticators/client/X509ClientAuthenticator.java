@@ -8,9 +8,10 @@ import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.provider.ProviderConfigProperty;
-import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.x509.X509ClientCertificateLookup;
 import org.keycloak.stereotype.ProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,12 +27,13 @@ import java.util.stream.Collectors;
 @Component("X509ClientAuthenticator")
 @ProviderFactory(id = "client-x509", providerClasses = ClientAuthenticator.class)
 public class X509ClientAuthenticator extends AbstractClientAuthenticator {
+    private static final Logger LOG = LoggerFactory.getLogger(X509ClientAuthenticator.class);
 
     public static final String PROVIDER_ID = "client-x509";
     public static final String ATTR_PREFIX = "x509";
     public static final String ATTR_SUBJECT_DN = ATTR_PREFIX + ".subjectdn";
 
-    protected static ServicesLogger logger = ServicesLogger.LOGGER;
+//    protected static ServicesLogger LOG = ServicesLogger.LOGGER;
 
     @Autowired(required = false)
     private X509ClientCertificateLookup x509ClientCertificateLookup;
@@ -39,8 +41,8 @@ public class X509ClientAuthenticator extends AbstractClientAuthenticator {
     @Override
     public void authenticateClient(ClientAuthenticationFlowContext context) {
         if (x509ClientCertificateLookup == null) {
-            logger.errorv("\"{0}\" Spi is not available, did you forget to update the configuration?",
-                    X509ClientCertificateLookup.class);
+            LOG.error("\"{}\" Spi is not available, did you forget to update the configuration?",
+                    X509ClientCertificateLookup.class.getName());
             return;
         }
 
@@ -86,7 +88,7 @@ public class X509ClientAuthenticator extends AbstractClientAuthenticator {
                 return;
             }
         } catch (GeneralSecurityException e) {
-            logger.errorf("[X509ClientCertificateAuthenticator:authenticate] Exception: %s", e.getMessage());
+            LOG.error("[X509ClientCertificateAuthenticator:authenticate] Exception: {}", e.getMessage());
             context.attempted();
             return;
         }
@@ -94,14 +96,14 @@ public class X509ClientAuthenticator extends AbstractClientAuthenticator {
         if (certs == null || certs.length == 0) {
             // No x509 client cert, fall through and
             // continue processing the rest of the authentication flow
-            logger.debug("[X509ClientCertificateAuthenticator:authenticate] x509 client certificate is not available for mutual SSL.");
+            LOG.debug("[X509ClientCertificateAuthenticator:authenticate] x509 client certificate is not available for mutual SSL.");
             context.attempted();
             return;
         }
 
         String subjectDNRegexp = client.getAttribute(ATTR_SUBJECT_DN);
         if (subjectDNRegexp == null || subjectDNRegexp.length() == 0) {
-            logger.errorf("[X509ClientCertificateAuthenticator:authenticate] " + ATTR_SUBJECT_DN + " is null or empty");
+            LOG.error("[X509ClientCertificateAuthenticator:authenticate] " + ATTR_SUBJECT_DN + " is null or empty");
             context.attempted();
             return;
         }
@@ -114,9 +116,9 @@ public class X509ClientAuthenticator extends AbstractClientAuthenticator {
 
         if (!matchedCertificate.isPresent()) {
             // We do quite expensive operation here, so better check the logging level beforehand.
-            if (logger.isDebugEnabled()) {
-                logger.debug("[X509ClientCertificateAuthenticator:authenticate] Couldn't match any certificate for pattern " + subjectDNRegexp);
-                logger.debug("[X509ClientCertificateAuthenticator:authenticate] Available SubjectDNs: " +
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("[X509ClientCertificateAuthenticator:authenticate] Couldn't match any certificate for pattern " + subjectDNRegexp);
+                LOG.debug("[X509ClientCertificateAuthenticator:authenticate] Available SubjectDNs: " +
                         Arrays.stream(certs)
                                 .map(cert -> cert.getSubjectDN().getName())
                                 .collect(Collectors.toList()));
@@ -124,7 +126,7 @@ public class X509ClientAuthenticator extends AbstractClientAuthenticator {
             context.attempted();
             return;
         } else {
-            logger.debug("[X509ClientCertificateAuthenticator:authenticate] Matched " + matchedCertificate.get() + " certificate.");
+            LOG.debug("[X509ClientCertificateAuthenticator:authenticate] Matched " + matchedCertificate.get() + " certificate.");
         }
 
         context.success();

@@ -17,9 +17,10 @@
 
 package org.keycloak.theme;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ThemeManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Component
 public class DefaultThemeManagerFactory {
-    private static final Logger log = Logger.getLogger(DefaultThemeManagerFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultThemeManagerFactory.class);
 
     private ConcurrentHashMap<ThemeKey, Theme> themeCache;
 
@@ -81,7 +82,7 @@ public class DefaultThemeManagerFactory {
     public void clearCache() {
         if (themeCache != null) {
             themeCache.clear();
-            log.info("Cleared theme cache");
+            LOG.info("Cleared theme cache");
         }
     }
 

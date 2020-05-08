@@ -17,7 +17,7 @@
 
 package org.keycloak.services.clientregistration.policy.impl;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
@@ -37,7 +37,7 @@ import java.util.Set;
  */
 public class ProtocolMappersClientRegistrationPolicy implements ClientRegistrationPolicy {
 
-    private static final Logger logger = Logger.getLogger(ProtocolMappersClientRegistrationPolicy.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ProtocolMappersClientRegistrationPolicy.class);
 
     private final KeycloakSession session;
     private final ComponentModel componentModel;
@@ -64,7 +64,7 @@ public class ProtocolMappersClientRegistrationPolicy implements ClientRegistrati
             String mapperType = mapper.getProtocolMapper();
 
             if (!allowedMapperProviders.contains(mapperType)) {
-                ServicesLogger.LOGGER.clientRegistrationMapperNotAllowed(mapper.getName(), mapperType);
+//                ServicesLogger.LOGGER.clientRegistrationMapperNotAllowed(mapper.getName(), mapperType);
                 throw new ClientRegistrationPolicyException("ProtocolMapper type not allowed");
             }
         }
@@ -83,7 +83,7 @@ public class ProtocolMappersClientRegistrationPolicy implements ClientRegistrati
 
         }).forEach((ProtocolMapperModel mapperToRemove) -> {
 
-            logger.debugf("Removing builtin mapper '%s' of type '%s' as type is not permitted", mapperToRemove.getName(), mapperToRemove.getProtocolMapper());
+            LOG.debug("Removing builtin mapper '%s' of type '%s' as type is not permitted", mapperToRemove.getName(), mapperToRemove.getProtocolMapper());
             clientModel.removeProtocolMapper(mapperToRemove);
 
         });

@@ -26,7 +26,6 @@ import org.keycloak.common.util.UriUtils;
 
 import javax.security.cert.X509Certificate;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;

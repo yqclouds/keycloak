@@ -17,12 +17,13 @@
 
 package org.keycloak.services.util;
 
-import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.theme.BrowserSecurityHeaderSetup;
 import org.keycloak.utils.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
 import java.net.URI;
@@ -47,7 +48,7 @@ public abstract class BrowserHistoryHelper {
     // Request attribute, which specifies if flow was changed in this request (eg. click "register" from the login screen)
     public static final String SHOULD_UPDATE_BROWSER_HISTORY = "SHOULD_UPDATE_BROWSER_HISTORY";
 
-    protected static final Logger logger = Logger.getLogger(BrowserHistoryHelper.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(BrowserHistoryHelper.class);
 
     // Always rely on javascript for now
     public static BrowserHistoryHelper getInstance() {
@@ -154,8 +155,8 @@ public abstract class BrowserHistoryHelper {
 
                     URI lastExecutionURL = new AuthenticationFlowURLHelper(session, session.getContext().getRealm(), session.getContext().getUri()).getLastExecutionUrl(authSession);
 
-                    if (logger.isTraceEnabled()) {
-                        logger.tracef("Saved response challenge and redirect to %s", lastExecutionURL);
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("Saved response challenge and redirect to {}", lastExecutionURL);
                     }
 
                     return Response.status(302).location(lastExecutionURL).build();
@@ -172,8 +173,8 @@ public abstract class BrowserHistoryHelper {
             if (savedResponse != null) {
                 authSession.removeAuthNote(CACHED_RESPONSE);
 
-                if (logger.isTraceEnabled()) {
-                    logger.tracef("Restored previously saved request");
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Restored previously saved request");
                 }
 
                 Response.ResponseBuilder builder = Response.status(200).type(MediaType.TEXT_HTML_UTF_8).entity(savedResponse);

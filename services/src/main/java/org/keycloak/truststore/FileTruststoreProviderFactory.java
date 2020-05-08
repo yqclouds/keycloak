@@ -17,7 +17,7 @@
 
 package org.keycloak.truststore;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,7 +44,7 @@ import java.util.Map;
 @ProviderFactory(id = "file", providerClasses = TruststoreProvider.class)
 public class FileTruststoreProviderFactory implements TruststoreProviderFactory {
 
-    private static final Logger log = Logger.getLogger(FileTruststoreProviderFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FileTruststoreProviderFactory.class);
 
     private TruststoreProvider provider;
 
@@ -95,7 +95,7 @@ public class FileTruststoreProviderFactory implements TruststoreProviderFactory 
         TruststoreCertificatesLoader certsLoader = new TruststoreCertificatesLoader(truststore);
         provider = new FileTruststoreProvider(truststore, verificationPolicy, certsLoader.trustedRootCerts, certsLoader.intermediateCerts);
         TruststoreProviderSingleton.set(provider);
-        log.debug("File trustore provider initialized: " + new File(storePath).getAbsolutePath());
+        LOG.debug("File trustore provider initialized: " + new File(storePath).getAbsolutePath());
     }
 
     private KeyStore loadStore(String path, char[] password) throws Exception {
@@ -138,7 +138,7 @@ public class FileTruststoreProviderFactory implements TruststoreProviderFactory 
             try {
 
                 enumeration = truststore.aliases();
-                log.trace("Checking " + truststore.size() + " entries from the truststore.");
+                LOG.trace("Checking " + truststore.size() + " entries from the truststore.");
                 while (enumeration.hasMoreElements()) {
 
                     String alias = (String) enumeration.nextElement();
@@ -149,24 +149,24 @@ public class FileTruststoreProviderFactory implements TruststoreProviderFactory 
                         if (isSelfSigned(cax509cert)) {
                             X500Principal principal = cax509cert.getSubjectX500Principal();
                             trustedRootCerts.put(principal, cax509cert);
-                            log.debug("Trusted root CA found in trustore : alias : " + alias + " | Subject DN : " + principal);
+                            LOG.debug("Trusted root CA found in trustore : alias : " + alias + " | Subject DN : " + principal);
                         } else {
                             X500Principal principal = cax509cert.getSubjectX500Principal();
                             intermediateCerts.put(principal, cax509cert);
-                            log.debug("Intermediate CA found in trustore : alias : " + alias + " | Subject DN : " + principal);
+                            LOG.debug("Intermediate CA found in trustore : alias : " + alias + " | Subject DN : " + principal);
                         }
                     } else
-                        log.info("Skipping certificate with alias [" + alias + "] from truststore, because it's not an X509Certificate");
+                        LOG.info("Skipping certificate with alias [" + alias + "] from truststore, because it's not an X509Certificate");
 
                 }
             } catch (KeyStoreException e) {
-                log.error("Error while reading Keycloak truststore " + e.getMessage(), e);
+                LOG.error("Error while reading Keycloak truststore " + e.getMessage(), e);
             } catch (CertificateException e) {
-                log.error("Error while reading Keycloak truststore " + e.getMessage(), e);
+                LOG.error("Error while reading Keycloak truststore " + e.getMessage(), e);
             } catch (NoSuchAlgorithmException e) {
-                log.error("Error while reading Keycloak truststore " + e.getMessage(), e);
+                LOG.error("Error while reading Keycloak truststore " + e.getMessage(), e);
             } catch (NoSuchProviderException e) {
-                log.error("Error while reading Keycloak truststore " + e.getMessage(), e);
+                LOG.error("Error while reading Keycloak truststore " + e.getMessage(), e);
             }
         }
 
@@ -180,14 +180,14 @@ public class FileTruststoreProviderFactory implements TruststoreProviderFactory 
                 // Try to verify certificate signature with its own public key
                 PublicKey key = cert.getPublicKey();
                 cert.verify(key);
-                log.trace("certificate " + cert.getSubjectDN() + " detected as root CA");
+                LOG.trace("certificate " + cert.getSubjectDN() + " detected as root CA");
                 return true;
             } catch (SignatureException sigEx) {
                 // Invalid signature --> not self-signed
-                log.trace("certificate " + cert.getSubjectDN() + " detected as intermediate CA");
+                LOG.trace("certificate " + cert.getSubjectDN() + " detected as intermediate CA");
             } catch (InvalidKeyException keyEx) {
                 // Invalid key --> not self-signed
-                log.trace("certificate " + cert.getSubjectDN() + " detected as intermediate CA");
+                LOG.trace("certificate " + cert.getSubjectDN() + " detected as intermediate CA");
             }
             return false;
         }

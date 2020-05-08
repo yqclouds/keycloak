@@ -16,7 +16,7 @@
  */
 package org.keycloak.credential;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.common.util.Time;
 import org.keycloak.credential.hash.PasswordHashProvider;
 import org.keycloak.models.*;
@@ -39,7 +39,7 @@ import java.util.Set;
 public class PasswordCredentialProvider implements CredentialProvider<PasswordCredentialModel>, CredentialInputUpdater, CredentialInputValidator, OnUserCache {
 
     public static final String PASSWORD_CACHE_KEY = PasswordCredentialProvider.class.getName() + "." + PasswordCredentialModel.TYPE;
-    private static final Logger logger = Logger.getLogger(PasswordCredentialProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PasswordCredentialProvider.class);
 
     protected final KeycloakSession session;
 
@@ -144,7 +144,7 @@ public class PasswordCredentialProvider implements CredentialProvider<PasswordCr
     protected PasswordHashProvider getHashProvider(PasswordPolicy policy) {
         PasswordHashProvider hash = session.getProvider(PasswordHashProvider.class, policy.getHashAlgorithm());
         if (hash == null) {
-            logger.warnv("Realm PasswordPolicy PasswordHashProvider {0} not found", policy.getHashAlgorithm());
+            LOG.warn("Realm PasswordPolicy PasswordHashProvider {} not found", policy.getHashAlgorithm());
             return session.getProvider(PasswordHashProvider.class, PasswordPolicy.HASH_ALGORITHM_DEFAULT);
         }
         return hash;
@@ -155,7 +155,7 @@ public class PasswordCredentialProvider implements CredentialProvider<PasswordCr
         if (!supportsCredentialType(input.getType())) return false;
 
         if (!(input instanceof UserCredentialModel)) {
-            logger.debug("Expected instance of UserCredentialModel for CredentialInput");
+            LOG.debug("Expected instance of UserCredentialModel for CredentialInput");
             return false;
         }
         UserCredentialModel cred = (UserCredentialModel)input;
@@ -231,26 +231,26 @@ public class PasswordCredentialProvider implements CredentialProvider<PasswordCr
     @Override
     public boolean isValid(RealmModel realm, UserModel user, CredentialInput input) {
         if (!(input instanceof UserCredentialModel)) {
-            logger.debug("Expected instance of UserCredentialModel for CredentialInput");
+            LOG.debug("Expected instance of UserCredentialModel for CredentialInput");
             return false;
 
         }
         if (input.getChallengeResponse() == null) {
-            logger.debugv("Input password was null for user {0} ", user.getUsername());
+            LOG.debug("Input password was null for user {} ", user.getUsername());
             return false;
         }
         PasswordCredentialModel password = getPassword(realm, user);
         if (password == null) {
-            logger.debugv("No password cached or stored for user {0} ", user.getUsername());
+            LOG.debug("No password cached or stored for user {} ", user.getUsername());
             return false;
         }
         PasswordHashProvider hash = session.getProvider(PasswordHashProvider.class, password.getPasswordCredentialData().getAlgorithm());
         if (hash == null) {
-            logger.debugv("PasswordHashProvider {0} not found for user {1} ", password.getPasswordCredentialData().getAlgorithm(), user.getUsername());
+            LOG.debug("PasswordHashProvider {} not found for user {} ", password.getPasswordCredentialData().getAlgorithm(), user.getUsername());
             return false;
         }
         if (!hash.verify(input.getChallengeResponse(), password)) {
-            logger.debugv("Failed password validation for user {0} ", user.getUsername());
+            LOG.debug("Failed password validation for user {} ", user.getUsername());
             return false;
         }
         PasswordPolicy policy = realm.getPasswordPolicy();

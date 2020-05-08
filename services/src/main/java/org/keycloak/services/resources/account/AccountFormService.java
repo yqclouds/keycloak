@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.account;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.model.PermissionTicket;
 import org.keycloak.authorization.model.Policy;
@@ -73,7 +73,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
 
     // Used when some other context (ie. IdentityBrokerService) wants to forward error to account management and display it here
     public static final String ACCOUNT_MGMT_FORWARDED_ERROR_NOTE = "ACCOUNT_MGMT_FORWARDED_ERROR";
-    private static final Logger logger = Logger.getLogger(AccountFormService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AccountFormService.class);
     private static Set<String> VALID_PATHS = new HashSet<>();
 
     static {
@@ -568,12 +568,12 @@ public class AccountFormService extends AbstractSecuredLocalService {
             errorEvent.error(Errors.NOT_ALLOWED);
             return accountProvider.setError(Response.Status.BAD_REQUEST, Messages.READ_ONLY_PASSWORD).createResponse(AccountPages.PASSWORD);
         } catch (ModelException me) {
-            ServicesLogger.LOGGER.failedToUpdatePassword(me);
+//            ServicesLogger.LOGGER.failedToUpdatePassword(me);
             setReferrerOnPage();
             errorEvent.detail(Details.REASON, me.getMessage()).error(Errors.PASSWORD_REJECTED);
             return accountProvider.setError(Response.Status.NOT_ACCEPTABLE, me.getMessage(), me.getParameters()).createResponse(AccountPages.PASSWORD);
         } catch (Exception ape) {
-            ServicesLogger.LOGGER.failedToUpdatePassword(ape);
+//            ServicesLogger.LOGGER.failedToUpdatePassword(ape);
             setReferrerOnPage();
             errorEvent.detail(Details.REASON, ape.getMessage()).error(Errors.PASSWORD_REJECTED);
             return accountProvider.setError(Response.Status.INTERNAL_SERVER_ERROR, ape.getMessage()).createResponse(AccountPages.PASSWORD);
@@ -666,7 +666,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
                     if (session.users().getFederatedIdentities(user, realm).size() > 1 || user.getFederationLink() != null || isPasswordSet(session, realm, user)) {
                         session.users().removeFederatedIdentity(realm, user, providerId);
 
-                        logger.debugv("Social provider {0} removed successfully from user {1}", providerId, user.getUsername());
+                        LOG.debug("Social provider {} removed successfully from user {}", providerId, user.getUsername());
 
                         event.event(EventType.REMOVE_FEDERATED_IDENTITY).client(auth.getClient()).user(auth.getUser())
                                 .detail(Details.USERNAME, auth.getUser().getUsername())

@@ -20,9 +20,10 @@ package org.keycloak.models.sessions.infinispan.entities;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.commons.marshall.SerializeWith;
-import org.jboss.logging.Logger;
 import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.util.KeycloakMarshallUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -37,7 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @SerializeWith(AuthenticatedClientSessionEntity.ExternalizerImpl.class)
 public class AuthenticatedClientSessionEntity extends SessionEntity {
 
-    public static final Logger logger = Logger.getLogger(AuthenticatedClientSessionEntity.class);
+    public static final Logger LOG = LoggerFactory.getLogger(AuthenticatedClientSessionEntity.class);
 
     // Metadata attribute, which contains the last timestamp available on remoteCache. Used in decide whether we need to write to remoteCache (DC) or not
     public static final String LAST_TIMESTAMP_REMOTE = "lstr";
@@ -156,7 +157,7 @@ public class AuthenticatedClientSessionEntity extends SessionEntity {
 
         entityWrapper.putLocalMetadataNoteInt(LAST_TIMESTAMP_REMOTE, timestampRemote);
 
-        logger.debugf("Updating client session entity %s. timestamp=%d, timestampRemote=%d", getId(), getTimestamp(), timestampRemote);
+        LOG.debug("Updating client session entity {}. timestamp={}, timestampRemote={}", getId(), getTimestamp(), timestampRemote);
 
         return entityWrapper;
     }

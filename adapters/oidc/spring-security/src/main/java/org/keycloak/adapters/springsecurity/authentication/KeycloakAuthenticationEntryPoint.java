@@ -17,12 +17,6 @@
 
 package org.keycloak.adapters.springsecurity.authentication;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.http.HttpHeaders;
 import org.keycloak.adapters.AdapterDeploymentContext;
 import org.keycloak.adapters.spi.HttpFacade;
@@ -35,6 +29,11 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 /**
  * Provides a Keycloak {@link AuthenticationEntryPoint authentication entry point}. Uses a
  * {@link RequestMatcher} to determine if the request is an interactive login request or a
@@ -43,7 +42,6 @@ import org.springframework.util.Assert;
  * constructor.
  *
  * @author <a href="mailto:srossillo@smartling.com">Scott Rossillo</a>
- *
  * @see HttpHeaderInspectingApiRequestMatcher
  */
 public class KeycloakAuthenticationEntryPoint implements AuthenticationEntryPoint {
@@ -55,7 +53,7 @@ public class KeycloakAuthenticationEntryPoint implements AuthenticationEntryPoin
     private static final String DEFAULT_REALM = "Unknown";
     private static final RequestMatcher DEFAULT_API_REQUEST_MATCHER = new HttpHeaderInspectingApiRequestMatcher();
 
-    private final static Logger log = LoggerFactory.getLogger(KeycloakAuthenticationEntryPoint.class);
+    private final static Logger LOG = LoggerFactory.getLogger(KeycloakAuthenticationEntryPoint.class);
 
     private final RequestMatcher apiRequestMatcher;
     private String loginUri = DEFAULT_LOGIN_URI;
@@ -75,7 +73,7 @@ public class KeycloakAuthenticationEntryPoint implements AuthenticationEntryPoin
      * matcher to determine if the current request is an API request or a browser request.
      *
      * @param apiRequestMatcher the <code>RequestMatcher</code> to use to determine
-     * if the current request is an API request or a browser request (required)
+     *                          if the current request is an API request or a browser request (required)
      */
     public KeycloakAuthenticationEntryPoint(AdapterDeploymentContext adapterDeploymentContext, RequestMatcher apiRequestMatcher) {
         Assert.notNull(apiRequestMatcher, "apiRequestMatcher required");
@@ -106,12 +104,12 @@ public class KeycloakAuthenticationEntryPoint implements AuthenticationEntryPoin
             response.addCookie(KeycloakCookieBasedRedirect.createCookieFromRedirectUrl(request.getRequestURI()));
         }
         String contextAwareLoginUri = request.getContextPath() + loginUri;
-        log.debug("Redirecting to login URI {}", contextAwareLoginUri);
+        LOG.debug("Redirecting to login URI {}", contextAwareLoginUri);
         response.sendRedirect(contextAwareLoginUri);
     }
 
     protected void commenceUnauthorizedResponse(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.addHeader(HttpHeaders.WWW_AUTHENTICATE, String.format("Bearer realm=\"%s\"", realm));
+        response.addHeader(HttpHeaders.WWW_AUTHENTICATE, String.format("Bearer realm=\"{}\"", realm));
         response.sendError(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase());
     }
 

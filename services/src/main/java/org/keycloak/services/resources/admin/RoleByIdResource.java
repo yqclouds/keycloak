@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
@@ -44,7 +44,7 @@ import java.util.Set;
  * @resource Roles (by ID)
  */
 public class RoleByIdResource extends RoleResource {
-    protected static final Logger logger = Logger.getLogger(RoleByIdResource.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(RoleByIdResource.class);
     private final RealmModel realm;
     private AdminPermissionEvaluator auth;
     private AdminEventBuilder adminEvent;
@@ -167,7 +167,7 @@ public class RoleByIdResource extends RoleResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Set<RoleRepresentation> getRoleComposites(final @PathParam("role-id") String id) {
 
-        if (logger.isDebugEnabled()) logger.debug("*** getRoleComposites: '" + id + "'");
+        if (LOG.isDebugEnabled()) LOG.debug("*** getRoleComposites: '" + id + "'");
         RoleModel role = getRoleModel(id);
         auth.roles().requireView(role);
         return getRoleComposites(role);

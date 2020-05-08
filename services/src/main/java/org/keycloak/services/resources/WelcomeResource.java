@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.Version;
 import org.keycloak.common.util.Base64Url;
@@ -53,7 +53,7 @@ import java.util.Map;
 @Path("/")
 public class WelcomeResource {
 
-    protected static final Logger logger = Logger.getLogger(WelcomeResource.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(WelcomeResource.class);
 
     private static final String KEYCLOAK_STATE_CHECKER = "WELCOME_STATE_CHECKER";
 
@@ -95,7 +95,7 @@ public class WelcomeResource {
             return createWelcomePage(null, null);
         } else {
             if (!isLocal()) {
-                ServicesLogger.LOGGER.rejectedNonLocalAttemptToCreateInitialUser(session.getContext().getConnection().getRemoteAddr());
+//                ServicesLogger.LOGGER.rejectedNonLocalAttemptToCreateInitialUser(session.getContext().getConnection().getRemoteAddr());
                 throw new WebApplicationException(Response.Status.BAD_REQUEST);
             }
 
@@ -128,10 +128,10 @@ public class WelcomeResource {
                 setBootstrap(false);
                 applianceBootstrap.createMasterRealmUser(username, password);
 
-                ServicesLogger.LOGGER.createdInitialAdminUser(username);
+//                ServicesLogger.LOGGER.createdInitialAdminUser(username);
                 return createWelcomePage("User created", null);
             } else {
-                ServicesLogger.LOGGER.initialUserAlreadyCreated();
+//                ServicesLogger.LOGGER.initialUserAlreadyCreated();
                 return createWelcomePage(null, "Users already exists");
             }
         }
@@ -232,7 +232,7 @@ public class WelcomeResource {
             InetAddress remoteInetAddress = InetAddress.getByName(clientConnection.getRemoteAddr());
             InetAddress localInetAddress = InetAddress.getByName(clientConnection.getLocalAddr());
             String xForwardedFor = headers.getHeaderString("X-Forwarded-For");
-            logger.debugf("Checking WelcomePage. Remote address: %s, Local address: %s, X-Forwarded-For header: %s", remoteInetAddress.toString(), localInetAddress.toString(), xForwardedFor);
+            LOG.debug("Checking WelcomePage. Remote address: %s, Local address: %s, X-Forwarded-For header: %s", remoteInetAddress.toString(), localInetAddress.toString(), xForwardedFor);
 
             // Access through AJP protocol (loadbalancer) may cause that remoteAddress is "127.0.0.1".
             // So consider that welcome page accessed locally just if it was accessed really through "localhost" URL and without loadbalancer (x-forwarded-for header is empty).

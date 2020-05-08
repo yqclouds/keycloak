@@ -38,14 +38,14 @@ import java.security.cert.X509Certificate;
 
 public class ValidateX509CertificateUsername extends AbstractX509ClientCertificateDirectGrantAuthenticator {
 
-    protected static ServicesLogger logger = ServicesLogger.LOGGER;
+//    protected static ServicesLogger LOG = ServicesLogger.LOGGER;
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
 
         X509Certificate[] certs = getCertificateChain(context);
         if (certs == null || certs.length == 0) {
-            logger.debug("[ValidateX509CertificateUsername:authenticate] x509 client certificate is not available for mutual SSL.");
+            LOG.debug("[ValidateX509CertificateUsername:authenticate] x509 client certificate is not available for mutual SSL.");
             context.getEvent().error(Errors.USER_NOT_FOUND);
             Response challengeResponse = errorResponse(Response.Status.UNAUTHORIZED.getStatusCode(), "invalid_request", "X509 client certificate is missing.");
             context.failure(AuthenticationFlowError.INVALID_USER, challengeResponse);
@@ -60,7 +60,7 @@ public class ValidateX509CertificateUsername extends AbstractX509ClientCertifica
             config = new X509AuthenticatorConfigModel(context.getAuthenticatorConfig());
         }
         if (config == null) {
-            logger.warn("[ValidateX509CertificateUsername:authenticate] x509 Client Certificate Authentication configuration is not available.");
+            LOG.warn("[ValidateX509CertificateUsername:authenticate] x509 Client Certificate Authentication configuration is not available.");
             context.getEvent().error(Errors.USER_NOT_FOUND);
             Response challengeResponse = errorResponse(Response.Status.UNAUTHORIZED.getStatusCode(), "invalid_request", "Configuration is missing.");
             context.failure(AuthenticationFlowError.INVALID_USER, challengeResponse);
@@ -74,7 +74,7 @@ public class ValidateX509CertificateUsername extends AbstractX509ClientCertifica
                     .validateKeyUsage()
                     .validateExtendedKeyUsage();
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
             // TODO use specific locale to load error messages
             Response challengeResponse = errorResponse(Response.Status.UNAUTHORIZED.getStatusCode(), "invalid_request", e.getMessage());
             context.failure(AuthenticationFlowError.INVALID_USER, challengeResponse);
@@ -84,7 +84,7 @@ public class ValidateX509CertificateUsername extends AbstractX509ClientCertifica
         Object userIdentity = getUserIdentityExtractor(config).extractUserIdentity(certs);
         if (userIdentity == null) {
             context.getEvent().error(Errors.INVALID_USER_CREDENTIALS);
-            logger.errorf("[ValidateX509CertificateUsername:authenticate] Unable to extract user identity from certificate.");
+            LOG.error("[ValidateX509CertificateUsername:authenticate] Unable to extract user identity from certificate.");
             // TODO use specific locale to load error messages
             String errorMessage = "Unable to extract user identity from specified certificate";
             Response challengeResponse = errorResponse(Response.Status.UNAUTHORIZED.getStatusCode(), "invalid_request", errorMessage);
@@ -97,13 +97,13 @@ public class ValidateX509CertificateUsername extends AbstractX509ClientCertifica
             context.getAuthenticationSession().setAuthNote(AbstractUsernameFormAuthenticator.ATTEMPTED_USERNAME, userIdentity.toString());
             user = getUserIdentityToModelMapper(config).find(context, userIdentity);
         } catch (ModelDuplicateException e) {
-            logger.modelDuplicateException(e);
+//            LOG.modelDuplicateException(e);
             String errorMessage = String.format("X509 certificate authentication's failed. Reason: \"%s\"", e.getMessage());
             Response challengeResponse = errorResponse(Response.Status.UNAUTHORIZED.getStatusCode(), "invalid_request", errorMessage);
             context.failure(AuthenticationFlowError.INVALID_USER, challengeResponse);
             return;
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
             String errorMessage = String.format("X509 certificate authentication's failed. Reason: \"%s\"", e.getMessage());
             Response challengeResponse = errorResponse(Response.Status.UNAUTHORIZED.getStatusCode(), "invalid_request", errorMessage);
             context.failure(AuthenticationFlowError.INVALID_USER, challengeResponse);

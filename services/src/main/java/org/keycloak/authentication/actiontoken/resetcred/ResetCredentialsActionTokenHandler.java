@@ -96,7 +96,7 @@ public class ResetCredentialsActionTokenHandler extends AbstractActionTokenHandl
                 SerializedBrokeredIdentityContext serializedCtx = SerializedBrokeredIdentityContext.readFromAuthenticationSession(authenticationSession, AbstractIdpAuthenticator.BROKERED_CONTEXT_NOTE);
                 authenticationSession.setAuthNote(AbstractIdpAuthenticator.FIRST_BROKER_LOGIN_SUCCESS, serializedCtx.getIdentityProviderId());
 
-                logger.debugf("Forget-password flow finished when authenticated user '%s' after first broker login with identity provider '%s'.",
+                LOG.debug("Forget-password flow finished when authenticated user '%s' after first broker login with identity provider '%s'.",
                         linkingUser.getUsername(), serializedCtx.getIdentityProviderId());
 
                 return LoginActionsService.redirectToAfterBrokerLoginEndpoint(session, realm, uriInfo, authenticationSession, true);

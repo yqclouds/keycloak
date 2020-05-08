@@ -118,7 +118,7 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, In
                     factory.init(scope);
 
                     if (spi.isInternal() && !isInternal(factory)) {
-                        ServicesLogger.LOGGER.spiMayChange(factory.getId(), factory.getClass().getName(), spi.getName());
+//                        ServicesLogger.LOGGER.spiMayChange(factory.getId(), factory.getClass().getName(), spi.getName());
                     }
 
                     factories.put(factory.getId(), factory);
@@ -133,7 +133,7 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, In
                         factory.init(scope);
 
                         if (spi.isInternal() && !isInternal(factory)) {
-                            ServicesLogger.LOGGER.spiMayChange(factory.getId(), factory.getClass().getName(), spi.getName());
+//                            ServicesLogger.LOGGER.spiMayChange(factory.getId(), factory.getClass().getName(), spi.getName());
                         }
 
                         factories.put(factory.getId(), factory);

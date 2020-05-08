@@ -17,13 +17,14 @@
 
 package org.keycloak.cluster.infinispan;
 
-import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterListener;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.cluster.ExecutionResult;
 import org.keycloak.common.util.Retry;
 import org.keycloak.common.util.Time;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -34,9 +35,9 @@ import java.util.concurrent.TimeUnit;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class InfinispanClusterProvider implements ClusterProvider {
+    protected static final Logger LOG = LoggerFactory.getLogger(InfinispanClusterProvider.class);
 
     public static final String CLUSTER_STARTUP_TIME_KEY = "cluster-start-time";
-    protected static final Logger logger = Logger.getLogger(InfinispanClusterProvider.class);
     private static final String TASK_KEY_PREFIX = "task::";
 
     private final int clusterStartupTime;
@@ -100,7 +101,7 @@ public class InfinispanClusterProvider implements ClusterProvider {
                 boolean executed = executeIfNotExecuted(taskKey, taskTimeoutInSeconds, task).isExecuted();
 
                 if (!executed) {
-                    logger.infof("Task already in progress on other cluster node. Will wait until it's finished");
+                    LOG.info("Task already in progress on other cluster node. Will wait until it's finished");
                 }
 
                 callback.getTaskCompletedLatch().await(taskTimeoutInSeconds, TimeUnit.SECONDS);
@@ -110,7 +111,7 @@ public class InfinispanClusterProvider implements ClusterProvider {
             Future<Boolean> future = localExecutor.submit(wrappedTask);
             callback.setFuture(future);
         } else {
-            logger.infof("Task already in progress on this cluster node. Will wait until it's finished");
+            LOG.info("Task already in progress on this cluster node. Will wait until it's finished");
         }
 
         return callback.getFuture();
@@ -141,13 +142,13 @@ public class InfinispanClusterProvider implements ClusterProvider {
 
         LockEntry existingLock = InfinispanClusterProviderFactory.putIfAbsentWithRetries(crossDCAwareCacheFactory, cacheKey, myLock, taskTimeoutInSeconds);
         if (existingLock != null) {
-            if (logger.isTraceEnabled()) {
-                logger.tracef("Task %s in progress already by node %s. Ignoring task.", cacheKey, existingLock.getNode());
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Task {} in progress already by node {}. Ignoring task.", cacheKey, existingLock.getNode());
             }
             return false;
         } else {
-            if (logger.isTraceEnabled()) {
-                logger.tracef("Successfully acquired lock for task %s. Our node is %s", cacheKey, myLock.getNode());
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Successfully acquired lock for task {}. Our node is {}", cacheKey, myLock.getNode());
             }
             return true;
         }
@@ -159,8 +160,8 @@ public class InfinispanClusterProvider implements ClusterProvider {
         Retry.executeWithBackoff((int iteration) -> {
 
             crossDCAwareCacheFactory.getCache().remove(cacheKey);
-            if (logger.isTraceEnabled()) {
-                logger.tracef("Task %s removed from the cache", cacheKey);
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Task {} removed from the cache", cacheKey);
             }
 
         }, 10, 10);

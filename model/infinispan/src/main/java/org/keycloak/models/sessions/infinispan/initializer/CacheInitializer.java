@@ -17,14 +17,14 @@
 
 package org.keycloak.models.sessions.infinispan.initializer;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public abstract class CacheInitializer {
-
-    private static final Logger log = Logger.getLogger(CacheInitializer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CacheInitializer.class);
 
     public void initCache() {
     }
@@ -35,7 +35,7 @@ public abstract class CacheInitializer {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException ie) {
-                    log.error("Interrupted", ie);
+                    LOG.error("Interrupted", ie);
                 }
             } else {
                 startLoading();

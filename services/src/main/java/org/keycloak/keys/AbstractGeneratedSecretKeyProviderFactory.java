@@ -17,7 +17,6 @@
 
 package org.keycloak.keys;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
@@ -25,6 +24,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ConfigurationValidationHelper;
+import org.slf4j.Logger;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -40,12 +40,12 @@ public abstract class AbstractGeneratedSecretKeyProviderFactory<T extends KeyPro
 
         if (!(model.contains(Attributes.SECRET_KEY))) {
             generateSecret(model, size);
-            logger().debugv("Generated secret for {0}", realm.getName());
+            LOG().debug("Generated secret for {}", realm.getName());
         } else {
             int currentSize = Base64Url.decode(model.get(Attributes.SECRET_KEY)).length;
             if (currentSize != size) {
                 generateSecret(model, size);
-                logger().debugv("Secret size changed, generating new secret for {0}", realm.getName());
+                LOG().debug("Secret size changed, generating new secret for {}", realm.getName());
             }
         }
     }
@@ -62,7 +62,7 @@ public abstract class AbstractGeneratedSecretKeyProviderFactory<T extends KeyPro
         }
     }
 
-    protected abstract Logger logger();
+    protected abstract Logger LOG();
 
     protected abstract int getDefaultKeySize();
 }

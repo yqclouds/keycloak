@@ -17,7 +17,7 @@
 
 package org.keycloak.authentication;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.models.AuthenticationExecutionModel;
@@ -36,7 +36,7 @@ import java.util.List;
  */
 public class ClientAuthenticationFlow implements AuthenticationFlow {
 
-    private static final Logger logger = Logger.getLogger(ClientAuthenticationFlow.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClientAuthenticationFlow.class);
 
     Response alternativeChallenge = null;
     AuthenticationProcessor processor;
@@ -64,7 +64,7 @@ public class ClientAuthenticationFlow implements AuthenticationFlow {
                 throw new AuthenticationFlowException("Could not find ClientAuthenticatorFactory for: " + model.getAuthenticator(), AuthenticationFlowError.INTERNAL_ERROR);
             }
             ClientAuthenticator authenticator = factory.create();
-            logger.debugv("client authenticator: {0}", factory.getId());
+            LOG.debug("client authenticator: {}", factory.getId());
 
             AuthenticationProcessor.Result context = processor.createClientAuthenticatorContext(model, authenticator, executions);
             authenticator.authenticateClient(context);
@@ -76,7 +76,7 @@ public class ClientAuthenticationFlow implements AuthenticationFlow {
                 // Fallback to secret just in case (for backwards compatibility)
                 if (expectedClientAuthType == null) {
                     expectedClientAuthType = KeycloakModelUtils.getDefaultClientAuthenticatorType();
-                    ServicesLogger.LOGGER.authMethodFallback(client.getClientId(), expectedClientAuthType);
+//                    ServicesLogger.LOGGER.authMethodFallback(client.getClientId(), expectedClientAuthType);
                 }
 
                 // Check if client authentication matches
@@ -90,7 +90,7 @@ public class ClientAuthenticationFlow implements AuthenticationFlow {
                         success = true;
                     }
 
-                    logger.debugv("Client {0} authenticated by {1}", client.getClientId(), factory.getId());
+                    LOG.debug("Client {} authenticated by {}", client.getClientId(), factory.getId());
                     processor.getEvent().detail(Details.CLIENT_AUTH_METHOD, factory.getId());
                     return null;
                 }
@@ -120,12 +120,12 @@ public class ClientAuthenticationFlow implements AuthenticationFlow {
             }
         }
 
-        if (logger.isTraceEnabled()) {
+        if (LOG.isTraceEnabled()) {
             List<String> exIds = new ArrayList<>();
             for (AuthenticationExecutionModel execution : executionsToRun) {
                 exIds.add(execution.getId());
             }
-            logger.tracef("Using executions for client authentication: %s", exIds.toString());
+            LOG.trace("Using executions for client authentication: %s", exIds.toString());
         }
 
         return executionsToRun;
@@ -135,7 +135,7 @@ public class ClientAuthenticationFlow implements AuthenticationFlow {
         AuthenticationExecutionModel execution = result.getExecution();
         FlowStatus status = result.getStatus();
 
-        logger.debugv("client authenticator {0}: {1}", status.toString(), execution.getAuthenticator());
+        LOG.debug("client authenticator {}: {}", status.toString(), execution.getAuthenticator());
 
         if (status == FlowStatus.SUCCESS) {
             return null;
@@ -159,13 +159,13 @@ public class ClientAuthenticationFlow implements AuthenticationFlow {
         } else if (status == FlowStatus.FAILURE_CHALLENGE) {
             return sendChallenge(result, execution);
         } else {
-            ServicesLogger.LOGGER.unknownResultStatus();
+//            ServicesLogger.LOGGER.unknownResultStatus();
             throw new AuthenticationFlowException(AuthenticationFlowError.INTERNAL_ERROR);
         }
     }
 
     public Response sendChallenge(AuthenticationProcessor.Result result, AuthenticationExecutionModel execution) {
-        logger.debugv("client authenticator: sending challenge for authentication execution {0}", execution.getAuthenticator());
+        LOG.debug("client authenticator: sending challenge for authentication execution {}", execution.getAuthenticator());
 
         if (result.getError() != null) {
             String errorAsString = result.getError().toString().toLowerCase();

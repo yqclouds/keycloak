@@ -8,35 +8,34 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * @author github.com/tubbynl
- *
  */
 public class RefreshableKeycloakSecurityContextTest {
 
-	@Test
-	public void isActive() {
-		TokenMetadataRepresentation token = new TokenMetadataRepresentation();
-		token.setActive(true);
-		token.issuedNow();
-		RefreshableKeycloakSecurityContext sut = new RefreshableKeycloakSecurityContext(null,null,null,token,null, null, null);
-		
-		// verify false if null deployment (KEYCLOAK-3050; yielded a npe)
-		assertFalse(sut.isActive());
-	}
+    @Test
+    public void isActive() {
+        TokenMetadataRepresentation token = new TokenMetadataRepresentation();
+        token.setActive(true);
+        token.issuedNow();
+        RefreshableKeycloakSecurityContext sut = new RefreshableKeycloakSecurityContext(null, null, null, token, null, null, null);
 
-	@Test
-	public void sameIssuedAtAsNotBeforeIsActiveKEYCLOAK10013() {
-		KeycloakDeployment keycloakDeployment = new KeycloakDeployment();
-		keycloakDeployment.setNotBefore(5000);
+        // verify false if null deployment (KEYCLOAK-3050; yielded a npe)
+        assertFalse(sut.isActive());
+    }
 
-		TokenMetadataRepresentation token = new TokenMetadataRepresentation();
-		token.setActive(true);
-		token.issuedAt(4999);
+    @Test
+    public void sameIssuedAtAsNotBeforeIsActiveKEYCLOAK10013() {
+        KeycloakDeployment keycloakDeployment = new KeycloakDeployment();
+        keycloakDeployment.setNotBefore(5000);
 
-		RefreshableKeycloakSecurityContext sut = new RefreshableKeycloakSecurityContext(keycloakDeployment,null,null,token,null, null, null);
+        TokenMetadataRepresentation token = new TokenMetadataRepresentation();
+        token.setActive(true);
+        token.issuedAt(4999);
 
-		assertFalse(sut.isActive());
+        RefreshableKeycloakSecurityContext sut = new RefreshableKeycloakSecurityContext(keycloakDeployment, null, null, token, null, null, null);
 
-		token.issuedAt(5000);
-		assertTrue(sut.isActive());
-	}
+        assertFalse(sut.isActive());
+
+        token.issuedAt(5000);
+        assertTrue(sut.isActive());
+    }
 }

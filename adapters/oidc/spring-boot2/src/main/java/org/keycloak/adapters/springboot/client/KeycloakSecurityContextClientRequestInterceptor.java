@@ -25,7 +25,7 @@ public class KeycloakSecurityContextClientRequestInterceptor implements ClientHt
 
     /**
      * Returns the {@link KeycloakSecurityContext} from the Spring {@link ServletRequestAttributes}'s {@link Principal}.
-     *
+     * <p>
      * The principal must support retrieval of the KeycloakSecurityContext, so at this point, only {@link KeycloakPrincipal}
      * values are supported
      *

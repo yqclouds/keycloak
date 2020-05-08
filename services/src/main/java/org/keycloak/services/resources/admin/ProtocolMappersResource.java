@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
@@ -49,7 +49,7 @@ import static org.keycloak.protocol.ProtocolMapperUtils.isEnabled;
  * @resource Protocol Mappers
  */
 public class ProtocolMappersResource {
-    protected static final Logger logger = Logger.getLogger(ProtocolMappersResource.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(ProtocolMappersResource.class);
 
     protected RealmModel realm;
 
@@ -232,7 +232,7 @@ public class ProtocolMappersResource {
                 throw new NotFoundException("ProtocolMapper provider not found");
             }
         } catch (ProtocolMapperConfigException ex) {
-            logger.error(ex.getMessage());
+            LOG.error(ex.getMessage());
             Properties messages = AdminRoot.getMessages(session, realm, auth.adminAuth().getToken().getLocale());
             throw new ErrorResponseException(ex.getMessage(), MessageFormat.format(messages.getProperty(ex.getMessageKey(), ex.getMessage()), ex.getParameters()),
                     Response.Status.BAD_REQUEST);

@@ -17,9 +17,10 @@
 
 package org.keycloak.forms.account.freemarker.model;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.Constants;
 import org.keycloak.models.UserModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.HashMap;
@@ -31,7 +32,7 @@ import java.util.Map;
  */
 public class AccountBean {
 
-    private static final Logger logger = Logger.getLogger(AccountBean.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AccountBean.class);
 
     private final UserModel user;
     private final MultivaluedMap<String, String> profileFormData;
@@ -50,7 +51,7 @@ public class AccountBean {
             }
 
             if (attrValue.size() > 1) {
-                logger.warnf("There are more values for attribute '%s' of user '%s' . Will display just first value", attr.getKey(), user.getUsername());
+                LOG.warn("There are more values for attribute '{}' of user '{}' . Will display just first value", attr.getKey(), user.getUsername());
             }
         }
 

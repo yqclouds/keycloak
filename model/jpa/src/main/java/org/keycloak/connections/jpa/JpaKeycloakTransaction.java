@@ -17,8 +17,9 @@
 
 package org.keycloak.connections.jpa;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakTransaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
@@ -29,7 +30,7 @@ import javax.persistence.PersistenceException;
  */
 public class JpaKeycloakTransaction implements KeycloakTransaction {
 
-    private static final Logger logger = Logger.getLogger(JpaKeycloakTransaction.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JpaKeycloakTransaction.class);
 
     protected EntityManager em;
 
@@ -45,7 +46,7 @@ public class JpaKeycloakTransaction implements KeycloakTransaction {
     @Override
     public void commit() {
         try {
-            logger.trace("Committing transaction");
+            LOG.trace("Committing transaction");
             em.getTransaction().commit();
         } catch (PersistenceException e) {
             throw PersistenceExceptionConverter.convert(e.getCause() != null ? e.getCause() : e);
@@ -54,7 +55,7 @@ public class JpaKeycloakTransaction implements KeycloakTransaction {
 
     @Override
     public void rollback() {
-        logger.trace("Rollback transaction");
+        LOG.trace("Rollback transaction");
         em.getTransaction().rollback();
     }
 

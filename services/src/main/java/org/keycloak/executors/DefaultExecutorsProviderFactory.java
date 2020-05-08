@@ -17,7 +17,7 @@
 
 package org.keycloak.executors;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @ProviderFactory(id = "default", providerClasses = ExecutorsProvider.class)
 public class DefaultExecutorsProviderFactory implements ExecutorsProviderFactory {
 
-    protected static final Logger logger = Logger.getLogger(DefaultExecutorsProviderFactory.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(DefaultExecutorsProviderFactory.class);
 
     private static final int DEFAULT_MIN_THREADS = 4;
     private static final int DEFAULT_MAX_THREADS = 64;
@@ -72,7 +72,7 @@ public class DefaultExecutorsProviderFactory implements ExecutorsProviderFactory
     public void destroy() throws Exception {
         if (managed != null && !managed) {
             for (Map.Entry<String, ExecutorService> executor : executors.entrySet()) {
-                logger.debugf("Shutting down executor for task '%s'", executor.getKey());
+                LOG.debug("Shutting down executor for task '%s'", executor.getKey());
                 executor.getValue().shutdown();
             }
         }
@@ -118,10 +118,10 @@ public class DefaultExecutorsProviderFactory implements ExecutorsProviderFactory
         String jndiName = MANAGED_EXECUTORS_SERVICE_JNDI_PREFIX + "default";
         try {
             new InitialContext().lookup(jndiName);
-            logger.debugf("We are in managed environment. Executor '%s' was available.", jndiName);
+            LOG.debug("We are in managed environment. Executor '%s' was available.", jndiName);
             managed = true;
         } catch (NamingException nnfe) {
-            logger.debugf("We are not in managed environment. Executor '%s' was not available.", jndiName);
+            LOG.debug("We are not in managed environment. Executor '%s' was not available.", jndiName);
             managed = false;
         }
     }
@@ -135,13 +135,13 @@ public class DefaultExecutorsProviderFactory implements ExecutorsProviderFactory
             String jndiName = MANAGED_EXECUTORS_SERVICE_JNDI_PREFIX + taskType;
             try {
                 ExecutorService executor = (ExecutorService) ctx.lookup(jndiName);
-                logger.debugf("Found executor for '%s' under JNDI name '%s'", taskType, jndiName);
+                LOG.debug("Found executor for '%s' under JNDI name '%s'", taskType, jndiName);
                 return executor;
             } catch (NameNotFoundException nnfe) {
-                logger.debugf("Not found executor for '%s' under specific JNDI name '%s'. Fallback to the default pool", taskType, jndiName);
+                LOG.debug("Not found executor for '%s' under specific JNDI name '%s'. Fallback to the default pool", taskType, jndiName);
 
                 ExecutorService executor = (ExecutorService) ctx.lookup(DEFAULT_MANAGED_EXECUTORS_SERVICE_JNDI);
-                logger.debugf("Found default executor for '%s' of JNDI name '%s'", taskType, DEFAULT_MANAGED_EXECUTORS_SERVICE_JNDI);
+                LOG.debug("Found default executor for '%s' of JNDI name '%s'", taskType, DEFAULT_MANAGED_EXECUTORS_SERVICE_JNDI);
                 return executor;
             }
         } catch (NamingException ne) {
@@ -160,7 +160,7 @@ public class DefaultExecutorsProviderFactory implements ExecutorsProviderFactory
             max = currentScope.getInt("max", DEFAULT_MAX_THREADS);
         }
 
-        logger.debugf("Creating pool for task '%s': min=%d, max=%d", taskType, min, max);
+        LOG.debug("Creating pool for task '%s': min=%d, max=%d", taskType, min, max);
 
         ThreadFactory threadFactory = createThreadFactory(taskType, session);
 
@@ -187,8 +187,8 @@ public class DefaultExecutorsProviderFactory implements ExecutorsProviderFactory
                 int threadNumber = i.getAndIncrement();
                 String threadName = "kc-" + taskType + "-" + group + "-" + threadNumber;
 
-                if (logger.isTraceEnabled()) {
-                    logger.tracef("Creating thread: %s", threadName);
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Creating thread: %s", threadName);
                 }
 
                 return new Thread(r, threadName);

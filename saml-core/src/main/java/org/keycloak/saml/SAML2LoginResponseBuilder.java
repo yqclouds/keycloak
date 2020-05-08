@@ -49,7 +49,7 @@ import static org.keycloak.saml.common.util.StringUtil.isNotNull;
  * @author bburke@redhat.com
  */
 public class SAML2LoginResponseBuilder implements SamlProtocolExtensionsAwareBuilder<SAML2LoginResponseBuilder> {
-    protected static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    protected static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
     protected final List<NodeGenerator> extensions = new LinkedList<>();
     protected String destination;
     protected String issuer;
@@ -166,11 +166,11 @@ public class SAML2LoginResponseBuilder implements SamlProtocolExtensionsAwareBui
             SAML2Response docGen = new SAML2Response();
             samlResponseDocument = docGen.convert(responseType);
 
-            if (logger.isTraceEnabled()) {
-                logger.trace("SAML Response Document: " + DocumentUtil.asString(samlResponseDocument));
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("SAML Response Document: " + DocumentUtil.asString(samlResponseDocument));
             }
         } catch (Exception e) {
-            throw logger.samlAssertionMarshallError(e);
+            throw LOG.samlAssertionMarshallError(e);
         }
 
         return samlResponseDocument;

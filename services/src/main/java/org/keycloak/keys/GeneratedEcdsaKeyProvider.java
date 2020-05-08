@@ -16,11 +16,12 @@
  */
 package org.keycloak.keys;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.Base64;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.crypto.KeyWrapper;
 import org.keycloak.models.RealmModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -30,7 +31,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 public class GeneratedEcdsaKeyProvider extends AbstractEcdsaKeyProvider {
-    private static final Logger logger = Logger.getLogger(GeneratedEcdsaKeyProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GeneratedEcdsaKeyProvider.class);
 
     public GeneratedEcdsaKeyProvider(RealmModel realm, ComponentModel model) {
         super(realm, model);
@@ -54,7 +55,7 @@ public class GeneratedEcdsaKeyProvider extends AbstractEcdsaKeyProvider {
 
             return createKeyWrapper(keyPair, ecInNistRep);
         } catch (Exception e) {
-            logger.warnf("Exception at decodeEcdsaPublicKey. %s", e.toString());
+            LOG.warn("Exception at decodeEcdsaPublicKey. {}", e.toString());
             return null;
         }
 

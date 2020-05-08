@@ -17,7 +17,6 @@
 
 package org.keycloak.adapters;
 
-import org.jboss.logging.Logger;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.adapters.rotation.AdapterTokenVerifier;
 import org.keycloak.adapters.spi.AdapterSessionStore;
@@ -35,6 +34,8 @@ import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.IDToken;
 import org.keycloak.util.TokenUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -47,7 +48,8 @@ import java.util.Map;
  * @version $Revision: 1 $
  */
 public class OAuthRequestAuthenticator {
-    private static final Logger log = Logger.getLogger(OAuthRequestAuthenticator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(OAuthRequestAuthenticator.class);
+
     protected KeycloakDeployment deployment;
     protected RequestAuthenticator reqAuthenticator;
     protected int sslRedirectPort;
@@ -141,8 +143,8 @@ public class OAuthRequestAuthenticator {
 
     protected String getRedirectUri(String state) {
         String url = getRequestUrl();
-        log.debugf("callback uri: %s", url);
-      
+        LOG.debug("callback uri: {}", url);
+
         if (!facade.getRequest().isSecure() && deployment.getSslRequired().isRequired(facade.getRequest().getRemoteAddr())) {
             int port = sslRedirectPort();
             if (port < 0) {
@@ -155,7 +157,7 @@ public class OAuthRequestAuthenticator {
         }
 
         String loginHint = getQueryParamValue("login_hint");
-        url = UriUtils.stripQueryParam(url,"login_hint");
+        url = UriUtils.stripQueryParam(url, "login_hint");
 
         String idpHint = getQueryParamValue(AdapterConstants.KC_IDP_HINT);
         url = UriUtils.stripQueryParam(url, AdapterConstants.KC_IDP_HINT);
@@ -178,11 +180,11 @@ public class OAuthRequestAuthenticator {
                 .queryParam(OAuth2Constants.REDIRECT_URI, rewrittenRedirectUri(url))
                 .queryParam(OAuth2Constants.STATE, state)
                 .queryParam("login", "true");
-        if(loginHint != null && loginHint.length() > 0){
-            redirectUriBuilder.queryParam("login_hint",loginHint);
+        if (loginHint != null && loginHint.length() > 0) {
+            redirectUriBuilder.queryParam("login_hint", loginHint);
         }
         if (idpHint != null && idpHint.length() > 0) {
-            redirectUriBuilder.queryParam(AdapterConstants.KC_IDP_HINT,idpHint);
+            redirectUriBuilder.queryParam(AdapterConstants.KC_IDP_HINT, idpHint);
         }
         if (prompt != null && prompt.length() > 0) {
             redirectUriBuilder.queryParam(OAuth2Constants.PROMPT, prompt);
@@ -210,7 +212,7 @@ public class OAuthRequestAuthenticator {
 
     protected AuthChallenge loginRedirect() {
         final String state = getStateCode();
-        final String redirect =  getRedirectUri(state);
+        final String redirect = getRedirectUri(state);
         if (redirect == null) {
             return challenge(403, OIDCAuthenticationError.Reason.NO_REDIRECT_URI, null);
         }
@@ -224,7 +226,7 @@ public class OAuthRequestAuthenticator {
             @Override
             public boolean challenge(HttpFacade exchange) {
                 tokenStore.saveRequest();
-                log.debug("Sending redirect to login page: " + redirect);
+                LOG.debug("Sending redirect to login page: " + redirect);
                 exchange.getResponse().setStatus(302);
                 exchange.getResponse().setCookie(deployment.getStateCookieName(), state, "/", null, -1, deployment.getSslRequired().isRequired(facade.getRequest().getRemoteAddr()), true);
                 exchange.getResponse().setHeader("Location", redirect);
@@ -237,23 +239,23 @@ public class OAuthRequestAuthenticator {
         OIDCHttpFacade.Cookie stateCookie = getCookie(deployment.getStateCookieName());
 
         if (stateCookie == null) {
-            log.warn("No state cookie");
+            LOG.warn("No state cookie");
             return challenge(400, OIDCAuthenticationError.Reason.INVALID_STATE_COOKIE, null);
         }
         // reset the cookie
-        log.debug("** reseting application state cookie");
+        LOG.debug("** reseting application state cookie");
         facade.getResponse().resetCookie(deployment.getStateCookieName(), stateCookie.getPath());
         String stateCookieValue = getCookieValue(deployment.getStateCookieName());
 
         String state = getQueryParamValue(OAuth2Constants.STATE);
         if (state == null) {
-            log.warn("state parameter was null");
+            LOG.warn("state parameter was null");
             return challenge(400, OIDCAuthenticationError.Reason.INVALID_STATE_COOKIE, null);
         }
         if (!state.equals(stateCookieValue)) {
-            log.warn("state parameter invalid");
-            log.warn("cookie: " + stateCookieValue);
-            log.warn("queryParam: " + state);
+            LOG.warn("state parameter invalid");
+            LOG.warn("cookie: " + stateCookieValue);
+            LOG.warn("queryParam: " + state);
             return challenge(400, OIDCAuthenticationError.Reason.INVALID_STATE_COOKIE, null);
         }
         return null;
@@ -263,20 +265,20 @@ public class OAuthRequestAuthenticator {
     public AuthOutcome authenticate() {
         String code = getCode();
         if (code == null) {
-            log.debug("there was no code");
+            LOG.debug("there was no code");
             String error = getError();
             if (error != null) {
                 // todo how do we send a response?
-                log.warn("There was an error: " + error);
+                LOG.warn("There was an error: " + error);
                 challenge = challenge(400, OIDCAuthenticationError.Reason.OAUTH_ERROR, error);
                 return AuthOutcome.FAILED;
             } else {
-                log.debug("redirecting to auth server");
+                LOG.debug("redirecting to auth server");
                 challenge = loginRedirect();
                 return AuthOutcome.NOT_ATTEMPTED;
             }
         } else {
-            log.debug("there was a code, resolving");
+            LOG.debug("there was a code, resolving");
             challenge = resolveCode(code);
             if (challenge != null) {
                 return AuthOutcome.FAILED;
@@ -318,31 +320,31 @@ public class OAuthRequestAuthenticator {
     protected AuthChallenge resolveCode(String code) {
         // abort if not HTTPS
         if (!isRequestSecure() && deployment.getSslRequired().isRequired(facade.getRequest().getRemoteAddr())) {
-            log.error("Adapter requires SSL. Request: " + facade.getRequest().getURI());
+            LOG.error("Adapter requires SSL. Request: " + facade.getRequest().getURI());
             return challenge(403, OIDCAuthenticationError.Reason.SSL_REQUIRED, null);
         }
 
-        log.debug("checking state cookie for after code");
+        LOG.debug("checking state cookie for after code");
         AuthChallenge challenge = checkStateCookie();
         if (challenge != null) return challenge;
 
         AccessTokenResponse tokenResponse = null;
         strippedOauthParametersRequestUri = rewrittenRedirectUri(stripOauthParametersFromRedirect());
-    
+
         try {
             // For COOKIE store we don't have httpSessionId and single sign-out won't be available
             String httpSessionId = deployment.getTokenStore() == TokenStore.SESSION ? reqAuthenticator.changeHttpSessionId(true) : null;
             tokenResponse = ServerRequest.invokeAccessCodeToToken(deployment, code, strippedOauthParametersRequestUri, httpSessionId);
         } catch (ServerRequest.HttpFailure failure) {
-            log.error("failed to turn code into token");
-            log.error("status from server: " + failure.getStatus());
+            LOG.error("failed to turn code into token");
+            LOG.error("status from server: " + failure.getStatus());
             if (failure.getError() != null && !failure.getError().trim().isEmpty()) {
-                log.error("   " + failure.getError());
+                LOG.error("   " + failure.getError());
             }
             return challenge(403, OIDCAuthenticationError.Reason.CODE_TO_TOKEN_FAILURE, null);
 
         } catch (IOException e) {
-            log.error("failed to turn code into token", e);
+            LOG.error("failed to turn code into token", e);
             return challenge(403, OIDCAuthenticationError.Reason.CODE_TO_TOKEN_FAILURE, null);
         }
 
@@ -350,8 +352,8 @@ public class OAuthRequestAuthenticator {
         refreshToken = tokenResponse.getRefreshToken();
         idTokenString = tokenResponse.getIdToken();
 
-        log.debug("Verifying tokens");
-        if (log.isTraceEnabled()) {
+        LOG.debug("Verifying tokens");
+        if (LOG.isTraceEnabled()) {
             logToken("\taccess_token", tokenString);
             logToken("\tid_token", idTokenString);
             logToken("\trefresh_token", refreshToken);
@@ -361,19 +363,19 @@ public class OAuthRequestAuthenticator {
             AdapterTokenVerifier.VerifiedTokens tokens = AdapterTokenVerifier.verifyTokens(tokenString, idTokenString, deployment);
             token = tokens.getAccessToken();
             idToken = tokens.getIdToken();
-            log.debug("Token Verification succeeded!");
+            LOG.debug("Token Verification succeeded!");
         } catch (VerificationException e) {
-            log.error("failed verification of token: " + e.getMessage());
+            LOG.error("failed verification of token: " + e.getMessage());
             return challenge(403, OIDCAuthenticationError.Reason.INVALID_TOKEN, null);
         }
         if (tokenResponse.getNotBeforePolicy() > deployment.getNotBefore()) {
             deployment.updateNotBefore(tokenResponse.getNotBeforePolicy());
         }
         if (token.getIssuedAt() < deployment.getNotBefore()) {
-            log.error("Stale token");
+            LOG.error("Stale token");
             return challenge(403, OIDCAuthenticationError.Reason.STALE_TOKEN, null);
         }
-        log.debug("successful authenticated");
+        LOG.debug("successful authenticated");
         return null;
     }
 
@@ -387,22 +389,22 @@ public class OAuthRequestAuthenticator {
                 .replaceQueryParam(OAuth2Constants.SESSION_STATE, null);
         return builder.build().toString();
     }
-    
+
     private String rewrittenRedirectUri(String originalUri) {
         Map<String, String> rewriteRules = deployment.getRedirectRewriteRules();
-            if(rewriteRules != null && !rewriteRules.isEmpty()) {
+        if (rewriteRules != null && !rewriteRules.isEmpty()) {
             try {
                 URL url = new URL(originalUri);
-                Map.Entry<String, String> rule =  rewriteRules.entrySet().iterator().next();
+                Map.Entry<String, String> rule = rewriteRules.entrySet().iterator().next();
                 StringBuilder redirectUriBuilder = new StringBuilder(url.getProtocol());
-                redirectUriBuilder.append("://"+ url.getAuthority());
+                redirectUriBuilder.append("://" + url.getAuthority());
                 redirectUriBuilder.append(url.getPath().replaceFirst(rule.getKey(), rule.getValue()));
                 return redirectUriBuilder.toString();
             } catch (MalformedURLException ex) {
-                log.error("Not a valid request url");
+                LOG.error("Not a valid request url");
                 throw new RuntimeException(ex);
             }
-            }
+        }
         return originalUri;
     }
 
@@ -410,9 +412,10 @@ public class OAuthRequestAuthenticator {
         try {
             JWSInput jwsInput = new JWSInput(token);
             String wireString = jwsInput.getWireString();
-            log.tracef("\t%s: %s", name, wireString.substring(0, wireString.lastIndexOf(".")) + ".signature");
+            LOG.trace("\t{}: {}", name, wireString.substring(0, wireString.lastIndexOf(".")) + ".signature");
         } catch (JWSInputException e) {
-            log.errorf(e, "Failed to parse %s: %s", name, token);
+            LOG.error("Failed to parse {}: {}", name, token);
+            LOG.error("Failed to parse", e);
         }
     }
 }

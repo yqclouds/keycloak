@@ -23,9 +23,10 @@ import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.reflections.Reflections;
 import org.keycloak.models.sessions.infinispan.util.InfinispanUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.security.auth.callback.*;
 import javax.security.sasl.RealmCallback;
@@ -46,10 +47,9 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class RemoteCacheProvider {
+    protected static final Logger LOG = LoggerFactory.getLogger(RemoteCacheProvider.class);
 
     public static final String SCRIPT_CACHE_NAME = "___script_cache";
-
-    protected static final Logger logger = Logger.getLogger(RemoteCacheProvider.class);
 
     private final EmbeddedCacheManager cacheManager;
 
@@ -82,7 +82,7 @@ public class RemoteCacheProvider {
     }
 
     public void stop() {
-        logger.debugf("Shutdown %d registered secured remoteCache managers", managedManagers.size());
+        LOG.debug("Shutdown {} registered secured remoteCache managers", managedManagers.size());
 
         for (RemoteCacheManager mgr : managedManagers.values()) {
             mgr.stop();
@@ -96,26 +96,26 @@ public class RemoteCacheProvider {
         Boolean remoteStoreSecurity = this.remoteStoreSecurityEnabled;
         if (remoteStoreSecurity == null) {
             try {
-                logger.debugf("Detecting remote security settings of HotRod server, cache %s. Disable by explicitly setting \"remoteStoreSecurityEnabled\" property in spi=connectionsInfinispan/provider=default", cacheName);
+                LOG.debug("Detecting remote security settings of HotRod server, cache {}. Disable by explicitly setting \"remoteStoreSecurityEnabled\" property in spi=connectionsInfinispan/provider=default", cacheName);
                 remoteStoreSecurity = false;
                 final RemoteCache<Object, Object> scriptCache = remoteCache.getRemoteCacheManager().getCache(SCRIPT_CACHE_NAME);
                 if (scriptCache == null) {
-                    logger.debug("Cannot detect remote security settings of HotRod server, disabling.");
+                    LOG.debug("Cannot detect remote security settings of HotRod server, disabling.");
                 } else {
                     scriptCache.containsKey("");
                 }
             } catch (HotRodClientException ex) {
-                logger.debug("Seems that HotRod server requires authentication, enabling.");
+                LOG.debug("Seems that HotRod server requires authentication, enabling.");
                 remoteStoreSecurity = true;
             }
         }
 
         if (remoteStoreSecurity) {
-            logger.infof("Remote store security for cache %s is enabled. Disable by setting \"remoteStoreSecurityEnabled\" property to \"false\" in spi=connectionsInfinispan/provider=default", cacheName);
+            LOG.info("Remote store security for cache {} is enabled. Disable by setting \"remoteStoreSecurityEnabled\" property to \"false\" in spi=connectionsInfinispan/provider=default", cacheName);
             RemoteCacheManager securedMgr = getOrCreateSecuredRemoteCacheManager(cacheName, remoteCache.getRemoteCacheManager());
             return securedMgr.getCache(remoteCache.getName());
         } else {
-            logger.infof("Remote store security for cache %s is disabled. If server fails to connect to remote JDG server, enable it.", cacheName);
+            LOG.info("Remote store security for cache {} is disabled. If server fails to connect to remote JDG server, enable it.", cacheName);
             return remoteCache;
         }
     }
@@ -142,7 +142,7 @@ public class RemoteCacheProvider {
             return managedManagers.get(securedHotRodEndpoint);
         }
 
-        logger.infof("Creating secured RemoteCacheManager for Server: '%s', Cache: '%s', Realm: '%s', Username: '%s', Secured HotRod endpoint: '%s'", serverName, cacheName, realm, username, securedHotRodEndpoint);
+        LOG.info("Creating secured RemoteCacheManager for Server: '{}', Cache: '{}', Realm: '{}', Username: '{}', Secured HotRod endpoint: '{}'", serverName, cacheName, realm, username, securedHotRodEndpoint);
 
         // Workaround as I need a way to override servers and it's not possible to remove existing :/
         try {

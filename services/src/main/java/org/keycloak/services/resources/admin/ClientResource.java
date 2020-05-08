@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.BadRequestException;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
@@ -68,7 +68,7 @@ import static java.lang.Boolean.TRUE;
  * @resource Clients
  */
 public class ClientResource {
-    protected static final Logger logger = Logger.getLogger(ClientResource.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(ClientResource.class);
     protected RealmModel realm;
     protected ClientModel client;
     protected KeycloakSession session;
@@ -220,7 +220,7 @@ public class ClientResource {
     public CredentialRepresentation regenerateSecret() {
         auth.clients().requireConfigure(client);
 
-        logger.debug("regenerateSecret");
+        LOG.debug("regenerateSecret");
         UserCredentialModel cred = KeycloakModelUtils.generateSecret(client);
         CredentialRepresentation rep = ModelToRepresentation.toRepresentation(cred);
         adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).representation(rep).success();
@@ -260,7 +260,7 @@ public class ClientResource {
     public CredentialRepresentation getClientSecret() {
         auth.clients().requireView(client);
 
-        logger.debug("getClientSecret");
+        LOG.debug("getClientSecret");
         UserCredentialModel model = UserCredentialModel.secret(client.getSecret());
         if (model == null) throw new NotFoundException("Client does not have a secret");
         return ModelToRepresentation.toRepresentation(model);
@@ -548,7 +548,7 @@ public class ClientResource {
 
         ReservedCharValidator.validate(node);
 
-        if (logger.isDebugEnabled()) logger.debug("Register node: " + node);
+        if (LOG.isDebugEnabled()) LOG.debug("Register node: " + node);
         client.registerNode(node, Time.currentTime());
         adminEvent.operation(OperationType.CREATE).resource(ResourceType.CLUSTER_NODE).resourcePath(session.getContext().getUri(), node).success();
     }
@@ -564,7 +564,7 @@ public class ClientResource {
     public void unregisterNode(final @PathParam("node") String node) {
         auth.clients().requireConfigure(client);
 
-        if (logger.isDebugEnabled()) logger.debug("Unregister node: " + node);
+        if (LOG.isDebugEnabled()) LOG.debug("Unregister node: " + node);
 
         Integer time = client.getRegisteredNodes().get(node);
         if (time == null) {
@@ -588,7 +588,7 @@ public class ClientResource {
     public GlobalRequestResult testNodesAvailable() {
         auth.clients().requireConfigure(client);
 
-        logger.debug("Test availability of cluster nodes");
+        LOG.debug("Test availability of cluster nodes");
         GlobalRequestResult result = new ResourceAdminManager(session).testNodesAvailability(realm, client);
         adminEvent.operation(OperationType.ACTION).resource(ResourceType.CLUSTER_NODE).resourcePath(session.getContext().getUri()).representation(result).success();
         return result;

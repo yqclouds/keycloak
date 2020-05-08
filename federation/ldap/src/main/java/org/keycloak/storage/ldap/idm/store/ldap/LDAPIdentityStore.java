@@ -17,7 +17,6 @@
 
 package org.keycloak.storage.ldap.idm.store.ldap;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.Base64;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.LDAPConstants;
@@ -31,6 +30,8 @@ import org.keycloak.storage.ldap.idm.query.internal.EqualCondition;
 import org.keycloak.storage.ldap.idm.query.internal.LDAPQuery;
 import org.keycloak.storage.ldap.idm.store.IdentityStore;
 import org.keycloak.storage.ldap.mappers.LDAPOperationDecorator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.naming.AuthenticationException;
 import javax.naming.NamingEnumeration;
@@ -50,7 +51,7 @@ import java.util.regex.Pattern;
  */
 public class LDAPIdentityStore implements IdentityStore {
 
-    private static final Logger logger = Logger.getLogger(LDAPIdentityStore.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LDAPIdentityStore.class);
     private static final Pattern rangePattern = Pattern.compile("([^;]+);range=([0-9]+)-([0-9]+|\\*)");
 
     private final LDAPConfig config;
@@ -78,8 +79,8 @@ public class LDAPIdentityStore implements IdentityStore {
         this.operationManager.createSubContext(entryDN, ldapAttributes);
         ldapObject.setUuid(getEntryIdentifier(ldapObject));
 
-        if (logger.isDebugEnabled()) {
-            logger.debugf("Type with identifier [%s] and dn [%s] successfully added to LDAP store.", ldapObject.getUuid(), entryDN);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Type with identifier [{}] and dn [{}] successfully added to LDAP store.", ldapObject.getUuid(), entryDN);
         }
     }
 
@@ -92,7 +93,7 @@ public class LDAPIdentityStore implements IdentityStore {
         try {
             this.operationManager.modifyAttributesNaming(groupDn, new ModificationItem[]{item}, null);
         } catch (AttributeInUseException e) {
-            logger.debugf("Group %s already contains the member %s", groupDn, value);
+            LOG.debug("Group {} already contains the member {}", groupDn, value);
         } catch (NamingException e) {
             throw new ModelException("Could not modify attribute for DN [" + groupDn + "]", e);
         }
@@ -105,10 +106,10 @@ public class LDAPIdentityStore implements IdentityStore {
         try {
             this.operationManager.modifyAttributesNaming(groupDn, new ModificationItem[]{item}, null);
         } catch (NoSuchAttributeException e) {
-            logger.debugf("Group %s does not contain the member %s", groupDn, value);
+            LOG.debug("Group {} does not contain the member {}", groupDn, value);
         } catch (SchemaViolationException e) {
             // schema violation removing one member => add the empty attribute, it cannot be other thing
-            logger.infof("Schema violation in group %s removing member %s. Trying adding empty member attribute.", groupDn, value);
+            LOG.info("Schema violation in group {} removing member {}. Trying adding empty member attribute.", groupDn, value);
             try {
                 this.operationManager.modifyAttributesNaming(groupDn,
                         new ModificationItem[]{item, new ModificationItem(DirContext.ADD_ATTRIBUTE, new BasicAttribute(memberAttrName, LDAPConstants.EMPTY_MEMBER_ATTRIBUTE_VALUE))},
@@ -131,8 +132,8 @@ public class LDAPIdentityStore implements IdentityStore {
         String entryDn = ldapObject.getDn().toString();
         this.operationManager.modifyAttributes(entryDn, attributes);
 
-        if (logger.isDebugEnabled()) {
-            logger.debugf("Type with identifier [%s] and DN [%s] successfully updated to LDAP store.", ldapObject.getUuid(), entryDn);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Type with identifier [{}] and DN [{}] successfully updated to LDAP store.", ldapObject.getUuid(), entryDn);
         }
     }
 
@@ -157,8 +158,8 @@ public class LDAPIdentityStore implements IdentityStore {
             String oldDn = ldapObject.getDn().toString();
             String newDn = newLdapDn.toString();
 
-            if (logger.isDebugEnabled()) {
-                logger.debugf("Renaming LDAP Object. Old DN: [%s], New DN: [%s]", oldDn, newDn);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Renaming LDAP Object. Old DN: [{}], New DN: [{}]", oldDn, newDn);
             }
 
             // In case, that there is conflict (For example already existing "CN=John Anthony"), the different DN is returned
@@ -172,8 +173,8 @@ public class LDAPIdentityStore implements IdentityStore {
     public void remove(LDAPObject ldapObject) {
         this.operationManager.removeEntry(ldapObject.getDn().toString());
 
-        if (logger.isDebugEnabled()) {
-            logger.debugf("Type with identifier [%s] and DN [%s] successfully removed from LDAP store.", ldapObject.getUuid(), ldapObject.getDn().toString());
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Type with identifier [{}] and DN [{}] successfully removed from LDAP store.", ldapObject.getUuid(), ldapObject.getDn().toString());
         }
     }
 
@@ -253,8 +254,8 @@ public class LDAPIdentityStore implements IdentityStore {
     public void validatePassword(LDAPObject user, String password) throws AuthenticationException {
         String userDN = user.getDn().toString();
 
-        if (logger.isTraceEnabled()) {
-            logger.tracef("Using DN [%s] for authentication of user", userDN);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Using DN [{}] for authentication of user", userDN);
         }
 
         operationManager.authenticate(userDN, password);
@@ -264,8 +265,8 @@ public class LDAPIdentityStore implements IdentityStore {
     public void updatePassword(LDAPObject user, String password, LDAPOperationDecorator passwordUpdateDecorator) {
         String userDN = user.getDn().toString();
 
-        if (logger.isDebugEnabled()) {
-            logger.debugf("Using DN [%s] for updating LDAP password of user", userDN);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Using DN [{}] for updating LDAP password of user", userDN);
         }
 
         if (getConfig().isActiveDirectory()) {
@@ -321,8 +322,8 @@ public class LDAPIdentityStore implements IdentityStore {
         filter.append(getObjectClassesFilter(identityQuery.getObjectClasses()));
         filter.append(")");
 
-        if (logger.isTraceEnabled()) {
-            logger.tracef("Using filter for LDAP search: %s . Searching in DN: %s", filter, identityQuery.getSearchDn());
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Using filter for LDAP search: {} . Searching in DN: {}", filter, identityQuery.getSearchDn());
         }
         return filter;
     }
@@ -382,7 +383,7 @@ public class LDAPIdentityStore implements IdentityStore {
                             int max = Integer.parseInt(m.group(3));
                             ldapObject.addRangedAttribute(ldapAttributeName, max);
                         } catch (NumberFormatException e) {
-                            logger.warnf("Invalid ranged expresion for attribute: %s", m.group(0));
+                            LOG.warn("Invalid ranged expresion for attribute: {}", m.group(0));
                         }
                     }
                 }
@@ -421,8 +422,8 @@ public class LDAPIdentityStore implements IdentityStore {
                 }
             }
 
-            if (logger.isTraceEnabled()) {
-                logger.tracef("Found ldap object and populated with the attributes. LDAP Object: %s", ldapObject.toString());
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Found ldap object and populated with the attributes. LDAP Object: {}", ldapObject.toString());
             }
             return ldapObject;
 
@@ -441,7 +442,7 @@ public class LDAPIdentityStore implements IdentityStore {
 
             if (attrValue == null) {
                 // Shouldn't happen
-                logger.warnf("Attribute '%s' is null on LDAP object '%s' . Using empty value to be saved to LDAP", attrName, ldapObject.getDn().toString());
+                LOG.warn("Attribute '{}' is null on LDAP object '{}' . Using empty value to be saved to LDAP", attrName, ldapObject.getDn().toString());
                 attrValue = Collections.emptySet();
             }
 
@@ -505,7 +506,7 @@ public class LDAPIdentityStore implements IdentityStore {
                 byte[] bytes = Base64.decode(value);
                 attr.add(bytes);
             } catch (IOException ioe) {
-                logger.warnf("Wasn't able to Base64 decode the attribute value. Ignoring attribute update. Attribute: %s, Attribute value: %s", attrName, attrValue);
+                LOG.warn("Wasn't able to Base64 decode the attribute value. Ignoring attribute update. Attribute: {}, Attribute value: {}", attrName, attrValue);
             }
         }
 

@@ -16,16 +16,16 @@
  */
 package org.keycloak.adapters.springsecurity.filter;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Collections;
-import java.util.Map;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpMethod;
 import org.springframework.mock.web.MockHttpServletRequest;
+
+import java.util.Collections;
+import java.util.Map;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class QueryParamPresenceRequestMatcherTest {
     private static final String ROOT_CONTEXT_PATH = "";

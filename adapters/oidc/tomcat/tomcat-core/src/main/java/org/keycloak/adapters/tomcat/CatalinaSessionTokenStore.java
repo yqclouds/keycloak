@@ -21,23 +21,19 @@ import org.apache.catalina.Session;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.keycloak.KeycloakSecurityContext;
-import org.keycloak.adapters.AdapterTokenStore;
-import org.keycloak.adapters.KeycloakDeployment;
-import org.keycloak.adapters.OidcKeycloakAccount;
-import org.keycloak.adapters.RefreshableKeycloakSecurityContext;
-import org.keycloak.adapters.RequestAuthenticator;
+import org.keycloak.adapters.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.Set;
-import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class CatalinaSessionTokenStore extends CatalinaAdapterSessionStore implements AdapterTokenStore {
-
-    private static final Logger log = Logger.getLogger("" + CatalinaSessionTokenStore.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CatalinaSessionTokenStore.class);
 
     private KeycloakDeployment deployment;
     private CatalinaUserSessionManagement sessionManagement;
@@ -87,7 +83,7 @@ public class CatalinaSessionTokenStore extends CatalinaAdapterSessionStore imple
         }
 
         // Refresh failed, so user is already logged out from keycloak. Cleanup and expire our session
-        log.fine("Cleanup and expire session " + catalinaSession.getId() + " after failed refresh");
+        LOG.info("Cleanup and expire session " + catalinaSession.getId() + " after failed refresh");
         request.setUserPrincipal(null);
         request.setAuthType(null);
         cleanSession(catalinaSession);
@@ -111,12 +107,12 @@ public class CatalinaSessionTokenStore extends CatalinaAdapterSessionStore imple
             return false;
         }
 
-        log.fine("remote logged in already. Establish state from session");
+        LOG.info("remote logged in already. Establish state from session");
 
         RefreshableKeycloakSecurityContext securityContext = account.getKeycloakSecurityContext();
 
         if (!deployment.getRealm().equals(securityContext.getRealm())) {
-            log.fine("Account from cookie is from a different realm than for the request.");
+            LOG.info("Account from cookie is from a different realm than for the request.");
             cleanSession(session);
             return false;
         }
@@ -178,7 +174,7 @@ public class CatalinaSessionTokenStore extends CatalinaAdapterSessionStore imple
         session.getSession().setAttribute(SerializableKeycloakAccount.class.getName(), sAccount);
         session.getSession().setAttribute(KeycloakSecurityContext.class.getName(), account.getKeycloakSecurityContext());
         String username = securityContext.getToken().getSubject();
-        log.fine("userSessionManagement.login: " + username);
+        LOG.info("userSessionManagement.login: " + username);
         this.sessionManagement.login(session);
     }
 

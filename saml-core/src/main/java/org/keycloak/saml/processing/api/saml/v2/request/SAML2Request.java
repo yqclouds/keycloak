@@ -50,7 +50,7 @@ import java.net.URL;
  */
 public class SAML2Request {
 
-    private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+    private static final PicketLinkLogger LOG = PicketLinkLoggerFactory.getLogger();
 
     private SAMLDocumentHolder samlDocumentHolder = null;
 
@@ -67,7 +67,7 @@ public class SAML2Request {
     public static SAMLDocumentHolder getSAML2ObjectFromStream(InputStream is) throws ConfigurationException, ParsingException,
             ProcessingException {
         if (is == null)
-            throw logger.nullArgumentError("InputStream");
+            throw LOG.nullArgumentError("InputStream");
 
         Document samlDocument = DocumentUtil.getDocument(is);
 
@@ -151,7 +151,7 @@ public class SAML2Request {
         } else if (requestType instanceof LogoutRequestType) {
             samlRequestWriter.write((LogoutRequestType) requestType);
         } else
-            throw logger.unsupportedType(requestType.getClass().getName());
+            throw LOG.unsupportedType(requestType.getClass().getName());
     }
 
     /**
@@ -168,7 +168,7 @@ public class SAML2Request {
         } else if (requestType instanceof LogoutRequestType) {
             samlRequestWriter.write((LogoutRequestType) requestType);
         } else
-            throw logger.unsupportedType(requestType.getClass().getName());
+            throw LOG.unsupportedType(requestType.getClass().getName());
     }
 
     /**
@@ -248,16 +248,16 @@ public class SAML2Request {
     public AuthnRequestType getAuthnRequestType(String fileName) throws ConfigurationException, ProcessingException,
             ParsingException {
         if (fileName == null)
-            throw logger.nullArgumentError("fileName");
+            throw LOG.nullArgumentError("fileName");
         URL resourceURL = SecurityActions.loadResource(getClass(), fileName);
         if (resourceURL == null)
-            throw logger.resourceNotFound(fileName);
+            throw LOG.resourceNotFound(fileName);
 
         InputStream is = null;
         try {
             is = resourceURL.openStream();
         } catch (IOException e) {
-            throw logger.processingError(e);
+            throw LOG.processingError(e);
         }
         return getAuthnRequestType(is);
     }
@@ -275,7 +275,7 @@ public class SAML2Request {
     public RequestAbstractType getRequestType(InputStream is) throws ParsingException, ConfigurationException,
             ProcessingException {
         if (is == null)
-            throw logger.nullArgumentError("InputStream");
+            throw LOG.nullArgumentError("InputStream");
 
         Document samlDocument = DocumentUtil.getDocument(is);
 
@@ -300,7 +300,7 @@ public class SAML2Request {
     public AuthnRequestType getAuthnRequestType(InputStream is) throws ConfigurationException, ProcessingException,
             ParsingException {
         if (is == null)
-            throw logger.nullArgumentError("InputStream");
+            throw LOG.nullArgumentError("InputStream");
 
         Document samlDocument = DocumentUtil.getDocument(is);
 

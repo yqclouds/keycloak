@@ -1,9 +1,10 @@
 package org.keycloak.protocol.oidc.utils;
 
-import org.jboss.logging.Logger;
 import org.keycloak.protocol.oidc.mappers.AbstractPairwiseSubMapper;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -11,7 +12,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class PairwiseSubMapperUtils {
-    private static final Logger logger = Logger.getLogger(PairwiseSubMapperUtils.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PairwiseSubMapperUtils.class);
 
     /**
      * Returns a set of valid redirect URIs from the root url and redirect URIs registered on a client.
@@ -29,7 +30,7 @@ public class PairwiseSubMapperUtils {
         for (String redirectUri : clientRedirectUris) {
             if (redirectUri.startsWith("/")) {
                 redirectUri = relativeToAbsoluteURI(clientRootUrl, redirectUri);
-                logger.debugv("replacing relative valid redirect with: {0}", redirectUri);
+                LOG.debug("replacing relative valid redirect with: {}", redirectUri);
             }
             if (redirectUri != null) {
                 validRedirects.add(redirectUri);
@@ -51,22 +52,22 @@ public class PairwiseSubMapperUtils {
         try {
             uri = new URI(sectorIdentifierUri);
         } catch (URISyntaxException e) {
-            logger.debug("Invalid sector identifier URI", e);
+            LOG.debug("Invalid sector identifier URI", e);
             return null;
         }
 
         if (uri.getScheme() == null) {
-            logger.debugv("Invalid sector identifier URI: {0}", sectorIdentifierUri);
+            LOG.debug("Invalid sector identifier URI: {}", sectorIdentifierUri);
             return null;
         }
 
         /*if (!uri.getScheme().equalsIgnoreCase("https")) {
-            logger.debugv("The sector identifier URI scheme must be HTTPS. Was '{0}'", uri.getScheme());
+            LOG.debug("The sector identifier URI scheme must be HTTPS. Was '{}'", uri.getScheme());
             return null;
         }*/
 
         if (uri.getHost() == null) {
-            logger.debug("The sector identifier URI must specify a host");
+            LOG.debug("The sector identifier URI must specify a host");
             return null;
         }
 
@@ -87,15 +88,15 @@ public class PairwiseSubMapperUtils {
                 URI uri = new URI(redirectUri);
                 hosts.add(uri.getHost());
             } catch (URISyntaxException e) {
-                logger.debugv("client redirect uris contained an invalid uri: {0}", redirectUri);
+                LOG.debug("client redirect uris contained an invalid uri: {}", redirectUri);
             }
         }
         if (hosts.isEmpty()) {
-            logger.debug("could not infer any valid sector_identifiers from client redirect uris");
+            LOG.debug("could not infer any valid sector_identifiers from client redirect uris");
             return null;
         }
         if (hosts.size() > 1) {
-            logger.debug("the client redirect uris contained multiple hosts");
+            LOG.debug("the client redirect uris contained multiple hosts");
             return null;
         }
         return hosts.iterator().next();

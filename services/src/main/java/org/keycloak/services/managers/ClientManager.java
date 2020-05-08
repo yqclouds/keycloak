@@ -18,7 +18,6 @@ package org.keycloak.services.managers;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import org.jboss.logging.Logger;
 import org.keycloak.authentication.ClientAuthenticator;
 import org.keycloak.authentication.ClientAuthenticatorFactory;
 import org.keycloak.common.constants.ServiceAccountConstants;
@@ -34,6 +33,8 @@ import org.keycloak.representations.adapters.config.BaseRealmConfig;
 import org.keycloak.representations.adapters.config.PolicyEnforcerConfig;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.sessions.AuthenticationSessionProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.URI;
@@ -44,7 +45,7 @@ import java.util.*;
  * @version $Revision: 1 $
  */
 public class ClientManager {
-    private static final Logger logger = Logger.getLogger(ClientManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClientManager.class);
 
     protected RealmManager realmManager;
 
@@ -150,7 +151,7 @@ public class ClientManager {
         // Add dedicated user for this service account
         if (realmManager.getSession().users().getServiceAccount(client) == null) {
             String username = ServiceAccountConstants.SERVICE_ACCOUNT_USER_PREFIX + client.getClientId();
-            logger.debugf("Creating service account user '%s'", username);
+            LOG.debug("Creating service account user '{}'", username);
 
             // Don't use federation for service account user
             UserModel user = realmManager.getSession().userLocalStorage().addUser(client.getRealm(), username);
@@ -160,7 +161,7 @@ public class ClientManager {
 
         // Add protocol mappers to retrieve clientId in access token
         if (client.getProtocolMapperByName(OIDCLoginProtocol.LOGIN_PROTOCOL, ServiceAccountConstants.CLIENT_ID_PROTOCOL_MAPPER) == null) {
-            logger.debugf("Creating service account protocol mapper '%s' for client '%s'", ServiceAccountConstants.CLIENT_ID_PROTOCOL_MAPPER, client.getClientId());
+            LOG.debug("Creating service account protocol mapper '{}' for client '{}'", ServiceAccountConstants.CLIENT_ID_PROTOCOL_MAPPER, client.getClientId());
             ProtocolMapperModel protocolMapper = UserSessionNoteMapper.createClaimMapper(ServiceAccountConstants.CLIENT_ID_PROTOCOL_MAPPER,
                     ServiceAccountConstants.CLIENT_ID,
                     ServiceAccountConstants.CLIENT_ID, "String",
@@ -170,7 +171,7 @@ public class ClientManager {
 
         // Add protocol mappers to retrieve hostname and IP address of client in access token
         if (client.getProtocolMapperByName(OIDCLoginProtocol.LOGIN_PROTOCOL, ServiceAccountConstants.CLIENT_HOST_PROTOCOL_MAPPER) == null) {
-            logger.debugf("Creating service account protocol mapper '%s' for client '%s'", ServiceAccountConstants.CLIENT_HOST_PROTOCOL_MAPPER, client.getClientId());
+            LOG.debug("Creating service account protocol mapper '{}' for client '{}'", ServiceAccountConstants.CLIENT_HOST_PROTOCOL_MAPPER, client.getClientId());
             ProtocolMapperModel protocolMapper = UserSessionNoteMapper.createClaimMapper(ServiceAccountConstants.CLIENT_HOST_PROTOCOL_MAPPER,
                     ServiceAccountConstants.CLIENT_HOST,
                     ServiceAccountConstants.CLIENT_HOST, "String",
@@ -179,7 +180,7 @@ public class ClientManager {
         }
 
         if (client.getProtocolMapperByName(OIDCLoginProtocol.LOGIN_PROTOCOL, ServiceAccountConstants.CLIENT_ADDRESS_PROTOCOL_MAPPER) == null) {
-            logger.debugf("Creating service account protocol mapper '%s' for client '%s'", ServiceAccountConstants.CLIENT_ADDRESS_PROTOCOL_MAPPER, client.getClientId());
+            LOG.debug("Creating service account protocol mapper '{}' for client '{}'", ServiceAccountConstants.CLIENT_ADDRESS_PROTOCOL_MAPPER, client.getClientId());
             ProtocolMapperModel protocolMapper = UserSessionNoteMapper.createClaimMapper(ServiceAccountConstants.CLIENT_ADDRESS_PROTOCOL_MAPPER,
                     ServiceAccountConstants.CLIENT_ADDRESS,
                     ServiceAccountConstants.CLIENT_ADDRESS, "String",
@@ -189,7 +190,7 @@ public class ClientManager {
     }
 
     public void clientIdChanged(ClientModel client, String newClientId) {
-        logger.debugf("Updating clientId from '%s' to '%s'", client.getClientId(), newClientId);
+        LOG.debug("Updating clientId from '{}' to '{}'", client.getClientId(), newClientId);
 
         UserModel serviceAccountUser = realmManager.getSession().users().getServiceAccount(client);
         if (serviceAccountUser != null) {

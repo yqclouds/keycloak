@@ -27,7 +27,8 @@ import org.apache.directory.api.ldap.schema.extractor.impl.DefaultSchemaLdifExtr
 import org.apache.directory.api.ldap.schema.extractor.impl.ResourceMap;
 import org.apache.directory.server.core.api.interceptor.context.AddOperationContext;
 import org.apache.directory.server.core.partition.ldif.AbstractLdifPartition;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.naming.InvalidNameException;
 import java.net.URL;
@@ -44,7 +45,7 @@ import java.util.regex.Pattern;
  */
 class InMemorySchemaPartition extends AbstractLdifPartition {
 
-    private static final Logger log = Logger.getLogger(InMemorySchemaPartition.class);
+    private static final Logger LOG = LoggerFactory.getLogger(InMemorySchemaPartition.class);
 
     /**
      * Filesystem path separator pattern, either forward slash or backslash. java.util.regex.Pattern is immutable so only one
@@ -63,7 +64,7 @@ class InMemorySchemaPartition extends AbstractLdifPartition {
     protected void doInit() throws InvalidNameException, Exception {
         if (initialized)
             return;
-        log.debug("Initializing schema partition " + getId());
+        LOG.debug("Initializing schema partition " + getId());
         suffixDn.apply(schemaManager);
         super.doInit();
 

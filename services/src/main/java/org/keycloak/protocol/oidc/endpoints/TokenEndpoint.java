@@ -17,7 +17,6 @@
 
 package org.keycloak.protocol.oidc.endpoints;
 
-import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.HttpResponse;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
@@ -67,6 +66,8 @@ import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
 import org.keycloak.util.TokenUtil;
 import org.keycloak.utils.ProfileHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.OPTIONS;
@@ -90,7 +91,7 @@ import static org.keycloak.models.ImpersonationSessionNote.IMPERSONATOR_USERNAME
  */
 public class TokenEndpoint {
 
-    private static final Logger logger = Logger.getLogger(TokenEndpoint.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TokenEndpoint.class);
     // https://tools.ietf.org/html/rfc7636#section-4.2
     private static final Pattern VALID_CODE_VERIFIER_PATTERN = Pattern.compile("^[0-9a-zA-Z\\-\\.~_]+$");
     private final TokenManager tokenManager;
@@ -170,8 +171,8 @@ public class TokenEndpoint {
 
     @OPTIONS
     public Response preflight() {
-        if (logger.isDebugEnabled()) {
-            logger.debugv("CORS preflight from: {0}", headers.getRequestHeaders().getFirst("Origin"));
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("CORS preflight from: {}", headers.getRequestHeaders().getFirst("Origin"));
         }
         return Cors.add(request, Response.ok()).auth().preflight().allowedMethods("POST", "OPTIONS").build();
     }
@@ -400,7 +401,7 @@ public class TokenEndpoint {
     private void checkParamsForPkceEnforcedClient(String codeVerifier, String codeChallenge, String codeChallengeMethod, String authUserId, String authUsername) {
         // check whether code verifier is specified
         if (codeVerifier == null) {
-            logger.warnf("PKCE code verifier not specified, authUserId = %s, authUsername = %s", authUserId, authUsername);
+            LOG.warn("PKCE code verifier not specified, authUserId = %s, authUsername = %s", authUserId, authUsername);
             event.error(Errors.CODE_VERIFIER_MISSING);
             throw new CorsErrorResponseException(cors, OAuthErrorException.INVALID_GRANT, "PKCE code verifier not specified", Response.Status.BAD_REQUEST);
         }
@@ -409,7 +410,7 @@ public class TokenEndpoint {
 
     private void checkParamsForPkceNotEnforcedClient(String codeVerifier, String codeChallenge, String codeChallengeMethod, String authUserId, String authUsername) {
         if (codeChallenge != null && codeVerifier == null) {
-            logger.warnf("PKCE code verifier not specified, authUserId = %s, authUsername = %s", authUserId, authUsername);
+            LOG.warn("PKCE code verifier not specified, authUserId = %s, authUsername = %s", authUserId, authUsername);
             event.error(Errors.CODE_VERIFIER_MISSING);
             throw new CorsErrorResponseException(cors, OAuthErrorException.INVALID_GRANT, "PKCE code verifier not specified", Response.Status.BAD_REQUEST);
         }
@@ -423,34 +424,34 @@ public class TokenEndpoint {
         // check whether code verifier is formatted along with the PKCE specification
 
         if (!isValidPkceCodeVerifier(codeVerifier)) {
-            logger.infof("PKCE invalid code verifier");
+            LOG.info("PKCE invalid code verifier");
             event.error(Errors.INVALID_CODE_VERIFIER);
             throw new CorsErrorResponseException(cors, OAuthErrorException.INVALID_GRANT, "PKCE invalid code verifier", Response.Status.BAD_REQUEST);
         }
 
-        logger.debugf("PKCE supporting Client, codeVerifier = %s", codeVerifier);
+        LOG.debug("PKCE supporting Client, codeVerifier = %s", codeVerifier);
         String codeVerifierEncoded = codeVerifier;
         try {
             // https://tools.ietf.org/html/rfc7636#section-4.2
             // plain or S256
             if (codeChallengeMethod != null && codeChallengeMethod.equals(OAuth2Constants.PKCE_METHOD_S256)) {
-                logger.debugf("PKCE codeChallengeMethod = %s", codeChallengeMethod);
+                LOG.debug("PKCE codeChallengeMethod = %s", codeChallengeMethod);
                 codeVerifierEncoded = generateS256CodeChallenge(codeVerifier);
             } else {
-                logger.debug("PKCE codeChallengeMethod is plain");
+                LOG.debug("PKCE codeChallengeMethod is plain");
                 codeVerifierEncoded = codeVerifier;
             }
         } catch (Exception nae) {
-            logger.infof("PKCE code verification failed, not supported algorithm specified");
+            LOG.info("PKCE code verification failed, not supported algorithm specified");
             event.error(Errors.PKCE_VERIFICATION_FAILED);
             throw new CorsErrorResponseException(cors, OAuthErrorException.INVALID_GRANT, "PKCE code verification failed, not supported algorithm specified", Response.Status.BAD_REQUEST);
         }
         if (!codeChallenge.equals(codeVerifierEncoded)) {
-            logger.warnf("PKCE verification failed. authUserId = %s, authUsername = %s", authUserId, authUsername);
+            LOG.warn("PKCE verification failed. authUserId = %s, authUsername = %s", authUserId, authUsername);
             event.error(Errors.PKCE_VERIFICATION_FAILED);
             throw new CorsErrorResponseException(cors, OAuthErrorException.INVALID_GRANT, "PKCE verification failed", Response.Status.BAD_REQUEST);
         } else {
-            logger.debugf("PKCE verification success. codeVerifierEncoded = %s, codeChallenge = %s", codeVerifierEncoded, codeChallenge);
+            LOG.debug("PKCE verification success. codeVerifierEncoded = %s, codeChallenge = %s", codeVerifierEncoded, codeChallenge);
         }
     }
 
@@ -474,7 +475,7 @@ public class TokenEndpoint {
             }
 
         } catch (OAuthErrorException e) {
-            logger.trace(e.getMessage(), e);
+            LOG.trace(e.getMessage(), e);
             // KEYCLOAK-6771 Certificate Bound Token
             if (MtlsHoKTokenUtil.CERT_VERIFY_ERROR_DESC.equals(e.getDescription())) {
                 event.error(Errors.NOT_ALLOWED);
@@ -493,14 +494,14 @@ public class TokenEndpoint {
     private void updateClientSession(AuthenticatedClientSessionModel clientSession) {
 
         if (clientSession == null) {
-            ServicesLogger.LOGGER.clientSessionNull();
+//            ServicesLogger.LOGGER.clientSessionNull();
             return;
         }
 
         String adapterSessionId = formParams.getFirst(AdapterConstants.CLIENT_SESSION_STATE);
         if (adapterSessionId != null) {
             String adapterSessionHost = formParams.getFirst(AdapterConstants.CLIENT_SESSION_HOST);
-            logger.debugf("Adapter Session '%s' saved in ClientSession for client '%s'. Host is '%s'", adapterSessionId, client.getClientId(), adapterSessionHost);
+            LOG.debug("Adapter Session '%s' saved in ClientSession for client '%s'. Host is '%s'", adapterSessionId, client.getClientId(), adapterSessionHost);
 
             String oldClientSessionState = clientSession.getNote(AdapterConstants.CLIENT_SESSION_STATE);
             if (!adapterSessionId.equals(oldClientSessionState)) {
@@ -608,7 +609,7 @@ public class TokenEndpoint {
 
         if (clientUser == null || client.getProtocolMapperByName(OIDCLoginProtocol.LOGIN_PROTOCOL, ServiceAccountConstants.CLIENT_ID_PROTOCOL_MAPPER) == null) {
             // May need to handle bootstrap here as well
-            logger.debugf("Service account user for client '%s' not found or default protocol mapper for service account not found. Creating now", client.getClientId());
+            LOG.debug("Service account user for client '%s' not found or default protocol mapper for service account not found. Creating now", client.getClientId());
             new ClientManager(new RealmManager(session)).enableServiceAccount(client);
             clientUser = session.users().getServiceAccount(client);
         }
@@ -963,7 +964,7 @@ public class TokenEndpoint {
 
         if (user == null) {
 
-            logger.debugf("Federated user not found for provider '%s' and broker username '%s'.", providerId, context.getUsername());
+            LOG.debug("Federated user not found for provider '%s' and broker username '%s'.", providerId, context.getUsername());
 
             String username = context.getModelUsername();
             if (username == null) {
@@ -1013,7 +1014,7 @@ public class TokenEndpoint {
             }
 
             if (context.getIdpConfig().isTrustEmail() && !Validation.isBlank(user.getEmail())) {
-                logger.debugf("Email verified automatically after registration of user '%s' through Identity provider '%s' ", user.getUsername(), context.getIdpConfig().getAlias());
+                LOG.debug("Email verified automatically after registration of user '%s' through Identity provider '%s' ", user.getUsername(), context.getIdpConfig().getAlias());
                 user.setEmailVerified(true);
             }
         } else {
@@ -1167,11 +1168,11 @@ public class TokenEndpoint {
     // https://tools.ietf.org/html/rfc7636#section-4.1
     private boolean isValidPkceCodeVerifier(String codeVerifier) {
         if (codeVerifier.length() < OIDCLoginProtocol.PKCE_CODE_VERIFIER_MIN_LENGTH) {
-            logger.infof(" Error: PKCE codeVerifier length under lower limit , codeVerifier = %s", codeVerifier);
+            LOG.info(" Error: PKCE codeVerifier length under lower limit , codeVerifier = %s", codeVerifier);
             return false;
         }
         if (codeVerifier.length() > OIDCLoginProtocol.PKCE_CODE_VERIFIER_MAX_LENGTH) {
-            logger.infof(" Error: PKCE codeVerifier length over upper limit , codeVerifier = %s", codeVerifier);
+            LOG.info(" Error: PKCE codeVerifier length over upper limit , codeVerifier = %s", codeVerifier);
             return false;
         }
         Matcher m = VALID_CODE_VERIFIER_PATTERN.matcher(codeVerifier);

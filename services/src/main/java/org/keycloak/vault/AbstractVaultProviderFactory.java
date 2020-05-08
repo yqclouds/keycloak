@@ -17,9 +17,10 @@
 
 package org.keycloak.vault;
 
-import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
@@ -67,7 +68,7 @@ import java.util.List;
 public abstract class AbstractVaultProviderFactory implements VaultProviderFactory {
 
     protected static final String KEY_RESOLVERS = "keyResolvers";
-    private static final Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     protected List<VaultKeyResolver> keyResolvers = new LinkedList<>();
 
     @Value("${keyResolvers}")
@@ -88,7 +89,7 @@ public abstract class AbstractVaultProviderFactory implements VaultProviderFacto
         }
         // no resolver configured - add the default REALM_UNDERSCORE_KEY resolver.
         if (this.keyResolvers.isEmpty()) {
-            logger.debugf("Key resolver is undefined - using %s by default", AvailableResolvers.REALM_UNDERSCORE_KEY.name());
+            LOG.debug("Key resolver is undefined - using {} by default", AvailableResolvers.REALM_UNDERSCORE_KEY.name());
             this.keyResolvers.add(AvailableResolvers.REALM_UNDERSCORE_KEY.getVaultKeyResolver());
         }
     }
@@ -125,7 +126,7 @@ public abstract class AbstractVaultProviderFactory implements VaultProviderFacto
             AvailableResolvers value = AvailableResolvers.valueOf(resolverName.trim().toUpperCase());
             return value == AvailableResolvers.FACTORY_PROVIDED ? this.getFactoryResolver() : value.getVaultKeyResolver();
         } catch (Exception e) {
-            logger.debugf(e, "Invalid key resolver: %s - skipping", resolverName);
+            LOG.debug("Invalid key resolver: {} - skipping", resolverName);
             return null;
         }
     }

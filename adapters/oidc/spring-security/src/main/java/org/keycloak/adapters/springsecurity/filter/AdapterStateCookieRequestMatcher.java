@@ -17,10 +17,11 @@
 
 package org.keycloak.adapters.springsecurity.filter;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import org.keycloak.constants.AdapterConstants;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Matches a request if it contains a {@value AdapterConstants#KEYCLOAK_ADAPTER_STATE_COOKIE}
@@ -35,7 +36,7 @@ public class AdapterStateCookieRequestMatcher implements RequestMatcher {
         if (request.getCookies() == null) {
             return false;
         }
-        for (Cookie cookie: request.getCookies()) {
+        for (Cookie cookie : request.getCookies()) {
             if (AdapterConstants.KEYCLOAK_ADAPTER_STATE_COOKIE.equals(cookie.getName())) {
                 return true;
             }

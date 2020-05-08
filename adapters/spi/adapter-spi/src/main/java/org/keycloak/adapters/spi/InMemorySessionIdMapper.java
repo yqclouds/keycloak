@@ -17,11 +17,13 @@
 
 package org.keycloak.adapters.spi;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import org.jboss.logging.Logger;
 
 /**
  * Maps external principal and SSO id to internal local http session id
@@ -30,8 +32,7 @@ import org.jboss.logging.Logger;
  * @version $Revision: 1 $
  */
 public class InMemorySessionIdMapper implements SessionIdMapper {
-
-    private static final Logger LOG = Logger.getLogger(InMemorySessionIdMapper.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(InMemorySessionIdMapper.class.getName());
 
     ConcurrentHashMap<String, String> ssoToSession = new ConcurrentHashMap<>();
     ConcurrentHashMap<String, String> sessionToSso = new ConcurrentHashMap<>();
@@ -67,7 +68,7 @@ public class InMemorySessionIdMapper implements SessionIdMapper {
 
     @Override
     public void map(String sso, String principal, String session) {
-        LOG.debugf("Adding mapping (%s, %s, %s)", sso, principal, session);
+        LOG.debug("Adding mapping ({}, {}, {})", sso, principal, session);
 
         if (sso != null) {
             ssoToSession.put(sso, session);
@@ -92,13 +93,13 @@ public class InMemorySessionIdMapper implements SessionIdMapper {
 
     @Override
     public void removeSession(String session) {
-        LOG.debugf("Removing session %s", session);
+        LOG.debug("Removing session {}", session);
 
         String sso = sessionToSso.remove(session);
         if (sso != null) {
             ssoToSession.remove(sso);
         }
-        String principal =  sessionToPrincipal.remove(session);
+        String principal = sessionToPrincipal.remove(session);
         if (principal != null) {
             Set<String> sessions = principalToSession.get(principal);
             sessions.remove(session);

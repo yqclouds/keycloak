@@ -17,11 +17,11 @@
 
 package org.keycloak.adapters.springsecurity.token;
 
-import javax.servlet.http.HttpServletResponse;
 import org.keycloak.adapters.AdapterTokenStore;
 import org.keycloak.adapters.KeycloakDeployment;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Creates a per-request adapter token store.
@@ -34,9 +34,8 @@ public interface AdapterTokenStoreFactory {
      * Returns a new {@link AdapterTokenStore} for the given {@link KeycloakDeployment} and {@link HttpServletRequest request}.
      *
      * @param deployment the <code>KeycloakDeployment</code> (required)
-     * @param request the current <code>HttpServletRequest</code> (required)
-     * @param response the current <code>HttpServletResponse</code> (required when using cookies)
-     *
+     * @param request    the current <code>HttpServletRequest</code> (required)
+     * @param response   the current <code>HttpServletResponse</code> (required when using cookies)
      * @return a new <code>AdapterTokenStore</code> for the given <code>deployment</code>, <code>request</code> and <code>response</code>
      * @throws IllegalArgumentException if any required parameter is <code>null</code>
      */

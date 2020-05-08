@@ -16,13 +16,13 @@
  */
 package org.keycloak.adapters.authorization;
 
+import org.keycloak.common.util.Time;
+import org.keycloak.representations.adapters.config.PolicyEnforcerConfig.PathConfig;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
-
-import org.keycloak.common.util.Time;
-import org.keycloak.representations.adapters.config.PolicyEnforcerConfig.PathConfig;
 
 /**
  * A simple LRU cache implementation supporting expiration and maximum number of entries.
@@ -47,13 +47,13 @@ public class PathCache {
      * Creates a new instance.
      *
      * @param maxEntries the maximum number of entries to keep in the cache
-     * @param maxAge the time in milliseconds that an entry can stay in the cache. If {@code -1}, entries never expire
+     * @param maxAge     the time in milliseconds that an entry can stay in the cache. If {@code -1}, entries never expire
      */
     public PathCache(final int maxEntries, long maxAge) {
         cache = new LinkedHashMap<String, CacheEntry>(16, DEFAULT_LOAD_FACTOR, true) {
             @Override
             protected boolean removeEldestEntry(Map.Entry eldest) {
-                return cache.size()  > maxEntries;
+                return cache.size() > maxEntries;
             }
         };
         this.maxAge = maxAge;
@@ -156,7 +156,7 @@ public class PathCache {
         CacheEntry(String key, PathConfig value, long maxAge) {
             this.key = key;
             this.value = value;
-            if(maxAge == -1) {
+            if (maxAge == -1) {
                 expiration = -1;
             } else {
                 expiration = Time.currentTimeMillis() + maxAge;

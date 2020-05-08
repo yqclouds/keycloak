@@ -17,7 +17,6 @@
 
 package org.keycloak.storage.ldap;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.UserModelDelegate;
 import org.keycloak.storage.ldap.idm.model.LDAPObject;
@@ -27,8 +26,6 @@ import org.keycloak.storage.ldap.idm.model.LDAPObject;
  * @version $Revision: 1 $
  */
 public class WritableLDAPUserModelDelegate extends UserModelDelegate implements UserModel {
-    private static final Logger logger = Logger.getLogger(WritableLDAPUserModelDelegate.class);
-
     protected LDAPStorageProvider provider;
     protected LDAPObject ldapObject;
 
@@ -37,5 +34,4 @@ public class WritableLDAPUserModelDelegate extends UserModelDelegate implements 
         this.provider = provider;
         this.ldapObject = ldapObject;
     }
-
 }

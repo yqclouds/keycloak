@@ -17,11 +17,12 @@
 
 package org.keycloak.timer.basic;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.services.scheduled.ScheduledTaskRunner;
 import org.keycloak.timer.ScheduledTask;
 import org.keycloak.timer.TimerProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -31,7 +32,7 @@ import java.util.TimerTask;
  */
 public class BasicTimerProvider implements TimerProvider {
 
-    private static final Logger logger = Logger.getLogger(BasicTimerProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BasicTimerProvider.class);
 
     private final KeycloakSession session;
     private final Timer timer;
@@ -55,11 +56,11 @@ public class BasicTimerProvider implements TimerProvider {
         TimerTaskContextImpl taskContext = new TimerTaskContextImpl(runnable, task, intervalMillis);
         TimerTaskContextImpl existingTask = factory.putTask(taskName, taskContext);
         if (existingTask != null) {
-            logger.debugf("Existing timer task '%s' found. Cancelling it", taskName);
+            LOG.debug("Existing timer task '{}' found. Cancelling it", taskName);
             existingTask.timerTask.cancel();
         }
 
-        logger.debugf("Starting task '%s' with interval '%d'", taskName, intervalMillis);
+        LOG.debug("Starting task '{}' with interval '{}'", taskName, intervalMillis);
         timer.schedule(task, intervalMillis, intervalMillis);
     }
 
@@ -73,7 +74,7 @@ public class BasicTimerProvider implements TimerProvider {
     public TimerTaskContext cancelTask(String taskName) {
         TimerTaskContextImpl existingTask = factory.removeTask(taskName);
         if (existingTask != null) {
-            logger.debugf("Cancelling task '%s'", taskName);
+            LOG.debug("Cancelling task '{}'", taskName);
             existingTask.timerTask.cancel();
         }
 

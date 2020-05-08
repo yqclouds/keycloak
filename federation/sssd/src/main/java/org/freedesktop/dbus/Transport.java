@@ -518,7 +518,7 @@ public class Transport {
                         switch (state) {
                             case INITIAL_STATE:
                                 if (null == us)
-                                    out.write(new byte[]{0});
+                                    out.write(new byte[]{});
                                 else
                                     us.sendCredentialByte((byte) 0);
                                 send(out, COMMAND_AUTH);

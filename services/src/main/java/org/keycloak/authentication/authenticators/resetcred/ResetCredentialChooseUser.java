@@ -17,7 +17,7 @@
 
 package org.keycloak.authentication.authenticators.resetcred;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.Config;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
@@ -51,7 +51,7 @@ public class ResetCredentialChooseUser implements Authenticator, AuthenticatorFa
     public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
             AuthenticationExecutionModel.Requirement.REQUIRED
     };
-    private static final Logger logger = Logger.getLogger(ResetCredentialChooseUser.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ResetCredentialChooseUser.class);
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
@@ -59,7 +59,7 @@ public class ResetCredentialChooseUser implements Authenticator, AuthenticatorFa
         if (existingUserId != null) {
             UserModel existingUser = AbstractIdpAuthenticator.getExistingUser(context.getSession(), context.getRealm(), context.getAuthenticationSession());
 
-            logger.debugf("Forget-password triggered when reauthenticating user after first broker login. Prefilling reset-credential-choose-user screen with user '%s' ", existingUser.getUsername());
+            LOG.debug("Forget-password triggered when reauthenticating user after first broker login. Prefilling reset-credential-choose-user screen with user '{}' ", existingUser.getUsername());
             context.setUser(existingUser);
             Response challenge = context.form().createPasswordReset();
             context.challenge(challenge);
@@ -72,7 +72,7 @@ public class ResetCredentialChooseUser implements Authenticator, AuthenticatorFa
 
             // Action token logics handles checks for user ID validity and user being enabled
 
-            logger.debugf("Forget-password triggered when reauthenticating user after authentication via action token. Skipping reset-credential-choose-user screen and using user '%s' ", existingUser.getUsername());
+            LOG.debug("Forget-password triggered when reauthenticating user after authentication via action token. Skipping reset-credential-choose-user screen and using user '{}' ", existingUser.getUsername());
             context.setUser(existingUser);
             context.success();
             return;

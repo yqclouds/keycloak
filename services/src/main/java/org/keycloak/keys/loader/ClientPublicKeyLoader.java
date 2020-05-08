@@ -17,7 +17,6 @@
 
 package org.keycloak.keys.loader;
 
-import org.jboss.logging.Logger;
 import org.keycloak.authentication.authenticators.client.JWTClientAuthenticator;
 import org.keycloak.common.util.KeyUtils;
 import org.keycloak.crypto.Algorithm;
@@ -37,6 +36,8 @@ import org.keycloak.representations.idm.CertificateRepresentation;
 import org.keycloak.services.util.CertificateInfoHelper;
 import org.keycloak.services.util.ResolveRelative;
 import org.keycloak.util.JWKSUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.security.PublicKey;
@@ -49,7 +50,7 @@ import java.util.Map;
  */
 public class ClientPublicKeyLoader implements PublicKeyLoader {
 
-    private static final Logger logger = Logger.getLogger(ClientPublicKeyLoader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClientPublicKeyLoader.class);
 
     private final KeycloakSession session;
     private final ClientModel client;
@@ -118,11 +119,11 @@ public class ClientPublicKeyLoader implements PublicKeyLoader {
                 KeyWrapper publicKey = getSignatureValidationKey(certInfo);
                 return Collections.singletonMap(publicKey.getKid(), publicKey);
             } catch (ModelException me) {
-                logger.warnf(me, "Unable to retrieve publicKey for verify signature of client '%s' . Error details: %s", client.getClientId(), me.getMessage());
+                LOG.warn("Unable to retrieve publicKey for verify signature of client '{}' . Error details: {}", client.getClientId(), me.getMessage());
                 return Collections.emptyMap();
             }
         } else {
-            logger.warnf("Unable to retrieve publicKey of client '%s' for the specified purpose other than verifying signature", client.getClientId());
+            LOG.warn("Unable to retrieve publicKey of client '{}' for the specified purpose other than verifying signature", client.getClientId());
             return Collections.emptyMap();
         }
     }

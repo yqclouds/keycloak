@@ -128,7 +128,7 @@ public class SAMLAssertionWriter extends BaseWriter {
 
         AdviceType advice = assertion.getAdvice();
         if (advice != null)
-            throw logger.notImplementedYet("Advice");
+            throw LOG.notImplementedYet("Advice");
 
         Set<StatementAbstractType> statements = assertion.getStatements();
         if (statements != null) {
@@ -138,7 +138,7 @@ public class SAMLAssertionWriter extends BaseWriter {
                 } else if (statement instanceof AttributeStatementType) {
                     write((AttributeStatementType) statement);
                 } else
-                    throw logger.writerUnknownTypeError(statement.getClass().getName());
+                    throw LOG.writerUnknownTypeError(statement.getClass().getName());
             }
         }
 
@@ -154,7 +154,7 @@ public class SAMLAssertionWriter extends BaseWriter {
      */
     public void write(StatementAbstractType statement) throws ProcessingException {
         // TODO: handle this section
-        throw logger.notImplementedYet("NYI");
+        throw LOG.notImplementedYet("NYI");
     }
 
     public void write(AttributeStatementType statement) throws ProcessingException {
@@ -170,7 +170,7 @@ public class SAMLAssertionWriter extends BaseWriter {
                 }
                 EncryptedElementType encType = attr.getEncryptedAssertion();
                 if (encType != null)
-                    throw logger.notImplementedYet("EncryptedElementType");
+                    throw LOG.notImplementedYet("EncryptedElementType");
             }
         }
 

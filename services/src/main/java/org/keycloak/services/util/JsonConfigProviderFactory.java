@@ -18,12 +18,13 @@
 package org.keycloak.services.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.common.util.SystemEnvProperties;
 import org.keycloak.config.ConfigProviderFactory;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.util.JsonSerialization;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,7 +34,7 @@ import java.util.Properties;
 
 public class JsonConfigProviderFactory implements ConfigProviderFactory {
 
-    private static final Logger LOG = Logger.getLogger(JsonConfigProviderFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JsonConfigProviderFactory.class);
 
     @Override
     public Optional<Config.ConfigProvider> create() {
@@ -45,7 +46,7 @@ public class JsonConfigProviderFactory implements ConfigProviderFactory {
             if (configDir != null) {
                 File f = new File(configDir + File.separator + "keycloak-server.json");
                 if (f.isFile()) {
-                    ServicesLogger.LOGGER.loadingFrom(f.getAbsolutePath());
+//                    ServicesLogger.LOGGER.loadingFrom(f.getAbsolutePath());
                     node = JsonSerialization.mapper.readTree(f);
                 }
             }
@@ -53,7 +54,7 @@ public class JsonConfigProviderFactory implements ConfigProviderFactory {
             if (node == null) {
                 URL resource = Thread.currentThread().getContextClassLoader().getResource("META-INF/keycloak-server.json");
                 if (resource != null) {
-                    ServicesLogger.LOGGER.loadingFrom(resource);
+//                    ServicesLogger.LOGGER.loadingFrom(resource);
                     node = JsonSerialization.mapper.readTree(resource);
                 }
             }
