@@ -29,7 +29,6 @@ import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.representations.adapters.action.GlobalRequestResult;
 import org.keycloak.representations.adapters.action.LogoutAction;
 import org.keycloak.representations.adapters.action.TestAvailabilityAction;
-import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.util.ResolveRelative;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

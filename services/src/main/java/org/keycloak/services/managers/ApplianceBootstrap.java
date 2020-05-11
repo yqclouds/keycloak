@@ -22,7 +22,6 @@ import org.keycloak.common.enums.SslRequired;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.DefaultKeyProviders;
 import org.keycloak.representations.idm.CredentialRepresentation;
-import org.keycloak.services.ServicesLogger;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>

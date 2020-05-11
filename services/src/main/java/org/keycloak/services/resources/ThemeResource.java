@@ -20,7 +20,6 @@ import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.common.Version;
 import org.keycloak.common.util.MimeTypeUtil;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.util.CacheControlUtil;
 import org.keycloak.theme.Theme;
 

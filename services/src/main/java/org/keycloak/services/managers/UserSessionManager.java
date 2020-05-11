@@ -19,7 +19,6 @@ package org.keycloak.services.managers;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.*;
 import org.keycloak.models.session.UserSessionPersisterProvider;
-import org.keycloak.services.ServicesLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

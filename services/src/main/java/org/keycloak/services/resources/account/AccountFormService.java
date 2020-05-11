@@ -41,7 +41,6 @@ import org.keycloak.models.utils.FormMessage;
 import org.keycloak.protocol.oidc.utils.RedirectUtils;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.ForbiddenException;
-import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.Urls;
 import org.keycloak.services.managers.*;
 import org.keycloak.services.messages.Messages;

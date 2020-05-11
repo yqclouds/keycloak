@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.keycloak.Config;
 import org.keycloak.common.util.SystemEnvProperties;
 import org.keycloak.config.ConfigProviderFactory;
-import org.keycloak.services.ServicesLogger;
 import org.keycloak.util.JsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

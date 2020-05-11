@@ -30,7 +30,6 @@ import org.keycloak.models.*;
 import org.keycloak.protocol.AuthorizationEndpointBase;
 import org.keycloak.protocol.RestartLoginCookie;
 import org.keycloak.services.ErrorPage;
-import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.managers.AuthenticationSessionManager;
 import org.keycloak.services.managers.ClientSessionCode;
 import org.keycloak.services.messages.Messages;

@@ -29,7 +29,6 @@ import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-import org.keycloak.services.ServicesLogger;
 import org.keycloak.util.JsonSerialization;
 import org.springframework.beans.factory.annotation.Autowired;
 

@@ -25,7 +25,7 @@ import java.util.UUID;
 /**
  * Provides single-use cache for OAuth2 code parameter. Used to ensure that particular value of code parameter is used once.
  * <p>
- * For now, it is separate provider as it's a bit different use-case than {@link ActionTokenStoreProvider}, however it may reuse some components (eg. same infinispan cache)
+ * For now, it is separate provider as it's a bit different use-case than {@link ActionTokenStoreProvider}, however it may reuse some components
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */

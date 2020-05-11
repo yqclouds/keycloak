@@ -24,7 +24,7 @@ import java.util.Map;
  * Internal action token store provider.
  * <p>
  * It's used for store the details about used action tokens. There is separate provider for OAuth2 codes - {@link CodeToTokenStoreProvider},
- * which may reuse some components (eg. same infinispan cache)
+ * which may reuse some components
  *
  * @author hmlnarik
  */

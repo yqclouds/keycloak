@@ -46,7 +46,6 @@
         <jakarta.persistence.version>2.2.3</jakarta.persistence.version>
         <hibernate.core.version>5.3.14.Final</hibernate.core.version>
         <hibernate.c3p0.version>5.3.14.Final</hibernate.c3p0.version>
-        <infinispan.version>9.4.16.Final</infinispan.version>
         <!-- Will be used in the product. Upstream versions are overridden in the community profile -->
         <jackson.version>2.10.0</jackson.version>
         <jackson.databind.version>${jackson.version}</jackson.databind.version>
@@ -114,7 +113,6 @@
         <osgi.bundle.plugin.version>2.3.7</osgi.bundle.plugin.version>
         <nexus.staging.plugin.version>1.6.5</nexus.staging.plugin.version>
         <frontend.plugin.version>1.8.0</frontend.plugin.version>
-        <docker.maven.plugin.version>0.28.0</docker.maven.plugin.version>
 
         <!-- Surefire Settings -->
         <surefire.memory.Xms>512m</surefire.memory.Xms>
@@ -146,7 +144,6 @@
     <modules>
         <module>adapters</module>
         <module>authz</module>
-        <module>common</module>
         <module>core</module>
         <module>server-spi</module>
         <module>server-spi-private</module>
@@ -568,16 +565,6 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-core</artifactId>
-                <version>${infinispan.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-cachestore-remote</artifactId>
-                <version>${infinispan.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.liquibase</groupId>
                 <artifactId>liquibase-core</artifactId>
                 <version>${liquibase.version}</version>
@@ -619,16 +606,6 @@
             </dependency>
 
             <!-- keycloak -->
-            <dependency>
-                <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-client-registration-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-common</artifactId>
-                <version>${project.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.keycloak</groupId>
                 <artifactId>keycloak-core</artifactId>
