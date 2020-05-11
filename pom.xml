@@ -150,7 +150,6 @@
         <module>federation</module>
         <module>services</module>
         <module>model</module>
-        <module>util</module>
         <module>integration</module>
         <module>web</module>
     </modules>

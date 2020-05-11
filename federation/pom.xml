@@ -33,5 +33,6 @@
 
     <modules>
         <module>ldap</module>
+        <module>embedded-ldap</module>
     </modules>
 </project>
