@@ -17,19 +17,13 @@
 
 package org.keycloak.storage.ldap;
 
-import org.keycloak.common.constants.KerberosConstants;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
-import org.keycloak.federation.kerberos.CommonKerberosConfig;
-import org.keycloak.federation.kerberos.impl.KerberosServerSubjectAuthenticator;
-import org.keycloak.federation.kerberos.impl.KerberosUsernamePasswordAuthenticator;
-import org.keycloak.federation.kerberos.impl.SPNEGOAuthenticator;
 import org.keycloak.models.*;
 import org.keycloak.models.cache.UserCache;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
-import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.UserStorageProviderFactory;
@@ -43,7 +37,6 @@ import org.keycloak.storage.ldap.mappers.*;
 import org.keycloak.storage.ldap.mappers.msad.MSADUserAccountControlStorageMapperFactory;
 import org.keycloak.storage.user.ImportSynchronization;
 import org.keycloak.storage.user.SynchronizationResult;
-import org.keycloak.utils.CredentialHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -182,30 +175,6 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
                 .property().name(LDAPConstants.PAGINATION)
                 .type(ProviderConfigProperty.BOOLEAN_TYPE)
                 .defaultValue("true")
-                .add()
-                .property().name(KerberosConstants.ALLOW_KERBEROS_AUTHENTICATION)
-                .type(ProviderConfigProperty.BOOLEAN_TYPE)
-                .defaultValue("false")
-                .add()
-                .property().name(KerberosConstants.SERVER_PRINCIPAL)
-                .type(ProviderConfigProperty.STRING_TYPE)
-                .add()
-                .property().name(KerberosConstants.KEYTAB)
-                .type(ProviderConfigProperty.STRING_TYPE)
-                .add()
-                .property().name(KerberosConstants.KERBEROS_REALM)
-                .type(ProviderConfigProperty.STRING_TYPE)
-                .add()
-                .property().name(KerberosConstants.DEBUG)
-                .type(ProviderConfigProperty.BOOLEAN_TYPE)
-                .defaultValue("false")
-                .add()
-                .property().name(KerberosConstants.USE_KERBEROS_FOR_PASSWORD_AUTHENTICATION)
-                .type(ProviderConfigProperty.BOOLEAN_TYPE)
-                .defaultValue("false")
-                .add()
-                .property().name(KerberosConstants.SERVER_PRINCIPAL)
-                .type(ProviderConfigProperty.STRING_TYPE)
                 .add()
                 .build();
     }
@@ -401,33 +370,14 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
             mapperModel = KeycloakModelUtils.createComponentModel("MSAD account controls", model.getId(), MSADUserAccountControlStorageMapperFactory.PROVIDER_ID, LDAPStorageMapper.class.getName());
             realm.addComponentModel(mapperModel);
         }
-        String allowKerberosCfg = model.getConfig().getFirst(KerberosConstants.ALLOW_KERBEROS_AUTHENTICATION);
-        if (Boolean.valueOf(allowKerberosCfg)) {
-            CredentialHelper.setOrReplaceAuthenticationRequirement(session, realm, CredentialRepresentation.KERBEROS,
-                    AuthenticationExecutionModel.Requirement.ALTERNATIVE, AuthenticationExecutionModel.Requirement.DISABLED);
-        }
     }
 
     @Override
     public void onUpdate(KeycloakSession session, RealmModel realm, ComponentModel oldModel, ComponentModel newModel) {
-        boolean allowKerberosCfgOld = Boolean.valueOf(oldModel.getConfig().getFirst(KerberosConstants.ALLOW_KERBEROS_AUTHENTICATION));
-        boolean allowKerberosCfgNew = Boolean.valueOf(newModel.getConfig().getFirst(KerberosConstants.ALLOW_KERBEROS_AUTHENTICATION));
-        if (!allowKerberosCfgOld && allowKerberosCfgNew) {
-            CredentialHelper.setOrReplaceAuthenticationRequirement(session, realm, CredentialRepresentation.KERBEROS,
-                    AuthenticationExecutionModel.Requirement.ALTERNATIVE, AuthenticationExecutionModel.Requirement.DISABLED);
-        } else if (allowKerberosCfgOld && !allowKerberosCfgNew) {
-            CredentialHelper.setOrReplaceAuthenticationRequirement(session, realm, CredentialRepresentation.KERBEROS,
-                    AuthenticationExecutionModel.Requirement.DISABLED, AuthenticationExecutionModel.Requirement.ALTERNATIVE);
-        } // else: keep current settings
     }
 
     @Override
     public void preRemove(KeycloakSession session, RealmModel realm, ComponentModel model) {
-        String allowKerberosCfg = model.getConfig().getFirst(KerberosConstants.ALLOW_KERBEROS_AUTHENTICATION);
-        if (Boolean.valueOf(allowKerberosCfg)) {
-            CredentialHelper.setOrReplaceAuthenticationRequirement(session, realm, CredentialRepresentation.KERBEROS,
-                    AuthenticationExecutionModel.Requirement.DISABLED, null);
-        }
     }
 
     @Override
@@ -529,17 +479,12 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
         }
 
         final QueryHolder queryHolder = new QueryHolder();
-        KeycloakModelUtils.runJobInTransaction(sessionFactory, new KeycloakSessionTask() {
+        KeycloakModelUtils.runJobInTransaction(sessionFactory, session -> {
+            session.getContext().setRealm(session.realms().getRealm(realmId));
 
-            @Override
-            public void run(KeycloakSession session) {
-                session.getContext().setRealm(session.realms().getRealm(realmId));
-
-                LDAPStorageProvider ldapFedProvider = (LDAPStorageProvider) session.getProvider(UserStorageProvider.class, model);
-                RealmModel realm = session.realms().getRealm(realmId);
-                queryHolder.query = LDAPUtils.createQueryForUserSearch(ldapFedProvider, realm);
-            }
-
+            LDAPStorageProvider ldapFedProvider = (LDAPStorageProvider) session.getProvider(UserStorageProvider.class, model);
+            RealmModel realm = session.realms().getRealm(realmId);
+            queryHolder.query = LDAPUtils.createQueryForUserSearch(ldapFedProvider, realm);
         });
         return queryHolder.query;
     }
@@ -553,53 +498,46 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
         final BooleanHolder exists = new BooleanHolder();
 
         for (final LDAPObject ldapUser : ldapUsers) {
-
             try {
-
                 // Process each user in it's own transaction to avoid global fail
-                KeycloakModelUtils.runJobInTransaction(sessionFactory, new KeycloakSessionTask() {
+                KeycloakModelUtils.runJobInTransaction(sessionFactory, session -> {
+                    LDAPStorageProvider ldapFedProvider = (LDAPStorageProvider) session.getProvider(UserStorageProvider.class, fedModel);
+                    RealmModel currentRealm = session.realms().getRealm(realmId);
+                    session.getContext().setRealm(currentRealm);
 
-                    @Override
-                    public void run(KeycloakSession session) {
-                        LDAPStorageProvider ldapFedProvider = (LDAPStorageProvider) session.getProvider(UserStorageProvider.class, fedModel);
-                        RealmModel currentRealm = session.realms().getRealm(realmId);
-                        session.getContext().setRealm(currentRealm);
+                    String username = LDAPUtils.getUsername(ldapUser, ldapFedProvider.getLdapIdentityStore().getConfig());
+                    exists.value = true;
+                    LDAPUtils.checkUuid(ldapUser, ldapFedProvider.getLdapIdentityStore().getConfig());
+                    UserModel currentUser = session.userLocalStorage().getUserByUsername(username, currentRealm);
 
-                        String username = LDAPUtils.getUsername(ldapUser, ldapFedProvider.getLdapIdentityStore().getConfig());
-                        exists.value = true;
-                        LDAPUtils.checkUuid(ldapUser, ldapFedProvider.getLdapIdentityStore().getConfig());
-                        UserModel currentUser = session.userLocalStorage().getUserByUsername(username, currentRealm);
+                    if (currentUser == null) {
 
-                        if (currentUser == null) {
+                        // Add new user to Keycloak
+                        exists.value = false;
+                        ldapFedProvider.importUserFromLDAP(session, currentRealm, ldapUser);
+                        syncResult.increaseAdded();
 
-                            // Add new user to Keycloak
-                            exists.value = false;
-                            ldapFedProvider.importUserFromLDAP(session, currentRealm, ldapUser);
-                            syncResult.increaseAdded();
+                    } else {
+                        if ((fedModel.getId().equals(currentUser.getFederationLink())) && (ldapUser.getUuid().equals(currentUser.getFirstAttribute(LDAPConstants.LDAP_ID)))) {
 
-                        } else {
-                            if ((fedModel.getId().equals(currentUser.getFederationLink())) && (ldapUser.getUuid().equals(currentUser.getFirstAttribute(LDAPConstants.LDAP_ID)))) {
-
-                                // Update keycloak user
-                                List<ComponentModel> federationMappers = currentRealm.getComponents(fedModel.getId(), LDAPStorageMapper.class.getName());
-                                List<ComponentModel> sortedMappers = ldapFedProvider.getMapperManager().sortMappersDesc(federationMappers);
-                                for (ComponentModel mapperModel : sortedMappers) {
-                                    LDAPStorageMapper ldapMapper = ldapFedProvider.getMapperManager().getMapper(mapperModel);
-                                    ldapMapper.onImportUserFromLDAP(ldapUser, currentUser, currentRealm, false);
-                                }
-                                UserCache userCache = session.userCache();
-                                if (userCache != null) {
-                                    userCache.evict(currentRealm, currentUser);
-                                }
-                                LOG.debug("Updated user from LDAP: {}", currentUser.getUsername());
-                                syncResult.increaseUpdated();
-                            } else {
-                                LOG.warn("User '{}' is not updated during sync as he already exists in Keycloak database but is not linked to federation provider '{}'", username, fedModel.getName());
-                                syncResult.increaseFailed();
+                            // Update keycloak user
+                            List<ComponentModel> federationMappers = currentRealm.getComponents(fedModel.getId(), LDAPStorageMapper.class.getName());
+                            List<ComponentModel> sortedMappers = ldapFedProvider.getMapperManager().sortMappersDesc(federationMappers);
+                            for (ComponentModel mapperModel : sortedMappers) {
+                                LDAPStorageMapper ldapMapper = ldapFedProvider.getMapperManager().getMapper(mapperModel);
+                                ldapMapper.onImportUserFromLDAP(ldapUser, currentUser, currentRealm, false);
                             }
+                            UserCache userCache = session.userCache();
+                            if (userCache != null) {
+                                userCache.evict(currentRealm, currentUser);
+                            }
+                            LOG.debug("Updated user from LDAP: {}", currentUser.getUsername());
+                            syncResult.increaseUpdated();
+                        } else {
+                            LOG.warn("User '{}' is not updated during sync as he already exists in Keycloak database but is not linked to federation provider '{}'", username, fedModel.getName());
+                            syncResult.increaseFailed();
                         }
                     }
-
                 });
             } catch (ModelException me) {
                 LOG.error("Failed during import user from LDAP", me);
@@ -607,32 +545,27 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
 
                 // Remove user if we already added him during this transaction
                 if (!exists.value) {
-                    KeycloakModelUtils.runJobInTransaction(sessionFactory, new KeycloakSessionTask() {
+                    KeycloakModelUtils.runJobInTransaction(sessionFactory, session -> {
+                        LDAPStorageProvider ldapFedProvider = (LDAPStorageProvider) session.getProvider(UserStorageProvider.class, fedModel);
+                        RealmModel currentRealm = session.realms().getRealm(realmId);
+                        session.getContext().setRealm(currentRealm);
 
-                        @Override
-                        public void run(KeycloakSession session) {
-                            LDAPStorageProvider ldapFedProvider = (LDAPStorageProvider) session.getProvider(UserStorageProvider.class, fedModel);
-                            RealmModel currentRealm = session.realms().getRealm(realmId);
-                            session.getContext().setRealm(currentRealm);
-
-                            String username = null;
-                            try {
-                                username = LDAPUtils.getUsername(ldapUser, ldapFedProvider.getLdapIdentityStore().getConfig());
-                            } catch (ModelException ignore) {
-                            }
-
-                            if (username != null) {
-                                UserModel existing = session.userLocalStorage().getUserByUsername(username, currentRealm);
-                                if (existing != null) {
-                                    UserCache userCache = session.userCache();
-                                    if (userCache != null) {
-                                        userCache.evict(currentRealm, existing);
-                                    }
-                                    session.userLocalStorage().removeUser(currentRealm, existing);
-                                }
-                            }
+                        String username = null;
+                        try {
+                            username = LDAPUtils.getUsername(ldapUser, ldapFedProvider.getLdapIdentityStore().getConfig());
+                        } catch (ModelException ignore) {
                         }
 
+                        if (username != null) {
+                            UserModel existing = session.userLocalStorage().getUserByUsername(username, currentRealm);
+                            if (existing != null) {
+                                UserCache userCache = session.userCache();
+                                if (userCache != null) {
+                                    userCache.evict(currentRealm, existing);
+                                }
+                                session.userLocalStorage().removeUser(currentRealm, existing);
+                            }
+                        }
                     });
                 }
             }
@@ -640,18 +573,4 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
 
         return syncResult;
     }
-
-    protected SPNEGOAuthenticator createSPNEGOAuthenticator(String spnegoToken, CommonKerberosConfig kerberosConfig) {
-        KerberosServerSubjectAuthenticator kerberosAuth = createKerberosSubjectAuthenticator(kerberosConfig);
-        return new SPNEGOAuthenticator(kerberosConfig, kerberosAuth, spnegoToken);
-    }
-
-    protected KerberosServerSubjectAuthenticator createKerberosSubjectAuthenticator(CommonKerberosConfig kerberosConfig) {
-        return new KerberosServerSubjectAuthenticator(kerberosConfig);
-    }
-
-    protected KerberosUsernamePasswordAuthenticator createKerberosUsernamePasswordAuthenticator(CommonKerberosConfig kerberosConfig) {
-        return new KerberosUsernamePasswordAuthenticator(kerberosConfig);
-    }
-
 }

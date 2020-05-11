@@ -17,7 +17,6 @@
 package org.keycloak.protocol.oidc;
 
 import org.keycloak.OAuth2Constants;
-import org.keycloak.common.constants.KerberosConstants;
 import org.keycloak.common.util.UriUtils;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.*;
@@ -28,7 +27,6 @@ import org.keycloak.protocol.LoginProtocol;
 import org.keycloak.protocol.oidc.mappers.*;
 import org.keycloak.representations.IDToken;
 import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.services.ServicesLogger;
 import org.keycloak.stereotype.ProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -138,12 +136,6 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
 
         ProtocolMapperModel address = AddressMapper.createAddressMapper();
         builtins.put(ADDRESS, address);
-
-        model = UserSessionNoteMapper.createClaimMapper(KerberosConstants.GSS_DELEGATION_CREDENTIAL_DISPLAY_NAME,
-                KerberosConstants.GSS_DELEGATION_CREDENTIAL,
-                KerberosConstants.GSS_DELEGATION_CREDENTIAL, "String",
-                true, false);
-        builtins.put(KerberosConstants.GSS_DELEGATION_CREDENTIAL, model);
 
         model = UserRealmRoleMappingMapper.create(null, REALM_ROLES, "realm_access.roles", true, false, true);
         builtins.put(REALM_ROLES, model);

@@ -17,14 +17,11 @@
 
 package org.keycloak.storage.ldap;
 
-import org.keycloak.common.constants.KerberosConstants;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.CredentialAuthentication;
 import org.keycloak.credential.CredentialInput;
 import org.keycloak.credential.CredentialInputUpdater;
 import org.keycloak.credential.CredentialInputValidator;
-import org.keycloak.federation.kerberos.impl.KerberosUsernamePasswordAuthenticator;
-import org.keycloak.federation.kerberos.impl.SPNEGOAuthenticator;
 import org.keycloak.models.*;
 import org.keycloak.models.cache.CachedUserModel;
 import org.keycloak.models.cache.UserCache;
@@ -44,7 +41,6 @@ import org.keycloak.storage.ldap.idm.query.EscapeStrategy;
 import org.keycloak.storage.ldap.idm.query.internal.LDAPQuery;
 import org.keycloak.storage.ldap.idm.query.internal.LDAPQueryConditionsBuilder;
 import org.keycloak.storage.ldap.idm.store.ldap.LDAPIdentityStore;
-import org.keycloak.storage.ldap.kerberos.LDAPProviderKerberosConfig;
 import org.keycloak.storage.ldap.mappers.LDAPOperationDecorator;
 import org.keycloak.storage.ldap.mappers.LDAPStorageMapper;
 import org.keycloak.storage.ldap.mappers.LDAPStorageMapperManager;
@@ -81,7 +77,6 @@ public class LDAPStorageProvider implements UserStorageProvider,
     protected UserStorageProviderModel model;
     protected LDAPIdentityStore ldapIdentityStore;
     protected EditMode editMode;
-    protected LDAPProviderKerberosConfig kerberosConfig;
     protected PasswordUpdateCallback updater;
     protected LDAPStorageMapperManager mapperManager;
 
@@ -97,15 +92,11 @@ public class LDAPStorageProvider implements UserStorageProvider,
         this.session = session;
         this.model = new UserStorageProviderModel(model);
         this.ldapIdentityStore = ldapIdentityStore;
-        this.kerberosConfig = new LDAPProviderKerberosConfig(model);
         this.editMode = ldapIdentityStore.getConfig().getEditMode();
         this.mapperManager = new LDAPStorageMapperManager(this);
         this.userManager = new LDAPStorageUserManager(this);
 
         supportedCredentialTypes.add(PasswordCredentialModel.TYPE);
-        if (kerberosConfig.isAllowKerberosAuthentication()) {
-            supportedCredentialTypes.add(UserCredentialModel.KERBEROS);
-        }
     }
 
     public void setUpdater(PasswordUpdateCallback updater) {
@@ -210,7 +201,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
 
     @Override
     public boolean supportsCredentialAuthenticationFor(String type) {
-        return type.equals(UserCredentialModel.KERBEROS) && kerberosConfig.isAllowKerberosAuthentication();
+        return type.equals(UserCredentialModel.KERBEROS);
     }
 
     @Override
@@ -250,7 +241,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
         if (!synchronizeRegistrations()) {
             return null;
         }
-        UserModel user = null;
+        UserModel user;
         if (model.isImportEnabled()) {
             user = session.userLocalStorage().addUser(realm, username);
             user.setFederationLink(model.getId());
@@ -526,8 +517,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
         }
         LOG.debug("Imported new user from LDAP to Keycloak DB. Username: [{}], Email: [{}], LDAP_ID: [{}], LDAP Entry DN: [{}]", imported.getUsername(), imported.getEmail(),
                 ldapUser.getUuid(), userDN);
-        UserModel proxy = proxy(realm, imported, ldapUser);
-        return proxy;
+        return proxy(realm, imported, ldapUser);
     }
 
     protected LDAPObject queryByEmail(RealmModel realm, String email) {
@@ -580,30 +570,24 @@ public class LDAPStorageProvider implements UserStorageProvider,
     }
 
     public boolean validPassword(RealmModel realm, UserModel user, String password) {
-        if (kerberosConfig.isAllowKerberosAuthentication() && kerberosConfig.isUseKerberosForPasswordAuthentication()) {
-            // Use Kerberos JAAS (Krb5LoginModule)
-            KerberosUsernamePasswordAuthenticator authenticator = factory.createKerberosUsernamePasswordAuthenticator(kerberosConfig);
-            return authenticator.validUser(user.getUsername(), password);
-        } else {
-            // Use Naming LDAP API
-            LDAPObject ldapUser = loadAndValidateUser(realm, user);
+        // Use Naming LDAP API
+        LDAPObject ldapUser = loadAndValidateUser(realm, user);
 
-            try {
-                ldapIdentityStore.validatePassword(ldapUser, password);
-                return true;
-            } catch (AuthenticationException ae) {
-                boolean processed = false;
-                List<ComponentModel> mappers = realm.getComponents(model.getId(), LDAPStorageMapper.class.getName());
-                List<ComponentModel> sortedMappers = mapperManager.sortMappersDesc(mappers);
-                for (ComponentModel mapperModel : sortedMappers) {
-                    if (LOG.isTraceEnabled()) {
-                        LOG.trace("Using mapper {} during import user from LDAP", mapperModel);
-                    }
-                    LDAPStorageMapper ldapMapper = mapperManager.getMapper(mapperModel);
-                    processed = processed || ldapMapper.onAuthenticationFailure(ldapUser, user, ae, realm);
+        try {
+            ldapIdentityStore.validatePassword(ldapUser, password);
+            return true;
+        } catch (AuthenticationException ae) {
+            boolean processed = false;
+            List<ComponentModel> mappers = realm.getComponents(model.getId(), LDAPStorageMapper.class.getName());
+            List<ComponentModel> sortedMappers = mapperManager.sortMappersDesc(mappers);
+            for (ComponentModel mapperModel : sortedMappers) {
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Using mapper {} during import user from LDAP", mapperModel);
                 }
-                return processed;
+                LDAPStorageMapper ldapMapper = mapperManager.getMapper(mapperModel);
+                processed = processed || ldapMapper.onAuthenticationFailure(ldapUser, user, ae, realm);
             }
+            return processed;
         }
     }
 
@@ -685,44 +669,6 @@ public class LDAPStorageProvider implements UserStorageProvider,
     @Override
     public CredentialValidationOutput authenticate(RealmModel realm, CredentialInput cred) {
         if (!(cred instanceof UserCredentialModel)) CredentialValidationOutput.failed();
-        UserCredentialModel credential = (UserCredentialModel) cred;
-        if (credential.getType().equals(UserCredentialModel.KERBEROS)) {
-            if (kerberosConfig.isAllowKerberosAuthentication()) {
-                String spnegoToken = credential.getChallengeResponse();
-                SPNEGOAuthenticator spnegoAuthenticator = factory.createSPNEGOAuthenticator(spnegoToken, kerberosConfig);
-
-                spnegoAuthenticator.authenticate();
-
-                Map<String, String> state = new HashMap<String, String>();
-                if (spnegoAuthenticator.isAuthenticated()) {
-
-                    // TODO: This assumes that LDAP "uid" is equal to kerberos principal name. Like uid "hnelson" and kerberos principal "hnelson@KEYCLOAK.ORG".
-                    // Check if it's correct or if LDAP attribute for mapping kerberos principal should be available (For ApacheDS it seems to be attribute "krb5PrincipalName" but on MSAD it's likely different)
-                    String username = spnegoAuthenticator.getAuthenticatedUsername();
-                    UserModel user = findOrCreateAuthenticatedUser(realm, username);
-
-                    if (user == null) {
-                        LOG.warn("Kerberos/SPNEGO authentication succeeded with username [{}], but couldn't find or create user with federation provider [{}]", username, model.getName());
-                        return CredentialValidationOutput.failed();
-                    } else {
-                        String delegationCredential = spnegoAuthenticator.getSerializedDelegationCredential();
-                        if (delegationCredential != null) {
-                            state.put(KerberosConstants.GSS_DELEGATION_CREDENTIAL, delegationCredential);
-                        }
-
-                        return new CredentialValidationOutput(user, CredentialValidationOutput.Status.AUTHENTICATED, state);
-                    }
-                } else if (spnegoAuthenticator.getResponseToken() != null) {
-                    // Case when SPNEGO handshake requires multiple steps
-                    LOG.trace("SPNEGO Handshake will continue");
-                    state.put(KerberosConstants.RESPONSE_TOKEN, spnegoAuthenticator.getResponseToken());
-                    return new CredentialValidationOutput(null, CredentialValidationOutput.Status.CONTINUE, state);
-                } else {
-                    LOG.trace("SPNEGO Handshake not successful");
-                    return CredentialValidationOutput.failed();
-                }
-            }
-        }
 
         return CredentialValidationOutput.failed();
     }
