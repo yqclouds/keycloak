@@ -37,7 +37,6 @@ public class DefaultAuthenticationFlows {
     public static final String DIRECT_GRANT_FLOW = "direct grant";
     public static final String RESET_CREDENTIALS_FLOW = "reset credentials";
     public static final String LOGIN_FORMS_FLOW = "forms";
-    public static final String SAML_ECP_FLOW = "saml ecp";
     public static final String HTTP_CHALLENGE_FLOW = "http challenge";
 
     public static final String CLIENT_AUTHENTICATION_FLOW = "clients";
@@ -54,7 +53,6 @@ public class DefaultAuthenticationFlows {
         if (realm.getFlowByAlias(RESET_CREDENTIALS_FLOW) == null) resetCredentialsFlow(realm);
         if (realm.getFlowByAlias(CLIENT_AUTHENTICATION_FLOW) == null) clientAuthFlow(realm);
         if (realm.getFlowByAlias(FIRST_BROKER_LOGIN_FLOW) == null) firstBrokerLoginFlow(realm, false);
-        if (realm.getFlowByAlias(SAML_ECP_FLOW) == null) samlEcpProfile(realm);
         if (realm.getFlowByAlias(HTTP_CHALLENGE_FLOW) == null) httpChallengeFlow(realm);
     }
 
@@ -65,7 +63,6 @@ public class DefaultAuthenticationFlows {
         if (realm.getFlowByAlias(RESET_CREDENTIALS_FLOW) == null) resetCredentialsFlow(realm);
         if (realm.getFlowByAlias(CLIENT_AUTHENTICATION_FLOW) == null) clientAuthFlow(realm);
         if (realm.getFlowByAlias(FIRST_BROKER_LOGIN_FLOW) == null) firstBrokerLoginFlow(realm, true);
-        if (realm.getFlowByAlias(SAML_ECP_FLOW) == null) samlEcpProfile(realm);
         if (realm.getFlowByAlias(HTTP_CHALLENGE_FLOW) == null) httpChallengeFlow(realm);
     }
 
@@ -637,27 +634,6 @@ public class DefaultAuthenticationFlows {
         execution.setAuthenticator("auth-otp-form");
         execution.setPriority(20);
         execution.setAuthenticatorFlow(false);
-        realm.addAuthenticatorExecution(execution);
-    }
-
-    public static void samlEcpProfile(RealmModel realm) {
-        AuthenticationFlowModel ecpFlow = new AuthenticationFlowModel();
-
-        ecpFlow.setAlias(SAML_ECP_FLOW);
-        ecpFlow.setDescription("SAML ECP Profile Authentication Flow");
-        ecpFlow.setProviderId("basic-flow");
-        ecpFlow.setTopLevel(true);
-        ecpFlow.setBuiltIn(true);
-        ecpFlow = realm.addAuthenticationFlow(ecpFlow);
-
-        AuthenticationExecutionModel execution = new AuthenticationExecutionModel();
-
-        execution.setParentFlow(ecpFlow.getId());
-        execution.setRequirement(AuthenticationExecutionModel.Requirement.REQUIRED);
-        execution.setAuthenticator("http-basic-authenticator");
-        execution.setPriority(10);
-        execution.setAuthenticatorFlow(false);
-
         realm.addAuthenticatorExecution(execution);
     }
 

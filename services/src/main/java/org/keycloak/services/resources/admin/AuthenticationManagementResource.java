@@ -16,13 +16,11 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.authentication.*;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.*;
-import org.keycloak.models.utils.DefaultAuthenticationFlows;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -32,6 +30,8 @@ import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.utils.CredentialHelper;
 import org.keycloak.utils.ReservedCharValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -197,7 +197,7 @@ public class AuthenticationManagementResource {
         List<AuthenticationFlowRepresentation> flows = new LinkedList<>();
         for (AuthenticationFlowModel flow : realm.getAuthenticationFlows()) {
             // KEYCLOAK-3517, we need a better way to filter non-configurable internal flows
-            if (flow.isTopLevel() && !flow.getAlias().equals(DefaultAuthenticationFlows.SAML_ECP_FLOW)) {
+            if (flow.isTopLevel()) {
                 flows.add(ModelToRepresentation.toRepresentation(realm, flow));
             }
         }

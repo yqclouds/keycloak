@@ -16,8 +16,3 @@
 #
 
 org.keycloak.protocol.oidc.installation.KeycloakOIDCClientInstallation
-org.keycloak.protocol.saml.installation.KeycloakSamlClientInstallation
-org.keycloak.protocol.saml.installation.SamlSPDescriptorClientInstallation
-org.keycloak.protocol.saml.installation.ModAuthMellonClientInstallation
-org.keycloak.protocol.saml.installation.KeycloakSamlSubsystemCliInstallation
-org.keycloak.protocol.saml.installation.KeycloakSamlSubsystemInstallation

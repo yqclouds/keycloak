@@ -40,7 +40,6 @@ import org.keycloak.protocol.LoginProtocolSpi;
 import org.keycloak.protocol.ProtocolMapperSpi;
 import org.keycloak.protocol.oidc.TokenIntrospectionSpi;
 import org.keycloak.protocol.oidc.ext.OIDCExtSPI;
-import org.keycloak.protocol.saml.preprocessor.SamlAuthenticationPreprocessorSpi;
 import org.keycloak.provider.*;
 import org.keycloak.scripting.ScriptingSpi;
 import org.keycloak.services.DefaultKeycloakSessionFactory;
@@ -167,7 +166,6 @@ public class KeycloakWebConfiguration {
         results.add(new RealmResourceSPI());
         results.add(new RealmSpi());
         results.add(new RequiredActionSpi());
-        results.add(new SamlAuthenticationPreprocessorSpi());
         results.add(new ScriptingSpi());
         results.add(new SignatureSpi());
         results.add(new SingleUseTokenStoreSpi());

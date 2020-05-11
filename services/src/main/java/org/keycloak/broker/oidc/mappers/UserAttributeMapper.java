@@ -17,6 +17,7 @@
 
 package org.keycloak.broker.oidc.mappers;
 
+import org.apache.commons.lang.StringUtils;
 import org.keycloak.broker.oidc.KeycloakOIDCIdentityProviderFactory;
 import org.keycloak.broker.oidc.OIDCIdentityProviderFactory;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
@@ -27,7 +28,6 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.provider.ProviderConfigProperty;
-import org.keycloak.saml.common.util.StringUtil;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 
@@ -99,7 +99,7 @@ public class UserAttributeMapper extends AbstractClaimMapper {
     @Override
     public void preprocessFederatedIdentity(KeycloakSession session, RealmModel realm, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
         String attribute = mapperModel.getConfig().get(USER_ATTRIBUTE);
-        if (StringUtil.isNullOrEmpty(attribute)) {
+        if (StringUtils.isBlank(attribute)) {
             return;
         }
         Object value = getClaimValue(mapperModel, context);
@@ -140,7 +140,7 @@ public class UserAttributeMapper extends AbstractClaimMapper {
     @Override
     public void updateBrokeredUser(KeycloakSession session, RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
         String attribute = mapperModel.getConfig().get(USER_ATTRIBUTE);
-        if (StringUtil.isNullOrEmpty(attribute)) {
+        if (StringUtils.isBlank(attribute)) {
             return;
         }
         Object value = getClaimValue(mapperModel, context);

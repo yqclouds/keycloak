@@ -27,7 +27,7 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 
 /**
- * Provides a template/sample client config adapter file.  For example keycloak.json for our OIDC adapter.  keycloak-saml.xml for our SAML client adapter
+ * Provides a template/sample client config adapter file.  For example keycloak.json for our OIDC adapter.
  *
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $

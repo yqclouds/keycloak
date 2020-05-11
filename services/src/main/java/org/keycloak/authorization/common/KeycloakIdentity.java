@@ -19,6 +19,7 @@ package org.keycloak.authorization.common;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.lang.StringUtils;
 import org.keycloak.authorization.attribute.Attributes;
 import org.keycloak.authorization.identity.Identity;
 import org.keycloak.authorization.util.Tokens;
@@ -26,7 +27,6 @@ import org.keycloak.models.*;
 import org.keycloak.protocol.oidc.TokenManager;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.IDToken;
-import org.keycloak.saml.common.util.StringUtil;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.util.DefaultClientSessionContext;
 import org.keycloak.util.JsonSerialization;
@@ -79,15 +79,12 @@ public class KeycloakIdentity implements Identity {
                 List<String> values = new ArrayList<>();
 
                 if (fieldValue.isArray()) {
-                    Iterator<JsonNode> valueIterator = fieldValue.iterator();
-
-                    while (valueIterator.hasNext()) {
-                        values.add(valueIterator.next().asText());
+                    for (JsonNode jsonNode : fieldValue) {
+                        values.add(jsonNode.asText());
                     }
                 } else {
                     String value = fieldValue.asText();
-
-                    if (StringUtil.isNullOrEmpty(value)) {
+                    if (StringUtils.isEmpty(value)) {
                         continue;
                     }
 
@@ -100,7 +97,7 @@ public class KeycloakIdentity implements Identity {
             }
 
             if (token instanceof AccessToken) {
-                this.accessToken = AccessToken.class.cast(token);
+                this.accessToken = (AccessToken) token;
             } else {
                 UserSessionProvider sessions = keycloakSession.sessions();
                 UserSessionModel userSession = sessions.getUserSession(realm, token.getSessionState());
@@ -174,15 +171,12 @@ public class KeycloakIdentity implements Identity {
                 List<String> values = new ArrayList<>();
 
                 if (fieldValue.isArray()) {
-                    Iterator<JsonNode> valueIterator = fieldValue.iterator();
-
-                    while (valueIterator.hasNext()) {
-                        values.add(valueIterator.next().asText());
+                    for (JsonNode jsonNode : fieldValue) {
+                        values.add(jsonNode.asText());
                     }
                 } else {
                     String value = fieldValue.asText();
-
-                    if (StringUtil.isNullOrEmpty(value)) {
+                    if (StringUtils.isBlank(value)) {
                         continue;
                     }
 

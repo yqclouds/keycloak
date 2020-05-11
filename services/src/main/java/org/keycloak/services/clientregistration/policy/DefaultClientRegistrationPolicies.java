@@ -20,9 +20,6 @@ package org.keycloak.services.clientregistration.policy;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.oidc.mappers.*;
-import org.keycloak.protocol.saml.mappers.RoleListMapper;
-import org.keycloak.protocol.saml.mappers.UserAttributeStatementMapper;
-import org.keycloak.protocol.saml.mappers.UserPropertyAttributeStatementMapper;
 import org.keycloak.services.clientregistration.policy.impl.*;
 
 import java.util.Arrays;
@@ -34,15 +31,12 @@ import java.util.List;
  */
 public class DefaultClientRegistrationPolicies {
 
-    private static String[] DEFAULT_ALLOWED_PROTOCOL_MAPPERS = {
-            UserAttributeStatementMapper.PROVIDER_ID,
+    private static final String[] DEFAULT_ALLOWED_PROTOCOL_MAPPERS = {
             UserAttributeMapper.PROVIDER_ID,
-            UserPropertyAttributeStatementMapper.PROVIDER_ID,
             UserPropertyMapper.PROVIDER_ID,
             FullNameMapper.PROVIDER_ID,
             AddressMapper.PROVIDER_ID,
-            new SHA256PairwiseSubMapper().getId(),
-            RoleListMapper.PROVIDER_ID
+            new SHA256PairwiseSubMapper().getId()
     };
 
     public static void addDefaultPolicies(RealmModel realm) {

@@ -22,8 +22,6 @@ import org.keycloak.common.util.OCSPUtils;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.Constants;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.saml.common.exceptions.ProcessingException;
-import org.keycloak.saml.processing.core.util.XMLSignatureUtil;
 import org.keycloak.truststore.TruststoreProvider;
 import org.keycloak.utils.CRLUtils;
 import org.slf4j.Logger;
@@ -816,17 +814,6 @@ public class CertificateValidator {
 
             public class GotOCSP {
                 public GotOCSP oCSPResponseCertificate(String responderCert) {
-                    if (responderCert != null && !responderCert.isEmpty()) {
-                        try {
-                            _responderCert = XMLSignatureUtil.getX509CertificateFromKeyInfoString(responderCert);
-                            _responderCert.checkValidity();
-                        } catch (CertificateException e) {
-                            LOG.warn("Ignoring invalid certificate: {}", _responderCert);
-                            _responderCert = null;
-                        } catch (ProcessingException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
                     return new GotOCSP();
                 }
 

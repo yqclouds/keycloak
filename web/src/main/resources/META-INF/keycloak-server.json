@@ -100,12 +100,6 @@
     }
   },
   "login-protocol": {
-    "saml": {
-      "knownProtocols": [
-        "http=${auth.server.http.port}",
-        "https=${auth.server.https.port}"
-      ]
-    }
   },
   "x509cert-lookup": {
     "provider": "${keycloak.x509cert.lookup.provider:default}",

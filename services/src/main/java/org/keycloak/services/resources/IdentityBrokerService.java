@@ -16,7 +16,6 @@
  */
 package org.keycloak.services.resources;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
@@ -27,12 +26,10 @@ import org.keycloak.authentication.authenticators.broker.util.PostBrokerLoginCon
 import org.keycloak.authentication.authenticators.broker.util.SerializedBrokeredIdentityContext;
 import org.keycloak.broker.provider.*;
 import org.keycloak.broker.provider.util.IdentityBrokerState;
-import org.keycloak.broker.saml.SAMLEndpoint;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.common.util.ObjectUtil;
 import org.keycloak.common.util.Time;
-import org.keycloak.dom.saml.v2.protocol.StatusResponseType;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
@@ -41,17 +38,15 @@ import org.keycloak.models.*;
 import org.keycloak.models.utils.AuthenticationFlowResolver;
 import org.keycloak.models.utils.FormMessage;
 import org.keycloak.protocol.LoginProtocol;
-import org.keycloak.protocol.LoginProtocolFactory;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.TokenManager;
 import org.keycloak.protocol.oidc.utils.RedirectUtils;
-import org.keycloak.protocol.saml.SamlProtocol;
-import org.keycloak.protocol.saml.SamlService;
-import org.keycloak.protocol.saml.SamlSessionUtils;
-import org.keycloak.protocol.saml.preprocessor.SamlAuthenticationPreprocessor;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.AccessToken;
-import org.keycloak.services.*;
+import org.keycloak.services.ErrorPage;
+import org.keycloak.services.ErrorPageException;
+import org.keycloak.services.ErrorResponse;
+import org.keycloak.services.Urls;
 import org.keycloak.services.managers.*;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.account.AccountFormService;
@@ -63,6 +58,8 @@ import org.keycloak.services.validation.Validation;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
 import org.keycloak.util.JsonSerialization;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
@@ -480,12 +477,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
     public Response authenticated(BrokeredIdentityContext context) {
         IdentityProviderModel identityProviderConfig = context.getIdpConfig();
 
-        final ParsedCodeContext parsedCode;
-        if (context.getContextData().get(SAMLEndpoint.SAML_IDP_INITIATED_CLIENT_ID) != null) {
-            parsedCode = samlIdpInitiatedSSO((String) context.getContextData().get(SAMLEndpoint.SAML_IDP_INITIATED_CLIENT_ID));
-        } else {
-            parsedCode = parseEncodedSessionCode(context.getCode());
-        }
+        final ParsedCodeContext parsedCode = parseEncodedSessionCode(context.getCode());
         if (parsedCode.response != null) {
             return parsedCode.response;
         }
@@ -494,20 +486,13 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
         String providerId = identityProviderConfig.getAlias();
         if (!identityProviderConfig.isStoreToken()) {
             if (isDebugEnabled()) {
-                LOG.debug("Token will not be stored for identity provider [%s].", providerId);
+                LOG.debug("Token will not be stored for identity provider [{}].", providerId);
             }
             context.setToken(null);
         }
 
         AuthenticationSessionModel authenticationSession = clientCode.getClientSession();
         context.setAuthenticationSession(authenticationSession);
-
-        StatusResponseType loginResponse = (StatusResponseType) context.getContextData().get(SAMLEndpoint.SAML_LOGIN_RESPONSE);
-        if (loginResponse != null) {
-            for (Iterator<SamlAuthenticationPreprocessor> it = SamlSessionUtils.getSamlAuthenticationPreprocessorIterator(session); it.hasNext(); ) {
-                loginResponse = it.next().beforeProcessingLoginResponse(loginResponse, authenticationSession);
-            }
-        }
 
         session.getContext().setClient(authenticationSession.getClient());
 
@@ -539,7 +524,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
 
         if (federatedUser == null) {
 
-            LOG.debug("Federated user not found for provider '%s' and broker username '%s'", providerId, context.getUsername());
+            LOG.debug("Federated user not found for provider '{}' and broker username '{}'", providerId, context.getUsername());
 
             String username = context.getModelUsername();
             if (username == null) {
@@ -1041,39 +1026,6 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
 
             return ParsedCodeContext.clientSessionCode(checks.getClientCode());
         }
-    }
-
-    /**
-     * If there is a client whose SAML IDP-initiated SSO URL name is set to the
-     * given {@code clientUrlName}, creates a fresh client session for that
-     * client and returns a {@link ParsedCodeContext} object with that session.
-     * Otherwise returns "client not found" response.
-     *
-     * @param clientUrlName
-     * @return see description
-     */
-    private ParsedCodeContext samlIdpInitiatedSSO(final String clientUrlName) {
-        event.event(EventType.LOGIN);
-        CacheControlUtil.noBackButtonCacheControlHeader();
-        Optional<ClientModel> oClient = this.realmModel.getClients().stream()
-                .filter(c -> Objects.equals(c.getAttribute(SamlProtocol.SAML_IDP_INITIATED_SSO_URL_NAME), clientUrlName))
-                .findFirst();
-
-        if (!oClient.isPresent()) {
-            event.error(Errors.CLIENT_NOT_FOUND);
-            return ParsedCodeContext.response(redirectToErrorPage(Response.Status.BAD_REQUEST, Messages.CLIENT_NOT_FOUND));
-        }
-
-        LoginProtocolFactory factory = (LoginProtocolFactory) session.getSessionFactory().getProviderFactory(LoginProtocol.class, SamlProtocol.LOGIN_PROTOCOL);
-        SamlService samlService = (SamlService) factory.createProtocolEndpoint(realmModel, event);
-        ResteasyProviderFactory.getInstance().injectProperties(samlService);
-        AuthenticationSessionModel authSession = samlService.getOrCreateLoginSessionForIdpInitiatedSso(session, realmModel, oClient.get(), null);
-        if (authSession == null) {
-            event.error(Errors.INVALID_REDIRECT_URI);
-            return ParsedCodeContext.response(redirectToErrorPage(Response.Status.BAD_REQUEST, Messages.INVALID_REDIRECT_URI));
-        }
-
-        return ParsedCodeContext.clientSessionCode(new ClientSessionCode<>(session, this.realmModel, authSession));
     }
 
     private Response checkAccountManagementFailedLinking(AuthenticationSessionModel authSession, String error, Object... parameters) {

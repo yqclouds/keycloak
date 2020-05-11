@@ -150,8 +150,6 @@
         <module>core</module>
         <module>server-spi</module>
         <module>server-spi-private</module>
-        <module>saml-core-api</module>
-        <module>saml-core</module>
         <module>federation</module>
         <module>services</module>
         <module>model</module>

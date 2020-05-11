@@ -198,9 +198,6 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
             case X509_CONFIRM:
                 attributes.put("x509", new X509ConfirmBean(formData));
                 break;
-            case SAML_POST_FORM:
-                attributes.put("samlPost", new SAMLPostFormBean(formData));
-                break;
         }
 
         return processTemplate(theme, Templates.getTemplate(page), locale);
