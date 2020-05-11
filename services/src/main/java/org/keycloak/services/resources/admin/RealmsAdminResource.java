@@ -78,7 +78,7 @@ public class RealmsAdminResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public List<RealmRepresentation> getRealms() {
-        List<RealmRepresentation> reps = new ArrayList<RealmRepresentation>();
+        List<RealmRepresentation> reps = new ArrayList<>();
         List<RealmModel> realms = session.realms().getRealms();
         for (RealmModel realm : realms) {
             addRealmRep(reps, realm);
