@@ -22,14 +22,14 @@ package org.keycloak.constants;
  * @version $Revision: 1 $
  */
 public interface ServiceUrlConstants {
-    public static final String AUTH_PATH = "/realms/{realm-name}/protocol/openid-connect/auth";
-    public static final String TOKEN_PATH = "/realms/{realm-name}/protocol/openid-connect/token";
-    public static final String TOKEN_SERVICE_LOGOUT_PATH = "/realms/{realm-name}/protocol/openid-connect/logout";
-    public static final String ACCOUNT_SERVICE_PATH = "/realms/{realm-name}/account";
-    public static final String REALM_INFO_PATH = "/realms/{realm-name}";
-    public static final String CLIENTS_MANAGEMENT_REGISTER_NODE_PATH = "/realms/{realm-name}/clients-managements/register-node";
-    public static final String CLIENTS_MANAGEMENT_UNREGISTER_NODE_PATH = "/realms/{realm-name}/clients-managements/unregister-node";
-    public static final String JWKS_URL = "/realms/{realm-name}/protocol/openid-connect/certs";
-    public static final String DISCOVERY_URL = "/realms/{realm-name}/.well-known/openid-configuration";
+    String AUTH_PATH = "/realms/{realm-name}/protocol/openid-connect/auth";
+    String TOKEN_PATH = "/realms/{realm-name}/protocol/openid-connect/token";
+    String TOKEN_SERVICE_LOGOUT_PATH = "/realms/{realm-name}/protocol/openid-connect/logout";
+    String ACCOUNT_SERVICE_PATH = "/realms/{realm-name}/account";
+    String REALM_INFO_PATH = "/realms/{realm-name}";
+    String CLIENTS_MANAGEMENT_REGISTER_NODE_PATH = "/realms/{realm-name}/clients-managements/register-node";
+    String CLIENTS_MANAGEMENT_UNREGISTER_NODE_PATH = "/realms/{realm-name}/clients-managements/unregister-node";
+    String JWKS_URL = "/realms/{realm-name}/protocol/openid-connect/certs";
+    String DISCOVERY_URL = "/realms/{realm-name}/.well-known/openid-configuration";
     String AUTHZ_DISCOVERY_URL = "/realms/{realm-name}/.well-known/uma2-configuration";
 }

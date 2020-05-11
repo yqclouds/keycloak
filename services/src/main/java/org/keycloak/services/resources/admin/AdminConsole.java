@@ -186,7 +186,7 @@ public class AdminConsole {
     }
 
     protected RealmModel getAdminstrationRealm(RealmManager realmManager) {
-        return realmManager.getKeycloakAdminstrationRealm();
+        return realmManager.getKeycloakAdministrationRealm();
     }
 
     /**

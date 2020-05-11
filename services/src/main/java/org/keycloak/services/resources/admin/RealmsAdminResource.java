@@ -140,7 +140,7 @@ public class RealmsAdminResource {
             return;
         }
 
-        RealmModel adminRealm = new RealmManager(session).getKeycloakAdminstrationRealm();
+        RealmModel adminRealm = new RealmManager(session).getKeycloakAdministrationRealm();
         ClientModel realmAdminApp = realm.getMasterAdminClient();
         for (String r : AdminRoles.ALL_REALM_ROLES) {
             RoleModel role = realmAdminApp.getRole(r);
@@ -162,7 +162,7 @@ public class RealmsAdminResource {
         RealmModel realm = realmManager.getRealmByName(name);
         if (realm == null) throw new NotFoundException("Realm not found.");
 
-        if (!auth.getRealm().equals(realmManager.getKeycloakAdminstrationRealm())
+        if (!auth.getRealm().equals(realmManager.getKeycloakAdministrationRealm())
                 && !auth.getRealm().equals(realm)) {
             throw new ForbiddenException();
         }

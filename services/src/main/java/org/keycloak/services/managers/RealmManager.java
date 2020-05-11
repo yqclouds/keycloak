@@ -60,7 +60,7 @@ public class RealmManager {
         return session;
     }
 
-    public RealmModel getKeycloakAdminstrationRealm() {
+    public RealmModel getKeycloakAdministrationRealm() {
         return getRealm(Config.getAdminRealm());
     }
 
@@ -232,7 +232,7 @@ public class RealmManager {
         boolean removed = model.removeRealm(realm.getId());
         if (removed) {
             if (masterAdminClient != null) {
-                new ClientManager(this).removeClient(getKeycloakAdminstrationRealm(), masterAdminClient);
+                new ClientManager(this).removeClient(getKeycloakAdministrationRealm(), masterAdminClient);
             }
 
             UserSessionProvider sessions = session.sessions();

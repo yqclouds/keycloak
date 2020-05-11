@@ -78,7 +78,7 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
         this.admin = auth.getUser();
         this.adminsRealm = auth.getRealm();
         if (!auth.getRealm().equals(realm)
-                && !auth.getRealm().equals(new RealmManager(session).getKeycloakAdminstrationRealm())) {
+                && !auth.getRealm().equals(new RealmManager(session).getKeycloakAdministrationRealm())) {
             throw new ForbiddenException();
         }
         initIdentity(session, auth);
@@ -156,7 +156,7 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
     public boolean hasOneAdminRole(RealmModel realm, String... adminRoles) {
         String clientId;
         RealmManager realmManager = new RealmManager(session);
-        if (adminsRealm.equals(realmManager.getKeycloakAdminstrationRealm())) {
+        if (adminsRealm.equals(realmManager.getKeycloakAdministrationRealm())) {
             clientId = realm.getMasterAdminClient().getClientId();
         } else if (adminsRealm.equals(realm)) {
             clientId = realm.getClientByClientId(realmManager.getRealmAdminClientId(realm)).getClientId();
@@ -350,7 +350,7 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
     @Override
     public boolean isAdmin() {
         RealmManager realmManager = new RealmManager(session);
-        if (adminsRealm.equals(realmManager.getKeycloakAdminstrationRealm())) {
+        if (adminsRealm.equals(realmManager.getKeycloakAdministrationRealm())) {
             if (identity.hasRealmRole(AdminRoles.ADMIN) || identity.hasRealmRole(AdminRoles.CREATE_REALM)) {
                 return true;
             }
@@ -366,7 +366,7 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
     @Override
     public boolean canCreateRealm() {
         RealmManager realmManager = new RealmManager(session);
-        if (!auth.getRealm().equals(realmManager.getKeycloakAdminstrationRealm())) {
+        if (!auth.getRealm().equals(realmManager.getKeycloakAdministrationRealm())) {
             return false;
         }
         return identity.hasRealmRole(AdminRoles.CREATE_REALM);
