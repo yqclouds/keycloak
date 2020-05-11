@@ -146,7 +146,6 @@
     <modules>
         <module>adapters</module>
         <module>authz</module>
-        <module>boms</module>
         <module>common</module>
         <module>core</module>
         <module>server-spi</module>
@@ -158,7 +157,6 @@
         <module>model</module>
         <module>util</module>
         <module>integration</module>
-        <module>misc</module>
         <module>web</module>
     </modules>
 
@@ -714,22 +712,6 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-client-registration-cli</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-admin-cli</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-client-cli-dist</artifactId>
-                <version>${project.version}</version>
-                <type>zip</type>
-            </dependency>
             <!-- webauthn support -->
             <dependency>
                 <groupId>com.webauthn4j</groupId>

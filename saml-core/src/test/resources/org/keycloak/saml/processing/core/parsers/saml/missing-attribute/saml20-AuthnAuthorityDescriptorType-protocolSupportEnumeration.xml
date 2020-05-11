@@ -1,8 +1,0 @@
-<EntityDescriptor xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
-                  xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
-                  entityID="https://IdentityProvider.com/SAML">
-    <ds:Signature>...</ds:Signature>
-    <AuthnAuthorityDescriptor ID="ID">
-
-    </AuthnAuthorityDescriptor>
-</EntityDescriptor>
