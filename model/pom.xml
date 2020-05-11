@@ -32,6 +32,5 @@
 
     <modules>
         <module>jpa</module>
-        <module>infinispan</module>
     </modules>
 </project>
