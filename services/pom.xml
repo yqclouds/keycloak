@@ -22,16 +22,11 @@
         <artifactId>keycloak-parent</artifactId>
         <groupId>org.keycloak</groupId>
         <version>9.0.1-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>keycloak-services</artifactId>
 
     <name>Keycloak REST Services</name>
     <description/>
-
-    <properties>
-        <version.swagger.doclet>1.1.2</version.swagger.doclet>
-    </properties>
 
     <dependencies>
         <dependency>
