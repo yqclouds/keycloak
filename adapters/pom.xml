@@ -33,7 +33,6 @@
     <modules>
         <module>oidc/adapter-core</module>
         <module>oidc/spring-boot-adapter-core</module>
-        <module>oidc/spring-boot-container-bundle</module>
         <module>oidc/spring-boot2</module>
         <module>oidc/spring-security</module>
         <module>oidc/tomcat</module>

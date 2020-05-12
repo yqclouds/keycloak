@@ -83,7 +83,7 @@
         <!-- Authorization -->
         <dependency>
             <groupId>org.keycloak</groupId>
-            <artifactId>keycloak-authz-client</artifactId>
+            <artifactId>keycloak-authz</artifactId>
             <version>${project.version}</version>
         </dependency>
 

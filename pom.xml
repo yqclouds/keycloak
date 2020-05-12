@@ -650,12 +650,7 @@
             <!-- Authorization -->
             <dependency>
                 <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-authz-client</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-authz-policy-common</artifactId>
+                <artifactId>keycloak-authz</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
