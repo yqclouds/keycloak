@@ -19,7 +19,6 @@ package org.keycloak.models.jpa;
 
 import org.keycloak.common.util.Time;
 import org.keycloak.connections.jpa.util.JpaUtils;
-import org.keycloak.core.entity.*;
 import org.keycloak.migration.MigrationModel;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;

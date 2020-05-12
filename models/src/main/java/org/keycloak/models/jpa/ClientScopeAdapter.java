@@ -17,7 +17,6 @@
 
 package org.keycloak.models.jpa;
 
-import org.keycloak.core.entity.*;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 

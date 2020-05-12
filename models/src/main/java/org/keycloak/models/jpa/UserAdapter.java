@@ -18,7 +18,6 @@
 package org.keycloak.models.jpa;
 
 import org.keycloak.common.util.MultivaluedHashMap;
-import org.keycloak.core.entity.*;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.RoleUtils;

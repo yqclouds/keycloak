@@ -20,45 +20,45 @@
              xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"
              version="1.0">
     <persistence-unit name="keycloak-default" transaction-type="RESOURCE_LOCAL">
-        <class>org.keycloak.core.entity.Client</class>
-        <class>org.keycloak.core.entity.ClientAttribute</class>
-        <class>org.keycloak.core.entity.Credential</class>
-        <class>org.keycloak.core.entity.Realm</class>
-        <class>org.keycloak.core.entity.RealmAttribute</class>
-        <class>org.keycloak.core.entity.RealmRequiredCredential</class>
-        <class>org.keycloak.core.entity.ComponentConfig</class>
-        <class>org.keycloak.core.entity.Component</class>
-        <class>org.keycloak.core.entity.UserFederationProvider</class>
-        <class>org.keycloak.core.entity.UserFederationMapper</class>
-        <class>org.keycloak.core.entity.Role</class>
-        <class>org.keycloak.core.entity.RoleAttribute</class>
-        <class>org.keycloak.core.entity.FederatedIdentity</class>
+        <class>com.hsbc.unified.iam.core.entity.Client</class>
+        <class>com.hsbc.unified.iam.core.entity.ClientAttribute</class>
+        <class>com.hsbc.unified.iam.core.entity.Credential</class>
+        <class>com.hsbc.unified.iam.core.entity.Realm</class>
+        <class>com.hsbc.unified.iam.core.entity.RealmAttribute</class>
+        <class>com.hsbc.unified.iam.core.entity.RealmRequiredCredential</class>
+        <class>com.hsbc.unified.iam.core.entity.ComponentConfig</class>
+        <class>com.hsbc.unified.iam.core.entity.Component</class>
+        <class>com.hsbc.unified.iam.core.entity.UserFederationProvider</class>
+        <class>com.hsbc.unified.iam.core.entity.UserFederationMapper</class>
+        <class>com.hsbc.unified.iam.core.entity.Role</class>
+        <class>com.hsbc.unified.iam.core.entity.RoleAttribute</class>
+        <class>com.hsbc.unified.iam.core.entity.FederatedIdentity</class>
         <class>org.keycloak.models.jpa.entities.MigrationModelEntity</class>
-        <class>org.keycloak.core.entity.User</class>
-        <class>org.keycloak.core.entity.UserRequiredAction</class>
-        <class>org.keycloak.core.entity.UserAttribute</class>
-        <class>org.keycloak.core.entity.UserRoleMapping</class>
-        <class>org.keycloak.core.entity.IdentityProvider</class>
-        <class>org.keycloak.core.entity.IdentityProviderMapper</class>
-        <class>org.keycloak.core.entity.ProtocolMapper</class>
-        <class>org.keycloak.core.entity.UserConsent</class>
-        <class>org.keycloak.core.entity.UserConsentClientScope</class>
-        <class>org.keycloak.core.entity.AuthenticationFlow</class>
-        <class>org.keycloak.core.entity.AuthenticationExecution</class>
-        <class>org.keycloak.core.entity.AuthenticatorConfig</class>
-        <class>org.keycloak.core.entity.RequiredActionProvider</class>
+        <class>com.hsbc.unified.iam.core.entity.User</class>
+        <class>com.hsbc.unified.iam.core.entity.UserRequiredAction</class>
+        <class>com.hsbc.unified.iam.core.entity.UserAttribute</class>
+        <class>com.hsbc.unified.iam.core.entity.UserRoleMapping</class>
+        <class>com.hsbc.unified.iam.core.entity.IdentityProvider</class>
+        <class>com.hsbc.unified.iam.core.entity.IdentityProviderMapper</class>
+        <class>com.hsbc.unified.iam.core.entity.ProtocolMapper</class>
+        <class>com.hsbc.unified.iam.core.entity.UserConsent</class>
+        <class>com.hsbc.unified.iam.core.entity.UserConsentClientScope</class>
+        <class>com.hsbc.unified.iam.core.entity.AuthenticationFlow</class>
+        <class>com.hsbc.unified.iam.core.entity.AuthenticationExecution</class>
+        <class>com.hsbc.unified.iam.core.entity.AuthenticatorConfig</class>
+        <class>com.hsbc.unified.iam.core.entity.RequiredActionProvider</class>
         <class>org.keycloak.models.jpa.session.PersistentUserSessionEntity</class>
         <class>org.keycloak.models.jpa.session.PersistentClientSessionEntity</class>
-        <class>org.keycloak.core.entity.Group</class>
-        <class>org.keycloak.core.entity.GroupAttribute</class>
-        <class>org.keycloak.core.entity.GroupRoleMapping</class>
-        <class>org.keycloak.core.entity.UserGroupMembership</class>
-        <class>org.keycloak.core.entity.ClientScope</class>
-        <class>org.keycloak.core.entity.ClientScopeAttribute</class>
-        <class>org.keycloak.core.entity.ClientScopeRoleMapping</class>
-        <class>org.keycloak.core.entity.ClientScopeClientMapping</class>
-        <class>org.keycloak.core.entity.DefaultClientScopeRealmMapping</class>
-        <class>org.keycloak.core.entity.ClientInitialAccess</class>
+        <class>com.hsbc.unified.iam.core.entity.Group</class>
+        <class>com.hsbc.unified.iam.core.entity.GroupAttribute</class>
+        <class>com.hsbc.unified.iam.core.entity.GroupRoleMapping</class>
+        <class>com.hsbc.unified.iam.core.entity.UserGroupMembership</class>
+        <class>com.hsbc.unified.iam.core.entity.ClientScope</class>
+        <class>com.hsbc.unified.iam.core.entity.ClientScopeAttribute</class>
+        <class>com.hsbc.unified.iam.core.entity.ClientScopeRoleMapping</class>
+        <class>com.hsbc.unified.iam.core.entity.ClientScopeClientMapping</class>
+        <class>com.hsbc.unified.iam.core.entity.DefaultClientScopeRealmMapping</class>
+        <class>com.hsbc.unified.iam.core.entity.ClientInitialAccess</class>
 
         <!-- JpaAuditProviders -->
         <class>org.keycloak.events.jpa.EventEntity</class>

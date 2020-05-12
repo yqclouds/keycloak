@@ -20,7 +20,6 @@ package org.keycloak.models.jpa;
 import org.keycloak.authorization.jpa.entities.ResourceEntity;
 import org.keycloak.common.util.Time;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.core.entity.*;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.credential.UserCredentialStore;
 import org.keycloak.models.*;
