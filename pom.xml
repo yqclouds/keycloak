@@ -146,7 +146,6 @@
         <module>authz</module>
         <module>core</module>
         <module>server-spi</module>
-        <module>server-spi-private</module>
         <module>federation</module>
         <module>services</module>
         <module>model</module>
@@ -634,11 +633,6 @@
             <dependency>
                 <groupId>org.keycloak</groupId>
                 <artifactId>keycloak-server-spi</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-server-spi-private</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
