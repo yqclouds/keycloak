@@ -24,15 +24,16 @@
         <version>9.0.1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
-    <artifactId>keycloak-util-embedded-ldap</artifactId>
+    <artifactId>keycloak-embedded-ldap</artifactId>
 
-    <name>Keycloak Util Embedded LDAP</name>
+    <name>Keycloak Embedded LDAP</name>
     <description/>
 
     <dependencies>
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
