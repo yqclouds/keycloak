@@ -16,6 +16,7 @@
     <description>Keycloak SSO</description>
 
     <properties>
+        <unified-iam.version>1.0.0-SNAPSHOT</unified-iam.version>
         <jboss.aesh.version>0.66.19</jboss.aesh.version>
         <aesh.version>2.4</aesh.version>
         <apache.httpcomponents.version>4.5.4</apache.httpcomponents.version>
@@ -124,10 +125,16 @@
         <module>models</module>
         <module>integration</module>
         <module>web</module>
+        <module>iam-models</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.hsbc.unified.iam</groupId>
+                <artifactId>iam-models</artifactId>
+                <version>${unified-iam.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
