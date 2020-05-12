@@ -677,42 +677,6 @@ public class LDAPStorageProvider implements UserStorageProvider,
     public void close() {
     }
 
-    /**
-     * Called after successful kerberos authentication
-     *
-     * @param realm    realm
-     * @param username username without realm prefix
-     * @return finded or newly created user
-     */
-    protected UserModel findOrCreateAuthenticatedUser(RealmModel realm, String username) {
-        UserModel user = session.userLocalStorage().getUserByUsername(username, realm);
-        if (user != null) {
-            LOG.debug("Kerberos authenticated user [{}] found in Keycloak storage", username);
-            if (!model.getId().equals(user.getFederationLink())) {
-                LOG.warn("User with username [{}] already exists, but is not linked to provider [{}]", username, model.getName());
-                return null;
-            } else {
-                LDAPObject ldapObject = loadAndValidateUser(realm, user);
-                if (ldapObject != null) {
-                    return proxy(realm, user, ldapObject);
-                } else {
-                    LOG.warn("User with username [{}] aready exists and is linked to provider [{}] but is not valid. Stale LDAP_ID on local user is: {}",
-                            username, model.getName(), user.getFirstAttribute(LDAPConstants.LDAP_ID));
-                    LOG.warn("Will re-create user");
-                    UserCache userCache = session.userCache();
-                    if (userCache != null) {
-                        userCache.evict(realm, user);
-                    }
-                    new UserManager(session).removeUser(realm, user, session.userLocalStorage());
-                }
-            }
-        }
-
-        // Creating user to local storage
-        LOG.debug("Kerberos authenticated user [{}] not in Keycloak storage. Creating him", username);
-        return getUserByUsername(username, realm);
-    }
-
     public LDAPObject loadLDAPUserByUsername(RealmModel realm, String username) {
         try (LDAPQuery ldapQuery = LDAPUtils.createQueryForUserSearch(this, realm)) {
             LDAPQueryConditionsBuilder conditionsBuilder = new LDAPQueryConditionsBuilder();

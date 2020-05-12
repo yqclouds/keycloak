@@ -28,7 +28,6 @@ public class CredentialRepresentation {
     public static final String PASSWORD = "password";
     public static final String TOTP = "totp";
     public static final String HOTP = "hotp";
-    public static final String KERBEROS = "kerberos";
     // only used when updating a credential.  Might set required action
     protected Boolean temporary;
     // All those fields are just for backwards compatibility

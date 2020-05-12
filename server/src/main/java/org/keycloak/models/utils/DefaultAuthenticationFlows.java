@@ -308,7 +308,6 @@ public class DefaultAuthenticationFlows {
         execution.setRequirement(AuthenticationExecutionModel.Requirement.DISABLED);
         if (migrate && hasCredentialType(realm, RequiredCredentialModel.KERBEROS.getType())) {
             execution.setRequirement(AuthenticationExecutionModel.Requirement.ALTERNATIVE);
-
         }
         execution.setAuthenticator("auth-spnego");
         execution.setPriority(20);

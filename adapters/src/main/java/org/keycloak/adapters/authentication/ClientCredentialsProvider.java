@@ -44,9 +44,6 @@ public interface ClientCredentialsProvider {
 
     /**
      * Return the ID of the provider. Use this ID in the keycloak.json configuration as the subelement of the "credentials" element
-     * <p>
-     * For example if your provider has ID "kerberos-keytab" , use the configuration like this in keycloak.json
-     * <p>
      * "credentials": {
      * <p>
      * "kerberos-keytab": {
@@ -62,7 +59,7 @@ public interface ClientCredentialsProvider {
      * Called by adapter during deployment of your application. You can for example read configuration and init your authenticator here
      *
      * @param deployment the adapter configuration
-     * @param config     the configuration of your provider read from keycloak.json . For the kerberos-keytab example above, it will return map with the single key "keytab" with value "/tmp/foo"
+     * @param config     the configuration of your provider read from keycloak.json .
      */
     void init(KeycloakDeployment deployment, Object config);
 
