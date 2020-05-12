@@ -97,7 +97,6 @@
         <!-- Test -->
         <greenmail.version>1.3.1b</greenmail.version>
         <jmeter.version>2.10</jmeter.version>
-        <junit.version>4.12</junit.version>
         <picketlink.version>2.7.1.Final</picketlink.version>
         <selenium.version>2.35.0</selenium.version>
         <xml-apis.version>1.4.01</xml-apis.version>
@@ -358,12 +357,6 @@
                 <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
                 <artifactId>owasp-java-html-sanitizer</artifactId>
                 <version>${owasp.html.sanitizer.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${junit.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>jakarta.persistence</groupId>

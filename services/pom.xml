@@ -155,11 +155,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>com.icegreen</groupId>
             <artifactId>greenmail</artifactId>
             <scope>test</scope>
@@ -169,6 +164,12 @@
                     <artifactId>slf4j-api</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
