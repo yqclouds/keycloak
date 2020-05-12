@@ -32,7 +32,7 @@ import javax.persistence.*;
         @NamedQuery(name = "deleteFederatedUserCredentialByUserAndTypeAndUserLabel", query = "delete from FederatedUserCredentialEntity cred where cred.userId = :userId and cred.type = :type and cred.userLabel = :userLabel"),
         @NamedQuery(name = "deleteFederatedUserCredentialsByRealm", query = "delete from FederatedUserCredentialEntity cred where cred.realmId=:realmId"),
         @NamedQuery(name = "deleteFederatedUserCredentialsByStorageProvider", query = "delete from FederatedUserCredentialEntity cred where cred.storageProviderId=:storageProviderId"),
-        @NamedQuery(name = "deleteFederatedUserCredentialsByRealmAndLink", query = "delete from FederatedUserCredentialEntity cred where cred.userId IN (select u.id from UserEntity u where u.realmId=:realmId and u.federationLink=:link)")
+        @NamedQuery(name = "deleteFederatedUserCredentialsByRealmAndLink", query = "delete from FederatedUserCredentialEntity cred where cred.userId IN (select u.id from User u where u.realmId=:realmId and u.federationLink=:link)")
 
 })
 @Table(name = "FED_USER_CREDENTIAL")

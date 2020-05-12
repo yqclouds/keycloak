@@ -17,8 +17,8 @@
 
 package org.keycloak.models.jpa;
 
+import org.keycloak.core.entity.*;
 import org.keycloak.models.*;
-import org.keycloak.models.jpa.entities.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 
 import javax.persistence.EntityManager;
@@ -30,28 +30,28 @@ import java.util.*;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScopeEntity> {
+public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScope> {
 
     protected KeycloakSession session;
     protected RealmModel realm;
     protected EntityManager em;
-    protected ClientScopeEntity entity;
+    protected ClientScope entity;
 
-    public ClientScopeAdapter(RealmModel realm, EntityManager em, KeycloakSession session, ClientScopeEntity entity) {
+    public ClientScopeAdapter(RealmModel realm, EntityManager em, KeycloakSession session, ClientScope entity) {
         this.session = session;
         this.realm = realm;
         this.em = em;
         this.entity = entity;
     }
 
-    public static ClientScopeEntity toClientScopeEntity(ClientScopeModel model, EntityManager em) {
+    public static ClientScope toClientScopeEntity(ClientScopeModel model, EntityManager em) {
         if (model instanceof ClientScopeAdapter) {
             return ((ClientScopeAdapter) model).getEntity();
         }
-        return em.getReference(ClientScopeEntity.class, model.getId());
+        return em.getReference(ClientScope.class, model.getId());
     }
 
-    public ClientScopeEntity getEntity() {
+    public ClientScope getEntity() {
         return entity;
     }
 
@@ -100,7 +100,7 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
     @Override
     public Set<ProtocolMapperModel> getProtocolMappers() {
         Set<ProtocolMapperModel> mappings = new HashSet<ProtocolMapperModel>();
-        for (ProtocolMapperEntity entity : this.entity.getProtocolMappers()) {
+        for (ProtocolMapper entity : this.entity.getProtocolMappers()) {
             ProtocolMapperModel mapping = new ProtocolMapperModel();
             mapping.setId(entity.getId());
             mapping.setName(entity.getName());
@@ -122,7 +122,7 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
             throw new ModelDuplicateException("Protocol mapper name must be unique per protocol");
         }
         String id = model.getId() != null ? model.getId() : KeycloakModelUtils.generateId();
-        ProtocolMapperEntity entity = new ProtocolMapperEntity();
+        ProtocolMapper entity = new ProtocolMapper();
         entity.setId(id);
         entity.setName(model.getName());
         entity.setProtocol(model.getProtocol());
@@ -135,8 +135,8 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
         return entityToModel(entity);
     }
 
-    protected ProtocolMapperEntity getProtocolMapperEntity(String id) {
-        for (ProtocolMapperEntity entity : this.entity.getProtocolMappers()) {
+    protected ProtocolMapper getProtocolMapperEntity(String id) {
+        for (ProtocolMapper entity : this.entity.getProtocolMappers()) {
             if (entity.getId().equals(id)) {
                 return entity;
             }
@@ -145,8 +145,8 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
 
     }
 
-    protected ProtocolMapperEntity getProtocolMapperEntityByName(String protocol, String name) {
-        for (ProtocolMapperEntity entity : this.entity.getProtocolMappers()) {
+    protected ProtocolMapper getProtocolMapperEntityByName(String protocol, String name) {
+        for (ProtocolMapper entity : this.entity.getProtocolMappers()) {
             if (entity.getProtocol().equals(protocol) && entity.getName().equals(name)) {
                 return entity;
             }
@@ -157,7 +157,7 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
 
     @Override
     public void removeProtocolMapper(ProtocolMapperModel mapping) {
-        ProtocolMapperEntity toDelete = getProtocolMapperEntity(mapping.getId());
+        ProtocolMapper toDelete = getProtocolMapperEntity(mapping.getId());
         if (toDelete != null) {
             session.users().preRemove(mapping);
 
@@ -169,7 +169,7 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
 
     @Override
     public void updateProtocolMapper(ProtocolMapperModel mapping) {
-        ProtocolMapperEntity entity = getProtocolMapperEntity(mapping.getId());
+        ProtocolMapper entity = getProtocolMapperEntity(mapping.getId());
         entity.setProtocolMapper(mapping.getProtocolMapper());
         if (entity.getConfig() == null) {
             entity.setConfig(mapping.getConfig());
@@ -183,19 +183,19 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
 
     @Override
     public ProtocolMapperModel getProtocolMapperById(String id) {
-        ProtocolMapperEntity entity = getProtocolMapperEntity(id);
+        ProtocolMapper entity = getProtocolMapperEntity(id);
         if (entity == null) return null;
         return entityToModel(entity);
     }
 
     @Override
     public ProtocolMapperModel getProtocolMapperByName(String protocol, String name) {
-        ProtocolMapperEntity entity = getProtocolMapperEntityByName(protocol, name);
+        ProtocolMapper entity = getProtocolMapperEntityByName(protocol, name);
         if (entity == null) return null;
         return entityToModel(entity);
     }
 
-    protected ProtocolMapperModel entityToModel(ProtocolMapperEntity entity) {
+    protected ProtocolMapperModel entityToModel(ProtocolMapper entity) {
         ProtocolMapperModel mapping = new ProtocolMapperModel();
         mapping.setId(entity.getId());
         mapping.setName(entity.getName());
@@ -241,9 +241,9 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
     @Override
     public void addScopeMapping(RoleModel role) {
         if (hasScope(role)) return;
-        ClientScopeRoleMappingEntity entity = new ClientScopeRoleMappingEntity();
+        ClientScopeRoleMapping entity = new ClientScopeRoleMapping();
         entity.setClientScope(getEntity());
-        RoleEntity roleEntity = RoleAdapter.toRoleEntity(role, em);
+        Role roleEntity = RoleAdapter.toRoleEntity(role, em);
         entity.setRole(roleEntity);
         em.persist(entity);
         em.flush();
@@ -252,19 +252,19 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
 
     @Override
     public void deleteScopeMapping(RoleModel role) {
-        TypedQuery<ClientScopeRoleMappingEntity> query = getRealmScopeMappingQuery(role);
+        TypedQuery<ClientScopeRoleMapping> query = getRealmScopeMappingQuery(role);
         query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
-        List<ClientScopeRoleMappingEntity> results = query.getResultList();
+        List<ClientScopeRoleMapping> results = query.getResultList();
         if (results.size() == 0) return;
-        for (ClientScopeRoleMappingEntity entity : results) {
+        for (ClientScopeRoleMapping entity : results) {
             em.remove(entity);
         }
     }
 
-    protected TypedQuery<ClientScopeRoleMappingEntity> getRealmScopeMappingQuery(RoleModel role) {
-        TypedQuery<ClientScopeRoleMappingEntity> query = em.createNamedQuery("clientScopeHasRole", ClientScopeRoleMappingEntity.class);
+    protected TypedQuery<ClientScopeRoleMapping> getRealmScopeMappingQuery(RoleModel role) {
+        TypedQuery<ClientScopeRoleMapping> query = em.createNamedQuery("clientScopeHasRole", ClientScopeRoleMapping.class);
         query.setParameter("clientScope", getEntity());
-        RoleEntity roleEntity = RoleAdapter.toRoleEntity(role, em);
+        Role roleEntity = RoleAdapter.toRoleEntity(role, em);
         query.setParameter("role", roleEntity);
         return query;
     }
@@ -282,14 +282,14 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
 
     @Override
     public void setAttribute(String name, String value) {
-        for (ClientScopeAttributeEntity attr : entity.getAttributes()) {
+        for (ClientScopeAttribute attr : entity.getAttributes()) {
             if (attr.getName().equals(name)) {
                 attr.setValue(value);
                 return;
             }
         }
 
-        ClientScopeAttributeEntity attr = new ClientScopeAttributeEntity();
+        ClientScopeAttribute attr = new ClientScopeAttribute();
         attr.setName(name);
         attr.setValue(value);
         attr.setClientScope(entity);
@@ -300,9 +300,9 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
 
     @Override
     public void removeAttribute(String name) {
-        Iterator<ClientScopeAttributeEntity> it = entity.getAttributes().iterator();
+        Iterator<ClientScopeAttribute> it = entity.getAttributes().iterator();
         while (it.hasNext()) {
-            ClientScopeAttributeEntity attr = it.next();
+            ClientScopeAttribute attr = it.next();
             if (attr.getName().equals(name)) {
                 it.remove();
                 em.remove(attr);
@@ -318,7 +318,7 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
     @Override
     public Map<String, String> getAttributes() {
         Map<String, String> attrs = new HashMap<>();
-        for (ClientScopeAttributeEntity attr : entity.getAttributes()) {
+        for (ClientScopeAttribute attr : entity.getAttributes()) {
             attrs.put(attr.getName(), attr.getValue());
         }
         return attrs;

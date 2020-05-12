@@ -21,8 +21,8 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleContainerModel;
 import org.keycloak.models.RoleModel;
-import org.keycloak.models.jpa.entities.RoleAttributeEntity;
-import org.keycloak.models.jpa.entities.RoleEntity;
+import org.keycloak.core.entity.Role;
+import org.keycloak.core.entity.RoleAttribute;
 import org.keycloak.models.utils.KeycloakModelUtils;
 
 import javax.persistence.EntityManager;
@@ -33,31 +33,31 @@ import java.util.*;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class RoleAdapter implements RoleModel, JpaModel<RoleEntity> {
-    protected RoleEntity role;
+public class RoleAdapter implements RoleModel, JpaModel<Role> {
+    protected Role role;
     protected EntityManager em;
     protected RealmModel realm;
     protected KeycloakSession session;
 
-    public RoleAdapter(KeycloakSession session, RealmModel realm, EntityManager em, RoleEntity role) {
+    public RoleAdapter(KeycloakSession session, RealmModel realm, EntityManager em, Role role) {
         this.em = em;
         this.realm = realm;
         this.role = role;
         this.session = session;
     }
 
-    public static RoleEntity toRoleEntity(RoleModel model, EntityManager em) {
+    public static Role toRoleEntity(RoleModel model, EntityManager em) {
         if (model instanceof RoleAdapter) {
             return ((RoleAdapter) model).getEntity();
         }
-        return em.getReference(RoleEntity.class, model.getId());
+        return em.getReference(Role.class, model.getId());
     }
 
-    public RoleEntity getEntity() {
+    public Role getEntity() {
         return role;
     }
 
-    public void setRole(RoleEntity role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 
@@ -93,8 +93,8 @@ public class RoleAdapter implements RoleModel, JpaModel<RoleEntity> {
 
     @Override
     public void addCompositeRole(RoleModel role) {
-        RoleEntity entity = RoleAdapter.toRoleEntity(role, em);
-        for (RoleEntity composite : getEntity().getCompositeRoles()) {
+        Role entity = RoleAdapter.toRoleEntity(role, em);
+        for (Role composite : getEntity().getCompositeRoles()) {
             if (composite.equals(entity)) return;
         }
         getEntity().getCompositeRoles().add(entity);
@@ -102,7 +102,7 @@ public class RoleAdapter implements RoleModel, JpaModel<RoleEntity> {
 
     @Override
     public void removeCompositeRole(RoleModel role) {
-        RoleEntity entity = RoleAdapter.toRoleEntity(role, em);
+        Role entity = RoleAdapter.toRoleEntity(role, em);
         getEntity().getCompositeRoles().remove(entity);
     }
 
@@ -110,7 +110,7 @@ public class RoleAdapter implements RoleModel, JpaModel<RoleEntity> {
     public Set<RoleModel> getComposites() {
         Set<RoleModel> set = new HashSet<RoleModel>();
 
-        for (RoleEntity composite : getEntity().getCompositeRoles()) {
+        for (Role composite : getEntity().getCompositeRoles()) {
             set.add(new RoleAdapter(session, realm, em, composite));
 
             // todo I want to do this, but can't as you get stack overflow
@@ -125,7 +125,7 @@ public class RoleAdapter implements RoleModel, JpaModel<RoleEntity> {
     }
 
     private void persistAttributeValue(String name, String value) {
-        RoleAttributeEntity attr = new RoleAttributeEntity();
+        RoleAttribute attr = new RoleAttribute();
         attr.setId(KeycloakModelUtils.generateId());
         attr.setName(name);
         attr.setValue(value);
@@ -150,7 +150,7 @@ public class RoleAdapter implements RoleModel, JpaModel<RoleEntity> {
 
     @Override
     public void removeAttribute(String name) {
-        Collection<RoleAttributeEntity> attributes = role.getAttributes();
+        Collection<RoleAttribute> attributes = role.getAttributes();
         if (attributes == null) {
             return;
         }
@@ -165,7 +165,7 @@ public class RoleAdapter implements RoleModel, JpaModel<RoleEntity> {
 
     @Override
     public String getFirstAttribute(String name) {
-        for (RoleAttributeEntity attribute : role.getAttributes()) {
+        for (RoleAttribute attribute : role.getAttributes()) {
             if (attribute.getName().equals(name)) {
                 return attribute.getValue();
             }
@@ -177,7 +177,7 @@ public class RoleAdapter implements RoleModel, JpaModel<RoleEntity> {
     @Override
     public List<String> getAttribute(String name) {
         List<String> attributes = new ArrayList<>();
-        for (RoleAttributeEntity attribute : role.getAttributes()) {
+        for (RoleAttribute attribute : role.getAttributes()) {
             if (attribute.getName().equals(name)) {
                 attributes.add(attribute.getValue());
             }
@@ -188,7 +188,7 @@ public class RoleAdapter implements RoleModel, JpaModel<RoleEntity> {
     @Override
     public Map<String, List<String>> getAttributes() {
         Map<String, List<String>> map = new HashMap<>();
-        for (RoleAttributeEntity attribute : role.getAttributes()) {
+        for (RoleAttribute attribute : role.getAttributes()) {
             map.computeIfAbsent(attribute.getName(), name -> new ArrayList<>()).add(attribute.getValue());
         }
 

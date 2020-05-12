@@ -31,7 +31,7 @@ import java.io.Serializable;
         @NamedQuery(name = "feduserRoleMappings", query = "select m from FederatedUserRoleMappingEntity m where m.userId = :userId"),
         @NamedQuery(name = "deleteFederatedUserRoleMappingsByRealm", query = "delete from  FederatedUserRoleMappingEntity mapping where mapping.realmId=:realmId"),
         @NamedQuery(name = "deleteFederatedUserRoleMappingsByStorageProvider", query = "delete from FederatedUserRoleMappingEntity e where e.storageProviderId=:storageProviderId"),
-        @NamedQuery(name = "deleteFederatedUserRoleMappingsByRealmAndLink", query = "delete from  FederatedUserRoleMappingEntity mapping where mapping.userId IN (select u.id from UserEntity u where u.realmId=:realmId and u.federationLink=:link)"),
+        @NamedQuery(name = "deleteFederatedUserRoleMappingsByRealmAndLink", query = "delete from  FederatedUserRoleMappingEntity mapping where mapping.userId IN (select u.id from User u where u.realmId=:realmId and u.federationLink=:link)"),
         @NamedQuery(name = "deleteFederatedUserRoleMappingsByRole", query = "delete from FederatedUserRoleMappingEntity m where m.roleId = :roleId"),
         @NamedQuery(name = "deleteFederatedUserRoleMappingsByUser", query = "delete from FederatedUserRoleMappingEntity m where m.userId = :userId and m.realmId = :realmId"),
 

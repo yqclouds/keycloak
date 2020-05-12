@@ -30,7 +30,7 @@ import javax.persistence.*;
         @NamedQuery(name = "deleteFederatedUserByUser", query = "delete from  FederatedUser f where f.id = :userId and f.realmId=:realmId"),
         @NamedQuery(name = "deleteFederatedUsersByRealm", query = "delete from  FederatedUser f where f.realmId=:realmId"),
         @NamedQuery(name = "deleteFederatedUsersByStorageProvider", query = "delete from FederatedUser f where f.storageProviderId=:storageProviderId"),
-        @NamedQuery(name = "deleteFederatedUsersByRealmAndLink", query = "delete from  FederatedUser f where f.id IN (select u.id from UserEntity u where u.realmId=:realmId and u.federationLink=:link)")
+        @NamedQuery(name = "deleteFederatedUsersByRealmAndLink", query = "delete from  FederatedUser f where f.id IN (select u.id from User u where u.realmId=:realmId and u.federationLink=:link)")
 })
 @Entity
 @Table(name = "FEDERATED_USER")

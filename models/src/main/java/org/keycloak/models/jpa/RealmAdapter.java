@@ -21,6 +21,7 @@ import org.keycloak.common.enums.SslRequired;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
+import org.keycloak.core.entity.*;
 import org.keycloak.models.*;
 import org.keycloak.models.jpa.entities.*;
 import org.keycloak.models.utils.ComponentUtil;
@@ -41,20 +42,20 @@ import static java.util.Objects.nonNull;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
+public class RealmAdapter implements RealmModel, JpaModel<Realm> {
     /**
      * This just exists for testing purposes
      */
     public static final String COMPONENT_PROVIDER_EXISTS_DISABLED = "component.provider.exists.disabled";
     protected static final Logger LOG = LoggerFactory.getLogger(RealmAdapter.class);
     private static final String BROWSER_HEADER_PREFIX = "_browser_header.";
-    protected RealmEntity realm;
+    protected Realm realm;
     protected EntityManager em;
     protected KeycloakSession session;
     private PasswordPolicy passwordPolicy;
     private OTPPolicy otpPolicy;
 
-    public RealmAdapter(KeycloakSession session, EntityManager em, RealmEntity realm) {
+    public RealmAdapter(KeycloakSession session, EntityManager em, Realm realm) {
         this.session = session;
         this.em = em;
         this.realm = realm;
@@ -72,7 +73,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
         return session.realms().getClientsCount(this);
     }
 
-    public RealmEntity getEntity() {
+    public Realm getEntity() {
         return realm;
     }
 
@@ -181,13 +182,13 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void setAttribute(String name, String value) {
-        for (RealmAttributeEntity attr : realm.getAttributes()) {
+        for (RealmAttribute attr : realm.getAttributes()) {
             if (attr.getName().equals(name)) {
                 attr.setValue(value);
                 return;
             }
         }
-        RealmAttributeEntity attr = new RealmAttributeEntity();
+        RealmAttribute attr = new RealmAttribute();
         attr.setName(name);
         attr.setValue(value);
         attr.setRealm(realm);
@@ -212,9 +213,9 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void removeAttribute(String name) {
-        Iterator<RealmAttributeEntity> it = realm.getAttributes().iterator();
+        Iterator<RealmAttribute> it = realm.getAttributes().iterator();
         while (it.hasNext()) {
-            RealmAttributeEntity attr = it.next();
+            RealmAttribute attr = it.next();
             if (attr.getName().equals(name)) {
                 it.remove();
                 em.remove(attr);
@@ -224,7 +225,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public String getAttribute(String name) {
-        for (RealmAttributeEntity attr : realm.getAttributes()) {
+        for (RealmAttribute attr : realm.getAttributes()) {
             if (attr.getName().equals(name)) {
                 return attr.getValue();
             }
@@ -257,7 +258,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     public Map<String, String> getAttributes() {
         // should always return a copy
         Map<String, String> result = new HashMap<String, String>();
-        for (RealmAttributeEntity attr : realm.getAttributes()) {
+        for (RealmAttribute attr : realm.getAttributes()) {
             result.put(attr.getName(), attr.getValue());
         }
         return result;
@@ -632,7 +633,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     }
 
     public void addRequiredCredential(RequiredCredentialModel model) {
-        RequiredCredentialEntity entity = new RequiredCredentialEntity();
+        RealmRequiredCredential entity = new RealmRequiredCredential();
         entity.setRealm(realm);
         entity.setInput(model.isInput());
         entity.setSecret(model.isSecret());
@@ -645,19 +646,19 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void updateRequiredCredentials(Set<String> creds) {
-        Collection<RequiredCredentialEntity> relationships = realm.getRequiredCredentials();
-        if (relationships == null) relationships = new ArrayList<RequiredCredentialEntity>();
+        Collection<RealmRequiredCredential> relationships = realm.getRequiredCredentials();
+        if (relationships == null) relationships = new ArrayList<RealmRequiredCredential>();
 
         Set<String> already = new HashSet<String>();
-        List<RequiredCredentialEntity> remove = new ArrayList<RequiredCredentialEntity>();
-        for (RequiredCredentialEntity rel : relationships) {
+        List<RealmRequiredCredential> remove = new ArrayList<RealmRequiredCredential>();
+        for (RealmRequiredCredential rel : relationships) {
             if (!creds.contains(rel.getType())) {
                 remove.add(rel);
             } else {
                 already.add(rel.getType());
             }
         }
-        for (RequiredCredentialEntity entity : remove) {
+        for (RealmRequiredCredential entity : remove) {
             relationships.remove(entity);
             em.remove(entity);
         }
@@ -671,10 +672,10 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public List<RequiredCredentialModel> getRequiredCredentials() {
-        Collection<RequiredCredentialEntity> entities = realm.getRequiredCredentials();
+        Collection<RealmRequiredCredential> entities = realm.getRequiredCredentials();
         if (entities == null) return Collections.EMPTY_LIST;
         List<RequiredCredentialModel> requiredCredentialModels = new LinkedList<>();
-        for (RequiredCredentialEntity entity : entities) {
+        for (RealmRequiredCredential entity : entities) {
             RequiredCredentialModel model = new RequiredCredentialModel();
             model.setFormLabel(entity.getFormLabel());
             model.setType(entity.getType());
@@ -687,10 +688,10 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public List<String> getDefaultRoles() {
-        Collection<RoleEntity> entities = realm.getDefaultRoles();
+        Collection<Role> entities = realm.getDefaultRoles();
         if (entities == null || entities.isEmpty()) return Collections.emptyList();
         List<String> roles = new LinkedList<>();
-        for (RoleEntity entity : entities) {
+        for (Role entity : entities) {
             roles.add(entity.getName());
         }
         return Collections.unmodifiableList(roles);
@@ -702,30 +703,30 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
         if (role == null) {
             role = addRole(name);
         }
-        Collection<RoleEntity> entities = realm.getDefaultRoles();
-        for (RoleEntity entity : entities) {
+        Collection<Role> entities = realm.getDefaultRoles();
+        for (Role entity : entities) {
             if (entity.getId().equals(role.getId())) {
                 return;
             }
         }
-        RoleEntity roleEntity = RoleAdapter.toRoleEntity(role, em);
+        Role roleEntity = RoleAdapter.toRoleEntity(role, em);
         entities.add(roleEntity);
         em.flush();
     }
 
     @Override
     public void updateDefaultRoles(String[] defaultRoles) {
-        Collection<RoleEntity> entities = realm.getDefaultRoles();
+        Collection<Role> entities = realm.getDefaultRoles();
         Set<String> already = new HashSet<String>();
-        List<RoleEntity> remove = new ArrayList<RoleEntity>();
-        for (RoleEntity rel : entities) {
+        List<Role> remove = new ArrayList<Role>();
+        for (Role rel : entities) {
             if (!contains(rel.getName(), defaultRoles)) {
                 remove.add(rel);
             } else {
                 already.add(rel.getName());
             }
         }
-        for (RoleEntity entity : remove) {
+        for (Role entity : remove) {
             entities.remove(entity);
         }
         em.flush();
@@ -739,14 +740,14 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void removeDefaultRoles(String... defaultRoles) {
-        Collection<RoleEntity> entities = realm.getDefaultRoles();
-        List<RoleEntity> remove = new ArrayList<RoleEntity>();
-        for (RoleEntity rel : entities) {
+        Collection<Role> entities = realm.getDefaultRoles();
+        List<Role> remove = new ArrayList<Role>();
+        for (Role rel : entities) {
             if (contains(rel.getName(), defaultRoles)) {
                 remove.add(rel);
             }
         }
-        for (RoleEntity entity : remove) {
+        for (Role entity : remove) {
             entities.remove(entity);
         }
         em.flush();
@@ -754,10 +755,10 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public List<GroupModel> getDefaultGroups() {
-        Collection<GroupEntity> entities = realm.getDefaultGroups();
+        Collection<Group> entities = realm.getDefaultGroups();
         if (entities == null || entities.isEmpty()) return Collections.EMPTY_LIST;
         List<GroupModel> defaultGroups = new LinkedList<>();
-        for (GroupEntity entity : entities) {
+        for (Group entity : entities) {
             defaultGroups.add(session.realms().getGroupById(entity.getId(), this));
         }
         return Collections.unmodifiableList(defaultGroups);
@@ -765,11 +766,11 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void addDefaultGroup(GroupModel group) {
-        Collection<GroupEntity> entities = realm.getDefaultGroups();
-        for (GroupEntity entity : entities) {
+        Collection<Group> entities = realm.getDefaultGroups();
+        for (Group entity : entities) {
             if (entity.getId().equals(group.getId())) return;
         }
-        GroupEntity groupEntity = GroupAdapter.toEntity(group, em);
+        Group groupEntity = GroupAdapter.toEntity(group, em);
         realm.getDefaultGroups().add(groupEntity);
         em.flush();
 
@@ -777,8 +778,8 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void removeDefaultGroup(GroupModel group) {
-        GroupEntity found = null;
-        for (GroupEntity defaultGroup : realm.getDefaultGroups()) {
+        Group found = null;
+        for (Group defaultGroup : realm.getDefaultGroups()) {
             if (defaultGroup.getId().equals(group.getId())) {
                 found = defaultGroup;
                 break;
@@ -1208,7 +1209,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public ClientModel getMasterAdminClient() {
-        ClientEntity masterAdminClient = realm.getMasterAdminClient();
+        Client masterAdminClient = realm.getMasterAdminClient();
         if (masterAdminClient == null) {
             return null;
         }
@@ -1224,18 +1225,18 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void setMasterAdminClient(ClientModel client) {
-        ClientEntity appEntity = client != null ? em.getReference(ClientEntity.class, client.getId()) : null;
+        Client appEntity = client != null ? em.getReference(Client.class, client.getId()) : null;
         realm.setMasterAdminClient(appEntity);
         em.flush();
     }
 
     @Override
     public List<IdentityProviderModel> getIdentityProviders() {
-        List<IdentityProviderEntity> entities = realm.getIdentityProviders();
+        List<IdentityProvider> entities = realm.getIdentityProviders();
         if (entities.isEmpty()) return Collections.EMPTY_LIST;
         List<IdentityProviderModel> identityProviders = new ArrayList<IdentityProviderModel>();
 
-        for (IdentityProviderEntity entity : entities) {
+        for (IdentityProvider entity : entities) {
             IdentityProviderModel identityProviderModel = entityToModel(entity);
 
             identityProviders.add(identityProviderModel);
@@ -1244,7 +1245,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
         return Collections.unmodifiableList(identityProviders);
     }
 
-    private IdentityProviderModel entityToModel(IdentityProviderEntity entity) {
+    private IdentityProviderModel entityToModel(IdentityProvider entity) {
         IdentityProviderModel identityProviderModel = new IdentityProviderModel();
         identityProviderModel.setProviderId(entity.getProviderId());
         identityProviderModel.setAlias(entity.getAlias());
@@ -1279,7 +1280,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void addIdentityProvider(IdentityProviderModel identityProvider) {
-        IdentityProviderEntity entity = new IdentityProviderEntity();
+        IdentityProvider entity = new IdentityProvider();
 
         if (identityProvider.getInternalId() == null) {
             entity.setInternalId(KeycloakModelUtils.generateId());
@@ -1309,7 +1310,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void removeIdentityProviderByAlias(String alias) {
-        for (IdentityProviderEntity entity : realm.getIdentityProviders()) {
+        for (IdentityProvider entity : realm.getIdentityProviders()) {
             if (entity.getAlias().equals(alias)) {
 
                 IdentityProviderModel model = entityToModel(entity);
@@ -1340,7 +1341,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void updateIdentityProvider(IdentityProviderModel identityProvider) {
-        for (IdentityProviderEntity entity : this.realm.getIdentityProviders()) {
+        for (IdentityProvider entity : this.realm.getIdentityProviders()) {
             if (entity.getInternalId().equals(identityProvider.getInternalId())) {
                 entity.setAlias(identityProvider.getAlias());
                 entity.setDisplayName(identityProvider.getDisplayName());
@@ -1421,10 +1422,10 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public Set<IdentityProviderMapperModel> getIdentityProviderMappers() {
-        Collection<IdentityProviderMapperEntity> entities = this.realm.getIdentityProviderMappers();
+        Collection<IdentityProviderMapper> entities = this.realm.getIdentityProviderMappers();
         if (entities.isEmpty()) return Collections.EMPTY_SET;
         Set<IdentityProviderMapperModel> mappings = new HashSet<IdentityProviderMapperModel>();
-        for (IdentityProviderMapperEntity entity : entities) {
+        for (IdentityProviderMapper entity : entities) {
             IdentityProviderMapperModel mapping = entityToModel(entity);
             mappings.add(mapping);
         }
@@ -1434,7 +1435,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     @Override
     public Set<IdentityProviderMapperModel> getIdentityProviderMappersByAlias(String brokerAlias) {
         Set<IdentityProviderMapperModel> mappings = new HashSet<IdentityProviderMapperModel>();
-        for (IdentityProviderMapperEntity entity : this.realm.getIdentityProviderMappers()) {
+        for (IdentityProviderMapper entity : this.realm.getIdentityProviderMappers()) {
             if (!entity.getIdentityProviderAlias().equals(brokerAlias)) {
                 continue;
             }
@@ -1450,7 +1451,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
             throw new RuntimeException("identity provider mapper name must be unique per identity provider");
         }
         String id = KeycloakModelUtils.generateId();
-        IdentityProviderMapperEntity entity = new IdentityProviderMapperEntity();
+        IdentityProviderMapper entity = new IdentityProviderMapper();
         entity.setId(id);
         entity.setName(model.getName());
         entity.setIdentityProviderAlias(model.getIdentityProviderAlias());
@@ -1463,8 +1464,8 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
         return entityToModel(entity);
     }
 
-    protected IdentityProviderMapperEntity getIdentityProviderMapperEntity(String id) {
-        for (IdentityProviderMapperEntity entity : this.realm.getIdentityProviderMappers()) {
+    protected IdentityProviderMapper getIdentityProviderMapperEntity(String id) {
+        for (IdentityProviderMapper entity : this.realm.getIdentityProviderMappers()) {
             if (entity.getId().equals(id)) {
                 return entity;
             }
@@ -1473,8 +1474,8 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     }
 
-    protected IdentityProviderMapperEntity getIdentityProviderMapperEntityByName(String alias, String name) {
-        for (IdentityProviderMapperEntity entity : this.realm.getIdentityProviderMappers()) {
+    protected IdentityProviderMapper getIdentityProviderMapperEntityByName(String alias, String name) {
+        for (IdentityProviderMapper entity : this.realm.getIdentityProviderMappers()) {
             if (entity.getIdentityProviderAlias().equals(alias) && entity.getName().equals(name)) {
                 return entity;
             }
@@ -1485,7 +1486,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void removeIdentityProviderMapper(IdentityProviderMapperModel mapping) {
-        IdentityProviderMapperEntity toDelete = getIdentityProviderMapperEntity(mapping.getId());
+        IdentityProviderMapper toDelete = getIdentityProviderMapperEntity(mapping.getId());
         if (toDelete != null) {
             this.realm.getIdentityProviderMappers().remove(toDelete);
             em.remove(toDelete);
@@ -1495,7 +1496,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void updateIdentityProviderMapper(IdentityProviderMapperModel mapping) {
-        IdentityProviderMapperEntity entity = getIdentityProviderMapperEntity(mapping.getId());
+        IdentityProviderMapper entity = getIdentityProviderMapperEntity(mapping.getId());
         entity.setIdentityProviderAlias(mapping.getIdentityProviderAlias());
         entity.setIdentityProviderMapper(mapping.getIdentityProviderMapper());
         if (entity.getConfig() == null) {
@@ -1512,19 +1513,19 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public IdentityProviderMapperModel getIdentityProviderMapperById(String id) {
-        IdentityProviderMapperEntity entity = getIdentityProviderMapperEntity(id);
+        IdentityProviderMapper entity = getIdentityProviderMapperEntity(id);
         if (entity == null) return null;
         return entityToModel(entity);
     }
 
     @Override
     public IdentityProviderMapperModel getIdentityProviderMapperByName(String alias, String name) {
-        IdentityProviderMapperEntity entity = getIdentityProviderMapperEntityByName(alias, name);
+        IdentityProviderMapper entity = getIdentityProviderMapperEntityByName(alias, name);
         if (entity == null) return null;
         return entityToModel(entity);
     }
 
-    protected IdentityProviderMapperModel entityToModel(IdentityProviderMapperEntity entity) {
+    protected IdentityProviderMapperModel entityToModel(IdentityProviderMapper entity) {
         IdentityProviderMapperModel mapping = new IdentityProviderMapperModel();
         mapping.setId(entity.getId());
         mapping.setName(entity.getName());
@@ -1637,7 +1638,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
         return null;
     }
 
-    protected AuthenticationFlowModel entityToModel(AuthenticationFlowEntity entity) {
+    protected AuthenticationFlowModel entityToModel(AuthenticationFlow entity) {
         AuthenticationFlowModel model = new AuthenticationFlowModel();
         model.setId(entity.getId());
         model.setAlias(entity.getAlias());
@@ -1650,7 +1651,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public AuthenticationFlowModel getAuthenticationFlowById(String id) {
-        AuthenticationFlowEntity entity = em.find(AuthenticationFlowEntity.class, id);
+        AuthenticationFlow entity = em.find(AuthenticationFlow.class, id);
         if (entity == null) return null;
         return entityToModel(entity);
     }
@@ -1660,7 +1661,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
         if (KeycloakModelUtils.isFlowUsed(this, model)) {
             throw new ModelException("Cannot remove authentication flow, it is currently in use");
         }
-        AuthenticationFlowEntity entity = em.find(AuthenticationFlowEntity.class, model.getId(), LockModeType.PESSIMISTIC_WRITE);
+        AuthenticationFlow entity = em.find(AuthenticationFlow.class, model.getId(), LockModeType.PESSIMISTIC_WRITE);
 
         em.remove(entity);
         em.flush();
@@ -1668,7 +1669,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void updateAuthenticationFlow(AuthenticationFlowModel model) {
-        AuthenticationFlowEntity entity = em.find(AuthenticationFlowEntity.class, model.getId());
+        AuthenticationFlow entity = em.find(AuthenticationFlow.class, model.getId());
         if (entity == null) return;
         entity.setAlias(model.getAlias());
         entity.setDescription(model.getDescription());
@@ -1680,7 +1681,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public AuthenticationFlowModel addAuthenticationFlow(AuthenticationFlowModel model) {
-        AuthenticationFlowEntity entity = new AuthenticationFlowEntity();
+        AuthenticationFlow entity = new AuthenticationFlow();
         String id = (model.getId() == null) ? KeycloakModelUtils.generateId() : model.getId();
         entity.setId(id);
         entity.setAlias(model.getAlias());
@@ -1697,7 +1698,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public List<AuthenticationExecutionModel> getAuthenticationExecutions(String flowId) {
-        AuthenticationFlowEntity flow = em.getReference(AuthenticationFlowEntity.class, flowId);
+        AuthenticationFlow flow = em.getReference(AuthenticationFlow.class, flowId);
 
         return flow.getExecutions().stream()
                 .filter(e -> getId().equals(e.getRealm().getId()))
@@ -1707,7 +1708,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
                         Collectors.toList(), Collections::unmodifiableList));
     }
 
-    public AuthenticationExecutionModel entityToModel(AuthenticationExecutionEntity entity) {
+    public AuthenticationExecutionModel entityToModel(AuthenticationExecution entity) {
         AuthenticationExecutionModel model = new AuthenticationExecutionModel();
         model.setId(entity.getId());
         model.setRequirement(entity.getRequirement());
@@ -1722,24 +1723,24 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public AuthenticationExecutionModel getAuthenticationExecutionById(String id) {
-        AuthenticationExecutionEntity entity = em.find(AuthenticationExecutionEntity.class, id);
+        AuthenticationExecution entity = em.find(AuthenticationExecution.class, id);
         if (entity == null) return null;
         return entityToModel(entity);
     }
 
     public AuthenticationExecutionModel getAuthenticationExecutionByFlowId(String flowId) {
-        TypedQuery<AuthenticationExecutionEntity> query = em.createNamedQuery("authenticationFlowExecution", AuthenticationExecutionEntity.class)
+        TypedQuery<AuthenticationExecution> query = em.createNamedQuery("authenticationFlowExecution", AuthenticationExecution.class)
                 .setParameter("flowId", flowId);
         if (query.getResultList().isEmpty()) {
             return null;
         }
-        AuthenticationExecutionEntity authenticationFlowExecution = query.getResultList().get(0);
+        AuthenticationExecution authenticationFlowExecution = query.getResultList().get(0);
         return entityToModel(authenticationFlowExecution);
     }
 
     @Override
     public AuthenticationExecutionModel addAuthenticatorExecution(AuthenticationExecutionModel model) {
-        AuthenticationExecutionEntity entity = new AuthenticationExecutionEntity();
+        AuthenticationExecution entity = new AuthenticationExecution();
         String id = (model.getId() == null) ? KeycloakModelUtils.generateId() : model.getId();
         entity.setId(id);
         entity.setAuthenticator(model.getAuthenticator());
@@ -1747,7 +1748,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
         entity.setFlowId(model.getFlowId());
         entity.setRequirement(model.getRequirement());
         entity.setAuthenticatorConfig(model.getAuthenticatorConfig());
-        AuthenticationFlowEntity flow = em.find(AuthenticationFlowEntity.class, model.getParentFlow());
+        AuthenticationFlow flow = em.find(AuthenticationFlow.class, model.getParentFlow());
         entity.setParentFlow(flow);
         flow.getExecutions().add(entity);
         entity.setRealm(realm);
@@ -1760,7 +1761,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void updateAuthenticatorExecution(AuthenticationExecutionModel model) {
-        AuthenticationExecutionEntity entity = em.find(AuthenticationExecutionEntity.class, model.getId());
+        AuthenticationExecution entity = em.find(AuthenticationExecution.class, model.getId());
         if (entity == null) return;
         entity.setAutheticatorFlow(model.isAuthenticatorFlow());
         entity.setAuthenticator(model.getAuthenticator());
@@ -1769,7 +1770,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
         entity.setAuthenticatorConfig(model.getAuthenticatorConfig());
         entity.setFlowId(model.getFlowId());
         if (model.getParentFlow() != null) {
-            AuthenticationFlowEntity flow = em.find(AuthenticationFlowEntity.class, model.getParentFlow());
+            AuthenticationFlow flow = em.find(AuthenticationFlow.class, model.getParentFlow());
             entity.setParentFlow(flow);
         }
         em.flush();
@@ -1777,7 +1778,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void removeAuthenticatorExecution(AuthenticationExecutionModel model) {
-        AuthenticationExecutionEntity entity = em.find(AuthenticationExecutionEntity.class, model.getId(), LockModeType.PESSIMISTIC_WRITE);
+        AuthenticationExecution entity = em.find(AuthenticationExecution.class, model.getId(), LockModeType.PESSIMISTIC_WRITE);
         if (entity == null) return;
         em.remove(entity);
         em.flush();
@@ -1786,7 +1787,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public AuthenticatorConfigModel addAuthenticatorConfig(AuthenticatorConfigModel model) {
-        AuthenticatorConfigEntity auth = new AuthenticatorConfigEntity();
+        AuthenticatorConfig auth = new AuthenticatorConfig();
         String id = (model.getId() == null) ? KeycloakModelUtils.generateId() : model.getId();
         auth.setId(id);
         auth.setAlias(model.getAlias());
@@ -1800,7 +1801,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void removeAuthenticatorConfig(AuthenticatorConfigModel model) {
-        AuthenticatorConfigEntity entity = em.find(AuthenticatorConfigEntity.class, model.getId(), LockModeType.PESSIMISTIC_WRITE);
+        AuthenticatorConfig entity = em.find(AuthenticatorConfig.class, model.getId(), LockModeType.PESSIMISTIC_WRITE);
         if (entity == null) return;
         em.remove(entity);
         em.flush();
@@ -1809,12 +1810,12 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public AuthenticatorConfigModel getAuthenticatorConfigById(String id) {
-        AuthenticatorConfigEntity entity = em.find(AuthenticatorConfigEntity.class, id);
+        AuthenticatorConfig entity = em.find(AuthenticatorConfig.class, id);
         if (entity == null) return null;
         return entityToModel(entity);
     }
 
-    public AuthenticatorConfigModel entityToModel(AuthenticatorConfigEntity entity) {
+    public AuthenticatorConfigModel entityToModel(AuthenticatorConfig entity) {
         AuthenticatorConfigModel model = new AuthenticatorConfigModel();
         model.setId(entity.getId());
         model.setAlias(entity.getAlias());
@@ -1826,7 +1827,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void updateAuthenticatorConfig(AuthenticatorConfigModel model) {
-        AuthenticatorConfigEntity entity = em.find(AuthenticatorConfigEntity.class, model.getId());
+        AuthenticatorConfig entity = em.find(AuthenticatorConfig.class, model.getId());
         if (entity == null) return;
         entity.setAlias(model.getAlias());
         if (entity.getConfig() == null) {
@@ -1843,10 +1844,10 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public List<AuthenticatorConfigModel> getAuthenticatorConfigs() {
-        Collection<AuthenticatorConfigEntity> entities = realm.getAuthenticatorConfigs();
+        Collection<AuthenticatorConfig> entities = realm.getAuthenticatorConfigs();
         if (entities.isEmpty()) return Collections.EMPTY_LIST;
         List<AuthenticatorConfigModel> authenticators = new LinkedList<>();
-        for (AuthenticatorConfigEntity entity : entities) {
+        for (AuthenticatorConfig entity : entities) {
             authenticators.add(entityToModel(entity));
         }
         return Collections.unmodifiableList(authenticators);
@@ -1854,7 +1855,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public RequiredActionProviderModel addRequiredActionProvider(RequiredActionProviderModel model) {
-        RequiredActionProviderEntity auth = new RequiredActionProviderEntity();
+        RequiredActionProvider auth = new RequiredActionProvider();
         String id = (model.getId() == null) ? KeycloakModelUtils.generateId() : model.getId();
         auth.setId(id);
         auth.setAlias(model.getAlias());
@@ -1874,7 +1875,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void removeRequiredActionProvider(RequiredActionProviderModel model) {
-        RequiredActionProviderEntity entity = em.find(RequiredActionProviderEntity.class, model.getId(), LockModeType.PESSIMISTIC_WRITE);
+        RequiredActionProvider entity = em.find(RequiredActionProvider.class, model.getId(), LockModeType.PESSIMISTIC_WRITE);
         if (entity == null) return;
         em.remove(entity);
         em.flush();
@@ -1883,12 +1884,12 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public RequiredActionProviderModel getRequiredActionProviderById(String id) {
-        RequiredActionProviderEntity entity = em.find(RequiredActionProviderEntity.class, id);
+        RequiredActionProvider entity = em.find(RequiredActionProvider.class, id);
         if (entity == null) return null;
         return entityToModel(entity);
     }
 
-    public RequiredActionProviderModel entityToModel(RequiredActionProviderEntity entity) {
+    public RequiredActionProviderModel entityToModel(RequiredActionProvider entity) {
         RequiredActionProviderModel model = new RequiredActionProviderModel();
         model.setId(entity.getId());
         model.setProviderId(entity.getProviderId());
@@ -1905,7 +1906,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void updateRequiredActionProvider(RequiredActionProviderModel model) {
-        RequiredActionProviderEntity entity = em.find(RequiredActionProviderEntity.class, model.getId());
+        RequiredActionProvider entity = em.find(RequiredActionProvider.class, model.getId());
         if (entity == null) return;
         entity.setAlias(model.getAlias());
         entity.setProviderId(model.getProviderId());
@@ -1927,10 +1928,10 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public List<RequiredActionProviderModel> getRequiredActionProviders() {
-        Collection<RequiredActionProviderEntity> entities = realm.getRequiredActionProviders();
+        Collection<RequiredActionProvider> entities = realm.getRequiredActionProviders();
         if (entities.isEmpty()) return Collections.EMPTY_LIST;
         List<RequiredActionProviderModel> actions = new LinkedList<>();
-        for (RequiredActionProviderEntity entity : entities) {
+        for (RequiredActionProvider entity : entities) {
             actions.add(entityToModel(entity));
         }
         Collections.sort(actions, RequiredActionProviderModel.RequiredActionComparator.SINGLETON);
@@ -1997,10 +1998,10 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public List<ClientScopeModel> getClientScopes() {
-        Collection<ClientScopeEntity> entities = realm.getClientScopes();
+        Collection<ClientScope> entities = realm.getClientScopes();
         if (entities == null || entities.isEmpty()) return Collections.EMPTY_LIST;
         List<ClientScopeModel> list = new LinkedList<>();
-        for (ClientScopeEntity entity : entities) {
+        for (ClientScope entity : entities) {
             list.add(session.realms().getClientScopeById(entity.getId(), this));
         }
         return Collections.unmodifiableList(list);
@@ -2013,7 +2014,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public ClientScopeModel addClientScope(String id, String name) {
-        ClientScopeEntity entity = new ClientScopeEntity();
+        ClientScope entity = new ClientScope();
         entity.setId(id);
         name = KeycloakModelUtils.convertClientScopeName(name);
         entity.setName(name);
@@ -2035,10 +2036,10 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
             throw new ModelException("Cannot remove client scope, it is currently in use");
         }
 
-        ClientScopeEntity clientScopeEntity = null;
-        Iterator<ClientScopeEntity> it = realm.getClientScopes().iterator();
+        ClientScope clientScopeEntity = null;
+        Iterator<ClientScope> it = realm.getClientScopes().iterator();
         while (it.hasNext()) {
-            ClientScopeEntity ae = it.next();
+            ClientScope ae = it.next();
             if (ae.getId().equals(id)) {
                 clientScopeEntity = ae;
                 it.remove();
@@ -2067,7 +2068,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void addDefaultClientScope(ClientScopeModel clientScope, boolean defaultScope) {
-        DefaultClientScopeRealmMappingEntity entity = new DefaultClientScopeRealmMappingEntity();
+        DefaultClientScopeRealmMapping entity = new DefaultClientScopeRealmMapping();
         entity.setClientScope(ClientScopeAdapter.toClientScopeEntity(clientScope, em));
         entity.setRealm(getEntity());
         entity.setDefaultScope(defaultScope);
@@ -2126,7 +2127,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
         }
 
 
-        ComponentEntity c = new ComponentEntity();
+        Component c = new Component();
         if (model.getId() == null) {
             c.setId(KeycloakModelUtils.generateId());
         } else {
@@ -2149,7 +2150,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
         return model;
     }
 
-    protected void setConfig(ComponentModel model, ComponentEntity c) {
+    protected void setConfig(ComponentModel model, Component c) {
         c.getComponentConfigs().clear();
         for (String key : model.getConfig().keySet()) {
             List<String> vals = model.getConfig().get(key);
@@ -2157,7 +2158,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
                 continue;
             }
             for (String val : vals) {
-                ComponentConfigEntity config = new ComponentConfigEntity();
+                ComponentConfig config = new ComponentConfig();
                 config.setId(KeycloakModelUtils.generateId());
                 config.setName(key);
                 config.setValue(val);
@@ -2171,7 +2172,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     public void updateComponent(ComponentModel component) {
         ComponentUtil.getComponentFactory(session, component).validateConfiguration(session, this, component);
 
-        ComponentEntity c = em.find(ComponentEntity.class, component.getId());
+        Component c = em.find(Component.class, component.getId());
         if (c == null) return;
         ComponentModel old = entityToModel(c);
         c.setName(component.getName());
@@ -2187,7 +2188,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void removeComponent(ComponentModel component) {
-        ComponentEntity c = em.find(ComponentEntity.class, component.getId());
+        Component c = em.find(Component.class, component.getId());
         if (c == null) return;
         session.users().preRemove(this, component);
         ComponentUtil.notifyPreRemove(session, this, component);
@@ -2197,7 +2198,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void removeComponents(String parentId) {
-        Predicate<ComponentEntity> sameParent = c -> Objects.equals(parentId, c.getParentId());
+        Predicate<Component> sameParent = c -> Objects.equals(parentId, c.getParentId());
 
         getEntity().getComponents().stream()
                 .filter(sameParent)
@@ -2230,7 +2231,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
                 .collect(Collectors.toList());
     }
 
-    protected ComponentModel entityToModel(ComponentEntity c) {
+    protected ComponentModel entityToModel(Component c) {
         ComponentModel model = new ComponentModel();
         model.setId(c.getId());
         model.setName(c.getName());
@@ -2239,7 +2240,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
         model.setSubType(c.getSubType());
         model.setParentId(c.getParentId());
         MultivaluedHashMap<String, String> config = new MultivaluedHashMap<>();
-        for (ComponentConfigEntity configEntity : c.getComponentConfigs()) {
+        for (ComponentConfig configEntity : c.getComponentConfigs()) {
             config.add(configEntity.getName(), configEntity.getValue());
         }
         model.setConfig(config);
@@ -2253,7 +2254,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public ComponentModel getComponent(String id) {
-        ComponentEntity c = em.find(ComponentEntity.class, id);
+        Component c = em.find(Component.class, id);
         if (c == null) return null;
         return entityToModel(c);
     }

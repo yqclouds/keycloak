@@ -20,45 +20,45 @@
              xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"
              version="1.0">
     <persistence-unit name="keycloak-default" transaction-type="RESOURCE_LOCAL">
-        <class>org.keycloak.models.jpa.entities.ClientEntity</class>
-        <class>org.keycloak.models.jpa.entities.ClientAttributeEntity</class>
-        <class>org.keycloak.models.jpa.entities.CredentialEntity</class>
-        <class>org.keycloak.models.jpa.entities.RealmEntity</class>
-        <class>org.keycloak.models.jpa.entities.RealmAttributeEntity</class>
-        <class>org.keycloak.models.jpa.entities.RequiredCredentialEntity</class>
-        <class>org.keycloak.models.jpa.entities.ComponentConfigEntity</class>
-        <class>org.keycloak.models.jpa.entities.ComponentEntity</class>
-        <class>org.keycloak.models.jpa.entities.UserFederationProviderEntity</class>
-        <class>org.keycloak.models.jpa.entities.UserFederationMapperEntity</class>
-        <class>org.keycloak.models.jpa.entities.RoleEntity</class>
-        <class>org.keycloak.models.jpa.entities.RoleAttributeEntity</class>
-        <class>org.keycloak.models.jpa.entities.FederatedIdentityEntity</class>
+        <class>org.keycloak.core.entity.Client</class>
+        <class>org.keycloak.core.entity.ClientAttribute</class>
+        <class>org.keycloak.core.entity.Credential</class>
+        <class>org.keycloak.core.entity.Realm</class>
+        <class>org.keycloak.core.entity.RealmAttribute</class>
+        <class>org.keycloak.core.entity.RealmRequiredCredential</class>
+        <class>org.keycloak.core.entity.ComponentConfig</class>
+        <class>org.keycloak.core.entity.Component</class>
+        <class>org.keycloak.core.entity.UserFederationProvider</class>
+        <class>org.keycloak.core.entity.UserFederationMapper</class>
+        <class>org.keycloak.core.entity.Role</class>
+        <class>org.keycloak.core.entity.RoleAttribute</class>
+        <class>org.keycloak.core.entity.FederatedIdentity</class>
         <class>org.keycloak.models.jpa.entities.MigrationModelEntity</class>
-        <class>org.keycloak.models.jpa.entities.UserEntity</class>
-        <class>org.keycloak.models.jpa.entities.UserRequiredActionEntity</class>
-        <class>org.keycloak.models.jpa.entities.UserAttributeEntity</class>
-        <class>org.keycloak.models.jpa.entities.UserRoleMappingEntity</class>
-        <class>org.keycloak.models.jpa.entities.IdentityProviderEntity</class>
-        <class>org.keycloak.models.jpa.entities.IdentityProviderMapperEntity</class>
-        <class>org.keycloak.models.jpa.entities.ProtocolMapperEntity</class>
-        <class>org.keycloak.models.jpa.entities.UserConsentEntity</class>
-        <class>org.keycloak.models.jpa.entities.UserConsentClientScopeEntity</class>
-        <class>org.keycloak.models.jpa.entities.AuthenticationFlowEntity</class>
-        <class>org.keycloak.models.jpa.entities.AuthenticationExecutionEntity</class>
-        <class>org.keycloak.models.jpa.entities.AuthenticatorConfigEntity</class>
-        <class>org.keycloak.models.jpa.entities.RequiredActionProviderEntity</class>
+        <class>org.keycloak.core.entity.User</class>
+        <class>org.keycloak.core.entity.UserRequiredAction</class>
+        <class>org.keycloak.core.entity.UserAttribute</class>
+        <class>org.keycloak.core.entity.UserRoleMapping</class>
+        <class>org.keycloak.core.entity.IdentityProvider</class>
+        <class>org.keycloak.core.entity.IdentityProviderMapper</class>
+        <class>org.keycloak.core.entity.ProtocolMapper</class>
+        <class>org.keycloak.core.entity.UserConsent</class>
+        <class>org.keycloak.core.entity.UserConsentClientScope</class>
+        <class>org.keycloak.core.entity.AuthenticationFlow</class>
+        <class>org.keycloak.core.entity.AuthenticationExecution</class>
+        <class>org.keycloak.core.entity.AuthenticatorConfig</class>
+        <class>org.keycloak.core.entity.RequiredActionProvider</class>
         <class>org.keycloak.models.jpa.session.PersistentUserSessionEntity</class>
         <class>org.keycloak.models.jpa.session.PersistentClientSessionEntity</class>
-        <class>org.keycloak.models.jpa.entities.GroupEntity</class>
-        <class>org.keycloak.models.jpa.entities.GroupAttributeEntity</class>
-        <class>org.keycloak.models.jpa.entities.GroupRoleMappingEntity</class>
-        <class>org.keycloak.models.jpa.entities.UserGroupMembershipEntity</class>
-        <class>org.keycloak.models.jpa.entities.ClientScopeEntity</class>
-        <class>org.keycloak.models.jpa.entities.ClientScopeAttributeEntity</class>
-        <class>org.keycloak.models.jpa.entities.ClientScopeRoleMappingEntity</class>
-        <class>org.keycloak.models.jpa.entities.ClientScopeClientMappingEntity</class>
-        <class>org.keycloak.models.jpa.entities.DefaultClientScopeRealmMappingEntity</class>
-        <class>org.keycloak.models.jpa.entities.ClientInitialAccessEntity</class>
+        <class>org.keycloak.core.entity.Group</class>
+        <class>org.keycloak.core.entity.GroupAttribute</class>
+        <class>org.keycloak.core.entity.GroupRoleMapping</class>
+        <class>org.keycloak.core.entity.UserGroupMembership</class>
+        <class>org.keycloak.core.entity.ClientScope</class>
+        <class>org.keycloak.core.entity.ClientScopeAttribute</class>
+        <class>org.keycloak.core.entity.ClientScopeRoleMapping</class>
+        <class>org.keycloak.core.entity.ClientScopeClientMapping</class>
+        <class>org.keycloak.core.entity.DefaultClientScopeRealmMapping</class>
+        <class>org.keycloak.core.entity.ClientInitialAccess</class>
 
         <!-- JpaAuditProviders -->
         <class>org.keycloak.events.jpa.EventEntity</class>
