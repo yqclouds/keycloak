@@ -22,12 +22,12 @@
         </dependency>
         <dependency>
             <groupId>org.keycloak</groupId>
-            <artifactId>keycloak-server-spi</artifactId>
+            <artifactId>keycloak-server</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.keycloak</groupId>
-            <artifactId>keycloak-model-jpa</artifactId>
+            <artifactId>keycloak-models</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

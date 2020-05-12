@@ -24,7 +24,7 @@
         <version>9.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>keycloak-server-spi</artifactId>
+    <artifactId>keycloak-server</artifactId>
 
     <name>Keycloak Server SPI</name>
     <description/>
