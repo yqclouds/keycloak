@@ -1,6 +1,5 @@
 package org.keycloak.services.resources.account;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.common.Version;
 import org.keycloak.events.EventStoreProvider;
@@ -21,6 +20,8 @@ import org.keycloak.theme.Theme;
 import org.keycloak.theme.beans.MessageFormatterMethod;
 import org.keycloak.urls.UrlType;
 import org.keycloak.utils.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.json.Json;

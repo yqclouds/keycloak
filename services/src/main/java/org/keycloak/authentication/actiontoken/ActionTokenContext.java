@@ -58,6 +58,7 @@ public class ActionTokenContext<T extends JsonWebToken> {
     private AuthenticationSessionModel authenticationSession;
     private boolean authenticationSessionFresh;
     private String executionId;
+
     public ActionTokenContext(KeycloakSession session, RealmModel realm, UriInfo uriInfo,
                               ClientConnection clientConnection, HttpRequest request,
                               EventBuilder event, ActionTokenHandler<T> handler, String executionId,

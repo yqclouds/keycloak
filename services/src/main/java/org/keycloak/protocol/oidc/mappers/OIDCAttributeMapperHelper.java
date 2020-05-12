@@ -24,7 +24,6 @@ import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.IDToken;
-import org.keycloak.services.ServicesLogger;
 import org.keycloak.util.JsonSerialization;
 
 import java.util.*;

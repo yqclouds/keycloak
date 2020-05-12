@@ -32,6 +32,7 @@ public class IdentityBrokerState {
     private final String tabId;
     // Encoded form of whole state
     private final String encoded;
+
     private IdentityBrokerState(String decodedStateParam, String clientId, String tabId, String encoded) {
         this.decodedState = decodedStateParam;
         this.clientId = clientId;

@@ -16,8 +16,9 @@
  */
 package org.keycloak.transaction;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.stereotype.ProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;

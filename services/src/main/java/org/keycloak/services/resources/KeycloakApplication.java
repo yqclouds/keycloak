@@ -16,12 +16,13 @@
  */
 package org.keycloak.services.resources;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.common.util.Resteasy;
 import org.keycloak.services.error.KeycloakErrorHandler;
 import org.keycloak.services.filters.KeycloakTransactionCommitter;
 import org.keycloak.services.resources.admin.AdminRoot;
 import org.keycloak.services.util.ObjectMapperResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Application;
 import java.util.HashSet;

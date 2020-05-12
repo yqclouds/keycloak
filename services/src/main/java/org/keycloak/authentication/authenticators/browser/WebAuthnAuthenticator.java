@@ -23,7 +23,6 @@ import com.webauthn4j.data.client.challenge.Challenge;
 import com.webauthn4j.data.client.challenge.DefaultChallenge;
 import com.webauthn4j.server.ServerProperty;
 import com.webauthn4j.util.exception.WebAuthnException;
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.WebAuthnConstants;
 import org.keycloak.authentication.*;
 import org.keycloak.authentication.requiredactions.WebAuthnRegisterFactory;
@@ -42,6 +41,8 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.WebAuthnPolicy;
 import org.keycloak.models.credential.WebAuthnCredentialModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;

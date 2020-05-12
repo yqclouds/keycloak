@@ -16,7 +16,6 @@
  */
 package org.keycloak.services.resources;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.Version;
 import org.keycloak.common.util.Base64Url;
@@ -32,6 +31,8 @@ import org.keycloak.theme.FreeMarkerUtil;
 import org.keycloak.theme.Theme;
 import org.keycloak.urls.UrlType;
 import org.keycloak.utils.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;

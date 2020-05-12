@@ -16,7 +16,6 @@
  */
 package org.keycloak.authentication.authenticators.browser;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
@@ -24,6 +23,8 @@ import org.keycloak.models.*;
 import org.keycloak.scripting.InvocableScriptAdapter;
 import org.keycloak.scripting.ScriptExecutionException;
 import org.keycloak.scripting.ScriptingProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;

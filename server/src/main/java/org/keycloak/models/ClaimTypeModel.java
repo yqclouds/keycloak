@@ -27,6 +27,7 @@ public class ClaimTypeModel {
     private String name;
     private boolean builtIn;
     private ValueType type;
+
     public ClaimTypeModel(ClaimTypeModel copy) {
         this(copy.getId(), copy.getName(), copy.isBuiltIn(), copy.getType());
     }

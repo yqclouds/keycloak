@@ -35,9 +35,11 @@ public class UserStorageProviderModel extends CacheableStorageProviderModel {
     private transient Integer changedSyncPeriod;
     private transient Integer lastSync;
     private transient Boolean importEnabled;
+
     public UserStorageProviderModel() {
         setProviderType(UserStorageProvider.class.getName());
     }
+
     public UserStorageProviderModel(ComponentModel copy) {
         super(copy);
     }

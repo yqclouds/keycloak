@@ -29,6 +29,7 @@ public class TypedPropertyCriteria implements PropertyCriteria {
 
     private final Class<?> propertyClass;
     private final MatchOption matchOption;
+
     public TypedPropertyCriteria(Class<?> propertyClass) {
         this(propertyClass, null);
     }

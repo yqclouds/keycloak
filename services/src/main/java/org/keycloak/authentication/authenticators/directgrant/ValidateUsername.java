@@ -26,7 +26,6 @@ import org.keycloak.events.Errors;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ProviderConfigProperty;
-import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;

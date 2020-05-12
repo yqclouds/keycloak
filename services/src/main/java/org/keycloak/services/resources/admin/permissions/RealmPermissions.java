@@ -16,12 +16,13 @@
  */
 package org.keycloak.services.resources.admin.permissions;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.models.AdminRoles;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.services.ForbiddenException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Manages default policies for all users.

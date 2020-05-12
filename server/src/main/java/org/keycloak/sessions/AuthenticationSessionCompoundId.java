@@ -31,6 +31,7 @@ public class AuthenticationSessionCompoundId {
     private final String tabId;
     private final String clientUUID;
     private final String encodedId;
+
     public AuthenticationSessionCompoundId(String rootSessionId, String tabId, String clientUUID, String encodedId) {
         this.rootSessionId = rootSessionId;
         this.tabId = tabId;

@@ -25,7 +25,6 @@ import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.models.ModelDuplicateException;
 import org.keycloak.models.UserModel;
-import org.keycloak.services.ServicesLogger;
 
 import javax.ws.rs.core.Response;
 import java.security.cert.X509Certificate;

@@ -16,7 +16,6 @@
  */
 package org.keycloak.services.resources.admin.permissions;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.common.ClientModelIdentity;
 import org.keycloak.authorization.common.DefaultEvaluationContext;
@@ -28,6 +27,8 @@ import org.keycloak.authorization.policy.evaluation.EvaluationContext;
 import org.keycloak.models.*;
 import org.keycloak.services.ForbiddenException;
 import org.keycloak.storage.StorageId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 

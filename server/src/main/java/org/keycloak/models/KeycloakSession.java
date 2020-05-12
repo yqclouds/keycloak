@@ -23,7 +23,6 @@ import org.keycloak.provider.Provider;
 import org.keycloak.sessions.AuthenticationSessionProvider;
 import org.keycloak.storage.federated.UserFederatedStorageProvider;
 import org.keycloak.vault.VaultTranscriber;
-import org.springframework.beans.factory.BeanFactory;
 
 import java.util.Set;
 

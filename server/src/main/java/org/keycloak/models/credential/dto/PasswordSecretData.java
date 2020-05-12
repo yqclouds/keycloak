@@ -2,8 +2,9 @@ package org.keycloak.models.credential.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.keycloak.common.util.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
