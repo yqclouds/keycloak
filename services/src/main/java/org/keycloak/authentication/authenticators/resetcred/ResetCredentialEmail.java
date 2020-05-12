@@ -17,6 +17,7 @@
 
 package org.keycloak.authentication.authenticators.resetcred;
 
+import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
@@ -35,7 +36,6 @@ import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
-import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -65,8 +65,8 @@ import java.util.concurrent.TimeUnit;
 public class ResetCredentialEmail implements Authenticator, AuthenticatorFactory {
 
     public static final String PROVIDER_ID = "reset-credential-email";
-    public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED
+    public static final AuthenticationExecutionRequirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionRequirement.REQUIRED
     };
     private static final Logger LOG = LoggerFactory.getLogger(ResetCredentialEmail.class);
 
@@ -182,7 +182,7 @@ public class ResetCredentialEmail implements Authenticator, AuthenticatorFactory
     }
 
     @Override
-    public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {
+    public AuthenticationExecutionRequirement[] getRequirementChoices() {
         return REQUIREMENT_CHOICES;
     }
 

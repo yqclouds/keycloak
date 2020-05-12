@@ -17,6 +17,7 @@
 
 package org.keycloak.authentication.forms;
 
+import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.keycloak.authentication.FormAction;
 import org.keycloak.authentication.FormActionFactory;
 import org.keycloak.authentication.FormContext;
@@ -24,7 +25,10 @@ import org.keycloak.authentication.ValidationContext;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.*;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserCredentialModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.models.utils.FormMessage;
 import org.keycloak.policy.PasswordPolicyManagerProvider;
@@ -48,9 +52,9 @@ import java.util.List;
 @ProviderFactory(id = "registration-password-action", providerClasses = FormAction.class)
 public class RegistrationPassword implements FormAction, FormActionFactory {
     public static final String PROVIDER_ID = "registration-password-action";
-    private static AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED,
-            AuthenticationExecutionModel.Requirement.DISABLED
+    private static AuthenticationExecutionRequirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionRequirement.REQUIRED,
+            AuthenticationExecutionRequirement.DISABLED
     };
 
     @Autowired
@@ -151,7 +155,7 @@ public class RegistrationPassword implements FormAction, FormActionFactory {
     }
 
     @Override
-    public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {
+    public AuthenticationExecutionRequirement[] getRequirementChoices() {
         return REQUIREMENT_CHOICES;
     }
 

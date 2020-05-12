@@ -17,6 +17,7 @@
 
 package org.keycloak.utils;
 
+import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.keycloak.authentication.*;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.credential.CredentialProvider;
@@ -37,16 +38,16 @@ public class CredentialHelper {
     private static final Logger LOG = LoggerFactory.getLogger(CredentialHelper.class);
 
     public static void setRequiredCredential(KeycloakSession session, String type, RealmModel realm) {
-        AuthenticationExecutionModel.Requirement requirement = AuthenticationExecutionModel.Requirement.REQUIRED;
+        AuthenticationExecutionRequirement requirement = AuthenticationExecutionRequirement.REQUIRED;
         setOrReplaceAuthenticationRequirement(session, realm, type, requirement, null);
     }
 
     public static void setAlternativeCredential(KeycloakSession session, String type, RealmModel realm) {
-        AuthenticationExecutionModel.Requirement requirement = AuthenticationExecutionModel.Requirement.ALTERNATIVE;
+        AuthenticationExecutionRequirement requirement = AuthenticationExecutionRequirement.ALTERNATIVE;
         setOrReplaceAuthenticationRequirement(session, realm, type, requirement, null);
     }
 
-    public static void setOrReplaceAuthenticationRequirement(KeycloakSession session, RealmModel realm, String type, AuthenticationExecutionModel.Requirement requirement, AuthenticationExecutionModel.Requirement currentRequirement) {
+    public static void setOrReplaceAuthenticationRequirement(KeycloakSession session, RealmModel realm, String type, AuthenticationExecutionRequirement requirement, AuthenticationExecutionRequirement currentRequirement) {
         for (AuthenticationFlowModel flow : realm.getAuthenticationFlows()) {
             for (AuthenticationExecutionModel execution : realm.getAuthenticationExecutions(flow.getId())) {
                 String providerId = execution.getAuthenticator();

@@ -18,8 +18,8 @@
 
 package org.keycloak.authentication.authenticators.x509;
 
+import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.keycloak.authentication.Authenticator;
-import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
@@ -48,7 +48,7 @@ public class X509ClientCertificateAuthenticatorFactory extends AbstractX509Clien
     }
 
     @Override
-    public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {
+    public AuthenticationExecutionRequirement[] getRequirementChoices() {
         return REQUIREMENT_CHOICES;
     }
 

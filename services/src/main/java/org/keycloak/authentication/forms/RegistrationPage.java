@@ -17,11 +17,11 @@
 
 package org.keycloak.authentication.forms;
 
+import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.keycloak.authentication.FormAuthenticator;
 import org.keycloak.authentication.FormAuthenticatorFactory;
 import org.keycloak.authentication.FormContext;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
@@ -45,9 +45,9 @@ public class RegistrationPage implements FormAuthenticator, FormAuthenticatorFac
     public static final String FIELD_LAST_NAME = "lastName";
     public static final String FIELD_FIRST_NAME = "firstName";
     public static final String PROVIDER_ID = "registration-page-form";
-    private static AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED,
-            AuthenticationExecutionModel.Requirement.DISABLED
+    private static AuthenticationExecutionRequirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionRequirement.REQUIRED,
+            AuthenticationExecutionRequirement.DISABLED
     };
 
     @Override
@@ -86,7 +86,7 @@ public class RegistrationPage implements FormAuthenticator, FormAuthenticatorFac
     }
 
     @Override
-    public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {
+    public AuthenticationExecutionRequirement[] getRequirementChoices() {
         return REQUIREMENT_CHOICES;
     }
 

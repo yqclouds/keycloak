@@ -17,6 +17,7 @@
 
 package org.keycloak.models.utils;
 
+import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.keycloak.Config;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.authorization.AuthorizationProvider;
@@ -1737,7 +1738,7 @@ public class RepresentationToModel {
         }
         model.setPriority(rep.getPriority());
         try {
-            model.setRequirement(AuthenticationExecutionModel.Requirement.valueOf(rep.getRequirement()));
+            model.setRequirement(AuthenticationExecutionRequirement.valueOf(rep.getRequirement()));
             model.setParentFlow(parentFlow.getId());
         } catch (IllegalArgumentException iae) {
         }
@@ -1753,7 +1754,7 @@ public class RepresentationToModel {
         model.setPriority(rep.getPriority());
         model.setParentFlow(rep.getParentFlow());
         model.setAuthenticatorFlow(rep.isAutheticatorFlow());
-        model.setRequirement(AuthenticationExecutionModel.Requirement.valueOf(rep.getRequirement()));
+        model.setRequirement(AuthenticationExecutionRequirement.valueOf(rep.getRequirement()));
 
         if (rep.getAuthenticatorConfig() != null) {
             AuthenticatorConfigModel cfg = realm.getAuthenticatorConfigByAlias(rep.getAuthenticatorConfig());

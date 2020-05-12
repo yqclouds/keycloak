@@ -17,9 +17,9 @@
 
 package org.keycloak.authentication.authenticators.console;
 
+import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
-import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -37,8 +37,8 @@ import java.util.List;
 public class ConsoleUsernamePasswordAuthenticatorFactory implements AuthenticatorFactory {
 
     public static final String PROVIDER_ID = "console-username-password";
-    public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED
+    public static final AuthenticationExecutionRequirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionRequirement.REQUIRED
     };
 
     @Override
@@ -62,7 +62,7 @@ public class ConsoleUsernamePasswordAuthenticatorFactory implements Authenticato
     }
 
     @Override
-    public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {
+    public AuthenticationExecutionRequirement[] getRequirementChoices() {
         return REQUIREMENT_CHOICES;
     }
 

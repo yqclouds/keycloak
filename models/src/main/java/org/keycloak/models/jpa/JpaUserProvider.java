@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa;
 
+import com.hsbc.unified.iam.core.entity.*;
 import org.keycloak.authorization.jpa.entities.ResourceEntity;
 import org.keycloak.common.util.Time;
 import org.keycloak.component.ComponentModel;
@@ -927,7 +928,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
         User userEntity = em.getReference(User.class, user.getId());
         query.setParameter("user", userEntity);
         List<FederatedIdentity> results = query.getResultList();
-        Set<FederatedIdentityModel> set = new HashSet<FederatedIdentityModel>();
+        Set<FederatedIdentityModel> set = new HashSet<>();
         for (FederatedIdentity entity : results) {
             set.add(new FederatedIdentityModel(entity.getIdentityProvider(), entity.getUserId(), entity.getUserName(), entity.getToken()));
         }

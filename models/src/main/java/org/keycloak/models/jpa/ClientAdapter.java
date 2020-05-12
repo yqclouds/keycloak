@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa;
 
+import com.hsbc.unified.iam.core.entity.*;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;

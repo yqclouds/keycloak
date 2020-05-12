@@ -17,6 +17,7 @@
 
 package org.keycloak.authentication.forms;
 
+import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.keycloak.authentication.FormAction;
 import org.keycloak.authentication.FormActionFactory;
 import org.keycloak.authentication.FormContext;
@@ -25,7 +26,6 @@ import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventType;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -51,9 +51,9 @@ import java.util.List;
 public class RegistrationUserCreation implements FormAction, FormActionFactory {
 
     public static final String PROVIDER_ID = "registration-user-creation";
-    private static AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED,
-            AuthenticationExecutionModel.Requirement.DISABLED
+    private static AuthenticationExecutionRequirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionRequirement.REQUIRED,
+            AuthenticationExecutionRequirement.DISABLED
     };
 
     @Override
@@ -195,7 +195,7 @@ public class RegistrationUserCreation implements FormAction, FormActionFactory {
     }
 
     @Override
-    public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {
+    public AuthenticationExecutionRequirement[] getRequirementChoices() {
         return REQUIREMENT_CHOICES;
     }
 

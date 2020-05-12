@@ -17,12 +17,13 @@
 
 package org.keycloak.models.jpa;
 
+import com.hsbc.unified.iam.core.entity.*;
 import org.keycloak.common.enums.SslRequired;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.*;
-import org.keycloak.models.jpa.entities.*;
+import org.keycloak.models.jpa.entities.RealmAttributes;
 import org.keycloak.models.utils.ComponentUtil;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.slf4j.Logger;
@@ -646,10 +647,10 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
     @Override
     public void updateRequiredCredentials(Set<String> creds) {
         Collection<RealmRequiredCredential> relationships = realm.getRequiredCredentials();
-        if (relationships == null) relationships = new ArrayList<RealmRequiredCredential>();
+        if (relationships == null) relationships = new ArrayList<>();
 
-        Set<String> already = new HashSet<String>();
-        List<RealmRequiredCredential> remove = new ArrayList<RealmRequiredCredential>();
+        Set<String> already = new HashSet<>();
+        List<RealmRequiredCredential> remove = new ArrayList<>();
         for (RealmRequiredCredential rel : relationships) {
             if (!creds.contains(rel.getType())) {
                 remove.add(rel);
@@ -716,8 +717,8 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
     @Override
     public void updateDefaultRoles(String[] defaultRoles) {
         Collection<Role> entities = realm.getDefaultRoles();
-        Set<String> already = new HashSet<String>();
-        List<Role> remove = new ArrayList<Role>();
+        Set<String> already = new HashSet<>();
+        List<Role> remove = new ArrayList<>();
         for (Role rel : entities) {
             if (!contains(rel.getName(), defaultRoles)) {
                 remove.add(rel);

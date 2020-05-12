@@ -16,10 +16,10 @@
 
 package org.keycloak.authentication.authenticators.browser;
 
+import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.common.Profile;
-import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.credential.WebAuthnCredentialModel;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
@@ -51,7 +51,7 @@ public class WebAuthnAuthenticatorFactory implements AuthenticatorFactory, Envir
     }
 
     @Override
-    public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {
+    public AuthenticationExecutionRequirement[] getRequirementChoices() {
         return REQUIREMENT_CHOICES;
     }
 

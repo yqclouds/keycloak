@@ -17,6 +17,7 @@
 
 package org.keycloak.authentication.forms;
 
+import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -31,7 +32,10 @@ import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.*;
+import org.keycloak.models.AuthenticatorConfigModel;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.FormMessage;
 import org.keycloak.provider.ConfiguredProvider;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -63,9 +67,9 @@ public class RegistrationRecaptcha implements FormAction, FormActionFactory, Con
     public static final String PROVIDER_ID = "registration-recaptcha-action";
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationRecaptcha.class);
     private static final List<ProviderConfigProperty> CONFIG_PROPERTIES = new ArrayList<ProviderConfigProperty>();
-    private static AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED,
-            AuthenticationExecutionModel.Requirement.DISABLED
+    private static AuthenticationExecutionRequirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionRequirement.REQUIRED,
+            AuthenticationExecutionRequirement.DISABLED
     };
 
     static {
@@ -107,7 +111,7 @@ public class RegistrationRecaptcha implements FormAction, FormActionFactory, Con
     }
 
     @Override
-    public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {
+    public AuthenticationExecutionRequirement[] getRequirementChoices() {
         return REQUIREMENT_CHOICES;
     }
 

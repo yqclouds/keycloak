@@ -1,8 +1,7 @@
 package org.keycloak.authentication.authenticators.conditional;
 
+import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.keycloak.authentication.Authenticator;
-import org.keycloak.models.AuthenticationExecutionModel;
-import org.keycloak.models.AuthenticationExecutionModel.Requirement;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
 import org.keycloak.stereotype.ProviderFactory;
@@ -16,8 +15,8 @@ import java.util.List;
 public class ConditionalRoleAuthenticatorFactory implements ConditionalAuthenticatorFactory {
     public static final String PROVIDER_ID = "conditional-user-role";
     protected static final String CONDITIONAL_USER_ROLE = "condUserRole";
-    private static final Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED, AuthenticationExecutionModel.Requirement.DISABLED
+    private static final AuthenticationExecutionRequirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionRequirement.REQUIRED, AuthenticationExecutionRequirement.DISABLED
     };
     private static List<ProviderConfigProperty> commonConfig;
 
@@ -50,7 +49,7 @@ public class ConditionalRoleAuthenticatorFactory implements ConditionalAuthentic
     }
 
     @Override
-    public Requirement[] getRequirementChoices() {
+    public AuthenticationExecutionRequirement[] getRequirementChoices() {
         return REQUIREMENT_CHOICES;
     }
 

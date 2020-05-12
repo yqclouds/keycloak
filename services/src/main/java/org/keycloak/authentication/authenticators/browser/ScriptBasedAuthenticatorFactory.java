@@ -16,11 +16,11 @@
  */
 package org.keycloak.authentication.authenticators.browser;
 
+import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.common.Profile;
 import org.keycloak.common.util.StreamUtil;
-import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -47,10 +47,10 @@ import static org.keycloak.provider.ProviderConfigProperty.STRING_TYPE;
 public class ScriptBasedAuthenticatorFactory implements AuthenticatorFactory, EnvironmentDependentProviderFactory {
 
     public static final String PROVIDER_ID = "auth-script-based";
-    static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED,
-            AuthenticationExecutionModel.Requirement.ALTERNATIVE,
-            AuthenticationExecutionModel.Requirement.DISABLED};
+    static final AuthenticationExecutionRequirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionRequirement.REQUIRED,
+            AuthenticationExecutionRequirement.ALTERNATIVE,
+            AuthenticationExecutionRequirement.DISABLED};
     static final ScriptBasedAuthenticator SINGLETON = new ScriptBasedAuthenticator();
     private static final Logger LOGGER = LoggerFactory.getLogger(ScriptBasedAuthenticatorFactory.class);
 
@@ -87,7 +87,7 @@ public class ScriptBasedAuthenticatorFactory implements AuthenticatorFactory, En
     }
 
     @Override
-    public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {
+    public AuthenticationExecutionRequirement[] getRequirementChoices() {
         return REQUIREMENT_CHOICES;
     }
 

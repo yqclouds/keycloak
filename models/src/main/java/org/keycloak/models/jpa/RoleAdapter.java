@@ -17,12 +17,12 @@
 
 package org.keycloak.models.jpa;
 
+import com.hsbc.unified.iam.core.entity.Role;
+import com.hsbc.unified.iam.core.entity.RoleAttribute;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleContainerModel;
 import org.keycloak.models.RoleModel;
-import org.keycloak.core.entity.Role;
-import org.keycloak.core.entity.RoleAttribute;
 import org.keycloak.models.utils.KeycloakModelUtils;
 
 import javax.persistence.EntityManager;

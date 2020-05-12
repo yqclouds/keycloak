@@ -16,6 +16,7 @@
  */
 package org.keycloak.services.resources.admin;
 
+import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.authentication.*;
 import org.keycloak.events.admin.OperationType;
@@ -385,7 +386,7 @@ public class AuthenticationManagementResource {
         AuthenticationExecutionModel execution = new AuthenticationExecutionModel();
         execution.setParentFlow(parentFlow.getId());
         execution.setFlowId(newFlow.getId());
-        execution.setRequirement(AuthenticationExecutionModel.Requirement.DISABLED);
+        execution.setRequirement(AuthenticationExecutionRequirement.DISABLED);
         execution.setAuthenticatorFlow(true);
         execution.setAuthenticator(provider);
         execution.setPriority(getNextPriority(parentFlow));
@@ -445,7 +446,7 @@ public class AuthenticationManagementResource {
         if (conf.getRequirementChoices().length == 1)
             execution.setRequirement(conf.getRequirementChoices()[0]);
         else
-            execution.setRequirement(AuthenticationExecutionModel.Requirement.DISABLED);
+            execution.setRequirement(AuthenticationExecutionRequirement.DISABLED);
 
         execution.setAuthenticatorFlow(false);
         execution.setAuthenticator(provider);
@@ -496,19 +497,19 @@ public class AuthenticationManagementResource {
             if (execution.isAuthenticatorFlow()) {
                 AuthenticationFlowModel flowRef = realm.getAuthenticationFlowById(execution.getFlowId());
                 if (AuthenticationFlow.BASIC_FLOW.equals(flowRef.getProviderId())) {
-                    rep.getRequirementChoices().add(AuthenticationExecutionModel.Requirement.REQUIRED.name());
-                    rep.getRequirementChoices().add(AuthenticationExecutionModel.Requirement.ALTERNATIVE.name());
-                    rep.getRequirementChoices().add(AuthenticationExecutionModel.Requirement.DISABLED.name());
-                    rep.getRequirementChoices().add(AuthenticationExecutionModel.Requirement.CONDITIONAL.name());
+                    rep.getRequirementChoices().add(AuthenticationExecutionRequirement.REQUIRED.name());
+                    rep.getRequirementChoices().add(AuthenticationExecutionRequirement.ALTERNATIVE.name());
+                    rep.getRequirementChoices().add(AuthenticationExecutionRequirement.DISABLED.name());
+                    rep.getRequirementChoices().add(AuthenticationExecutionRequirement.CONDITIONAL.name());
                 } else if (AuthenticationFlow.FORM_FLOW.equals(flowRef.getProviderId())) {
-                    rep.getRequirementChoices().add(AuthenticationExecutionModel.Requirement.REQUIRED.name());
-                    rep.getRequirementChoices().add(AuthenticationExecutionModel.Requirement.DISABLED.name());
+                    rep.getRequirementChoices().add(AuthenticationExecutionRequirement.REQUIRED.name());
+                    rep.getRequirementChoices().add(AuthenticationExecutionRequirement.DISABLED.name());
                     rep.setProviderId(execution.getAuthenticator());
                     rep.setAuthenticationConfig(execution.getAuthenticatorConfig());
                 } else if (AuthenticationFlow.CLIENT_FLOW.equals(flowRef.getProviderId())) {
-                    rep.getRequirementChoices().add(AuthenticationExecutionModel.Requirement.ALTERNATIVE.name());
-                    rep.getRequirementChoices().add(AuthenticationExecutionModel.Requirement.REQUIRED.name());
-                    rep.getRequirementChoices().add(AuthenticationExecutionModel.Requirement.DISABLED.name());
+                    rep.getRequirementChoices().add(AuthenticationExecutionRequirement.ALTERNATIVE.name());
+                    rep.getRequirementChoices().add(AuthenticationExecutionRequirement.REQUIRED.name());
+                    rep.getRequirementChoices().add(AuthenticationExecutionRequirement.DISABLED.name());
                 }
                 rep.setDisplayName(flowRef.getAlias());
                 rep.setConfigurable(false);
@@ -524,7 +525,7 @@ public class AuthenticationManagementResource {
                 ConfigurableAuthenticatorFactory factory = CredentialHelper.getConfigurableAuthenticatorFactory(session, providerId);
                 rep.setDisplayName(factory.getDisplayType());
                 rep.setConfigurable(factory.isConfigurable());
-                for (AuthenticationExecutionModel.Requirement choice : factory.getRequirementChoices()) {
+                for (AuthenticationExecutionRequirement choice : factory.getRequirementChoices()) {
                     rep.getRequirementChoices().add(choice.name());
                 }
                 rep.setId(execution.getId());
@@ -574,7 +575,7 @@ public class AuthenticationManagementResource {
 
         }
         if (!model.getRequirement().name().equals(rep.getRequirement())) {
-            model.setRequirement(AuthenticationExecutionModel.Requirement.valueOf(rep.getRequirement()));
+            model.setRequirement(AuthenticationExecutionRequirement.valueOf(rep.getRequirement()));
             realm.updateAuthenticatorExecution(model);
             adminEvent.operation(OperationType.UPDATE).resource(ResourceType.AUTH_EXECUTION).resourcePath(session.getContext().getUri()).representation(rep).success();
         }

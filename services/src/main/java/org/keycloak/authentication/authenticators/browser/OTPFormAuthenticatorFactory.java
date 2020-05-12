@@ -17,12 +17,12 @@
 
 package org.keycloak.authentication.authenticators.browser;
 
+import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.authentication.DisplayTypeAuthenticatorFactory;
 import org.keycloak.authentication.authenticators.console.ConsoleOTPFormAuthenticator;
-import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.credential.OTPCredentialModel;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -75,7 +75,7 @@ public class OTPFormAuthenticatorFactory implements AuthenticatorFactory, Displa
     }
 
     @Override
-    public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {
+    public AuthenticationExecutionRequirement[] getRequirementChoices() {
         return REQUIREMENT_CHOICES;
     }
 

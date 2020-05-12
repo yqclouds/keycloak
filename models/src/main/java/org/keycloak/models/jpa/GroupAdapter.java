@@ -17,11 +17,11 @@
 
 package org.keycloak.models.jpa;
 
+import com.hsbc.unified.iam.core.entity.Group;
+import com.hsbc.unified.iam.core.entity.GroupAttribute;
+import com.hsbc.unified.iam.core.entity.GroupRoleMapping;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.models.*;
-import org.keycloak.core.entity.Group;
-import org.keycloak.core.entity.GroupAttribute;
-import org.keycloak.core.entity.GroupRoleMapping;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.RoleUtils;
 

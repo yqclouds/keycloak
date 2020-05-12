@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.keycloak.models.AuthenticationExecutionModel.Requirement.DISABLED;
+import static com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement.DISABLED;
 import static org.keycloak.utils.CredentialHelper.createUserStorageCredentialRepresentation;
 
 public class AccountCredentialResource {

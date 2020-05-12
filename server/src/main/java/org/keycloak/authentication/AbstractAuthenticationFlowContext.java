@@ -17,6 +17,7 @@
 
 package org.keycloak.authentication;
 
+import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.events.EventBuilder;
@@ -120,8 +121,7 @@ public interface AbstractAuthenticationFlowContext {
      */
     String generateAccessCode();
 
-
-    AuthenticationExecutionModel.Requirement getCategoryRequirementFromCurrentFlow(String authenticatorCategory);
+    AuthenticationExecutionRequirement getCategoryRequirementFromCurrentFlow(String authenticatorCategory);
 
     /**
      * Mark the current execution as successful.  The flow will then continue

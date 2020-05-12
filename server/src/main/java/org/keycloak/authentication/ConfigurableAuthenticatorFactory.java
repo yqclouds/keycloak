@@ -17,7 +17,7 @@
 
 package org.keycloak.authentication;
 
-import org.keycloak.models.AuthenticationExecutionModel;
+import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.keycloak.provider.ConfiguredProvider;
 
 /**
@@ -26,10 +26,10 @@ import org.keycloak.provider.ConfiguredProvider;
  */
 public interface ConfigurableAuthenticatorFactory extends ConfiguredProvider {
 
-    AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED,
-            AuthenticationExecutionModel.Requirement.ALTERNATIVE,
-            AuthenticationExecutionModel.Requirement.DISABLED};
+    AuthenticationExecutionRequirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionRequirement.REQUIRED,
+            AuthenticationExecutionRequirement.ALTERNATIVE,
+            AuthenticationExecutionRequirement.DISABLED};
 
     /**
      * Friendly name for the authenticator
@@ -57,7 +57,7 @@ public interface ConfigurableAuthenticatorFactory extends ConfiguredProvider {
      *
      * @return
      */
-    AuthenticationExecutionModel.Requirement[] getRequirementChoices();
+    AuthenticationExecutionRequirement[] getRequirementChoices();
 
     /**
      * Does this authenticator have required actions that can set if the user does not have

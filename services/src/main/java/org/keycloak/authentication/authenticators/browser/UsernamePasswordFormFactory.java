@@ -17,12 +17,12 @@
 
 package org.keycloak.authentication.authenticators.browser;
 
+import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.authentication.DisplayTypeAuthenticatorFactory;
 import org.keycloak.authentication.authenticators.console.ConsoleUsernamePasswordAuthenticator;
-import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -41,8 +41,8 @@ public class UsernamePasswordFormFactory implements AuthenticatorFactory, Displa
 
     public static final String PROVIDER_ID = "auth-username-password-form";
     public static final UsernamePasswordForm SINGLETON = new UsernamePasswordForm();
-    public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED
+    public static final AuthenticationExecutionRequirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionRequirement.REQUIRED
     };
 
     @Override
@@ -73,7 +73,7 @@ public class UsernamePasswordFormFactory implements AuthenticatorFactory, Displa
     }
 
     @Override
-    public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {
+    public AuthenticationExecutionRequirement[] getRequirementChoices() {
         return REQUIREMENT_CHOICES;
     }
 

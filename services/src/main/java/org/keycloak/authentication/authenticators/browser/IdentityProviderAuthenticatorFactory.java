@@ -17,13 +17,13 @@
 
 package org.keycloak.authentication.authenticators.browser;
 
+import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.keycloak.Config;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.authentication.DisplayTypeAuthenticatorFactory;
 import org.keycloak.authentication.authenticators.AttemptedAuthenticator;
-import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -38,8 +38,8 @@ import static org.keycloak.provider.ProviderConfigProperty.STRING_TYPE;
  */
 public class IdentityProviderAuthenticatorFactory implements AuthenticatorFactory, DisplayTypeAuthenticatorFactory {
 
-    protected static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED, AuthenticationExecutionModel.Requirement.ALTERNATIVE, AuthenticationExecutionModel.Requirement.DISABLED
+    protected static final AuthenticationExecutionRequirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionRequirement.REQUIRED, AuthenticationExecutionRequirement.ALTERNATIVE, AuthenticationExecutionRequirement.DISABLED
     };
 
     protected static final String DEFAULT_PROVIDER = "defaultProvider";
@@ -60,7 +60,7 @@ public class IdentityProviderAuthenticatorFactory implements AuthenticatorFactor
     }
 
     @Override
-    public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {
+    public AuthenticationExecutionRequirement[] getRequirementChoices() {
         return REQUIREMENT_CHOICES;
     }
 

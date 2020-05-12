@@ -17,6 +17,8 @@
 
 package org.keycloak.models;
 
+import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
+
 import java.io.Serializable;
 import java.util.Comparator;
 
@@ -31,7 +33,7 @@ public class AuthenticationExecutionModel implements Serializable {
     private String authenticator;
     private String flowId;
     private boolean authenticatorFlow;
-    private Requirement requirement;
+    private AuthenticationExecutionRequirement requirement;
     private int priority;
     private String parentFlow;
 
@@ -59,11 +61,11 @@ public class AuthenticationExecutionModel implements Serializable {
         this.authenticator = authenticator;
     }
 
-    public Requirement getRequirement() {
+    public AuthenticationExecutionRequirement getRequirement() {
         return requirement;
     }
 
-    public void setRequirement(Requirement requirement) {
+    public void setRequirement(AuthenticationExecutionRequirement requirement) {
         this.requirement = requirement;
     }
 
@@ -110,23 +112,23 @@ public class AuthenticationExecutionModel implements Serializable {
     }
 
     public boolean isRequired() {
-        return requirement == Requirement.REQUIRED;
+        return requirement == AuthenticationExecutionRequirement.REQUIRED;
     }
 
     public boolean isConditional() {
-        return requirement == Requirement.CONDITIONAL;
+        return requirement == AuthenticationExecutionRequirement.CONDITIONAL;
     }
 
     public boolean isAlternative() {
-        return requirement == Requirement.ALTERNATIVE;
+        return requirement == AuthenticationExecutionRequirement.ALTERNATIVE;
     }
 
     public boolean isDisabled() {
-        return requirement == Requirement.DISABLED;
+        return requirement == AuthenticationExecutionRequirement.DISABLED;
     }
 
     public boolean isEnabled() {
-        return requirement != Requirement.DISABLED;
+        return requirement != AuthenticationExecutionRequirement.DISABLED;
     }
 
     @Override
@@ -144,13 +146,6 @@ public class AuthenticationExecutionModel implements Serializable {
     @Override
     public int hashCode() {
         return id != null ? id.hashCode() : 0;
-    }
-
-    public enum Requirement {
-        REQUIRED,
-        CONDITIONAL,
-        ALTERNATIVE,
-        DISABLED
     }
 
     public static class ExecutionComparator implements Comparator<AuthenticationExecutionModel> {

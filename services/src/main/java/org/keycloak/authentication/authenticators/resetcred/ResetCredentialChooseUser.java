@@ -17,6 +17,7 @@
 
 package org.keycloak.authentication.authenticators.resetcred;
 
+import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.keycloak.Config;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
@@ -28,7 +29,10 @@ import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAu
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
-import org.keycloak.models.*;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.stereotype.ProviderFactory;
@@ -49,8 +53,8 @@ import java.util.List;
 public class ResetCredentialChooseUser implements Authenticator, AuthenticatorFactory {
 
     public static final String PROVIDER_ID = "reset-credentials-choose-user";
-    public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED
+    public static final AuthenticationExecutionRequirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionRequirement.REQUIRED
     };
     private static final Logger LOG = LoggerFactory.getLogger(ResetCredentialChooseUser.class);
 
@@ -157,7 +161,7 @@ public class ResetCredentialChooseUser implements Authenticator, AuthenticatorFa
     }
 
     @Override
-    public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {
+    public AuthenticationExecutionRequirement[] getRequirementChoices() {
         return REQUIREMENT_CHOICES;
     }
 

@@ -17,6 +17,7 @@
 
 package org.keycloak.authentication;
 
+import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAuthenticator;
 import org.keycloak.authentication.authenticators.client.ClientAuthUtil;
@@ -749,7 +750,7 @@ public class AuthenticationProcessor {
         }
 
         @Override
-        public AuthenticationExecutionModel.Requirement getCategoryRequirementFromCurrentFlow(String authenticatorCategory) {
+        public AuthenticationExecutionRequirement getCategoryRequirementFromCurrentFlow(String authenticatorCategory) {
             List<AuthenticationExecutionModel> executions = realm.getAuthenticationExecutions(execution.getParentFlow());
             for (AuthenticationExecutionModel exe : executions) {
                 AuthenticatorFactory factory = (AuthenticatorFactory) getSession().getSessionFactory().getProviderFactory(Authenticator.class, exe.getAuthenticator());

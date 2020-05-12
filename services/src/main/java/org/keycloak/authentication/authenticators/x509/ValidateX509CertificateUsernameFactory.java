@@ -18,8 +18,8 @@
 
 package org.keycloak.authentication.authenticators.x509;
 
+import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.keycloak.authentication.Authenticator;
-import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
@@ -35,8 +35,8 @@ public class ValidateX509CertificateUsernameFactory extends AbstractX509ClientCe
 
     public static final String PROVIDER_ID = "direct-grant-auth-x509-username";
     public static final ValidateX509CertificateUsername SINGLETON = new ValidateX509CertificateUsername();
-    public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED
+    public static final AuthenticationExecutionRequirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionRequirement.REQUIRED
     };
 
     @Override
@@ -50,7 +50,7 @@ public class ValidateX509CertificateUsernameFactory extends AbstractX509ClientCe
     }
 
     @Override
-    public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {
+    public AuthenticationExecutionRequirement[] getRequirementChoices() {
         return REQUIREMENT_CHOICES;
     }
 
