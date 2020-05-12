@@ -90,10 +90,6 @@
             <artifactId>lombok</artifactId>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>org.keycloak</groupId>
-            <artifactId>keycloak-ldap-federation</artifactId>
-        </dependency>
     </dependencies>
 
     <build>
