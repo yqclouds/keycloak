@@ -22,7 +22,7 @@ import org.jboss.resteasy.spi.BadRequestException;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authorization.admin.AuthorizationService;
 import com.hsbc.unified.iam.common.ClientConnection;
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import org.keycloak.events.Errors;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;

@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.keycloak.TokenVerifier.Predicate;
 import org.keycloak.common.VerificationException;
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import org.keycloak.models.ActionTokenValueModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;

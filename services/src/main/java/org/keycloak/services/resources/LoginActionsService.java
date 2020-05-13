@@ -33,7 +33,7 @@ import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAu
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import com.hsbc.unified.iam.common.ClientConnection;
 import org.keycloak.common.VerificationException;
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import org.keycloak.crypto.SignatureProvider;
 import org.keycloak.crypto.SignatureVerifierContext;
 import org.keycloak.events.Details;

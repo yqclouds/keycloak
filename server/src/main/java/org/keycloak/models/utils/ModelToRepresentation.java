@@ -21,7 +21,7 @@ import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.model.*;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.common.util.MultivaluedHashMap;
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.events.Event;

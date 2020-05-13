@@ -19,7 +19,7 @@
 package org.keycloak.authentication.authenticators.x509;
 
 import org.keycloak.common.util.OCSPUtils;
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import com.hsbc.unified.iam.common.constants.Constants;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.truststore.TruststoreProvider;

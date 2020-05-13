@@ -27,10 +27,10 @@ public interface ClientRepository extends JpaRepository<Client, String>, JpaSpec
     List<String> findClientIdByClientId(String clientId, String realm);
 
     @Query(name = "searchClientsByClientId", value = "select client.id from Client client where lower(client.clientId) like lower(concat('%',:clientId,'%')) and client.realm.id = :realm order by client.clientId")
-    List<String> findClientsByClientId(String clientId, String realm);
+    List<String> searchClientsByClientId(String clientId, String realm);
 
     @Query(name = "getRealmClientsCount", value = "select count(client) from Client client where client.realm.id = :realm")
-    Integer getRealmClientsCount(String realm);
+    Long getRealmClientsCount(String realm);
 
     @Query(name = "findClientByClientId", value = "select client from Client client where client.clientId = :clientId and client.realm.id = :realm")
     List<Client> findClientByClientId(String clientId, String realm);

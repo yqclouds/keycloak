@@ -18,7 +18,7 @@ package org.keycloak.authorization.client.util;
 
 import org.keycloak.authorization.client.Configuration;
 import org.keycloak.authorization.client.representation.ServerConfiguration;
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.AccessTokenResponse;

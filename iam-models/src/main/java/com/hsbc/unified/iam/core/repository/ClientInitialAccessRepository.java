@@ -14,7 +14,7 @@ import java.util.List;
 public interface ClientInitialAccessRepository extends JpaRepository<ClientInitialAccess, String>,
         JpaSpecificationExecutor<ClientInitialAccess> {
     @Query(name = "findClientInitialAccessByRealm", value = "select ia from ClientInitialAccess ia where ia.realm = :realm order by timestamp")
-    List<ClientInitialAccess> findClientInitialAccessByRealm();
+    List<ClientInitialAccess> findClientInitialAccessByRealm(Realm realm);
 
     @Modifying
     @Query(name = "removeClientInitialAccessByRealm", value = "delete from ClientInitialAccess ia where ia.realm = :realm")
@@ -22,9 +22,9 @@ public interface ClientInitialAccessRepository extends JpaRepository<ClientIniti
 
     @Modifying
     @Query(name = "removeExpiredClientInitialAccess", value = "delete from ClientInitialAccess ia where (ia.expiration > 0 and (ia.timestamp + ia.expiration) < :currentTime) or ia.remainingCount = 0")
-    void removeExpiredClientInitialAccess();
+    void removeExpiredClientInitialAccess(int currentTime);
 
     @Modifying
     @Query(name = "decreaseClientInitialAccessRemainingCount", value = "update ClientInitialAccess ia set ia.remainingCount = ia.remainingCount - 1 where ia.id = :id")
-    void decreaseClientInitialAccessRemainingCount();
+    void decreaseClientInitialAccessRemainingCount(String id);
 }

@@ -30,24 +30,9 @@ import java.util.*;
  * @version $Revision: 1 $
  */
 @Entity
-//@DynamicInsert
-//@DynamicUpdate
 @Table(name = "KEYCLOAK_ROLE", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"NAME", "CLIENT_REALM_CONSTRAINT"})
 })
-@NamedQueries({
-        @NamedQuery(name = "getClientRoles", query = "select role from Role role where role.client.id = :client order by role.name"),
-        @NamedQuery(name = "getClientRoleIds", query = "select role.id from Role role where role.client.id = :client"),
-        @NamedQuery(name = "getClientRoleByName", query = "select role from Role role where role.name = :name and role.client = :client"),
-        @NamedQuery(name = "getClientRoleIdByName", query = "select role.id from Role role where role.name = :name and role.client.id = :client"),
-        @NamedQuery(name = "searchForClientRoles", query = "select role from Role role where role.client.id = :client and ( lower(role.name) like :search or lower(role.description) like :search ) order by role.name"),
-        @NamedQuery(name = "getRealmRoles", query = "select role from Role role where role.clientRole = false and role.realm.id = :realm order by role.name"),
-        @NamedQuery(name = "getRealmRoleIds", query = "select role.id from Role role where role.clientRole = false and role.realm.id = :realm"),
-        @NamedQuery(name = "getRealmRoleByName", query = "select role from Role role where role.clientRole = false and role.name = :name and role.realm = :realm"),
-        @NamedQuery(name = "getRealmRoleIdByName", query = "select role.id from Role role where role.clientRole = false and role.name = :name and role.realm.id = :realm"),
-        @NamedQuery(name = "searchForRealmRoles", query = "select role from Role role where role.clientRole = false and role.realm.id = :realm and ( lower(role.name) like :search or lower(role.description) like :search ) order by role.name"),
-})
-
 public class Role {
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "role")
     @Fetch(FetchMode.SELECT)

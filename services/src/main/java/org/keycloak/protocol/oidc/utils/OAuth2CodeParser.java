@@ -17,7 +17,7 @@
 
 package org.keycloak.protocol.oidc.utils;
 
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import org.keycloak.events.Details;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.*;

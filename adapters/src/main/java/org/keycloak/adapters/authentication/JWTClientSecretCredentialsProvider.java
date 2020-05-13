@@ -19,7 +19,7 @@ package org.keycloak.adapters.authentication;
 import com.hsbc.unified.iam.common.constants.OAuth2Constants;
 import org.keycloak.adapters.AdapterUtils;
 import org.keycloak.adapters.KeycloakDeployment;
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import com.hsbc.unified.iam.common.crypto.Algorithm;
 import org.keycloak.crypto.JavaAlgorithm;
 import org.keycloak.jose.jws.JWSBuilder;

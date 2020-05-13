@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.keycloak.common.util;
+package com.hsbc.unified.iam.common.util;
 
 import java.util.Date;
 

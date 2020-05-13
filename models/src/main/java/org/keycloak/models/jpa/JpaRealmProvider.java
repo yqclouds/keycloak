@@ -17,13 +17,17 @@
 
 package org.keycloak.models.jpa;
 
+import com.hsbc.unified.iam.common.util.Time;
 import com.hsbc.unified.iam.core.entity.*;
+import com.hsbc.unified.iam.core.entity.events.ClientCreationEvent;
+import com.hsbc.unified.iam.core.entity.events.ClientRemovedEvent;
 import com.hsbc.unified.iam.core.entity.events.RealmCreationEvent;
+import com.hsbc.unified.iam.core.entity.events.RoleRemovedEvent;
 import com.hsbc.unified.iam.core.repository.*;
+import com.hsbc.unified.iam.core.service.ClientService;
+import com.hsbc.unified.iam.core.service.GroupService;
 import com.hsbc.unified.iam.core.service.RealmService;
 import com.hsbc.unified.iam.core.service.RoleService;
-import org.keycloak.common.util.Time;
-import org.keycloak.connections.jpa.util.JpaUtils;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.slf4j.Logger;
@@ -33,7 +37,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 
 import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -54,7 +57,11 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
     @Autowired
     private RealmService realmService;
     @Autowired
+    private ClientService clientService;
+    @Autowired
     private RoleService roleService;
+    @Autowired
+    private GroupService groupService;
     @Autowired
     private RealmRepository realmRepository;
     @Autowired
@@ -67,6 +74,12 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
     private ClientInitialAccessRepository clientInitialAccessRepository;
     @Autowired
     private RoleRepository roleRepository;
+    @Autowired
+    private GroupRepository groupRepository;
+    @Autowired
+    private ClientScopeRoleMappingRepository clientScopeRoleMappingRepository;
+    @Autowired
+    private ClientScopeClientMappingRepository clientScopeClientMappingRepository;
 
     public JpaRealmProvider(KeycloakSession session, EntityManager em) {
         this.session = session;
@@ -186,7 +199,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
         TypedQuery<String> query = em.createNamedQuery("getRealmRoleIdByName", String.class);
         query.setParameter("name", name);
         query.setParameter("realm", realm.getId());
-        List<String> roles = query.getResultList();
+        List<String> roles = roleRepository.getRealmRoleIdByName(name, realm.getId());
         if (roles.isEmpty()) return null;
         return session.realms().getRoleById(roles.get(0), realm);
     }
@@ -201,24 +214,15 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
         if (getClientRole(realm, client, name) != null) {
             throw new ModelDuplicateException();
         }
-        Client clientEntity = em.getReference(Client.class, client.getId());
-        Role roleEntity = new Role();
-        roleEntity.setId(id);
-        roleEntity.setName(name);
-        roleEntity.setClient(clientEntity);
-        roleEntity.setClientRole(true);
-        roleEntity.setRealmId(realm.getId());
-        em.persist(roleEntity);
-        RoleAdapter adapter = new RoleAdapter(session, realm, em, roleEntity);
-        return adapter;
+
+        Client clientEntity = clientRepository.getOne(client.getId());
+        Role roleEntity = roleService.createRole(id, name, clientEntity, realm.getId());
+        return new RoleAdapter(session, realm, em, roleEntity);
     }
 
     @Override
     public Set<RoleModel> getRealmRoles(RealmModel realm) {
-        TypedQuery<String> query = em.createNamedQuery("getRealmRoleIds", String.class);
-        query.setParameter("realm", realm.getId());
-        List<String> roles = query.getResultList();
-
+        List<String> roles = roleRepository.getRealmRoleIds(realm.getId());
         if (roles.isEmpty()) return Collections.EMPTY_SET;
         Set<RoleModel> list = new HashSet<>();
         for (String id : roles) {
@@ -229,10 +233,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
     @Override
     public RoleModel getClientRole(RealmModel realm, ClientModel client, String name) {
-        TypedQuery<String> query = em.createNamedQuery("getClientRoleIdByName", String.class);
-        query.setParameter("name", name);
-        query.setParameter("client", client.getId());
-        List<String> roles = query.getResultList();
+        List<String> roles = roleRepository.getClientRoleIdByName(name, client.getId());
         if (roles.isEmpty()) return null;
         return session.realms().getRoleById(roles.get(0), realm);
     }
@@ -241,39 +242,28 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
     @Override
     public Set<RoleModel> getClientRoles(RealmModel realm, ClientModel client) {
         Set<RoleModel> list = new HashSet<>();
-        TypedQuery<String> query = em.createNamedQuery("getClientRoleIds", String.class);
-        query.setParameter("client", client.getId());
-        List<String> roles = query.getResultList();
+
+        List<String> roles = roleRepository.getClientRoleIds(client.getId());
         for (String id : roles) {
             list.add(session.realms().getRoleById(id, realm));
         }
+
         return list;
     }
 
     @Override
     public Set<RoleModel> getRealmRoles(RealmModel realm, Integer first, Integer max) {
-        TypedQuery<Role> query = em.createNamedQuery("getRealmRoles", Role.class);
-        query.setParameter("realm", realm.getId());
-
-        return getRoles(query, realm, first, max);
+        List<Role> roles = roleRepository.getRealmRoles(realm.getId());
+        return getRoles(roles, realm);
     }
 
     @Override
     public Set<RoleModel> getClientRoles(RealmModel realm, ClientModel client, Integer first, Integer max) {
-        TypedQuery<Role> query = em.createNamedQuery("getClientRoles", Role.class);
-        query.setParameter("client", client.getId());
-
-        return getRoles(query, realm, first, max);
+        List<Role> roles = roleRepository.getClientRoles(client.getId());
+        return getRoles(roles, realm);
     }
 
-    protected Set<RoleModel> getRoles(TypedQuery<Role> query, RealmModel realm, Integer first, Integer max) {
-        if (Objects.nonNull(first) && Objects.nonNull(max)
-                && first >= 0 && max >= 0) {
-            query = query.setFirstResult(first).setMaxResults(max);
-        }
-
-        List<Role> results = query.getResultList();
-
+    protected Set<RoleModel> getRoles(List<Role> results, RealmModel realm) {
         return results.stream()
                 .map(role -> new RoleAdapter(session, realm, em, role))
                 .collect(Collectors.collectingAndThen(
@@ -282,29 +272,17 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
     @Override
     public Set<RoleModel> searchForClientRoles(RealmModel realm, ClientModel client, String search, Integer first, Integer max) {
-        TypedQuery<Role> query = em.createNamedQuery("searchForClientRoles", Role.class);
-        query.setParameter("client", client.getId());
-        return searchForRoles(query, realm, search, first, max);
+        List<Role> roles = roleRepository.searchForClientRoles(client.getId(), search);
+        return searchForRoles(roles, realm);
     }
 
     @Override
     public Set<RoleModel> searchForRoles(RealmModel realm, String search, Integer first, Integer max) {
-        TypedQuery<Role> query = em.createNamedQuery("searchForRealmRoles", Role.class);
-        query.setParameter("realm", realm.getId());
-
-        return searchForRoles(query, realm, search, first, max);
+        List<Role> roles = roleRepository.searchForRealmRoles(realm.getId(), "%" + search.trim().toLowerCase() + "%");
+        return searchForRoles(roles, realm);
     }
 
-    protected Set<RoleModel> searchForRoles(TypedQuery<Role> query, RealmModel realm, String search, Integer first, Integer max) {
-
-        query.setParameter("search", "%" + search.trim().toLowerCase() + "%");
-        if (Objects.nonNull(first) && Objects.nonNull(max)
-                && first >= 0 && max >= 0) {
-            query = query.setFirstResult(first).setMaxResults(max);
-        }
-
-        List<Role> results = query.getResultList();
-
+    private Set<RoleModel> searchForRoles(List<Role> results, RealmModel realm) {
         return results.stream()
                 .map(role -> new RoleAdapter(session, realm, em, role))
                 .collect(Collectors.collectingAndThen(
@@ -318,49 +296,37 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
         if (container.getDefaultRoles().contains(role.getName())) {
             container.removeDefaultRoles(role.getName());
         }
-        Role roleEntity = em.getReference(Role.class, role.getId());
-        String compositeRoleTable = JpaUtils.getTableNameForNativeQuery("COMPOSITE_ROLE", em);
-        em.createNativeQuery("delete from " + compositeRoleTable + " where CHILD_ROLE = :role").setParameter("role", roleEntity).executeUpdate();
+        Role roleEntity = roleRepository.getOne(role.getId());
+        roleRepository.deleteCompositeRoles(roleEntity);
+
         realm.getClients().forEach(c -> c.deleteScopeMapping(role));
-        em.createNamedQuery("deleteClientScopeRoleMappingByRole").setParameter("role", roleEntity).executeUpdate();
-        int val = em.createNamedQuery("deleteGroupRoleMappingsByRole").setParameter("roleId", roleEntity.getId()).executeUpdate();
+        clientScopeRoleMappingRepository.deleteClientScopeRoleMappingByRole(roleEntity);
+        groupRoleMappingRepository.deleteGroupRoleMappingsByRole(roleEntity.getId());
+        roleRepository.delete(roleEntity);
 
-        em.flush();
-        em.remove(roleEntity);
+        applicationEventPublisher.publishEvent(new RoleRemovedEvent(roleEntity));
 
-        session.getSessionFactory().publish(new RoleContainerModel.RoleRemovedEvent() {
-            @Override
-            public RoleModel getRole() {
-                return role;
-            }
-
-            @Override
-            public KeycloakSession getSession() {
-                return session;
-            }
-        });
-
-        em.flush();
         return true;
-
     }
 
     @Override
     public RoleModel getRoleById(String id, RealmModel realm) {
-        Role entity = em.find(Role.class, id);
-        if (entity == null) return null;
+        Optional<Role> optional = roleRepository.findById(id);
+        if (!optional.isPresent()) return null;
+
+        Role entity = optional.get();
         if (!realm.getId().equals(entity.getRealmId())) return null;
-        RoleAdapter adapter = new RoleAdapter(session, realm, em, entity);
-        return adapter;
+        return new RoleAdapter(session, realm, em, entity);
     }
 
     @Override
     public GroupModel getGroupById(String id, RealmModel realm) {
-        Group groupEntity = em.find(Group.class, id);
-        if (groupEntity == null) return null;
-        if (!groupEntity.getRealm().getId().equals(realm.getId())) return null;
-        GroupAdapter adapter = new GroupAdapter(realm, em, groupEntity);
-        return adapter;
+        Optional<Group> optional = groupRepository.findById(id);
+        if (!optional.isPresent()) return null;
+
+        Group group = optional.get();
+        if (!group.getRealm().getId().equals(realm.getId())) return null;
+        return new GroupAdapter(realm, em, group);
     }
 
     @Override
@@ -378,8 +344,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
     @Override
     public List<GroupModel> getGroups(RealmModel realm) {
-        Realm ref = em.getReference(Realm.class, realm.getId());
-
+        Realm ref = realmRepository.getOne(realm.getId());
         return ref.getGroups().stream()
                 .map(g -> session.realms().getGroupById(g.getId(), realm))
                 .sorted(Comparator.comparing(GroupModel::getName))
@@ -390,22 +355,15 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
     @Override
     public Long getGroupsCount(RealmModel realm, Boolean onlyTopGroups) {
         if (Objects.equals(onlyTopGroups, Boolean.TRUE)) {
-            return em.createNamedQuery("getTopLevelGroupCount", Long.class)
-                    .setParameter("realm", realm.getId())
-                    .setParameter("parent", Group.TOP_PARENT_ID)
-                    .getSingleResult();
-        } else {
-            return em.createNamedQuery("getGroupCount", Long.class)
-                    .setParameter("realm", realm.getId())
-                    .getSingleResult();
+            return groupRepository.getTopLevelGroupCount(realm.getId(), Group.TOP_PARENT_ID);
         }
+
+        return groupRepository.getGroupCount(realm.getId());
     }
 
     @Override
     public Long getClientsCount(RealmModel realm) {
-        return em.createNamedQuery("getRealmClientsCount", Long.class)
-                .setParameter("realm", realm.getId())
-                .getSingleResult();
+        return clientRepository.getRealmClientsCount(realm.getId());
     }
 
     @Override
@@ -415,16 +373,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
     @Override
     public List<GroupModel> getGroupsByRole(RealmModel realm, RoleModel role, int firstResult, int maxResults) {
-        TypedQuery<Group> query = em.createNamedQuery("groupsInRole", Group.class);
-        query.setParameter("roleId", role.getId());
-        if (firstResult != -1) {
-            query.setFirstResult(firstResult);
-        }
-        if (maxResults != -1) {
-            query.setMaxResults(maxResults);
-        }
-        List<Group> results = query.getResultList();
-
+        List<Group> results = groupRoleMappingRepository.findGroupsInRole(role.getId());
         return results.stream()
                 .map(g -> new GroupAdapter(realm, em, g))
                 .sorted(Comparator.comparing(GroupModel::getName))
@@ -434,8 +383,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
     @Override
     public List<GroupModel> getTopLevelGroups(RealmModel realm) {
-        Realm ref = em.getReference(Realm.class, realm.getId());
-
+        Realm ref = realmRepository.getOne(realm.getId());
         return ref.getGroups().stream()
                 .filter(g -> Group.TOP_PARENT_ID.equals(g.getParentId()))
                 .map(g -> session.realms().getGroupById(g.getId(), realm))
@@ -446,12 +394,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
     @Override
     public List<GroupModel> getTopLevelGroups(RealmModel realm, Integer first, Integer max) {
-        List<String> groupIds = em.createNamedQuery("getTopLevelGroupIds", String.class)
-                .setParameter("realm", realm.getId())
-                .setParameter("parent", Group.TOP_PARENT_ID)
-                .setFirstResult(first)
-                .setMaxResults(max)
-                .getResultList();
+        List<String> groupIds = groupRepository.getTopLevelGroupIds(realm.getId(), Group.TOP_PARENT_ID);
         List<GroupModel> list = new ArrayList<>();
         if (Objects.nonNull(groupIds) && !groupIds.isEmpty()) {
             for (String id : groupIds) {
@@ -468,44 +411,23 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
         if (group == null) {
             return false;
         }
-
-        GroupModel.GroupRemovedEvent event = new GroupModel.GroupRemovedEvent() {
-            @Override
-            public RealmModel getRealm() {
-                return realm;
-            }
-
-            @Override
-            public GroupModel getGroup() {
-                return group;
-            }
-
-            @Override
-            public KeycloakSession getSession() {
-                return session;
-            }
-        };
-        session.getSessionFactory().publish(event);
-
         session.users().preRemove(realm, group);
 
         realm.removeDefaultGroup(group);
         for (GroupModel subGroup : group.getSubGroups()) {
             session.realms().removeGroup(realm, subGroup);
         }
-        Group groupEntity = em.find(Group.class, group.getId(), LockModeType.PESSIMISTIC_WRITE);
+        Group groupEntity = groupRepository.getOne(group.getId());
         if ((groupEntity == null) || (!groupEntity.getRealm().getId().equals(realm.getId()))) {
             return false;
         }
-        em.createNamedQuery("deleteGroupRoleMappingsByGroup").setParameter("group", groupEntity).executeUpdate();
+        groupRoleMappingRepository.deleteGroupRoleMappingsByGroup(groupEntity);
 
-        Realm realmEntity = em.getReference(Realm.class, realm.getId());
+        Realm realmEntity = realmRepository.getOne(realm.getId());
         realmEntity.getGroups().remove(groupEntity);
+        groupRepository.delete(groupEntity);
 
-        em.remove(groupEntity);
         return true;
-
-
     }
 
     @Override
@@ -516,18 +438,13 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
             // maybe it's impossible but better ensure this doesn't happen
             throw new ModelException("The ID of the new group is equals to the tag used for top level groups");
         }
-        Group groupEntity = new Group();
-        groupEntity.setId(id);
-        groupEntity.setName(name);
-        Realm realmEntity = em.getReference(Realm.class, realm.getId());
-        groupEntity.setRealm(realmEntity);
-        groupEntity.setParentId(toParent == null ? Group.TOP_PARENT_ID : toParent.getId());
-        em.persist(groupEntity);
-        em.flush();
-        realmEntity.getGroups().add(groupEntity);
 
-        GroupAdapter adapter = new GroupAdapter(realm, em, groupEntity);
-        return adapter;
+        Realm realmEntity = realmRepository.getOne(realm.getId());
+        Group groupEntity = groupService.createGroup(id, name, realmEntity, toParent == null ? null : toParent.getId());
+        realmEntity.getGroups().add(groupEntity);
+        realmRepository.saveAndFlush(realmEntity);
+
+        return new GroupAdapter(realm, em, groupEntity);
     }
 
     @Override
@@ -545,38 +462,17 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
         if (clientId == null) {
             clientId = id;
         }
-        Client entity = new Client();
-        entity.setId(id);
-        entity.setClientId(clientId);
-        entity.setEnabled(true);
-        entity.setStandardFlowEnabled(true);
-        Realm realmRef = em.getReference(Realm.class, realm.getId());
-        entity.setRealm(realmRef);
-        em.persist(entity);
-        em.flush();
-        final ClientModel resource = new ClientAdapter(realm, em, session, entity);
+        Realm realmRef = realmRepository.getOne(realm.getId());
 
-        em.flush();
-        session.getSessionFactory().publish(new RealmModel.ClientCreationEvent() {
-            @Override
-            public ClientModel getCreatedClient() {
-                return resource;
-            }
-        });
-        return resource;
+        Client entity = clientService.createClient(id, clientId, realmRef);
+        applicationEventPublisher.publishEvent(new ClientCreationEvent(entity));
+
+        return new ClientAdapter(realm, em, session, entity);
     }
 
     @Override
     public List<ClientModel> getClients(RealmModel realm, Integer firstResult, Integer maxResults) {
-        TypedQuery<String> query = em.createNamedQuery("getClientIdsByRealm", String.class);
-        if (firstResult != null && firstResult > 0) {
-            query.setFirstResult(firstResult);
-        }
-        if (maxResults != null && maxResults > 0) {
-            query.setMaxResults(maxResults);
-        }
-        query.setParameter("realm", realm.getId());
-        List<String> clients = query.getResultList();
+        List<String> clients = clientRepository.getClientIdsByRealm(realm.getId());
         if (clients.isEmpty()) return Collections.EMPTY_LIST;
         List<ClientModel> list = new LinkedList<>();
         for (String id : clients) {
@@ -593,9 +489,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
     @Override
     public List<ClientModel> getAlwaysDisplayInConsoleClients(RealmModel realm) {
-        TypedQuery<String> query = em.createNamedQuery("getAlwaysDisplayInConsoleClients", String.class);
-        query.setParameter("realm", realm.getId());
-        List<String> clients = query.getResultList();
+        List<String> clients = clientRepository.getAlwaysDisplayInConsoleClients(realm.getId());
         if (clients.isEmpty()) return Collections.EMPTY_LIST;
         List<ClientModel> list = new LinkedList<>();
         for (String id : clients) {
@@ -607,37 +501,22 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
     @Override
     public ClientModel getClientById(String id, RealmModel realm) {
-        Client app = em.find(Client.class, id);
+        Optional<Client> optional = clientRepository.findById(id);
         // Check if application belongs to this realm
-        if (app == null || !realm.getId().equals(app.getRealm().getId())) return null;
-        ClientAdapter client = new ClientAdapter(realm, em, session, app);
-        return client;
-
+        if (!optional.isPresent() || !realm.getId().equals(optional.get().getRealm().getId())) return null;
+        return new ClientAdapter(realm, em, session, optional.get());
     }
 
     @Override
     public ClientModel getClientByClientId(String clientId, RealmModel realm) {
-        TypedQuery<String> query = em.createNamedQuery("findClientIdByClientId", String.class);
-        query.setParameter("clientId", clientId);
-        query.setParameter("realm", realm.getId());
-        List<String> results = query.getResultList();
+        List<String> results = clientRepository.findClientIdByClientId(clientId, realm.getId());
         if (results.isEmpty()) return null;
-        String id = results.get(0);
-        return session.realms().getClientById(id, realm);
+        return session.realms().getClientById(results.get(0), realm);
     }
 
     @Override
     public List<ClientModel> searchClientsByClientId(String clientId, Integer firstResult, Integer maxResults, RealmModel realm) {
-        TypedQuery<String> query = em.createNamedQuery("searchClientsByClientId", String.class);
-        if (firstResult != null && firstResult > 0) {
-            query.setFirstResult(firstResult);
-        }
-        if (maxResults != null && maxResults > 0) {
-            query.setMaxResults(maxResults);
-        }
-        query.setParameter("clientId", clientId);
-        query.setParameter("realm", realm.getId());
-        List<String> results = query.getResultList();
+        List<String> results = clientRepository.searchClientsByClientId(clientId, realm.getId());
         if (results.isEmpty()) return Collections.EMPTY_LIST;
         return results.stream().map(id -> session.realms().getClientById(id, realm)).collect(Collectors.toList());
     }
@@ -654,31 +533,11 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
             removeRole(realm, role);
         }
 
-        Client clientEntity = em.find(Client.class, id, LockModeType.PESSIMISTIC_WRITE);
+        Client clientEntity = clientRepository.getOne(client.getId());
+        clientScopeClientMappingRepository.deleteClientScopeClientMappingByClient(clientEntity);
+        clientRepository.delete(clientEntity);
 
-        session.getSessionFactory().publish(new RealmModel.ClientRemovedEvent() {
-            @Override
-            public ClientModel getClient() {
-                return client;
-            }
-
-            @Override
-            public KeycloakSession getSession() {
-                return session;
-            }
-        });
-
-        int countRemoved = em.createNamedQuery("deleteClientScopeClientMappingByClient")
-                .setParameter("client", clientEntity)
-                .executeUpdate();
-        em.remove(clientEntity);  // i have no idea why, but this needs to come before deleteScopeMapping
-
-        try {
-            em.flush();
-        } catch (RuntimeException e) {
-            LOG.error("Unable to delete client entity: {} from realm {}", client.getClientId(), realm.getName());
-            throw e;
-        }
+        applicationEventPublisher.publishEvent(new ClientRemovedEvent(clientEntity));
 
         return true;
     }
@@ -689,19 +548,12 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
         // Check if application belongs to this realm
         if (app == null || !realm.getId().equals(app.getRealm().getId())) return null;
-        ClientScopeAdapter adapter = new ClientScopeAdapter(realm, em, session, app);
-        return adapter;
+        return new ClientScopeAdapter(realm, em, session, app);
     }
 
     @Override
     public List<GroupModel> searchForGroupByName(RealmModel realm, String search, Integer first, Integer max) {
-        TypedQuery<String> query = em.createNamedQuery("getGroupIdsByNameContaining", String.class)
-                .setParameter("realm", realm.getId())
-                .setParameter("search", search);
-        if (Objects.nonNull(first) && Objects.nonNull(max)) {
-            query = query.setFirstResult(first).setMaxResults(max);
-        }
-        List<String> groups = query.getResultList();
+        List<String> groups = groupRepository.getGroupIdsByNameContaining(realm.getId(), search);
         if (Objects.isNull(groups)) return Collections.EMPTY_LIST;
         List<GroupModel> list = new ArrayList<>();
         for (String id : groups) {
@@ -720,51 +572,30 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
     @Override
     public ClientInitialAccessModel createClientInitialAccessModel(RealmModel realm, int expiration, int count) {
-        Realm realmEntity = em.find(Realm.class, realm.getId());
-
-        ClientInitialAccess entity = new ClientInitialAccess();
-        entity.setId(KeycloakModelUtils.generateId());
-        entity.setRealm(realmEntity);
-
-        entity.setCount(count);
-        entity.setRemainingCount(count);
-
-        int currentTime = Time.currentTime();
-        entity.setTimestamp(currentTime);
-        entity.setExpiration(expiration);
-
-        em.persist(entity);
+        Realm realmEntity = realmRepository.getOne(realm.getId());
+        ClientInitialAccess entity = clientService.createClientInitialAccess(
+                KeycloakModelUtils.generateId(), expiration, count, realmEntity
+        );
 
         return entityToModel(entity);
     }
 
     @Override
     public ClientInitialAccessModel getClientInitialAccessModel(RealmModel realm, String id) {
-        ClientInitialAccess entity = em.find(ClientInitialAccess.class, id);
-        if (entity == null) {
-            return null;
-        } else {
-            return entityToModel(entity);
-        }
+        Optional<ClientInitialAccess> optional = clientInitialAccessRepository.findById(id);
+        return optional.map(this::entityToModel).orElse(null);
     }
 
     @Override
     public void removeClientInitialAccessModel(RealmModel realm, String id) {
-        ClientInitialAccess entity = em.find(ClientInitialAccess.class, id, LockModeType.PESSIMISTIC_WRITE);
-        if (entity != null) {
-            em.remove(entity);
-            em.flush();
-        }
+        Optional<ClientInitialAccess> optional = clientInitialAccessRepository.findById(id);
+        optional.ifPresent(clientInitialAccess -> clientInitialAccessRepository.delete(clientInitialAccess));
     }
 
     @Override
     public List<ClientInitialAccessModel> listClientInitialAccess(RealmModel realm) {
-        Realm realmEntity = em.find(Realm.class, realm.getId());
-
-        TypedQuery<ClientInitialAccess> query = em.createNamedQuery("findClientInitialAccessByRealm", ClientInitialAccess.class);
-        query.setParameter("realm", realmEntity);
-        List<ClientInitialAccess> entities = query.getResultList();
-
+        Realm realmEntity = realmRepository.getOne(realm.getId());
+        List<ClientInitialAccess> entities = clientInitialAccessRepository.findClientInitialAccessByRealm(realmEntity);
         return entities.stream()
                 .map(this::entityToModel)
                 .collect(Collectors.toList());
@@ -772,18 +603,12 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
     @Override
     public void removeExpiredClientInitialAccess() {
-        int currentTime = Time.currentTime();
-
-        em.createNamedQuery("removeExpiredClientInitialAccess")
-                .setParameter("currentTime", currentTime)
-                .executeUpdate();
+        clientInitialAccessRepository.removeExpiredClientInitialAccess(Time.currentTime());
     }
 
     @Override
     public void decreaseRemainingCount(RealmModel realm, ClientInitialAccessModel clientInitialAccess) {
-        em.createNamedQuery("decreaseClientInitialAccessRemainingCount")
-                .setParameter("id", clientInitialAccess.getId())
-                .executeUpdate();
+        clientInitialAccessRepository.decreaseClientInitialAccessRemainingCount(clientInitialAccess.getId());
     }
 
     private ClientInitialAccessModel entityToModel(ClientInitialAccess entity) {

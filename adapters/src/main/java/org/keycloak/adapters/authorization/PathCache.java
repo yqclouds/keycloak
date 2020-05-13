@@ -16,7 +16,7 @@
  */
 package org.keycloak.adapters.authorization;
 
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import org.keycloak.representations.adapters.config.PolicyEnforcerConfig.PathConfig;
 
 import java.util.LinkedHashMap;

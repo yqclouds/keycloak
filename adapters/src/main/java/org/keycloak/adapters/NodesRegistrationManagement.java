@@ -18,7 +18,7 @@
 package org.keycloak.adapters;
 
 import org.keycloak.common.util.HostUtils;
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

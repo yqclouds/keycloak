@@ -27,13 +27,6 @@ import java.util.Collection;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@NamedQueries({
-        @NamedQuery(name = "getGroupIdsByParent", query = "select u.id from Group u where u.parentId = :parent"),
-        @NamedQuery(name = "getGroupIdsByNameContaining", query = "select u.id from Group u where u.realm.id = :realm and u.name like concat('%',:search,'%') order by u.name ASC"),
-        @NamedQuery(name = "getTopLevelGroupIds", query = "select u.id from Group u where u.parentId = :parent and u.realm.id = :realm order by u.name ASC"),
-        @NamedQuery(name = "getGroupCount", query = "select count(u) from Group u where u.realm.id = :realm"),
-        @NamedQuery(name = "getTopLevelGroupCount", query = "select count(u) from Group u where u.realm.id = :realm and u.parentId = :parent")
-})
 @Entity
 @Table(name = "KEYCLOAK_GROUP",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"REALM_ID", "PARENT_GROUP", "NAME"})}

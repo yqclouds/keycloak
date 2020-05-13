@@ -17,7 +17,7 @@
 
 package org.keycloak.connections.jpa.updater.liquibase.lock;
 
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import org.keycloak.connections.jpa.JpaConnectionProviderFactory;
 import org.keycloak.connections.jpa.updater.liquibase.conn.LiquibaseConnectionProviderFactory;
 import org.keycloak.models.KeycloakSession;

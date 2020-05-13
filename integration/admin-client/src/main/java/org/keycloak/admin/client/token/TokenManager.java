@@ -20,7 +20,7 @@ package org.keycloak.admin.client.token;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.keycloak.admin.client.Config;
 import org.keycloak.admin.client.resource.BasicAuthFilter;
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import org.keycloak.representations.AccessTokenResponse;
 
 import javax.ws.rs.BadRequestException;

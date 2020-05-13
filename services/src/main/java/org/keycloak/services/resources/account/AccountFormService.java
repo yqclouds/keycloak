@@ -24,7 +24,7 @@ import org.keycloak.authorization.model.Scope;
 import org.keycloak.authorization.store.PermissionTicketStore;
 import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.common.util.Base64Url;
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import org.keycloak.common.util.UriUtils;
 import org.keycloak.events.*;
 import org.keycloak.forms.account.AccountPages;

@@ -25,11 +25,6 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@NamedQueries({
-        @NamedQuery(name = "clientScopeClientMappingIdsByClient", query = "select m.clientScope.id from ClientScopeClientMapping m where m.client = :client and m.defaultScope = :defaultScope"),
-        @NamedQuery(name = "deleteClientScopeClientMapping", query = "delete from ClientScopeClientMapping where client = :client and clientScope = :clientScope"),
-        @NamedQuery(name = "deleteClientScopeClientMappingByClient", query = "delete from ClientScopeClientMapping where client = :client")
-})
 @Entity
 @Table(name = "CLIENT_SCOPE_CLIENT")
 @IdClass(ClientScopeClientMapping.Key.class)

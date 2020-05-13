@@ -28,7 +28,7 @@ import com.webauthn4j.data.attestation.authenticator.COSEKey;
 import com.webauthn4j.util.exception.WebAuthnException;
 import org.keycloak.authentication.requiredactions.WebAuthnRegisterFactory;
 import org.keycloak.common.util.Base64;
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;

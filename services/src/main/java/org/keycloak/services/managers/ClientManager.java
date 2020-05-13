@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.keycloak.authentication.ClientAuthenticator;
 import org.keycloak.authentication.ClientAuthenticatorFactory;
 import org.keycloak.common.constants.ServiceAccountConstants;
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import org.keycloak.models.*;
 import org.keycloak.models.session.UserSessionPersisterProvider;
 import org.keycloak.models.utils.RepresentationToModel;

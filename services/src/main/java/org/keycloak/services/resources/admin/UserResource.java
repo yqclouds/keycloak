@@ -23,7 +23,7 @@ import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.authentication.actiontoken.execactions.ExecuteActionsActionToken;
 import com.hsbc.unified.iam.common.ClientConnection;
 import org.keycloak.common.Profile;
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.email.EmailException;
 import org.keycloak.email.EmailTemplateProvider;

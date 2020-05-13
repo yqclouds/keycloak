@@ -20,7 +20,7 @@ package org.keycloak.services.clientregistration;
 import org.keycloak.TokenCategory;
 import org.keycloak.TokenVerifier;
 import org.keycloak.common.VerificationException;
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import org.keycloak.crypto.SignatureProvider;
 import org.keycloak.crypto.SignatureSignerContext;
 import org.keycloak.crypto.SignatureVerifierContext;

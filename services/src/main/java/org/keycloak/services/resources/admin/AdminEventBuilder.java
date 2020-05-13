@@ -17,7 +17,7 @@
 package org.keycloak.services.resources.admin;
 
 import com.hsbc.unified.iam.common.ClientConnection;
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.EventStoreProvider;
 import org.keycloak.events.admin.AdminEvent;

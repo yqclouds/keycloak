@@ -21,7 +21,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.keycloak.adapters.HttpAdapterUtils;
 import org.keycloak.adapters.HttpClientAdapterException;
 import org.keycloak.adapters.KeycloakDeployment;
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import org.keycloak.jose.jwk.JSONWebKeySet;
 import org.keycloak.jose.jwk.JWK;
 import org.keycloak.util.JWKSUtils;

@@ -18,7 +18,7 @@
 
 package org.keycloak.models.credential;
 
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.models.credential.dto.WebAuthnCredentialData;
 import org.keycloak.models.credential.dto.WebAuthnSecretData;

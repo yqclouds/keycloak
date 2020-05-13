@@ -24,7 +24,7 @@ import org.keycloak.OAuthErrorException;
 import org.keycloak.broker.provider.*;
 import org.keycloak.broker.provider.util.SimpleHttp;
 import com.hsbc.unified.iam.common.ClientConnection;
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import org.keycloak.crypto.*;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;

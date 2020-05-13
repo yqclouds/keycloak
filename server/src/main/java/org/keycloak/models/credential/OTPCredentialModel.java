@@ -1,6 +1,6 @@
 package org.keycloak.models.credential;
 
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.models.OTPPolicy;
 import org.keycloak.models.RealmModel;

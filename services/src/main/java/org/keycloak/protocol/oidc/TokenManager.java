@@ -25,7 +25,7 @@ import org.keycloak.TokenVerifier;
 import org.keycloak.cluster.ClusterProvider;
 import com.hsbc.unified.iam.common.ClientConnection;
 import org.keycloak.common.VerificationException;
-import org.keycloak.common.util.Time;
+import com.hsbc.unified.iam.common.util.Time;
 import org.keycloak.crypto.HashProvider;
 import org.keycloak.crypto.SignatureProvider;
 import org.keycloak.events.Details;
