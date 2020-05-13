@@ -20,7 +20,6 @@ package org.keycloak.models.jpa;
 import com.hsbc.unified.iam.core.entity.*;
 import org.keycloak.common.util.Time;
 import org.keycloak.connections.jpa.util.JpaUtils;
-import org.keycloak.migration.MigrationModel;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.slf4j.Logger;
@@ -45,11 +44,6 @@ public class JpaRealmProvider implements RealmProvider {
     public JpaRealmProvider(KeycloakSession session, EntityManager em) {
         this.session = session;
         this.em = em;
-    }
-
-    @Override
-    public MigrationModel getMigrationModel() {
-        return new MigrationModelAdapter(em);
     }
 
     @Override

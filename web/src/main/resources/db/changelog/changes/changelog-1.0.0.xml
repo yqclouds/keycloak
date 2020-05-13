@@ -590,21 +590,6 @@
             </column>
             <column name="VALUE" type="VARCHAR(255)"/>
         </createTable>
-        <createTable tableName="MIGRATION_MODEL">
-            <column name="ID" type="VARCHAR(36)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="VERSION" type="VARCHAR(36)">
-                <constraints nullable="true"/>
-            </column>
-            <column name="UPDATE_TIME" type="BIGINT" defaultValueNumeric="0">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-        <createIndex tableName="MIGRATION_MODEL" indexName="IDX_UPDATE_TIME">
-            <column name="UPDATE_TIME" type="BIGINT"/>
-        </createIndex>
-
         <createTable tableName="IDENTITY_PROVIDER_MAPPER">
             <column name="ID" type="VARCHAR(36)">
                 <constraints nullable="false"/>
@@ -1610,7 +1595,6 @@
                        tableName="IDENTITY_PROVIDER_CONFIG"/>
         <addPrimaryKey columnNames="USER_SESSION, NAME" constraintName="CONSTRAINT_USN_PK"
                        tableName="USER_SESSION_NOTE"/>
-        <addPrimaryKey columnNames="ID" constraintName="CONSTRAINT_MIGMOD" tableName="MIGRATION_MODEL"/>
         <addPrimaryKey columnNames="ID" constraintName="CONSTRAINT_IDPM" tableName="IDENTITY_PROVIDER_MAPPER"/>
         <addPrimaryKey columnNames="ID" constraintName="CONSTRAINT_GRNTCSNT_PM" tableName="USER_CONSENT"/>
         <addPrimaryKey columnNames="USER_CONSENT_ID, ROLE_ID" constraintName="CONSTRAINT_GRNTCSNT_ROLE_PM"

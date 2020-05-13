@@ -28,10 +28,6 @@ import java.util.Set;
  * @version $Revision: 1 $
  */
 public interface RealmProvider extends Provider, ClientProvider {
-
-    // Note: The reason there are so many query methods here is for layering a cache on top of an persistent KeycloakSession
-    MigrationModel getMigrationModel();
-
     RealmModel createRealm(String name);
 
     RealmModel createRealm(String id, String name);

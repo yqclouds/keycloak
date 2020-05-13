@@ -33,7 +33,6 @@
         <class>com.hsbc.unified.iam.core.entity.Role</class>
         <class>com.hsbc.unified.iam.core.entity.RoleAttribute</class>
         <class>com.hsbc.unified.iam.core.entity.FederatedIdentity</class>
-        <class>org.keycloak.models.jpa.entities.MigrationModelEntity</class>
         <class>com.hsbc.unified.iam.core.entity.User</class>
         <class>com.hsbc.unified.iam.core.entity.UserRequiredAction</class>
         <class>com.hsbc.unified.iam.core.entity.UserAttribute</class>
