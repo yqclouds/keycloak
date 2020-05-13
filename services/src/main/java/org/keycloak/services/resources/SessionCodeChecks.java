@@ -19,7 +19,7 @@ package org.keycloak.services.resources;
 
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authentication.AuthenticationProcessor;
-import org.keycloak.common.ClientConnection;
+import com.hsbc.unified.iam.common.ClientConnection;
 import org.keycloak.common.util.ObjectUtil;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;

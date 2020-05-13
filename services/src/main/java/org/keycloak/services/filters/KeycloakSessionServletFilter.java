@@ -17,7 +17,7 @@
 
 package org.keycloak.services.filters;
 
-import org.keycloak.common.ClientConnection;
+import com.hsbc.unified.iam.common.ClientConnection;
 import org.keycloak.common.util.Resteasy;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;

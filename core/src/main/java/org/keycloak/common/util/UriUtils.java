@@ -17,7 +17,7 @@
 
 package org.keycloak.common.util;
 
-import org.keycloak.common.enums.SslRequired;
+import com.hsbc.unified.iam.core.entity.SslRequired;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;

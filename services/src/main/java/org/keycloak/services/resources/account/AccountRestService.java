@@ -18,7 +18,7 @@ package org.keycloak.services.resources.account;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.HttpRequest;
-import org.keycloak.common.ClientConnection;
+import com.hsbc.unified.iam.common.ClientConnection;
 import org.keycloak.common.Profile;
 import org.keycloak.common.util.StringPropertyReplacer;
 import org.keycloak.credential.CredentialModel;

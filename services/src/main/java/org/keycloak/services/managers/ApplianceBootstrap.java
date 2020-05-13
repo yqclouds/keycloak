@@ -18,7 +18,7 @@ package org.keycloak.services.managers;
 
 import org.keycloak.Config;
 import org.keycloak.common.Version;
-import org.keycloak.common.enums.SslRequired;
+import com.hsbc.unified.iam.core.entity.SslRequired;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.DefaultKeyProviders;
 import org.keycloak.representations.idm.CredentialRepresentation;

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.keycloak.common.enums;
+package com.hsbc.unified.iam.common.enums;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>

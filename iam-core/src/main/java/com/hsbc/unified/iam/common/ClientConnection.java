@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.keycloak.common;
+package com.hsbc.unified.iam.common;
 
 /**
  * Information about the client connection

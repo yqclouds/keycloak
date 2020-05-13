@@ -17,7 +17,7 @@
 
 package org.keycloak.models;
 
-import org.keycloak.common.enums.SslRequired;
+import com.hsbc.unified.iam.core.entity.SslRequired;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.provider.ProviderEvent;
 import org.keycloak.storage.UserStorageProvider;

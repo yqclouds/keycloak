@@ -18,7 +18,8 @@
 package org.keycloak.models.jpa;
 
 import com.hsbc.unified.iam.core.entity.*;
-import org.keycloak.common.enums.SslRequired;
+import com.hsbc.unified.iam.core.service.RealmService;
+import com.hsbc.unified.iam.core.entity.SslRequired;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
@@ -27,6 +28,7 @@ import org.keycloak.models.utils.ComponentUtil;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -54,6 +56,9 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
     private PasswordPolicy passwordPolicy;
     private OTPPolicy otpPolicy;
 
+    @Autowired
+    private RealmService realmService;
+
     public RealmAdapter(KeycloakSession session, EntityManager em, Realm realm) {
         this.session = session;
         this.em = em;
@@ -78,49 +83,47 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
 
     @Override
     public String getId() {
-        return realm.getId();
+        return this.realmService.getId(realm);
     }
 
     @Override
     public String getName() {
-        return realm.getName();
+        return this.realmService.getName(realm);
     }
 
     @Override
     public void setName(String name) {
-        realm.setName(name);
-        em.flush();
+        this.realmService.setName(realm, name);
     }
 
     @Override
     public String getDisplayName() {
-        return getAttribute(RealmAttribute.DISPLAY_NAME);
+        return this.realmService.getAttribute(realm, RealmAttribute.DISPLAY_NAME);
     }
 
     @Override
     public void setDisplayName(String displayName) {
-        setAttribute(RealmAttribute.DISPLAY_NAME, displayName);
+        this.realmService.setAttribute(realm, RealmAttribute.DISPLAY_NAME, displayName);
     }
 
     @Override
     public String getDisplayNameHtml() {
-        return getAttribute(RealmAttribute.DISPLAY_NAME_HTML);
+        return this.realmService.getDisplayNameHtml(realm);
     }
 
     @Override
     public void setDisplayNameHtml(String displayNameHtml) {
-        setAttribute(RealmAttribute.DISPLAY_NAME_HTML, displayNameHtml);
+        this.realmService.setDisplayNameHtml(realm, displayNameHtml);
     }
 
     @Override
     public boolean isEnabled() {
-        return realm.isEnabled();
+        return this.realmService.isEnabled(realm);
     }
 
     @Override
     public void setEnabled(boolean enabled) {
-        realm.setEnabled(enabled);
-        em.flush();
+        this.realmService.setEnabled(realm, enabled);
     }
 
     @Override
@@ -181,86 +184,52 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
 
     @Override
     public void setAttribute(String name, String value) {
-        for (RealmAttribute attr : realm.getAttributes()) {
-            if (attr.getName().equals(name)) {
-                attr.setValue(value);
-                return;
-            }
-        }
-        RealmAttribute attr = new RealmAttribute();
-        attr.setName(name);
-        attr.setValue(value);
-        attr.setRealm(realm);
-        em.persist(attr);
-        realm.getAttributes().add(attr);
+        this.realmService.setAttribute(realm, name, value);
     }
 
     @Override
     public void setAttribute(String name, Boolean value) {
-        setAttribute(name, value.toString());
+        this.realmService.setAttribute(realm, name, value);
     }
 
     @Override
     public void setAttribute(String name, Integer value) {
-        setAttribute(name, value.toString());
+        this.realmService.setAttribute(realm, name, value);
     }
 
     @Override
     public void setAttribute(String name, Long value) {
-        setAttribute(name, value.toString());
+        this.realmService.setAttribute(realm, name, value);
     }
 
     @Override
     public void removeAttribute(String name) {
-        Iterator<RealmAttribute> it = realm.getAttributes().iterator();
-        while (it.hasNext()) {
-            RealmAttribute attr = it.next();
-            if (attr.getName().equals(name)) {
-                it.remove();
-                em.remove(attr);
-            }
-        }
+        this.realmService.removeAttribute(realm, name);
     }
 
     @Override
     public String getAttribute(String name) {
-        for (RealmAttribute attr : realm.getAttributes()) {
-            if (attr.getName().equals(name)) {
-                return attr.getValue();
-            }
-        }
-        return null;
+        return this.realmService.getAttribute(realm, name);
     }
 
     @Override
     public Integer getAttribute(String name, Integer defaultValue) {
-        String v = getAttribute(name);
-        return v != null ? Integer.parseInt(v) : defaultValue;
-
+        return this.realmService.getAttribute(realm, name, defaultValue);
     }
 
     @Override
     public Long getAttribute(String name, Long defaultValue) {
-        String v = getAttribute(name);
-        return v != null ? Long.parseLong(v) : defaultValue;
-
+        return this.realmService.getAttribute(realm, name, defaultValue);
     }
 
     @Override
     public Boolean getAttribute(String name, Boolean defaultValue) {
-        String v = getAttribute(name);
-        return v != null ? Boolean.parseBoolean(v) : defaultValue;
-
+        return this.realmService.getAttribute(realm, name, defaultValue);
     }
 
     @Override
     public Map<String, String> getAttributes() {
-        // should always return a copy
-        Map<String, String> result = new HashMap<String, String>();
-        for (RealmAttribute attr : realm.getAttributes()) {
-            result.put(attr.getName(), attr.getValue());
-        }
-        return result;
+        return this.realmService.getAttributes(realm);
     }
 
     @Override

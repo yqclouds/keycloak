@@ -17,7 +17,7 @@
 
 package org.keycloak;
 
-import org.keycloak.common.enums.RelativeUrlsUsed;
+import com.hsbc.unified.iam.common.enums.RelativeUrlsUsed;
 import org.keycloak.common.util.KeycloakUriBuilder;
 
 import java.util.Map;

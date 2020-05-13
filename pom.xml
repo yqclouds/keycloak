@@ -125,6 +125,8 @@
         <module>models</module>
         <module>integration</module>
         <module>web</module>
+
+        <module>iam-core</module>
         <module>iam-models</module>
     </modules>
 

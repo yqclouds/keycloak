@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package org.keycloak.common.enums;
+package com.hsbc.unified.iam.core.entity;
 
-import org.keycloak.common.ClientConnection;
+import com.hsbc.unified.iam.common.ClientConnection;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
