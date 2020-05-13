@@ -23,7 +23,6 @@ import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.*;
-import org.keycloak.models.jpa.entities.RealmAttributes;
 import org.keycloak.models.utils.ComponentUtil;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.slf4j.Logger;
@@ -95,22 +94,22 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
 
     @Override
     public String getDisplayName() {
-        return getAttribute(RealmAttributes.DISPLAY_NAME);
+        return getAttribute(RealmAttribute.DISPLAY_NAME);
     }
 
     @Override
     public void setDisplayName(String displayName) {
-        setAttribute(RealmAttributes.DISPLAY_NAME, displayName);
+        setAttribute(RealmAttribute.DISPLAY_NAME, displayName);
     }
 
     @Override
     public String getDisplayNameHtml() {
-        return getAttribute(RealmAttributes.DISPLAY_NAME_HTML);
+        return getAttribute(RealmAttribute.DISPLAY_NAME_HTML);
     }
 
     @Override
     public void setDisplayNameHtml(String displayNameHtml) {
-        setAttribute(RealmAttributes.DISPLAY_NAME_HTML, displayNameHtml);
+        setAttribute(RealmAttribute.DISPLAY_NAME_HTML, displayNameHtml);
     }
 
     @Override
@@ -518,22 +517,22 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
     // KEYCLOAK-7688 Offline Session Max for Offline Token
     @Override
     public boolean isOfflineSessionMaxLifespanEnabled() {
-        return getAttribute(RealmAttributes.OFFLINE_SESSION_MAX_LIFESPAN_ENABLED, false);
+        return getAttribute(RealmAttribute.OFFLINE_SESSION_MAX_LIFESPAN_ENABLED, false);
     }
 
     @Override
     public void setOfflineSessionMaxLifespanEnabled(boolean offlineSessionMaxLifespanEnabled) {
-        setAttribute(RealmAttributes.OFFLINE_SESSION_MAX_LIFESPAN_ENABLED, offlineSessionMaxLifespanEnabled);
+        setAttribute(RealmAttribute.OFFLINE_SESSION_MAX_LIFESPAN_ENABLED, offlineSessionMaxLifespanEnabled);
     }
 
     @Override
     public int getOfflineSessionMaxLifespan() {
-        return getAttribute(RealmAttributes.OFFLINE_SESSION_MAX_LIFESPAN, Constants.DEFAULT_OFFLINE_SESSION_MAX_LIFESPAN);
+        return getAttribute(RealmAttribute.OFFLINE_SESSION_MAX_LIFESPAN, Constants.DEFAULT_OFFLINE_SESSION_MAX_LIFESPAN);
     }
 
     @Override
     public void setOfflineSessionMaxLifespan(int seconds) {
-        setAttribute(RealmAttributes.OFFLINE_SESSION_MAX_LIFESPAN, seconds);
+        setAttribute(RealmAttribute.OFFLINE_SESSION_MAX_LIFESPAN, seconds);
     }
 
     @Override
@@ -566,8 +565,8 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
         getAttributes().entrySet().stream()
                 .filter(Objects::nonNull)
                 .filter(entry -> nonNull(entry.getValue()))
-                .filter(entry -> entry.getKey().startsWith(RealmAttributes.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN + "."))
-                .forEach(entry -> userActionTokens.put(entry.getKey().substring(RealmAttributes.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN.length() + 1), Integer.valueOf(entry.getValue())));
+                .filter(entry -> entry.getKey().startsWith(RealmAttribute.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN + "."))
+                .forEach(entry -> userActionTokens.put(entry.getKey().substring(RealmAttribute.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN.length() + 1), Integer.valueOf(entry.getValue())));
 
         return Collections.unmodifiableMap(userActionTokens);
     }
@@ -585,36 +584,36 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
 
     @Override
     public int getActionTokenGeneratedByAdminLifespan() {
-        return getAttribute(RealmAttributes.ACTION_TOKEN_GENERATED_BY_ADMIN_LIFESPAN, 12 * 60 * 60);
+        return getAttribute(RealmAttribute.ACTION_TOKEN_GENERATED_BY_ADMIN_LIFESPAN, 12 * 60 * 60);
     }
 
     @Override
     public void setActionTokenGeneratedByAdminLifespan(int actionTokenGeneratedByAdminLifespan) {
-        setAttribute(RealmAttributes.ACTION_TOKEN_GENERATED_BY_ADMIN_LIFESPAN, actionTokenGeneratedByAdminLifespan);
+        setAttribute(RealmAttribute.ACTION_TOKEN_GENERATED_BY_ADMIN_LIFESPAN, actionTokenGeneratedByAdminLifespan);
     }
 
     @Override
     public int getActionTokenGeneratedByUserLifespan() {
-        return getAttribute(RealmAttributes.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN, getAccessCodeLifespanUserAction());
+        return getAttribute(RealmAttribute.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN, getAccessCodeLifespanUserAction());
     }
 
     @Override
     public void setActionTokenGeneratedByUserLifespan(int actionTokenGeneratedByUserLifespan) {
-        setAttribute(RealmAttributes.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN, actionTokenGeneratedByUserLifespan);
+        setAttribute(RealmAttribute.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN, actionTokenGeneratedByUserLifespan);
     }
 
     @Override
     public int getActionTokenGeneratedByUserLifespan(String actionTokenId) {
-        if (actionTokenId == null || getAttribute(RealmAttributes.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN + "." + actionTokenId) == null) {
+        if (actionTokenId == null || getAttribute(RealmAttribute.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN + "." + actionTokenId) == null) {
             return getActionTokenGeneratedByUserLifespan();
         }
-        return getAttribute(RealmAttributes.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN + "." + actionTokenId, getAccessCodeLifespanUserAction());
+        return getAttribute(RealmAttribute.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN + "." + actionTokenId, getAccessCodeLifespanUserAction());
     }
 
     @Override
     public void setActionTokenGeneratedByUserLifespan(String actionTokenId, Integer actionTokenGeneratedByUserLifespan) {
         if (actionTokenGeneratedByUserLifespan != null)
-            setAttribute(RealmAttributes.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN + "." + actionTokenId, actionTokenGeneratedByUserLifespan);
+            setAttribute(RealmAttribute.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN + "." + actionTokenId, actionTokenGeneratedByUserLifespan);
     }
 
     protected RequiredCredentialModel initRequiredCredentialModel(String type) {
@@ -982,51 +981,51 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
         WebAuthnPolicy policy = new WebAuthnPolicy();
 
         // mandatory parameters
-        String rpEntityName = getAttribute(RealmAttributes.WEBAUTHN_POLICY_RP_ENTITY_NAME + attributePrefix);
+        String rpEntityName = getAttribute(RealmAttribute.WEBAUTHN_POLICY_RP_ENTITY_NAME + attributePrefix);
         if (rpEntityName == null || rpEntityName.isEmpty())
             rpEntityName = Constants.DEFAULT_WEBAUTHN_POLICY_RP_ENTITY_NAME;
         policy.setRpEntityName(rpEntityName);
 
-        String signatureAlgorithmsString = getAttribute(RealmAttributes.WEBAUTHN_POLICY_SIGNATURE_ALGORITHMS + attributePrefix);
+        String signatureAlgorithmsString = getAttribute(RealmAttribute.WEBAUTHN_POLICY_SIGNATURE_ALGORITHMS + attributePrefix);
         if (signatureAlgorithmsString == null || signatureAlgorithmsString.isEmpty())
             signatureAlgorithmsString = Constants.DEFAULT_WEBAUTHN_POLICY_SIGNATURE_ALGORITHMS;
         List<String> signatureAlgorithms = Arrays.asList(signatureAlgorithmsString.split(","));
         policy.setSignatureAlgorithm(signatureAlgorithms);
 
         // optional parameters
-        String rpId = getAttribute(RealmAttributes.WEBAUTHN_POLICY_RP_ID + attributePrefix);
+        String rpId = getAttribute(RealmAttribute.WEBAUTHN_POLICY_RP_ID + attributePrefix);
         if (rpId == null || rpId.isEmpty()) rpId = "";
         policy.setRpId(rpId);
 
-        String attestationConveyancePreference = getAttribute(RealmAttributes.WEBAUTHN_POLICY_ATTESTATION_CONVEYANCE_PREFERENCE + attributePrefix);
+        String attestationConveyancePreference = getAttribute(RealmAttribute.WEBAUTHN_POLICY_ATTESTATION_CONVEYANCE_PREFERENCE + attributePrefix);
         if (attestationConveyancePreference == null || attestationConveyancePreference.isEmpty())
             attestationConveyancePreference = Constants.DEFAULT_WEBAUTHN_POLICY_NOT_SPECIFIED;
         policy.setAttestationConveyancePreference(attestationConveyancePreference);
 
-        String authenticatorAttachment = getAttribute(RealmAttributes.WEBAUTHN_POLICY_AUTHENTICATOR_ATTACHMENT + attributePrefix);
+        String authenticatorAttachment = getAttribute(RealmAttribute.WEBAUTHN_POLICY_AUTHENTICATOR_ATTACHMENT + attributePrefix);
         if (authenticatorAttachment == null || authenticatorAttachment.isEmpty())
             authenticatorAttachment = Constants.DEFAULT_WEBAUTHN_POLICY_NOT_SPECIFIED;
         policy.setAuthenticatorAttachment(authenticatorAttachment);
 
-        String requireResidentKey = getAttribute(RealmAttributes.WEBAUTHN_POLICY_REQUIRE_RESIDENT_KEY + attributePrefix);
+        String requireResidentKey = getAttribute(RealmAttribute.WEBAUTHN_POLICY_REQUIRE_RESIDENT_KEY + attributePrefix);
         if (requireResidentKey == null || requireResidentKey.isEmpty())
             requireResidentKey = Constants.DEFAULT_WEBAUTHN_POLICY_NOT_SPECIFIED;
         policy.setRequireResidentKey(requireResidentKey);
 
-        String userVerificationRequirement = getAttribute(RealmAttributes.WEBAUTHN_POLICY_USER_VERIFICATION_REQUIREMENT + attributePrefix);
+        String userVerificationRequirement = getAttribute(RealmAttribute.WEBAUTHN_POLICY_USER_VERIFICATION_REQUIREMENT + attributePrefix);
         if (userVerificationRequirement == null || userVerificationRequirement.isEmpty())
             userVerificationRequirement = Constants.DEFAULT_WEBAUTHN_POLICY_NOT_SPECIFIED;
         policy.setUserVerificationRequirement(userVerificationRequirement);
 
-        String createTime = getAttribute(RealmAttributes.WEBAUTHN_POLICY_CREATE_TIMEOUT + attributePrefix);
+        String createTime = getAttribute(RealmAttribute.WEBAUTHN_POLICY_CREATE_TIMEOUT + attributePrefix);
         if (createTime != null) policy.setCreateTimeout(Integer.parseInt(createTime));
         else policy.setCreateTimeout(0);
 
-        String avoidSameAuthenticatorRegister = getAttribute(RealmAttributes.WEBAUTHN_POLICY_AVOID_SAME_AUTHENTICATOR_REGISTER + attributePrefix);
+        String avoidSameAuthenticatorRegister = getAttribute(RealmAttribute.WEBAUTHN_POLICY_AVOID_SAME_AUTHENTICATOR_REGISTER + attributePrefix);
         if (avoidSameAuthenticatorRegister != null)
             policy.setAvoidSameAuthenticatorRegister(Boolean.parseBoolean(avoidSameAuthenticatorRegister));
 
-        String acceptableAaguidsString = getAttribute(RealmAttributes.WEBAUTHN_POLICY_ACCEPTABLE_AAGUIDS + attributePrefix);
+        String acceptableAaguidsString = getAttribute(RealmAttribute.WEBAUTHN_POLICY_ACCEPTABLE_AAGUIDS + attributePrefix);
         List<String> acceptableAaguids = new ArrayList<>();
         if (acceptableAaguidsString != null && !acceptableAaguidsString.isEmpty())
             acceptableAaguids = Arrays.asList(acceptableAaguidsString.split(","));
@@ -1038,40 +1037,40 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
     private void setWebAuthnPolicy(WebAuthnPolicy policy, String attributePrefix) {
         // mandatory parameters
         String rpEntityName = policy.getRpEntityName();
-        setAttribute(RealmAttributes.WEBAUTHN_POLICY_RP_ENTITY_NAME + attributePrefix, rpEntityName);
+        setAttribute(RealmAttribute.WEBAUTHN_POLICY_RP_ENTITY_NAME + attributePrefix, rpEntityName);
 
         List<String> signatureAlgorithms = policy.getSignatureAlgorithm();
         String signatureAlgorithmsString = String.join(",", signatureAlgorithms);
-        setAttribute(RealmAttributes.WEBAUTHN_POLICY_SIGNATURE_ALGORITHMS + attributePrefix, signatureAlgorithmsString);
+        setAttribute(RealmAttribute.WEBAUTHN_POLICY_SIGNATURE_ALGORITHMS + attributePrefix, signatureAlgorithmsString);
 
         // optional parameters
         String rpId = policy.getRpId();
-        setAttribute(RealmAttributes.WEBAUTHN_POLICY_RP_ID + attributePrefix, rpId);
+        setAttribute(RealmAttribute.WEBAUTHN_POLICY_RP_ID + attributePrefix, rpId);
 
         String attestationConveyancePreference = policy.getAttestationConveyancePreference();
-        setAttribute(RealmAttributes.WEBAUTHN_POLICY_ATTESTATION_CONVEYANCE_PREFERENCE + attributePrefix, attestationConveyancePreference);
+        setAttribute(RealmAttribute.WEBAUTHN_POLICY_ATTESTATION_CONVEYANCE_PREFERENCE + attributePrefix, attestationConveyancePreference);
 
         String authenticatorAttachment = policy.getAuthenticatorAttachment();
-        setAttribute(RealmAttributes.WEBAUTHN_POLICY_AUTHENTICATOR_ATTACHMENT + attributePrefix, authenticatorAttachment);
+        setAttribute(RealmAttribute.WEBAUTHN_POLICY_AUTHENTICATOR_ATTACHMENT + attributePrefix, authenticatorAttachment);
 
         String requireResidentKey = policy.getRequireResidentKey();
-        setAttribute(RealmAttributes.WEBAUTHN_POLICY_REQUIRE_RESIDENT_KEY + attributePrefix, requireResidentKey);
+        setAttribute(RealmAttribute.WEBAUTHN_POLICY_REQUIRE_RESIDENT_KEY + attributePrefix, requireResidentKey);
 
         String userVerificationRequirement = policy.getUserVerificationRequirement();
-        setAttribute(RealmAttributes.WEBAUTHN_POLICY_USER_VERIFICATION_REQUIREMENT + attributePrefix, userVerificationRequirement);
+        setAttribute(RealmAttribute.WEBAUTHN_POLICY_USER_VERIFICATION_REQUIREMENT + attributePrefix, userVerificationRequirement);
 
         int createTime = policy.getCreateTimeout();
-        setAttribute(RealmAttributes.WEBAUTHN_POLICY_CREATE_TIMEOUT + attributePrefix, Integer.toString(createTime));
+        setAttribute(RealmAttribute.WEBAUTHN_POLICY_CREATE_TIMEOUT + attributePrefix, Integer.toString(createTime));
 
         boolean avoidSameAuthenticatorRegister = policy.isAvoidSameAuthenticatorRegister();
-        setAttribute(RealmAttributes.WEBAUTHN_POLICY_AVOID_SAME_AUTHENTICATOR_REGISTER + attributePrefix, Boolean.toString(avoidSameAuthenticatorRegister));
+        setAttribute(RealmAttribute.WEBAUTHN_POLICY_AVOID_SAME_AUTHENTICATOR_REGISTER + attributePrefix, Boolean.toString(avoidSameAuthenticatorRegister));
 
         List<String> acceptableAaguids = policy.getAcceptableAaguids();
         if (acceptableAaguids != null && !acceptableAaguids.isEmpty()) {
             String acceptableAaguidsString = String.join(",", acceptableAaguids);
-            setAttribute(RealmAttributes.WEBAUTHN_POLICY_ACCEPTABLE_AAGUIDS + attributePrefix, acceptableAaguidsString);
+            setAttribute(RealmAttribute.WEBAUTHN_POLICY_ACCEPTABLE_AAGUIDS + attributePrefix, acceptableAaguidsString);
         } else {
-            removeAttribute(RealmAttributes.WEBAUTHN_POLICY_ACCEPTABLE_AAGUIDS + attributePrefix);
+            removeAttribute(RealmAttribute.WEBAUTHN_POLICY_ACCEPTABLE_AAGUIDS + attributePrefix);
         }
     }
 

@@ -32,7 +32,28 @@ import java.io.Serializable;
 @Table(name = "REALM_ATTRIBUTE")
 @Entity
 @IdClass(RealmAttribute.Key.class)
-public class RealmAttribute {
+public class RealmAttribute implements Serializable {
+    public static final String DISPLAY_NAME = "displayName";
+    public static final String DISPLAY_NAME_HTML = "displayNameHtml";
+
+    public static final String ACTION_TOKEN_GENERATED_BY_ADMIN_LIFESPAN = "actionTokenGeneratedByAdminLifespan";
+    public static final String ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN = "actionTokenGeneratedByUserLifespan";
+
+    // KEYCLOAK-7688 Offline Session Max for Offline Token
+    public static final String OFFLINE_SESSION_MAX_LIFESPAN_ENABLED = "offlineSessionMaxLifespanEnabled";
+    public static final String OFFLINE_SESSION_MAX_LIFESPAN = "offlineSessionMaxLifespan";
+
+    public static final String WEBAUTHN_POLICY_RP_ENTITY_NAME = "webAuthnPolicyRpEntityName";
+    public static final String WEBAUTHN_POLICY_SIGNATURE_ALGORITHMS = "webAuthnPolicySignatureAlgorithms";
+    public static final String WEBAUTHN_POLICY_RP_ID = "webAuthnPolicyRpId";
+    public static final String WEBAUTHN_POLICY_ATTESTATION_CONVEYANCE_PREFERENCE = "webAuthnPolicyAttestationConveyancePreference";
+    public static final String WEBAUTHN_POLICY_AUTHENTICATOR_ATTACHMENT = "webAuthnPolicyAuthenticatorAttachment";
+    public static final String WEBAUTHN_POLICY_REQUIRE_RESIDENT_KEY = "webAuthnPolicyRequireResidentKey";
+    public static final String WEBAUTHN_POLICY_USER_VERIFICATION_REQUIREMENT = "webAuthnPolicyUserVerificationRequirement";
+    public static final String WEBAUTHN_POLICY_CREATE_TIMEOUT = "webAuthnPolicyCreateTimeout";
+    public static final String WEBAUTHN_POLICY_AVOID_SAME_AUTHENTICATOR_REGISTER = "webAuthnPolicyAvoidSameAuthenticatorRegister";
+    public static final String WEBAUTHN_POLICY_ACCEPTABLE_AAGUIDS = "webAuthnPolicyAcceptableAaguids";
+
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REALM_ID")
