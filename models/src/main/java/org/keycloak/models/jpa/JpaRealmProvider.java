@@ -18,12 +18,19 @@
 package org.keycloak.models.jpa;
 
 import com.hsbc.unified.iam.core.entity.*;
+import com.hsbc.unified.iam.core.entity.events.RealmCreationEvent;
+import com.hsbc.unified.iam.core.repository.*;
+import com.hsbc.unified.iam.core.service.RealmService;
+import com.hsbc.unified.iam.core.service.RoleService;
 import org.keycloak.common.util.Time;
 import org.keycloak.connections.jpa.util.JpaUtils;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -36,10 +43,30 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class JpaRealmProvider implements RealmProvider {
+public class JpaRealmProvider implements RealmProvider, ApplicationEventPublisherAware {
     protected static final Logger LOG = LoggerFactory.getLogger(JpaRealmProvider.class);
+
+    private ApplicationEventPublisher applicationEventPublisher;
+
     private final KeycloakSession session;
     protected EntityManager em;
+
+    @Autowired
+    private RealmService realmService;
+    @Autowired
+    private RoleService roleService;
+    @Autowired
+    private RealmRepository realmRepository;
+    @Autowired
+    private ClientRepository clientRepository;
+    @Autowired
+    private GroupRoleMappingRepository groupRoleMappingRepository;
+    @Autowired
+    private DefaultClientScopeRealmMappingRepository defaultClientScopeRealmMappingRepository;
+    @Autowired
+    private ClientInitialAccessRepository clientInitialAccessRepository;
+    @Autowired
+    private RoleRepository roleRepository;
 
     public JpaRealmProvider(KeycloakSession session, EntityManager em) {
         this.session = session;
@@ -53,50 +80,28 @@ public class JpaRealmProvider implements RealmProvider {
 
     @Override
     public RealmModel createRealm(String id, String name) {
-        Realm realm = new Realm();
-        realm.setName(name);
-        realm.setId(id);
-        em.persist(realm);
-        em.flush();
-        final RealmModel adapter = new RealmAdapter(session, em, realm);
-        session.getSessionFactory().publish(new RealmModel.RealmCreationEvent() {
-            @Override
-            public RealmModel getCreatedRealm() {
-                return adapter;
-            }
-
-            @Override
-            public KeycloakSession getSession() {
-                return session;
-            }
-        });
-        return adapter;
+        Realm realm = this.realmService.createRealm(id, name);
+        applicationEventPublisher.publishEvent(new RealmCreationEvent(realm));
+        return new RealmAdapter(session, em, realm);
     }
 
     @Override
     public RealmModel getRealm(String id) {
-        Realm realm = em.find(Realm.class, id);
-        if (realm == null) return null;
-        RealmAdapter adapter = new RealmAdapter(session, em, realm);
-        return adapter;
+        return new RealmAdapter(session, em, this.realmService.getRealm(id));
     }
 
     @Override
     public List<RealmModel> getRealmsWithProviderType(Class<?> providerType) {
-        TypedQuery<String> query = em.createNamedQuery("getRealmIdsWithProviderType", String.class);
-        query.setParameter("providerType", providerType.getName());
-        return getRealms(query);
+        return getRealms(this.realmService.getRealmsWithProviderType(providerType));
     }
 
     @Override
     public List<RealmModel> getRealms() {
-        TypedQuery<String> query = em.createNamedQuery("getAllRealmIds", String.class);
-        return getRealms(query);
+        return getRealms(this.realmService.getAllRealmIds());
     }
 
-    private List<RealmModel> getRealms(TypedQuery<String> query) {
-        List<String> entities = query.getResultList();
-        List<RealmModel> realms = new ArrayList<RealmModel>();
+    private List<RealmModel> getRealms(List<String> entities) {
+        List<RealmModel> realms = new ArrayList<>();
         for (String id : entities) {
             RealmModel realm = session.realms().getRealm(id);
             if (realm != null) realms.add(realm);
@@ -107,43 +112,35 @@ public class JpaRealmProvider implements RealmProvider {
 
     @Override
     public RealmModel getRealmByName(String name) {
-        TypedQuery<String> query = em.createNamedQuery("getRealmIdByName", String.class);
-        query.setParameter("name", name);
-        List<String> entities = query.getResultList();
-        if (entities.isEmpty()) return null;
-        if (entities.size() > 1) throw new IllegalStateException("Should not be more than one realm with same name");
-        String id = query.getResultList().get(0);
+        List<String> entities = this.realmService.getRealmIdByName(name);
+        if (entities.isEmpty()) {
+            return null;
+        }
 
-        return session.realms().getRealm(id);
+        if (entities.size() > 1) {
+            throw new IllegalStateException("Should not be more than one realm with same name");
+        }
+
+        return session.realms().getRealm(entities.get(0));
     }
 
     @Override
     public boolean removeRealm(String id) {
-        Realm realm = em.find(Realm.class, id, LockModeType.PESSIMISTIC_WRITE);
+        Realm realm = this.realmService.getRealm(id);
         if (realm == null) {
             return false;
         }
-        em.refresh(realm);
         final RealmAdapter adapter = new RealmAdapter(session, em, realm);
         session.users().preRemove(adapter);
 
-        realm.getDefaultGroups().clear();
-        em.flush();
-
-        int num = em.createNamedQuery("deleteGroupRoleMappingsByRealm")
-                .setParameter("realm", realm).executeUpdate();
-
-        TypedQuery<String> query = em.createNamedQuery("getClientIdsByRealm", String.class);
-        query.setParameter("realm", realm.getId());
-        List<String> clients = query.getResultList();
+        realmService.removeDefaultGroups(realm);
+        groupRoleMappingRepository.deleteGroupRoleMappingsByRealm(realm);
+        List<String> clients = clientRepository.getClientIdsByRealm(realm.getId());
         for (String client : clients) {
             // No need to go through cache. Clients were already invalidated
             removeClient(client, adapter);
         }
-
-        num = em.createNamedQuery("deleteDefaultClientScopeRealmMappingByRealm")
-                .setParameter("realm", realm).executeUpdate();
-
+        defaultClientScopeRealmMappingRepository.deleteDefaultClientScopeRealmMappingByRealm(realm);
         for (ClientScope a : new LinkedList<>(realm.getClientScopes())) {
             adapter.removeClientScope(a.getId());
         }
@@ -157,25 +154,9 @@ public class JpaRealmProvider implements RealmProvider {
             session.realms().removeGroup(adapter, group);
         }
 
-        num = em.createNamedQuery("removeClientInitialAccessByRealm")
-                .setParameter("realm", realm).executeUpdate();
-
-        em.remove(realm);
-
-        em.flush();
-        em.clear();
-
-        session.getSessionFactory().publish(new RealmModel.RealmRemovedEvent() {
-            @Override
-            public RealmModel getRealm() {
-                return adapter;
-            }
-
-            @Override
-            public KeycloakSession getSession() {
-                return session;
-            }
-        });
+        clientInitialAccessRepository.removeClientInitialAccessByRealm(realm);
+        realmRepository.delete(realm);
+        applicationEventPublisher.publishEvent(new RealmCreationEvent(realm));
 
         return true;
     }
@@ -187,7 +168,6 @@ public class JpaRealmProvider implements RealmProvider {
     @Override
     public RoleModel addRealmRole(RealmModel realm, String name) {
         return addRealmRole(realm, KeycloakModelUtils.generateId(), name);
-
     }
 
     @Override
@@ -195,17 +175,10 @@ public class JpaRealmProvider implements RealmProvider {
         if (getRealmRole(realm, name) != null) {
             throw new ModelDuplicateException();
         }
-        Role entity = new Role();
-        entity.setId(id);
-        entity.setName(name);
-        Realm ref = em.getReference(Realm.class, realm.getId());
-        entity.setRealm(ref);
-        entity.setRealmId(realm.getId());
-        em.persist(entity);
-        em.flush();
-        RoleAdapter adapter = new RoleAdapter(session, realm, em, entity);
-        return adapter;
 
+        Realm ref = realmRepository.getOne(realm.getId());
+        Role entity = roleService.createRole(id, name, ref);
+        return new RoleAdapter(session, realm, em, entity);
     }
 
     @Override
@@ -823,4 +796,8 @@ public class JpaRealmProvider implements RealmProvider {
         return model;
     }
 
+    @Override
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        this.applicationEventPublisher = applicationEventPublisher;
+    }
 }

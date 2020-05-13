@@ -237,21 +237,10 @@ public interface RealmModel extends RoleContainerModel {
 
     void setOTPPolicy(OTPPolicy policy);
 
-    /**
-     * @return WebAuthn policy for 2-factor authentication
-     */
     WebAuthnPolicy getWebAuthnPolicy();
 
-    /**
-     * Set WebAuthn policy for 2-factor authentication
-     *
-     * @param policy
-     */
     void setWebAuthnPolicy(WebAuthnPolicy policy);
 
-    /**
-     * @return WebAuthn passwordless policy below. This is temporary and will be removed later.
-     */
     WebAuthnPolicy getWebAuthnPolicyPasswordless();
 
     /**
@@ -395,20 +384,8 @@ public interface RealmModel extends RoleContainerModel {
 
     IdentityProviderMapperModel getIdentityProviderMapperByName(String brokerAlias, String name);
 
-    /**
-     * Adds component model.  Will call onCreate() method of ComponentFactory
-     *
-     * @param model
-     * @return
-     */
     ComponentModel addComponentModel(ComponentModel model);
 
-    /**
-     * Adds component model.  Will NOT call onCreate() method of ComponentFactory
-     *
-     * @param model
-     * @return
-     */
     ComponentModel importComponentModel(ComponentModel model);
 
     void updateComponent(ComponentModel component);
@@ -459,11 +436,6 @@ public interface RealmModel extends RoleContainerModel {
 
     void setEmailTheme(String name);
 
-    /**
-     * Time in seconds since epoc
-     *
-     * @return
-     */
     int getNotBefore();
 
     void setNotBefore(int notBefore);
@@ -487,10 +459,6 @@ public interface RealmModel extends RoleContainerModel {
     boolean isAdminEventsEnabled();
 
     void setAdminEventsEnabled(boolean enabled);
-
-//    boolean isPersistUserSessions();
-//
-//    void setPersistUserSessions();
 
     boolean isAdminEventsDetailsEnabled();
 
@@ -538,15 +506,9 @@ public interface RealmModel extends RoleContainerModel {
 
     List<GroupModel> getTopLevelGroups();
 
-    ;
-
     List<GroupModel> getTopLevelGroups(Integer first, Integer max);
 
-    ;
-
     List<GroupModel> searchForGroupByName(String search, Integer first, Integer max);
-
-    ;
 
     boolean removeGroup(GroupModel group);
 

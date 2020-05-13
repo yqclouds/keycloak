@@ -18,7 +18,7 @@
 package org.keycloak.models.utils;
 
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.Constants;
+import com.hsbc.unified.iam.common.constants.Constants;
 import org.keycloak.models.RealmModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

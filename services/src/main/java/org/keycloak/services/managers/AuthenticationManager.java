@@ -16,8 +16,9 @@
  */
 package org.keycloak.services.managers;
 
+import com.hsbc.unified.iam.common.constants.Constants;
 import org.jboss.resteasy.spi.HttpRequest;
-import org.keycloak.OAuth2Constants;
+import com.hsbc.unified.iam.common.constants.OAuth2Constants;
 import org.keycloak.TokenVerifier;
 import org.keycloak.TokenVerifier.Predicate;
 import org.keycloak.TokenVerifier.TokenTypeCheck;

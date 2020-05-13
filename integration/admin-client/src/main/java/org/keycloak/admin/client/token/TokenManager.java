@@ -27,7 +27,7 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Form;
 
-import static org.keycloak.OAuth2Constants.*;
+import static com.hsbc.unified.iam.common.constants.OAuth2Constants.*;
 
 /**
  * @author rodrigo.sasaki@icarros.com.br

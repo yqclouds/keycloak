@@ -28,16 +28,6 @@ import java.util.*;
  */
 @Entity
 @Table(name = "CLIENT", uniqueConstraints = {@UniqueConstraint(columnNames = {"REALM_ID", "CLIENT_ID"})})
-@NamedQueries({
-        @NamedQuery(name = "getClientsByRealm", query = "select client from Client client where client.realm = :realm"),
-        @NamedQuery(name = "getClientById", query = "select client from Client client where client.id = :id and client.realm.id = :realm"),
-        @NamedQuery(name = "getClientIdsByRealm", query = "select client.id from Client client where client.realm.id = :realm order by client.clientId"),
-        @NamedQuery(name = "getAlwaysDisplayInConsoleClients", query = "select client.id from Client client where client.alwaysDisplayInConsole = true and client.realm.id = :realm  order by client.clientId"),
-        @NamedQuery(name = "findClientIdByClientId", query = "select client.id from Client client where client.clientId = :clientId and client.realm.id = :realm"),
-        @NamedQuery(name = "searchClientsByClientId", query = "select client.id from Client client where lower(client.clientId) like lower(concat('%',:clientId,'%')) and client.realm.id = :realm order by client.clientId"),
-        @NamedQuery(name = "getRealmClientsCount", query = "select count(client) from Client client where client.realm.id = :realm"),
-        @NamedQuery(name = "findClientByClientId", query = "select client from Client client where client.clientId = :clientId and client.realm.id = :realm"),
-})
 public class Client {
 
     @ManyToOne(fetch = FetchType.LAZY)

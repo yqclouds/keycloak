@@ -19,7 +19,7 @@ package org.keycloak.keys;
 
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.crypto.Algorithm;
+import com.hsbc.unified.iam.common.crypto.Algorithm;
 import org.keycloak.crypto.KeyUse;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;

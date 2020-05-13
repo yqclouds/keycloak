@@ -17,9 +17,9 @@
 
 package org.keycloak.models.jpa;
 
+import com.hsbc.unified.iam.common.constants.Constants;
 import com.hsbc.unified.iam.core.entity.*;
 import com.hsbc.unified.iam.core.service.RealmService;
-import com.hsbc.unified.iam.core.entity.SslRequired;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
@@ -128,24 +128,22 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
 
     @Override
     public SslRequired getSslRequired() {
-        return realm.getSslRequired() != null ? SslRequired.valueOf(realm.getSslRequired()) : null;
+        return this.realmService.getSslRequired(realm);
     }
 
     @Override
     public void setSslRequired(SslRequired sslRequired) {
-        realm.setSslRequired(sslRequired.name());
-        em.flush();
+        this.realmService.setSslRequired(realm, sslRequired);
     }
 
     @Override
     public boolean isUserManagedAccessAllowed() {
-        return realm.isAllowUserManagedAccess();
+        return this.realmService.isUserManagedAccessAllowed(realm);
     }
 
     @Override
     public void setUserManagedAccessAllowed(boolean userManagedAccessAllowed) {
-        realm.setAllowUserManagedAccess(userManagedAccessAllowed);
-        em.flush();
+        this.realmService.setUserManagedAccessAllowed(realm, userManagedAccessAllowed);
     }
 
     @Override

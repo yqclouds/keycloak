@@ -16,7 +16,8 @@
  */
 package org.keycloak.protocol.oidc;
 
-import org.keycloak.OAuth2Constants;
+import com.hsbc.unified.iam.common.constants.Constants;
+import com.hsbc.unified.iam.common.constants.OAuth2Constants;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.TokenIdGenerator;
 import org.keycloak.common.util.Time;

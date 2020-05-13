@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.keycloak;
+package com.hsbc.unified.iam.common.constants;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>

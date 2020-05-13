@@ -17,7 +17,7 @@
 
 package org.keycloak.authentication.requiredactions;
 
-import org.keycloak.OAuth2Constants;
+import com.hsbc.unified.iam.common.constants.OAuth2Constants;
 import org.keycloak.authentication.*;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.credential.CredentialProvider;

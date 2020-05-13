@@ -16,6 +16,7 @@
  */
 package org.keycloak.crypto;
 
+import com.hsbc.unified.iam.common.crypto.Algorithm;
 import org.keycloak.common.VerificationException;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;

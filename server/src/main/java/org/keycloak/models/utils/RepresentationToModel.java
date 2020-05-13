@@ -17,9 +17,10 @@
 
 package org.keycloak.models.utils;
 
+import com.hsbc.unified.iam.common.constants.Constants;
 import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.keycloak.Config;
-import org.keycloak.OAuth2Constants;
+import com.hsbc.unified.iam.common.constants.OAuth2Constants;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.AuthorizationProviderFactory;
 import org.keycloak.authorization.model.*;

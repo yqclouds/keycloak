@@ -17,6 +17,7 @@
 
 package org.keycloak.authentication;
 
+import com.hsbc.unified.iam.common.constants.Constants;
 import org.jboss.resteasy.spi.HttpRequest;
 import com.hsbc.unified.iam.common.ClientConnection;
 import org.keycloak.common.util.Time;

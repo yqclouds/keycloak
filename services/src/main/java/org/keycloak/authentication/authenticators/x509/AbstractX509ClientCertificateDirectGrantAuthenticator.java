@@ -18,7 +18,7 @@
 
 package org.keycloak.authentication.authenticators.x509;
 
-import org.keycloak.OAuth2Constants;
+import com.hsbc.unified.iam.common.constants.OAuth2Constants;
 import org.keycloak.authentication.AuthenticationFlowContext;
 
 import javax.ws.rs.core.MediaType;

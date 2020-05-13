@@ -19,7 +19,7 @@ package org.keycloak.keys.loader;
 
 import org.keycloak.authentication.authenticators.client.JWTClientAuthenticator;
 import org.keycloak.common.util.KeyUtils;
-import org.keycloak.crypto.Algorithm;
+import com.hsbc.unified.iam.common.crypto.Algorithm;
 import org.keycloak.crypto.KeyType;
 import org.keycloak.crypto.KeyUse;
 import org.keycloak.crypto.KeyWrapper;

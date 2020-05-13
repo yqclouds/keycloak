@@ -17,6 +17,7 @@
 
 package org.keycloak.partialimport;
 
+import com.hsbc.unified.iam.common.constants.Constants;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.RepresentationToModel;

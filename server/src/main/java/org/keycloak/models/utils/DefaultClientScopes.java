@@ -17,7 +17,8 @@
 
 package org.keycloak.models.utils;
 
-import org.keycloak.OAuth2Constants;
+import com.hsbc.unified.iam.common.constants.Constants;
+import com.hsbc.unified.iam.common.constants.OAuth2Constants;
 import org.keycloak.models.*;
 import org.keycloak.protocol.LoginProtocol;
 import org.keycloak.protocol.LoginProtocolFactory;

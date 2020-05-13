@@ -17,7 +17,7 @@
 
 package org.keycloak.broker.oidc;
 
-import org.keycloak.OAuth2Constants;
+import com.hsbc.unified.iam.common.constants.OAuth2Constants;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.util.SimpleHttp;

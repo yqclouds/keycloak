@@ -25,7 +25,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.keycloak.OAuth2Constants;
+import com.hsbc.unified.iam.common.constants.OAuth2Constants;
 import org.keycloak.adapters.authentication.ClientCredentialsProviderUtils;
 import org.keycloak.adapters.spi.AuthOutcome;
 import org.keycloak.adapters.spi.HttpFacade;

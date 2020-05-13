@@ -18,7 +18,7 @@
 package org.keycloak.representations.idm;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.keycloak.OAuth2Constants;
+import com.hsbc.unified.iam.common.constants.OAuth2Constants;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>

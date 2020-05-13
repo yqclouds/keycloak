@@ -28,7 +28,7 @@ import org.keycloak.authorization.store.PermissionTicketStore;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.authorization.store.ScopeStore;
 import org.keycloak.authorization.store.StoreFactory;
-import org.keycloak.models.Constants;
+import com.hsbc.unified.iam.common.constants.Constants;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserProvider;

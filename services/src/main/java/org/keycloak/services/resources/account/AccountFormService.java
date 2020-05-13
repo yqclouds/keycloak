@@ -184,7 +184,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
 
             UserSessionModel userSession = auth.getSession();
 
-            String tabId = session.getContext().getUri().getQueryParameters().getFirst(org.keycloak.models.Constants.TAB_ID);
+            String tabId = session.getContext().getUri().getQueryParameters().getFirst(com.hsbc.unified.iam.common.constants.Constants.TAB_ID);
             if (tabId != null) {
                 AuthenticationSessionModel authSession = new AuthenticationSessionManager(session).getAuthenticationSessionByIdAndClient(realm, userSession.getId(), client, tabId);
                 if (authSession != null) {

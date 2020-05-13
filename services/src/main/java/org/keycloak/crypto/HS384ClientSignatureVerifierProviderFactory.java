@@ -16,6 +16,7 @@
  */
 package org.keycloak.crypto;
 
+import com.hsbc.unified.iam.common.crypto.Algorithm;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;

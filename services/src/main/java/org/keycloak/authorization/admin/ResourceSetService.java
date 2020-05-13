@@ -17,6 +17,7 @@
  */
 package org.keycloak.authorization.admin;
 
+import com.hsbc.unified.iam.common.constants.Constants;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.authorization.AuthorizationProvider;

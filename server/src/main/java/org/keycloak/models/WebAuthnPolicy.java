@@ -17,7 +17,7 @@
 
 package org.keycloak.models;
 
-import org.keycloak.crypto.Algorithm;
+import com.hsbc.unified.iam.common.crypto.Algorithm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

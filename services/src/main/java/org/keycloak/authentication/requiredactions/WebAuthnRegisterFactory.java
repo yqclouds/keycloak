@@ -21,7 +21,7 @@ import com.webauthn4j.anchor.TrustAnchorsResolverImpl;
 import com.webauthn4j.validator.attestation.trustworthiness.certpath.CertPathTrustworthinessValidator;
 import com.webauthn4j.validator.attestation.trustworthiness.certpath.NullCertPathTrustworthinessValidator;
 import com.webauthn4j.validator.attestation.trustworthiness.certpath.TrustAnchorCertPathTrustworthinessValidator;
-import org.keycloak.OAuth2Constants;
+import com.hsbc.unified.iam.common.constants.OAuth2Constants;
 import org.keycloak.authentication.DisplayTypeRequiredActionFactory;
 import org.keycloak.authentication.RequiredActionFactory;
 import org.keycloak.authentication.RequiredActionProvider;

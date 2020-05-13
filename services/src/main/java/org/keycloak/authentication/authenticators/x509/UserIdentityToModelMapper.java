@@ -19,7 +19,7 @@
 package org.keycloak.authentication.authenticators.x509;
 
 import org.keycloak.authentication.AuthenticationFlowContext;
-import org.keycloak.models.Constants;
+import com.hsbc.unified.iam.common.constants.Constants;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ModelDuplicateException;
 import org.keycloak.models.UserModel;

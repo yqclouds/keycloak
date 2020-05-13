@@ -18,7 +18,7 @@
 package org.keycloak.protocol.oidc;
 
 import org.jboss.resteasy.spi.HttpRequest;
-import org.keycloak.OAuth2Constants;
+import com.hsbc.unified.iam.common.constants.OAuth2Constants;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.TokenCategory;
 import org.keycloak.TokenVerifier;

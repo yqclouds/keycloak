@@ -16,7 +16,8 @@
  */
 package org.keycloak.protocol.oidc;
 
-import org.keycloak.OAuth2Constants;
+import com.hsbc.unified.iam.common.constants.Constants;
+import com.hsbc.unified.iam.common.constants.OAuth2Constants;
 import org.keycloak.common.util.UriUtils;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.*;

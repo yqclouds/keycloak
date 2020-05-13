@@ -17,6 +17,7 @@
 
 package org.keycloak.protocol.oidc.utils;
 
+import com.hsbc.unified.iam.common.constants.Constants;
 import org.keycloak.common.util.UriUtils;
 import org.keycloak.models.*;
 import org.keycloak.services.Urls;

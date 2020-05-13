@@ -24,12 +24,6 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "CLIENT_INITIAL_ACCESS")
-@NamedQueries({
-        @NamedQuery(name = "findClientInitialAccessByRealm", query = "select ia from ClientInitialAccess ia where ia.realm = :realm order by timestamp"),
-        @NamedQuery(name = "removeClientInitialAccessByRealm", query = "delete from ClientInitialAccess ia where ia.realm = :realm"),
-        @NamedQuery(name = "removeExpiredClientInitialAccess", query = "delete from ClientInitialAccess ia where (ia.expiration > 0 and (ia.timestamp + ia.expiration) < :currentTime) or ia.remainingCount = 0"),
-        @NamedQuery(name = "decreaseClientInitialAccessRemainingCount", query = "update ClientInitialAccess ia set ia.remainingCount = ia.remainingCount - 1 where ia.id = :id")
-})
 public class ClientInitialAccess {
 
     @Id

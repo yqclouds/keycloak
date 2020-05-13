@@ -18,6 +18,7 @@
 package org.keycloak.authentication.authenticators.broker.util;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hsbc.unified.iam.common.constants.Constants;
 import org.keycloak.authentication.requiredactions.util.UpdateProfileContext;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.IdentityProvider;

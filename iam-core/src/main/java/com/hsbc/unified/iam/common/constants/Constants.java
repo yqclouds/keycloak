@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package org.keycloak.models;
+package com.hsbc.unified.iam.common.constants;
 
-import org.keycloak.OAuth2Constants;
-import org.keycloak.crypto.Algorithm;
+import com.hsbc.unified.iam.common.constants.OAuth2Constants;
+import com.hsbc.unified.iam.common.crypto.Algorithm;
 
 import java.util.Arrays;
 import java.util.Collection;

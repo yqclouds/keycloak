@@ -44,7 +44,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.*;
 
-import static org.keycloak.models.Constants.ACCOUNT_CONSOLE_CLIENT_ID;
+import static com.hsbc.unified.iam.common.constants.Constants.ACCOUNT_CONSOLE_CLIENT_ID;
 
 /**
  * API for linking/unlinking social login accounts

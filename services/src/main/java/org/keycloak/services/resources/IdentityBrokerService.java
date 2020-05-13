@@ -16,6 +16,7 @@
  */
 package org.keycloak.services.resources;
 
+import com.hsbc.unified.iam.common.constants.Constants;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;

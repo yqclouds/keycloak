@@ -16,6 +16,8 @@
  */
 package org.keycloak.crypto;
 
+import com.hsbc.unified.iam.common.crypto.Algorithm;
+
 public class JavaAlgorithm {
 
     public static final String RS256 = "SHA256withRSA";

@@ -17,6 +17,7 @@
 
 package org.keycloak.protocol.oidc.installation;
 
+import com.hsbc.unified.iam.common.constants.Constants;
 import org.keycloak.authentication.ClientAuthenticator;
 import org.keycloak.authentication.ClientAuthenticatorFactory;
 import org.keycloak.authorization.admin.AuthorizationService;

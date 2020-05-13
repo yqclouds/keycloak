@@ -24,16 +24,6 @@ import java.io.Serializable;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@NamedQueries({
-        @NamedQuery(name = "groupsInRole", query = "select g from GroupRoleMapping m, Group g where m.roleId=:roleId and g.id=m.group"),
-        @NamedQuery(name = "groupHasRole", query = "select m from GroupRoleMapping m where m.group = :group and m.roleId = :roleId"),
-        @NamedQuery(name = "groupRoleMappings", query = "select m from GroupRoleMapping m where m.group = :group"),
-        @NamedQuery(name = "groupRoleMappingIds", query = "select m.roleId from GroupRoleMapping m where m.group = :group"),
-        @NamedQuery(name = "deleteGroupRoleMappingsByRealm", query = "delete from  GroupRoleMapping mapping where mapping.group IN (select u from Group u where u.realm=:realm)"),
-        @NamedQuery(name = "deleteGroupRoleMappingsByRole", query = "delete from GroupRoleMapping m where m.roleId = :roleId"),
-        @NamedQuery(name = "deleteGroupRoleMappingsByGroup", query = "delete from GroupRoleMapping m where m.group = :group")
-
-})
 @Table(name = "GROUP_ROLE_MAPPING")
 @Entity
 @IdClass(GroupRoleMapping.Key.class)

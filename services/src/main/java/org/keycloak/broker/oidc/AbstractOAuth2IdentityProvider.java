@@ -18,7 +18,8 @@ package org.keycloak.broker.oidc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.keycloak.OAuth2Constants;
+import com.hsbc.unified.iam.common.crypto.Algorithm;
+import com.hsbc.unified.iam.common.constants.OAuth2Constants;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.broker.provider.*;
 import org.keycloak.broker.provider.util.SimpleHttp;

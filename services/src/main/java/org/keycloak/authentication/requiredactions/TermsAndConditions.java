@@ -17,7 +17,7 @@
 
 package org.keycloak.authentication.requiredactions;
 
-import org.keycloak.OAuth2Constants;
+import com.hsbc.unified.iam.common.constants.OAuth2Constants;
 import org.keycloak.authentication.DisplayTypeRequiredActionFactory;
 import org.keycloak.authentication.RequiredActionContext;
 import org.keycloak.authentication.RequiredActionFactory;

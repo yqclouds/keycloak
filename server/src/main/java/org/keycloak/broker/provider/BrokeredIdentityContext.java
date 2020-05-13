@@ -16,7 +16,7 @@
  */
 package org.keycloak.broker.provider;
 
-import org.keycloak.models.Constants;
+import com.hsbc.unified.iam.common.constants.Constants;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.sessions.AuthenticationSessionModel;
 

@@ -17,7 +17,7 @@
 
 package org.keycloak.services.clientregistration.oidc;
 
-import org.keycloak.OAuth2Constants;
+import com.hsbc.unified.iam.common.constants.OAuth2Constants;
 import org.keycloak.authentication.ClientAuthenticator;
 import org.keycloak.authentication.ClientAuthenticatorFactory;
 import org.keycloak.authentication.authenticators.client.ClientIdAndSecretAuthenticator;

@@ -17,6 +17,7 @@
 
 package org.keycloak.authentication;
 
+import com.hsbc.unified.iam.common.constants.Constants;
 import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAuthenticator;

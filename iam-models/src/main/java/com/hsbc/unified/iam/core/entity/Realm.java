@@ -22,11 +22,6 @@ import java.util.*;
 
 @Table(name = "REALM")
 @Entity
-@NamedQueries({
-        @NamedQuery(name = "getAllRealmIds", query = "select realm.id from Realm realm"),
-        @NamedQuery(name = "getRealmIdByName", query = "select realm.id from Realm realm where realm.name = :name"),
-        @NamedQuery(name = "getRealmIdsWithProviderType", query = "select distinct c.realm.id from Component c where c.providerType = :providerType"),
-})
 public class Realm {
     @Id
     @Column(name = "ID", length = 36)

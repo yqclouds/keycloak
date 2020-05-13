@@ -16,6 +16,7 @@
  */
 package org.keycloak.services.managers;
 
+import com.hsbc.unified.iam.common.constants.Constants;
 import org.keycloak.Config;
 import org.keycloak.common.Version;
 import com.hsbc.unified.iam.core.entity.SslRequired;

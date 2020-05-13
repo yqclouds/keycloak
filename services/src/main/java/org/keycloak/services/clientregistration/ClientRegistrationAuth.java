@@ -17,6 +17,7 @@
 
 package org.keycloak.services.clientregistration;
 
+import com.hsbc.unified.iam.common.constants.Constants;
 import org.jboss.resteasy.spi.Failure;
 import org.keycloak.Config;
 import org.keycloak.OAuthErrorException;
