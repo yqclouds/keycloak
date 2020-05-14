@@ -1,4 +1,4 @@
-package org.keycloak.models.credential.dto;
+package com.hsbc.unified.iam.facade.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -8,7 +8,8 @@ public class PasswordCredentialData {
     private final String algorithm;
 
     @JsonCreator
-    public PasswordCredentialData(@JsonProperty("hashIterations") int hashIterations, @JsonProperty("algorithm") String algorithm) {
+    public PasswordCredentialData(@JsonProperty("hashIterations") int hashIterations,
+                                  @JsonProperty("algorithm") String algorithm) {
         this.hashIterations = hashIterations;
         this.algorithm = algorithm;
     }

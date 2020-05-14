@@ -24,7 +24,7 @@ import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.IDToken;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import java.util.*;
 import java.util.function.Function;

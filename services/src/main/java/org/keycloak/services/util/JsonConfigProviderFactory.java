@@ -19,9 +19,9 @@ package org.keycloak.services.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.keycloak.Config;
-import org.keycloak.common.util.SystemEnvProperties;
+import com.hsbc.unified.iam.common.util.SystemEnvProperties;
 import org.keycloak.config.ConfigProviderFactory;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -19,7 +19,7 @@ package org.keycloak.keys;
 
 import org.keycloak.common.util.CertificateUtils;
 import org.keycloak.common.util.KeyUtils;
-import org.keycloak.common.util.MultivaluedHashMap;
+import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
 import org.keycloak.common.util.PemUtils;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;

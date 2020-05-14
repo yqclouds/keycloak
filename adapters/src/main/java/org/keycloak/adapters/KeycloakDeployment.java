@@ -30,7 +30,7 @@ import org.keycloak.constants.ServiceUrlConstants;
 import org.keycloak.enums.TokenStore;
 import org.keycloak.protocol.oidc.representations.OIDCConfigurationRepresentation;
 import org.keycloak.representations.adapters.config.AdapterConfig;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -77,7 +77,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.keycloak.models.utils.StripSecretsUtils.stripForExport;
-import static org.keycloak.util.JsonSerialization.readValue;
+import static com.hsbc.unified.iam.common.util.JsonSerialization.readValue;
 
 /**
  * Base resource class for the admin REST api of one realm

@@ -27,7 +27,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.services.Urls;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;

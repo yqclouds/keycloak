@@ -20,7 +20,7 @@ package org.keycloak.adapters;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -16,6 +16,7 @@
  */
 package org.keycloak.credential;
 
+import com.hsbc.unified.iam.facade.model.CredentialModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.provider.Provider;

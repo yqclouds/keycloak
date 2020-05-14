@@ -29,7 +29,7 @@ import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.IDToken;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.util.DefaultClientSessionContext;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import javax.ws.rs.core.Response.Status;
 import java.util.*;

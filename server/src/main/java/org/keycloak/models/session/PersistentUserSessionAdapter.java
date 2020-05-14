@@ -19,7 +19,7 @@ package org.keycloak.models.session;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.keycloak.models.*;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import java.io.IOException;
 import java.util.Collection;

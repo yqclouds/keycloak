@@ -26,7 +26,7 @@ import org.keycloak.authorization.client.AuthorizationDeniedException;
 import org.keycloak.authorization.client.AuthzClient;
 import org.keycloak.authorization.client.resource.PermissionResource;
 import org.keycloak.authorization.client.resource.ProtectionResource;
-import org.keycloak.common.util.Base64;
+import com.hsbc.unified.iam.common.util.Base64;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.adapters.config.PolicyEnforcerConfig;
 import org.keycloak.representations.adapters.config.PolicyEnforcerConfig.PathConfig;
@@ -34,7 +34,7 @@ import org.keycloak.representations.idm.authorization.AuthorizationRequest;
 import org.keycloak.representations.idm.authorization.AuthorizationResponse;
 import org.keycloak.representations.idm.authorization.Permission;
 import org.keycloak.representations.idm.authorization.PermissionRequest;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

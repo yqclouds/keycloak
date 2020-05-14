@@ -17,12 +17,12 @@
 
 package org.keycloak.jose.jwe;
 
-import org.keycloak.common.util.Base64;
+import com.hsbc.unified.iam.common.util.Base64;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.common.util.BouncyIntegration;
 import org.keycloak.jose.jwe.alg.JWEAlgorithmProvider;
 import org.keycloak.jose.jwe.enc.JWEEncryptionProvider;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;

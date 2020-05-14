@@ -17,7 +17,7 @@
 
 package org.keycloak.storage.ldap;
 
-import org.keycloak.common.util.MultivaluedHashMap;
+import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
 import org.keycloak.models.LDAPConstants;
 import org.keycloak.storage.UserStorageProvider;
 

@@ -18,6 +18,8 @@
 package org.keycloak.common.util;
 
 
+import com.hsbc.unified.iam.common.util.Base64;
+
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $

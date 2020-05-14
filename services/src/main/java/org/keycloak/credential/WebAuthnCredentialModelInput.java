@@ -21,7 +21,7 @@ import com.webauthn4j.data.AuthenticationRequest;
 import com.webauthn4j.data.attestation.authenticator.AttestedCredentialData;
 import com.webauthn4j.data.attestation.authenticator.COSEKey;
 import com.webauthn4j.data.attestation.statement.AttestationStatement;
-import org.keycloak.common.util.Base64;
+import com.hsbc.unified.iam.common.util.Base64;
 
 public class WebAuthnCredentialModelInput implements CredentialInput {
 

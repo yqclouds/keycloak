@@ -1,4 +1,4 @@
-package org.keycloak.common.util;
+package com.hsbc.unified.iam.common.util;
 
 /**
  * <p>Encodes and decodes to and from Base64 notation.</p>

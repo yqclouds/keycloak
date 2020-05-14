@@ -22,7 +22,7 @@ import org.keycloak.events.Details;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.models.*;
-import org.keycloak.models.credential.PasswordCredentialModel;
+import com.hsbc.unified.iam.facade.model.PasswordCredentialModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.representations.account.AccountLinkUriRepresentation;
 import org.keycloak.representations.account.LinkedAccountRepresentation;

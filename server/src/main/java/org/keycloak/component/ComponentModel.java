@@ -17,7 +17,7 @@
 
 package org.keycloak.component;
 
-import org.keycloak.common.util.MultivaluedHashMap;
+import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
 
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;

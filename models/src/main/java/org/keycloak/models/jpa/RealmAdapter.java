@@ -19,8 +19,9 @@ package org.keycloak.models.jpa;
 
 import com.hsbc.unified.iam.common.constants.Constants;
 import com.hsbc.unified.iam.core.entity.*;
+import com.hsbc.unified.iam.core.repository.ClientRepository;
 import com.hsbc.unified.iam.core.service.RealmService;
-import org.keycloak.common.util.MultivaluedHashMap;
+import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.*;
@@ -36,8 +37,6 @@ import javax.persistence.TypedQuery;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
-import static java.util.Objects.nonNull;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -58,6 +57,8 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
 
     @Autowired
     private RealmService realmService;
+    @Autowired
+    private ClientRepository clientRepository;
 
     public RealmAdapter(KeycloakSession session, EntityManager em, Realm realm) {
         this.session = session;
@@ -74,7 +75,7 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
 
     @Override
     public Long getClientsCount() {
-        return session.realms().getClientsCount(this);
+        return clientRepository.getRealmClientsCount(this.getId());
     }
 
     public Realm getEntity() {
@@ -148,36 +149,32 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
 
     @Override
     public boolean isRegistrationAllowed() {
-        return realm.isRegistrationAllowed();
+        return realmService.isRegistrationAllowed(realm);
     }
 
     @Override
     public void setRegistrationAllowed(boolean registrationAllowed) {
-        realm.setRegistrationAllowed(registrationAllowed);
-        em.flush();
+        realmService.setRegistrationAllowed(realm, registrationAllowed);
     }
 
     @Override
     public boolean isRegistrationEmailAsUsername() {
-        return realm.isRegistrationEmailAsUsername();
+        return realmService.isRegistrationEmailAsUsername(realm);
     }
 
     @Override
     public void setRegistrationEmailAsUsername(boolean registrationEmailAsUsername) {
-        realm.setRegistrationEmailAsUsername(registrationEmailAsUsername);
-        if (registrationEmailAsUsername) realm.setDuplicateEmailsAllowed(false);
-        em.flush();
+        realmService.setRegistrationEmailAsUsername(realm, registrationEmailAsUsername);
     }
 
     @Override
     public boolean isRememberMe() {
-        return realm.isRememberMe();
+        return realmService.isRememberMe(realm);
     }
 
     @Override
     public void setRememberMe(boolean rememberMe) {
-        realm.setRememberMe(rememberMe);
-        em.flush();
+        realmService.setRememberMe(realm, rememberMe);
     }
 
     @Override
@@ -322,265 +319,243 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
 
     @Override
     public boolean isVerifyEmail() {
-        return realm.isVerifyEmail();
+        return realmService.isVerifyEmail(realm);
     }
 
     @Override
     public void setVerifyEmail(boolean verifyEmail) {
-        realm.setVerifyEmail(verifyEmail);
-        em.flush();
+        realmService.setVerifyEmail(realm, verifyEmail);
     }
 
     @Override
     public boolean isLoginWithEmailAllowed() {
-        return realm.isLoginWithEmailAllowed();
+        return realmService.isLoginWithEmailAllowed(realm);
     }
 
     @Override
     public void setLoginWithEmailAllowed(boolean loginWithEmailAllowed) {
-        realm.setLoginWithEmailAllowed(loginWithEmailAllowed);
-        if (loginWithEmailAllowed) realm.setDuplicateEmailsAllowed(false);
-        em.flush();
+        realmService.setLoginWithEmailAllowed(realm, loginWithEmailAllowed);
     }
 
     @Override
     public boolean isDuplicateEmailsAllowed() {
-        return realm.isDuplicateEmailsAllowed();
+        return realmService.isDuplicateEmailsAllowed(realm);
     }
 
     @Override
     public void setDuplicateEmailsAllowed(boolean duplicateEmailsAllowed) {
-        realm.setDuplicateEmailsAllowed(duplicateEmailsAllowed);
-        if (duplicateEmailsAllowed) {
-            realm.setLoginWithEmailAllowed(false);
-            realm.setRegistrationEmailAsUsername(false);
-        }
-        em.flush();
+        realmService.setDuplicateEmailsAllowed(realm, duplicateEmailsAllowed);
     }
 
     @Override
     public boolean isResetPasswordAllowed() {
-        return realm.isResetPasswordAllowed();
+        return realmService.isResetPasswordAllowed(realm);
     }
 
     @Override
     public void setResetPasswordAllowed(boolean resetPasswordAllowed) {
-        realm.setResetPasswordAllowed(resetPasswordAllowed);
-        em.flush();
+        realmService.setResetPasswordAllowed(realm, resetPasswordAllowed);
     }
 
     @Override
     public boolean isEditUsernameAllowed() {
-        return realm.isEditUsernameAllowed();
+        return realmService.isEditUsernameAllowed(realm);
     }
 
     @Override
     public void setEditUsernameAllowed(boolean editUsernameAllowed) {
-        realm.setEditUsernameAllowed(editUsernameAllowed);
-        em.flush();
+        realmService.setEditUsernameAllowed(realm, editUsernameAllowed);
     }
 
     @Override
     public int getNotBefore() {
-        return realm.getNotBefore();
+        return realmService.getNotBefore(realm);
     }
 
     @Override
     public void setNotBefore(int notBefore) {
-        realm.setNotBefore(notBefore);
+        realmService.setNotBefore(realm, notBefore);
     }
 
     @Override
     public boolean isRevokeRefreshToken() {
-        return realm.isRevokeRefreshToken();
+        return realmService.isRevokeRefreshToken(realm);
     }
 
     @Override
     public void setRevokeRefreshToken(boolean revokeRefreshToken) {
-        realm.setRevokeRefreshToken(revokeRefreshToken);
+        realmService.setRevokeRefreshToken(realm, revokeRefreshToken);
     }
 
     @Override
     public int getRefreshTokenMaxReuse() {
-        return realm.getRefreshTokenMaxReuse();
+        return realmService.getRefreshTokenMaxReuse(realm);
     }
 
     @Override
     public void setRefreshTokenMaxReuse(int revokeRefreshTokenReuseCount) {
-        realm.setRefreshTokenMaxReuse(revokeRefreshTokenReuseCount);
+        realmService.setRefreshTokenMaxReuse(realm, revokeRefreshTokenReuseCount);
     }
 
     @Override
     public int getAccessTokenLifespan() {
-        return realm.getAccessTokenLifespan();
+        return realmService.getAccessTokenLifespan(realm);
     }
 
     @Override
     public void setAccessTokenLifespan(int tokenLifespan) {
-        realm.setAccessTokenLifespan(tokenLifespan);
-        em.flush();
+        realmService.setAccessTokenLifespan(realm, tokenLifespan);
     }
 
     @Override
     public int getAccessTokenLifespanForImplicitFlow() {
-        return realm.getAccessTokenLifespanForImplicitFlow();
+        return realmService.getAccessTokenLifespanForImplicitFlow(realm);
     }
 
     @Override
     public void setAccessTokenLifespanForImplicitFlow(int seconds) {
-        realm.setAccessTokenLifespanForImplicitFlow(seconds);
+        realmService.setAccessTokenLifespanForImplicitFlow(realm, seconds);
     }
 
     @Override
     public int getSsoSessionIdleTimeout() {
-        return realm.getSsoSessionIdleTimeout();
+        return realmService.getSsoSessionIdleTimeout(realm);
     }
 
     @Override
     public void setSsoSessionIdleTimeout(int seconds) {
-        realm.setSsoSessionIdleTimeout(seconds);
+        realmService.setSsoSessionIdleTimeout(realm, seconds);
     }
 
     @Override
     public int getSsoSessionMaxLifespan() {
-        return realm.getSsoSessionMaxLifespan();
+        return realmService.getSsoSessionMaxLifespan(realm);
     }
 
     @Override
     public void setSsoSessionMaxLifespan(int seconds) {
-        realm.setSsoSessionMaxLifespan(seconds);
+        realmService.setSsoSessionMaxLifespan(realm, seconds);
     }
 
     @Override
     public int getSsoSessionIdleTimeoutRememberMe() {
-        return realm.getSsoSessionIdleTimeoutRememberMe();
+        return realmService.getSsoSessionIdleTimeoutRememberMe(realm);
     }
 
     @Override
     public void setSsoSessionIdleTimeoutRememberMe(int seconds) {
-        realm.setSsoSessionIdleTimeoutRememberMe(seconds);
+        realmService.setSsoSessionIdleTimeoutRememberMe(realm, seconds);
     }
 
     @Override
     public int getSsoSessionMaxLifespanRememberMe() {
-        return realm.getSsoSessionMaxLifespanRememberMe();
+        return realmService.getSsoSessionMaxLifespanRememberMe(realm);
     }
 
     @Override
     public void setSsoSessionMaxLifespanRememberMe(int seconds) {
-        realm.setSsoSessionMaxLifespanRememberMe(seconds);
+        realmService.setSsoSessionMaxLifespanRememberMe(realm, seconds);
     }
 
     @Override
     public int getOfflineSessionIdleTimeout() {
-        return realm.getOfflineSessionIdleTimeout();
+        return realmService.getOfflineSessionIdleTimeout(realm);
     }
 
     @Override
     public void setOfflineSessionIdleTimeout(int seconds) {
-        realm.setOfflineSessionIdleTimeout(seconds);
+        realmService.setOfflineSessionIdleTimeout(realm, seconds);
     }
 
-    // KEYCLOAK-7688 Offline Session Max for Offline Token
     @Override
     public boolean isOfflineSessionMaxLifespanEnabled() {
-        return getAttribute(RealmAttribute.OFFLINE_SESSION_MAX_LIFESPAN_ENABLED, false);
+        return realmService.getAttribute(realm, RealmAttribute.OFFLINE_SESSION_MAX_LIFESPAN_ENABLED, false);
     }
 
     @Override
     public void setOfflineSessionMaxLifespanEnabled(boolean offlineSessionMaxLifespanEnabled) {
-        setAttribute(RealmAttribute.OFFLINE_SESSION_MAX_LIFESPAN_ENABLED, offlineSessionMaxLifespanEnabled);
+        realmService.setAttribute(realm, RealmAttribute.OFFLINE_SESSION_MAX_LIFESPAN_ENABLED, offlineSessionMaxLifespanEnabled);
     }
 
     @Override
     public int getOfflineSessionMaxLifespan() {
-        return getAttribute(RealmAttribute.OFFLINE_SESSION_MAX_LIFESPAN, Constants.DEFAULT_OFFLINE_SESSION_MAX_LIFESPAN);
+        return realmService.getAttribute(realm, RealmAttribute.OFFLINE_SESSION_MAX_LIFESPAN, Constants.DEFAULT_OFFLINE_SESSION_MAX_LIFESPAN);
     }
 
     @Override
     public void setOfflineSessionMaxLifespan(int seconds) {
-        setAttribute(RealmAttribute.OFFLINE_SESSION_MAX_LIFESPAN, seconds);
+        realmService.setAttribute(realm, RealmAttribute.OFFLINE_SESSION_MAX_LIFESPAN, seconds);
     }
 
     @Override
     public int getAccessCodeLifespan() {
-        return realm.getAccessCodeLifespan();
+        return realmService.getAccessCodeLifespan(realm);
     }
 
     @Override
     public void setAccessCodeLifespan(int accessCodeLifespan) {
-        realm.setAccessCodeLifespan(accessCodeLifespan);
-        em.flush();
+        realmService.setAccessCodeLifespan(realm, accessCodeLifespan);
     }
 
     @Override
     public int getAccessCodeLifespanUserAction() {
-        return realm.getAccessCodeLifespanUserAction();
+        return realmService.getAccessCodeLifespanUserAction(realm);
     }
 
     @Override
     public void setAccessCodeLifespanUserAction(int accessCodeLifespanUserAction) {
-        realm.setAccessCodeLifespanUserAction(accessCodeLifespanUserAction);
-        em.flush();
+        realmService.setAccessCodeLifespanUserAction(realm, accessCodeLifespanUserAction);
     }
 
     @Override
     public Map<String, Integer> getUserActionTokenLifespans() {
-
-        Map<String, Integer> userActionTokens = new HashMap<>();
-
-        getAttributes().entrySet().stream()
-                .filter(Objects::nonNull)
-                .filter(entry -> nonNull(entry.getValue()))
-                .filter(entry -> entry.getKey().startsWith(RealmAttribute.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN + "."))
-                .forEach(entry -> userActionTokens.put(entry.getKey().substring(RealmAttribute.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN.length() + 1), Integer.valueOf(entry.getValue())));
-
-        return Collections.unmodifiableMap(userActionTokens);
+        return realmService.getUserActionTokenLifespans(realm);
     }
 
     @Override
     public int getAccessCodeLifespanLogin() {
-        return realm.getAccessCodeLifespanLogin();
+        return realmService.getAccessCodeLifespanLogin(realm);
     }
 
     @Override
     public void setAccessCodeLifespanLogin(int accessCodeLifespanLogin) {
-        realm.setAccessCodeLifespanLogin(accessCodeLifespanLogin);
-        em.flush();
+        realmService.setAccessCodeLifespanLogin(realm, accessCodeLifespanLogin);
     }
 
     @Override
     public int getActionTokenGeneratedByAdminLifespan() {
-        return getAttribute(RealmAttribute.ACTION_TOKEN_GENERATED_BY_ADMIN_LIFESPAN, 12 * 60 * 60);
+        return realmService.getAttribute(realm, RealmAttribute.ACTION_TOKEN_GENERATED_BY_ADMIN_LIFESPAN, 12 * 60 * 60);
     }
 
     @Override
     public void setActionTokenGeneratedByAdminLifespan(int actionTokenGeneratedByAdminLifespan) {
-        setAttribute(RealmAttribute.ACTION_TOKEN_GENERATED_BY_ADMIN_LIFESPAN, actionTokenGeneratedByAdminLifespan);
+        realmService.setAttribute(realm, RealmAttribute.ACTION_TOKEN_GENERATED_BY_ADMIN_LIFESPAN, actionTokenGeneratedByAdminLifespan);
     }
 
     @Override
     public int getActionTokenGeneratedByUserLifespan() {
-        return getAttribute(RealmAttribute.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN, getAccessCodeLifespanUserAction());
+        return realmService.getAttribute(realm, RealmAttribute.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN, getAccessCodeLifespanUserAction());
     }
 
     @Override
     public void setActionTokenGeneratedByUserLifespan(int actionTokenGeneratedByUserLifespan) {
-        setAttribute(RealmAttribute.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN, actionTokenGeneratedByUserLifespan);
+        realmService.setAttribute(realm, RealmAttribute.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN, actionTokenGeneratedByUserLifespan);
     }
 
     @Override
     public int getActionTokenGeneratedByUserLifespan(String actionTokenId) {
-        if (actionTokenId == null || getAttribute(RealmAttribute.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN + "." + actionTokenId) == null) {
-            return getActionTokenGeneratedByUserLifespan();
+        if (actionTokenId == null || realmService.getAttribute(realm, RealmAttribute.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN + "." + actionTokenId) == null) {
+            return realmService.getActionTokenGeneratedByUserLifespan(realm);
         }
-        return getAttribute(RealmAttribute.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN + "." + actionTokenId, getAccessCodeLifespanUserAction());
+
+        return realmService.getAttribute(realm, RealmAttribute.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN + "." + actionTokenId, getAccessCodeLifespanUserAction());
     }
 
     @Override
     public void setActionTokenGeneratedByUserLifespan(String actionTokenId, Integer actionTokenGeneratedByUserLifespan) {
-        if (actionTokenGeneratedByUserLifespan != null)
-            setAttribute(RealmAttribute.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN + "." + actionTokenId, actionTokenGeneratedByUserLifespan);
+        if (actionTokenGeneratedByUserLifespan != null) {
+            realmService.setAttribute(realm, RealmAttribute.ACTION_TOKEN_GENERATED_BY_USER_LIFESPAN + "." + actionTokenId, actionTokenGeneratedByUserLifespan);
+        }
     }
 
     protected RequiredCredentialModel initRequiredCredentialModel(String type) {
@@ -588,6 +563,7 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
         if (model == null) {
             throw new RuntimeException("Unknown credential type " + type);
         }
+
         return model;
     }
 

@@ -48,7 +48,7 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.IdentityBrokerService;
 import org.keycloak.services.resources.RealmsResource;
 import org.keycloak.sessions.AuthenticationSessionModel;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 import org.keycloak.vault.VaultStringSecret;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package org.keycloak.credential;
+package com.hsbc.unified.iam.facade.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.keycloak.common.util.Base64;
-import org.keycloak.common.util.MultivaluedHashMap;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.Base64;
+import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import java.io.IOException;
 import java.io.Serializable;

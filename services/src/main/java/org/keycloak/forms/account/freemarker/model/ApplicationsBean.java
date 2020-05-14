@@ -18,7 +18,7 @@
 package org.keycloak.forms.account.freemarker.model;
 
 import com.hsbc.unified.iam.common.constants.Constants;
-import org.keycloak.common.util.MultivaluedHashMap;
+import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
 import org.keycloak.models.*;
 import org.keycloak.protocol.oidc.TokenManager;
 import org.keycloak.services.managers.UserSessionManager;

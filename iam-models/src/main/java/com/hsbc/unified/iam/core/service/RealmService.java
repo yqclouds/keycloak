@@ -2,7 +2,6 @@ package com.hsbc.unified.iam.core.service;
 
 import com.hsbc.unified.iam.core.entity.Realm;
 import com.hsbc.unified.iam.core.entity.SslRequired;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -175,6 +174,14 @@ public interface RealmService {
     int getActionTokenGeneratedByUserLifespan(Realm entity, String actionTokenType);
 
     void setActionTokenGeneratedByUserLifespan(Realm entity, String actionTokenType, Integer seconds);
+
+    boolean isEditUsernameAllowed(Realm entity);
+
+    void setEditUsernameAllowed(Realm entity, boolean editUsernameAllowed);
+
+    int getNotBefore(Realm entity);
+
+    void setNotBefore(Realm entity, int notBefore);
 
     void setAttribute(Realm entity, String name, String value);
 

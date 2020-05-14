@@ -22,7 +22,7 @@ import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.crypto.KeyType;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import java.math.BigInteger;
 import java.security.KeyFactory;

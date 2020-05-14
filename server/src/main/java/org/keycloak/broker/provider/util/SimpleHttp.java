@@ -28,10 +28,10 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicNameValuePair;
-import org.keycloak.common.util.Base64;
+import com.hsbc.unified.iam.common.util.Base64;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;

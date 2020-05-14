@@ -18,7 +18,7 @@
 package org.keycloak.models;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import java.io.IOException;
 import java.io.Serializable;

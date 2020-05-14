@@ -17,12 +17,12 @@
 
 package org.keycloak.device;
 
-import org.keycloak.common.util.Base64;
+import com.hsbc.unified.iam.common.util.Base64;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserSessionModel;
 import org.keycloak.representations.account.DeviceRepresentation;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ua_parser.Client;

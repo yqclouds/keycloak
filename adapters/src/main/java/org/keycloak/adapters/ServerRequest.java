@@ -31,7 +31,7 @@ import org.keycloak.common.util.KeycloakUriBuilder;
 import org.keycloak.common.util.StreamUtil;
 import org.keycloak.constants.AdapterConstants;
 import org.keycloak.representations.AccessTokenResponse;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

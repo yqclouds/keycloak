@@ -18,9 +18,9 @@
 package org.keycloak.models;
 
 import org.keycloak.credential.CredentialInput;
-import org.keycloak.credential.CredentialModel;
+import com.hsbc.unified.iam.facade.model.CredentialModel;
 import org.keycloak.models.credential.OTPCredentialModel;
-import org.keycloak.models.credential.PasswordCredentialModel;
+import com.hsbc.unified.iam.facade.model.PasswordCredentialModel;
 import org.keycloak.models.credential.PasswordUserCredentialModel;
 
 import java.util.HashMap;

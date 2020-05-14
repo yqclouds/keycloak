@@ -41,7 +41,7 @@ import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;

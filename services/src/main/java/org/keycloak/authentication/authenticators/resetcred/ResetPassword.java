@@ -20,7 +20,7 @@ package org.keycloak.authentication.authenticators.resetcred;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.models.UserModel;
-import org.keycloak.models.credential.PasswordCredentialModel;
+import com.hsbc.unified.iam.facade.model.PasswordCredentialModel;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 

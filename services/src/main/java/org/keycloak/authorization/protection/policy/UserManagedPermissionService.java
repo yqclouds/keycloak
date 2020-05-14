@@ -33,7 +33,7 @@ import org.keycloak.common.Profile;
 import org.keycloak.representations.idm.authorization.UmaPermissionRepresentation;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.resources.admin.AdminEventBuilder;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;

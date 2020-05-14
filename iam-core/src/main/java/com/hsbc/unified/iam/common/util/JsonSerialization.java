@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.keycloak.util;
+package com.hsbc.unified.iam.common.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;

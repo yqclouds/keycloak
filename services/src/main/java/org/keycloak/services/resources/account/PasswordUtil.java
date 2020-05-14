@@ -3,7 +3,7 @@ package org.keycloak.services.resources.account;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-import org.keycloak.models.credential.PasswordCredentialModel;
+import com.hsbc.unified.iam.facade.model.PasswordCredentialModel;
 
 public class PasswordUtil {
 

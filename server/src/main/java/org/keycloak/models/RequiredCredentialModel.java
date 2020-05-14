@@ -18,7 +18,7 @@
 package org.keycloak.models;
 
 import org.keycloak.models.credential.OTPCredentialModel;
-import org.keycloak.models.credential.PasswordCredentialModel;
+import com.hsbc.unified.iam.facade.model.PasswordCredentialModel;
 
 import java.io.Serializable;
 import java.util.Collections;

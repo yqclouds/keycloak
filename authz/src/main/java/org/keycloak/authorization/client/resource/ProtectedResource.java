@@ -25,7 +25,7 @@ import org.keycloak.authorization.client.util.HttpMethod;
 import org.keycloak.authorization.client.util.Throwables;
 import org.keycloak.authorization.client.util.TokenCallable;
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import java.util.List;
 import java.util.concurrent.Callable;

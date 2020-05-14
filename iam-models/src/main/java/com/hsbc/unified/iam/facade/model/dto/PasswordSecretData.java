@@ -1,15 +1,14 @@
-package org.keycloak.models.credential.dto;
+package com.hsbc.unified.iam.facade.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.keycloak.common.util.Base64;
+import com.hsbc.unified.iam.common.util.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 public class PasswordSecretData {
-
     public static final Logger LOG = LoggerFactory.getLogger(PasswordSecretData.class);
 
     private final String value;

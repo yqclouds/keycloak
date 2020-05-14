@@ -18,8 +18,8 @@ package org.keycloak.services.managers;
 
 import org.keycloak.TokenIdGenerator;
 import org.keycloak.common.util.KeycloakUriBuilder;
-import org.keycloak.common.util.MultivaluedHashMap;
-import org.keycloak.common.util.StringPropertyReplacer;
+import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
+import com.hsbc.unified.iam.common.util.StringPropertyReplacer;
 import com.hsbc.unified.iam.common.util.Time;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.constants.AdapterConstants;

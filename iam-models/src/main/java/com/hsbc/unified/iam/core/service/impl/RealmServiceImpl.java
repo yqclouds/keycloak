@@ -498,6 +498,28 @@ public class RealmServiceImpl implements RealmService {
     }
 
     @Override
+    public boolean isEditUsernameAllowed(Realm entity) {
+        return entity.isEditUsernameAllowed();
+    }
+
+    @Override
+    public void setEditUsernameAllowed(Realm entity, boolean editUsernameAllowed) {
+        entity.setEditUsernameAllowed(editUsernameAllowed);
+        this.realmRepository.saveAndFlush(entity);
+    }
+
+    @Override
+    public int getNotBefore(Realm entity) {
+        return entity.getNotBefore();
+    }
+
+    @Override
+    public void setNotBefore(Realm entity, int notBefore) {
+        entity.setNotBefore(notBefore);
+        this.realmRepository.saveAndFlush(entity);
+    }
+
+    @Override
     @Transactional
     public void setAttribute(Realm entity, String name, String value) {
         for (RealmAttribute attr : entity.getAttributes()) {

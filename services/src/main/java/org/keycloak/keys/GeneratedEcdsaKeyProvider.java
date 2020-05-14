@@ -16,7 +16,7 @@
  */
 package org.keycloak.keys;
 
-import org.keycloak.common.util.Base64;
+import com.hsbc.unified.iam.common.util.Base64;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.crypto.KeyWrapper;
 import org.keycloak.models.RealmModel;

@@ -17,6 +17,7 @@
 
 package org.keycloak.common.util;
 
+import com.hsbc.unified.iam.common.util.Base64;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 
 import java.io.ByteArrayInputStream;

@@ -16,6 +16,7 @@
 
 package org.keycloak.authentication.requiredactions;
 
+import com.hsbc.unified.iam.facade.model.CredentialModel;
 import com.webauthn4j.WebAuthnManager;
 import com.webauthn4j.converter.util.ObjectConverter;
 import com.webauthn4j.data.RegistrationData;

@@ -17,9 +17,9 @@
 
 package org.keycloak.credential.hash;
 
-import org.keycloak.credential.CredentialModel;
+import com.hsbc.unified.iam.facade.model.CredentialModel;
 import org.keycloak.models.PasswordPolicy;
-import org.keycloak.models.credential.PasswordCredentialModel;
+import com.hsbc.unified.iam.facade.model.PasswordCredentialModel;
 import org.keycloak.provider.Provider;
 
 /**

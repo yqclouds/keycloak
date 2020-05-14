@@ -21,7 +21,7 @@ import org.keycloak.common.util.Base64Url;
 import org.keycloak.crypto.SignatureSignerContext;
 import org.keycloak.jose.jws.crypto.HMACProvider;
 import org.keycloak.jose.jws.crypto.RSAProvider;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;

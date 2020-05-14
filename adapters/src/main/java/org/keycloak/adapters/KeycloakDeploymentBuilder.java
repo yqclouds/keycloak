@@ -29,7 +29,7 @@ import org.keycloak.common.util.PemUtils;
 import org.keycloak.enums.TokenStore;
 import org.keycloak.representations.adapters.config.AdapterConfig;
 import org.keycloak.representations.adapters.config.PolicyEnforcerConfig;
-import org.keycloak.util.SystemPropertiesJsonParserFactory;
+import com.hsbc.unified.iam.common.util.SystemPropertiesJsonParserFactory;
 
 import java.io.IOException;
 import java.io.InputStream;

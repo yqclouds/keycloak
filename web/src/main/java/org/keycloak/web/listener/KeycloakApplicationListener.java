@@ -17,7 +17,7 @@ import org.keycloak.services.resources.KeycloakApplication;
 import org.keycloak.services.scheduled.*;
 import org.keycloak.timer.TimerProvider;
 import org.keycloak.transaction.JtaTransactionManagerLookup;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

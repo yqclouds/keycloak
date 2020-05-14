@@ -16,7 +16,7 @@
  */
 package org.keycloak.storage.federated;
 
-import org.keycloak.credential.CredentialModel;
+import com.hsbc.unified.iam.facade.model.CredentialModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.Provider;
 

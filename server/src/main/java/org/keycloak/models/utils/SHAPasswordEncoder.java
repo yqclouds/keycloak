@@ -17,7 +17,7 @@
 
 package org.keycloak.models.utils;
 
-import org.keycloak.common.util.Base64;
+import com.hsbc.unified.iam.common.util.Base64;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

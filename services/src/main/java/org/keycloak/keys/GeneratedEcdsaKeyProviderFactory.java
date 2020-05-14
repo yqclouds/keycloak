@@ -16,8 +16,8 @@
  */
 package org.keycloak.keys;
 
-import org.keycloak.common.util.Base64;
-import org.keycloak.common.util.MultivaluedHashMap;
+import com.hsbc.unified.iam.common.util.Base64;
+import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
 import com.hsbc.unified.iam.common.crypto.Algorithm;

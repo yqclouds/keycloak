@@ -1,6 +1,7 @@
 package org.keycloak.services.resources.account;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hsbc.unified.iam.facade.model.CredentialModel;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;

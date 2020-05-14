@@ -26,7 +26,7 @@ import org.keycloak.authentication.actiontoken.DefaultActionTokenKey;
 import org.keycloak.authentication.actiontoken.resetcred.ResetCredentialsActionToken;
 import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAuthenticator;
 import com.hsbc.unified.iam.common.util.Time;
-import org.keycloak.credential.CredentialModel;
+import com.hsbc.unified.iam.facade.model.CredentialModel;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.credential.PasswordCredentialProvider;
 import org.keycloak.credential.PasswordCredentialProviderFactory;

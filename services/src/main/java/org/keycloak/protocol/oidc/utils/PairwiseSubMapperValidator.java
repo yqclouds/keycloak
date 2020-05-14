@@ -6,7 +6,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.protocol.ProtocolMapperConfigException;
 import org.keycloak.protocol.oidc.mappers.PairwiseSubMapperHelper;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;

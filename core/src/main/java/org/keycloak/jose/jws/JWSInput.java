@@ -18,7 +18,7 @@
 package org.keycloak.jose.jws;
 
 import org.keycloak.common.util.Base64Url;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

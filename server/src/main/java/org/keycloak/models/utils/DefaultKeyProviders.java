@@ -17,7 +17,7 @@
 
 package org.keycloak.models.utils;
 
-import org.keycloak.common.util.MultivaluedHashMap;
+import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentModel;
 import com.hsbc.unified.iam.common.crypto.Algorithm;
 import org.keycloak.keys.KeyProvider;

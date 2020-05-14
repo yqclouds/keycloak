@@ -16,7 +16,7 @@
 package org.keycloak.forms.login.freemarker.model;
 
 import org.keycloak.common.util.Base64Url;
-import org.keycloak.credential.CredentialModel;
+import com.hsbc.unified.iam.facade.model.CredentialModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;

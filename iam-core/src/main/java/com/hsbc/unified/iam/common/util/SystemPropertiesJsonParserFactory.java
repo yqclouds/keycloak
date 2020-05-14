@@ -15,14 +15,12 @@
  * limitations under the License.
  */
 
-package org.keycloak.util;
+package com.hsbc.unified.iam.common.util;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.util.JsonParserDelegate;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
-import org.keycloak.common.util.StringPropertyReplacer;
-import org.keycloak.common.util.SystemEnvProperties;
 
 import java.io.IOException;
 import java.io.InputStream;

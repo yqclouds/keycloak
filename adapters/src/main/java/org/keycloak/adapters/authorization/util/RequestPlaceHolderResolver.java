@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.keycloak.adapters.spi.HttpFacade;
 import org.keycloak.adapters.spi.HttpFacade.Cookie;
 import org.keycloak.adapters.spi.HttpFacade.Request;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import java.io.*;
 import java.util.ArrayList;

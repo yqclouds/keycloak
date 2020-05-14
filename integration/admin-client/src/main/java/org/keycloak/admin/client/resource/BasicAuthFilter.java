@@ -17,7 +17,7 @@
 
 package org.keycloak.admin.client.resource;
 
-import org.keycloak.common.util.Base64;
+import com.hsbc.unified.iam.common.util.Base64;
 
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;

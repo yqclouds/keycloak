@@ -23,7 +23,7 @@ import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.protocol.oidc.OIDCAdvancedConfigWrapper;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import java.util.HashMap;
 import java.util.HashSet;

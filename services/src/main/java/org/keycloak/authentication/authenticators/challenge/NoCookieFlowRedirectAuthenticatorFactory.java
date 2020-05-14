@@ -20,7 +20,7 @@ import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.credential.PasswordCredentialModel;
+import com.hsbc.unified.iam.facade.model.PasswordCredentialModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;

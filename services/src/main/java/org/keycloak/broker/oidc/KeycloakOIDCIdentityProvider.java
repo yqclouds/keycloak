@@ -36,7 +36,7 @@ import org.keycloak.representations.adapters.action.AdminAction;
 import org.keycloak.representations.adapters.action.LogoutAction;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.managers.AuthenticationManager;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;

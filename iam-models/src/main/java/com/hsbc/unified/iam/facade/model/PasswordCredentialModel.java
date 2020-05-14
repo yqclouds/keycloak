@@ -1,9 +1,8 @@
-package org.keycloak.models.credential;
+package com.hsbc.unified.iam.facade.model;
 
-import org.keycloak.credential.CredentialModel;
-import org.keycloak.models.credential.dto.PasswordCredentialData;
-import org.keycloak.models.credential.dto.PasswordSecretData;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.facade.model.dto.PasswordCredentialData;
+import com.hsbc.unified.iam.facade.model.dto.PasswordSecretData;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import java.io.IOException;
 

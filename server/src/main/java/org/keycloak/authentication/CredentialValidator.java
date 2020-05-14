@@ -1,6 +1,6 @@
 package org.keycloak.authentication;
 
-import org.keycloak.credential.CredentialModel;
+import com.hsbc.unified.iam.facade.model.CredentialModel;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;

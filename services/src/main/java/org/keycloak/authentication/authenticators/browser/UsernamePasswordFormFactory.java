@@ -24,7 +24,7 @@ import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.authentication.DisplayTypeAuthenticatorFactory;
 import org.keycloak.authentication.authenticators.console.ConsoleUsernamePasswordAuthenticator;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.credential.PasswordCredentialModel;
+import com.hsbc.unified.iam.facade.model.PasswordCredentialModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;

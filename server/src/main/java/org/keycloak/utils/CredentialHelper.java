@@ -19,7 +19,7 @@ package org.keycloak.utils;
 
 import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
 import org.keycloak.authentication.*;
-import org.keycloak.credential.CredentialModel;
+import com.hsbc.unified.iam.facade.model.CredentialModel;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.models.*;
 import org.keycloak.models.credential.OTPCredentialModel;

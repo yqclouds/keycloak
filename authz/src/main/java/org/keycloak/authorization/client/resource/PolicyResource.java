@@ -22,7 +22,7 @@ import org.keycloak.authorization.client.util.Http;
 import org.keycloak.authorization.client.util.Throwables;
 import org.keycloak.authorization.client.util.TokenCallable;
 import org.keycloak.representations.idm.authorization.UmaPermissionRepresentation;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import java.util.List;
 import java.util.concurrent.Callable;

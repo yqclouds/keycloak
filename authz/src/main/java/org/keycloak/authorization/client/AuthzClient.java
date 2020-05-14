@@ -24,7 +24,7 @@ import org.keycloak.authorization.client.util.Http;
 import org.keycloak.authorization.client.util.TokenCallable;
 import org.keycloak.common.util.KeycloakUriBuilder;
 import org.keycloak.representations.AccessTokenResponse;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import java.io.IOException;
 import java.io.InputStream;

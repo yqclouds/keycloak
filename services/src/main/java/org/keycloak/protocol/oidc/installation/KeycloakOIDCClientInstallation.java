@@ -28,7 +28,7 @@ import org.keycloak.protocol.oidc.mappers.AudienceProtocolMapper;
 import org.keycloak.representations.adapters.config.PolicyEnforcerConfig;
 import org.keycloak.services.managers.ClientManager;
 import org.keycloak.stereotype.ProviderFactory;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MediaType;

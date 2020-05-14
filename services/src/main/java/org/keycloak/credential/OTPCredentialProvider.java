@@ -16,6 +16,7 @@
  */
 package org.keycloak.credential;
 
+import com.hsbc.unified.iam.facade.model.CredentialModel;
 import org.keycloak.common.util.ObjectUtil;
 import com.hsbc.unified.iam.common.util.Time;
 import org.keycloak.models.*;

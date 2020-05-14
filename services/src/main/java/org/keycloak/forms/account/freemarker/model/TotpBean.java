@@ -17,7 +17,7 @@
 
 package org.keycloak.forms.account.freemarker.model;
 
-import org.keycloak.credential.CredentialModel;
+import com.hsbc.unified.iam.facade.model.CredentialModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.OTPPolicy;
 import org.keycloak.models.RealmModel;

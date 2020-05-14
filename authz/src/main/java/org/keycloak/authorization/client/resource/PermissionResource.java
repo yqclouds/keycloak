@@ -25,7 +25,7 @@ import org.keycloak.authorization.client.util.TokenCallable;
 import org.keycloak.representations.idm.authorization.PermissionRequest;
 import org.keycloak.representations.idm.authorization.PermissionResponse;
 import org.keycloak.representations.idm.authorization.PermissionTicketRepresentation;
-import org.keycloak.util.JsonSerialization;
+import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import java.util.Arrays;
 import java.util.List;

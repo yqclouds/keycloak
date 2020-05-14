@@ -19,7 +19,7 @@
 package org.keycloak.forms.login.freemarker.model;
 
 import org.keycloak.authentication.authenticators.browser.OTPFormAuthenticator;
-import org.keycloak.credential.CredentialModel;
+import com.hsbc.unified.iam.facade.model.CredentialModel;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.credential.OTPCredentialProvider;
 import org.keycloak.credential.OTPCredentialProviderFactory;
