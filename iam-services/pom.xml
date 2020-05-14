@@ -8,10 +8,10 @@
         <version>2.2.5.RELEASE</version>
     </parent>
     <groupId>com.hsbc.unified.iam</groupId>
-    <artifactId>iam-models</artifactId>
+    <artifactId>iam-services</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
-    <name>Unified IAM Models</name>
+    <name>Unified IAM Services</name>
     <description/>
 
     <dependencies>

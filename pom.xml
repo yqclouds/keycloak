@@ -121,7 +121,8 @@
         <module>web</module>
 
         <module>iam-core</module>
-        <module>iam-models</module>
+        <module>iam-services</module>
+        <module>iam-facades</module>
     </modules>
 
     <dependencyManagement>
