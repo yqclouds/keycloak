@@ -1,2 +1,0 @@
-org.keycloak.crypto.Aes128CbcHmacSha256ContentEncryptionProviderFactory
-org.keycloak.crypto.Aes128GcmContentEncryptionProviderFactory

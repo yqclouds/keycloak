@@ -11,6 +11,9 @@
     <artifactId>iam-core</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
+    <name>Unified IAM Core</name>
+    <description/>
+
     <dependencies>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

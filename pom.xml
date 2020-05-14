@@ -117,12 +117,8 @@
 
     <modules>
         <module>adapters</module>
-        <module>authz</module>
         <module>core</module>
-        <module>server</module>
         <module>federation</module>
-        <module>services</module>
-        <module>models</module>
         <module>integration</module>
         <module>web</module>
 
