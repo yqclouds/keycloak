@@ -17,12 +17,12 @@
 
 package org.keycloak.services.clientregistration;
 
-import com.hsbc.unified.iam.common.constants.Constants;
+import com.hsbc.unified.iam.core.constants.Constants;
 import org.jboss.resteasy.spi.Failure;
 import org.keycloak.Config;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.authentication.AuthenticationProcessor;
-import com.hsbc.unified.iam.common.util.Time;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;

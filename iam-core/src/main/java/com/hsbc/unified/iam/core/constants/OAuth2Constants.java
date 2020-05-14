@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.hsbc.unified.iam.common.constants;
+package com.hsbc.unified.iam.core.constants;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>

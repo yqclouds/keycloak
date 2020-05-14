@@ -17,7 +17,7 @@
 
 package org.keycloak.forms.account.freemarker.model;
 
-import com.hsbc.unified.iam.common.constants.Constants;
+import com.hsbc.unified.iam.core.constants.Constants;
 import org.keycloak.models.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

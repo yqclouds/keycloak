@@ -16,7 +16,7 @@
  */
 package org.keycloak.broker.oidc;
 
-import com.hsbc.unified.iam.core.entity.SslRequired;
+import com.hsbc.unified.iam.entity.SslRequired;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.RealmModel;
 

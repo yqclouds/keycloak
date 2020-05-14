@@ -17,8 +17,8 @@
 
 package org.keycloak.util;
 
-import com.hsbc.unified.iam.common.constants.OAuth2Constants;
-import com.hsbc.unified.iam.common.util.JsonSerialization;
+import com.hsbc.unified.iam.core.constants.OAuth2Constants;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.keycloak.jose.jwe.*;
 import org.keycloak.jose.jwe.alg.JWEAlgorithmProvider;
 import org.keycloak.jose.jwe.enc.JWEEncryptionProvider;

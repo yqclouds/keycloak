@@ -30,7 +30,7 @@ import org.keycloak.adapters.authorization.util.PlaceHolders;
 import org.keycloak.adapters.spi.HttpFacade;
 import org.keycloak.authorization.client.util.HttpResponseException;
 import org.keycloak.common.util.StreamUtil;
-import com.hsbc.unified.iam.common.util.JsonSerialization;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;

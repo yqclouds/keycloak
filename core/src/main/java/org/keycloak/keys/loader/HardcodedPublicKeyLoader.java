@@ -17,7 +17,7 @@
 package org.keycloak.keys.loader;
 
 import org.keycloak.common.util.PemUtils;
-import com.hsbc.unified.iam.common.crypto.Algorithm;
+import com.hsbc.unified.iam.core.crypto.Algorithm;
 import org.keycloak.crypto.KeyType;
 import org.keycloak.crypto.KeyUse;
 import org.keycloak.crypto.KeyWrapper;

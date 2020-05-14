@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.hsbc.unified.iam.common.util;
+package com.hsbc.unified.iam.core.util;
 
 import java.util.Date;
 

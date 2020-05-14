@@ -17,7 +17,7 @@
 
 package org.keycloak.services;
 
-import com.hsbc.unified.iam.common.ClientConnection;
+import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.common.util.Resteasy;
 import org.keycloak.locale.LocaleSelectorProvider;
 import org.keycloak.models.*;

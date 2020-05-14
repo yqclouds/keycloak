@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.hsbc.unified.iam.core.entity;
+package com.hsbc.unified.iam.entity;
 
-import com.hsbc.unified.iam.common.ClientConnection;
+import com.hsbc.unified.iam.core.ClientConnection;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

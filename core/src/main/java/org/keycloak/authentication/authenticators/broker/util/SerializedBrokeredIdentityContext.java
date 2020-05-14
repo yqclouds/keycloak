@@ -18,7 +18,7 @@
 package org.keycloak.authentication.authenticators.broker.util;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hsbc.unified.iam.common.constants.Constants;
+import com.hsbc.unified.iam.core.constants.Constants;
 import org.keycloak.authentication.requiredactions.util.UpdateProfileContext;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.IdentityProvider;
@@ -28,7 +28,7 @@ import org.keycloak.common.util.reflections.Reflections;
 import org.keycloak.models.*;
 import org.keycloak.services.resources.IdentityBrokerService;
 import org.keycloak.sessions.AuthenticationSessionModel;
-import com.hsbc.unified.iam.common.util.JsonSerialization;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 
 import java.io.IOException;
 import java.util.ArrayList;

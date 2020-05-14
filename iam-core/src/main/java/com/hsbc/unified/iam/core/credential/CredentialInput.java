@@ -14,24 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.hsbc.unified.iam.common;
+package com.hsbc.unified.iam.core.credential;
 
 /**
- * Information about the client connection
- *
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public interface ClientConnection {
+public interface CredentialInput {
+    String getCredentialId();
 
-    String getRemoteAddr();
+    String getType();
 
-    String getRemoteHost();
-
-    int getRemotePort();
-
-    String getLocalAddr();
-
-    int getLocalPort();
+    String getChallengeResponse();
 }

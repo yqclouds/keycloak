@@ -19,7 +19,7 @@ package org.keycloak.services.resources.admin;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import com.hsbc.unified.iam.common.ClientConnection;
+import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.models.*;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.TokenManager;

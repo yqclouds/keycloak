@@ -17,12 +17,12 @@
 
 package org.keycloak.authentication.requiredactions;
 
-import com.hsbc.unified.iam.common.constants.OAuth2Constants;
+import com.hsbc.unified.iam.core.constants.OAuth2Constants;
 import org.keycloak.authentication.DisplayTypeRequiredActionFactory;
 import org.keycloak.authentication.RequiredActionContext;
 import org.keycloak.authentication.RequiredActionFactory;
 import org.keycloak.authentication.RequiredActionProvider;
-import com.hsbc.unified.iam.common.util.Time;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;

@@ -16,10 +16,10 @@
  */
 package org.keycloak.credential;
 
-import com.hsbc.unified.iam.common.credential.CredentialInput;
+import com.hsbc.unified.iam.core.credential.CredentialInput;
 import org.keycloak.models.CredentialModel;
 import org.keycloak.common.util.ObjectUtil;
-import com.hsbc.unified.iam.common.util.Time;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.models.*;
 import org.keycloak.models.credential.OTPCredentialModel;
 import org.keycloak.models.dto.OTPCredentialData;

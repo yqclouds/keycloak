@@ -16,9 +16,9 @@
  */
 package org.keycloak.services.resources;
 
-import com.hsbc.unified.iam.common.constants.Constants;
+import com.hsbc.unified.iam.core.constants.Constants;
 import org.jboss.resteasy.spi.HttpRequest;
-import com.hsbc.unified.iam.common.constants.OAuth2Constants;
+import com.hsbc.unified.iam.core.constants.OAuth2Constants;
 import org.keycloak.TokenVerifier;
 import org.keycloak.authentication.*;
 import org.keycloak.authentication.actiontoken.ActionTokenContext;
@@ -31,9 +31,9 @@ import org.keycloak.authentication.authenticators.broker.util.PostBrokerLoginCon
 import org.keycloak.authentication.authenticators.broker.util.SerializedBrokeredIdentityContext;
 import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAuthenticator;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
-import com.hsbc.unified.iam.common.ClientConnection;
+import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.common.VerificationException;
-import com.hsbc.unified.iam.common.util.Time;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.crypto.SignatureProvider;
 import org.keycloak.crypto.SignatureVerifierContext;
 import org.keycloak.events.Details;

@@ -20,7 +20,7 @@ package org.keycloak.theme;
 import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
-import com.hsbc.unified.iam.common.util.JsonSerialization;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 
 import java.io.InputStream;
 import java.util.HashMap;

@@ -16,8 +16,8 @@
  */
 package org.keycloak.storage.adapter;
 
-import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
-import com.hsbc.unified.iam.common.util.Time;
+import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.DefaultRoles;
 import org.keycloak.models.utils.RoleUtils;

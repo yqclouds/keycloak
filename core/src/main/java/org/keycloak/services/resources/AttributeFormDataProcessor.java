@@ -19,7 +19,7 @@ package org.keycloak.services.resources;
 
 import org.keycloak.authentication.requiredactions.util.UpdateProfileContext;
 import org.keycloak.authentication.requiredactions.util.UserUpdateProfileContext;
-import com.hsbc.unified.iam.common.constants.Constants;
+import com.hsbc.unified.iam.core.constants.Constants;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 

@@ -18,9 +18,9 @@ package org.keycloak.services.resources.account;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.HttpRequest;
-import com.hsbc.unified.iam.common.ClientConnection;
+import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.common.Profile;
-import com.hsbc.unified.iam.common.util.StringPropertyReplacer;
+import com.hsbc.unified.iam.core.util.StringPropertyReplacer;
 import org.keycloak.events.Details;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventStoreProvider;

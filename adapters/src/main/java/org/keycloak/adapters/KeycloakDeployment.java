@@ -23,14 +23,14 @@ import org.apache.http.client.methods.HttpGet;
 import org.keycloak.adapters.authentication.ClientCredentialsProvider;
 import org.keycloak.adapters.authorization.PolicyEnforcer;
 import org.keycloak.adapters.rotation.PublicKeyLocator;
-import com.hsbc.unified.iam.common.enums.RelativeUrlsUsed;
-import com.hsbc.unified.iam.core.entity.SslRequired;
+import com.hsbc.unified.iam.core.enums.RelativeUrlsUsed;
+import com.hsbc.unified.iam.entity.SslRequired;
 import org.keycloak.common.util.KeycloakUriBuilder;
 import org.keycloak.constants.ServiceUrlConstants;
 import org.keycloak.enums.TokenStore;
 import org.keycloak.protocol.oidc.representations.OIDCConfigurationRepresentation;
 import org.keycloak.representations.adapters.config.AdapterConfig;
-import com.hsbc.unified.iam.common.util.JsonSerialization;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -20,7 +20,7 @@ package org.keycloak.authentication.requiredactions;
 import org.keycloak.authentication.ConsoleDisplayMode;
 import org.keycloak.authentication.RequiredActionContext;
 import org.keycloak.authentication.RequiredActionProvider;
-import com.hsbc.unified.iam.common.util.Time;
+import com.hsbc.unified.iam.core.util.Time;
 
 import javax.ws.rs.core.Response;
 import java.util.Arrays;

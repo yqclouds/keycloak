@@ -17,7 +17,7 @@
 package org.keycloak.adapters.authorization.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.hsbc.unified.iam.common.util.JsonSerialization;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 
 import java.io.IOException;
 import java.util.ArrayList;

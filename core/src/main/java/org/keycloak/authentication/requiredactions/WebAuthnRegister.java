@@ -46,7 +46,7 @@ import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.common.util.UriUtils;
 import org.keycloak.credential.*;
-import com.hsbc.unified.iam.common.crypto.Algorithm;
+import com.hsbc.unified.iam.core.crypto.Algorithm;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.models.CredentialModel;

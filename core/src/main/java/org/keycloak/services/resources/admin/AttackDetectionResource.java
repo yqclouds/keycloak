@@ -17,8 +17,8 @@
 package org.keycloak.services.resources.admin;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
-import com.hsbc.unified.iam.common.ClientConnection;
-import com.hsbc.unified.iam.common.util.Time;
+import com.hsbc.unified.iam.core.ClientConnection;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.KeycloakSession;

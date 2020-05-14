@@ -24,12 +24,12 @@ import org.keycloak.adapters.authentication.ClientCredentialsProviderUtils;
 import org.keycloak.adapters.authorization.PolicyEnforcer;
 import org.keycloak.adapters.rotation.HardcodedPublicKeyLocator;
 import org.keycloak.adapters.rotation.JWKPublicKeyLocator;
-import com.hsbc.unified.iam.core.entity.SslRequired;
+import com.hsbc.unified.iam.entity.SslRequired;
 import org.keycloak.common.util.PemUtils;
 import org.keycloak.enums.TokenStore;
 import org.keycloak.representations.adapters.config.AdapterConfig;
 import org.keycloak.representations.adapters.config.PolicyEnforcerConfig;
-import com.hsbc.unified.iam.common.util.SystemPropertiesJsonParserFactory;
+import com.hsbc.unified.iam.core.util.SystemPropertiesJsonParserFactory;
 
 import java.io.IOException;
 import java.io.InputStream;

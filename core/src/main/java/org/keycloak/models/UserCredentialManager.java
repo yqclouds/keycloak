@@ -16,7 +16,7 @@
  */
 package org.keycloak.models;
 
-import com.hsbc.unified.iam.common.credential.CredentialInput;
+import com.hsbc.unified.iam.core.credential.CredentialInput;
 import org.keycloak.credential.UserCredentialStore;
 
 import java.util.List;

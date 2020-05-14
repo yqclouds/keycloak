@@ -16,8 +16,8 @@
  */
 package org.keycloak.services.managers;
 
-import com.hsbc.unified.iam.common.constants.Constants;
-import com.hsbc.unified.iam.common.util.Time;
+import com.hsbc.unified.iam.core.constants.Constants;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.models.*;
 import org.keycloak.models.session.UserSessionPersisterProvider;
 import org.slf4j.Logger;

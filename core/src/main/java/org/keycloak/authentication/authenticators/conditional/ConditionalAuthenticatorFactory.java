@@ -1,6 +1,6 @@
 package org.keycloak.authentication.authenticators.conditional;
 
-import com.hsbc.unified.iam.common.constants.OAuth2Constants;
+import com.hsbc.unified.iam.core.constants.OAuth2Constants;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.authentication.DisplayTypeAuthenticatorFactory;

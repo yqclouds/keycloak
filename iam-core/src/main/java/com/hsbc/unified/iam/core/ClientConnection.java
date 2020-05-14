@@ -15,20 +15,23 @@
  * limitations under the License.
  */
 
-package com.hsbc.unified.iam.common.enums;
+package com.hsbc.unified.iam.core;
 
 /**
- * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
+ * Information about the client connection
+ *
+ * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
+ * @version $Revision: 1 $
  */
-public enum RelativeUrlsUsed {
+public interface ClientConnection {
 
-    /**
-     * Always use relative URI and resolve them later based on browser HTTP request
-     */
-    ALWAYS,
+    String getRemoteAddr();
 
-    /**
-     * Relative Uri not used. Configuration contains absolute URI
-     */
-    NEVER;
+    String getRemoteHost();
+
+    int getRemotePort();
+
+    String getLocalAddr();
+
+    int getLocalPort();
 }

@@ -19,8 +19,8 @@ package org.keycloak.theme;
 
 import org.keycloak.Config;
 import org.keycloak.common.Version;
-import com.hsbc.unified.iam.common.util.StringPropertyReplacer;
-import com.hsbc.unified.iam.common.util.SystemEnvProperties;
+import com.hsbc.unified.iam.core.util.StringPropertyReplacer;
+import com.hsbc.unified.iam.core.util.SystemEnvProperties;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ThemeManager;
 import org.slf4j.Logger;

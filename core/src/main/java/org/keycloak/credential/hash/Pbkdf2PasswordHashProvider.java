@@ -17,7 +17,7 @@
 
 package org.keycloak.credential.hash;
 
-import com.hsbc.unified.iam.common.util.Base64;
+import com.hsbc.unified.iam.core.util.Base64;
 import org.keycloak.models.PasswordCredentialModel;
 import org.keycloak.models.PasswordPolicy;
 

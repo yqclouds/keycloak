@@ -17,7 +17,7 @@
 
 package org.keycloak.representations.idm;
 
-import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
+import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>

@@ -17,12 +17,12 @@
 
 package org.keycloak.models.utils;
 
-import com.hsbc.unified.iam.common.constants.Constants;
-import com.hsbc.unified.iam.common.constants.OAuth2Constants;
-import com.hsbc.unified.iam.common.util.JsonSerialization;
-import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
+import com.hsbc.unified.iam.core.constants.Constants;
+import com.hsbc.unified.iam.core.constants.OAuth2Constants;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
+import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
 import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
-import com.hsbc.unified.iam.core.entity.SslRequired;
+import com.hsbc.unified.iam.entity.SslRequired;
 import org.keycloak.Config;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.AuthorizationProviderFactory;

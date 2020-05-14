@@ -16,8 +16,8 @@
  */
 package org.keycloak.services.resources.admin;
 
-import com.hsbc.unified.iam.common.ClientConnection;
-import com.hsbc.unified.iam.common.util.Time;
+import com.hsbc.unified.iam.core.ClientConnection;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.EventStoreProvider;
 import org.keycloak.events.admin.AdminEvent;
@@ -28,7 +28,7 @@ import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-import com.hsbc.unified.iam.common.util.JsonSerialization;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

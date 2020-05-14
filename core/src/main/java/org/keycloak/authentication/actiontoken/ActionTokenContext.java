@@ -17,9 +17,9 @@
 package org.keycloak.authentication.actiontoken;
 
 import org.jboss.resteasy.spi.HttpRequest;
-import com.hsbc.unified.iam.common.constants.OAuth2Constants;
+import com.hsbc.unified.iam.core.constants.OAuth2Constants;
 import org.keycloak.authentication.AuthenticationProcessor;
-import com.hsbc.unified.iam.common.ClientConnection;
+import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.ClientModel;

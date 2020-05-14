@@ -17,8 +17,8 @@
 
 package org.keycloak.models.utils;
 
-import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
-import com.hsbc.unified.iam.common.util.Time;
+import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.model.*;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;

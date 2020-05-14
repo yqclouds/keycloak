@@ -17,8 +17,8 @@
 
 package org.keycloak.common.util;
 
-import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
-import com.hsbc.unified.iam.core.entity.SslRequired;
+import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
+import com.hsbc.unified.iam.entity.SslRequired;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;

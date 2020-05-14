@@ -20,7 +20,7 @@ package org.keycloak.adapters.tomcat;
 import org.keycloak.adapters.spi.AuthenticationError;
 import org.keycloak.adapters.spi.HttpFacade;
 import org.keycloak.adapters.spi.LogoutError;
-import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
+import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
 import org.keycloak.common.util.ServerCookie;
 import org.keycloak.common.util.UriUtils;
 

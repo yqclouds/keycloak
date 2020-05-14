@@ -18,7 +18,7 @@
 package org.keycloak.keys;
 
 import org.keycloak.component.ComponentModel;
-import com.hsbc.unified.iam.common.crypto.Algorithm;
+import com.hsbc.unified.iam.core.crypto.Algorithm;
 import org.keycloak.crypto.KeyType;
 import org.keycloak.crypto.KeyUse;
 

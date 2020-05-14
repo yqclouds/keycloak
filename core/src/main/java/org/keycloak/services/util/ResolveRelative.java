@@ -17,7 +17,7 @@
 
 package org.keycloak.services.util;
 
-import com.hsbc.unified.iam.common.constants.Constants;
+import com.hsbc.unified.iam.core.constants.Constants;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.urls.UrlType;
 

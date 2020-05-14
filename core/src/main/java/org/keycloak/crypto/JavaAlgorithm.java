@@ -16,7 +16,7 @@
  */
 package org.keycloak.crypto;
 
-import com.hsbc.unified.iam.common.crypto.Algorithm;
+import com.hsbc.unified.iam.core.crypto.Algorithm;
 
 public class JavaAlgorithm {
 

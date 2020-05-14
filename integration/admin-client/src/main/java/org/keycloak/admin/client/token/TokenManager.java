@@ -20,14 +20,14 @@ package org.keycloak.admin.client.token;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.keycloak.admin.client.Config;
 import org.keycloak.admin.client.resource.BasicAuthFilter;
-import com.hsbc.unified.iam.common.util.Time;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.representations.AccessTokenResponse;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Form;
 
-import static com.hsbc.unified.iam.common.constants.OAuth2Constants.*;
+import static com.hsbc.unified.iam.core.constants.OAuth2Constants.*;
 
 /**
  * @author rodrigo.sasaki@icarros.com.br

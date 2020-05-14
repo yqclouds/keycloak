@@ -1,7 +1,7 @@
 package com.hsbc.unified.iam.service;
 
 import com.hsbc.unified.iam.entity.Realm;
-import com.hsbc.unified.iam.core.entity.SslRequired;
+import com.hsbc.unified.iam.entity.SslRequired;
 
 import java.util.List;
 import java.util.Map;

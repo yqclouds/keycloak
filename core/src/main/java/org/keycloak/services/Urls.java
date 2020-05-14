@@ -17,7 +17,7 @@
 package org.keycloak.services;
 
 import org.keycloak.common.Version;
-import com.hsbc.unified.iam.common.constants.Constants;
+import com.hsbc.unified.iam.core.constants.Constants;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.OIDCLoginProtocolService;
 import org.keycloak.services.resources.IdentityBrokerService;

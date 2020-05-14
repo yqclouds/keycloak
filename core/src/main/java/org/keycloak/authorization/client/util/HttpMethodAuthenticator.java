@@ -18,7 +18,7 @@
 package org.keycloak.authorization.client.util;
 
 import org.apache.http.Header;
-import com.hsbc.unified.iam.common.constants.OAuth2Constants;
+import com.hsbc.unified.iam.core.constants.OAuth2Constants;
 import org.keycloak.authorization.client.ClientAuthenticator;
 import org.keycloak.representations.idm.authorization.AuthorizationRequest;
 import org.keycloak.representations.idm.authorization.AuthorizationRequest.Metadata;

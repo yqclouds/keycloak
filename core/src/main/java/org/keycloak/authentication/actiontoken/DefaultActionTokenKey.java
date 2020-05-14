@@ -18,7 +18,7 @@ package org.keycloak.authentication.actiontoken;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.hsbc.unified.iam.common.util.Base64;
+import com.hsbc.unified.iam.core.util.Base64;
 import org.keycloak.models.ActionTokenKeyModel;
 import org.keycloak.representations.JsonWebToken;
 

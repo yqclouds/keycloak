@@ -16,8 +16,8 @@
  */
 package org.keycloak.services.clientregistration.oidc;
 
-import com.hsbc.unified.iam.common.constants.OAuth2Constants;
-import com.hsbc.unified.iam.common.util.Time;
+import com.hsbc.unified.iam.core.constants.OAuth2Constants;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;

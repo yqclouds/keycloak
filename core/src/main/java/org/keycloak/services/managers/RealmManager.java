@@ -16,9 +16,9 @@
  */
 package org.keycloak.services.managers;
 
-import com.hsbc.unified.iam.common.constants.Constants;
+import com.hsbc.unified.iam.core.constants.Constants;
 import org.keycloak.Config;
-import com.hsbc.unified.iam.core.entity.SslRequired;
+import com.hsbc.unified.iam.entity.SslRequired;
 import org.keycloak.models.*;
 import org.keycloak.models.session.UserSessionPersisterProvider;
 import org.keycloak.models.utils.*;

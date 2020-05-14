@@ -1,7 +1,7 @@
 package org.keycloak.authentication.authenticators.client;
 
 import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
-import com.hsbc.unified.iam.common.constants.OAuth2Constants;
+import com.hsbc.unified.iam.core.constants.OAuth2Constants;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.ClientAuthenticationFlowContext;
 import org.keycloak.authentication.ClientAuthenticator;

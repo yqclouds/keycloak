@@ -1,9 +1,9 @@
 package com.hsbc.unified.iam.service.impl;
 
-import com.hsbc.unified.iam.common.constants.Constants;
+import com.hsbc.unified.iam.core.constants.Constants;
 import com.hsbc.unified.iam.entity.Realm;
 import com.hsbc.unified.iam.entity.RealmAttribute;
-import com.hsbc.unified.iam.core.entity.SslRequired;
+import com.hsbc.unified.iam.entity.SslRequired;
 import com.hsbc.unified.iam.repository.RealmAttributeRepository;
 import com.hsbc.unified.iam.repository.RealmRepository;
 import com.hsbc.unified.iam.service.RealmService;

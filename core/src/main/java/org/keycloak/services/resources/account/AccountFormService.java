@@ -16,8 +16,8 @@
  */
 package org.keycloak.services.resources.account;
 
-import com.hsbc.unified.iam.common.util.JsonSerialization;
-import com.hsbc.unified.iam.common.util.Time;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.model.PermissionTicket;
 import org.keycloak.authorization.model.Policy;
@@ -184,7 +184,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
 
             UserSessionModel userSession = auth.getSession();
 
-            String tabId = session.getContext().getUri().getQueryParameters().getFirst(com.hsbc.unified.iam.common.constants.Constants.TAB_ID);
+            String tabId = session.getContext().getUri().getQueryParameters().getFirst(com.hsbc.unified.iam.core.constants.Constants.TAB_ID);
             if (tabId != null) {
                 AuthenticationSessionModel authSession = new AuthenticationSessionManager(session).getAuthenticationSessionByIdAndClient(realm, userSession.getId(), client, tabId);
                 if (authSession != null) {

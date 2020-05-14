@@ -18,7 +18,7 @@
 package org.keycloak.broker.provider;
 
 import org.keycloak.common.util.Base64Url;
-import com.hsbc.unified.iam.common.util.JsonSerialization;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 
 import java.io.IOException;
 import java.util.List;

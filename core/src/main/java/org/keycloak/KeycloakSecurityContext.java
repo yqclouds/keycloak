@@ -20,7 +20,7 @@ package org.keycloak;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.IDToken;
-import com.hsbc.unified.iam.common.util.JsonSerialization;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

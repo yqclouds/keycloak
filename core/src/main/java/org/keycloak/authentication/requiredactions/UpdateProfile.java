@@ -17,7 +17,7 @@
 
 package org.keycloak.authentication.requiredactions;
 
-import com.hsbc.unified.iam.common.constants.OAuth2Constants;
+import com.hsbc.unified.iam.core.constants.OAuth2Constants;
 import org.keycloak.authentication.*;
 import org.keycloak.events.Details;
 import org.keycloak.events.EventBuilder;

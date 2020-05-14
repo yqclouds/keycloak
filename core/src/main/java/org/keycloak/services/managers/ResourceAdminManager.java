@@ -18,9 +18,9 @@ package org.keycloak.services.managers;
 
 import org.keycloak.TokenIdGenerator;
 import org.keycloak.common.util.KeycloakUriBuilder;
-import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
-import com.hsbc.unified.iam.common.util.StringPropertyReplacer;
-import com.hsbc.unified.iam.common.util.Time;
+import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
+import com.hsbc.unified.iam.core.util.StringPropertyReplacer;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.constants.AdapterConstants;
 import org.keycloak.models.*;

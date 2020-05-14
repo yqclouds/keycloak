@@ -19,7 +19,7 @@ package org.keycloak.services.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.keycloak.Config;
-import com.hsbc.unified.iam.common.util.StringPropertyReplacer;
+import com.hsbc.unified.iam.core.util.StringPropertyReplacer;
 
 import java.util.Properties;
 

@@ -17,7 +17,7 @@
 
 package org.keycloak.models;
 
-import com.hsbc.unified.iam.common.constants.Constants;
+import com.hsbc.unified.iam.core.constants.Constants;
 import org.keycloak.Config;
 import org.keycloak.models.utils.KeycloakModelUtils;
 

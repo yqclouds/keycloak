@@ -17,9 +17,9 @@
 
 package org.keycloak.protocol.oidc.endpoints.request;
 
-import com.hsbc.unified.iam.common.constants.OAuth2Constants;
+import com.hsbc.unified.iam.core.constants.OAuth2Constants;
 import org.keycloak.constants.AdapterConstants;
-import com.hsbc.unified.iam.common.constants.Constants;
+import com.hsbc.unified.iam.core.constants.Constants;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

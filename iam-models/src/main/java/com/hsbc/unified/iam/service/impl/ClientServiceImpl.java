@@ -1,6 +1,6 @@
 package com.hsbc.unified.iam.service.impl;
 
-import com.hsbc.unified.iam.common.util.Time;
+import com.hsbc.unified.iam.core.util.Time;
 import com.hsbc.unified.iam.entity.Client;
 import com.hsbc.unified.iam.entity.ClientInitialAccess;
 import com.hsbc.unified.iam.entity.Realm;

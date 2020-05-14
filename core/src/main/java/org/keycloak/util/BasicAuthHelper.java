@@ -17,7 +17,7 @@
 
 package org.keycloak.util;
 
-import com.hsbc.unified.iam.common.util.Base64;
+import com.hsbc.unified.iam.core.util.Base64;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

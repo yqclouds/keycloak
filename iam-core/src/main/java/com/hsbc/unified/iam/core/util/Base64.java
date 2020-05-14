@@ -1,4 +1,4 @@
-package com.hsbc.unified.iam.common.util;
+package com.hsbc.unified.iam.core.util;
 
 /**
  * <p>Encodes and decodes to and from Base64 notation.</p>

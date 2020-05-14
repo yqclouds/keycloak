@@ -16,7 +16,7 @@
  */
 package org.keycloak.storage;
 
-import com.hsbc.unified.iam.common.util.Time;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.PrioritizedComponentModel;
 import org.keycloak.models.cache.CachedObject;

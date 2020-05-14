@@ -16,13 +16,13 @@
 
 package org.keycloak.credential;
 
-import com.hsbc.unified.iam.common.credential.CredentialInput;
+import com.hsbc.unified.iam.core.credential.CredentialInput;
 import com.webauthn4j.data.AuthenticationParameters;
 import com.webauthn4j.data.AuthenticationRequest;
 import com.webauthn4j.data.attestation.authenticator.AttestedCredentialData;
 import com.webauthn4j.data.attestation.authenticator.COSEKey;
 import com.webauthn4j.data.attestation.statement.AttestationStatement;
-import com.hsbc.unified.iam.common.util.Base64;
+import com.hsbc.unified.iam.core.util.Base64;
 
 public class WebAuthnCredentialModelInput implements CredentialInput {
 

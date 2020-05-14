@@ -17,9 +17,9 @@
 
 package org.keycloak;
 
-import com.hsbc.unified.iam.common.enums.RelativeUrlsUsed;
+import com.hsbc.unified.iam.core.enums.RelativeUrlsUsed;
 import org.keycloak.common.util.KeycloakUriBuilder;
-import com.hsbc.unified.iam.common.constants.OAuth2Constants;
+import com.hsbc.unified.iam.core.constants.OAuth2Constants;
 
 import java.util.Map;
 import java.util.UUID;

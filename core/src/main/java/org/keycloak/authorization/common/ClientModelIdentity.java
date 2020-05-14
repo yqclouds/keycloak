@@ -18,7 +18,7 @@ package org.keycloak.authorization.common;
 
 import org.keycloak.authorization.attribute.Attributes;
 import org.keycloak.authorization.identity.Identity;
-import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
+import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
 import org.keycloak.models.*;
 
 /**

@@ -17,7 +17,7 @@
 
 package org.keycloak.authentication.authenticators.broker.util;
 
-import com.hsbc.unified.iam.common.util.JsonSerialization;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 
 import java.io.IOException;
 

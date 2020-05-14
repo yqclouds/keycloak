@@ -18,9 +18,9 @@
 package org.keycloak.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hsbc.unified.iam.common.util.Base64;
-import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
-import com.hsbc.unified.iam.common.util.JsonSerialization;
+import com.hsbc.unified.iam.core.util.Base64;
+import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 
 import java.io.IOException;
 import java.io.Serializable;

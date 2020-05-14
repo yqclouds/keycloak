@@ -17,7 +17,7 @@
 
 package org.keycloak.storage.ldap.idm.store.ldap;
 
-import com.hsbc.unified.iam.common.util.Base64;
+import com.hsbc.unified.iam.core.util.Base64;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.LDAPConstants;
 import org.keycloak.models.ModelException;

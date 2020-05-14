@@ -18,8 +18,8 @@
 
 package org.keycloak.models.credential;
 
-import com.hsbc.unified.iam.common.util.JsonSerialization;
-import com.hsbc.unified.iam.common.util.Time;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.models.CredentialModel;
 import org.keycloak.models.dto.WebAuthnCredentialData;
 import org.keycloak.models.dto.WebAuthnSecretData;

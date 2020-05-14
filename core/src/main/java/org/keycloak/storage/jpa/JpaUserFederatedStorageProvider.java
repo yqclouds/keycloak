@@ -16,9 +16,9 @@
  */
 package org.keycloak.storage.jpa;
 
-import com.hsbc.unified.iam.common.util.Base64;
-import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
-import com.hsbc.unified.iam.common.util.Time;
+import com.hsbc.unified.iam.core.util.Base64;
+import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.UserCredentialStore;
 import org.keycloak.models.*;

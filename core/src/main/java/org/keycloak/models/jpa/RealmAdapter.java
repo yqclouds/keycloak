@@ -17,9 +17,8 @@
 
 package org.keycloak.models.jpa;
 
-import com.hsbc.unified.iam.common.constants.Constants;
-import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
-import com.hsbc.unified.iam.core.entity.*;
+import com.hsbc.unified.iam.core.constants.Constants;
+import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
 import com.hsbc.unified.iam.entity.*;
 import com.hsbc.unified.iam.repository.ClientRepository;
 import com.hsbc.unified.iam.service.RealmService;

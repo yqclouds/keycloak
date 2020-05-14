@@ -17,8 +17,8 @@
 
 package org.keycloak.admin.client;
 
-import static com.hsbc.unified.iam.common.constants.OAuth2Constants.CLIENT_CREDENTIALS;
-import static com.hsbc.unified.iam.common.constants.OAuth2Constants.PASSWORD;
+import static com.hsbc.unified.iam.core.constants.OAuth2Constants.CLIENT_CREDENTIALS;
+import static com.hsbc.unified.iam.core.constants.OAuth2Constants.PASSWORD;
 
 /**
  * @author rodrigo.sasaki@icarros.com.br

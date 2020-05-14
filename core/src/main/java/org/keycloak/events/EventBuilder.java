@@ -17,8 +17,8 @@
 
 package org.keycloak.events;
 
-import com.hsbc.unified.iam.common.ClientConnection;
-import com.hsbc.unified.iam.common.util.Time;
+import com.hsbc.unified.iam.core.ClientConnection;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

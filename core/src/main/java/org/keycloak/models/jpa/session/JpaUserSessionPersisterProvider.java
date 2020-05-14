@@ -17,7 +17,7 @@
 
 package org.keycloak.models.jpa.session;
 
-import com.hsbc.unified.iam.common.util.Time;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.models.*;
 import org.keycloak.models.session.*;
 import org.keycloak.models.utils.SessionTimeoutHelper;

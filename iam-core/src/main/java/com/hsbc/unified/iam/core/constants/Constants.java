@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 
-package com.hsbc.unified.iam.common.constants;
+package com.hsbc.unified.iam.core.constants;
 
-import com.hsbc.unified.iam.common.constants.OAuth2Constants;
-import com.hsbc.unified.iam.common.crypto.Algorithm;
+import com.hsbc.unified.iam.core.crypto.Algorithm;
 
 import java.util.Arrays;
 import java.util.Collection;

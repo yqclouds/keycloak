@@ -17,14 +17,14 @@
 package org.keycloak.services.resources.admin;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.hsbc.unified.iam.common.constants.Constants;
+import com.hsbc.unified.iam.core.constants.Constants;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.Config;
 import org.keycloak.KeyPairVerifier;
 import org.keycloak.authentication.CredentialRegistrator;
 import org.keycloak.authentication.RequiredActionProvider;
-import com.hsbc.unified.iam.common.ClientConnection;
+import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.common.VerificationException;
 import org.keycloak.common.util.PemUtils;
 import org.keycloak.email.EmailTemplateProvider;
@@ -77,7 +77,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.keycloak.models.utils.StripSecretsUtils.stripForExport;
-import static com.hsbc.unified.iam.common.util.JsonSerialization.readValue;
+import static com.hsbc.unified.iam.core.util.JsonSerialization.readValue;
 
 /**
  * Base resource class for the admin REST api of one realm

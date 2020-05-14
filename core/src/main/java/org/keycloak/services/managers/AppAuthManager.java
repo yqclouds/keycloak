@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.managers;
 
-import com.hsbc.unified.iam.common.ClientConnection;
+import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.common.util.ObjectUtil;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.KeycloakSession;

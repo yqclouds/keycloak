@@ -2,7 +2,7 @@ package org.keycloak.models.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.hsbc.unified.iam.common.util.Base64;
+import com.hsbc.unified.iam.core.util.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

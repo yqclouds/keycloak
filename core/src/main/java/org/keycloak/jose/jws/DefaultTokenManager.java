@@ -18,7 +18,7 @@ package org.keycloak.jose.jws;
 
 import org.keycloak.Token;
 import org.keycloak.TokenCategory;
-import com.hsbc.unified.iam.common.crypto.Algorithm;
+import com.hsbc.unified.iam.core.crypto.Algorithm;
 import org.keycloak.crypto.*;
 import org.keycloak.jose.jwe.JWEException;
 import org.keycloak.jose.jwe.alg.JWEAlgorithmProvider;

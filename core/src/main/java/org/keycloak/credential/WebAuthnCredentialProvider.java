@@ -16,7 +16,7 @@
 
 package org.keycloak.credential;
 
-import com.hsbc.unified.iam.common.credential.CredentialInput;
+import com.hsbc.unified.iam.core.credential.CredentialInput;
 import org.keycloak.models.CredentialModel;
 import com.webauthn4j.WebAuthnManager;
 import com.webauthn4j.authenticator.Authenticator;
@@ -29,8 +29,8 @@ import com.webauthn4j.data.attestation.authenticator.AttestedCredentialData;
 import com.webauthn4j.data.attestation.authenticator.COSEKey;
 import com.webauthn4j.util.exception.WebAuthnException;
 import org.keycloak.authentication.requiredactions.WebAuthnRegisterFactory;
-import com.hsbc.unified.iam.common.util.Base64;
-import com.hsbc.unified.iam.common.util.Time;
+import com.hsbc.unified.iam.core.util.Base64;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;

@@ -20,7 +20,7 @@ package org.keycloak.protocol;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.keycloak.Token;
 import org.keycloak.TokenCategory;
-import com.hsbc.unified.iam.common.ClientConnection;
+import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;

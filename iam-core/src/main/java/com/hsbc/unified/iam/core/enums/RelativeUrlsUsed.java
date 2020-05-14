@@ -14,22 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hsbc.unified.iam.common.crypto;
 
-public interface Algorithm {
+package com.hsbc.unified.iam.core.enums;
 
-    String HS256 = "HS256";
-    String HS384 = "HS384";
-    String HS512 = "HS512";
-    String RS256 = "RS256";
-    String RS384 = "RS384";
-    String RS512 = "RS512";
-    String ES256 = "ES256";
-    String ES384 = "ES384";
-    String ES512 = "ES512";
-    String PS256 = "PS256";
-    String PS384 = "PS384";
-    String PS512 = "PS512";
+/**
+ * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
+ */
+public enum RelativeUrlsUsed {
 
-    String AES = "AES";
+    /**
+     * Always use relative URI and resolve them later based on browser HTTP request
+     */
+    ALWAYS,
+
+    /**
+     * Relative Uri not used. Configuration contains absolute URI
+     */
+    NEVER;
 }

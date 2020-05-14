@@ -16,7 +16,7 @@
  */
 package org.keycloak.credential;
 
-import com.hsbc.unified.iam.common.credential.CredentialInput;
+import com.hsbc.unified.iam.core.credential.CredentialInput;
 import org.keycloak.models.CredentialModel;
 import org.keycloak.common.util.reflections.Types;
 import org.keycloak.models.*;

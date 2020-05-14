@@ -29,7 +29,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import java.net.URI;
 
-import static com.hsbc.unified.iam.common.constants.OAuth2Constants.PASSWORD;
+import static com.hsbc.unified.iam.core.constants.OAuth2Constants.PASSWORD;
 
 /**
  * Provides a Keycloak client. By default, this implementation uses a the default RestEasy client builder settings.
