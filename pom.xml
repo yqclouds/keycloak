@@ -17,8 +17,6 @@
 
     <properties>
         <unified-iam.version>1.0.0-SNAPSHOT</unified-iam.version>
-        <jboss.aesh.version>0.66.19</jboss.aesh.version>
-        <aesh.version>2.4</aesh.version>
         <apache.httpcomponents.version>4.5.4</apache.httpcomponents.version>
         <apache.httpcomponents.httpcore.version>4.4.5</apache.httpcomponents.httpcore.version>
         <apache.mime4j.version>0.6</apache.mime4j.version>
@@ -384,31 +382,6 @@
                 <artifactId>liquibase-core</artifactId>
                 <version>${liquibase.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.ops4j.pax.web</groupId>
-                <artifactId>pax-web-runtime</artifactId>
-                <version>${pax.web.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ops4j.pax.web</groupId>
-                <artifactId>pax-web-api</artifactId>
-                <version>${pax.web.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ops4j.pax.web</groupId>
-                <artifactId>pax-web-spi</artifactId>
-                <version>${pax.web.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.aesh</groupId>
-                <artifactId>aesh</artifactId>
-                <version>${jboss.aesh.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.aesh</groupId>
-                <artifactId>aesh</artifactId>
-                <version>${aesh.version}</version>
-            </dependency>
 
             <!-- webauthn support -->
             <dependency>
@@ -420,11 +393,6 @@
                 <groupId>com.webauthn4j</groupId>
                 <artifactId>webauthn4j-util</artifactId>
                 <version>${webauthn4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.kerby</groupId>
-                <artifactId>kerby-asn1</artifactId>
-                <version>${org.apache.kerby.kerby-asn1.version}</version>
             </dependency>
             <dependency>
                 <groupId>commons-lang</groupId>
