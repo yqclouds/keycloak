@@ -21,7 +21,7 @@ import com.hsbc.unified.iam.common.constants.Constants;
 import com.hsbc.unified.iam.common.constants.OAuth2Constants;
 import com.hsbc.unified.iam.common.util.JsonSerialization;
 import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
-import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
+import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import com.hsbc.unified.iam.core.entity.SslRequired;
 import org.keycloak.Config;
 import org.keycloak.authorization.AuthorizationProvider;

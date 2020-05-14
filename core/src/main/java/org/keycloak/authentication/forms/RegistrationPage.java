@@ -17,7 +17,7 @@
 
 package org.keycloak.authentication.forms;
 
-import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
+import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import org.keycloak.authentication.FormAuthenticator;
 import org.keycloak.authentication.FormAuthenticatorFactory;
 import org.keycloak.authentication.FormContext;

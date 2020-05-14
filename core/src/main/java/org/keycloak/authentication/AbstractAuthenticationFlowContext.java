@@ -17,7 +17,7 @@
 
 package org.keycloak.authentication;
 
-import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
+import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import org.jboss.resteasy.spi.HttpRequest;
 import com.hsbc.unified.iam.common.ClientConnection;
 import org.keycloak.events.EventBuilder;

@@ -17,7 +17,7 @@
 
 package org.keycloak.authentication;
 
-import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
+import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import org.keycloak.provider.ConfiguredProvider;
 
 /**

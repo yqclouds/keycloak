@@ -1,6 +1,6 @@
 package org.keycloak.authentication.authenticators.conditional;
 
-import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
+import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;

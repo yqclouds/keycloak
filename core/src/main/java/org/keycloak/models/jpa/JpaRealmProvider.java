@@ -18,16 +18,17 @@
 package org.keycloak.models.jpa;
 
 import com.hsbc.unified.iam.common.util.Time;
-import com.hsbc.unified.iam.core.entity.*;
-import com.hsbc.unified.iam.core.entity.events.ClientCreationEvent;
-import com.hsbc.unified.iam.core.entity.events.ClientRemovedEvent;
-import com.hsbc.unified.iam.core.entity.events.RealmCreationEvent;
-import com.hsbc.unified.iam.core.entity.events.RoleRemovedEvent;
+import com.hsbc.unified.iam.entity.*;
+import com.hsbc.unified.iam.entity.events.ClientCreationEvent;
+import com.hsbc.unified.iam.entity.events.ClientRemovedEvent;
+import com.hsbc.unified.iam.entity.events.RealmCreationEvent;
+import com.hsbc.unified.iam.entity.events.RoleRemovedEvent;
 import com.hsbc.unified.iam.core.repository.*;
-import com.hsbc.unified.iam.core.service.ClientService;
-import com.hsbc.unified.iam.core.service.GroupService;
-import com.hsbc.unified.iam.core.service.RealmService;
-import com.hsbc.unified.iam.core.service.RoleService;
+import com.hsbc.unified.iam.repository.*;
+import com.hsbc.unified.iam.service.ClientService;
+import com.hsbc.unified.iam.service.GroupService;
+import com.hsbc.unified.iam.service.RealmService;
+import com.hsbc.unified.iam.service.RoleService;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.slf4j.Logger;

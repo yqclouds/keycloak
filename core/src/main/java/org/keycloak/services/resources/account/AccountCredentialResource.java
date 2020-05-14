@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement.DISABLED;
+import static com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement.DISABLED;
 import static org.keycloak.utils.CredentialHelper.createUserStorageCredentialRepresentation;
 
 public class AccountCredentialResource {

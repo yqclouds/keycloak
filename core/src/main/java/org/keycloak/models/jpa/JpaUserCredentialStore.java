@@ -17,8 +17,8 @@
 package org.keycloak.models.jpa;
 
 import com.hsbc.unified.iam.common.util.Base64;
-import com.hsbc.unified.iam.core.entity.Credential;
-import com.hsbc.unified.iam.core.entity.User;
+import com.hsbc.unified.iam.entity.Credential;
+import com.hsbc.unified.iam.entity.User;
 import org.keycloak.credential.UserCredentialStore;
 import org.keycloak.models.CredentialModel;
 import org.keycloak.models.KeycloakSession;

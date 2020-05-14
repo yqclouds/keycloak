@@ -17,8 +17,8 @@
 
 package org.keycloak.models.jpa;
 
-import com.hsbc.unified.iam.core.entity.Role;
-import com.hsbc.unified.iam.core.entity.RoleAttribute;
+import com.hsbc.unified.iam.entity.Role;
+import com.hsbc.unified.iam.entity.RoleAttribute;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleContainerModel;

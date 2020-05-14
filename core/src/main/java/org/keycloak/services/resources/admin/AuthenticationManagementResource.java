@@ -16,7 +16,7 @@
  */
 package org.keycloak.services.resources.admin;
 
-import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
+import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.authentication.*;
 import org.keycloak.events.admin.OperationType;

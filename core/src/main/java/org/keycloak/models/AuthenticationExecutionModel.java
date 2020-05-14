@@ -17,7 +17,7 @@
 
 package org.keycloak.models;
 
-import com.hsbc.unified.iam.core.entity.AuthenticationExecutionRequirement;
+import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 
 import java.io.Serializable;
 import java.util.Comparator;

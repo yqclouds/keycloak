@@ -17,9 +17,9 @@
 
 package org.keycloak.models.jpa;
 
-import com.hsbc.unified.iam.core.entity.Group;
-import com.hsbc.unified.iam.core.entity.GroupAttribute;
-import com.hsbc.unified.iam.core.entity.GroupRoleMapping;
+import com.hsbc.unified.iam.entity.Group;
+import com.hsbc.unified.iam.entity.GroupAttribute;
+import com.hsbc.unified.iam.entity.GroupRoleMapping;
 import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
