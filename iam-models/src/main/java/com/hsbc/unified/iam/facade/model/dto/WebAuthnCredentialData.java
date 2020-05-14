@@ -16,7 +16,7 @@
  *
  */
 
-package org.keycloak.models.credential.dto;
+package com.hsbc.unified.iam.facade.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -23,6 +23,7 @@ import com.hsbc.unified.iam.facade.model.CredentialModel;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.models.*;
 import org.keycloak.models.credential.OTPCredentialModel;
+import org.keycloak.models.credential.UserCredentialModel;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

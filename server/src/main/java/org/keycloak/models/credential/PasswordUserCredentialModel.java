@@ -17,8 +17,6 @@
 
 package org.keycloak.models.credential;
 
-import org.keycloak.models.UserCredentialModel;
-
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  * @deprecated Recommended to use {@link UserCredentialModel} as it contains all the functionality required by this class

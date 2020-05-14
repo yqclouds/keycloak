@@ -4,8 +4,8 @@ import com.hsbc.unified.iam.common.util.Time;
 import com.hsbc.unified.iam.facade.model.CredentialModel;
 import org.keycloak.models.OTPPolicy;
 import org.keycloak.models.RealmModel;
-import org.keycloak.models.credential.dto.OTPCredentialData;
-import org.keycloak.models.credential.dto.OTPSecretData;
+import com.hsbc.unified.iam.facade.model.dto.OTPCredentialData;
+import com.hsbc.unified.iam.facade.model.dto.OTPSecretData;
 import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import java.io.IOException;

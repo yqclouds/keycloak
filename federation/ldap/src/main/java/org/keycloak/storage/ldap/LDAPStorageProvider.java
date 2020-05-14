@@ -19,13 +19,14 @@ package org.keycloak.storage.ldap;
 
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.CredentialAuthentication;
-import org.keycloak.credential.CredentialInput;
+import com.hsbc.unified.iam.common.credential.CredentialInput;
 import org.keycloak.credential.CredentialInputUpdater;
 import org.keycloak.credential.CredentialInputValidator;
 import org.keycloak.models.*;
 import org.keycloak.models.cache.CachedUserModel;
 import org.keycloak.models.cache.UserCache;
 import com.hsbc.unified.iam.facade.model.PasswordCredentialModel;
+import org.keycloak.models.credential.UserCredentialModel;
 import org.keycloak.models.utils.DefaultRoles;
 import org.keycloak.models.utils.ReadOnlyUserModelDelegate;
 import org.keycloak.policy.PasswordPolicyManagerProvider;

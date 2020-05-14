@@ -35,6 +35,7 @@ import org.keycloak.component.ComponentModel;
 import com.hsbc.unified.iam.facade.model.CredentialModel;
 import org.keycloak.keys.KeyProvider;
 import org.keycloak.models.*;
+import org.keycloak.models.credential.UserCredentialModel;
 import org.keycloak.policy.PasswordPolicyNotMetException;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.idm.*;

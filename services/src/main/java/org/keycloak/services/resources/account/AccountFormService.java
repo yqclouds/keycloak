@@ -35,6 +35,7 @@ import org.keycloak.locale.LocaleUpdaterProvider;
 import org.keycloak.models.*;
 import org.keycloak.models.credential.OTPCredentialModel;
 import com.hsbc.unified.iam.facade.model.PasswordCredentialModel;
+import org.keycloak.models.credential.UserCredentialModel;
 import org.keycloak.models.utils.CredentialValidation;
 import org.keycloak.models.utils.FormMessage;
 import org.keycloak.protocol.oidc.utils.RedirectUtils;

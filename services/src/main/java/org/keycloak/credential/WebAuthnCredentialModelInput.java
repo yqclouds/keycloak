@@ -16,6 +16,7 @@
 
 package org.keycloak.credential;
 
+import com.hsbc.unified.iam.common.credential.CredentialInput;
 import com.webauthn4j.data.AuthenticationParameters;
 import com.webauthn4j.data.AuthenticationRequest;
 import com.webauthn4j.data.attestation.authenticator.AttestedCredentialData;

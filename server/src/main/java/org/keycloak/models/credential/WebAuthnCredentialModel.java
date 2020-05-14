@@ -20,8 +20,8 @@ package org.keycloak.models.credential;
 
 import com.hsbc.unified.iam.common.util.Time;
 import com.hsbc.unified.iam.facade.model.CredentialModel;
-import org.keycloak.models.credential.dto.WebAuthnCredentialData;
-import org.keycloak.models.credential.dto.WebAuthnSecretData;
+import com.hsbc.unified.iam.facade.model.dto.WebAuthnCredentialData;
+import com.hsbc.unified.iam.facade.model.dto.WebAuthnSecretData;
 import com.hsbc.unified.iam.common.util.JsonSerialization;
 
 import java.io.IOException;

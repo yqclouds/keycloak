@@ -16,6 +16,7 @@
  */
 package org.keycloak.credential;
 
+import com.hsbc.unified.iam.common.credential.CredentialInput;
 import com.hsbc.unified.iam.common.util.Time;
 import com.hsbc.unified.iam.facade.model.CredentialModel;
 import org.keycloak.credential.hash.PasswordHashProvider;
@@ -24,6 +25,7 @@ import org.keycloak.models.cache.CachedUserModel;
 import org.keycloak.models.cache.OnUserCache;
 import org.keycloak.models.cache.UserCache;
 import com.hsbc.unified.iam.facade.model.PasswordCredentialModel;
+import org.keycloak.models.credential.UserCredentialModel;
 import org.keycloak.policy.PasswordPolicyManagerProvider;
 import org.keycloak.policy.PolicyError;
 import org.slf4j.Logger;

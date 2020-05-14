@@ -15,13 +15,11 @@
  * limitations under the License.
  */
 
-package org.keycloak.models;
+package org.keycloak.models.credential;
 
-import org.keycloak.credential.CredentialInput;
+import com.hsbc.unified.iam.common.credential.CredentialInput;
 import com.hsbc.unified.iam.facade.model.CredentialModel;
-import org.keycloak.models.credential.OTPCredentialModel;
 import com.hsbc.unified.iam.facade.model.PasswordCredentialModel;
-import org.keycloak.models.credential.PasswordUserCredentialModel;
 
 import java.util.HashMap;
 import java.util.Map;

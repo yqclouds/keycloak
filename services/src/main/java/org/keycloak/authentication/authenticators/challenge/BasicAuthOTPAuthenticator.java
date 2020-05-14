@@ -25,6 +25,7 @@ import org.keycloak.credential.OTPCredentialProvider;
 import org.keycloak.events.Errors;
 import org.keycloak.models.*;
 import org.keycloak.models.credential.OTPCredentialModel;
+import org.keycloak.models.credential.UserCredentialModel;
 import org.keycloak.services.messages.Messages;
 
 import javax.ws.rs.core.Response;

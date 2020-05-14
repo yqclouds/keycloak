@@ -16,6 +16,7 @@
 
 package org.keycloak.credential;
 
+import com.hsbc.unified.iam.common.credential.CredentialInput;
 import com.hsbc.unified.iam.facade.model.CredentialModel;
 import com.webauthn4j.WebAuthnManager;
 import com.webauthn4j.authenticator.Authenticator;
@@ -34,7 +35,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.WebAuthnCredentialModel;
-import org.keycloak.models.credential.dto.WebAuthnCredentialData;
+import com.hsbc.unified.iam.facade.model.dto.WebAuthnCredentialData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

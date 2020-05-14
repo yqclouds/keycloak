@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Red Hat, Inc. and/or its affiliates
+ * Copyright 2019 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,17 +13,25 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
-package org.keycloak.credential;
+
+package com.hsbc.unified.iam.facade.model.dto;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 /**
- * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
- * @version $Revision: 1 $
+ * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-public interface CredentialInput {
-    String getCredentialId();
+public class WebAuthnSecretData {
 
-    String getType();
+    @JsonCreator
+    public WebAuthnSecretData() {
+    }
 
-    String getChallengeResponse();
+
+    @Override
+    public String toString() {
+        return "WebAuthnSecretData {}";
+    }
 }

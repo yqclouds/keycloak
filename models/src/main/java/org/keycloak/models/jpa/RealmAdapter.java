@@ -18,10 +18,10 @@
 package org.keycloak.models.jpa;
 
 import com.hsbc.unified.iam.common.constants.Constants;
+import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
 import com.hsbc.unified.iam.core.entity.*;
 import com.hsbc.unified.iam.core.repository.ClientRepository;
 import com.hsbc.unified.iam.core.service.RealmService;
-import com.hsbc.unified.iam.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.*;
@@ -558,23 +558,12 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
         }
     }
 
-    protected RequiredCredentialModel initRequiredCredentialModel(String type) {
+    @Override
+    public void addRequiredCredential(String type) {
         RequiredCredentialModel model = RequiredCredentialModel.BUILT_IN.get(type);
         if (model == null) {
             throw new RuntimeException("Unknown credential type " + type);
         }
-
-        return model;
-    }
-
-    @Override
-    public void addRequiredCredential(String type) {
-        RequiredCredentialModel model = initRequiredCredentialModel(type);
-        addRequiredCredential(model);
-        em.flush();
-    }
-
-    public void addRequiredCredential(RequiredCredentialModel model) {
         RealmRequiredCredential entity = new RealmRequiredCredential();
         entity.setRealm(realm);
         entity.setInput(model.isInput());
