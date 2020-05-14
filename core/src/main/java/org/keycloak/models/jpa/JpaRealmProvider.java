@@ -23,7 +23,6 @@ import com.hsbc.unified.iam.entity.events.ClientCreationEvent;
 import com.hsbc.unified.iam.entity.events.ClientRemovedEvent;
 import com.hsbc.unified.iam.entity.events.RealmCreationEvent;
 import com.hsbc.unified.iam.entity.events.RoleRemovedEvent;
-import com.hsbc.unified.iam.core.repository.*;
 import com.hsbc.unified.iam.repository.*;
 import com.hsbc.unified.iam.service.ClientService;
 import com.hsbc.unified.iam.service.GroupService;
