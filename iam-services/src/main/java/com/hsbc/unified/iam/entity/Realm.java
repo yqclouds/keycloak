@@ -374,6 +374,10 @@ public class Realm {
     }
 
     public Collection<RealmRequiredCredential> getRequiredCredentials() {
+        if (requiredCredentials == null) {
+            requiredCredentials = new ArrayList<>();
+        }
+
         return requiredCredentials;
     }
 

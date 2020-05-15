@@ -15,20 +15,23 @@
  * limitations under the License.
  */
 
-package org.keycloak.models.jpa;
+package com.hsbc.unified.iam.legacy.adapter.impl;
 
 import com.hsbc.unified.iam.core.constants.Constants;
 import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
 import com.hsbc.unified.iam.entity.*;
+import com.hsbc.unified.iam.facade.service.RealmFacade;
 import com.hsbc.unified.iam.repository.ClientRepository;
 import com.hsbc.unified.iam.service.RealmService;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.*;
+import org.keycloak.models.jpa.ClientScopeAdapter;
+import org.keycloak.models.jpa.GroupAdapter;
+import org.keycloak.models.jpa.JpaModel;
+import org.keycloak.models.jpa.RoleAdapter;
 import org.keycloak.models.utils.ComponentUtil;
 import org.keycloak.models.utils.KeycloakModelUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
@@ -47,7 +50,6 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
      * This just exists for testing purposes
      */
     public static final String COMPONENT_PROVIDER_EXISTS_DISABLED = "component.provider.exists.disabled";
-    protected static final Logger LOG = LoggerFactory.getLogger(RealmAdapter.class);
     private static final String BROWSER_HEADER_PREFIX = "_browser_header.";
     protected Realm realm;
     protected EntityManager em;
@@ -56,9 +58,13 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
     private OTPPolicy otpPolicy;
 
     @Autowired
-    private RealmService realmService;
-    @Autowired
     private ClientRepository clientRepository;
+
+    @Autowired
+    private RealmService realmService;
+
+    @Autowired
+    private RealmFacade realmFacade;
 
     public RealmAdapter(KeycloakSession session, EntityManager em, Realm realm) {
         this.session = session;
@@ -560,72 +566,22 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
 
     @Override
     public void addRequiredCredential(String type) {
-        RequiredCredentialModel model = RequiredCredentialModel.BUILT_IN.get(type);
-        if (model == null) {
-            throw new RuntimeException("Unknown credential type " + type);
-        }
-        RealmRequiredCredential entity = new RealmRequiredCredential();
-        entity.setRealm(realm);
-        entity.setInput(model.isInput());
-        entity.setSecret(model.isSecret());
-        entity.setType(model.getType());
-        entity.setFormLabel(model.getFormLabel());
-        em.persist(entity);
-        realm.getRequiredCredentials().add(entity);
-        em.flush();
+        realmFacade.addRequiredCredential(realm, type);
     }
 
     @Override
-    public void updateRequiredCredentials(Set<String> creds) {
-        Collection<RealmRequiredCredential> relationships = realm.getRequiredCredentials();
-        if (relationships == null) relationships = new ArrayList<>();
-
-        Set<String> already = new HashSet<>();
-        List<RealmRequiredCredential> remove = new ArrayList<>();
-        for (RealmRequiredCredential rel : relationships) {
-            if (!creds.contains(rel.getType())) {
-                remove.add(rel);
-            } else {
-                already.add(rel.getType());
-            }
-        }
-        for (RealmRequiredCredential entity : remove) {
-            relationships.remove(entity);
-            em.remove(entity);
-        }
-        for (String cred : creds) {
-            if (!already.contains(cred)) {
-                addRequiredCredential(cred);
-            }
-        }
-        em.flush();
+    public void updateRequiredCredentials(Set<String> credentials) {
+        realmFacade.updateRequiredCredentials(realm, credentials);
     }
 
     @Override
     public List<RequiredCredentialModel> getRequiredCredentials() {
-        Collection<RealmRequiredCredential> entities = realm.getRequiredCredentials();
-        if (entities == null) return Collections.EMPTY_LIST;
-        List<RequiredCredentialModel> requiredCredentialModels = new LinkedList<>();
-        for (RealmRequiredCredential entity : entities) {
-            RequiredCredentialModel model = new RequiredCredentialModel();
-            model.setFormLabel(entity.getFormLabel());
-            model.setType(entity.getType());
-            model.setSecret(entity.isSecret());
-            model.setInput(entity.isInput());
-            requiredCredentialModels.add(model);
-        }
-        return Collections.unmodifiableList(requiredCredentialModels);
+        return realmFacade.getRequiredCredentials(realm);
     }
 
     @Override
     public List<String> getDefaultRoles() {
-        Collection<Role> entities = realm.getDefaultRoles();
-        if (entities == null || entities.isEmpty()) return Collections.emptyList();
-        List<String> roles = new LinkedList<>();
-        for (Role entity : entities) {
-            roles.add(entity.getName());
-        }
-        return Collections.unmodifiableList(roles);
+        return realmFacade.getDefaultRoles(realm);
     }
 
     @Override
@@ -672,7 +628,7 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
     @Override
     public void removeDefaultRoles(String... defaultRoles) {
         Collection<Role> entities = realm.getDefaultRoles();
-        List<Role> remove = new ArrayList<Role>();
+        List<Role> remove = new ArrayList<>();
         for (Role rel : entities) {
             if (contains(rel.getName(), defaultRoles)) {
                 remove.add(rel);

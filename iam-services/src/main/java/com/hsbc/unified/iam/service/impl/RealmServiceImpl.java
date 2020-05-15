@@ -3,6 +3,7 @@ package com.hsbc.unified.iam.service.impl;
 import com.hsbc.unified.iam.core.constants.Constants;
 import com.hsbc.unified.iam.entity.Realm;
 import com.hsbc.unified.iam.entity.RealmAttribute;
+import com.hsbc.unified.iam.entity.RealmRequiredCredential;
 import com.hsbc.unified.iam.entity.SslRequired;
 import com.hsbc.unified.iam.repository.RealmAttributeRepository;
 import com.hsbc.unified.iam.repository.RealmRepository;
@@ -625,5 +626,23 @@ public class RealmServiceImpl implements RealmService {
     @Override
     public List<String> getRealmIdByName(String name) {
         return this.realmRepository.getRealmIdByName(name);
+    }
+
+    @Override
+    @Transactional
+    public void createRequiredCredential(Realm realm, RealmRequiredCredential entity) {
+        entity.setRealm(realm);
+        realm.getRequiredCredentials().add(entity);
+
+        this.realmRepository.save(realm);
+    }
+
+    @Override
+    public void updateRequiredCredentials(Realm realm, List<RealmRequiredCredential> added, List<RealmRequiredCredential> removed) {
+        Collection<RealmRequiredCredential> existing = realm.getRequiredCredentials();
+        existing.removeAll(removed);
+        existing.addAll(added);
+
+        this.realmRepository.save(realm);
     }
 }

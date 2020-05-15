@@ -1,10 +1,12 @@
 package com.hsbc.unified.iam.service;
 
 import com.hsbc.unified.iam.entity.Realm;
+import com.hsbc.unified.iam.entity.RealmRequiredCredential;
 import com.hsbc.unified.iam.entity.SslRequired;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface RealmService {
     Realm createRealm(String id, String name);
@@ -208,4 +210,8 @@ public interface RealmService {
     List<String> getAllRealmIds();
 
     List<String> getRealmIdByName(String name);
+
+    void createRequiredCredential(Realm realm, RealmRequiredCredential entity);
+
+    void updateRequiredCredentials(Realm realm, List<RealmRequiredCredential> added, List<RealmRequiredCredential> removed);
 }
