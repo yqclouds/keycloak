@@ -19,14 +19,16 @@ package org.keycloak.models.jpa;
 
 import com.hsbc.unified.iam.entity.Role;
 import com.hsbc.unified.iam.entity.RoleAttribute;
+import com.hsbc.unified.iam.repository.RoleAttributeRepository;
+import com.hsbc.unified.iam.repository.RoleRepository;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleContainerModel;
 import org.keycloak.models.RoleModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
 import java.util.*;
 
 /**
@@ -39,18 +41,23 @@ public class RoleAdapter implements RoleModel, JpaModel<Role> {
     protected RealmModel realm;
     protected KeycloakSession session;
 
-    public RoleAdapter(KeycloakSession session, RealmModel realm, EntityManager em, Role role) {
-        this.em = em;
+    @Autowired
+    private RoleRepository roleRepository;
+    @Autowired
+    private RoleAttributeRepository roleAttributeRepository;
+
+    public RoleAdapter(KeycloakSession session, RealmModel realm, Role role) {
         this.realm = realm;
         this.role = role;
         this.session = session;
     }
 
-    public static Role toRoleEntity(RoleModel model, EntityManager em) {
+    public Role toRoleEntity(RoleModel model) {
         if (model instanceof RoleAdapter) {
             return ((RoleAdapter) model).getEntity();
         }
-        return em.getReference(Role.class, model.getId());
+
+        return roleRepository.getOne(model.getId());
     }
 
     public Role getEntity() {
@@ -93,7 +100,7 @@ public class RoleAdapter implements RoleModel, JpaModel<Role> {
 
     @Override
     public void addCompositeRole(RoleModel role) {
-        Role entity = RoleAdapter.toRoleEntity(role, em);
+        Role entity = this.toRoleEntity(role);
         for (Role composite : getEntity().getCompositeRoles()) {
             if (composite.equals(entity)) return;
         }
@@ -102,16 +109,16 @@ public class RoleAdapter implements RoleModel, JpaModel<Role> {
 
     @Override
     public void removeCompositeRole(RoleModel role) {
-        Role entity = RoleAdapter.toRoleEntity(role, em);
+        Role entity = this.toRoleEntity(role);
         getEntity().getCompositeRoles().remove(entity);
     }
 
     @Override
     public Set<RoleModel> getComposites() {
-        Set<RoleModel> set = new HashSet<RoleModel>();
+        Set<RoleModel> set = new HashSet<>();
 
         for (Role composite : getEntity().getCompositeRoles()) {
-            set.add(new RoleAdapter(session, realm, em, composite));
+            set.add(new RoleAdapter(session, realm, composite));
 
             // todo I want to do this, but can't as you get stack overflow
             // set.add(session.realms().getRoleById(composite.getId(), realm));
@@ -130,8 +137,9 @@ public class RoleAdapter implements RoleModel, JpaModel<Role> {
         attr.setName(name);
         attr.setValue(value);
         attr.setRole(role);
-        em.persist(attr);
+        roleAttributeRepository.save(attr);
         role.getAttributes().add(attr);
+        roleRepository.saveAndFlush(role);
     }
 
     @Override
@@ -155,12 +163,9 @@ public class RoleAdapter implements RoleModel, JpaModel<Role> {
             return;
         }
 
-        Query query = em.createNamedQuery("deleteRoleAttributesByNameAndUser");
-        query.setParameter("name", name);
-        query.setParameter("roleId", role.getId());
-        query.executeUpdate();
-
+        roleAttributeRepository.deleteRoleAttributesByNameAndUser(role.getId(), name);
         attributes.removeIf(attribute -> attribute.getName().equals(name));
+        roleRepository.save(role);
     }
 
     @Override
@@ -219,7 +224,7 @@ public class RoleAdapter implements RoleModel, JpaModel<Role> {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof RoleModel)) return false;
+        if (!(o instanceof RoleModel)) return false;
 
         RoleModel that = (RoleModel) o;
         return that.getId().equals(getId());

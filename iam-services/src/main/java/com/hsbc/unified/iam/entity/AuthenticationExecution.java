@@ -23,9 +23,6 @@ import javax.persistence.*;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@NamedQueries({
-        @NamedQuery(name = "authenticationFlowExecution", query = "select authExec from AuthenticationExecution authExec where authExec.flowId = :flowId")
-})
 @Table(name = "AUTHENTICATION_EXECUTION")
 @Entity
 public class AuthenticationExecution {

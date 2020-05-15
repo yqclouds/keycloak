@@ -20,6 +20,7 @@ package org.keycloak.models.jpa;
 import com.hsbc.unified.iam.entity.*;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -36,6 +37,9 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
     protected RealmModel realm;
     protected EntityManager em;
     protected ClientScope entity;
+
+    @Autowired
+    private RoleAdapter roleAdapter;
 
     public ClientScopeAdapter(RealmModel realm, EntityManager em, KeycloakSession session, ClientScope entity) {
         this.session = session;
@@ -99,14 +103,14 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
 
     @Override
     public Set<ProtocolMapperModel> getProtocolMappers() {
-        Set<ProtocolMapperModel> mappings = new HashSet<ProtocolMapperModel>();
+        Set<ProtocolMapperModel> mappings = new HashSet<>();
         for (ProtocolMapper entity : this.entity.getProtocolMappers()) {
             ProtocolMapperModel mapping = new ProtocolMapperModel();
             mapping.setId(entity.getId());
             mapping.setName(entity.getName());
             mapping.setProtocol(entity.getProtocol());
             mapping.setProtocolMapper(entity.getProtocolMapper());
-            Map<String, String> config = new HashMap<String, String>();
+            Map<String, String> config = new HashMap<>();
             if (entity.getConfig() != null) {
                 config.putAll(entity.getConfig());
             }
@@ -201,7 +205,7 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
         mapping.setName(entity.getName());
         mapping.setProtocol(entity.getProtocol());
         mapping.setProtocolMapper(entity.getProtocolMapper());
-        Map<String, String> config = new HashMap<String, String>();
+        Map<String, String> config = new HashMap<>();
         if (entity.getConfig() != null) config.putAll(entity.getConfig());
         mapping.setConfig(config);
         return mapping;
@@ -229,7 +233,7 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
         TypedQuery<String> query = em.createNamedQuery("clientScopeRoleMappingIds", String.class);
         query.setParameter("clientScope", getEntity());
         List<String> ids = query.getResultList();
-        Set<RoleModel> roles = new HashSet<RoleModel>();
+        Set<RoleModel> roles = new HashSet<>();
         for (String roleId : ids) {
             RoleModel role = realm.getRoleById(roleId);
             if (role == null) continue;
@@ -243,7 +247,7 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
         if (hasScope(role)) return;
         ClientScopeRoleMapping entity = new ClientScopeRoleMapping();
         entity.setClientScope(getEntity());
-        Role roleEntity = RoleAdapter.toRoleEntity(role, em);
+        Role roleEntity = roleAdapter.toRoleEntity(role);
         entity.setRole(roleEntity);
         em.persist(entity);
         em.flush();
@@ -264,7 +268,7 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
     protected TypedQuery<ClientScopeRoleMapping> getRealmScopeMappingQuery(RoleModel role) {
         TypedQuery<ClientScopeRoleMapping> query = em.createNamedQuery("clientScopeHasRole", ClientScopeRoleMapping.class);
         query.setParameter("clientScope", getEntity());
-        Role roleEntity = RoleAdapter.toRoleEntity(role, em);
+        Role roleEntity = roleAdapter.toRoleEntity(role);
         query.setParameter("role", roleEntity);
         return query;
     }
@@ -328,7 +332,7 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof ClientScopeModel)) return false;
+        if (!(o instanceof ClientScopeModel)) return false;
 
         ClientScopeModel that = (ClientScopeModel) o;
         return that.getId().equals(getId());

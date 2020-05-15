@@ -21,6 +21,7 @@ import com.hsbc.unified.iam.entity.*;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -38,6 +39,9 @@ public class ClientAdapter implements ClientModel, JpaModel<Client> {
     protected RealmModel realm;
     protected EntityManager em;
     protected Client entity;
+
+    @Autowired
+    private RoleAdapter roleAdapter;
 
     public ClientAdapter(RealmModel realm, EntityManager em, KeycloakSession session, Client entity) {
         this.session = session;
@@ -254,13 +258,13 @@ public class ClientAdapter implements ClientModel, JpaModel<Client> {
 
     @Override
     public void addScopeMapping(RoleModel role) {
-        Role roleEntity = RoleAdapter.toRoleEntity(role, em);
+        Role roleEntity = roleAdapter.toRoleEntity(role);
         getEntity().getScopeMapping().add(roleEntity);
     }
 
     @Override
     public void deleteScopeMapping(RoleModel role) {
-        getEntity().getScopeMapping().remove(RoleAdapter.toRoleEntity(role, em));
+        getEntity().getScopeMapping().remove(roleAdapter.toRoleEntity(role));
     }
 
     @Override
@@ -696,7 +700,7 @@ public class ClientAdapter implements ClientModel, JpaModel<Client> {
                 return;
             }
         }
-        Role roleEntity = RoleAdapter.toRoleEntity(role, em);
+        Role roleEntity = roleAdapter.toRoleEntity(role);
         entities.add(roleEntity);
     }
 

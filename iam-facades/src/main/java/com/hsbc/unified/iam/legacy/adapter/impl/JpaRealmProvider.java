@@ -41,7 +41,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 
 import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -195,14 +194,11 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
         Realm ref = realmRepository.getOne(realm.getId());
         Role entity = roleService.createRole(id, name, ref);
-        return new RoleAdapter(session, realm, em, entity);
+        return new RoleAdapter(session, realm, entity);
     }
 
     @Override
     public RoleModel getRealmRole(RealmModel realm, String name) {
-        TypedQuery<String> query = em.createNamedQuery("getRealmRoleIdByName", String.class);
-        query.setParameter("name", name);
-        query.setParameter("realm", realm.getId());
         List<String> roles = roleRepository.getRealmRoleIdByName(name, realm.getId());
         if (roles.isEmpty()) return null;
         return session.realms().getRoleById(roles.get(0), realm);
@@ -221,7 +217,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
         Client clientEntity = clientRepository.getOne(client.getId());
         Role roleEntity = roleService.createRole(id, name, clientEntity, realm.getId());
-        return new RoleAdapter(session, realm, em, roleEntity);
+        return new RoleAdapter(session, realm, roleEntity);
     }
 
     @Override
@@ -269,7 +265,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
     protected Set<RoleModel> getRoles(List<Role> results, RealmModel realm) {
         return results.stream()
-                .map(role -> new RoleAdapter(session, realm, em, role))
+                .map(role -> new RoleAdapter(session, realm, role))
                 .collect(Collectors.collectingAndThen(
                         Collectors.toCollection(LinkedHashSet::new), Collections::unmodifiableSet));
     }
@@ -288,7 +284,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
     private Set<RoleModel> searchForRoles(List<Role> results, RealmModel realm) {
         return results.stream()
-                .map(role -> new RoleAdapter(session, realm, em, role))
+                .map(role -> new RoleAdapter(session, realm, role))
                 .collect(Collectors.collectingAndThen(
                         Collectors.toSet(), Collections::unmodifiableSet));
     }
@@ -320,7 +316,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
         Role entity = optional.get();
         if (!realm.getId().equals(entity.getRealmId())) return null;
-        return new RoleAdapter(session, realm, em, entity);
+        return new RoleAdapter(session, realm, entity);
     }
 
     @Override
@@ -342,8 +338,11 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
             group.getParent().removeChild(group);
         }
         group.setParent(toParent);
-        if (toParent != null) toParent.addChild(group);
-        else session.realms().addTopLevelGroup(realm, group);
+        if (toParent != null) {
+            toParent.addChild(group);
+        } else {
+            session.realms().addTopLevelGroup(realm, group);
+        }
     }
 
     @Override

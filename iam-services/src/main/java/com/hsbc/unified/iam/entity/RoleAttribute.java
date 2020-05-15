@@ -24,9 +24,6 @@ import javax.persistence.*;
 /**
  * @author <a href="mailto:leon.graser@bosch-si.com">Leon Graser</a>
  */
-@NamedQueries({
-        @NamedQuery(name = "deleteRoleAttributesByNameAndUser", query = "delete from RoleAttribute attr where attr.role.id = :roleId and attr.name = :name"),
-})
 @Table(name = "ROLE_ATTRIBUTE")
 @Entity
 public class RoleAttribute {
