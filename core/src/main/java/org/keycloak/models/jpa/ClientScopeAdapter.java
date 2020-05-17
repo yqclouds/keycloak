@@ -18,13 +18,14 @@
 package org.keycloak.models.jpa;
 
 import com.hsbc.unified.iam.entity.*;
+import com.hsbc.unified.iam.repository.ClientScopeAttributeRepository;
+import com.hsbc.unified.iam.repository.ClientScopeRepository;
+import com.hsbc.unified.iam.repository.ClientScopeRoleMappingRepository;
+import com.hsbc.unified.iam.repository.ProtocolMapperRepository;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
-import javax.persistence.TypedQuery;
 import java.util.*;
 
 /**
@@ -35,24 +36,31 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
 
     protected KeycloakSession session;
     protected RealmModel realm;
-    protected EntityManager em;
     protected ClientScope entity;
 
     @Autowired
     private RoleAdapter roleAdapter;
 
-    public ClientScopeAdapter(RealmModel realm, EntityManager em, KeycloakSession session, ClientScope entity) {
+    @Autowired
+    private ClientScopeRepository clientScopeRepository;
+    @Autowired
+    private ProtocolMapperRepository protocolMapperRepository;
+    @Autowired
+    private ClientScopeAttributeRepository clientScopeAttributeRepository;
+    @Autowired
+    private ClientScopeRoleMappingRepository clientScopeRoleMappingRepository;
+
+    public ClientScopeAdapter(RealmModel realm, KeycloakSession session, ClientScope entity) {
         this.session = session;
         this.realm = realm;
-        this.em = em;
         this.entity = entity;
     }
 
-    public static ClientScope toClientScopeEntity(ClientScopeModel model, EntityManager em) {
+    public ClientScope toClientScopeEntity(ClientScopeModel model) {
         if (model instanceof ClientScopeAdapter) {
             return ((ClientScopeAdapter) model).getEntity();
         }
-        return em.getReference(ClientScope.class, model.getId());
+        return clientScopeRepository.getOne(model.getId());
     }
 
     public ClientScope getEntity() {
@@ -134,7 +142,7 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
         entity.setClientScope(this.entity);
         entity.setConfig(model.getConfig());
 
-        em.persist(entity);
+        protocolMapperRepository.save(entity);
         this.entity.getProtocolMappers().add(entity);
         return entityToModel(entity);
     }
@@ -164,11 +172,9 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
         ProtocolMapper toDelete = getProtocolMapperEntity(mapping.getId());
         if (toDelete != null) {
             session.users().preRemove(mapping);
-
             this.entity.getProtocolMappers().remove(toDelete);
-            em.remove(toDelete);
+            protocolMapperRepository.delete(toDelete);
         }
-
     }
 
     @Override
@@ -181,8 +187,7 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
             entity.getConfig().clear();
             entity.getConfig().putAll(mapping.getConfig());
         }
-        em.flush();
-
+        protocolMapperRepository.save(entity);
     }
 
     @Override
@@ -230,9 +235,7 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
 
     @Override
     public Set<RoleModel> getScopeMappings() {
-        TypedQuery<String> query = em.createNamedQuery("clientScopeRoleMappingIds", String.class);
-        query.setParameter("clientScope", getEntity());
-        List<String> ids = query.getResultList();
+        List<String> ids = clientScopeRoleMappingRepository.clientScopeRoleMappingIds(getEntity());
         Set<RoleModel> roles = new HashSet<>();
         for (String roleId : ids) {
             RoleModel role = realm.getRoleById(roleId);
@@ -249,28 +252,16 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
         entity.setClientScope(getEntity());
         Role roleEntity = roleAdapter.toRoleEntity(role);
         entity.setRole(roleEntity);
-        em.persist(entity);
-        em.flush();
-        em.detach(entity);
+        clientScopeRoleMappingRepository.save(entity);
     }
 
     @Override
     public void deleteScopeMapping(RoleModel role) {
-        TypedQuery<ClientScopeRoleMapping> query = getRealmScopeMappingQuery(role);
-        query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
-        List<ClientScopeRoleMapping> results = query.getResultList();
-        if (results.size() == 0) return;
-        for (ClientScopeRoleMapping entity : results) {
-            em.remove(entity);
-        }
-    }
-
-    protected TypedQuery<ClientScopeRoleMapping> getRealmScopeMappingQuery(RoleModel role) {
-        TypedQuery<ClientScopeRoleMapping> query = em.createNamedQuery("clientScopeHasRole", ClientScopeRoleMapping.class);
-        query.setParameter("clientScope", getEntity());
         Role roleEntity = roleAdapter.toRoleEntity(role);
-        query.setParameter("role", roleEntity);
-        return query;
+        List<ClientScopeRoleMapping> results = clientScopeRoleMappingRepository.clientScopeHasRole(getEntity(), roleEntity);
+        if (results.isEmpty()) return;
+
+        clientScopeRoleMappingRepository.deleteAll(results);
     }
 
     @Override
@@ -297,9 +288,9 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
         attr.setName(name);
         attr.setValue(value);
         attr.setClientScope(entity);
-        em.persist(attr);
+        clientScopeAttributeRepository.save(attr);
         entity.getAttributes().add(attr);
-
+        clientScopeRepository.save(entity);
     }
 
     @Override
@@ -309,7 +300,7 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
             ClientScopeAttribute attr = it.next();
             if (attr.getName().equals(name)) {
                 it.remove();
-                em.remove(attr);
+                clientScopeAttributeRepository.delete(attr);
             }
         }
     }

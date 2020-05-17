@@ -50,8 +50,6 @@ import java.util.stream.Collectors;
  * @version $Revision: 1 $
  */
 public class JpaRealmProvider implements RealmProvider, ApplicationEventPublisherAware {
-    protected static final Logger LOG = LoggerFactory.getLogger(JpaRealmProvider.class);
-
     private ApplicationEventPublisher applicationEventPublisher;
 
     private final KeycloakSession session;
@@ -69,6 +67,8 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
     private RealmRepository realmRepository;
     @Autowired
     private ClientRepository clientRepository;
+    @Autowired
+    private ClientScopeRepository clientScopeRepository;
     @Autowired
     private GroupRoleMappingRepository groupRoleMappingRepository;
     @Autowired
@@ -121,7 +121,6 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
         for (String id : entities) {
             RealmModel realm = session.realms().getRealm(id);
             if (realm != null) realms.add(realm);
-            em.flush();
         }
         return realms;
     }
@@ -547,11 +546,11 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
     @Override
     public ClientScopeModel getClientScopeById(String id, RealmModel realm) {
-        ClientScope app = em.find(ClientScope.class, id);
+        Optional<ClientScope> app = clientScopeRepository.findById(id);
 
         // Check if application belongs to this realm
-        if (app == null || !realm.getId().equals(app.getRealm().getId())) return null;
-        return new ClientScopeAdapter(realm, em, session, app);
+        if (!app.isPresent() || !realm.getId().equals(app.get().getRealm().getId())) return null;
+        return new ClientScopeAdapter(realm, session, app.get());
     }
 
     @Override

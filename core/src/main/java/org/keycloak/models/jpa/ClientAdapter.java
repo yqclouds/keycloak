@@ -42,6 +42,8 @@ public class ClientAdapter implements ClientModel, JpaModel<Client> {
 
     @Autowired
     private RoleAdapter roleAdapter;
+    @Autowired
+    private ClientScopeAdapter clientScopeAdapter;
 
     public ClientAdapter(RealmModel realm, EntityManager em, KeycloakSession session, Client entity) {
         this.session = session;
@@ -349,7 +351,7 @@ public class ClientAdapter implements ClientModel, JpaModel<Client> {
         if (getClientScopes(defaultScope, false).containsKey(clientScope.getName())) return;
 
         ClientScopeClientMapping entity = new ClientScopeClientMapping();
-        entity.setClientScope(ClientScopeAdapter.toClientScopeEntity(clientScope, em));
+        entity.setClientScope(clientScopeAdapter.toClientScopeEntity(clientScope));
         entity.setClient(getEntity());
         entity.setDefaultScope(defaultScope);
         em.persist(entity);
@@ -360,7 +362,7 @@ public class ClientAdapter implements ClientModel, JpaModel<Client> {
     @Override
     public void removeClientScope(ClientScopeModel clientScope) {
         int numRemoved = em.createNamedQuery("deleteClientScopeClientMapping")
-                .setParameter("clientScope", ClientScopeAdapter.toClientScopeEntity(clientScope, em))
+                .setParameter("clientScope", clientScopeAdapter.toClientScopeEntity(clientScope))
                 .setParameter("client", getEntity())
                 .executeUpdate();
         em.flush();

@@ -35,8 +35,6 @@ import org.keycloak.models.utils.KeycloakModelUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
-import javax.persistence.TypedQuery;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -59,15 +57,28 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
 
     @Autowired
     private RoleAdapter roleAdapter;
+    @Autowired
+    private GroupAdapter groupAdapter;
 
     @Autowired
     private ClientRepository clientRepository;
+    @Autowired
+    private ClientScopeRepository clientScopeRepository;
+    @Autowired
+    private ClientScopeRoleMappingRepository clientScopeRoleMappingRepository;
     @Autowired
     private AuthenticationFlowRepository authenticationFlowRepository;
     @Autowired
     private AuthenticationExecutionRepository authenticationExecutionRepository;
     @Autowired
     private AuthenticatorConfigRepository authenticatorConfigRepository;
+    @Autowired
+    private DefaultClientScopeRealmMappingRepository defaultClientScopeRealmMappingRepository;
+    @Autowired
+    private ComponentRepository componentRepository;
+
+    @Autowired
+    private ClientScopeAdapter clientScopeAdapter;
 
     @Autowired
     private RealmService realmService;
@@ -77,6 +88,8 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
     private IdentityProviderRepository identityProviderRepository;
     @Autowired
     private IdentityProviderMapperRepository identityProviderMapperRepository;
+    @Autowired
+    private RequiredActionProviderRepository requiredActionProviderRepository;
 
     @Autowired
     private RealmFacade realmFacade;
@@ -671,7 +684,7 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
         for (Group entity : entities) {
             if (entity.getId().equals(group.getId())) return;
         }
-        Group groupEntity = GroupAdapter.toEntity(group, em);
+        Group groupEntity = groupAdapter.toEntity(group);
         realm.getDefaultGroups().add(groupEntity);
         realmRepository.saveAndFlush(realm);
     }
@@ -1748,26 +1761,20 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
         auth.setDefaultAction(model.isDefaultAction());
         auth.setPriority(model.getPriority());
         realm.getRequiredActionProviders().add(auth);
-        em.persist(auth);
-        em.flush();
+        requiredActionProviderRepository.save(auth);
         model.setId(auth.getId());
         return model;
     }
 
     @Override
     public void removeRequiredActionProvider(RequiredActionProviderModel model) {
-        RequiredActionProvider entity = em.find(RequiredActionProvider.class, model.getId(), LockModeType.PESSIMISTIC_WRITE);
-        if (entity == null) return;
-        em.remove(entity);
-        em.flush();
-
+        requiredActionProviderRepository.deleteById(model.getId());
     }
 
     @Override
     public RequiredActionProviderModel getRequiredActionProviderById(String id) {
-        RequiredActionProvider entity = em.find(RequiredActionProvider.class, id);
-        if (entity == null) return null;
-        return entityToModel(entity);
+        Optional<RequiredActionProvider> entity = requiredActionProviderRepository.findById(id);
+        return entity.map(this::entityToModel).orElse(null);
     }
 
     public RequiredActionProviderModel entityToModel(RequiredActionProvider entity) {
@@ -1787,8 +1794,9 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
 
     @Override
     public void updateRequiredActionProvider(RequiredActionProviderModel model) {
-        RequiredActionProvider entity = em.find(RequiredActionProvider.class, model.getId());
-        if (entity == null) return;
+        Optional<RequiredActionProvider> optional = requiredActionProviderRepository.findById(model.getId());
+        if (!optional.isPresent()) return;
+        RequiredActionProvider entity = optional.get();
         entity.setAlias(model.getAlias());
         entity.setProviderId(model.getProviderId());
         entity.setEnabled(model.isEnabled());
@@ -1803,8 +1811,6 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
                 entity.getConfig().putAll(model.getConfig());
             }
         }
-        em.flush();
-
     }
 
     @Override
@@ -1815,7 +1821,7 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
         for (RequiredActionProvider entity : entities) {
             actions.add(entityToModel(entity));
         }
-        Collections.sort(actions, RequiredActionProviderModel.RequiredActionComparator.SINGLETON);
+        actions.sort(RequiredActionProviderModel.RequiredActionComparator.SINGLETON);
         return Collections.unmodifiableList(actions);
     }
 
@@ -1901,11 +1907,8 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
         entity.setName(name);
         entity.setRealm(realm);
         realm.getClientScopes().add(entity);
-        em.persist(entity);
-        em.flush();
-        final ClientScopeModel resource = new ClientScopeAdapter(this, em, session, entity);
-        em.flush();
-        return resource;
+        clientScopeRepository.save(entity);
+        return new ClientScopeAdapter(this, session, entity);
     }
 
     @Override
@@ -1927,17 +1930,11 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
                 break;
             }
         }
-        if (clientScope == null) {
-            return false;
-        }
 
         session.users().preRemove(clientScope);
 
-        em.createNamedQuery("deleteClientScopeRoleMappingByClientScope").setParameter("clientScope", clientScopeEntity).executeUpdate();
-        em.flush();
-        em.remove(clientScopeEntity);
-        em.flush();
-
+        clientScopeRoleMappingRepository.deleteClientScopeRoleMappingByClientScope(clientScopeEntity);
+        clientScopeRepository.delete(clientScopeEntity);
 
         return true;
     }
@@ -1950,30 +1947,23 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
     @Override
     public void addDefaultClientScope(ClientScopeModel clientScope, boolean defaultScope) {
         DefaultClientScopeRealmMapping entity = new DefaultClientScopeRealmMapping();
-        entity.setClientScope(ClientScopeAdapter.toClientScopeEntity(clientScope, em));
+        entity.setClientScope(clientScopeAdapter.toClientScopeEntity(clientScope));
         entity.setRealm(getEntity());
         entity.setDefaultScope(defaultScope);
-        em.persist(entity);
-        em.flush();
-        em.detach(entity);
+        defaultClientScopeRealmMappingRepository.save(entity);
     }
 
     @Override
     public void removeDefaultClientScope(ClientScopeModel clientScope) {
-        int numRemoved = em.createNamedQuery("deleteDefaultClientScopeRealmMapping")
-                .setParameter("clientScope", ClientScopeAdapter.toClientScopeEntity(clientScope, em))
-                .setParameter("realm", getEntity())
-                .executeUpdate();
-        em.flush();
+        defaultClientScopeRealmMappingRepository.deleteDefaultClientScopeRealmMapping(
+                clientScopeAdapter.toClientScopeEntity(clientScope),
+                getEntity()
+        );
     }
 
     @Override
     public List<ClientScopeModel> getDefaultClientScopes(boolean defaultScope) {
-        TypedQuery<String> query = em.createNamedQuery("defaultClientScopeRealmMappingIdsByRealm", String.class);
-        query.setParameter("realm", getEntity());
-        query.setParameter("defaultScope", defaultScope);
-        List<String> ids = query.getResultList();
-
+        List<String> ids = defaultClientScopeRealmMappingRepository.defaultClientScopeRealmMappingIdsByRealm(getEntity(), defaultScope);
         List<ClientScopeModel> clientScopes = new LinkedList<>();
         for (String clientScopeId : ids) {
             ClientScopeModel clientScope = getClientScopeById(clientScopeId);
@@ -1993,7 +1983,7 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
 
     @Override
     public ComponentModel importComponentModel(ComponentModel model) {
-        ComponentFactory componentFactory = null;
+        ComponentFactory componentFactory;
         try {
             componentFactory = ComponentUtil.getComponentFactory(session, model);
             if (componentFactory == null && System.getProperty(COMPONENT_PROVIDER_EXISTS_DISABLED) == null) {
@@ -2004,9 +1994,7 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
             if (System.getProperty(COMPONENT_PROVIDER_EXISTS_DISABLED) == null) {
                 throw e;
             }
-
         }
-
 
         Component c = new Component();
         if (model.getId() == null) {
@@ -2024,7 +2012,8 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
         c.setProviderId(model.getProviderId());
         c.setSubType(model.getSubType());
         c.setRealm(realm);
-        em.persist(c);
+        componentRepository.save(c);
+
         realm.getComponents().add(c);
         setConfig(model, c);
         model.setId(c.getId());
@@ -2053,8 +2042,9 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
     public void updateComponent(ComponentModel component) {
         ComponentUtil.getComponentFactory(session, component).validateConfiguration(session, this, component);
 
-        Component c = em.find(Component.class, component.getId());
-        if (c == null) return;
+        Optional<Component> optional = componentRepository.findById(component.getId());
+        if (!optional.isPresent()) return;
+        Component c = optional.get();
         ComponentModel old = entityToModel(c);
         c.setName(component.getName());
         c.setProviderId(component.getProviderId());
@@ -2063,24 +2053,21 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
         c.setSubType(component.getSubType());
         setConfig(component, c);
         ComponentUtil.notifyUpdated(session, this, old, component);
-
-
     }
 
     @Override
     public void removeComponent(ComponentModel component) {
-        Component c = em.find(Component.class, component.getId());
-        if (c == null) return;
+        Optional<Component> optional = componentRepository.findById(component.getId());
+        if (!optional.isPresent()) return;
         session.users().preRemove(this, component);
         ComponentUtil.notifyPreRemove(session, this, component);
         removeComponents(component.getId());
-        getEntity().getComponents().remove(c);
+        getEntity().getComponents().remove(optional.get());
     }
 
     @Override
     public void removeComponents(String parentId) {
         Predicate<Component> sameParent = c -> Objects.equals(parentId, c.getParentId());
-
         getEntity().getComponents().stream()
                 .filter(sameParent)
                 .map(this::entityToModel)
@@ -2135,8 +2122,8 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
 
     @Override
     public ComponentModel getComponent(String id) {
-        Component c = em.find(Component.class, id);
-        if (c == null) return null;
-        return entityToModel(c);
+        Optional<Component> optional = componentRepository.findById(id);
+        if (!optional.isPresent()) return null;
+        return entityToModel(optional.get());
     }
 }

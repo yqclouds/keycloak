@@ -17,13 +17,15 @@
 
 package org.keycloak.models.jpa;
 
+import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
 import com.hsbc.unified.iam.entity.Group;
 import com.hsbc.unified.iam.entity.GroupAttribute;
 import com.hsbc.unified.iam.entity.GroupRoleMapping;
-import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
+import com.hsbc.unified.iam.repository.GroupRepository;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.RoleUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -40,17 +42,21 @@ public class GroupAdapter implements GroupModel, JpaModel<Group> {
     protected EntityManager em;
     protected RealmModel realm;
 
+    @Autowired
+    private GroupRepository groupRepository;
+
     public GroupAdapter(RealmModel realm, EntityManager em, Group group) {
         this.em = em;
         this.group = group;
         this.realm = realm;
     }
 
-    public static Group toEntity(GroupModel model, EntityManager em) {
+    public Group toEntity(GroupModel model) {
         if (model instanceof GroupAdapter) {
             return ((GroupAdapter) model).getEntity();
         }
-        return em.getReference(Group.class, model.getId());
+
+        return groupRepository.getOne(model.getId());
     }
 
     public Group getEntity() {
@@ -83,7 +89,7 @@ public class GroupAdapter implements GroupModel, JpaModel<Group> {
         if (parent == null) {
             group.setParentId(Group.TOP_PARENT_ID);
         } else if (!parent.getId().equals(getId())) {
-            Group parentEntity = toEntity(parent, em);
+            Group parentEntity = toEntity(parent);
             group.setParentId(parentEntity.getId());
         }
     }

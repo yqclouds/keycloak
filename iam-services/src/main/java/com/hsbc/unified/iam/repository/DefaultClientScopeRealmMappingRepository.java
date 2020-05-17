@@ -1,5 +1,6 @@
 package com.hsbc.unified.iam.repository;
 
+import com.hsbc.unified.iam.entity.ClientScope;
 import com.hsbc.unified.iam.entity.DefaultClientScopeRealmMapping;
 import com.hsbc.unified.iam.entity.Realm;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,11 +15,11 @@ import java.util.List;
 public interface DefaultClientScopeRealmMappingRepository extends JpaRepository<DefaultClientScopeRealmMapping, DefaultClientScopeRealmMapping.Key>,
         JpaSpecificationExecutor<DefaultClientScopeRealmMapping> {
     @Query(name = "defaultClientScopeRealmMappingIdsByRealm", value = "select m.clientScope.id from DefaultClientScopeRealmMapping m where m.realm = :realm and m.defaultScope = :defaultScope")
-    List<String> defaultClientScopeRealmMappingIdsByRealm();
+    List<String> defaultClientScopeRealmMappingIdsByRealm(Realm realm, boolean defaultScope);
 
     @Modifying
     @Query(name = "deleteDefaultClientScopeRealmMapping", value = "delete from DefaultClientScopeRealmMapping where realm = :realm and clientScope = :clientScope")
-    void deleteDefaultClientScopeRealmMapping();
+    void deleteDefaultClientScopeRealmMapping(ClientScope clientScope, Realm realm);
 
     @Modifying
     @Query(name = "deleteDefaultClientScopeRealmMappingByRealm", value = "delete from DefaultClientScopeRealmMapping where realm = :realm")
