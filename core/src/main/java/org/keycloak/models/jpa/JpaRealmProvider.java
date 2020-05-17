@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.hsbc.unified.iam.legacy.adapter.impl;
+package org.keycloak.models.jpa;
 
 import com.hsbc.unified.iam.core.util.Time;
 import com.hsbc.unified.iam.entity.*;
@@ -29,13 +29,7 @@ import com.hsbc.unified.iam.service.GroupService;
 import com.hsbc.unified.iam.service.RealmService;
 import com.hsbc.unified.iam.service.RoleService;
 import org.keycloak.models.*;
-import org.keycloak.models.jpa.ClientAdapter;
-import org.keycloak.models.jpa.ClientScopeAdapter;
-import org.keycloak.models.jpa.GroupAdapter;
-import org.keycloak.models.jpa.RoleAdapter;
 import org.keycloak.models.utils.KeycloakModelUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.hsbc.unified.iam.legacy.adapter.impl;
+package org.keycloak.models.jpa;
 
 import com.hsbc.unified.iam.core.constants.Constants;
 import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
@@ -26,10 +26,6 @@ import com.hsbc.unified.iam.service.RealmService;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.*;
-import org.keycloak.models.jpa.ClientScopeAdapter;
-import org.keycloak.models.jpa.GroupAdapter;
-import org.keycloak.models.jpa.JpaModel;
-import org.keycloak.models.jpa.RoleAdapter;
 import org.keycloak.models.utils.ComponentUtil;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.springframework.beans.factory.annotation.Autowired;
