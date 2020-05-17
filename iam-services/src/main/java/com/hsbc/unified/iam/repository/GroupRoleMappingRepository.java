@@ -23,7 +23,7 @@ public interface GroupRoleMappingRepository extends JpaRepository<GroupRoleMappi
     List<Group> findGroupsInRole(String roleId);
 
     @Query(name = "groupHasRole", value = "select m from GroupRoleMapping m where m.group = :group and m.roleId = :roleId")
-    boolean isGroupHasRole(Group group, String roleId);
+    List<GroupRoleMapping> isGroupHasRole(Group group, String roleId);
 
     @Query(name = "groupRoleMappings", value = "select m from GroupRoleMapping m where m.group = :group")
     List<GroupRoleMapping> findGroupRoleMappings(Group group);

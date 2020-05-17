@@ -319,7 +319,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
         Group group = optional.get();
         if (!group.getRealm().getId().equals(realm.getId())) return null;
-        return new GroupAdapter(realm, em, group);
+        return new GroupAdapter(realm, group);
     }
 
     @Override
@@ -371,7 +371,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
     public List<GroupModel> getGroupsByRole(RealmModel realm, RoleModel role, int firstResult, int maxResults) {
         List<Group> results = groupRoleMappingRepository.findGroupsInRole(role.getId());
         return results.stream()
-                .map(g -> new GroupAdapter(realm, em, g))
+                .map(g -> new GroupAdapter(realm, g))
                 .sorted(Comparator.comparing(GroupModel::getName))
                 .collect(Collectors.collectingAndThen(
                         Collectors.toList(), Collections::unmodifiableList));
@@ -440,7 +440,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
         realmEntity.getGroups().add(groupEntity);
         realmRepository.saveAndFlush(realmEntity);
 
-        return new GroupAdapter(realm, em, groupEntity);
+        return new GroupAdapter(realm, groupEntity);
     }
 
     @Override
@@ -463,7 +463,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
         Client entity = clientService.createClient(id, clientId, realmRef);
         applicationEventPublisher.publishEvent(new ClientCreationEvent(entity));
 
-        return new ClientAdapter(realm, em, session, entity);
+        return new ClientAdapter(realm, session, entity);
     }
 
     @Override
@@ -500,7 +500,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
         Optional<Client> optional = clientRepository.findById(id);
         // Check if application belongs to this realm
         if (!optional.isPresent() || !realm.getId().equals(optional.get().getRealm().getId())) return null;
-        return new ClientAdapter(realm, em, session, optional.get());
+        return new ClientAdapter(realm, session, optional.get());
     }
 
     @Override

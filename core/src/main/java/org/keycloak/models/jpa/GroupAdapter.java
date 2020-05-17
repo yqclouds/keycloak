@@ -21,15 +21,14 @@ import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
 import com.hsbc.unified.iam.entity.Group;
 import com.hsbc.unified.iam.entity.GroupAttribute;
 import com.hsbc.unified.iam.entity.GroupRoleMapping;
+import com.hsbc.unified.iam.repository.GroupAttributeRepository;
 import com.hsbc.unified.iam.repository.GroupRepository;
+import com.hsbc.unified.iam.repository.GroupRoleMappingRepository;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.RoleUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
-import javax.persistence.TypedQuery;
 import java.util.*;
 
 /**
@@ -39,14 +38,16 @@ import java.util.*;
 public class GroupAdapter implements GroupModel, JpaModel<Group> {
 
     protected Group group;
-    protected EntityManager em;
     protected RealmModel realm;
 
     @Autowired
     private GroupRepository groupRepository;
+    @Autowired
+    private GroupAttributeRepository groupAttributeRepository;
+    @Autowired
+    private GroupRoleMappingRepository groupRoleMappingRepository;
 
-    public GroupAdapter(RealmModel realm, EntityManager em, Group group) {
-        this.em = em;
+    public GroupAdapter(RealmModel realm, Group group) {
         this.group = group;
         this.realm = realm;
     }
@@ -117,15 +118,14 @@ public class GroupAdapter implements GroupModel, JpaModel<Group> {
 
     @Override
     public Set<GroupModel> getSubGroups() {
-        TypedQuery<String> query = em.createNamedQuery("getGroupIdsByParent", String.class);
-        query.setParameter("parent", group.getId());
-        List<String> ids = query.getResultList();
+        List<String> ids = groupRepository.getGroupIdsByParent(group.getId());
         Set<GroupModel> set = new HashSet<>();
         for (String id : ids) {
             GroupModel subGroup = realm.getGroupById(id);
             if (subGroup == null) continue;
             set.add(subGroup);
         }
+
         return set;
     }
 
@@ -145,8 +145,8 @@ public class GroupAdapter implements GroupModel, JpaModel<Group> {
         }
 
         for (GroupAttribute attr : toRemove) {
-            em.remove(attr);
             group.getAttributes().remove(attr);
+            groupAttributeRepository.delete(attr);
         }
 
         if (found) {
@@ -173,7 +173,7 @@ public class GroupAdapter implements GroupModel, JpaModel<Group> {
         attr.setName(name);
         attr.setValue(value);
         attr.setGroup(group);
-        em.persist(attr);
+        groupAttributeRepository.save(attr);
         group.getAttributes().add(attr);
     }
 
@@ -184,7 +184,7 @@ public class GroupAdapter implements GroupModel, JpaModel<Group> {
             GroupAttribute attr = it.next();
             if (attr.getName().equals(name)) {
                 it.remove();
-                em.remove(attr);
+                groupAttributeRepository.delete(attr);
             }
         }
     }
@@ -225,47 +225,36 @@ public class GroupAdapter implements GroupModel, JpaModel<Group> {
         return RoleUtils.hasRole(roles, role);
     }
 
-    protected TypedQuery<GroupRoleMapping> getGroupRoleMappingEntityTypedQuery(RoleModel role) {
-        TypedQuery<GroupRoleMapping> query = em.createNamedQuery("groupHasRole", GroupRoleMapping.class);
-        query.setParameter("group", getEntity());
-        query.setParameter("roleId", role.getId());
-        return query;
-    }
-
     @Override
     public void grantRole(RoleModel role) {
         if (hasRole(role)) return;
         GroupRoleMapping entity = new GroupRoleMapping();
         entity.setGroup(getEntity());
         entity.setRoleId(role.getId());
-        em.persist(entity);
-        em.flush();
-        em.detach(entity);
+        groupRoleMappingRepository.save(entity);
     }
 
     @Override
     public Set<RoleModel> getRealmRoleMappings() {
         Set<RoleModel> roleMappings = getRoleMappings();
 
-        Set<RoleModel> realmRoles = new HashSet<RoleModel>();
+        Set<RoleModel> realmRoles = new HashSet<>();
         for (RoleModel role : roleMappings) {
             RoleContainerModel container = role.getContainer();
             if (container instanceof RealmModel) {
                 realmRoles.add(role);
             }
         }
+
         return realmRoles;
     }
-
 
     @Override
     public Set<RoleModel> getRoleMappings() {
         // we query ids only as the role might be cached and following the @ManyToOne will result in a load
         // even if we're getting just the id.
-        TypedQuery<String> query = em.createNamedQuery("groupRoleMappingIds", String.class);
-        query.setParameter("group", getEntity());
-        List<String> ids = query.getResultList();
-        Set<RoleModel> roles = new HashSet<RoleModel>();
+        List<String> ids = groupRoleMappingRepository.findGroupRoleMappingIds(getEntity());
+        Set<RoleModel> roles = new HashSet<>();
         for (String roleId : ids) {
             RoleModel roleById = realm.getRoleById(roleId);
             if (roleById == null) continue;
@@ -277,22 +266,16 @@ public class GroupAdapter implements GroupModel, JpaModel<Group> {
     @Override
     public void deleteRoleMapping(RoleModel role) {
         if (group == null || role == null) return;
-
-        TypedQuery<GroupRoleMapping> query = getGroupRoleMappingEntityTypedQuery(role);
-        query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
-        List<GroupRoleMapping> results = query.getResultList();
+        List<GroupRoleMapping> results = groupRoleMappingRepository.isGroupHasRole(getEntity(), role.getId());
         if (results.size() == 0) return;
-        for (GroupRoleMapping entity : results) {
-            em.remove(entity);
-        }
-        em.flush();
+        groupRoleMappingRepository.deleteAll(results);
     }
 
     @Override
     public Set<RoleModel> getClientRoleMappings(ClientModel app) {
         Set<RoleModel> roleMappings = getRoleMappings();
 
-        Set<RoleModel> roles = new HashSet<RoleModel>();
+        Set<RoleModel> roles = new HashSet<>();
         for (RoleModel role : roleMappings) {
             RoleContainerModel container = role.getContainer();
             if (container instanceof ClientModel) {
@@ -308,7 +291,7 @@ public class GroupAdapter implements GroupModel, JpaModel<Group> {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof GroupModel)) return false;
+        if (!(o instanceof GroupModel)) return false;
 
         GroupModel that = (GroupModel) o;
         return that.getId().equals(getId());
