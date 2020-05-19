@@ -18,7 +18,7 @@ package org.keycloak.services.resources.account.resources;
 
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.PermissionTicket;
+import org.keycloak.authorization.model.PermissionTicketModel;
 import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.authorization.store.PermissionTicketStore;
 import org.keycloak.authorization.store.ResourceStore;
@@ -107,7 +107,7 @@ public abstract class AbstractResourceService {
 
         }
 
-        ResourcePermission(PermissionTicket ticket, AuthorizationProvider provider) {
+        ResourcePermission(PermissionTicketModel ticket, AuthorizationProvider provider) {
             super(ticket.getResource(), provider);
             setScopes(new HashSet<>());
         }
@@ -162,7 +162,7 @@ public abstract class AbstractResourceService {
             setEmail(user.getEmail());
         }
 
-        Permission(PermissionTicket ticket, AuthorizationProvider provider) {
+        Permission(PermissionTicketModel ticket, AuthorizationProvider provider) {
             this(ticket.getRequester(), provider);
         }
 

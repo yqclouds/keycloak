@@ -131,5 +131,5 @@ public interface AdminEventQuery {
      *
      * @return
      */
-    List<AdminEvent> getResultList();
+    List<AdminEventModel> getResultList();
 }

@@ -18,7 +18,7 @@
 package org.keycloak.forms.account.freemarker.model;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.PermissionTicket;
+import org.keycloak.authorization.model.PermissionTicketModel;
 import org.keycloak.authorization.model.Policy;
 import org.keycloak.authorization.model.Resource;
 import org.keycloak.authorization.model.Scope;
@@ -77,8 +77,8 @@ public class AuthorizationBean {
         if (resourcesWaitingOthersApproval == null) {
             HashMap<String, String> filters = new HashMap<>();
 
-            filters.put(PermissionTicket.REQUESTER, user.getId());
-            filters.put(PermissionTicket.GRANTED, Boolean.FALSE.toString());
+            filters.put(PermissionTicketModel.REQUESTER, user.getId());
+            filters.put(PermissionTicketModel.GRANTED, Boolean.FALSE.toString());
 
             resourcesWaitingOthersApproval = toResourceRepresentation(findPermissions(filters));
         }
@@ -90,8 +90,8 @@ public class AuthorizationBean {
         if (requestsWaitingPermission == null) {
             HashMap<String, String> filters = new HashMap<>();
 
-            filters.put(PermissionTicket.OWNER, user.getId());
-            filters.put(PermissionTicket.GRANTED, Boolean.FALSE.toString());
+            filters.put(PermissionTicketModel.OWNER, user.getId());
+            filters.put(PermissionTicketModel.GRANTED, Boolean.FALSE.toString());
 
             requestsWaitingPermission = toResourceRepresentation(findPermissions(filters));
         }
@@ -113,8 +113,8 @@ public class AuthorizationBean {
         if (userSharedResources == null) {
             HashMap<String, String> filters = new HashMap<>();
 
-            filters.put(PermissionTicket.REQUESTER, user.getId());
-            filters.put(PermissionTicket.GRANTED, Boolean.TRUE.toString());
+            filters.put(PermissionTicketModel.REQUESTER, user.getId());
+            filters.put(PermissionTicketModel.GRANTED, Boolean.TRUE.toString());
 
             PermissionTicketStore ticketStore = authorizationProvider.getStoreFactory().getPermissionTicketStore();
 
@@ -139,10 +139,10 @@ public class AuthorizationBean {
         return new ResourceBean(authorizationProvider.getStoreFactory().getResourceStore().findById(id, null));
     }
 
-    private Collection<RequesterBean> toPermissionRepresentation(List<PermissionTicket> permissionRequests) {
+    private Collection<RequesterBean> toPermissionRepresentation(List<PermissionTicketModel> permissionRequests) {
         Map<String, RequesterBean> requests = new HashMap<>();
 
-        for (PermissionTicket ticket : permissionRequests) {
+        for (PermissionTicketModel ticket : permissionRequests) {
             Resource resource = ticket.getResource();
 
             if (!resource.isOwnerManagedAccess()) {
@@ -155,10 +155,10 @@ public class AuthorizationBean {
         return requests.values();
     }
 
-    private Collection<ResourceBean> toResourceRepresentation(List<PermissionTicket> tickets) {
+    private Collection<ResourceBean> toResourceRepresentation(List<PermissionTicketModel> tickets) {
         Map<String, ResourceBean> requests = new HashMap<>();
 
-        for (PermissionTicket ticket : tickets) {
+        for (PermissionTicketModel ticket : tickets) {
             Resource resource = ticket.getResource();
 
             if (!resource.isOwnerManagedAccess()) {
@@ -171,7 +171,7 @@ public class AuthorizationBean {
         return requests.values();
     }
 
-    private List<PermissionTicket> findPermissions(Map<String, String> filters) {
+    private List<PermissionTicketModel> findPermissions(Map<String, String> filters) {
         return authorizationProvider.getStoreFactory().getPermissionTicketStore().find(filters, null, -1, -1);
     }
 
@@ -183,7 +183,7 @@ public class AuthorizationBean {
         private List<PermissionScopeBean> scopes = new ArrayList<>();
         private boolean granted;
 
-        public RequesterBean(PermissionTicket ticket, AuthorizationProvider authorization) {
+        public RequesterBean(PermissionTicketModel ticket, AuthorizationProvider authorization) {
             this.requester = authorization.getSession().users().getUserById(ticket.getRequester(), authorization.getRealm());
             granted = ticket.isGranted();
             createdTimestamp = ticket.getCreatedTimestamp();
@@ -198,7 +198,7 @@ public class AuthorizationBean {
             return scopes;
         }
 
-        private void addScope(PermissionTicket ticket) {
+        private void addScope(PermissionTicketModel ticket) {
             if (ticket != null) {
                 scopes.add(new PermissionScopeBean(ticket));
             }
@@ -229,9 +229,9 @@ public class AuthorizationBean {
     public static class PermissionScopeBean {
 
         private final Scope scope;
-        private final PermissionTicket ticket;
+        private final PermissionTicketModel ticket;
 
-        public PermissionScopeBean(PermissionTicket ticket) {
+        public PermissionScopeBean(PermissionTicketModel ticket) {
             this.ticket = ticket;
             scope = ticket.getScope();
         }
@@ -299,8 +299,8 @@ public class AuthorizationBean {
             if (shares == null) {
                 Map<String, String> filters = new HashMap<>();
 
-                filters.put(PermissionTicket.RESOURCE, this.resource.getId());
-                filters.put(PermissionTicket.GRANTED, Boolean.TRUE.toString());
+                filters.put(PermissionTicketModel.RESOURCE, this.resource.getId());
+                filters.put(PermissionTicketModel.GRANTED, Boolean.TRUE.toString());
 
                 shares = toPermissionRepresentation(findPermissions(filters));
             }
@@ -325,7 +325,7 @@ public class AuthorizationBean {
                     .filter(policy -> {
                         Map<String, String> filters1 = new HashMap<>();
 
-                        filters1.put(PermissionTicket.POLICY, policy.getId());
+                        filters1.put(PermissionTicketModel.POLICY, policy.getId());
 
                         return authorizationProvider.getStoreFactory().getPermissionTicketStore().find(filters1, resourceServer.getId(), -1, 1)
                                 .isEmpty();
@@ -341,7 +341,7 @@ public class AuthorizationBean {
             return permissions.values();
         }
 
-        private void addPermission(PermissionTicket ticket, AuthorizationProvider authorization) {
+        private void addPermission(PermissionTicketModel ticket, AuthorizationProvider authorization) {
             permissions.computeIfAbsent(ticket.getRequester(), key -> new RequesterBean(ticket, authorization)).addScope(ticket);
         }
     }

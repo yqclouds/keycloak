@@ -17,7 +17,7 @@
 package org.keycloak.services.resources.account.resources;
 
 import org.jboss.resteasy.spi.HttpRequest;
-import org.keycloak.authorization.model.PermissionTicket;
+import org.keycloak.authorization.model.PermissionTicketModel;
 import org.keycloak.authorization.store.PermissionTicketStore;
 import org.keycloak.common.util.KeycloakUriBuilder;
 import org.keycloak.models.KeycloakSession;
@@ -123,21 +123,21 @@ public class ResourcesService extends AbstractResourceService {
         for (org.keycloak.authorization.model.Resource resource : resources) {
             ResourcePermission permission = new ResourcePermission(resource, authorizationProvider);
 
-            List<PermissionTicket> tickets;
+            List<PermissionTicketModel> tickets;
 
             if (withRequesters) {
                 Map<String, String> filters = new HashMap<>();
 
-                filters.put(PermissionTicket.OWNER, user.getId());
-                filters.put(PermissionTicket.GRANTED, Boolean.TRUE.toString());
-                filters.put(PermissionTicket.RESOURCE, resource.getId());
+                filters.put(PermissionTicketModel.OWNER, user.getId());
+                filters.put(PermissionTicketModel.GRANTED, Boolean.TRUE.toString());
+                filters.put(PermissionTicketModel.RESOURCE, resource.getId());
 
                 tickets = ticketStore.find(filters, null, -1, -1);
             } else {
                 tickets = ticketStore.findGranted(resource.getName(), user.getId(), null);
             }
 
-            for (PermissionTicket ticket : tickets) {
+            for (PermissionTicketModel ticket : tickets) {
                 if (resource.equals(ticket.getResource())) {
                     if (withRequesters) {
                         Permission user = permission.getPermission(ticket.getRequester());

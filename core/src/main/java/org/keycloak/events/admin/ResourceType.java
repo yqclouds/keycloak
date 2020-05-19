@@ -17,7 +17,7 @@
 package org.keycloak.events.admin;
 
 /**
- * Represents Keycloak resource types for which {@link AdminEvent AdminEvent's} can be triggered.
+ * Represents Keycloak resource types for which {@link AdminEventModel AdminEventModel's} can be triggered.
  *
  * @author <a href="mailto:thomas.darimont@gmail.com">Thomas Darimont</a>
  */

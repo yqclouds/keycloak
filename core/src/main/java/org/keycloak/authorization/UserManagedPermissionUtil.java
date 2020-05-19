@@ -16,7 +16,7 @@
  */
 package org.keycloak.authorization;
 
-import org.keycloak.authorization.model.PermissionTicket;
+import org.keycloak.authorization.model.PermissionTicketModel;
 import org.keycloak.authorization.model.Policy;
 import org.keycloak.authorization.model.Scope;
 import org.keycloak.authorization.store.PolicyStore;
@@ -33,19 +33,19 @@ import java.util.List;
  */
 public class UserManagedPermissionUtil {
 
-    public static void updatePolicy(PermissionTicket ticket, StoreFactory storeFactory) {
+    public static void updatePolicy(PermissionTicketModel ticket, StoreFactory storeFactory) {
         Scope scope = ticket.getScope();
         Policy policy = ticket.getPolicy();
 
         if (policy == null) {
             HashMap<String, String> filter = new HashMap<>();
 
-            filter.put(PermissionTicket.OWNER, ticket.getOwner());
-            filter.put(PermissionTicket.REQUESTER, ticket.getRequester());
-            filter.put(PermissionTicket.RESOURCE, ticket.getResource().getId());
-            filter.put(PermissionTicket.POLICY_IS_NOT_NULL, Boolean.TRUE.toString());
+            filter.put(PermissionTicketModel.OWNER, ticket.getOwner());
+            filter.put(PermissionTicketModel.REQUESTER, ticket.getRequester());
+            filter.put(PermissionTicketModel.RESOURCE, ticket.getResource().getId());
+            filter.put(PermissionTicketModel.POLICY_IS_NOT_NULL, Boolean.TRUE.toString());
 
-            List<PermissionTicket> tickets = storeFactory.getPermissionTicketStore().find(filter, ticket.getResourceServer().getId(), -1, 1);
+            List<PermissionTicketModel> tickets = storeFactory.getPermissionTicketStore().find(filter, ticket.getResourceServer().getId(), -1, 1);
 
             if (!tickets.isEmpty()) {
                 policy = tickets.iterator().next().getPolicy();
@@ -68,18 +68,18 @@ public class UserManagedPermissionUtil {
         }
     }
 
-    public static void removePolicy(PermissionTicket ticket, StoreFactory storeFactory) {
+    public static void removePolicy(PermissionTicketModel ticket, StoreFactory storeFactory) {
         Policy policy = ticket.getPolicy();
 
         if (policy != null) {
             HashMap<String, String> filter = new HashMap<>();
 
-            filter.put(PermissionTicket.OWNER, ticket.getOwner());
-            filter.put(PermissionTicket.REQUESTER, ticket.getRequester());
-            filter.put(PermissionTicket.RESOURCE, ticket.getResource().getId());
-            filter.put(PermissionTicket.GRANTED, Boolean.TRUE.toString());
+            filter.put(PermissionTicketModel.OWNER, ticket.getOwner());
+            filter.put(PermissionTicketModel.REQUESTER, ticket.getRequester());
+            filter.put(PermissionTicketModel.RESOURCE, ticket.getResource().getId());
+            filter.put(PermissionTicketModel.GRANTED, Boolean.TRUE.toString());
 
-            List<PermissionTicket> tickets = storeFactory.getPermissionTicketStore().find(filter, ticket.getResourceServer().getId(), -1, -1);
+            List<PermissionTicketModel> tickets = storeFactory.getPermissionTicketStore().find(filter, ticket.getResourceServer().getId(), -1, -1);
 
             if (tickets.isEmpty()) {
                 PolicyStore policyStore = storeFactory.getPolicyStore();
@@ -95,7 +95,7 @@ public class UserManagedPermissionUtil {
         }
     }
 
-    private static Policy createUserManagedPermission(PermissionTicket ticket, StoreFactory storeFactory) {
+    private static Policy createUserManagedPermission(PermissionTicketModel ticket, StoreFactory storeFactory) {
         PolicyStore policyStore = storeFactory.getPolicyStore();
         UserPolicyRepresentation userPolicyRep = new UserPolicyRepresentation();
 

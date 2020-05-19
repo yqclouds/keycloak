@@ -19,7 +19,7 @@ package org.keycloak.authorization.model;
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
-public interface PermissionTicket {
+public interface PermissionTicketModel {
 
     String ID = "id";
     String RESOURCE = "resource.id";

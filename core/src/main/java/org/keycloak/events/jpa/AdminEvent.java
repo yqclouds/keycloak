@@ -27,7 +27,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "ADMIN_EVENT_ENTITY")
-public class AdminEventEntity {
+public class AdminEvent {
 
     @Id
     @Column(name = "ID", length = 36)

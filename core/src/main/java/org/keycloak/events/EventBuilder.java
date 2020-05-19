@@ -38,7 +38,7 @@ public class EventBuilder {
 
     private List<EventListenerProvider> listeners;
     private RealmModel realm;
-    private Event event;
+    private EventModel event;
 
     @Autowired(required = false)
     private EventStoreProvider eventStoreProvider;
@@ -46,7 +46,7 @@ public class EventBuilder {
     public EventBuilder(RealmModel realm, KeycloakSession session, ClientConnection clientConnection) {
         this.realm = realm;
 
-        event = new Event();
+        event = new EventModel();
 
         if (realm.isEventsEnabled() && eventStoreProvider == null) {
             LOG.error("Events enabled, but no event store provider configured");
@@ -59,7 +59,7 @@ public class EventBuilder {
                 if (listener != null) {
                     listeners.add(listener);
                 } else {
-                    LOG.error("Event listener '" + id + "' registered, but provider not found");
+                    LOG.error("EventModel listener '" + id + "' registered, but provider not found");
                 }
             }
         }
@@ -68,7 +68,7 @@ public class EventBuilder {
         ipAddress(clientConnection.getRemoteAddr());
     }
 
-    private EventBuilder(EventStoreProvider eventStoreProvider, List<EventListenerProvider> listeners, RealmModel realm, Event event) {
+    private EventBuilder(EventStoreProvider eventStoreProvider, List<EventListenerProvider> listeners, RealmModel realm, EventModel event) {
         this.eventStoreProvider = eventStoreProvider;
         this.listeners = listeners;
         this.realm = realm;
@@ -144,7 +144,7 @@ public class EventBuilder {
         return this;
     }
 
-    public Event getEvent() {
+    public EventModel getEvent() {
         return event;
     }
 

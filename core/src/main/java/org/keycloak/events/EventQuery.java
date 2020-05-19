@@ -43,6 +43,6 @@ public interface EventQuery {
 
     EventQuery maxResults(int results);
 
-    List<Event> getResultList();
+    List<EventModel> getResultList();
 
 }

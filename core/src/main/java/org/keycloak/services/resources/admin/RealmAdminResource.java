@@ -28,11 +28,11 @@ import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.common.VerificationException;
 import org.keycloak.common.util.PemUtils;
 import org.keycloak.email.EmailTemplateProvider;
-import org.keycloak.events.Event;
+import org.keycloak.events.EventModel;
 import org.keycloak.events.EventQuery;
 import org.keycloak.events.EventStoreProvider;
 import org.keycloak.events.EventType;
-import org.keycloak.events.admin.AdminEvent;
+import org.keycloak.events.admin.AdminEventModel;
 import org.keycloak.events.admin.AdminEventQuery;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
@@ -733,9 +733,9 @@ public class RealmAdminResource {
         return toEventListRep(query.getResultList());
     }
 
-    private List<EventRepresentation> toEventListRep(List<Event> events) {
+    private List<EventRepresentation> toEventListRep(List<EventModel> events) {
         List<EventRepresentation> reps = new ArrayList<>();
-        for (Event event : events) {
+        for (EventModel event : events) {
             reps.add(ModelToRepresentation.toRepresentation(event));
         }
         return reps;
@@ -843,9 +843,9 @@ public class RealmAdminResource {
         return toAdminEventRep(query.getResultList());
     }
 
-    private List<AdminEventRepresentation> toAdminEventRep(List<AdminEvent> events) {
+    private List<AdminEventRepresentation> toAdminEventRep(List<AdminEventModel> events) {
         List<AdminEventRepresentation> reps = new ArrayList<>();
-        for (AdminEvent event : events) {
+        for (AdminEventModel event : events) {
             reps.add(ModelToRepresentation.toRepresentation(event));
         }
 

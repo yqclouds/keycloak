@@ -21,7 +21,7 @@ import org.keycloak.OAuthErrorException;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.common.DefaultEvaluationContext;
 import org.keycloak.authorization.common.KeycloakIdentity;
-import org.keycloak.authorization.model.PermissionTicket;
+import org.keycloak.authorization.model.PermissionTicketModel;
 import org.keycloak.authorization.model.Resource;
 import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.authorization.model.Scope;
@@ -450,8 +450,8 @@ public class AuthorizationTokenService {
                     }
 
                     if (!identity.isResourceServer() || !identity.getId().equals(resourceServer.getId())) {
-                        List<PermissionTicket> tickets = storeFactory.getPermissionTicketStore().findGranted(resourceName, identity.getId(), resourceServer.getId());
-                        for (PermissionTicket permissionTicket : tickets) {
+                        List<PermissionTicketModel> tickets = storeFactory.getPermissionTicketStore().findGranted(resourceName, identity.getId(), resourceServer.getId());
+                        for (PermissionTicketModel permissionTicket : tickets) {
                             requestedResources.add(permissionTicket.getResource());
                         }
 

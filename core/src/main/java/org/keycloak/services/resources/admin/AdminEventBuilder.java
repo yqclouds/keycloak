@@ -20,7 +20,7 @@ import com.hsbc.unified.iam.core.ClientConnection;
 import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.EventStoreProvider;
-import org.keycloak.events.admin.AdminEvent;
+import org.keycloak.events.admin.AdminEventModel;
 import org.keycloak.events.admin.AuthDetails;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
@@ -47,11 +47,11 @@ public class AdminEventBuilder {
     private EventStoreProvider eventStoreProvider;
     private Map<String, EventListenerProvider> listeners;
     private RealmModel realm;
-    private AdminEvent adminEvent;
+    private AdminEventModel adminEvent;
 
     public AdminEventBuilder(RealmModel realm, AdminAuth auth, KeycloakSession session, ClientConnection clientConnection) {
         this.realm = realm;
-        adminEvent = new AdminEvent();
+        adminEvent = new AdminEventModel();
 
         this.listeners = new HashMap<>();
         updateStore(session);
@@ -229,7 +229,7 @@ public class AdminEventBuilder {
         return this;
     }
 
-    public AdminEvent getEvent() {
+    public AdminEventModel getEvent() {
         return adminEvent;
     }
 

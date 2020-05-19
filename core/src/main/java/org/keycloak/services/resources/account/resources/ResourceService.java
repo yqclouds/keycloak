@@ -17,7 +17,7 @@
 package org.keycloak.services.resources.account.resources;
 
 import org.jboss.resteasy.spi.HttpRequest;
-import org.keycloak.authorization.model.PermissionTicket;
+import org.keycloak.authorization.model.PermissionTicketModel;
 import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserModel;
@@ -66,9 +66,9 @@ public class ResourceService extends AbstractResourceService {
     public Response toPermissions() {
         Map<String, String> filters = new HashMap<>();
 
-        filters.put(PermissionTicket.OWNER, user.getId());
-        filters.put(PermissionTicket.GRANTED, Boolean.TRUE.toString());
-        filters.put(PermissionTicket.RESOURCE, resource.getId());
+        filters.put(PermissionTicketModel.OWNER, user.getId());
+        filters.put(PermissionTicketModel.GRANTED, Boolean.TRUE.toString());
+        filters.put(PermissionTicketModel.RESOURCE, resource.getId());
 
         Collection<ResourcePermission> resources = toPermissions(ticketStore.find(filters, null, -1, -1));
         Collection<Permission> permissions = Collections.EMPTY_LIST;
@@ -98,14 +98,14 @@ public class ResourceService extends AbstractResourceService {
         ResourceServer resourceServer = resource.getResourceServer();
         Map<String, String> filters = new HashMap<>();
 
-        filters.put(PermissionTicket.RESOURCE, resource.getId());
+        filters.put(PermissionTicketModel.RESOURCE, resource.getId());
 
         for (Permission permission : permissions) {
             UserModel user = getUser(permission.getUsername());
 
-            filters.put(PermissionTicket.REQUESTER, user.getId());
+            filters.put(PermissionTicketModel.REQUESTER, user.getId());
 
-            List<PermissionTicket> tickets = ticketStore.find(filters, resource.getResourceServer().getId(), -1, -1);
+            List<PermissionTicketModel> tickets = ticketStore.find(filters, resource.getResourceServer().getId(), -1, -1);
 
             // grants all requested permissions
             if (tickets.isEmpty()) {
@@ -117,10 +117,10 @@ public class ResourceService extends AbstractResourceService {
 
                 while (scopesIterator.hasNext()) {
                     org.keycloak.authorization.model.Scope scope = getScope(scopesIterator.next(), resourceServer);
-                    Iterator<PermissionTicket> ticketIterator = tickets.iterator();
+                    Iterator<PermissionTicketModel> ticketIterator = tickets.iterator();
 
                     while (ticketIterator.hasNext()) {
-                        PermissionTicket ticket = ticketIterator.next();
+                        PermissionTicketModel ticket = ticketIterator.next();
 
                         if (scope.getId().equals(ticket.getScope().getId())) {
                             if (!ticket.isGranted()) {
@@ -140,7 +140,7 @@ public class ResourceService extends AbstractResourceService {
                 }
 
                 // remove all tickets that are not within the requested permissions
-                for (PermissionTicket ticket : tickets) {
+                for (PermissionTicketModel ticket : tickets) {
                     ticketStore.delete(ticket.getId());
                 }
             }
@@ -160,13 +160,13 @@ public class ResourceService extends AbstractResourceService {
     public Response getPermissionRequests() {
         Map<String, String> filters = new HashMap<>();
 
-        filters.put(PermissionTicket.OWNER, user.getId());
-        filters.put(PermissionTicket.GRANTED, Boolean.FALSE.toString());
-        filters.put(PermissionTicket.RESOURCE, resource.getId());
+        filters.put(PermissionTicketModel.OWNER, user.getId());
+        filters.put(PermissionTicketModel.GRANTED, Boolean.FALSE.toString());
+        filters.put(PermissionTicketModel.RESOURCE, resource.getId());
 
         Map<String, Permission> requests = new HashMap<>();
 
-        for (PermissionTicket ticket : ticketStore.find(filters, null, -1, -1)) {
+        for (PermissionTicketModel ticket : ticketStore.find(filters, null, -1, -1)) {
             requests.computeIfAbsent(ticket.getRequester(), requester -> new Permission(ticket, authorizationProvider)).addScope(ticket.getScope().getName());
         }
 
@@ -175,7 +175,7 @@ public class ResourceService extends AbstractResourceService {
 
     private void grantPermission(UserModel user, String scopeId) {
         org.keycloak.authorization.model.Scope scope = getScope(scopeId, resourceServer);
-        PermissionTicket ticket = ticketStore.create(resource.getId(), scope.getId(), user.getId(), resourceServer);
+        PermissionTicketModel ticket = ticketStore.create(resource.getId(), scope.getId(), user.getId(), resourceServer);
         ticket.setGrantedTimestamp(Calendar.getInstance().getTimeInMillis());
     }
 
@@ -200,10 +200,10 @@ public class ResourceService extends AbstractResourceService {
         return user;
     }
 
-    private Collection<ResourcePermission> toPermissions(List<PermissionTicket> tickets) {
+    private Collection<ResourcePermission> toPermissions(List<PermissionTicketModel> tickets) {
         Map<String, ResourcePermission> permissions = new HashMap<>();
 
-        for (PermissionTicket ticket : tickets) {
+        for (PermissionTicketModel ticket : tickets) {
             ResourcePermission resource = permissions
                     .computeIfAbsent(ticket.getResource().getId(), s -> new ResourcePermission(ticket, authorizationProvider));
 

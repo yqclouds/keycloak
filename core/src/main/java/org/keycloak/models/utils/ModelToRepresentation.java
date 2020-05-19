@@ -23,8 +23,8 @@ import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.model.*;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.events.Event;
-import org.keycloak.events.admin.AdminEvent;
+import org.keycloak.events.EventModel;
+import org.keycloak.events.admin.AdminEventModel;
 import org.keycloak.events.admin.AuthDetails;
 import org.keycloak.models.*;
 import org.keycloak.models.credential.OTPCredentialModel;
@@ -235,7 +235,7 @@ public class ModelToRepresentation {
         return rep;
     }
 
-    public static EventRepresentation toRepresentation(Event event) {
+    public static EventRepresentation toRepresentation(EventModel event) {
         EventRepresentation rep = new EventRepresentation();
         rep.setTime(event.getTime());
         rep.setType(event.getType().toString());
@@ -249,7 +249,7 @@ public class ModelToRepresentation {
         return rep;
     }
 
-    public static AdminEventRepresentation toRepresentation(AdminEvent adminEvent) {
+    public static AdminEventRepresentation toRepresentation(AdminEventModel adminEvent) {
         AdminEventRepresentation rep = new AdminEventRepresentation();
         rep.setTime(adminEvent.getTime());
         rep.setRealmId(adminEvent.getRealmId());
@@ -976,11 +976,11 @@ public class ModelToRepresentation {
         return resource;
     }
 
-    public static PermissionTicketRepresentation toRepresentation(PermissionTicket ticket, AuthorizationProvider authorization) {
+    public static PermissionTicketRepresentation toRepresentation(PermissionTicketModel ticket, AuthorizationProvider authorization) {
         return toRepresentation(ticket, authorization, false);
     }
 
-    public static PermissionTicketRepresentation toRepresentation(PermissionTicket ticket, AuthorizationProvider authorization, boolean returnNames) {
+    public static PermissionTicketRepresentation toRepresentation(PermissionTicketModel ticket, AuthorizationProvider authorization, boolean returnNames) {
         PermissionTicketRepresentation representation = new PermissionTicketRepresentation();
 
         representation.setId(ticket.getId());

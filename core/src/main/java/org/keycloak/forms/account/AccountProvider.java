@@ -17,7 +17,7 @@
 
 package org.keycloak.forms.account;
 
-import org.keycloak.events.Event;
+import org.keycloak.events.EventModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserSessionModel;
@@ -57,7 +57,7 @@ public interface AccountProvider extends Provider {
 
     AccountProvider setReferrer(String[] referrer);
 
-    AccountProvider setEvents(List<Event> events);
+    AccountProvider setEvents(List<EventModel> events);
 
     AccountProvider setSessions(List<UserSessionModel> sessions);
 

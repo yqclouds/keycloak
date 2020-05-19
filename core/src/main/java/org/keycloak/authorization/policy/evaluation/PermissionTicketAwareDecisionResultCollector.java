@@ -18,7 +18,7 @@ package org.keycloak.authorization.policy.evaluation;
 
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.identity.Identity;
-import org.keycloak.authorization.model.PermissionTicket;
+import org.keycloak.authorization.model.PermissionTicketModel;
 import org.keycloak.authorization.model.Resource;
 import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.authorization.model.Scope;
@@ -108,11 +108,11 @@ public class PermissionTicketAwareDecisionResultCollector extends DecisionPermis
                     if (scopes.isEmpty()) {
                         Map<String, String> filters = new HashMap<>();
 
-                        filters.put(PermissionTicket.RESOURCE, resource.getId());
-                        filters.put(PermissionTicket.REQUESTER, identity.getId());
-                        filters.put(PermissionTicket.SCOPE_IS_NULL, Boolean.TRUE.toString());
+                        filters.put(PermissionTicketModel.RESOURCE, resource.getId());
+                        filters.put(PermissionTicketModel.REQUESTER, identity.getId());
+                        filters.put(PermissionTicketModel.SCOPE_IS_NULL, Boolean.TRUE.toString());
 
-                        List<PermissionTicket> tickets = authorization.getStoreFactory().getPermissionTicketStore().find(filters, resource.getResourceServer().getId(), -1, -1);
+                        List<PermissionTicketModel> tickets = authorization.getStoreFactory().getPermissionTicketStore().find(filters, resource.getResourceServer().getId(), -1, -1);
 
                         if (tickets.isEmpty()) {
                             authorization.getStoreFactory().getPermissionTicketStore().create(resource.getId(), null, identity.getId(), resource.getResourceServer());
@@ -129,11 +129,11 @@ public class PermissionTicketAwareDecisionResultCollector extends DecisionPermis
 
                             Map<String, String> filters = new HashMap<>();
 
-                            filters.put(PermissionTicket.RESOURCE, resource.getId());
-                            filters.put(PermissionTicket.REQUESTER, identity.getId());
-                            filters.put(PermissionTicket.SCOPE, scope.getId());
+                            filters.put(PermissionTicketModel.RESOURCE, resource.getId());
+                            filters.put(PermissionTicketModel.REQUESTER, identity.getId());
+                            filters.put(PermissionTicketModel.SCOPE, scope.getId());
 
-                            List<PermissionTicket> tickets = authorization.getStoreFactory().getPermissionTicketStore().find(filters, resource.getResourceServer().getId(), -1, -1);
+                            List<PermissionTicketModel> tickets = authorization.getStoreFactory().getPermissionTicketStore().find(filters, resource.getResourceServer().getId(), -1, -1);
 
                             if (tickets.isEmpty()) {
                                 authorization.getStoreFactory().getPermissionTicketStore().create(resource.getId(), scope.getId(), identity.getId(), resource.getResourceServer());

@@ -17,7 +17,7 @@
 
 package org.keycloak.events;
 
-import org.keycloak.events.admin.AdminEvent;
+import org.keycloak.events.admin.AdminEventModel;
 import org.keycloak.provider.Provider;
 
 /**
@@ -25,8 +25,8 @@ import org.keycloak.provider.Provider;
  */
 public interface EventListenerProvider extends Provider {
 
-    void onEvent(Event event);
+    void onEvent(EventModel event);
 
-    void onEvent(AdminEvent event, boolean includeRepresentation);
+    void onEvent(AdminEventModel event, boolean includeRepresentation);
 
 }

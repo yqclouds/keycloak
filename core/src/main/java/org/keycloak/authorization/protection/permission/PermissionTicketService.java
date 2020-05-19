@@ -20,7 +20,7 @@ package org.keycloak.authorization.protection.permission;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.common.KeycloakIdentity;
-import org.keycloak.authorization.model.PermissionTicket;
+import org.keycloak.authorization.model.PermissionTicketModel;
 import org.keycloak.authorization.model.Resource;
 import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.authorization.model.Scope;
@@ -110,14 +110,14 @@ public class PermissionTicketService {
             throw new ErrorResponseException("invalid_resource_id", "Resource set with id [" + representation.getResource() + "] does not have Scope [" + scope.getName() + "]", Response.Status.BAD_REQUEST);
 
         Map<String, String> attributes = new HashMap<>();
-        attributes.put(PermissionTicket.RESOURCE, resource.getId());
-        attributes.put(PermissionTicket.SCOPE, scope.getId());
-        attributes.put(PermissionTicket.REQUESTER, user.getId());
+        attributes.put(PermissionTicketModel.RESOURCE, resource.getId());
+        attributes.put(PermissionTicketModel.SCOPE, scope.getId());
+        attributes.put(PermissionTicketModel.REQUESTER, user.getId());
 
         if (!ticketStore.find(attributes, resourceServer.getId(), -1, -1).isEmpty())
             throw new ErrorResponseException("invalid_permission", "Permission already exists", Response.Status.BAD_REQUEST);
 
-        PermissionTicket ticket = ticketStore.create(resource.getId(), scope.getId(), user.getId(), resourceServer);
+        PermissionTicketModel ticket = ticketStore.create(resource.getId(), scope.getId(), user.getId(), resourceServer);
         if (representation.isGranted())
             ticket.setGrantedTimestamp(java.lang.System.currentTimeMillis());
         representation = ModelToRepresentation.toRepresentation(ticket, authorization);
@@ -132,7 +132,7 @@ public class PermissionTicketService {
         }
 
         PermissionTicketStore ticketStore = authorization.getStoreFactory().getPermissionTicketStore();
-        PermissionTicket ticket = ticketStore.findById(representation.getId(), resourceServer.getId());
+        PermissionTicketModel ticket = ticketStore.findById(representation.getId(), resourceServer.getId());
 
         if (ticket == null) {
             throw new ErrorResponseException(OAuthErrorException.INVALID_REQUEST, "invalid_ticket", Response.Status.BAD_REQUEST);
@@ -156,7 +156,7 @@ public class PermissionTicketService {
         }
 
         PermissionTicketStore ticketStore = authorization.getStoreFactory().getPermissionTicketStore();
-        PermissionTicket ticket = ticketStore.findById(id, resourceServer.getId());
+        PermissionTicketModel ticket = ticketStore.findById(id, resourceServer.getId());
 
         if (ticket == null) {
             throw new ErrorResponseException(OAuthErrorException.INVALID_REQUEST, "invalid_ticket", Response.Status.BAD_REQUEST);
@@ -186,7 +186,7 @@ public class PermissionTicketService {
         Map<String, String> filters = new HashMap<>();
 
         if (resourceId != null) {
-            filters.put(PermissionTicket.RESOURCE, resourceId);
+            filters.put(PermissionTicketModel.RESOURCE, resourceId);
         }
 
         if (scopeId != null) {
@@ -197,19 +197,19 @@ public class PermissionTicketService {
                 scope = scopeStore.findByName(scopeId, resourceServer.getId());
             }
 
-            filters.put(PermissionTicket.SCOPE, scope != null ? scope.getId() : scopeId);
+            filters.put(PermissionTicketModel.SCOPE, scope != null ? scope.getId() : scopeId);
         }
 
         if (owner != null) {
-            filters.put(PermissionTicket.OWNER, getUserId(owner));
+            filters.put(PermissionTicketModel.OWNER, getUserId(owner));
         }
 
         if (requester != null) {
-            filters.put(PermissionTicket.REQUESTER, getUserId(requester));
+            filters.put(PermissionTicketModel.REQUESTER, getUserId(requester));
         }
 
         if (granted != null) {
-            filters.put(PermissionTicket.GRANTED, granted.toString());
+            filters.put(PermissionTicketModel.GRANTED, granted.toString());
         }
 
         return Response.ok().entity(permissionTicketStore.find(filters, resourceServer.getId(), firstResult != null ? firstResult : -1, maxResult != null ? maxResult : Constants.DEFAULT_MAX_RESULTS)

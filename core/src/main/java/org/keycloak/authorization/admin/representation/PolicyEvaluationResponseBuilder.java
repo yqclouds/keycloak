@@ -20,7 +20,7 @@ import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.Decision;
 import org.keycloak.authorization.admin.PolicyEvaluationService;
 import org.keycloak.authorization.common.KeycloakIdentity;
-import org.keycloak.authorization.model.PermissionTicket;
+import org.keycloak.authorization.model.PermissionTicketModel;
 import org.keycloak.authorization.model.Policy;
 import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.authorization.model.Scope;
@@ -179,13 +179,13 @@ public class PolicyEvaluationResponseBuilder {
         if ("uma".equals(representation.getType())) {
             Map<String, String> filters = new HashMap<>();
 
-            filters.put(PermissionTicket.POLICY, policy.getId());
+            filters.put(PermissionTicketModel.POLICY, policy.getId());
 
-            List<PermissionTicket> tickets = authorization.getStoreFactory().getPermissionTicketStore().find(filters, policy.getResourceServer().getId(), -1, 1);
+            List<PermissionTicketModel> tickets = authorization.getStoreFactory().getPermissionTicketStore().find(filters, policy.getResourceServer().getId(), -1, 1);
 
             if (!tickets.isEmpty()) {
                 KeycloakSession keycloakSession = authorization.getSession();
-                PermissionTicket ticket = tickets.get(0);
+                PermissionTicketModel ticket = tickets.get(0);
                 UserModel owner = keycloakSession.users().getUserById(ticket.getOwner(), authorization.getRealm());
                 UserModel requester = keycloakSession.users().getUserById(ticket.getRequester(), authorization.getRealm());
 

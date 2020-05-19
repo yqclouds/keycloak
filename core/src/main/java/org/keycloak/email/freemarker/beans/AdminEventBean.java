@@ -17,7 +17,7 @@
 
 package org.keycloak.email.freemarker.beans;
 
-import org.keycloak.events.admin.AdminEvent;
+import org.keycloak.events.admin.AdminEventModel;
 
 import java.util.Date;
 
@@ -26,9 +26,9 @@ import java.util.Date;
  */
 public class AdminEventBean {
 
-    private AdminEvent adminEvent;
+    private AdminEventModel adminEvent;
 
-    public AdminEventBean(AdminEvent adminEvent) {
+    public AdminEventBean(AdminEventModel adminEvent) {
         this.adminEvent = adminEvent;
     }
 

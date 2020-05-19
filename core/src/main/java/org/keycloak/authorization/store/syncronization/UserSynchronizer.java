@@ -18,7 +18,7 @@
 package org.keycloak.authorization.store.syncronization;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.PermissionTicket;
+import org.keycloak.authorization.model.PermissionTicketModel;
 import org.keycloak.authorization.model.Policy;
 import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
@@ -110,17 +110,17 @@ public class UserSynchronizer implements Synchronizer<UserRemovedEvent> {
         UserModel userModel = event.getUser();
         Map<String, String> attributes = new HashMap<>();
 
-        attributes.put(PermissionTicket.OWNER, userModel.getId());
+        attributes.put(PermissionTicketModel.OWNER, userModel.getId());
 
-        for (PermissionTicket ticket : ticketStore.find(attributes, null, -1, -1)) {
+        for (PermissionTicketModel ticket : ticketStore.find(attributes, null, -1, -1)) {
             ticketStore.delete(ticket.getId());
         }
 
         attributes = new HashMap<>();
 
-        attributes.put(PermissionTicket.REQUESTER, userModel.getId());
+        attributes.put(PermissionTicketModel.REQUESTER, userModel.getId());
 
-        for (PermissionTicket ticket : ticketStore.find(attributes, null, -1, -1)) {
+        for (PermissionTicketModel ticket : ticketStore.find(attributes, null, -1, -1)) {
             ticketStore.delete(ticket.getId());
         }
     }

@@ -17,7 +17,7 @@
 
 package org.keycloak.forms.account.freemarker.model;
 
-import org.keycloak.events.Event;
+import org.keycloak.events.EventModel;
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -31,9 +31,9 @@ public class LogBean {
 
     private List<EventBean> events;
 
-    public LogBean(List<Event> events) {
+    public LogBean(List<EventModel> events) {
         this.events = new LinkedList<EventBean>();
-        for (Event e : events) {
+        for (EventModel e : events) {
             this.events.add(new EventBean(e));
         }
     }
@@ -44,9 +44,9 @@ public class LogBean {
 
     public static class EventBean {
 
-        private Event event;
+        private EventModel event;
 
-        public EventBean(Event event) {
+        public EventBean(EventModel event) {
             this.event = event;
         }
 

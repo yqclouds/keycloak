@@ -10,21 +10,21 @@ import java.util.List;
 @Repository
 public interface PermissionTicketRepository
         extends JpaRepository<PermissionTicket, String>, JpaSpecificationExecutor<PermissionTicket> {
-    @Query(name = "findPermissionIdByResource", value = "select p.id from PermissionTicket p inner join p.resource r where p.resourceServer.id = :serverId and (r.resourceServer.id = :serverId and r.id = :resourceId)")
-    List<String> findPermissionIdByResource();
+    @Query(name = "findPermissionIdByResource", value = "select p.id from PermissionTicketModel p inner join p.resource r where p.resourceServer.id = :serverId and (r.resourceServer.id = :serverId and r.id = :resourceId)")
+    List<String> findPermissionIdByResource(String resourceId, String serverId);
 
-    @Query(name = "findPermissionIdByScope", value = "select p.id from PermissionTicket p inner join p.scope s where p.resourceServer.id = :serverId and (s.resourceServer.id = :serverId and s.id = :scopeId)")
-    List<String> findPermissionIdByScope();
+    @Query(name = "findPermissionIdByScope", value = "select p.id from PermissionTicketModel p inner join p.scope s where p.resourceServer.id = :serverId and (s.resourceServer.id = :serverId and s.id = :scopeId)")
+    List<String> findPermissionIdByScope(String scopeId, String serverId);
 
-    @Query(name = "findPermissionTicketIdByServerId", value = "select p.id from PermissionTicket p where  p.resourceServer.id = :serverId ")
+    @Query(name = "findPermissionTicketIdByServerId", value = "select p.id from PermissionTicketModel p where  p.resourceServer.id = :serverId ")
     List<String> findPermissionTicketIdByServerId();
 
-    @Query(name = "findGrantedResources", value = "select distinct(r.id) from Resource r inner join PermissionTicket p on r.id = p.resource.id where p.grantedTimestamp is not null and p.requester = :requester order by r.id")
-    List<String> findGrantedResources();
+    @Query(name = "findGrantedResources", value = "select distinct(r.id) from Resource r inner join PermissionTicketModel p on r.id = p.resource.id where p.grantedTimestamp is not null and p.requester = :requester order by r.id")
+    List<String> findGrantedResources(String requester);
 
-    @Query(name = "findGrantedResourcesByName", value = "select distinct(r.id) from Resource r inner join PermissionTicket p on r.id = p.resource.id where p.grantedTimestamp is not null and p.requester = :requester and lower(r.name) like :resourceName order by r.id")
-    List<String> findGrantedResourcesByName();
+    @Query(name = "findGrantedResourcesByName", value = "select distinct(r.id) from Resource r inner join PermissionTicketModel p on r.id = p.resource.id where p.grantedTimestamp is not null and p.requester = :requester and lower(r.name) like :resourceName order by r.id")
+    List<String> findGrantedResourcesByName(String requester, String resourceName);
 
-    @Query(name = "findGrantedOwnerResources", value = "select distinct(r.id) from Resource r inner join PermissionTicket p on r.id = p.resource.id where p.grantedTimestamp is not null and p.owner = :owner order by r.id")
-    List<String> findGrantedOwnerResources();
+    @Query(name = "findGrantedOwnerResources", value = "select distinct(r.id) from Resource r inner join PermissionTicketModel p on r.id = p.resource.id where p.grantedTimestamp is not null and p.owner = :owner order by r.id")
+    List<String> findGrantedOwnerResources(String owner);
 }

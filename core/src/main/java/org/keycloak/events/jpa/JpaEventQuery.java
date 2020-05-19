@@ -17,9 +17,10 @@
 
 package org.keycloak.events.jpa;
 
-import org.keycloak.events.Event;
+import org.keycloak.events.EventModel;
 import org.keycloak.events.EventQuery;
 import org.keycloak.events.EventType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -37,26 +38,25 @@ import java.util.List;
  */
 public class JpaEventQuery implements EventQuery {
 
-    private final EntityManager em;
+    @Autowired
+    private EntityManager em;
     private final CriteriaBuilder cb;
-    private final CriteriaQuery<EventEntity> cq;
-    private final Root<EventEntity> root;
+    private final CriteriaQuery<Event> cq;
+    private final Root<Event> root;
     private final ArrayList<Predicate> predicates;
     private Integer firstResult;
     private Integer maxResults;
 
-    public JpaEventQuery(EntityManager em) {
-        this.em = em;
-
+    public JpaEventQuery() {
         cb = em.getCriteriaBuilder();
-        cq = cb.createQuery(EventEntity.class);
-        root = cq.from(EventEntity.class);
-        predicates = new ArrayList<Predicate>(4);
+        cq = cb.createQuery(Event.class);
+        root = cq.from(Event.class);
+        predicates = new ArrayList<>(4);
     }
 
     @Override
     public EventQuery type(EventType... types) {
-        List<String> eventStrings = new LinkedList<String>();
+        List<String> eventStrings = new LinkedList<>();
         for (EventType e : types) {
             eventStrings.add(e.toString());
         }
@@ -84,13 +84,13 @@ public class JpaEventQuery implements EventQuery {
 
     @Override
     public EventQuery fromDate(Date fromDate) {
-        predicates.add(cb.greaterThanOrEqualTo(root.<Long>get("time"), fromDate.getTime()));
+        predicates.add(cb.greaterThanOrEqualTo(root.get("time"), fromDate.getTime()));
         return this;
     }
 
     @Override
     public EventQuery toDate(Date toDate) {
-        predicates.add(cb.lessThanOrEqualTo(root.<Long>get("time"), toDate.getTime()));
+        predicates.add(cb.lessThanOrEqualTo(root.get("time"), toDate.getTime()));
         return this;
     }
 
@@ -113,14 +113,14 @@ public class JpaEventQuery implements EventQuery {
     }
 
     @Override
-    public List<Event> getResultList() {
+    public List<EventModel> getResultList() {
         if (!predicates.isEmpty()) {
-            cq.where(cb.and(predicates.toArray(new Predicate[predicates.size()])));
+            cq.where(cb.and(predicates.toArray(new Predicate[0])));
         }
 
         cq.orderBy(cb.desc(root.get("time")));
 
-        TypedQuery<EventEntity> query = em.createQuery(cq);
+        TypedQuery<Event> query = em.createQuery(cq);
 
         if (firstResult != null) {
             query.setFirstResult(firstResult);
@@ -130,8 +130,8 @@ public class JpaEventQuery implements EventQuery {
             query.setMaxResults(maxResults);
         }
 
-        List<Event> events = new LinkedList<Event>();
-        for (EventEntity e : query.getResultList()) {
+        List<EventModel> events = new LinkedList<>();
+        for (Event e : query.getResultList()) {
             events.add(JpaEventStoreProvider.convertEvent(e));
         }
 

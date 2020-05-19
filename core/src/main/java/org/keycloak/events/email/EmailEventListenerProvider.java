@@ -19,10 +19,10 @@ package org.keycloak.events.email;
 
 import org.keycloak.email.EmailException;
 import org.keycloak.email.EmailTemplateProvider;
-import org.keycloak.events.Event;
+import org.keycloak.events.EventModel;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.EventType;
-import org.keycloak.events.admin.AdminEvent;
+import org.keycloak.events.admin.AdminEventModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RealmProvider;
@@ -52,7 +52,7 @@ public class EmailEventListenerProvider implements EventListenerProvider {
     }
 
     @Override
-    public void onEvent(Event event) {
+    public void onEvent(EventModel event) {
         if (includedEvents.contains(event.getType())) {
             if (event.getRealmId() != null && event.getUserId() != null) {
                 RealmModel realm = model.getRealm(event.getRealmId());
@@ -69,7 +69,7 @@ public class EmailEventListenerProvider implements EventListenerProvider {
     }
 
     @Override
-    public void onEvent(AdminEvent event, boolean includeRepresentation) {
+    public void onEvent(AdminEventModel event, boolean includeRepresentation) {
 
     }
 

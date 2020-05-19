@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface PolicyRepository extends JpaRepository<Policy, String>, JpaSpecificationExecutor<Policy> {
     @Query(name = "findPolicyIdByServerId", value = "select p.id from Policy p where  p.resourceServer.id = :serverId ")
-    List<String> findPolicyIdByServerId();
+    List<String> findPolicyIdByServerId(String serverId);
 
     @Query(name = "findPolicyIdByName", value = "select p from Policy p left join fetch p.associatedPolicies a where  p.resourceServer.id = :serverId  and p.name = :name")
     List<Policy> findPolicyIdByName();
@@ -28,7 +28,7 @@ public interface PolicyRepository extends JpaRepository<Policy, String>, JpaSpec
     List<Policy> findPolicyIdByNullResourceScope();
 
     @Query(name = "findPolicyIdByType", value = "select p.id from Policy p where p.resourceServer.id = :serverId and p.type = :type")
-    List<String> findPolicyIdByType();
+    List<String> findPolicyIdByType(String serverId, String owner);
 
     @Query(name = "findPolicyIdByResourceType", value = "select p from Policy p inner join p.config c inner join fetch p.associatedPolicies a where p.resourceServer.id = :serverId and KEY(c) = 'defaultResourceType' and c like :type")
     List<Policy> findPolicyIdByResourceType();

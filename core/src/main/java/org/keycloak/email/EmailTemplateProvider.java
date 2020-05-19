@@ -17,7 +17,7 @@
 
 package org.keycloak.email;
 
-import org.keycloak.events.Event;
+import org.keycloak.events.EventModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.provider.Provider;
@@ -41,7 +41,7 @@ public interface EmailTemplateProvider extends Provider {
 
     EmailTemplateProvider setAttribute(String name, Object value);
 
-    void sendEvent(Event event) throws EmailException;
+    void sendEvent(EventModel event) throws EmailException;
 
     /**
      * Reset password sent from forgot password link on login

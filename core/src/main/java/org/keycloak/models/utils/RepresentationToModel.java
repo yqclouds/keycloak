@@ -2361,9 +2361,9 @@ public class RepresentationToModel {
         return model;
     }
 
-    public static PermissionTicket toModel(PermissionTicketRepresentation representation, String resourceServerId, AuthorizationProvider authorization) {
+    public static PermissionTicketModel toModel(PermissionTicketRepresentation representation, String resourceServerId, AuthorizationProvider authorization) {
         PermissionTicketStore ticketStore = authorization.getStoreFactory().getPermissionTicketStore();
-        PermissionTicket ticket = ticketStore.findById(representation.getId(), resourceServerId);
+        PermissionTicketModel ticket = ticketStore.findById(representation.getId(), resourceServerId);
         boolean granted = representation.isGranted();
 
         if (granted && !ticket.isGranted()) {

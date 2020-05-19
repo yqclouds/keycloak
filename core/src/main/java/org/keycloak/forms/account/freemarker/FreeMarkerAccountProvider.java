@@ -16,7 +16,7 @@
  */
 package org.keycloak.forms.account.freemarker;
 
-import org.keycloak.events.Event;
+import org.keycloak.events.EventModel;
 import org.keycloak.forms.account.AccountPages;
 import org.keycloak.forms.account.AccountProvider;
 import org.keycloak.forms.account.freemarker.model.*;
@@ -56,7 +56,7 @@ public class FreeMarkerAccountProvider implements AccountProvider {
     protected Response.Status status = Response.Status.OK;
     protected RealmModel realm;
     protected String[] referrer;
-    protected List<Event> events;
+    protected List<EventModel> events;
     protected String stateChecker;
     protected List<UserSessionModel> sessions;
     protected boolean identityProviderEnabled;
@@ -334,7 +334,7 @@ public class FreeMarkerAccountProvider implements AccountProvider {
     }
 
     @Override
-    public AccountProvider setEvents(List<Event> events) {
+    public AccountProvider setEvents(List<EventModel> events) {
         this.events = events;
         return this;
     }

@@ -19,16 +19,17 @@ package org.keycloak.events.jpa;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.keycloak.events.Event;
+import org.keycloak.events.EventModel;
 import org.keycloak.events.EventQuery;
 import org.keycloak.events.EventStoreProvider;
 import org.keycloak.events.EventType;
-import org.keycloak.events.admin.AdminEvent;
+import org.keycloak.events.admin.AdminEventModel;
 import org.keycloak.events.admin.AdminEventQuery;
 import org.keycloak.events.admin.AuthDetails;
 import org.keycloak.events.admin.OperationType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -47,12 +48,17 @@ public class JpaEventStoreProvider implements EventStoreProvider {
 
     private final int maxDetailLength;
 
+    @Autowired
+    private EventRepository eventRepository;
+    @Autowired
+    private AdminEventRepository adminEventRepository;
+
     public JpaEventStoreProvider(int maxDetailLength) {
         this.maxDetailLength = maxDetailLength;
     }
 
-    static Event convertEvent(EventEntity eventEntity) {
-        Event event = new Event();
+    static EventModel convertEvent(Event eventEntity) {
+        EventModel event = new EventModel();
         event.setTime(eventEntity.getTime());
         event.setType(EventType.valueOf(eventEntity.getType()));
         event.setRealmId(eventEntity.getRealmId());
@@ -70,8 +76,8 @@ public class JpaEventStoreProvider implements EventStoreProvider {
         return event;
     }
 
-    static AdminEventEntity convertAdminEvent(AdminEvent adminEvent, boolean includeRepresentation) {
-        AdminEventEntity adminEventEntity = new AdminEventEntity();
+    static AdminEvent convertAdminEvent(AdminEventModel adminEvent, boolean includeRepresentation) {
+        AdminEvent adminEventEntity = new AdminEvent();
         adminEventEntity.setId(UUID.randomUUID().toString());
         adminEventEntity.setTime(adminEvent.getTime());
         adminEventEntity.setRealmId(adminEvent.getRealmId());
@@ -91,8 +97,8 @@ public class JpaEventStoreProvider implements EventStoreProvider {
         return adminEventEntity;
     }
 
-    static AdminEvent convertAdminEvent(AdminEventEntity adminEventEntity) {
-        AdminEvent adminEvent = new AdminEvent();
+    static AdminEventModel convertAdminEvent(AdminEvent adminEventEntity) {
+        AdminEventModel adminEvent = new AdminEventModel();
         adminEvent.setTime(adminEventEntity.getTime());
         adminEvent.setRealmId(adminEventEntity.getRealmId());
         setAuthDetails(adminEvent, adminEventEntity);
@@ -111,14 +117,14 @@ public class JpaEventStoreProvider implements EventStoreProvider {
         return adminEvent;
     }
 
-    private static void setAuthDetails(AdminEventEntity adminEventEntity, AuthDetails authDetails) {
+    private static void setAuthDetails(AdminEvent adminEventEntity, AuthDetails authDetails) {
         adminEventEntity.setAuthRealmId(authDetails.getRealmId());
         adminEventEntity.setAuthClientId(authDetails.getClientId());
         adminEventEntity.setAuthUserId(authDetails.getUserId());
         adminEventEntity.setAuthIpAddress(authDetails.getIpAddress());
     }
 
-    private static void setAuthDetails(AdminEvent adminEvent, AdminEventEntity adminEventEntity) {
+    private static void setAuthDetails(AdminEventModel adminEvent, AdminEvent adminEventEntity) {
         AuthDetails authDetails = new AuthDetails();
         authDetails.setRealmId(adminEventEntity.getAuthRealmId());
         authDetails.setClientId(adminEventEntity.getAuthClientId());
@@ -129,60 +135,60 @@ public class JpaEventStoreProvider implements EventStoreProvider {
 
     @Override
     public EventQuery createQuery() {
-        return new JpaEventQuery(em);
+        return new JpaEventQuery();
     }
 
     @Override
     public void clear() {
-        em.createQuery("delete from EventEntity").executeUpdate();
+        eventRepository.deleteAll();
     }
 
     @Override
     public void clear(String realmId) {
-        em.createQuery("delete from EventEntity where realmId = :realmId").setParameter("realmId", realmId).executeUpdate();
+        eventRepository.deleteByRealmId(realmId);
     }
 
     @Override
     public void clear(String realmId, long olderThan) {
-        em.createQuery("delete from EventEntity where realmId = :realmId and time < :time").setParameter("realmId", realmId).setParameter("time", olderThan).executeUpdate();
+        eventRepository.deleteByRealmIdAndTimeLessThan(realmId, olderThan);
     }
 
     @Override
-    public void onEvent(Event event) {
-        em.persist(convertEvent(event));
+    public void onEvent(EventModel event) {
+        eventRepository.save(convertEvent(event));
     }
 
     @Override
     public AdminEventQuery createAdminQuery() {
-        return new JpaAdminEventQuery(em);
+        return new JpaAdminEventQuery();
     }
 
     @Override
     public void clearAdmin() {
-        em.createQuery("delete from AdminEventEntity").executeUpdate();
+        adminEventRepository.deleteAll();
     }
 
     @Override
     public void clearAdmin(String realmId) {
-        em.createQuery("delete from AdminEventEntity where realmId = :realmId").setParameter("realmId", realmId).executeUpdate();
+        adminEventRepository.deleteByRealmId(realmId);
     }
 
     @Override
     public void clearAdmin(String realmId, long olderThan) {
-        em.createQuery("delete from AdminEventEntity where realmId = :realmId and time < :time").setParameter("realmId", realmId).setParameter("time", olderThan).executeUpdate();
+        adminEventRepository.deleteByRealmIdAndTimeLessThan(realmId, olderThan);
     }
 
     @Override
-    public void onEvent(AdminEvent event, boolean includeRepresentation) {
-        em.persist(convertAdminEvent(event, includeRepresentation));
+    public void onEvent(AdminEventModel event, boolean includeRepresentation) {
+        adminEventRepository.save(convertAdminEvent(event, includeRepresentation));
     }
 
     @Override
     public void close() {
     }
 
-    private EventEntity convertEvent(Event event) {
-        EventEntity eventEntity = new EventEntity();
+    private Event convertEvent(EventModel event) {
+        Event eventEntity = new Event();
         eventEntity.setId(UUID.randomUUID().toString());
         eventEntity.setTime(event.getTime());
         eventEntity.setType(event.getType().toString());

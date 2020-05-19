@@ -20,7 +20,7 @@ package org.keycloak.authorization.util;
 
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.identity.Identity;
-import org.keycloak.authorization.model.PermissionTicket;
+import org.keycloak.authorization.model.PermissionTicketModel;
 import org.keycloak.authorization.model.Resource;
 import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.authorization.model.Scope;
@@ -84,12 +84,12 @@ public final class Permissions {
         }
 
         // obtain all resources granted to the user via permission tickets (uma)
-        List<PermissionTicket> tickets = storeFactory.getPermissionTicketStore().findGranted(identity.getId(), resourceServer.getId());
+        List<PermissionTicketModel> tickets = storeFactory.getPermissionTicketStore().findGranted(identity.getId(), resourceServer.getId());
 
         if (!tickets.isEmpty()) {
             Map<String, ResourcePermission> userManagedPermissions = new HashMap<>();
 
-            for (PermissionTicket ticket : tickets) {
+            for (PermissionTicketModel ticket : tickets) {
                 ResourcePermission permission = userManagedPermissions.get(ticket.getResource().getId());
 
                 if (permission == null) {

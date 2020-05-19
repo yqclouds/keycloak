@@ -17,7 +17,7 @@
 
 package org.keycloak.email.freemarker.beans;
 
-import org.keycloak.events.Event;
+import org.keycloak.events.EventModel;
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -28,9 +28,9 @@ import java.util.Map;
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class EventBean {
-    private Event event;
+    private EventModel event;
 
-    public EventBean(Event event) {
+    public EventBean(EventModel event) {
         this.event = event;
     }
 

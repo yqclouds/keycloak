@@ -17,10 +17,11 @@
 
 package org.keycloak.events.jpa;
 
-import org.keycloak.events.admin.AdminEvent;
+import org.keycloak.events.admin.AdminEventModel;
 import org.keycloak.events.admin.AdminEventQuery;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -35,21 +36,20 @@ import java.util.List;
  */
 public class JpaAdminEventQuery implements AdminEventQuery {
 
-    private final EntityManager em;
+    @Autowired
+    private EntityManager em;
     private final CriteriaBuilder cb;
-    private final CriteriaQuery<AdminEventEntity> cq;
-    private final Root<AdminEventEntity> root;
+    private final CriteriaQuery<AdminEvent> cq;
+    private final Root<AdminEvent> root;
     private final ArrayList<Predicate> predicates;
     private Integer firstResult;
     private Integer maxResults;
 
-    public JpaAdminEventQuery(EntityManager em) {
-        this.em = em;
-
+    public JpaAdminEventQuery() {
         cb = em.getCriteriaBuilder();
-        cq = cb.createQuery(AdminEventEntity.class);
-        root = cq.from(AdminEventEntity.class);
-        predicates = new ArrayList<Predicate>();
+        cq = cb.createQuery(AdminEvent.class);
+        root = cq.from(AdminEvent.class);
+        predicates = new ArrayList<>();
     }
 
     @Override
@@ -60,7 +60,7 @@ public class JpaAdminEventQuery implements AdminEventQuery {
 
     @Override
     public AdminEventQuery operation(OperationType... operations) {
-        List<String> operationStrings = new LinkedList<String>();
+        List<String> operationStrings = new LinkedList<>();
         for (OperationType e : operations) {
             operationStrings.add(e.toString());
         }
@@ -70,8 +70,7 @@ public class JpaAdminEventQuery implements AdminEventQuery {
 
     @Override
     public AdminEventQuery resourceType(ResourceType... resourceTypes) {
-
-        List<String> resourceTypeStrings = new LinkedList<String>();
+        List<String> resourceTypeStrings = new LinkedList<>();
         for (ResourceType e : resourceTypes) {
             resourceTypeStrings.add(e.toString());
         }
@@ -113,13 +112,13 @@ public class JpaAdminEventQuery implements AdminEventQuery {
 
     @Override
     public AdminEventQuery fromTime(Date fromTime) {
-        predicates.add(cb.greaterThanOrEqualTo(root.<Long>get("time"), fromTime.getTime()));
+        predicates.add(cb.greaterThanOrEqualTo(root.get("time"), fromTime.getTime()));
         return this;
     }
 
     @Override
     public AdminEventQuery toTime(Date toTime) {
-        predicates.add(cb.lessThanOrEqualTo(root.<Long>get("time"), toTime.getTime()));
+        predicates.add(cb.lessThanOrEqualTo(root.get("time"), toTime.getTime()));
         return this;
     }
 
@@ -136,14 +135,14 @@ public class JpaAdminEventQuery implements AdminEventQuery {
     }
 
     @Override
-    public List<AdminEvent> getResultList() {
+    public List<AdminEventModel> getResultList() {
         if (!predicates.isEmpty()) {
-            cq.where(cb.and(predicates.toArray(new Predicate[predicates.size()])));
+            cq.where(cb.and(predicates.toArray(new Predicate[0])));
         }
 
         cq.orderBy(cb.desc(root.get("time")));
 
-        TypedQuery<AdminEventEntity> query = em.createQuery(cq);
+        TypedQuery<AdminEvent> query = em.createQuery(cq);
 
         if (firstResult != null) {
             query.setFirstResult(firstResult);
@@ -153,8 +152,8 @@ public class JpaAdminEventQuery implements AdminEventQuery {
             query.setMaxResults(maxResults);
         }
 
-        List<AdminEvent> events = new LinkedList<AdminEvent>();
-        for (AdminEventEntity e : query.getResultList()) {
+        List<AdminEventModel> events = new LinkedList<>();
+        for (AdminEvent e : query.getResultList()) {
             events.add(JpaEventStoreProvider.convertAdminEvent(e));
         }
 

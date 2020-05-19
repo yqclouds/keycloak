@@ -250,9 +250,9 @@ public final class AuthorizationProvider implements Provider {
             public void delete(String id) {
                 Scope scope = findById(id, null);
                 PermissionTicketStore ticketStore = AuthorizationProvider.this.getStoreFactory().getPermissionTicketStore();
-                List<PermissionTicket> permissions = ticketStore.findByScope(id, scope.getResourceServer().getId());
+                List<PermissionTicketModel> permissions = ticketStore.findByScope(id, scope.getResourceServer().getId());
 
-                for (PermissionTicket permission : permissions) {
+                for (PermissionTicketModel permission : permissions) {
                     ticketStore.delete(permission.getId());
                 }
 
@@ -450,9 +450,9 @@ public final class AuthorizationProvider implements Provider {
                 Resource resource = findById(id, null);
                 StoreFactory storeFactory = AuthorizationProvider.this.getStoreFactory();
                 PermissionTicketStore ticketStore = storeFactory.getPermissionTicketStore();
-                List<PermissionTicket> permissions = ticketStore.findByResource(id, resource.getResourceServer().getId());
+                List<PermissionTicketModel> permissions = ticketStore.findByResource(id, resource.getResourceServer().getId());
 
-                for (PermissionTicket permission : permissions) {
+                for (PermissionTicketModel permission : permissions) {
                     ticketStore.delete(permission.getId());
                 }
 

@@ -20,7 +20,7 @@ package org.keycloak.events.admin;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-public class AdminEvent {
+public class AdminEventModel {
 
     private long time;
 
@@ -29,7 +29,7 @@ public class AdminEvent {
     private AuthDetails authDetails;
 
     /**
-     * The resource type an AdminEvent was triggered for.
+     * The resource type an AdminEventModel was triggered for.
      */
     private String resourceType;
 
@@ -139,7 +139,7 @@ public class AdminEvent {
     }
 
     /**
-     * Returns the type of the affected {@link ResourceType} for this {@link AdminEvent}, e.g. {@link ResourceType#USER USER}, {@link ResourceType#GROUP GROUP} etc.
+     * Returns the type of the affected {@link ResourceType} for this {@link AdminEventModel}, e.g. {@link ResourceType#USER USER}, {@link ResourceType#GROUP GROUP} etc.
      *
      * @return
      */

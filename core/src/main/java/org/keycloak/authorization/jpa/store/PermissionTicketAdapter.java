@@ -29,7 +29,7 @@ import static org.keycloak.authorization.UserManagedPermissionUtil.updatePolicy;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class PermissionTicketAdapter implements org.keycloak.authorization.model.PermissionTicket, JpaModel<PermissionTicket> {
+public class PermissionTicketAdapter implements PermissionTicketModel, JpaModel<PermissionTicket> {
 
     private final PermissionTicket entity;
     private final StoreFactory storeFactory;
@@ -39,7 +39,7 @@ public class PermissionTicketAdapter implements org.keycloak.authorization.model
         this.storeFactory = storeFactory;
     }
 
-    public org.keycloak.authorization.jpa.entities.PermissionTicket toEntity(org.keycloak.authorization.model.PermissionTicket permission) {
+    public org.keycloak.authorization.jpa.entities.PermissionTicket toEntity(PermissionTicketModel permission) {
         if (permission instanceof PermissionTicketAdapter) {
             return ((PermissionTicketAdapter) permission).getEntity();
         } else {
@@ -132,7 +132,7 @@ public class PermissionTicketAdapter implements org.keycloak.authorization.model
         if (this == o) return true;
         if (o == null || !(o instanceof org.keycloak.authorization.model.Policy)) return false;
 
-        org.keycloak.authorization.model.PermissionTicket that = (org.keycloak.authorization.model.PermissionTicket) o;
+        PermissionTicketModel that = (PermissionTicketModel) o;
         return that.getId().equals(getId());
     }
 

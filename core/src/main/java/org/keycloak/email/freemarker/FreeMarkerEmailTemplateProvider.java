@@ -24,7 +24,7 @@ import org.keycloak.email.EmailSenderProvider;
 import org.keycloak.email.EmailTemplateProvider;
 import org.keycloak.email.freemarker.beans.EventBean;
 import org.keycloak.email.freemarker.beans.ProfileBean;
-import org.keycloak.events.Event;
+import org.keycloak.events.EventModel;
 import org.keycloak.events.EventType;
 import org.keycloak.forms.login.freemarker.model.UrlBean;
 import org.keycloak.models.KeycloakSession;
@@ -103,7 +103,7 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
     }
 
     @Override
-    public void sendEvent(Event event) throws EmailException {
+    public void sendEvent(EventModel event) throws EmailException {
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("user", new ProfileBean(user));
         attributes.put("event", new EventBean(event));

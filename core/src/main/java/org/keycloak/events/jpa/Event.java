@@ -15,39 +15,57 @@
  * limitations under the License.
  */
 
-package org.keycloak.events;
+package org.keycloak.events.jpa;
 
-import java.util.HashMap;
-import java.util.Map;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
+@Entity
+@Table(name = "EVENT_ENTITY")
 public class Event {
 
+    @Id
+    @Column(name = "ID", length = 36)
+    private String id;
+
+    @Column(name = "EVENT_TIME")
     private long time;
 
-    private EventType type;
+    @Column(name = "TYPE")
+    private String type;
 
+    @Column(name = "REALM_ID")
     private String realmId;
 
+    @Column(name = "CLIENT_ID")
     private String clientId;
 
+    @Column(name = "USER_ID")
     private String userId;
 
+    @Column(name = "SESSION_ID")
     private String sessionId;
 
+    @Column(name = "IP_ADDRESS")
     private String ipAddress;
 
+    @Column(name = "ERROR")
     private String error;
 
-    private Map<String, String> details;
+    @Column(name = "DETAILS_JSON", length = 2550)
+    private String detailsJson;
 
-    static String maxLength(String string, int length) {
-        if (string != null && string.length() > length) {
-            return string.substring(0, length - 1);
-        }
-        return string;
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public long getTime() {
@@ -58,11 +76,11 @@ public class Event {
         this.time = time;
     }
 
-    public EventType getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(EventType type) {
+    public void setType(String type) {
         this.type = type;
     }
 
@@ -71,7 +89,7 @@ public class Event {
     }
 
     public void setRealmId(String realmId) {
-        this.realmId = maxLength(realmId, 255);
+        this.realmId = realmId;
     }
 
     public String getClientId() {
@@ -79,7 +97,7 @@ public class Event {
     }
 
     public void setClientId(String clientId) {
-        this.clientId = maxLength(clientId, 255);
+        this.clientId = clientId;
     }
 
     public String getUserId() {
@@ -87,7 +105,7 @@ public class Event {
     }
 
     public void setUserId(String userId) {
-        this.userId = maxLength(userId, 255);
+        this.userId = userId;
     }
 
     public String getSessionId() {
@@ -114,26 +132,12 @@ public class Event {
         this.error = error;
     }
 
-    public Map<String, String> getDetails() {
-        return details;
+    public String getDetailsJson() {
+        return detailsJson;
     }
 
-    public void setDetails(Map<String, String> details) {
-        this.details = details;
-    }
-
-    public Event clone() {
-        Event clone = new Event();
-        clone.time = time;
-        clone.type = type;
-        clone.realmId = realmId;
-        clone.clientId = clientId;
-        clone.userId = userId;
-        clone.sessionId = sessionId;
-        clone.ipAddress = ipAddress;
-        clone.error = error;
-        clone.details = details != null ? new HashMap<>(details) : null;
-        return clone;
+    public void setDetailsJson(String detailsJson) {
+        this.detailsJson = detailsJson;
     }
 
 }
