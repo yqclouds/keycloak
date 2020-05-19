@@ -24,18 +24,6 @@ import java.io.Serializable;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@NamedQueries({
-        @NamedQuery(name = "userMemberOf", query = "select m from UserGroupMembership m where m.user = :user and m.groupId = :groupId"),
-        @NamedQuery(name = "userGroupMembership", query = "select m from UserGroupMembership m where m.user = :user"),
-        @NamedQuery(name = "groupMembership", query = "select g.user from UserGroupMembership g where g.groupId = :groupId order by g.user.username"),
-        @NamedQuery(name = "deleteUserGroupMembershipByRealm", query = "delete from  UserGroupMembership mapping where mapping.user IN (select u from User u where u.realmId=:realmId)"),
-        @NamedQuery(name = "deleteUserGroupMembershipsByRealmAndLink", query = "delete from  UserGroupMembership mapping where mapping.user IN (select u from User u where u.realmId=:realmId and u.federationLink=:link)"),
-        @NamedQuery(name = "deleteUserGroupMembershipsByGroup", query = "delete from UserGroupMembership m where m.groupId = :groupId"),
-        @NamedQuery(name = "deleteUserGroupMembershipsByUser", query = "delete from UserGroupMembership m where m.user = :user"),
-        @NamedQuery(name = "searchForUserCountInGroups", query = "select count(m.user) from UserGroupMembership m where m.user.realmId = :realmId and (m.user.serviceAccountClientLink is null) and " +
-                "( lower(m.user.username) like :search or lower(concat(m.user.firstName, ' ', m.user.lastName)) like :search or m.user.email like :search ) and m.group.id in :groupIds"),
-        @NamedQuery(name = "userCountInGroups", query = "select count(m.user) from UserGroupMembership m where m.user.realmId = :realmId and m.group.id in :groupIds")
-})
 @Table(name = "USER_GROUP_MEMBERSHIP")
 @Entity
 @IdClass(UserGroupMembership.Key.class)

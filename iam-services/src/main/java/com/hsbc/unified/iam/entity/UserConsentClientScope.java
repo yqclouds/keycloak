@@ -23,15 +23,6 @@ import java.io.Serializable;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@NamedQueries({
-        @NamedQuery(name = "deleteUserConsentClientScopesByRealm", query = "delete from UserConsentClientScope grantedScope where grantedScope.userConsent IN (select consent from UserConsent consent where consent.user IN (select user from User user where user.realmId = :realmId))"),
-        @NamedQuery(name = "deleteUserConsentClientScopesByRealmAndLink", query = "delete from UserConsentClientScope grantedScope where grantedScope.userConsent IN (select consent from UserConsent consent where consent.user IN (select u from User u where u.realmId=:realmId and u.federationLink=:link))"),
-        @NamedQuery(name = "deleteUserConsentClientScopesByUser", query = "delete from UserConsentClientScope grantedScope where grantedScope.userConsent IN (select consent from UserConsent consent where consent.user = :user)"),
-        @NamedQuery(name = "deleteUserConsentClientScopesByClientScope", query = "delete from UserConsentClientScope grantedScope where grantedScope.scopeId = :scopeId"),
-        @NamedQuery(name = "deleteUserConsentClientScopesByClient", query = "delete from UserConsentClientScope grantedScope where grantedScope.userConsent IN (select consent from UserConsent consent where consent.clientId = :clientId)"),
-        @NamedQuery(name = "deleteUserConsentClientScopesByExternalClient", query = "delete from UserConsentClientScope grantedScope where grantedScope.userConsent IN (select consent from UserConsent consent where consent.clientStorageProvider = :clientStorageProvider and consent.externalClientId = :externalClientId)"),
-        @NamedQuery(name = "deleteUserConsentClientScopesByClientStorageProvider", query = "delete from UserConsentClientScope grantedScope where grantedScope.userConsent IN (select consent from UserConsent consent where consent.clientStorageProvider = :clientStorageProvider)"),
-})
 @Entity
 @Table(name = "USER_CONSENT_CLIENT_SCOPE")
 @IdClass(UserConsentClientScope.Key.class)

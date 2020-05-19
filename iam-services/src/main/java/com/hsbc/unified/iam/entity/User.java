@@ -31,26 +31,6 @@ import java.util.UUID;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@NamedQueries({
-        @NamedQuery(name = "getAllUsersByRealm", query = "select u from User u where u.realmId = :realmId order by u.username"),
-        @NamedQuery(name = "getAllUsersByRealmExcludeServiceAccount", query = "select u from User u where u.realmId = :realmId and (u.serviceAccountClientLink is null) order by u.username"),
-        @NamedQuery(name = "searchForUser", query = "select u from User u where u.realmId = :realmId and (u.serviceAccountClientLink is null) and " +
-                "( lower(u.username) like :search or lower(concat(coalesce(u.firstName, ''), ' ', coalesce(u.lastName, ''))) like :search or u.email like :search ) order by u.username"),
-        @NamedQuery(name = "searchForUserCount", query = "select count(u) from User u where u.realmId = :realmId and (u.serviceAccountClientLink is null) and " +
-                "( lower(u.username) like :search or lower(concat(coalesce(u.firstName, ''), ' ', coalesce(u.lastName, ''))) like :search or u.email like :search )"),
-        @NamedQuery(name = "getRealmUserByUsername", query = "select u from User u where u.username = :username and u.realmId = :realmId"),
-        @NamedQuery(name = "getRealmUserByEmail", query = "select u from User u where u.email = :email and u.realmId = :realmId"),
-        @NamedQuery(name = "getRealmUserByLastName", query = "select u from User u where u.lastName = :lastName and u.realmId = :realmId"),
-        @NamedQuery(name = "getRealmUserByFirstLastName", query = "select u from User u where u.firstName = :first and u.lastName = :last and u.realmId = :realmId"),
-        @NamedQuery(name = "getRealmUserByServiceAccount", query = "select u from User u where u.serviceAccountClientLink = :clientInternalId and u.realmId = :realmId"),
-        @NamedQuery(name = "getRealmUserCount", query = "select count(u) from User u where u.realmId = :realmId"),
-        @NamedQuery(name = "getRealmUserCountExcludeServiceAccount", query = "select count(u) from User u where u.realmId = :realmId and (u.serviceAccountClientLink is null)"),
-        @NamedQuery(name = "getRealmUsersByAttributeNameAndValue", query = "select u from User u join u.attributes attr " +
-                "where u.realmId = :realmId and attr.name = :name and attr.value = :value"),
-        @NamedQuery(name = "deleteUsersByRealm", query = "delete from User u where u.realmId = :realmId"),
-        @NamedQuery(name = "deleteUsersByRealmAndLink", query = "delete from User u where u.realmId = :realmId and u.federationLink=:link"),
-        @NamedQuery(name = "unlinkUsers", query = "update User u set u.federationLink = null where u.realmId = :realmId and u.federationLink=:link")
-})
 @Entity
 @Table(name = "USER_ENTITY", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"REALM_ID", "USERNAME"}),

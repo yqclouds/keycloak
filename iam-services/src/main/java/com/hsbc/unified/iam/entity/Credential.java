@@ -23,12 +23,6 @@ import javax.persistence.*;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@NamedQueries({
-        @NamedQuery(name = "credentialByUser", query = "select cred from Credential cred where cred.user = :user order by cred.priority"),
-        @NamedQuery(name = "deleteCredentialsByRealm", query = "delete from Credential cred where cred.user IN (select u from User u where u.realmId=:realmId)"),
-        @NamedQuery(name = "deleteCredentialsByRealmAndLink", query = "delete from Credential cred where cred.user IN (select u from User u where u.realmId=:realmId and u.federationLink=:link)")
-
-})
 @Table(name = "CREDENTIAL")
 @Entity
 public class Credential {

@@ -24,14 +24,6 @@ import java.io.Serializable;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@NamedQueries({
-        @NamedQuery(name = "findFederatedIdentityByUser", query = "select link from FederatedIdentity link where link.user = :user"),
-        @NamedQuery(name = "findFederatedIdentityByUserAndProvider", query = "select link from FederatedIdentity link where link.user = :user and link.identityProvider = :identityProvider"),
-        @NamedQuery(name = "findUserByFederatedIdentityAndRealm", query = "select link.user from FederatedIdentity link where link.realmId = :realmId and link.identityProvider = :identityProvider and link.userId = :userId"),
-        @NamedQuery(name = "deleteFederatedIdentityByRealm", query = "delete from FederatedIdentity social where social.user IN (select u from User u where realmId=:realmId)"),
-        @NamedQuery(name = "deleteFederatedIdentityByRealmAndLink", query = "delete from FederatedIdentity social where social.user IN (select u from User u where realmId=:realmId and u.federationLink=:link)"),
-        @NamedQuery(name = "deleteFederatedIdentityByUser", query = "delete from FederatedIdentity social where social.user = :user")
-})
 @Table(name = "FEDERATED_IDENTITY")
 @Entity
 @IdClass(FederatedIdentity.Key.class)

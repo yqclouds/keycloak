@@ -19,20 +19,20 @@ package org.keycloak.models.jpa;
 import com.hsbc.unified.iam.core.util.Base64;
 import com.hsbc.unified.iam.entity.Credential;
 import com.hsbc.unified.iam.entity.User;
+import com.hsbc.unified.iam.repository.CredentialRepository;
+import com.hsbc.unified.iam.repository.UserRepository;
 import org.keycloak.credential.UserCredentialStore;
 import org.keycloak.models.CredentialModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
-import javax.persistence.TypedQuery;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -45,18 +45,17 @@ public class JpaUserCredentialStore implements UserCredentialStore {
     public static final int PRIORITY_DIFFERENCE = 10;
 
     protected static final Logger LOG = LoggerFactory.getLogger(JpaUserCredentialStore.class);
-    protected final EntityManager em;
-    private final KeycloakSession session;
 
-    public JpaUserCredentialStore(KeycloakSession session, EntityManager em) {
-        this.session = session;
-        this.em = em;
-    }
+    @Autowired
+    private CredentialRepository credentialRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     public void updateCredential(RealmModel realm, UserModel user, CredentialModel cred) {
-        Credential entity = em.find(Credential.class, cred.getId());
-        if (entity == null) return;
+        Optional<Credential> optional = credentialRepository.findById(cred.getId());
+        if (!optional.isPresent()) return;
+        Credential entity = optional.get();
         entity.setCreatedDate(cred.getCreatedDate());
         entity.setUserLabel(cred.getUserLabel());
         entity.setType(cred.getType());
@@ -78,10 +77,8 @@ public class JpaUserCredentialStore implements UserCredentialStore {
 
     @Override
     public CredentialModel getStoredCredentialById(RealmModel realm, UserModel user, String id) {
-        Credential entity = em.find(Credential.class, id);
-        if (entity == null) return null;
-        CredentialModel model = toModel(entity);
-        return model;
+        Optional<Credential> optional = credentialRepository.findById(id);
+        return optional.map(this::toModel).orElse(null);
     }
 
     CredentialModel toModel(Credential entity) {
@@ -113,10 +110,8 @@ public class JpaUserCredentialStore implements UserCredentialStore {
     }
 
     private List<Credential> getStoredCredentialEntities(RealmModel realm, UserModel user) {
-        User userEntity = em.getReference(User.class, user.getId());
-        TypedQuery<Credential> query = em.createNamedQuery("credentialByUser", Credential.class)
-                .setParameter("user", userEntity);
-        return query.getResultList();
+        User userEntity = userRepository.getOne(user.getId());
+        return credentialRepository.credentialByUser(userEntity);
     }
 
     @Override
@@ -146,7 +141,7 @@ public class JpaUserCredentialStore implements UserCredentialStore {
         entity.setType(cred.getType());
         entity.setSecretData(cred.getSecretData());
         entity.setCredentialData(cred.getCredentialData());
-        User userRef = em.getReference(User.class, user.getId());
+        User userRef = userRepository.getOne(user.getId());
         entity.setUser(userRef);
 
         //add in linkedlist to last position
@@ -154,14 +149,14 @@ public class JpaUserCredentialStore implements UserCredentialStore {
         int priority = credentials.isEmpty() ? PRIORITY_DIFFERENCE : credentials.get(credentials.size() - 1).getPriority() + PRIORITY_DIFFERENCE;
         entity.setPriority(priority);
 
-        em.persist(entity);
-        return entity;
+        return credentialRepository.save(entity);
     }
 
     Credential removeCredentialEntity(RealmModel realm, UserModel user, String id) {
-        Credential entity = em.find(Credential.class, id, LockModeType.PESSIMISTIC_WRITE);
-        if (entity == null) return null;
+        Optional<Credential> optional = credentialRepository.findById(id);
+        if (!optional.isPresent()) return null;
 
+        Credential entity = optional.get();
         int currentPriority = entity.getPriority();
 
         List<Credential> credentials = getStoredCredentialEntities(realm, user);
@@ -173,19 +168,17 @@ public class JpaUserCredentialStore implements UserCredentialStore {
             }
         }
 
-        em.remove(entity);
-        em.flush();
+        credentialRepository.save(entity);
         return entity;
     }
 
     ////Operations to handle the linked list of credentials
     @Override
     public boolean moveCredentialTo(RealmModel realm, UserModel user, String id, String newPreviousCredentialId) {
-        List<Credential> sortedCreds = getStoredCredentialEntities(realm, user);
+        List<Credential> sortedCredentials = getStoredCredentialEntities(realm, user);
 
         // 1 - Create new list and move everything to it.
-        List<Credential> newList = new ArrayList<>();
-        newList.addAll(sortedCreds);
+        List<Credential> newList = new ArrayList<>(sortedCredentials);
 
         // 2 - Find indexes of our and newPrevious credential
         int ourCredentialIndex = -1;
@@ -203,12 +196,12 @@ public class JpaUserCredentialStore implements UserCredentialStore {
         }
 
         if (ourCredentialIndex == -1) {
-            LOG.warn("Not found credential with id [%s] of user [%s]", id, user.getUsername());
+            LOG.warn("Not found credential with id [{}] of user [{}]", id, user.getUsername());
             return false;
         }
 
         if (newPreviousCredentialId != null && newPreviousCredentialIndex == -1) {
-            LOG.warn("Can't move up credential with id [%s] of user [%s]", id, user.getUsername());
+            LOG.warn("Can't move up credential with id [{}] of user [{}]", id, user.getUsername());
             return false;
         }
 
@@ -227,7 +220,7 @@ public class JpaUserCredentialStore implements UserCredentialStore {
             if (credential.getPriority() != expectedPriority) {
                 credential.setPriority(expectedPriority);
 
-                LOG.trace("Priority of credential [%s] of user [%s] changed to [{}]", credential.getId(), user.getUsername(), expectedPriority);
+                LOG.trace("Priority of credential [{}] of user [{}] changed to [{}]", credential.getId(), user.getUsername(), expectedPriority);
             }
         }
         return true;

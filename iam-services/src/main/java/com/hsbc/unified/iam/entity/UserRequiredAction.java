@@ -24,10 +24,6 @@ import java.io.Serializable;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@NamedQueries({
-        @NamedQuery(name = "deleteUserRequiredActionsByRealm", query = "delete from UserRequiredAction action where action.user IN (select u from User u where u.realmId=:realmId)"),
-        @NamedQuery(name = "deleteUserRequiredActionsByRealmAndLink", query = "delete from UserRequiredAction action where action.user IN (select u from User u where u.realmId=:realmId and u.federationLink=:link)")
-})
 @Entity
 @Table(name = "USER_REQUIRED_ACTION")
 @IdClass(UserRequiredAction.Key.class)

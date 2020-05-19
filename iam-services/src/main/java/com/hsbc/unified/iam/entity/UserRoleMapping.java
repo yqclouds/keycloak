@@ -24,18 +24,6 @@ import java.io.Serializable;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@NamedQueries({
-        @NamedQuery(name = "usersInRole", query = "select u from UserRoleMapping m, User u where m.roleId=:roleId and u.id=m.user"),
-        @NamedQuery(name = "userHasRole", query = "select m from UserRoleMapping m where m.user = :user and m.roleId = :roleId"),
-        @NamedQuery(name = "userRoleMappings", query = "select m from UserRoleMapping m where m.user = :user"),
-        @NamedQuery(name = "userRoleMappingIds", query = "select m.roleId from UserRoleMapping m where m.user = :user"),
-        @NamedQuery(name = "deleteUserRoleMappingsByRealm", query = "delete from  UserRoleMapping mapping where mapping.user IN (select u from User u where u.realmId=:realmId)"),
-        @NamedQuery(name = "deleteUserRoleMappingsByRealmAndLink", query = "delete from  UserRoleMapping mapping where mapping.user IN (select u from User u where u.realmId=:realmId and u.federationLink=:link)"),
-        @NamedQuery(name = "deleteUserRoleMappingsByRole", query = "delete from UserRoleMapping m where m.roleId = :roleId"),
-        @NamedQuery(name = "deleteUserRoleMappingsByUser", query = "delete from UserRoleMapping m where m.user = :user"),
-        @NamedQuery(name = "grantRoleToAllUsers", query = "insert into UserRoleMapping (roleId, user) select role.id, user from Role role, User user where role.id = :roleId AND role.realm.id = :realmId AND user.realmId = :realmId")
-
-})
 @Table(name = "USER_ROLE_MAPPING")
 @Entity
 @IdClass(UserRoleMapping.Key.class)

@@ -28,17 +28,6 @@ import java.util.Collection;
 @Table(name = "USER_CONSENT", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"USER_ID", "CLIENT_ID"})
 })
-@NamedQueries({
-        @NamedQuery(name = "userConsentByUserAndClient", query = "select consent from UserConsent consent where consent.user.id = :userId and consent.clientId = :clientId"),
-        @NamedQuery(name = "userConsentByUserAndExternalClient", query = "select consent from UserConsent consent where consent.user.id = :userId and consent.clientStorageProvider = :clientStorageProvider and consent.externalClientId = :externalClientId"),
-        @NamedQuery(name = "userConsentsByUser", query = "select consent from UserConsent consent where consent.user.id = :userId"),
-        @NamedQuery(name = "deleteUserConsentsByRealm", query = "delete from UserConsent consent where consent.user IN (select user from User user where user.realmId = :realmId)"),
-        @NamedQuery(name = "deleteUserConsentsByRealmAndLink", query = "delete from UserConsent consent where consent.user IN (select u from User u where u.realmId=:realmId and u.federationLink=:link)"),
-        @NamedQuery(name = "deleteUserConsentsByUser", query = "delete from UserConsent consent where consent.user = :user"),
-        @NamedQuery(name = "deleteUserConsentsByClient", query = "delete from UserConsent consent where consent.clientId = :clientId"),
-        @NamedQuery(name = "deleteUserConsentsByExternalClient", query = "delete from UserConsent consent where consent.clientStorageProvider = :clientStorageProvider and consent.externalClientId = :externalClientId"),
-        @NamedQuery(name = "deleteUserConsentsByClientStorageProvider", query = "delete from UserConsent consent where consent.clientStorageProvider = :clientStorageProvider"),
-})
 public class UserConsent {
 
     @Id

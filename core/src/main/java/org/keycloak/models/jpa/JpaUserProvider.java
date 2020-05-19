@@ -19,6 +19,7 @@ package org.keycloak.models.jpa;
 
 import com.hsbc.unified.iam.core.util.Time;
 import com.hsbc.unified.iam.entity.*;
+import com.hsbc.unified.iam.repository.*;
 import org.keycloak.authorization.jpa.entities.ResourceEntity;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.UserCredentialStore;
@@ -28,11 +29,14 @@ import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.storage.StorageId;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.client.ClientStorageProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Subquery;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -50,12 +54,29 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
 
     private final KeycloakSession session;
     private final JpaUserCredentialStore credentialStore;
-    protected EntityManager em;
 
-    public JpaUserProvider(KeycloakSession session, EntityManager em) {
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private UserRoleMappingRepository userRoleMappingRepository;
+    @Autowired
+    private UserGroupMembershipRepository userGroupMembershipRepository;
+    @Autowired
+    private FederatedIdentityRepository federatedIdentityRepository;
+    @Autowired
+    private UserConsentRepository userConsentRepository;
+    @Autowired
+    private UserConsentClientScopeRepository userConsentClientScopeRepository;
+    @Autowired
+    private UserRequiredActionRepository userRequiredActionRepository;
+    @Autowired
+    private CredentialRepository credentialRepository;
+    @Autowired
+    private UserAttributeRepository userAttributeRepository;
+
+    public JpaUserProvider(KeycloakSession session) {
         this.session = session;
-        this.em = em;
-        credentialStore = new JpaUserCredentialStore(session, em);
+        credentialStore = new JpaUserCredentialStore();
     }
 
     @Override
@@ -69,10 +90,9 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
         entity.setCreatedTimestamp(System.currentTimeMillis());
         entity.setUsername(username.toLowerCase());
         entity.setRealmId(realm.getId());
-        em.persist(entity);
-        em.flush();
-        UserAdapter userModel = new UserAdapter(session, realm, em, entity);
+        userRepository.saveAndFlush(entity);
 
+        UserAdapter userModel = new UserAdapter(realm, entity);
         if (addDefaultRoles) {
             DefaultRoles.addDefaultRoles(realm, userModel);
 
@@ -99,29 +119,19 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
 
     @Override
     public boolean removeUser(RealmModel realm, UserModel user) {
-        User userEntity = em.find(User.class, user.getId());
-        if (userEntity == null) return false;
-        removeUser(userEntity);
+        Optional<User> optional = userRepository.findById(user.getId());
+        if (!optional.isPresent()) return false;
+        removeUser(optional.get());
         return true;
     }
 
     private void removeUser(User user) {
-        String id = user.getId();
-        em.createNamedQuery("deleteUserRoleMappingsByUser").setParameter("user", user).executeUpdate();
-        em.createNamedQuery("deleteUserGroupMembershipsByUser").setParameter("user", user).executeUpdate();
-        em.createNamedQuery("deleteFederatedIdentityByUser").setParameter("user", user).executeUpdate();
-        em.createNamedQuery("deleteUserConsentClientScopesByUser").setParameter("user", user).executeUpdate();
-        em.createNamedQuery("deleteUserConsentsByUser").setParameter("user", user).executeUpdate();
-        em.flush();
-        // not sure why i have to do a clear() here.  I was getting some messed up errors that Hibernate couldn't
-        // un-delete the User.
-        em.clear();
-        user = em.find(User.class, id, LockModeType.PESSIMISTIC_WRITE);
-        if (user != null) {
-            em.remove(user);
-        }
-
-        em.flush();
+        userRoleMappingRepository.deleteUserRoleMappingsByUser(user);
+        userGroupMembershipRepository.deleteUserGroupMembershipsByUser(user);
+        federatedIdentityRepository.deleteFederatedIdentityByUser(user);
+        userConsentClientScopeRepository.deleteUserConsentClientScopesByUser(user);
+        userConsentRepository.deleteUserConsentsByUser(user);
+        userRepository.delete(user);
     }
 
     @Override
@@ -132,28 +142,23 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
         entity.setUserId(identity.getUserId());
         entity.setUserName(identity.getUserName().toLowerCase());
         entity.setToken(identity.getToken());
-        User userEntity = em.getReference(User.class, user.getId());
+        User userEntity = userRepository.getOne(user.getId());
         entity.setUser(userEntity);
-        em.persist(entity);
-        em.flush();
+        federatedIdentityRepository.save(entity);
     }
 
     @Override
     public void updateFederatedIdentity(RealmModel realm, UserModel federatedUser, FederatedIdentityModel federatedIdentityModel) {
         FederatedIdentity federatedIdentity = findFederatedIdentity(federatedUser, federatedIdentityModel.getIdentityProvider(), LockModeType.PESSIMISTIC_WRITE);
-
         federatedIdentity.setToken(federatedIdentityModel.getToken());
-
-        em.persist(federatedIdentity);
-        em.flush();
+        federatedIdentityRepository.save(federatedIdentity);
     }
 
     @Override
     public boolean removeFederatedIdentity(RealmModel realm, UserModel user, String identityProvider) {
         FederatedIdentity entity = findFederatedIdentity(user, identityProvider, LockModeType.PESSIMISTIC_WRITE);
         if (entity != null) {
-            em.remove(entity);
-            em.flush();
+            federatedIdentityRepository.delete(entity);
             return true;
         } else {
             return false;
@@ -173,7 +178,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
 
         consentEntity = new UserConsent();
         consentEntity.setId(KeycloakModelUtils.generateId());
-        consentEntity.setUser(em.getReference(User.class, userId));
+        consentEntity.setUser(userRepository.getOne(userId));
         StorageId clientStorageId = new StorageId(clientId);
         if (clientStorageId.isLocal()) {
             consentEntity.setClientId(clientId);
@@ -184,9 +189,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
 
         consentEntity.setCreatedDate(currentTime);
         consentEntity.setLastUpdatedDate(currentTime);
-        em.persist(consentEntity);
-        em.flush();
-
+        userConsentRepository.save(consentEntity);
         updateGrantedConsentEntity(consentEntity, consent);
     }
 
@@ -198,11 +201,8 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
 
     @Override
     public List<UserConsentModel> getConsents(RealmModel realm, String userId) {
-        TypedQuery<UserConsent> query = em.createNamedQuery("userConsentsByUser", UserConsent.class);
-        query.setParameter("userId", userId);
-        List<UserConsent> results = query.getResultList();
-
-        List<UserConsentModel> consents = new ArrayList<UserConsentModel>();
+        List<UserConsent> results = userConsentRepository.userConsentsByUser(userId);
+        List<UserConsentModel> consents = new ArrayList<>();
         for (UserConsent entity : results) {
             UserConsentModel model = toConsentModel(realm, entity);
             consents.add(model);
@@ -225,34 +225,26 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
     public boolean revokeConsentForClient(RealmModel realm, String userId, String clientId) {
         UserConsent consentEntity = getGrantedConsentEntity(userId, clientId, LockModeType.PESSIMISTIC_WRITE);
         if (consentEntity == null) return false;
-
-        em.remove(consentEntity);
-        em.flush();
+        userConsentRepository.delete(consentEntity);
         return true;
     }
 
-
     private UserConsent getGrantedConsentEntity(String userId, String clientId, LockModeType lockMode) {
         StorageId clientStorageId = new StorageId(clientId);
-        String queryName = clientStorageId.isLocal() ? "userConsentByUserAndClient" : "userConsentByUserAndExternalClient";
-        TypedQuery<UserConsent> query = em.createNamedQuery(queryName, UserConsent.class);
-        query.setParameter("userId", userId);
+
+        List<UserConsent> results;
         if (clientStorageId.isLocal()) {
-            query.setParameter("clientId", clientId);
+            results = userConsentRepository.userConsentByUserAndClient(userId, clientId);
         } else {
-            query.setParameter("clientStorageProvider", clientStorageId.getProviderId());
-            query.setParameter("externalClientId", clientStorageId.getExternalId());
+            results = userConsentRepository.userConsentByUserAndExternalClient(userId, clientStorageId.getProviderId(), clientStorageId.getExternalId());
         }
-        query.setLockMode(lockMode);
-        List<UserConsent> results = query.getResultList();
         if (results.size() > 1) {
             throw new ModelException("More results found for user [" + userId + "] and client [" + clientId + "]");
         } else if (results.size() == 1) {
             return results.get(0);
-        } else {
-            return null;
         }
 
+        return null;
     }
 
     private UserConsentModel toConsentModel(RealmModel realm, UserConsent entity) {
@@ -260,7 +252,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
             return null;
         }
 
-        StorageId clientStorageId = null;
+        StorageId clientStorageId;
         if (entity.getClientId() == null) {
             clientStorageId = new StorageId(entity.getClientStorageProvider(), entity.getExternalClientId());
         } else {
@@ -300,8 +292,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
 
             // Check if it's already there
             if (!grantedClientScopeEntities.contains(grantedClientScopeEntity)) {
-                em.persist(grantedClientScopeEntity);
-                em.flush();
+                userConsentClientScopeRepository.save(grantedClientScopeEntity);
                 grantedClientScopeEntities.add(grantedClientScopeEntity);
             } else {
                 scopesToRemove.remove(grantedClientScopeEntity);
@@ -310,130 +301,75 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
         // Those client scopes were no longer on consentModel and will be removed
         for (UserConsentClientScope toRemove : scopesToRemove) {
             grantedClientScopeEntities.remove(toRemove);
-            em.remove(toRemove);
+            userConsentClientScopeRepository.delete(toRemove);
         }
 
         consentEntity.setLastUpdatedDate(Time.currentTimeMillis());
-
-        em.flush();
+        userConsentRepository.save(consentEntity);
     }
-
 
     @Override
     public void setNotBeforeForUser(RealmModel realm, UserModel user, int notBefore) {
-        User entity = em.getReference(User.class, user.getId());
+        User entity = userRepository.getOne(user.getId());
         entity.setNotBefore(notBefore);
     }
 
     @Override
     public int getNotBeforeOfUser(RealmModel realm, UserModel user) {
-        User entity = em.getReference(User.class, user.getId());
+        User entity = userRepository.getOne(user.getId());
         return entity.getNotBefore();
     }
 
     @Override
     public void grantToAllUsers(RealmModel realm, RoleModel role) {
-        int num = em.createNamedQuery("grantRoleToAllUsers")
-                .setParameter("realmId", realm.getId())
-                .setParameter("roleId", role.getId())
-                .executeUpdate();
+        userRoleMappingRepository.grantRoleToAllUsers(realm.getId(), role.getId());
     }
 
     @Override
     public void preRemove(RealmModel realm) {
-        int num = em.createNamedQuery("deleteUserConsentClientScopesByRealm")
-                .setParameter("realmId", realm.getId()).executeUpdate();
-        num = em.createNamedQuery("deleteUserConsentsByRealm")
-                .setParameter("realmId", realm.getId()).executeUpdate();
-        num = em.createNamedQuery("deleteUserRoleMappingsByRealm")
-                .setParameter("realmId", realm.getId()).executeUpdate();
-        num = em.createNamedQuery("deleteUserRequiredActionsByRealm")
-                .setParameter("realmId", realm.getId()).executeUpdate();
-        num = em.createNamedQuery("deleteFederatedIdentityByRealm")
-                .setParameter("realmId", realm.getId()).executeUpdate();
-        num = em.createNamedQuery("deleteCredentialsByRealm")
-                .setParameter("realmId", realm.getId()).executeUpdate();
-        num = em.createNamedQuery("deleteUserAttributesByRealm")
-                .setParameter("realmId", realm.getId()).executeUpdate();
-        num = em.createNamedQuery("deleteUserGroupMembershipByRealm")
-                .setParameter("realmId", realm.getId()).executeUpdate();
-        num = em.createNamedQuery("deleteUsersByRealm")
-                .setParameter("realmId", realm.getId()).executeUpdate();
+        userConsentClientScopeRepository.deleteUserConsentClientScopesByRealm(realm.getId());
+        userConsentRepository.deleteUserConsentsByRealm(realm.getId());
+        userRoleMappingRepository.deleteUserRoleMappingsByRealm(realm.getId());
+        userRequiredActionRepository.deleteUserRequiredActionsByRealm(realm.getId());
+        federatedIdentityRepository.deleteFederatedIdentityByRealm(realm.getId());
+        credentialRepository.deleteCredentialsByRealm(realm.getId());
+        userAttributeRepository.deleteUserAttributesByRealm(realm.getId());
+        userGroupMembershipRepository.deleteUserGroupMembershipByRealm(realm.getId());
+        userRepository.deleteUsersByRealm(realm.getId());
     }
 
     @Override
     public void removeImportedUsers(RealmModel realm, String storageProviderId) {
-        int num = em.createNamedQuery("deleteUserRoleMappingsByRealmAndLink")
-                .setParameter("realmId", realm.getId())
-                .setParameter("link", storageProviderId)
-                .executeUpdate();
-        num = em.createNamedQuery("deleteUserRequiredActionsByRealmAndLink")
-                .setParameter("realmId", realm.getId())
-                .setParameter("link", storageProviderId)
-                .executeUpdate();
-        num = em.createNamedQuery("deleteFederatedIdentityByRealmAndLink")
-                .setParameter("realmId", realm.getId())
-                .setParameter("link", storageProviderId)
-                .executeUpdate();
-        num = em.createNamedQuery("deleteCredentialsByRealmAndLink")
-                .setParameter("realmId", realm.getId())
-                .setParameter("link", storageProviderId)
-                .executeUpdate();
-        num = em.createNamedQuery("deleteUserAttributesByRealmAndLink")
-                .setParameter("realmId", realm.getId())
-                .setParameter("link", storageProviderId)
-                .executeUpdate();
-        num = em.createNamedQuery("deleteUserGroupMembershipsByRealmAndLink")
-                .setParameter("realmId", realm.getId())
-                .setParameter("link", storageProviderId)
-                .executeUpdate();
-        num = em.createNamedQuery("deleteUserConsentClientScopesByRealmAndLink")
-                .setParameter("realmId", realm.getId())
-                .setParameter("link", storageProviderId)
-                .executeUpdate();
-        num = em.createNamedQuery("deleteUserConsentsByRealmAndLink")
-                .setParameter("realmId", realm.getId())
-                .setParameter("link", storageProviderId)
-                .executeUpdate();
-        num = em.createNamedQuery("deleteUsersByRealmAndLink")
-                .setParameter("realmId", realm.getId())
-                .setParameter("link", storageProviderId)
-                .executeUpdate();
+        userRoleMappingRepository.deleteUserRoleMappingsByRealmAndLink(realm.getId(), storageProviderId);
+        userRequiredActionRepository.deleteUserRequiredActionsByRealmAndLink(realm.getId(), storageProviderId);
+        federatedIdentityRepository.deleteFederatedIdentityByRealmAndLink(realm.getId(), storageProviderId);
+        credentialRepository.deleteCredentialsByRealmAndLink(realm.getId(), storageProviderId);
+        userAttributeRepository.deleteUserAttributesByRealmAndLink(realm.getId(), storageProviderId);
+        userGroupMembershipRepository.deleteUserGroupMembershipsByRealmAndLink(realm.getId(), storageProviderId);
+        userConsentClientScopeRepository.deleteUserConsentClientScopesByRealmAndLink(realm.getId(), storageProviderId);
+        userConsentRepository.deleteUserConsentsByRealmAndLink(realm.getId(), storageProviderId);
+        userRepository.deleteUsersByRealmAndLink(realm.getId(), storageProviderId);
     }
 
     @Override
     public void unlinkUsers(RealmModel realm, String storageProviderId) {
-        em.createNamedQuery("unlinkUsers")
-                .setParameter("realmId", realm.getId())
-                .setParameter("link", storageProviderId)
-                .executeUpdate();
+        userRepository.unlinkUsers(realm.getId(), storageProviderId);
     }
 
     @Override
     public void preRemove(RealmModel realm, RoleModel role) {
-        em.createNamedQuery("deleteUserRoleMappingsByRole").setParameter("roleId", role.getId()).executeUpdate();
+        userRoleMappingRepository.deleteUserRoleMappingsByRole(role.getId());
     }
 
     @Override
     public void preRemove(RealmModel realm, ClientModel client) {
         StorageId clientStorageId = new StorageId(client.getId());
         if (clientStorageId.isLocal()) {
-            int num = em.createNamedQuery("deleteUserConsentClientScopesByClient")
-                    .setParameter("clientId", client.getId())
-                    .executeUpdate();
-            num = em.createNamedQuery("deleteUserConsentsByClient")
-                    .setParameter("clientId", client.getId())
-                    .executeUpdate();
+            userConsentClientScopeRepository.deleteUserConsentClientScopesByClient(client.getId());
+            userConsentRepository.deleteUserConsentsByClient(client.getId());
         } else {
-            em.createNamedQuery("deleteUserConsentClientScopesByExternalClient")
-                    .setParameter("clientStorageProvider", clientStorageId.getProviderId())
-                    .setParameter("externalClientId", clientStorageId.getExternalId())
-                    .executeUpdate();
-            em.createNamedQuery("deleteUserConsentsByExternalClient")
-                    .setParameter("clientStorageProvider", clientStorageId.getProviderId())
-                    .setParameter("externalClientId", clientStorageId.getExternalId())
-                    .executeUpdate();
-
+            userConsentClientScopeRepository.deleteUserConsentClientScopesByExternalClient(clientStorageId.getProviderId(), clientStorageId.getExternalId());
+            userConsentRepository.deleteUserConsentsByExternalClient(clientStorageId.getProviderId(), clientStorageId.getExternalId());
         }
     }
 
@@ -444,33 +380,25 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
 
     @Override
     public void preRemove(ClientScopeModel clientScope) {
-        em.createNamedQuery("deleteUserConsentClientScopesByClientScope")
-                .setParameter("scopeId", clientScope.getId())
-                .executeUpdate();
+        userConsentClientScopeRepository.deleteUserConsentClientScopesByClientScope(clientScope.getId());
     }
 
     @Override
     public List<UserModel> getGroupMembers(RealmModel realm, GroupModel group) {
-        TypedQuery<User> query = em.createNamedQuery("groupMembership", User.class);
-        query.setParameter("groupId", group.getId());
-        List<User> results = query.getResultList();
-
-        List<UserModel> users = new ArrayList<UserModel>();
+        List<User> results = userGroupMembershipRepository.groupMembership(group.getId());
+        List<UserModel> users = new ArrayList<>();
         for (User user : results) {
-            users.add(new UserAdapter(session, realm, em, user));
+            users.add(new UserAdapter(realm, user));
         }
         return users;
     }
 
     @Override
     public List<UserModel> getRoleMembers(RealmModel realm, RoleModel role) {
-        TypedQuery<User> query = em.createNamedQuery("usersInRole", User.class);
-        query.setParameter("roleId", role.getId());
-        List<User> results = query.getResultList();
-
-        List<UserModel> users = new ArrayList<UserModel>();
+        List<User> results = userRoleMappingRepository.usersInRole(role.getId());
+        List<UserModel> users = new ArrayList<>();
         for (User user : results) {
-            users.add(new UserAdapter(session, realm, em, user));
+            users.add(new UserAdapter(realm, user));
         }
         return users;
     }
@@ -478,39 +406,32 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
 
     @Override
     public void preRemove(RealmModel realm, GroupModel group) {
-        em.createNamedQuery("deleteUserGroupMembershipsByGroup").setParameter("groupId", group.getId()).executeUpdate();
-
+        userGroupMembershipRepository.deleteUserGroupMembershipsByGroup(group.getId());
     }
 
     @Override
     public UserModel getUserById(String id, RealmModel realm) {
-        User userEntity = em.find(User.class, id);
-        if (userEntity == null || !realm.getId().equals(userEntity.getRealmId())) return null;
-        return new UserAdapter(session, realm, em, userEntity);
+        Optional<User> optional = userRepository.findById(id);
+        if (!optional.isPresent() || !realm.getId().equals(optional.get().getRealmId())) return null;
+        return new UserAdapter(realm, optional.get());
     }
 
     @Override
     public UserModel getUserByUsername(String username, RealmModel realm) {
-        TypedQuery<User> query = em.createNamedQuery("getRealmUserByUsername", User.class);
-        query.setParameter("username", username.toLowerCase());
-        query.setParameter("realmId", realm.getId());
-        List<User> results = query.getResultList();
+        List<User> results = userRepository.getRealmUserByUsername(username.toLowerCase(), realm.getId());
         if (results.size() == 0) return null;
-        return new UserAdapter(session, realm, em, results.get(0));
+        return new UserAdapter(realm, results.get(0));
     }
 
     @Override
     public UserModel getUserByEmail(String email, RealmModel realm) {
-        TypedQuery<User> query = em.createNamedQuery("getRealmUserByEmail", User.class);
-        query.setParameter("email", email.toLowerCase());
-        query.setParameter("realmId", realm.getId());
-        List<User> results = query.getResultList();
+        List<User> results = userRepository.getRealmUserByEmail(email.toLowerCase(), realm.getId());
 
         if (results.isEmpty()) return null;
 
         ensureEmailConstraint(results, realm);
 
-        return new UserAdapter(session, realm, em, results.get(0));
+        return new UserAdapter(realm, results.get(0));
     }
 
     @Override
@@ -519,11 +440,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
 
     @Override
     public UserModel getUserByFederatedIdentity(FederatedIdentityModel identity, RealmModel realm) {
-        TypedQuery<User> query = em.createNamedQuery("findUserByFederatedIdentityAndRealm", User.class);
-        query.setParameter("realmId", realm.getId());
-        query.setParameter("identityProvider", identity.getIdentityProvider());
-        query.setParameter("userId", identity.getUserId());
-        List<User> results = query.getResultList();
+        List<User> results = federatedIdentityRepository.findUserByFederatedIdentityAndRealm(realm.getId(), identity.getUserId(), identity.getIdentityProvider());
         if (results.isEmpty()) {
             return null;
         } else if (results.size() > 1) {
@@ -531,16 +448,13 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
                     ", userId=" + identity.getUserId() + ", results=" + results);
         } else {
             User user = results.get(0);
-            return new UserAdapter(session, realm, em, user);
+            return new UserAdapter(realm, user);
         }
     }
 
     @Override
     public UserModel getServiceAccount(ClientModel client) {
-        TypedQuery<User> query = em.createNamedQuery("getRealmUserByServiceAccount", User.class);
-        query.setParameter("realmId", client.getRealm().getId());
-        query.setParameter("clientInternalId", client.getId());
-        List<User> results = query.getResultList();
+        List<User> results = userRepository.getRealmUserByServiceAccount(client.getRealm().getId(), client.getId());
         if (results.isEmpty()) {
             return null;
         } else if (results.size() > 1) {
@@ -548,7 +462,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
                     ", results=" + results);
         } else {
             User user = results.get(0);
-            return new UserAdapter(session, client.getRealm(), em, user);
+            return new UserAdapter(client.getRealm(), user);
         }
     }
 
@@ -559,16 +473,14 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
 
     @Override
     public int getUsersCount(RealmModel realm, boolean includeServiceAccount) {
-        String namedQuery = "getRealmUserCountExcludeServiceAccount";
-
+        Integer count;
         if (includeServiceAccount) {
-            namedQuery = "getRealmUserCount";
+            count = userRepository.getRealmUserCount(realm.getId());
+        } else {
+            count = userRepository.getRealmUserCountExcludeServiceAccount(realm.getId());
         }
 
-        Object count = em.createNamedQuery(namedQuery)
-                .setParameter("realmId", realm.getId())
-                .getSingleResult();
-        return ((Number) count).intValue();
+        return count;
     }
 
     @Override
@@ -582,21 +494,13 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
             return 0;
         }
 
-        TypedQuery<Long> query = em.createNamedQuery("userCountInGroups", Long.class);
-        query.setParameter("realmId", realm.getId());
-        query.setParameter("groupIds", groupIds);
-        Long count = query.getSingleResult();
-
+        Long count = userGroupMembershipRepository.userCountInGroups(realm.getId(), groupIds);
         return count.intValue();
     }
 
     @Override
     public int getUsersCount(String search, RealmModel realm) {
-        TypedQuery<Long> query = em.createNamedQuery("searchForUserCount", Long.class);
-        query.setParameter("realmId", realm.getId());
-        query.setParameter("search", "%" + search.toLowerCase() + "%");
-        Long count = query.getSingleResult();
-
+        Long count = userRepository.searchForUserCount(realm.getId(), "%" + search.toLowerCase() + "%");
         return count.intValue();
     }
 
@@ -606,54 +510,78 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
             return 0;
         }
 
-        TypedQuery<Long> query = em.createNamedQuery("searchForUserCountInGroups", Long.class);
-        query.setParameter("realmId", realm.getId());
-        query.setParameter("search", "%" + search.toLowerCase() + "%");
-        query.setParameter("groupIds", groupIds);
-        Long count = query.getSingleResult();
-
+        Long count = userGroupMembershipRepository.searchForUserCountInGroups(realm.getId(), groupIds, "%" + search.toLowerCase() + "%");
         return count.intValue();
+    }
+
+    private static Specification<User> getUsersCountSpecification(Map<String, String> params, RealmModel realm) {
+        return (Specification<User>) (root, query, cb) -> {
+            List<Predicate> restrictions = new ArrayList<>();
+            restrictions.add(cb.equal(root.get("realmId"), realm.getId()));
+            for (Map.Entry<String, String> entry : params.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                if (key == null || value == null) {
+                    continue;
+                }
+
+                switch (key) {
+                    case UserModel.USERNAME:
+                        restrictions.add(cb.like(root.get("username"), "%" + value + "%"));
+                        break;
+                    case UserModel.FIRST_NAME:
+                        restrictions.add(cb.like(root.get("firstName"), "%" + value + "%"));
+                        break;
+                    case UserModel.LAST_NAME:
+                        restrictions.add(cb.like(root.get("lastName"), "%" + value + "%"));
+                        break;
+                    case UserModel.EMAIL:
+                        restrictions.add(cb.like(root.get("email"), "%" + value + "%"));
+                        break;
+                }
+            }
+
+            return cb.and(restrictions.toArray(new Predicate[0]));
+        };
     }
 
     @Override
     public int getUsersCount(Map<String, String> params, RealmModel realm) {
-        CriteriaBuilder qb = em.getCriteriaBuilder();
-        CriteriaQuery<Long> userQuery = qb.createQuery(Long.class);
-        Root<User> from = userQuery.from(User.class);
-        Expression<Long> count = qb.count(from);
+        List<User> results = userRepository.findAll(getUsersCountSpecification(params, realm));
+        return results.size();
+    }
 
-        userQuery = userQuery.select(count);
-        List<Predicate> restrictions = new ArrayList<>();
-        restrictions.add(qb.equal(from.get("realmId"), realm.getId()));
+    private static Specification<UserGroupMembership> getUsersCountSpecification(Map<String, String> params, RealmModel realm, Set<String> groupIds) {
+        return (Specification<UserGroupMembership>) (root, query, cb) -> {
+            List<Predicate> restrictions = new ArrayList<>();
+            restrictions.add(cb.equal(root.get("user").get("realmId"), realm.getId()));
+            restrictions.add(root.get("groupId").in(groupIds));
 
-        for (Map.Entry<String, String> entry : params.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-            if (key == null || value == null) {
-                continue;
+            for (Map.Entry<String, String> entry : params.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                if (key == null || value == null) {
+                    continue;
+                }
+
+                switch (key) {
+                    case UserModel.USERNAME:
+                        restrictions.add(cb.like(root.get("user").get("username"), "%" + value + "%"));
+                        break;
+                    case UserModel.FIRST_NAME:
+                        restrictions.add(cb.like(root.get("user").get("firstName"), "%" + value + "%"));
+                        break;
+                    case UserModel.LAST_NAME:
+                        restrictions.add(cb.like(root.get("user").get("lastName"), "%" + value + "%"));
+                        break;
+                    case UserModel.EMAIL:
+                        restrictions.add(cb.like(root.get("user").get("email"), "%" + value + "%"));
+                        break;
+                }
             }
 
-            switch (key) {
-                case UserModel.USERNAME:
-                    restrictions.add(qb.like(from.get("username"), "%" + value + "%"));
-                    break;
-                case UserModel.FIRST_NAME:
-                    restrictions.add(qb.like(from.get("firstName"), "%" + value + "%"));
-                    break;
-                case UserModel.LAST_NAME:
-                    restrictions.add(qb.like(from.get("lastName"), "%" + value + "%"));
-                    break;
-                case UserModel.EMAIL:
-                    restrictions.add(qb.like(from.get("email"), "%" + value + "%"));
-                    break;
-            }
-        }
-
-        userQuery = userQuery.where(restrictions.toArray(new Predicate[0]));
-        TypedQuery<Long> query = em.createQuery(userQuery);
-        Long result = query.getSingleResult();
-
-        return result.intValue();
+            return cb.and(restrictions.toArray(new Predicate[0]));
+        };
     }
 
     @Override
@@ -662,44 +590,8 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
             return 0;
         }
 
-        CriteriaBuilder qb = em.getCriteriaBuilder();
-        CriteriaQuery<Long> userQuery = qb.createQuery(Long.class);
-        Root<UserGroupMembership> from = userQuery.from(UserGroupMembership.class);
-        Expression<Long> count = qb.count(from.get("user"));
-        userQuery = userQuery.select(count);
-
-        List<Predicate> restrictions = new ArrayList<>();
-        restrictions.add(qb.equal(from.get("user").get("realmId"), realm.getId()));
-        restrictions.add(from.get("groupId").in(groupIds));
-
-        for (Map.Entry<String, String> entry : params.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-            if (key == null || value == null) {
-                continue;
-            }
-
-            switch (key) {
-                case UserModel.USERNAME:
-                    restrictions.add(qb.like(from.get("user").get("username"), "%" + value + "%"));
-                    break;
-                case UserModel.FIRST_NAME:
-                    restrictions.add(qb.like(from.get("user").get("firstName"), "%" + value + "%"));
-                    break;
-                case UserModel.LAST_NAME:
-                    restrictions.add(qb.like(from.get("user").get("lastName"), "%" + value + "%"));
-                    break;
-                case UserModel.EMAIL:
-                    restrictions.add(qb.like(from.get("user").get("email"), "%" + value + "%"));
-                    break;
-            }
-        }
-
-        userQuery = userQuery.where(restrictions.toArray(new Predicate[0]));
-        TypedQuery<Long> query = em.createQuery(userQuery);
-        Long result = query.getSingleResult();
-
-        return result.intValue();
+        List<UserGroupMembership> results = userGroupMembershipRepository.findAll(getUsersCountSpecification(params, realm, groupIds));
+        return results.size();
     }
 
     @Override
@@ -714,56 +606,33 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
 
     @Override
     public List<UserModel> getUsers(RealmModel realm, int firstResult, int maxResults, boolean includeServiceAccounts) {
-        String queryName = includeServiceAccounts ? "getAllUsersByRealm" : "getAllUsersByRealmExcludeServiceAccount";
-
-        TypedQuery<User> query = em.createNamedQuery(queryName, User.class);
-        query.setParameter("realmId", realm.getId());
-        if (firstResult != -1) {
-            query.setFirstResult(firstResult);
+        List<User> results;
+        if (includeServiceAccounts) {
+            results = userRepository.getAllUsersByRealm(realm.getId());
+        } else {
+            results = userRepository.getAllUsersByRealmExcludeServiceAccount(realm.getId());
         }
-        if (maxResults != -1) {
-            query.setMaxResults(maxResults);
-        }
-        List<User> results = query.getResultList();
         List<UserModel> users = new LinkedList<>();
-        for (User entity : results) users.add(new UserAdapter(session, realm, em, entity));
+        for (User entity : results) users.add(new UserAdapter(realm, entity));
         return users;
     }
 
     @Override
     public List<UserModel> getGroupMembers(RealmModel realm, GroupModel group, int firstResult, int maxResults) {
-        TypedQuery<User> query = em.createNamedQuery("groupMembership", User.class);
-        query.setParameter("groupId", group.getId());
-        if (firstResult != -1) {
-            query.setFirstResult(firstResult);
-        }
-        if (maxResults != -1) {
-            query.setMaxResults(maxResults);
-        }
-        List<User> results = query.getResultList();
-
+        List<User> results = userGroupMembershipRepository.groupMembership(group.getId());
         List<UserModel> users = new LinkedList<>();
         for (User user : results) {
-            users.add(new UserAdapter(session, realm, em, user));
+            users.add(new UserAdapter(realm, user));
         }
         return users;
     }
 
     @Override
     public List<UserModel> getRoleMembers(RealmModel realm, RoleModel role, int firstResult, int maxResults) {
-        TypedQuery<User> query = em.createNamedQuery("usersInRole", User.class);
-        query.setParameter("roleId", role.getId());
-        if (firstResult != -1) {
-            query.setFirstResult(firstResult);
-        }
-        if (maxResults != -1) {
-            query.setMaxResults(maxResults);
-        }
-        List<User> results = query.getResultList();
-
+        List<User> results = userRoleMappingRepository.usersInRole(role.getId());
         List<UserModel> users = new LinkedList<>();
         for (User user : results) {
-            users.add(new UserAdapter(session, realm, em, user));
+            users.add(new UserAdapter(realm, user));
         }
         return users;
     }
@@ -775,18 +644,9 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
 
     @Override
     public List<UserModel> searchForUser(String search, RealmModel realm, int firstResult, int maxResults) {
-        TypedQuery<User> query = em.createNamedQuery("searchForUser", User.class);
-        query.setParameter("realmId", realm.getId());
-        query.setParameter("search", "%" + search.toLowerCase() + "%");
-        if (firstResult != -1) {
-            query.setFirstResult(firstResult);
-        }
-        if (maxResults != -1) {
-            query.setMaxResults(maxResults);
-        }
-        List<User> results = query.getResultList();
+        List<User> results = userRepository.searchForUser(realm.getId(), "%" + search.toLowerCase() + "%");
         List<UserModel> users = new LinkedList<>();
-        for (User entity : results) users.add(new UserAdapter(session, realm, em, entity));
+        for (User entity : results) users.add(new UserAdapter(realm, entity));
         return users;
     }
 
@@ -795,100 +655,92 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
         return searchForUser(attributes, realm, -1, -1);
     }
 
+    private static Specification<User> searchForUserSpecification(KeycloakSession session, Map<String, String> attributes, RealmModel realm) {
+        return (Specification<User>) (root, query, cb) -> {
+            List<Predicate> restrictions = new ArrayList<>();
+
+            restrictions.add(cb.equal(root.get("realmId"), realm.getId()));
+
+            if (!session.getAttributeOrDefault(UserModel.INCLUDE_SERVICE_ACCOUNT, true)) {
+                restrictions.add(root.get("serviceAccountClientLink").isNull());
+            }
+
+            for (Map.Entry<String, String> entry : attributes.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+
+                if (value == null) {
+                    continue;
+                }
+
+                switch (key) {
+                    case UserModel.SEARCH:
+                        List<Predicate> orPredicates = new ArrayList<>();
+
+                        orPredicates.add(cb.like(cb.lower(root.get(UserModel.USERNAME)), "%" + value.toLowerCase() + "%"));
+                        orPredicates.add(cb.like(cb.lower(root.get(UserModel.EMAIL)), "%" + value.toLowerCase() + "%"));
+                        orPredicates.add(cb.like(
+                                cb.lower(cb.concat(cb.concat(
+                                        cb.coalesce(root.get(UserModel.FIRST_NAME), cb.literal("")), " "),
+                                        cb.coalesce(root.get(UserModel.LAST_NAME), cb.literal("")))),
+                                "%" + value.toLowerCase() + "%"));
+
+                        restrictions.add(cb.or(orPredicates.toArray(new Predicate[orPredicates.size()])));
+
+                        break;
+
+                    case UserModel.USERNAME:
+                    case UserModel.FIRST_NAME:
+                    case UserModel.LAST_NAME:
+                    case UserModel.EMAIL:
+                        restrictions.add(cb.like(cb.lower(root.get(key)), "%" + value.toLowerCase() + "%"));
+                }
+            }
+
+            Set<String> userGroups = (Set<String>) session.getAttribute(UserModel.GROUPS);
+
+            if (userGroups != null) {
+                Subquery subquery = query.subquery(String.class);
+                Root<UserGroupMembership> from = subquery.from(UserGroupMembership.class);
+
+                subquery.select(cb.literal(1));
+
+                List<Predicate> subPredicates = new ArrayList<>();
+
+                subPredicates.add(from.get("groupId").in(userGroups));
+                subPredicates.add(cb.equal(from.get("user").get("id"), root.get("id")));
+
+                Subquery subquery1 = query.subquery(String.class);
+
+                subquery1.select(cb.literal(1));
+                Root from1 = subquery1.from(ResourceEntity.class);
+
+                List<Predicate> subs = new ArrayList<>();
+
+                Expression<String> groupId = from.get("groupId");
+                subs.add(cb.like(from1.get("name"), cb.concat("group.resource.", groupId)));
+
+                subquery1.where(subs.toArray(new Predicate[0]));
+
+                subPredicates.add(cb.exists(subquery1));
+
+                subquery.where(subPredicates.toArray(new Predicate[0]));
+
+                restrictions.add(cb.exists(subquery));
+            }
+
+            query.where(restrictions.toArray(new Predicate[0])).orderBy(cb.asc(root.get(UserModel.USERNAME)));
+
+            return cb.and(restrictions.toArray(new Predicate[0]));
+        };
+    }
+
     @Override
     public List<UserModel> searchForUser(Map<String, String> attributes, RealmModel realm, int firstResult, int maxResults) {
-        CriteriaBuilder builder = em.getCriteriaBuilder();
-        CriteriaQuery<User> queryBuilder = builder.createQuery(User.class);
-        Root<User> root = queryBuilder.from(User.class);
-
-        List<Predicate> predicates = new ArrayList();
-
-        predicates.add(builder.equal(root.get("realmId"), realm.getId()));
-
-        if (!session.getAttributeOrDefault(UserModel.INCLUDE_SERVICE_ACCOUNT, true)) {
-            predicates.add(root.get("serviceAccountClientLink").isNull());
-        }
-
-        for (Map.Entry<String, String> entry : attributes.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-
-            if (value == null) {
-                continue;
-            }
-
-            switch (key) {
-                case UserModel.SEARCH:
-                    List<Predicate> orPredicates = new ArrayList();
-
-                    orPredicates.add(builder.like(builder.lower(root.get(UserModel.USERNAME)), "%" + value.toLowerCase() + "%"));
-                    orPredicates.add(builder.like(builder.lower(root.get(UserModel.EMAIL)), "%" + value.toLowerCase() + "%"));
-                    orPredicates.add(builder.like(
-                            builder.lower(builder.concat(builder.concat(
-                                    builder.coalesce(root.get(UserModel.FIRST_NAME), builder.literal("")), " "),
-                                    builder.coalesce(root.get(UserModel.LAST_NAME), builder.literal("")))),
-                            "%" + value.toLowerCase() + "%"));
-
-                    predicates.add(builder.or(orPredicates.toArray(new Predicate[orPredicates.size()])));
-
-                    break;
-
-                case UserModel.USERNAME:
-                case UserModel.FIRST_NAME:
-                case UserModel.LAST_NAME:
-                case UserModel.EMAIL:
-                    predicates.add(builder.like(builder.lower(root.get(key)), "%" + value.toLowerCase() + "%"));
-            }
-        }
-
-        Set<String> userGroups = (Set<String>) session.getAttribute(UserModel.GROUPS);
-
-        if (userGroups != null) {
-            Subquery subquery = queryBuilder.subquery(String.class);
-            Root<UserGroupMembership> from = subquery.from(UserGroupMembership.class);
-
-            subquery.select(builder.literal(1));
-
-            List<Predicate> subPredicates = new ArrayList<>();
-
-            subPredicates.add(from.get("groupId").in(userGroups));
-            subPredicates.add(builder.equal(from.get("user").get("id"), root.get("id")));
-
-            Subquery subquery1 = queryBuilder.subquery(String.class);
-
-            subquery1.select(builder.literal(1));
-            Root from1 = subquery1.from(ResourceEntity.class);
-
-            List<Predicate> subs = new ArrayList<>();
-
-            Expression<String> groupId = from.get("groupId");
-            subs.add(builder.like(from1.get("name"), builder.concat("group.resource.", groupId)));
-
-            subquery1.where(subs.toArray(new Predicate[subs.size()]));
-
-            subPredicates.add(builder.exists(subquery1));
-
-            subquery.where(subPredicates.toArray(new Predicate[subPredicates.size()]));
-
-            predicates.add(builder.exists(subquery));
-        }
-
-        queryBuilder.where(predicates.toArray(new Predicate[predicates.size()])).orderBy(builder.asc(root.get(UserModel.USERNAME)));
-
-        TypedQuery<User> query = em.createQuery(queryBuilder);
-
-        if (firstResult != -1) {
-            query.setFirstResult(firstResult);
-        }
-
-        if (maxResults != -1) {
-            query.setMaxResults(maxResults);
-        }
-
         List<UserModel> results = new ArrayList<>();
         UserProvider users = session.users();
 
-        for (User entity : query.getResultList()) {
+        for (User entity : userRepository.findAll(searchForUserSpecification(session, attributes, realm))) {
             results.add(users.getUserById(entity.getId(), realm));
         }
 
@@ -897,36 +749,24 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
 
     @Override
     public List<UserModel> searchForUserByUserAttribute(String attrName, String attrValue, RealmModel realm) {
-        TypedQuery<User> query = em.createNamedQuery("getRealmUsersByAttributeNameAndValue", User.class);
-        query.setParameter("name", attrName);
-        query.setParameter("value", attrValue);
-        query.setParameter("realmId", realm.getId());
-        List<User> results = query.getResultList();
-
-        List<UserModel> users = new ArrayList<UserModel>();
+        List<User> results = userRepository.getRealmUsersByAttributeNameAndValue(realm.getId(), attrName, attrValue);
+        List<UserModel> users = new ArrayList<>();
         for (User user : results) {
-            users.add(new UserAdapter(session, realm, em, user));
+            users.add(new UserAdapter(realm, user));
         }
         return users;
     }
 
     private FederatedIdentity findFederatedIdentity(UserModel user, String identityProvider, LockModeType lockMode) {
-        TypedQuery<FederatedIdentity> query = em.createNamedQuery("findFederatedIdentityByUserAndProvider", FederatedIdentity.class);
-        User userEntity = em.getReference(User.class, user.getId());
-        query.setParameter("user", userEntity);
-        query.setParameter("identityProvider", identityProvider);
-        query.setLockMode(lockMode);
-        List<FederatedIdentity> results = query.getResultList();
+        User userEntity = userRepository.getOne(user.getId());
+        List<FederatedIdentity> results = federatedIdentityRepository.findFederatedIdentityByUserAndProvider(userEntity, identityProvider);
         return results.size() > 0 ? results.get(0) : null;
     }
 
-
     @Override
     public Set<FederatedIdentityModel> getFederatedIdentities(UserModel user, RealmModel realm) {
-        TypedQuery<FederatedIdentity> query = em.createNamedQuery("findFederatedIdentityByUser", FederatedIdentity.class);
-        User userEntity = em.getReference(User.class, user.getId());
-        query.setParameter("user", userEntity);
-        List<FederatedIdentity> results = query.getResultList();
+        User userEntity = userRepository.getOne(user.getId());
+        List<FederatedIdentity> results = federatedIdentityRepository.findFederatedIdentityByUser(userEntity);
         Set<FederatedIdentityModel> set = new HashSet<>();
         for (FederatedIdentity entity : results) {
             set.add(new FederatedIdentityModel(entity.getIdentityProvider(), entity.getUserId(), entity.getUserName(), entity.getToken()));
@@ -951,13 +791,8 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
     }
 
     protected void removeConsentByClientStorageProvider(RealmModel realm, String providerId) {
-        em.createNamedQuery("deleteUserConsentClientScopesByClientStorageProvider")
-                .setParameter("clientStorageProvider", providerId)
-                .executeUpdate();
-        em.createNamedQuery("deleteUserConsentsByClientStorageProvider")
-                .setParameter("clientStorageProvider", providerId)
-                .executeUpdate();
-
+        userConsentClientScopeRepository.deleteUserConsentClientScopesByClientStorageProvider(providerId);
+        userConsentRepository.deleteUserConsentsByClientStorageProvider(providerId);
     }
 
     @Override
@@ -969,17 +804,15 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
     public CredentialModel createCredential(RealmModel realm, UserModel user, CredentialModel cred) {
         Credential entity = credentialStore.createCredentialEntity(realm, user, cred);
 
-        User userEntity = userInEntityManagerContext(user.getId());
-        if (userEntity != null) {
-            userEntity.getCredentials().add(entity);
-        }
+        User userEntity = userRepository.getOne(user.getId());
+        userEntity.getCredentials().add(entity);
         return toModel(entity);
     }
 
     @Override
     public boolean removeStoredCredential(RealmModel realm, UserModel user, String id) {
         Credential entity = credentialStore.removeCredentialEntity(realm, user, id);
-        User userEntity = userInEntityManagerContext(user.getId());
+        User userEntity = userRepository.getOne(user.getId());
         if (entity != null && userEntity != null) {
             userEntity.getCredentials().remove(entity);
         }
@@ -1003,9 +836,8 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
     @Override
     public List<CredentialModel> getStoredCredentialsByType(RealmModel realm, UserModel user, String type) {
         List<Credential> results;
-        User userEntity = userInEntityManagerContext(user.getId());
+        User userEntity = userRepository.getOne(user.getId());
         if (userEntity != null) {
-
             // user already in persistence context, no need to execute a query
             results = userEntity.getCredentials().stream().filter(it -> type.equals(it.getType()))
                     .sorted(Comparator.comparingInt(Credential::getPriority))
@@ -1048,13 +880,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
             // Realm settings have been changed from allowing duplicate emails to not allowing them.
             // We need to update the email constraint to reflect this change in the user entities.
             user.setEmailConstraint(user.getEmail());
-            em.persist(user);
+            userRepository.saveAndFlush(user);
         }
-    }
-
-    private User userInEntityManagerContext(String id) {
-        User user = em.getReference(User.class, id);
-        boolean isLoaded = em.getEntityManagerFactory().getPersistenceUnitUtil().isLoaded(user);
-        return isLoaded ? user : null;
     }
 }

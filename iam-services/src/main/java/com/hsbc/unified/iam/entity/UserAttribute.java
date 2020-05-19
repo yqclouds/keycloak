@@ -25,12 +25,6 @@ import javax.persistence.*;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@NamedQueries({
-        @NamedQuery(name = "deleteUserAttributesByRealm", query = "delete from  UserAttribute attr where attr.user IN (select u from User u where u.realmId=:realmId)"),
-        @NamedQuery(name = "deleteUserAttributesByNameAndUser", query = "delete from  UserAttribute attr where attr.user.id = :userId and attr.name = :name"),
-        @NamedQuery(name = "deleteUserAttributesByNameAndUserOtherThan", query = "delete from  UserAttribute attr where attr.user.id = :userId and attr.name = :name and attr.id <> :attrId"),
-        @NamedQuery(name = "deleteUserAttributesByRealmAndLink", query = "delete from  UserAttribute attr where attr.user IN (select u from User u where u.realmId=:realmId and u.federationLink=:link)")
-})
 @Table(name = "USER_ATTRIBUTE")
 @Entity
 public class UserAttribute {
