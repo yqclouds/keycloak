@@ -21,12 +21,9 @@ import javax.persistence.*;
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
-@NamedQueries({
-        @NamedQuery(name = "deleteResourceAttributesByNameAndResource", query = "delete from ResourceAttributeEntity attr where attr.resource.id = :resourceId and attr.name = :name")
-})
 @Table(name = "RESOURCE_ATTRIBUTE")
 @Entity
-public class ResourceAttributeEntity {
+public class ResourceAttribute {
 
     @Id
     @Column(name = "ID", length = 36)
@@ -36,7 +33,7 @@ public class ResourceAttributeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "RESOURCE_ID")
-    private ResourceEntity resource;
+    private Resource resource;
 
     @Column(name = "NAME")
     private String name;
@@ -67,11 +64,11 @@ public class ResourceAttributeEntity {
         this.value = value;
     }
 
-    public ResourceEntity getResource() {
+    public Resource getResource() {
         return resource;
     }
 
-    public void setResource(ResourceEntity resource) {
+    public void setResource(Resource resource) {
         this.resource = resource;
     }
 
@@ -79,9 +76,9 @@ public class ResourceAttributeEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null) return false;
-        if (!(o instanceof ResourceAttributeEntity)) return false;
+        if (!(o instanceof ResourceAttribute)) return false;
 
-        ResourceAttributeEntity that = (ResourceAttributeEntity) o;
+        ResourceAttribute that = (ResourceAttribute) o;
 
         if (!id.equals(that.getId())) return false;
 

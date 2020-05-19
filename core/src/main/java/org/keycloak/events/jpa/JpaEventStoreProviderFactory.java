@@ -17,12 +17,10 @@
 
 package org.keycloak.events.jpa;
 
-import org.keycloak.connections.jpa.JpaConnectionProvider;
 import org.keycloak.events.EventStoreProvider;
 import org.keycloak.events.EventStoreProviderFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -32,23 +30,18 @@ import org.springframework.stereotype.Component;
 @Component("JpaEventStoreProviderFactory")
 @ProviderFactory(id = "jpa", providerClasses = EventStoreProvider.class)
 public class JpaEventStoreProviderFactory implements EventStoreProviderFactory {
-
     public static final String ID = "jpa";
 
     @Value("${max-detail-length}")
     private int maxDetailLength;
 
-    @Autowired
-    private JpaConnectionProvider connectionProvider;
-
     @Override
     public EventStoreProvider create(KeycloakSession session) {
-        return new JpaEventStoreProvider(connectionProvider.getEntityManager(), maxDetailLength);
+        return new JpaEventStoreProvider(maxDetailLength);
     }
 
     @Override
     public String getId() {
         return ID;
     }
-
 }

@@ -34,7 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 
-import javax.persistence.EntityManager;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,7 +46,6 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
     private ApplicationEventPublisher applicationEventPublisher;
 
     private final KeycloakSession session;
-    protected EntityManager em;
 
     @Autowired
     private RealmService realmService;
@@ -78,9 +76,8 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
     @Autowired
     private ClientScopeClientMappingRepository clientScopeClientMappingRepository;
 
-    public JpaRealmProvider(KeycloakSession session, EntityManager em) {
+    public JpaRealmProvider(KeycloakSession session) {
         this.session = session;
-        this.em = em;
     }
 
     @Override
@@ -92,12 +89,12 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
     public RealmModel createRealm(String id, String name) {
         Realm realm = this.realmService.createRealm(id, name);
         applicationEventPublisher.publishEvent(new RealmCreationEvent(realm));
-        return new RealmAdapter(session, em, realm);
+        return new RealmAdapter(session, realm);
     }
 
     @Override
     public RealmModel getRealm(String id) {
-        return new RealmAdapter(session, em, this.realmService.getRealm(id));
+        return new RealmAdapter(session, this.realmService.getRealm(id));
     }
 
     @Override
@@ -139,7 +136,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
         if (realm == null) {
             return false;
         }
-        final RealmAdapter adapter = new RealmAdapter(session, em, realm);
+        final RealmAdapter adapter = new RealmAdapter(session, realm);
         session.users().preRemove(adapter);
 
         realmService.removeDefaultGroups(realm);

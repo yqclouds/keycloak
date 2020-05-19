@@ -19,12 +19,10 @@ package org.keycloak.authorization.jpa.store;
 
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.jpa.entities.*;
-import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.authorization.store.ResourceServerStore;
 import org.keycloak.models.ModelException;
 import org.keycloak.storage.StorageId;
 
-import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import java.util.List;
 
@@ -33,31 +31,29 @@ import java.util.List;
  */
 public class JPAResourceServerStore implements ResourceServerStore {
 
-    private final EntityManager entityManager;
     private final AuthorizationProvider provider;
 
-    public JPAResourceServerStore(EntityManager entityManager, AuthorizationProvider provider) {
-        this.entityManager = entityManager;
+    public JPAResourceServerStore(AuthorizationProvider provider) {
         this.provider = provider;
     }
 
     @Override
-    public ResourceServer create(String clientId) {
+    public org.keycloak.authorization.model.ResourceServer create(String clientId) {
         if (!StorageId.isLocalStorage(clientId)) {
             throw new ModelException("Creating resource server from federated ClientModel not supported");
         }
-        ResourceServerEntity entity = new ResourceServerEntity();
+        ResourceServer entity = new ResourceServer();
 
         entity.setId(clientId);
 
         this.entityManager.persist(entity);
 
-        return new ResourceServerAdapter(entity, entityManager, provider.getStoreFactory());
+        return new ResourceServerAdapter(entity, provider.getStoreFactory());
     }
 
     @Override
     public void delete(String id) {
-        ResourceServerEntity entity = entityManager.find(ResourceServerEntity.class, id);
+        ResourceServer entity = entityManager.find(ResourceServer.class, id);
         if (entity == null) return;
         //This didn't work, had to loop through and remove each policy individually
         //entityManager.createNamedQuery("deletePolicyByResourceServer")
@@ -68,7 +64,7 @@ public class JPAResourceServerStore implements ResourceServerStore {
             query.setParameter("serverId", id);
             List<String> result = query.getResultList();
             for (String policyId : result) {
-                entityManager.remove(entityManager.getReference(PolicyEntity.class, policyId));
+                entityManager.remove(entityManager.getReference(Policy.class, policyId));
             }
         }
 
@@ -79,7 +75,7 @@ public class JPAResourceServerStore implements ResourceServerStore {
 
             List<String> result = query.getResultList();
             for (String permissionId : result) {
-                entityManager.remove(entityManager.getReference(PermissionTicketEntity.class, permissionId));
+                entityManager.remove(entityManager.getReference(PermissionTicket.class, permissionId));
             }
         }
 
@@ -92,7 +88,7 @@ public class JPAResourceServerStore implements ResourceServerStore {
 
             List<String> result = query.getResultList();
             for (String resourceId : result) {
-                entityManager.remove(entityManager.getReference(ResourceEntity.class, resourceId));
+                entityManager.remove(entityManager.getReference(Resource.class, resourceId));
             }
         }
 
@@ -115,9 +111,9 @@ public class JPAResourceServerStore implements ResourceServerStore {
     }
 
     @Override
-    public ResourceServer findById(String id) {
-        ResourceServerEntity entity = entityManager.find(ResourceServerEntity.class, id);
+    public org.keycloak.authorization.model.ResourceServer findById(String id) {
+        ResourceServer entity = entityManager.find(ResourceServer.class, id);
         if (entity == null) return null;
-        return new ResourceServerAdapter(entity, entityManager, provider.getStoreFactory());
+        return new ResourceServerAdapter(entity, provider.getStoreFactory());
     }
 }

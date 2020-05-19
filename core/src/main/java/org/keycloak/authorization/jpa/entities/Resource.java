@@ -32,23 +32,7 @@ import java.util.*;
 @Table(name = "RESOURCE_SERVER_RESOURCE", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"NAME", "RESOURCE_SERVER_ID", "OWNER"})
 })
-@NamedQueries(
-        {
-                @NamedQuery(name = "findResourceIdByOwner", query = "select distinct(r) from ResourceEntity r left join fetch r.scopes s where r.resourceServer.id = :serverId and r.owner = :owner"),
-                @NamedQuery(name = "findResourceIdByOwnerOrdered", query = "select distinct(r) from ResourceEntity r left join fetch r.scopes s where r.resourceServer.id = :serverId and r.owner = :owner order by r.id"),
-                @NamedQuery(name = "findAnyResourceIdByOwner", query = "select distinct(r) from ResourceEntity r left join fetch r.scopes s where r.owner = :owner"),
-                @NamedQuery(name = "findAnyResourceIdByOwnerOrdered", query = "select distinct(r) from ResourceEntity r left join fetch r.scopes s where r.owner = :owner order by r.id"),
-                @NamedQuery(name = "findResourceIdByUri", query = "select r.id from ResourceEntity r where  r.resourceServer.id = :serverId  and :uri in elements(r.uris)"),
-                @NamedQuery(name = "findResourceIdByName", query = "select distinct(r) from ResourceEntity r left join fetch r.scopes s where  r.resourceServer.id = :serverId  and r.owner = :ownerId and r.name = :name"),
-                @NamedQuery(name = "findResourceIdByType", query = "select distinct(r) from ResourceEntity r left join fetch r.scopes s where  r.resourceServer.id = :serverId  and r.owner = :ownerId and r.type = :type"),
-                @NamedQuery(name = "findResourceIdByTypeNoOwner", query = "select distinct(r) from ResourceEntity r left join fetch r.scopes s where  r.resourceServer.id = :serverId  and r.type = :type"),
-                @NamedQuery(name = "findResourceIdByTypeInstance", query = "select distinct(r) from ResourceEntity r left join fetch r.scopes s where  r.resourceServer.id = :serverId and r.type = :type and r.owner <> :serverId"),
-                @NamedQuery(name = "findResourceIdByServerId", query = "select r.id from ResourceEntity r where  r.resourceServer.id = :serverId "),
-                @NamedQuery(name = "findResourceIdByScope", query = "select r from ResourceEntity r inner join r.scopes s where r.resourceServer.id = :serverId and (s.resourceServer.id = :serverId and s.id in (:scopeIds))"),
-                @NamedQuery(name = "deleteResourceByResourceServer", query = "delete from ResourceEntity r where r.resourceServer.id = :serverId")
-        }
-)
-public class ResourceEntity {
+public class Resource {
 
     @Id
     @Column(name = "ID", length = 36)
@@ -81,7 +65,7 @@ public class ResourceEntity {
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "RESOURCE_SERVER_ID")
-    private ResourceServerEntity resourceServer;
+    private ResourceServer resourceServer;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {})
     @JoinTable(name = "RESOURCE_SCOPE", joinColumns = @JoinColumn(name = "RESOURCE_ID"), inverseJoinColumns = @JoinColumn(name = "SCOPE_ID"))
@@ -89,12 +73,12 @@ public class ResourceEntity {
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {})
     @JoinTable(name = "RESOURCE_POLICY", joinColumns = @JoinColumn(name = "RESOURCE_ID"), inverseJoinColumns = @JoinColumn(name = "POLICY_ID"))
-    private List<PolicyEntity> policies = new LinkedList<>();
+    private List<Policy> policies = new LinkedList<>();
 
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "resource", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SELECT)
     @BatchSize(size = 20)
-    private Collection<ResourceAttributeEntity> attributes = new ArrayList<>();
+    private Collection<ResourceAttribute> attributes = new ArrayList<>();
 
     public String getId() {
         return id;
@@ -148,11 +132,11 @@ public class ResourceEntity {
         this.iconUri = iconUri;
     }
 
-    public ResourceServerEntity getResourceServer() {
+    public ResourceServer getResourceServer() {
         return resourceServer;
     }
 
-    public void setResourceServer(ResourceServerEntity resourceServer) {
+    public void setResourceServer(ResourceServer resourceServer) {
         this.resourceServer = resourceServer;
     }
 
@@ -172,20 +156,20 @@ public class ResourceEntity {
         this.ownerManagedAccess = ownerManagedAccess;
     }
 
-    public List<PolicyEntity> getPolicies() {
+    public List<Policy> getPolicies() {
         return this.policies;
     }
 
 
-    public void setPolicies(List<PolicyEntity> policies) {
+    public void setPolicies(List<Policy> policies) {
         this.policies = policies;
     }
 
-    public Collection<ResourceAttributeEntity> getAttributes() {
+    public Collection<ResourceAttribute> getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(Collection<ResourceAttributeEntity> attributes) {
+    public void setAttributes(Collection<ResourceAttribute> attributes) {
         this.attributes = attributes;
     }
 
@@ -194,7 +178,7 @@ public class ResourceEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ResourceEntity that = (ResourceEntity) o;
+        Resource that = (Resource) o;
 
         return getId().equals(that.getId());
     }

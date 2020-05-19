@@ -16,14 +16,12 @@
  */
 package org.keycloak.authorization.jpa.store;
 
-import org.keycloak.authorization.jpa.entities.PermissionTicketEntity;
-import org.keycloak.authorization.jpa.entities.PolicyEntity;
+import org.keycloak.authorization.jpa.entities.PermissionTicket;
+import org.keycloak.authorization.jpa.entities.Policy;
 import org.keycloak.authorization.jpa.entities.ScopeEntity;
 import org.keycloak.authorization.model.*;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.jpa.JpaModel;
-
-import javax.persistence.EntityManager;
 
 import static org.keycloak.authorization.UserManagedPermissionUtil.updatePolicy;
 
@@ -31,28 +29,26 @@ import static org.keycloak.authorization.UserManagedPermissionUtil.updatePolicy;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class PermissionTicketAdapter implements PermissionTicket, JpaModel<PermissionTicketEntity> {
+public class PermissionTicketAdapter implements org.keycloak.authorization.model.PermissionTicket, JpaModel<PermissionTicket> {
 
-    private final EntityManager entityManager;
-    private final PermissionTicketEntity entity;
+    private final PermissionTicket entity;
     private final StoreFactory storeFactory;
 
-    public PermissionTicketAdapter(PermissionTicketEntity entity, EntityManager entityManager, StoreFactory storeFactory) {
+    public PermissionTicketAdapter(PermissionTicket entity, StoreFactory storeFactory) {
         this.entity = entity;
-        this.entityManager = entityManager;
         this.storeFactory = storeFactory;
     }
 
-    public static PermissionTicketEntity toEntity(EntityManager em, PermissionTicket permission) {
+    public org.keycloak.authorization.jpa.entities.PermissionTicket toEntity(org.keycloak.authorization.model.PermissionTicket permission) {
         if (permission instanceof PermissionTicketAdapter) {
             return ((PermissionTicketAdapter) permission).getEntity();
         } else {
-            return em.getReference(PermissionTicketEntity.class, permission.getId());
+            return em.getReference(org.keycloak.authorization.jpa.entities.PermissionTicket.class, permission.getId());
         }
     }
 
     @Override
-    public PermissionTicketEntity getEntity() {
+    public PermissionTicket getEntity() {
         return entity;
     }
 
@@ -98,8 +94,8 @@ public class PermissionTicketAdapter implements PermissionTicket, JpaModel<Permi
     }
 
     @Override
-    public Policy getPolicy() {
-        PolicyEntity policy = entity.getPolicy();
+    public org.keycloak.authorization.model.Policy getPolicy() {
+        Policy policy = entity.getPolicy();
 
         if (policy == null) {
             return null;
@@ -109,9 +105,9 @@ public class PermissionTicketAdapter implements PermissionTicket, JpaModel<Permi
     }
 
     @Override
-    public void setPolicy(Policy policy) {
+    public void setPolicy(org.keycloak.authorization.model.Policy policy) {
         if (policy != null) {
-            entity.setPolicy(entityManager.getReference(PolicyEntity.class, policy.getId()));
+            entity.setPolicy(entityManager.getReference(Policy.class, policy.getId()));
         }
     }
 
@@ -134,9 +130,9 @@ public class PermissionTicketAdapter implements PermissionTicket, JpaModel<Permi
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof Policy)) return false;
+        if (o == null || !(o instanceof org.keycloak.authorization.model.Policy)) return false;
 
-        PermissionTicket that = (PermissionTicket) o;
+        org.keycloak.authorization.model.PermissionTicket that = (org.keycloak.authorization.model.PermissionTicket) o;
         return that.getId().equals(getId());
     }
 

@@ -25,7 +25,6 @@ import org.keycloak.storage.StorageId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
@@ -40,11 +39,9 @@ public class JpaUserSessionPersisterProvider implements UserSessionPersisterProv
     private static final Logger LOG = LoggerFactory.getLogger(JpaUserSessionPersisterProvider.class);
 
     private final KeycloakSession session;
-    private final EntityManager em;
 
-    public JpaUserSessionPersisterProvider(KeycloakSession session, EntityManager em) {
+    public JpaUserSessionPersisterProvider(KeycloakSession session) {
         this.session = session;
-        this.em = em;
     }
 
     @Override

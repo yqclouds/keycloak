@@ -18,12 +18,12 @@
 package org.keycloak.authorization.jpa.store;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.jpa.entities.ResourceEntity;
-import org.keycloak.authorization.model.Resource;
+import org.keycloak.authorization.jpa.entities.Resource;
 import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.*;
 import javax.persistence.criteria.*;
@@ -38,22 +38,23 @@ import java.util.function.Consumer;
  */
 public class JPAResourceStore implements ResourceStore {
 
-    private final EntityManager entityManager;
     private final AuthorizationProvider provider;
 
-    public JPAResourceStore(EntityManager entityManager, AuthorizationProvider provider) {
-        this.entityManager = entityManager;
+    @Autowired
+    private ResourceServerAdapter resourceServerAdapter;
+
+    public JPAResourceStore(AuthorizationProvider provider) {
         this.provider = provider;
     }
 
     @Override
-    public Resource create(String name, ResourceServer resourceServer, String owner) {
+    public org.keycloak.authorization.model.Resource create(String name, ResourceServer resourceServer, String owner) {
         return create(null, name, resourceServer, owner);
     }
 
     @Override
-    public Resource create(String id, String name, ResourceServer resourceServer, String owner) {
-        ResourceEntity entity = new ResourceEntity();
+    public org.keycloak.authorization.model.Resource create(String id, String name, ResourceServer resourceServer, String owner) {
+        Resource entity = new Resource();
 
         if (id == null) {
             entity.setId(KeycloakModelUtils.generateId());
@@ -62,18 +63,18 @@ public class JPAResourceStore implements ResourceStore {
         }
 
         entity.setName(name);
-        entity.setResourceServer(ResourceServerAdapter.toEntity(entityManager, resourceServer));
+        entity.setResourceServer(resourceServerAdapter.toEntity(resourceServer));
         entity.setOwner(owner);
 
         this.entityManager.persist(entity);
         this.entityManager.flush();
 
-        return new ResourceAdapter(entity, entityManager, provider.getStoreFactory());
+        return new ResourceAdapter(entity, provider.getStoreFactory());
     }
 
     @Override
     public void delete(String id) {
-        ResourceEntity resource = entityManager.getReference(ResourceEntity.class, id);
+        Resource resource = entityManager.getReference(Resource.class, id);
         if (resource == null) return;
 
         resource.getScopes().clear();
@@ -81,19 +82,19 @@ public class JPAResourceStore implements ResourceStore {
     }
 
     @Override
-    public Resource findById(String id, String resourceServerId) {
+    public org.keycloak.authorization.model.Resource findById(String id, String resourceServerId) {
         if (id == null) {
             return null;
         }
 
-        ResourceEntity entity = entityManager.find(ResourceEntity.class, id);
+        Resource entity = entityManager.find(Resource.class, id);
         if (entity == null) return null;
-        return new ResourceAdapter(entity, entityManager, provider.getStoreFactory());
+        return new ResourceAdapter(entity, provider.getStoreFactory());
     }
 
     @Override
-    public List<Resource> findByOwner(String ownerId, String resourceServerId) {
-        List<Resource> list = new LinkedList<>();
+    public List<org.keycloak.authorization.model.Resource> findByOwner(String ownerId, String resourceServerId) {
+        List<org.keycloak.authorization.model.Resource> list = new LinkedList<>();
 
         findByOwner(ownerId, resourceServerId, list::add);
 
@@ -101,20 +102,20 @@ public class JPAResourceStore implements ResourceStore {
     }
 
     @Override
-    public void findByOwner(String ownerId, String resourceServerId, Consumer<Resource> consumer) {
+    public void findByOwner(String ownerId, String resourceServerId, Consumer<org.keycloak.authorization.model.Resource> consumer) {
         findByOwnerFilter(ownerId, resourceServerId, consumer, -1, -1);
     }
 
     @Override
-    public List<Resource> findByOwner(String ownerId, String resourceServerId, int first, int max) {
-        List<Resource> list = new LinkedList<>();
+    public List<org.keycloak.authorization.model.Resource> findByOwner(String ownerId, String resourceServerId, int first, int max) {
+        List<org.keycloak.authorization.model.Resource> list = new LinkedList<>();
 
         findByOwnerFilter(ownerId, resourceServerId, list::add, first, max);
 
         return list;
     }
 
-    private void findByOwnerFilter(String ownerId, String resourceServerId, Consumer<Resource> consumer, int firstResult, int maxResult) {
+    private void findByOwnerFilter(String ownerId, String resourceServerId, Consumer<org.keycloak.authorization.model.Resource> consumer, int firstResult, int maxResult) {
         boolean pagination = firstResult > -1 && maxResult > -1;
         String queryName = pagination ? "findResourceIdByOwnerOrdered" : "findResourceIdByOwner";
 
@@ -122,7 +123,7 @@ public class JPAResourceStore implements ResourceStore {
             queryName = pagination ? "findAnyResourceIdByOwnerOrdered" : "findAnyResourceIdByOwner";
         }
 
-        TypedQuery<ResourceEntity> query = entityManager.createNamedQuery(queryName, ResourceEntity.class);
+        TypedQuery<Resource> query = entityManager.createNamedQuery(queryName, Resource.class);
 
         query.setFlushMode(FlushModeType.COMMIT);
         query.setParameter("owner", ownerId);
@@ -137,10 +138,10 @@ public class JPAResourceStore implements ResourceStore {
         }
 
         ResourceStore resourceStore = provider.getStoreFactory().getResourceStore();
-        List<ResourceEntity> result = query.getResultList();
+        List<Resource> result = query.getResultList();
 
-        for (ResourceEntity entity : result) {
-            Resource cached = resourceStore.findById(entity.getId(), resourceServerId);
+        for (Resource entity : result) {
+            org.keycloak.authorization.model.Resource cached = resourceStore.findById(entity.getId(), resourceServerId);
 
             if (cached != null) {
                 consumer.accept(cached);
@@ -149,7 +150,7 @@ public class JPAResourceStore implements ResourceStore {
     }
 
     @Override
-    public List<Resource> findByUri(String uri, String resourceServerId) {
+    public List<org.keycloak.authorization.model.Resource> findByUri(String uri, String resourceServerId) {
         TypedQuery<String> query = entityManager.createNamedQuery("findResourceIdByUri", String.class);
 
         query.setFlushMode(FlushModeType.COMMIT);
@@ -157,11 +158,11 @@ public class JPAResourceStore implements ResourceStore {
         query.setParameter("serverId", resourceServerId);
 
         List<String> result = query.getResultList();
-        List<Resource> list = new LinkedList<>();
+        List<org.keycloak.authorization.model.Resource> list = new LinkedList<>();
         ResourceStore resourceStore = provider.getStoreFactory().getResourceStore();
 
         for (String id : result) {
-            Resource resource = resourceStore.findById(id, resourceServerId);
+            org.keycloak.authorization.model.Resource resource = resourceStore.findById(id, resourceServerId);
 
             if (resource != null) {
                 list.add(resource);
@@ -172,17 +173,17 @@ public class JPAResourceStore implements ResourceStore {
     }
 
     @Override
-    public List<Resource> findByResourceServer(String resourceServerId) {
+    public List<org.keycloak.authorization.model.Resource> findByResourceServer(String resourceServerId) {
         TypedQuery<String> query = entityManager.createNamedQuery("findResourceIdByServerId", String.class);
 
         query.setParameter("serverId", resourceServerId);
 
         List<String> result = query.getResultList();
-        List<Resource> list = new LinkedList<>();
+        List<org.keycloak.authorization.model.Resource> list = new LinkedList<>();
         ResourceStore resourceStore = provider.getStoreFactory().getResourceStore();
 
         for (String id : result) {
-            Resource resource = resourceStore.findById(id, resourceServerId);
+            org.keycloak.authorization.model.Resource resource = resourceStore.findById(id, resourceServerId);
 
             if (resource != null) {
                 list.add(resource);
@@ -193,10 +194,10 @@ public class JPAResourceStore implements ResourceStore {
     }
 
     @Override
-    public List<Resource> findByResourceServer(Map<String, String[]> attributes, String resourceServerId, int firstResult, int maxResult) {
+    public List<org.keycloak.authorization.model.Resource> findByResourceServer(Map<String, String[]> attributes, String resourceServerId, int firstResult, int maxResult) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<ResourceEntity> querybuilder = builder.createQuery(ResourceEntity.class);
-        Root<ResourceEntity> root = querybuilder.from(ResourceEntity.class);
+        CriteriaQuery<Resource> querybuilder = builder.createQuery(Resource.class);
+        Root<Resource> root = querybuilder.from(Resource.class);
         querybuilder.select(root.get("id"));
         List<Predicate> predicates = new ArrayList();
 
@@ -220,8 +221,8 @@ public class JPAResourceStore implements ResourceStore {
                 predicates.add(builder.notEqual(urisSize, 0));
             } else if ("owner".equals(name)) {
                 predicates.add(root.get(name).in(value));
-            } else if (!Resource.EXACT_NAME.equals(name)) {
-                if ("name".equals(name) && attributes.containsKey(Resource.EXACT_NAME) && Boolean.valueOf(attributes.get(Resource.EXACT_NAME)[0])
+            } else if (!org.keycloak.authorization.model.Resource.EXACT_NAME.equals(name)) {
+                if ("name".equals(name) && attributes.containsKey(org.keycloak.authorization.model.Resource.EXACT_NAME) && Boolean.valueOf(attributes.get(org.keycloak.authorization.model.Resource.EXACT_NAME)[0])
                         && value.length > 0 && value[0] != null) {
                     predicates.add(builder.equal(builder.lower(root.get(name)), value[0].toLowerCase()));
                 } else if (value.length > 0 && value[0] != null) {
@@ -242,11 +243,11 @@ public class JPAResourceStore implements ResourceStore {
         }
 
         List<String> result = query.getResultList();
-        List<Resource> list = new LinkedList<>();
+        List<org.keycloak.authorization.model.Resource> list = new LinkedList<>();
         ResourceStore resourceStore = provider.getStoreFactory().getResourceStore();
 
         for (String id : result) {
-            Resource resource = resourceStore.findById(id, resourceServerId);
+            org.keycloak.authorization.model.Resource resource = resourceStore.findById(id, resourceServerId);
 
             if (resource != null) {
                 list.add(resource);
@@ -257,8 +258,8 @@ public class JPAResourceStore implements ResourceStore {
     }
 
     @Override
-    public List<Resource> findByScope(List<String> scopes, String resourceServerId) {
-        List<Resource> result = new ArrayList<>();
+    public List<org.keycloak.authorization.model.Resource> findByScope(List<String> scopes, String resourceServerId) {
+        List<org.keycloak.authorization.model.Resource> result = new ArrayList<>();
 
         findByScope(scopes, resourceServerId, result::add);
 
@@ -266,8 +267,8 @@ public class JPAResourceStore implements ResourceStore {
     }
 
     @Override
-    public void findByScope(List<String> scopes, String resourceServerId, Consumer<Resource> consumer) {
-        TypedQuery<ResourceEntity> query = entityManager.createNamedQuery("findResourceIdByScope", ResourceEntity.class);
+    public void findByScope(List<String> scopes, String resourceServerId, Consumer<org.keycloak.authorization.model.Resource> consumer) {
+        TypedQuery<Resource> query = entityManager.createNamedQuery("findResourceIdByScope", Resource.class);
 
         query.setFlushMode(FlushModeType.COMMIT);
         query.setParameter("scopeIds", scopes);
@@ -276,33 +277,33 @@ public class JPAResourceStore implements ResourceStore {
         StoreFactory storeFactory = provider.getStoreFactory();
 
         query.getResultList().stream()
-                .map(id -> new ResourceAdapter(id, entityManager, storeFactory))
+                .map(id -> new ResourceAdapter(id, storeFactory))
                 .forEach(consumer);
     }
 
     @Override
-    public Resource findByName(String name, String resourceServerId) {
+    public org.keycloak.authorization.model.Resource findByName(String name, String resourceServerId) {
         return findByName(name, resourceServerId, resourceServerId);
     }
 
     @Override
-    public Resource findByName(String name, String ownerId, String resourceServerId) {
-        TypedQuery<ResourceEntity> query = entityManager.createNamedQuery("findResourceIdByName", ResourceEntity.class);
+    public org.keycloak.authorization.model.Resource findByName(String name, String ownerId, String resourceServerId) {
+        TypedQuery<Resource> query = entityManager.createNamedQuery("findResourceIdByName", Resource.class);
 
         query.setParameter("serverId", resourceServerId);
         query.setParameter("name", name);
         query.setParameter("ownerId", ownerId);
 
         try {
-            return new ResourceAdapter(query.getSingleResult(), entityManager, provider.getStoreFactory());
+            return new ResourceAdapter(query.getSingleResult(), provider.getStoreFactory());
         } catch (NoResultException ex) {
             return null;
         }
     }
 
     @Override
-    public List<Resource> findByType(String type, String resourceServerId) {
-        List<Resource> list = new LinkedList<>();
+    public List<org.keycloak.authorization.model.Resource> findByType(String type, String resourceServerId) {
+        List<org.keycloak.authorization.model.Resource> list = new LinkedList<>();
 
         findByType(type, resourceServerId, list::add);
 
@@ -310,8 +311,8 @@ public class JPAResourceStore implements ResourceStore {
     }
 
     @Override
-    public List<Resource> findByType(String type, String owner, String resourceServerId) {
-        List<Resource> list = new LinkedList<>();
+    public List<org.keycloak.authorization.model.Resource> findByType(String type, String owner, String resourceServerId) {
+        List<org.keycloak.authorization.model.Resource> list = new LinkedList<>();
 
         findByType(type, owner, resourceServerId, list::add);
 
@@ -319,18 +320,18 @@ public class JPAResourceStore implements ResourceStore {
     }
 
     @Override
-    public void findByType(String type, String resourceServerId, Consumer<Resource> consumer) {
+    public void findByType(String type, String resourceServerId, Consumer<org.keycloak.authorization.model.Resource> consumer) {
         findByType(type, resourceServerId, resourceServerId, consumer);
     }
 
     @Override
-    public void findByType(String type, String owner, String resourceServerId, Consumer<Resource> consumer) {
-        TypedQuery<ResourceEntity> query;
+    public void findByType(String type, String owner, String resourceServerId, Consumer<org.keycloak.authorization.model.Resource> consumer) {
+        TypedQuery<Resource> query;
 
         if (owner != null) {
-            query = entityManager.createNamedQuery("findResourceIdByType", ResourceEntity.class);
+            query = entityManager.createNamedQuery("findResourceIdByType", Resource.class);
         } else {
-            query = entityManager.createNamedQuery("findResourceIdByTypeNoOwner", ResourceEntity.class);
+            query = entityManager.createNamedQuery("findResourceIdByTypeNoOwner", Resource.class);
         }
 
         query.setFlushMode(FlushModeType.COMMIT);
@@ -345,13 +346,13 @@ public class JPAResourceStore implements ResourceStore {
         StoreFactory storeFactory = provider.getStoreFactory();
 
         query.getResultList().stream()
-                .map(entity -> new ResourceAdapter(entity, entityManager, storeFactory))
+                .map(entity -> new ResourceAdapter(entity, storeFactory))
                 .forEach(consumer);
     }
 
     @Override
-    public List<Resource> findByTypeInstance(String type, String resourceServerId) {
-        List<Resource> list = new LinkedList<>();
+    public List<org.keycloak.authorization.model.Resource> findByTypeInstance(String type, String resourceServerId) {
+        List<org.keycloak.authorization.model.Resource> list = new LinkedList<>();
 
         findByTypeInstance(type, resourceServerId, list::add);
 
@@ -359,8 +360,8 @@ public class JPAResourceStore implements ResourceStore {
     }
 
     @Override
-    public void findByTypeInstance(String type, String resourceServerId, Consumer<Resource> consumer) {
-        TypedQuery<ResourceEntity> query = entityManager.createNamedQuery("findResourceIdByTypeInstance", ResourceEntity.class);
+    public void findByTypeInstance(String type, String resourceServerId, Consumer<org.keycloak.authorization.model.Resource> consumer) {
+        TypedQuery<Resource> query = entityManager.createNamedQuery("findResourceIdByTypeInstance", Resource.class);
 
         query.setFlushMode(FlushModeType.COMMIT);
         query.setParameter("type", type);
@@ -369,7 +370,7 @@ public class JPAResourceStore implements ResourceStore {
         StoreFactory storeFactory = provider.getStoreFactory();
 
         query.getResultList().stream()
-                .map(entity -> new ResourceAdapter(entity, entityManager, storeFactory))
+                .map(entity -> new ResourceAdapter(entity, storeFactory))
                 .forEach(consumer);
     }
 }

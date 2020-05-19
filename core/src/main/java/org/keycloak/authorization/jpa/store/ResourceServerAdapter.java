@@ -16,42 +16,37 @@
  */
 package org.keycloak.authorization.jpa.store;
 
-import org.keycloak.authorization.jpa.entities.ResourceServerEntity;
+import org.keycloak.authorization.jpa.entities.ResourceServer;
 import org.keycloak.authorization.model.AbstractAuthorizationModel;
-import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.jpa.JpaModel;
 import org.keycloak.representations.idm.authorization.DecisionStrategy;
 import org.keycloak.representations.idm.authorization.PolicyEnforcementMode;
 
-import javax.persistence.EntityManager;
-
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class ResourceServerAdapter extends AbstractAuthorizationModel implements ResourceServer, JpaModel<ResourceServerEntity> {
-    private ResourceServerEntity entity;
-    private EntityManager em;
+public class ResourceServerAdapter extends AbstractAuthorizationModel implements org.keycloak.authorization.model.ResourceServer, JpaModel<ResourceServer> {
+    private ResourceServer entity;
     private StoreFactory storeFactory;
 
-    public ResourceServerAdapter(ResourceServerEntity entity, EntityManager em, StoreFactory storeFactory) {
+    public ResourceServerAdapter(ResourceServer entity, StoreFactory storeFactory) {
         super(storeFactory);
         this.entity = entity;
-        this.em = em;
         this.storeFactory = storeFactory;
     }
 
-    public static ResourceServerEntity toEntity(EntityManager em, ResourceServer resource) {
+    public ResourceServer toEntity(org.keycloak.authorization.model.ResourceServer resource) {
         if (resource instanceof ResourceAdapter) {
             return ((ResourceServerAdapter) resource).getEntity();
         } else {
-            return em.getReference(ResourceServerEntity.class, resource.getId());
+            return em.getReference(ResourceServer.class, resource.getId());
         }
     }
 
     @Override
-    public ResourceServerEntity getEntity() {
+    public ResourceServer getEntity() {
         return entity;
     }
 
@@ -98,9 +93,9 @@ public class ResourceServerAdapter extends AbstractAuthorizationModel implements
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof ResourceServer)) return false;
+        if (o == null || !(o instanceof org.keycloak.authorization.model.ResourceServer)) return false;
 
-        ResourceServer that = (ResourceServer) o;
+        org.keycloak.authorization.model.ResourceServer that = (org.keycloak.authorization.model.ResourceServer) o;
         return that.getId().equals(getId());
     }
 

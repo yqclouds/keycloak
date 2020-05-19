@@ -55,11 +55,11 @@ public class ScopeEntity {
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "RESOURCE_SERVER_ID")
-    private ResourceServerEntity resourceServer;
+    private ResourceServer resourceServer;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {})
     @JoinTable(name = "SCOPE_POLICY", joinColumns = @JoinColumn(name = "SCOPE_ID"), inverseJoinColumns = @JoinColumn(name = "POLICY_ID"))
-    private List<PolicyEntity> policies = new ArrayList<>();
+    private List<Policy> policies = new ArrayList<>();
 
     public String getId() {
         return id;
@@ -97,19 +97,19 @@ public class ScopeEntity {
         this.iconUri = iconUri;
     }
 
-    public ResourceServerEntity getResourceServer() {
+    public ResourceServer getResourceServer() {
         return resourceServer;
     }
 
-    public void setResourceServer(final ResourceServerEntity resourceServer) {
+    public void setResourceServer(final ResourceServer resourceServer) {
         this.resourceServer = resourceServer;
     }
 
-    public List<PolicyEntity> getPolicies() {
+    public List<Policy> getPolicies() {
         return policies;
     }
 
-    public void setPolicies(List<PolicyEntity> policies) {
+    public void setPolicies(List<Policy> policies) {
         this.policies = policies;
     }
 

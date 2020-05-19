@@ -17,15 +17,18 @@
 package org.keycloak.authorization.jpa.store;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.jpa.entities.PermissionTicketEntity;
-import org.keycloak.authorization.model.PermissionTicket;
+import org.keycloak.authorization.jpa.entities.PermissionTicket;
 import org.keycloak.authorization.model.Resource;
 import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.authorization.store.PermissionTicketStore;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.persistence.*;
+import javax.persistence.FlushModeType;
+import javax.persistence.LockModeType;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -37,39 +40,44 @@ import java.util.*;
  */
 public class JPAPermissionTicketStore implements PermissionTicketStore {
 
-    private final EntityManager entityManager;
     private final AuthorizationProvider provider;
 
-    public JPAPermissionTicketStore(EntityManager entityManager, AuthorizationProvider provider) {
-        this.entityManager = entityManager;
+    @Autowired
+    private ResourceAdapter resourceAdapter;
+    @Autowired
+    private ScopeAdapter scopeAdapter;
+    @Autowired
+    private ResourceServerAdapter resourceServerAdapter;
+
+    public JPAPermissionTicketStore(AuthorizationProvider provider) {
         this.provider = provider;
     }
 
     @Override
-    public PermissionTicket create(String resourceId, String scopeId, String requester, ResourceServer resourceServer) {
-        PermissionTicketEntity entity = new PermissionTicketEntity();
+    public org.keycloak.authorization.model.PermissionTicket create(String resourceId, String scopeId, String requester, ResourceServer resourceServer) {
+        PermissionTicket entity = new PermissionTicket();
 
         entity.setId(KeycloakModelUtils.generateId());
-        entity.setResource(ResourceAdapter.toEntity(entityManager, provider.getStoreFactory().getResourceStore().findById(resourceId, resourceServer.getId())));
+        entity.setResource(resourceAdapter.toEntity(provider.getStoreFactory().getResourceStore().findById(resourceId, resourceServer.getId())));
         entity.setRequester(requester);
         entity.setCreatedTimestamp(System.currentTimeMillis());
 
         if (scopeId != null) {
-            entity.setScope(ScopeAdapter.toEntity(entityManager, provider.getStoreFactory().getScopeStore().findById(scopeId, resourceServer.getId())));
+            entity.setScope(scopeAdapter.toEntity(provider.getStoreFactory().getScopeStore().findById(scopeId, resourceServer.getId())));
         }
 
         entity.setOwner(entity.getResource().getOwner());
-        entity.setResourceServer(ResourceServerAdapter.toEntity(entityManager, resourceServer));
+        entity.setResourceServer(resourceServerAdapter.toEntity(resourceServer));
 
         this.entityManager.persist(entity);
         this.entityManager.flush();
-        PermissionTicket model = new PermissionTicketAdapter(entity, entityManager, provider.getStoreFactory());
+        org.keycloak.authorization.model.PermissionTicket model = new PermissionTicketAdapter(entity, provider.getStoreFactory());
         return model;
     }
 
     @Override
     public void delete(String id) {
-        PermissionTicketEntity policy = entityManager.find(PermissionTicketEntity.class, id, LockModeType.PESSIMISTIC_WRITE);
+        PermissionTicket policy = entityManager.find(PermissionTicket.class, id, LockModeType.PESSIMISTIC_WRITE);
         if (policy != null) {
             this.entityManager.remove(policy);
         }
@@ -77,29 +85,29 @@ public class JPAPermissionTicketStore implements PermissionTicketStore {
 
 
     @Override
-    public PermissionTicket findById(String id, String resourceServerId) {
+    public org.keycloak.authorization.model.PermissionTicket findById(String id, String resourceServerId) {
         if (id == null) {
             return null;
         }
 
-        PermissionTicketEntity entity = entityManager.find(PermissionTicketEntity.class, id);
+        PermissionTicket entity = entityManager.find(PermissionTicket.class, id);
         if (entity == null) return null;
 
-        return new PermissionTicketAdapter(entity, entityManager, provider.getStoreFactory());
+        return new PermissionTicketAdapter(entity, provider.getStoreFactory());
     }
 
     @Override
-    public List<PermissionTicket> findByResourceServer(final String resourceServerId) {
+    public List<org.keycloak.authorization.model.PermissionTicket> findByResourceServer(final String resourceServerId) {
         TypedQuery<String> query = entityManager.createNamedQuery("findPolicyIdByServerId", String.class);
 
         query.setParameter("serverId", resourceServerId);
 
         List<String> result = query.getResultList();
-        List<PermissionTicket> list = new LinkedList<>();
+        List<org.keycloak.authorization.model.PermissionTicket> list = new LinkedList<>();
         PermissionTicketStore ticketStore = provider.getStoreFactory().getPermissionTicketStore();
 
         for (String id : result) {
-            PermissionTicket ticket = ticketStore.findById(id, resourceServerId);
+            org.keycloak.authorization.model.PermissionTicket ticket = ticketStore.findById(id, resourceServerId);
             if (Objects.nonNull(ticket)) {
                 list.add(ticket);
             }
@@ -109,7 +117,7 @@ public class JPAPermissionTicketStore implements PermissionTicketStore {
     }
 
     @Override
-    public List<PermissionTicket> findByResource(final String resourceId, String resourceServerId) {
+    public List<org.keycloak.authorization.model.PermissionTicket> findByResource(final String resourceId, String resourceServerId) {
         TypedQuery<String> query = entityManager.createNamedQuery("findPermissionIdByResource", String.class);
 
         query.setFlushMode(FlushModeType.COMMIT);
@@ -117,11 +125,11 @@ public class JPAPermissionTicketStore implements PermissionTicketStore {
         query.setParameter("serverId", resourceServerId);
 
         List<String> result = query.getResultList();
-        List<PermissionTicket> list = new LinkedList<>();
+        List<org.keycloak.authorization.model.PermissionTicket> list = new LinkedList<>();
         PermissionTicketStore ticketStore = provider.getStoreFactory().getPermissionTicketStore();
 
         for (String id : result) {
-            PermissionTicket ticket = ticketStore.findById(id, resourceServerId);
+            org.keycloak.authorization.model.PermissionTicket ticket = ticketStore.findById(id, resourceServerId);
             if (Objects.nonNull(ticket)) {
                 list.add(ticket);
             }
@@ -131,7 +139,7 @@ public class JPAPermissionTicketStore implements PermissionTicketStore {
     }
 
     @Override
-    public List<PermissionTicket> findByScope(String scopeId, String resourceServerId) {
+    public List<org.keycloak.authorization.model.PermissionTicket> findByScope(String scopeId, String resourceServerId) {
         if (scopeId == null) {
             return Collections.emptyList();
         }
@@ -144,11 +152,11 @@ public class JPAPermissionTicketStore implements PermissionTicketStore {
         query.setParameter("serverId", resourceServerId);
 
         List<String> result = query.getResultList();
-        List<PermissionTicket> list = new LinkedList<>();
+        List<org.keycloak.authorization.model.PermissionTicket> list = new LinkedList<>();
         PermissionTicketStore ticketStore = provider.getStoreFactory().getPermissionTicketStore();
 
         for (String id : result) {
-            PermissionTicket ticket = ticketStore.findById(id, resourceServerId);
+            org.keycloak.authorization.model.PermissionTicket ticket = ticketStore.findById(id, resourceServerId);
             if (Objects.nonNull(ticket)) {
                 list.add(ticket);
             }
@@ -158,10 +166,10 @@ public class JPAPermissionTicketStore implements PermissionTicketStore {
     }
 
     @Override
-    public List<PermissionTicket> find(Map<String, String> attributes, String resourceServerId, int firstResult, int maxResult) {
+    public List<org.keycloak.authorization.model.PermissionTicket> find(Map<String, String> attributes, String resourceServerId, int firstResult, int maxResult) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<PermissionTicketEntity> querybuilder = builder.createQuery(PermissionTicketEntity.class);
-        Root<PermissionTicketEntity> root = querybuilder.from(PermissionTicketEntity.class);
+        CriteriaQuery<PermissionTicket> querybuilder = builder.createQuery(PermissionTicket.class);
+        Root<PermissionTicket> root = querybuilder.from(PermissionTicket.class);
 
         querybuilder.select(root.get("id"));
 
@@ -172,35 +180,35 @@ public class JPAPermissionTicketStore implements PermissionTicketStore {
         }
 
         attributes.forEach((name, value) -> {
-            if (PermissionTicket.ID.equals(name)) {
+            if (org.keycloak.authorization.model.PermissionTicket.ID.equals(name)) {
                 predicates.add(root.get(name).in(value));
-            } else if (PermissionTicket.SCOPE.equals(name)) {
+            } else if (org.keycloak.authorization.model.PermissionTicket.SCOPE.equals(name)) {
                 predicates.add(root.join("scope").get("id").in(value));
-            } else if (PermissionTicket.SCOPE_IS_NULL.equals(name)) {
+            } else if (org.keycloak.authorization.model.PermissionTicket.SCOPE_IS_NULL.equals(name)) {
                 if (Boolean.valueOf(value)) {
                     predicates.add(builder.isNull(root.get("scope")));
                 } else {
                     predicates.add(builder.isNotNull(root.get("scope")));
                 }
-            } else if (PermissionTicket.RESOURCE.equals(name)) {
+            } else if (org.keycloak.authorization.model.PermissionTicket.RESOURCE.equals(name)) {
                 predicates.add(root.join("resource").get("id").in(value));
-            } else if (PermissionTicket.RESOURCE_NAME.equals(name)) {
+            } else if (org.keycloak.authorization.model.PermissionTicket.RESOURCE_NAME.equals(name)) {
                 predicates.add(root.join("resource").get("name").in(value));
-            } else if (PermissionTicket.OWNER.equals(name)) {
+            } else if (org.keycloak.authorization.model.PermissionTicket.OWNER.equals(name)) {
                 predicates.add(builder.equal(root.get("owner"), value));
-            } else if (PermissionTicket.REQUESTER.equals(name)) {
+            } else if (org.keycloak.authorization.model.PermissionTicket.REQUESTER.equals(name)) {
                 predicates.add(builder.equal(root.get("requester"), value));
-            } else if (PermissionTicket.GRANTED.equals(name)) {
+            } else if (org.keycloak.authorization.model.PermissionTicket.GRANTED.equals(name)) {
                 if (Boolean.valueOf(value)) {
                     predicates.add(builder.isNotNull(root.get("grantedTimestamp")));
                 } else {
                     predicates.add(builder.isNull(root.get("grantedTimestamp")));
                 }
-            } else if (PermissionTicket.REQUESTER_IS_NULL.equals(name)) {
+            } else if (org.keycloak.authorization.model.PermissionTicket.REQUESTER_IS_NULL.equals(name)) {
                 predicates.add(builder.isNull(root.get("requester")));
-            } else if (PermissionTicket.POLICY_IS_NOT_NULL.equals(name)) {
+            } else if (org.keycloak.authorization.model.PermissionTicket.POLICY_IS_NOT_NULL.equals(name)) {
                 predicates.add(builder.isNotNull(root.get("policy")));
-            } else if (PermissionTicket.POLICY.equals(name)) {
+            } else if (org.keycloak.authorization.model.PermissionTicket.POLICY.equals(name)) {
                 predicates.add(root.join("policy").get("id").in(value));
             } else {
                 throw new RuntimeException("Unsupported filter [" + name + "]");
@@ -220,11 +228,11 @@ public class JPAPermissionTicketStore implements PermissionTicketStore {
         }
 
         List<String> result = query.getResultList();
-        List<PermissionTicket> list = new LinkedList<>();
+        List<org.keycloak.authorization.model.PermissionTicket> list = new LinkedList<>();
         PermissionTicketStore ticketStore = provider.getStoreFactory().getPermissionTicketStore();
 
         for (String id : result) {
-            PermissionTicket ticket = ticketStore.findById(id, resourceServerId);
+            org.keycloak.authorization.model.PermissionTicket ticket = ticketStore.findById(id, resourceServerId);
             if (Objects.nonNull(ticket)) {
                 list.add(ticket);
             }
@@ -234,22 +242,22 @@ public class JPAPermissionTicketStore implements PermissionTicketStore {
     }
 
     @Override
-    public List<PermissionTicket> findGranted(String userId, String resourceServerId) {
+    public List<org.keycloak.authorization.model.PermissionTicket> findGranted(String userId, String resourceServerId) {
         HashMap<String, String> filters = new HashMap<>();
 
-        filters.put(PermissionTicket.GRANTED, Boolean.TRUE.toString());
-        filters.put(PermissionTicket.REQUESTER, userId);
+        filters.put(org.keycloak.authorization.model.PermissionTicket.GRANTED, Boolean.TRUE.toString());
+        filters.put(org.keycloak.authorization.model.PermissionTicket.REQUESTER, userId);
 
         return find(filters, resourceServerId, -1, -1);
     }
 
     @Override
-    public List<PermissionTicket> findGranted(String resourceName, String userId, String resourceServerId) {
+    public List<org.keycloak.authorization.model.PermissionTicket> findGranted(String resourceName, String userId, String resourceServerId) {
         HashMap<String, String> filters = new HashMap<>();
 
-        filters.put(PermissionTicket.RESOURCE_NAME, resourceName);
-        filters.put(PermissionTicket.GRANTED, Boolean.TRUE.toString());
-        filters.put(PermissionTicket.REQUESTER, userId);
+        filters.put(org.keycloak.authorization.model.PermissionTicket.RESOURCE_NAME, resourceName);
+        filters.put(org.keycloak.authorization.model.PermissionTicket.GRANTED, Boolean.TRUE.toString());
+        filters.put(org.keycloak.authorization.model.PermissionTicket.REQUESTER, userId);
 
         return find(filters, resourceServerId, -1, -1);
     }
@@ -315,7 +323,7 @@ public class JPAPermissionTicketStore implements PermissionTicketStore {
     }
 
     @Override
-    public List<PermissionTicket> findByOwner(String owner, String resourceServerId) {
+    public List<org.keycloak.authorization.model.PermissionTicket> findByOwner(String owner, String resourceServerId) {
         TypedQuery<String> query = entityManager.createNamedQuery("findPolicyIdByType", String.class);
 
         query.setFlushMode(FlushModeType.COMMIT);
@@ -323,11 +331,11 @@ public class JPAPermissionTicketStore implements PermissionTicketStore {
         query.setParameter("owner", owner);
 
         List<String> result = query.getResultList();
-        List<PermissionTicket> list = new LinkedList<>();
+        List<org.keycloak.authorization.model.PermissionTicket> list = new LinkedList<>();
         PermissionTicketStore ticketStore = provider.getStoreFactory().getPermissionTicketStore();
 
         for (String id : result) {
-            PermissionTicket ticket = ticketStore.findById(id, resourceServerId);
+            org.keycloak.authorization.model.PermissionTicket ticket = ticketStore.findById(id, resourceServerId);
             if (Objects.nonNull(ticket)) {
                 list.add(ticket);
             }

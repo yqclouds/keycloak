@@ -23,6 +23,7 @@ import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.authorization.model.Scope;
 import org.keycloak.authorization.store.ScopeStore;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -39,11 +40,11 @@ import java.util.Map;
  */
 public class JPAScopeStore implements ScopeStore {
 
-    private final EntityManager entityManager;
     private final AuthorizationProvider provider;
+    @Autowired
+    private ResourceServerAdapter resourceServerAdapter;
 
-    public JPAScopeStore(EntityManager entityManager, AuthorizationProvider provider) {
-        this.entityManager = entityManager;
+    public JPAScopeStore(AuthorizationProvider provider) {
         this.provider = provider;
     }
 
@@ -63,12 +64,12 @@ public class JPAScopeStore implements ScopeStore {
         }
 
         entity.setName(name);
-        entity.setResourceServer(ResourceServerAdapter.toEntity(entityManager, resourceServer));
+        entity.setResourceServer(resourceServerAdapter.toEntity(resourceServer));
 
         this.entityManager.persist(entity);
         this.entityManager.flush();
 
-        return new ScopeAdapter(entity, entityManager, provider.getStoreFactory());
+        return new ScopeAdapter(entity, provider.getStoreFactory());
     }
 
     @Override
@@ -89,7 +90,7 @@ public class JPAScopeStore implements ScopeStore {
         ScopeEntity entity = entityManager.find(ScopeEntity.class, id);
         if (entity == null) return null;
 
-        return new ScopeAdapter(entity, entityManager, provider.getStoreFactory());
+        return new ScopeAdapter(entity, provider.getStoreFactory());
     }
 
     @Override

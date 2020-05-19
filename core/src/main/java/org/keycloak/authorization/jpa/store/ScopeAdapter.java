@@ -23,25 +23,21 @@ import org.keycloak.authorization.model.Scope;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.jpa.JpaModel;
 
-import javax.persistence.EntityManager;
-
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public class ScopeAdapter extends AbstractAuthorizationModel implements Scope, JpaModel<ScopeEntity> {
     private ScopeEntity entity;
-    private EntityManager em;
     private StoreFactory storeFactory;
 
-    public ScopeAdapter(ScopeEntity entity, EntityManager em, StoreFactory storeFactory) {
+    public ScopeAdapter(ScopeEntity entity, StoreFactory storeFactory) {
         super(storeFactory);
         this.entity = entity;
-        this.em = em;
         this.storeFactory = storeFactory;
     }
 
-    public static ScopeEntity toEntity(EntityManager em, Scope scope) {
+    public ScopeEntity toEntity(Scope scope) {
         if (scope instanceof ScopeAdapter) {
             return ((ScopeAdapter) scope).getEntity();
         } else {

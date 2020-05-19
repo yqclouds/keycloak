@@ -30,7 +30,6 @@ import org.keycloak.events.admin.OperationType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,11 +45,9 @@ public class JpaEventStoreProvider implements EventStoreProvider {
     };
     private static final Logger LOG = LoggerFactory.getLogger(JpaEventStoreProvider.class);
 
-    private final EntityManager em;
     private final int maxDetailLength;
 
-    public JpaEventStoreProvider(EntityManager em, int maxDetailLength) {
-        this.em = em;
+    public JpaEventStoreProvider(int maxDetailLength) {
         this.maxDetailLength = maxDetailLength;
     }
 

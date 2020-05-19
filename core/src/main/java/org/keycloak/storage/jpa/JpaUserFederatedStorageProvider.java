@@ -33,7 +33,6 @@ import org.keycloak.storage.jpa.entity.FederatedUserRequiredActionEntity.Key;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 import java.util.*;
@@ -49,16 +48,13 @@ public class JpaUserFederatedStorageProvider implements
     protected static final Logger LOG = LoggerFactory.getLogger(JpaUserFederatedStorageProvider.class);
 
     private final KeycloakSession session;
-    protected EntityManager em;
 
-    public JpaUserFederatedStorageProvider(KeycloakSession session, EntityManager em) {
+    public JpaUserFederatedStorageProvider(KeycloakSession session) {
         this.session = session;
-        this.em = em;
     }
 
     @Override
     public void close() {
-
     }
 
     /**

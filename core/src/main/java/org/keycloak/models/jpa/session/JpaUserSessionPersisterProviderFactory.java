@@ -17,15 +17,11 @@
 
 package org.keycloak.models.jpa.session;
 
-import org.keycloak.connections.jpa.JpaConnectionProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.session.UserSessionPersisterProvider;
 import org.keycloak.models.session.UserSessionPersisterProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import javax.persistence.EntityManager;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -33,16 +29,11 @@ import javax.persistence.EntityManager;
 @Component("JpaUserSessionPersisterProviderFactory")
 @ProviderFactory(id = "jpa", providerClasses = UserSessionPersisterProvider.class)
 public class JpaUserSessionPersisterProviderFactory implements UserSessionPersisterProviderFactory {
-
     public static final String ID = "jpa";
-
-    @Autowired
-    private JpaConnectionProvider connectionProvider;
 
     @Override
     public UserSessionPersisterProvider create(KeycloakSession session) {
-        EntityManager em = connectionProvider.getEntityManager();
-        return new JpaUserSessionPersisterProvider(session, em);
+        return new JpaUserSessionPersisterProvider(session);
     }
 
     @Override

@@ -26,17 +26,7 @@ import javax.persistence.*;
 @Table(name = "RESOURCE_SERVER_PERM_TICKET", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"OWNER", "RESOURCE_SERVER_ID", "RESOURCE_ID", "SCOPE_ID"})
 })
-@NamedQueries(
-        {
-                @NamedQuery(name = "findPermissionIdByResource", query = "select p.id from PermissionTicketEntity p inner join p.resource r where p.resourceServer.id = :serverId and (r.resourceServer.id = :serverId and r.id = :resourceId)"),
-                @NamedQuery(name = "findPermissionIdByScope", query = "select p.id from PermissionTicketEntity p inner join p.scope s where p.resourceServer.id = :serverId and (s.resourceServer.id = :serverId and s.id = :scopeId)"),
-                @NamedQuery(name = "findPermissionTicketIdByServerId", query = "select p.id from PermissionTicketEntity p where  p.resourceServer.id = :serverId "),
-                @NamedQuery(name = "findGrantedResources", query = "select distinct(r.id) from ResourceEntity r inner join PermissionTicketEntity p on r.id = p.resource.id where p.grantedTimestamp is not null and p.requester = :requester order by r.id"),
-                @NamedQuery(name = "findGrantedResourcesByName", query = "select distinct(r.id) from ResourceEntity r inner join PermissionTicketEntity p on r.id = p.resource.id where p.grantedTimestamp is not null and p.requester = :requester and lower(r.name) like :resourceName order by r.id"),
-                @NamedQuery(name = "findGrantedOwnerResources", query = "select distinct(r.id) from ResourceEntity r inner join PermissionTicketEntity p on r.id = p.resource.id where p.grantedTimestamp is not null and p.owner = :owner order by r.id")
-        }
-)
-public class PermissionTicketEntity {
+public class PermissionTicket {
 
     @Id
     @Column(name = "ID", length = 36)
@@ -58,7 +48,7 @@ public class PermissionTicketEntity {
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "RESOURCE_ID")
-    private ResourceEntity resource;
+    private Resource resource;
 
     @ManyToOne(optional = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "SCOPE_ID")
@@ -66,11 +56,11 @@ public class PermissionTicketEntity {
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "RESOURCE_SERVER_ID")
-    private ResourceServerEntity resourceServer;
+    private ResourceServer resourceServer;
 
     @ManyToOne(optional = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "POLICY_ID")
-    private PolicyEntity policy;
+    private Policy policy;
 
     public String getId() {
         return id;
@@ -88,11 +78,11 @@ public class PermissionTicketEntity {
         this.owner = owner;
     }
 
-    public ResourceEntity getResource() {
+    public Resource getResource() {
         return resource;
     }
 
-    public void setResource(ResourceEntity resource) {
+    public void setResource(Resource resource) {
         this.resource = resource;
     }
 
@@ -104,11 +94,11 @@ public class PermissionTicketEntity {
         this.scope = scope;
     }
 
-    public ResourceServerEntity getResourceServer() {
+    public ResourceServer getResourceServer() {
         return resourceServer;
     }
 
-    public void setResourceServer(ResourceServerEntity resourceServer) {
+    public void setResourceServer(ResourceServer resourceServer) {
         this.resourceServer = resourceServer;
     }
 
@@ -140,11 +130,11 @@ public class PermissionTicketEntity {
         return grantedTimestamp != null;
     }
 
-    public PolicyEntity getPolicy() {
+    public Policy getPolicy() {
         return policy;
     }
 
-    public void setPolicy(PolicyEntity policy) {
+    public void setPolicy(Policy policy) {
         this.policy = policy;
     }
 
@@ -153,7 +143,7 @@ public class PermissionTicketEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        PermissionTicketEntity that = (PermissionTicketEntity) o;
+        PermissionTicket that = (PermissionTicket) o;
 
         return getId().equals(that.getId());
     }

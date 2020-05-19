@@ -21,8 +21,6 @@ package org.keycloak.authorization.jpa.store;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.store.*;
 
-import javax.persistence.EntityManager;
-
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
@@ -35,12 +33,12 @@ public class JPAStoreFactory implements StoreFactory {
     private final JPAPermissionTicketStore permissionTicketStore;
     private boolean readOnly;
 
-    public JPAStoreFactory(EntityManager entityManager, AuthorizationProvider provider) {
-        policyStore = new JPAPolicyStore(entityManager, provider);
-        resourceServerStore = new JPAResourceServerStore(entityManager, provider);
-        resourceStore = new JPAResourceStore(entityManager, provider);
-        scopeStore = new JPAScopeStore(entityManager, provider);
-        permissionTicketStore = new JPAPermissionTicketStore(entityManager, provider);
+    public JPAStoreFactory(AuthorizationProvider provider) {
+        policyStore = new JPAPolicyStore(provider);
+        resourceServerStore = new JPAResourceServerStore(provider);
+        resourceStore = new JPAResourceStore(provider);
+        scopeStore = new JPAScopeStore(provider);
+        permissionTicketStore = new JPAPermissionTicketStore(provider);
     }
 
     @Override

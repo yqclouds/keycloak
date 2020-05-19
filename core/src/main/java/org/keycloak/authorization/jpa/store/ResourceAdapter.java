@@ -16,11 +16,10 @@
  */
 package org.keycloak.authorization.jpa.store;
 
-import org.keycloak.authorization.jpa.entities.ResourceAttributeEntity;
-import org.keycloak.authorization.jpa.entities.ResourceEntity;
+import org.keycloak.authorization.jpa.entities.ResourceAttribute;
+import org.keycloak.authorization.jpa.entities.Resource;
 import org.keycloak.authorization.jpa.entities.ScopeEntity;
 import org.keycloak.authorization.model.AbstractAuthorizationModel;
-import org.keycloak.authorization.model.Resource;
 import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.authorization.model.Scope;
 import org.keycloak.authorization.store.StoreFactory;
@@ -28,7 +27,6 @@ import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
 import org.keycloak.models.jpa.JpaModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 
-import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.util.*;
 
@@ -36,29 +34,27 @@ import java.util.*;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class ResourceAdapter extends AbstractAuthorizationModel implements Resource, JpaModel<ResourceEntity> {
+public class ResourceAdapter extends AbstractAuthorizationModel implements org.keycloak.authorization.model.Resource, JpaModel<Resource> {
 
-    private ResourceEntity entity;
-    private EntityManager em;
+    private Resource entity;
     private StoreFactory storeFactory;
 
-    public ResourceAdapter(ResourceEntity entity, EntityManager em, StoreFactory storeFactory) {
+    public ResourceAdapter(Resource entity, StoreFactory storeFactory) {
         super(storeFactory);
         this.entity = entity;
-        this.em = em;
         this.storeFactory = storeFactory;
     }
 
-    public static ResourceEntity toEntity(EntityManager em, Resource resource) {
+    public Resource toEntity(org.keycloak.authorization.model.Resource resource) {
         if (resource instanceof ResourceAdapter) {
             return ((ResourceAdapter) resource).getEntity();
         } else {
-            return em.getReference(ResourceEntity.class, resource.getId());
+            return em.getReference(Resource.class, resource.getId());
         }
     }
 
     @Override
-    public ResourceEntity getEntity() {
+    public Resource getEntity() {
         return entity;
     }
 
@@ -178,7 +174,7 @@ public class ResourceAdapter extends AbstractAuthorizationModel implements Resou
     @Override
     public Map<String, List<String>> getAttributes() {
         MultivaluedHashMap<String, String> result = new MultivaluedHashMap<>();
-        for (ResourceAttributeEntity attr : entity.getAttributes()) {
+        for (ResourceAttribute attr : entity.getAttributes()) {
             result.add(attr.getName(), attr.getValue());
         }
         return Collections.unmodifiableMap(result);
@@ -211,7 +207,7 @@ public class ResourceAdapter extends AbstractAuthorizationModel implements Resou
         removeAttribute(name);
 
         for (String value : values) {
-            ResourceAttributeEntity attr = new ResourceAttributeEntity();
+            ResourceAttribute attr = new ResourceAttribute();
             attr.setId(KeycloakModelUtils.generateId());
             attr.setName(name);
             attr.setValue(value);
@@ -231,9 +227,9 @@ public class ResourceAdapter extends AbstractAuthorizationModel implements Resou
 
         query.executeUpdate();
 
-        List<ResourceAttributeEntity> toRemove = new ArrayList<>();
+        List<ResourceAttribute> toRemove = new ArrayList<>();
 
-        for (ResourceAttributeEntity attr : entity.getAttributes()) {
+        for (ResourceAttribute attr : entity.getAttributes()) {
             if (attr.getName().equals(name)) {
                 toRemove.add(attr);
             }
@@ -250,9 +246,9 @@ public class ResourceAdapter extends AbstractAuthorizationModel implements Resou
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof Resource)) return false;
+        if (o == null || !(o instanceof org.keycloak.authorization.model.Resource)) return false;
 
-        Resource that = (Resource) o;
+        org.keycloak.authorization.model.Resource that = (org.keycloak.authorization.model.Resource) o;
         return that.getId().equals(getId());
     }
 

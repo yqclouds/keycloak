@@ -31,7 +31,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "RESOURCE_SERVER")
-public class ResourceServerEntity {
+public class ResourceServer {
 
     @Id
     @Column(name = "ID", length = 36)
@@ -86,7 +86,7 @@ public class ResourceServerEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ResourceServerEntity that = (ResourceServerEntity) o;
+        ResourceServer that = (ResourceServer) o;
 
         return getId().equals(that.getId());
     }

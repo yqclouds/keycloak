@@ -28,7 +28,6 @@ import org.keycloak.models.RoleModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.persistence.EntityManager;
 import java.util.*;
 
 /**
@@ -37,7 +36,6 @@ import java.util.*;
  */
 public class RoleAdapter implements RoleModel, JpaModel<Role> {
     protected Role role;
-    protected EntityManager em;
     protected RealmModel realm;
     protected KeycloakSession session;
 

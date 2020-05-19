@@ -30,7 +30,6 @@ import org.keycloak.models.utils.ComponentUtil;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.persistence.EntityManager;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -46,7 +45,6 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
     public static final String COMPONENT_PROVIDER_EXISTS_DISABLED = "component.provider.exists.disabled";
     private static final String BROWSER_HEADER_PREFIX = "_browser_header.";
     protected Realm realm;
-    protected EntityManager em;
     protected KeycloakSession session;
     private PasswordPolicy passwordPolicy;
     private OTPPolicy otpPolicy;
@@ -90,9 +88,8 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
     @Autowired
     private RealmFacade realmFacade;
 
-    public RealmAdapter(KeycloakSession session, EntityManager em, Realm realm) {
+    public RealmAdapter(KeycloakSession session, Realm realm) {
         this.session = session;
-        this.em = em;
         this.realm = realm;
     }
 

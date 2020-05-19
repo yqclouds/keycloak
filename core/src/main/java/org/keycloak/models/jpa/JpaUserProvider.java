@@ -20,7 +20,7 @@ package org.keycloak.models.jpa;
 import com.hsbc.unified.iam.core.util.Time;
 import com.hsbc.unified.iam.entity.*;
 import com.hsbc.unified.iam.repository.*;
-import org.keycloak.authorization.jpa.entities.ResourceEntity;
+import org.keycloak.authorization.jpa.entities.Resource;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.UserCredentialStore;
 import org.keycloak.models.*;
@@ -713,7 +713,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
                 Subquery subquery1 = query.subquery(String.class);
 
                 subquery1.select(cb.literal(1));
-                Root from1 = subquery1.from(ResourceEntity.class);
+                Root from1 = subquery1.from(Resource.class);
 
                 List<Predicate> subs = new ArrayList<>();
 
