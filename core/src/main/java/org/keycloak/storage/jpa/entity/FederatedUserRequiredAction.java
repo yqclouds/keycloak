@@ -26,17 +26,10 @@ import java.io.Serializable;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@NamedQueries({
-        @NamedQuery(name = "getFederatedUserRequiredActionsByUser", query = "select action from FederatedUserRequiredActionEntity action where action.userId = :userId and action.realmId=:realmId"),
-        @NamedQuery(name = "deleteFederatedUserRequiredActionsByUser", query = "delete from FederatedUserRequiredActionEntity action where action.realmId=:realmId and action.userId = :userId"),
-        @NamedQuery(name = "deleteFederatedUserRequiredActionsByRealm", query = "delete from FederatedUserRequiredActionEntity action where action.realmId=:realmId"),
-        @NamedQuery(name = "deleteFederatedUserRequiredActionsByStorageProvider", query = "delete from FederatedUserRequiredActionEntity e where e.storageProviderId=:storageProviderId"),
-        @NamedQuery(name = "deleteFederatedUserRequiredActionsByRealmAndLink", query = "delete from FederatedUserRequiredActionEntity action where action.userId IN (select u.id from User u where u.realmId=:realmId and u.federationLink=:link)")
-})
 @Entity
 @Table(name = "FED_USER_REQUIRED_ACTION")
-@IdClass(FederatedUserRequiredActionEntity.Key.class)
-public class FederatedUserRequiredActionEntity {
+@IdClass(FederatedUserRequiredAction.Key.class)
+public class FederatedUserRequiredAction {
 
     @Id
     @Column(name = "USER_ID")
@@ -89,9 +82,9 @@ public class FederatedUserRequiredActionEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null) return false;
-        if (!(o instanceof FederatedUserRequiredActionEntity)) return false;
+        if (!(o instanceof FederatedUserRequiredAction)) return false;
 
-        FederatedUserRequiredActionEntity key = (FederatedUserRequiredActionEntity) o;
+        FederatedUserRequiredAction key = (FederatedUserRequiredAction) o;
 
         if (action != key.action) return false;
         if (userId != null ? !userId.equals(key.userId != null ? key.userId : null) : key.userId != null) return false;

@@ -14,9 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.storage.jpa.entity;
 
-import org.keycloak.storage.jpa.KeyUtils;
+package org.keycloak.storage.jpa.entity;
 
 import javax.persistence.*;
 
@@ -24,15 +23,18 @@ import javax.persistence.*;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
+@Table(name = "FED_USER_ATTRIBUTE")
 @Entity
-@Table(name = "FEDERATED_USER")
-public class FederatedUser {
+public class FederatedUserAttribute {
 
     @Id
-    @Column(name = "ID")
+    @Column(name = "ID", length = 36)
     @Access(AccessType.PROPERTY)
     // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
     protected String id;
+
+    @Column(name = "USER_ID")
+    protected String userId;
 
     @Column(name = "REALM_ID")
     protected String realmId;
@@ -40,14 +42,41 @@ public class FederatedUser {
     @Column(name = "STORAGE_PROVIDER_ID")
     protected String storageProviderId;
 
+    @Column(name = "NAME")
+    protected String name;
+    @Column(name = "VALUE")
+    protected String value;
 
     public String getId() {
         return id;
     }
 
     public void setId(String id) {
-        KeyUtils.assertValidKey(id);
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getRealmId() {
@@ -65,4 +94,24 @@ public class FederatedUser {
     public void setStorageProviderId(String storageProviderId) {
         this.storageProviderId = storageProviderId;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        if (!(o instanceof FederatedUserAttribute)) return false;
+
+        FederatedUserAttribute that = (FederatedUserAttribute) o;
+
+        if (!id.equals(that.getId())) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
+
 }

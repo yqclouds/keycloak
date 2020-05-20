@@ -26,19 +26,10 @@ import java.io.Serializable;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@NamedQueries({
-        @NamedQuery(name = "findBrokerLinkByUser", query = "select link from BrokerLinkEntity link where link.userId = :userId"),
-        @NamedQuery(name = "findBrokerLinkByUserAndProvider", query = "select link from BrokerLinkEntity link where link.userId = :userId and link.identityProvider = :identityProvider and link.realmId = :realmId"),
-        @NamedQuery(name = "findUserByBrokerLinkAndRealm", query = "select link.userId from BrokerLinkEntity link where link.realmId = :realmId and link.identityProvider = :identityProvider and link.brokerUserId = :brokerUserId"),
-        @NamedQuery(name = "deleteBrokerLinkByStorageProvider", query = "delete from BrokerLinkEntity social where social.storageProviderId = :storageProviderId"),
-        @NamedQuery(name = "deleteBrokerLinkByRealm", query = "delete from BrokerLinkEntity social where social.realmId = :realmId"),
-        @NamedQuery(name = "deleteBrokerLinkByRealmAndLink", query = "delete from BrokerLinkEntity social where social.userId IN (select u.id from User u where realmId=:realmId and u.federationLink=:link)"),
-        @NamedQuery(name = "deleteBrokerLinkByUser", query = "delete from BrokerLinkEntity social where social.userId = :userId and social.realmId = :realmId")
-})
 @Table(name = "BROKER_LINK")
 @Entity
-@IdClass(BrokerLinkEntity.Key.class)
-public class BrokerLinkEntity {
+@IdClass(BrokerLink.Key.class)
+public class BrokerLink {
 
     @Id
     @Column(name = "IDENTITY_PROVIDER")
@@ -118,9 +109,9 @@ public class BrokerLinkEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null) return false;
-        if (!(o instanceof BrokerLinkEntity)) return false;
+        if (!(o instanceof BrokerLink)) return false;
 
-        BrokerLinkEntity key = (BrokerLinkEntity) o;
+        BrokerLink key = (BrokerLink) o;
 
         if (identityProvider != null ? !identityProvider.equals(key.identityProvider) : key.identityProvider != null)
             return false;

@@ -26,34 +26,31 @@ import java.io.Serializable;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@NamedQueries({
-        @NamedQuery(name = "feduserHasRole", query = "select m from FederatedUserRoleMappingEntity m where m.userId = :userId and m.roleId = :roleId"),
-        @NamedQuery(name = "feduserRoleMappings", query = "select m from FederatedUserRoleMappingEntity m where m.userId = :userId"),
-        @NamedQuery(name = "deleteFederatedUserRoleMappingsByRealm", query = "delete from  FederatedUserRoleMappingEntity mapping where mapping.realmId=:realmId"),
-        @NamedQuery(name = "deleteFederatedUserRoleMappingsByStorageProvider", query = "delete from FederatedUserRoleMappingEntity e where e.storageProviderId=:storageProviderId"),
-        @NamedQuery(name = "deleteFederatedUserRoleMappingsByRealmAndLink", query = "delete from  FederatedUserRoleMappingEntity mapping where mapping.userId IN (select u.id from User u where u.realmId=:realmId and u.federationLink=:link)"),
-        @NamedQuery(name = "deleteFederatedUserRoleMappingsByRole", query = "delete from FederatedUserRoleMappingEntity m where m.roleId = :roleId"),
-        @NamedQuery(name = "deleteFederatedUserRoleMappingsByUser", query = "delete from FederatedUserRoleMappingEntity m where m.userId = :userId and m.realmId = :realmId"),
-
-})
-@Table(name = "FED_USER_ROLE_MAPPING")
+@Table(name = "FED_USER_GROUP_MEMBERSHIP")
 @Entity
-@IdClass(FederatedUserRoleMappingEntity.Key.class)
-public class FederatedUserRoleMappingEntity {
-
+@IdClass(FederatedUserGroupMembership.Key.class)
+public class FederatedUserGroupMembership {
     @Id
     @Column(name = "USER_ID")
     protected String userId;
 
     @Id
-    @Column(name = "ROLE_ID")
-    protected String roleId;
+    @Column(name = "GROUP_ID")
+    protected String groupId;
 
     @Column(name = "REALM_ID")
     protected String realmId;
 
     @Column(name = "STORAGE_PROVIDER_ID")
     protected String storageProviderId;
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
 
     public String getUserId() {
         return userId;
@@ -80,23 +77,15 @@ public class FederatedUserRoleMappingEntity {
         this.storageProviderId = storageProviderId;
     }
 
-    public String getRoleId() {
-        return roleId;
-    }
-
-    public void setRoleId(String roleId) {
-        this.roleId = roleId;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null) return false;
-        if (!(o instanceof FederatedUserRoleMappingEntity)) return false;
+        if (!(o instanceof FederatedUserGroupMembership)) return false;
 
-        FederatedUserRoleMappingEntity key = (FederatedUserRoleMappingEntity) o;
+        FederatedUserGroupMembership key = (FederatedUserGroupMembership) o;
 
-        if (!roleId.equals(key.roleId)) return false;
+        if (!groupId.equals(key.groupId)) return false;
         if (!userId.equals(key.userId)) return false;
 
         return true;
@@ -105,7 +94,7 @@ public class FederatedUserRoleMappingEntity {
     @Override
     public int hashCode() {
         int result = userId.hashCode();
-        result = 31 * result + roleId.hashCode();
+        result = 31 * result + groupId.hashCode();
         return result;
     }
 
@@ -113,22 +102,22 @@ public class FederatedUserRoleMappingEntity {
 
         protected String userId;
 
-        protected String roleId;
+        protected String groupId;
 
         public Key() {
         }
 
-        public Key(String userId, String roleId) {
+        public Key(String userId, String groupId) {
             this.userId = userId;
-            this.roleId = roleId;
+            this.groupId = groupId;
         }
 
         public String getUserId() {
             return userId;
         }
 
-        public String getRoleId() {
-            return roleId;
+        public String getGroupId() {
+            return groupId;
         }
 
         @Override
@@ -138,7 +127,7 @@ public class FederatedUserRoleMappingEntity {
 
             Key key = (Key) o;
 
-            if (!roleId.equals(key.roleId)) return false;
+            if (!groupId.equals(key.groupId)) return false;
             if (!userId.equals(key.userId)) return false;
 
             return true;
@@ -147,7 +136,7 @@ public class FederatedUserRoleMappingEntity {
         @Override
         public int hashCode() {
             int result = userId.hashCode();
-            result = 31 * result + roleId.hashCode();
+            result = 31 * result + groupId.hashCode();
             return result;
         }
     }

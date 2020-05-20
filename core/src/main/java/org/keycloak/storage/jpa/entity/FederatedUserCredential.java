@@ -23,24 +23,29 @@ import javax.persistence.*;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@NamedQueries({
-        @NamedQuery(name = "getFederatedAttributesByNameAndValue", query = "select attr.userId from FederatedUserAttributeEntity attr where attr.name = :name and attr.value = :value and attr.realmId=:realmId"),
-        @NamedQuery(name = "getFederatedAttributesByUser", query = "select attr from FederatedUserAttributeEntity attr where attr.userId = :userId and attr.realmId=:realmId"),
-        @NamedQuery(name = "deleteUserFederatedAttributesByUser", query = "delete from  FederatedUserAttributeEntity attr where attr.userId = :userId and attr.realmId=:realmId"),
-        @NamedQuery(name = "deleteUserFederatedAttributesByUserAndName", query = "delete from  FederatedUserAttributeEntity attr where attr.userId = :userId and attr.name=:name and attr.realmId=:realmId"),
-        @NamedQuery(name = "deleteUserFederatedAttributesByRealm", query = "delete from  FederatedUserAttributeEntity attr where attr.realmId=:realmId"),
-        @NamedQuery(name = "deleteFederatedAttributesByStorageProvider", query = "delete from FederatedUserAttributeEntity e where e.storageProviderId=:storageProviderId"),
-        @NamedQuery(name = "deleteUserFederatedAttributesByRealmAndLink", query = "delete from  FederatedUserAttributeEntity attr where attr.userId IN (select u.id from User u where u.realmId=:realmId and u.federationLink=:link)")
-})
-@Table(name = "FED_USER_ATTRIBUTE")
+@Table(name = "FED_USER_CREDENTIAL")
 @Entity
-public class FederatedUserAttributeEntity {
-
+public class FederatedUserCredential {
     @Id
     @Column(name = "ID", length = 36)
     @Access(AccessType.PROPERTY)
     // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL
     protected String id;
+
+    @Column(name = "SECRET_DATA")
+    protected String secretData;
+
+    @Column(name = "CREDENTIAL_DATA")
+    protected String credentialData;
+
+    @Column(name = "TYPE")
+    protected String type;
+
+    @Column(name = "USER_LABEL")
+    protected String userLabel;
+
+    @Column(name = "CREATED_DATE")
+    protected Long createdDate;
 
     @Column(name = "USER_ID")
     protected String userId;
@@ -51,10 +56,13 @@ public class FederatedUserAttributeEntity {
     @Column(name = "STORAGE_PROVIDER_ID")
     protected String storageProviderId;
 
-    @Column(name = "NAME")
-    protected String name;
-    @Column(name = "VALUE")
-    protected String value;
+    @Column(name = "PRIORITY")
+    protected int priority;
+
+    @Deprecated // Needed just for backwards compatibility when migrating old credentials
+    @Column(name = "SALT")
+    protected byte[] salt;
+
 
     public String getId() {
         return id;
@@ -64,21 +72,47 @@ public class FederatedUserAttributeEntity {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+
+    public String getType() {
+        return type;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setType(String type) {
+        this.type = type;
     }
 
-    public String getValue() {
-        return value;
+    public String getUserLabel() {
+        return userLabel;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setUserLabel(String userLabel) {
+        this.userLabel = userLabel;
     }
+
+    public Long getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Long createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public String getSecretData() {
+        return secretData;
+    }
+
+    public void setSecretData(String secretData) {
+        this.secretData = secretData;
+    }
+
+    public String getCredentialData() {
+        return credentialData;
+    }
+
+    public void setCredentialData(String credentialData) {
+        this.credentialData = credentialData;
+    }
+
 
     public String getUserId() {
         return userId;
@@ -104,13 +138,31 @@ public class FederatedUserAttributeEntity {
         this.storageProviderId = storageProviderId;
     }
 
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+
+    @Deprecated
+    public byte[] getSalt() {
+        return salt;
+    }
+
+    @Deprecated
+    public void setSalt(byte[] salt) {
+        this.salt = salt;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null) return false;
-        if (!(o instanceof FederatedUserAttributeEntity)) return false;
+        if (!(o instanceof FederatedUserCredential)) return false;
 
-        FederatedUserAttributeEntity that = (FederatedUserAttributeEntity) o;
+        FederatedUserCredential that = (FederatedUserCredential) o;
 
         if (!id.equals(that.getId())) return false;
 
@@ -121,6 +173,5 @@ public class FederatedUserAttributeEntity {
     public int hashCode() {
         return id.hashCode();
     }
-
 
 }
