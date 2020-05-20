@@ -26,7 +26,7 @@ import org.keycloak.models.*;
 import org.keycloak.models.cache.CachedUserModel;
 import org.keycloak.models.cache.UserCache;
 import org.keycloak.models.PasswordCredentialModel;
-import org.keycloak.models.credential.UserCredentialModel;
+import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.models.utils.DefaultRoles;
 import org.keycloak.models.utils.ReadOnlyUserModelDelegate;
 import org.keycloak.policy.PasswordPolicyManagerProvider;

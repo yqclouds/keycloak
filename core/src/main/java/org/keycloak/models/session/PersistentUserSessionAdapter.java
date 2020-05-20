@@ -18,6 +18,7 @@
 package org.keycloak.models.session;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hsbc.unified.iam.facade.model.session.PersistentUserSessionModel;
 import org.keycloak.models.*;
 import com.hsbc.unified.iam.core.util.JsonSerialization;
 

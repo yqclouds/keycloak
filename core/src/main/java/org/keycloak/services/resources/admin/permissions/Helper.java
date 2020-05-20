@@ -17,10 +17,10 @@
 package org.keycloak.services.resources.admin.permissions;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.PolicyModel;
-import org.keycloak.authorization.model.ResourceModel;
-import org.keycloak.authorization.model.ResourceServerModel;
-import org.keycloak.authorization.model.ScopeModel;
+import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
+import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.RoleModel;
 import org.keycloak.representations.idm.authorization.DecisionStrategy;

@@ -18,7 +18,7 @@
 
 package org.keycloak.authorization;
 
-import org.keycloak.authorization.model.*;
+import com.hsbc.unified.iam.facade.model.authorization.*;
 import org.keycloak.authorization.permission.evaluator.Evaluators;
 import org.keycloak.authorization.policy.evaluation.PolicyEvaluator;
 import org.keycloak.authorization.policy.provider.PolicyProvider;

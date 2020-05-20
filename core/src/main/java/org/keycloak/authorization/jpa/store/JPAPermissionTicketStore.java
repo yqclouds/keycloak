@@ -17,12 +17,12 @@
 package org.keycloak.authorization.jpa.store;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.jpa.entities.PermissionTicket;
-import org.keycloak.authorization.jpa.entities.PermissionTicketRepository;
-import org.keycloak.authorization.jpa.entities.PolicyRepository;
-import org.keycloak.authorization.model.PermissionTicketModel;
-import org.keycloak.authorization.model.ResourceModel;
-import org.keycloak.authorization.model.ResourceServerModel;
+import com.hsbc.unified.iam.entity.authorization.PermissionTicket;
+import com.hsbc.unified.iam.repository.authorization.PermissionTicketRepository;
+import com.hsbc.unified.iam.repository.authorization.PolicyRepository;
+import com.hsbc.unified.iam.facade.model.authorization.PermissionTicketModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import org.keycloak.authorization.store.PermissionTicketStore;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.models.utils.KeycloakModelUtils;

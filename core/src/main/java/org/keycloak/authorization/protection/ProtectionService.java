@@ -22,7 +22,7 @@ import org.keycloak.OAuthErrorException;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.admin.ResourceSetService;
 import org.keycloak.authorization.common.KeycloakIdentity;
-import org.keycloak.authorization.model.ResourceServerModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import org.keycloak.authorization.protection.permission.PermissionService;
 import org.keycloak.authorization.protection.permission.PermissionTicketService;
 import org.keycloak.authorization.protection.policy.UserManagedPermissionService;

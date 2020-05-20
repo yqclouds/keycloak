@@ -20,7 +20,7 @@ package org.keycloak.authorization.policy.evaluation;
 
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.Decision;
-import org.keycloak.authorization.model.PolicyModel;
+import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import org.keycloak.authorization.permission.ResourcePermission;
 
 import java.util.Map;

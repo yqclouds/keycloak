@@ -16,12 +16,12 @@
  */
 package org.keycloak.authorization.jpa.store;
 
-import org.keycloak.authorization.jpa.entities.ResourceServer;
-import org.keycloak.authorization.jpa.entities.ResourceServerRepository;
-import org.keycloak.authorization.model.AbstractAuthorizationModel;
-import org.keycloak.authorization.model.ResourceServerModel;
+import com.hsbc.unified.iam.entity.authorization.ResourceServer;
+import com.hsbc.unified.iam.repository.authorization.ResourceServerRepository;
+import com.hsbc.unified.iam.facade.model.authorization.AbstractAuthorizationModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import org.keycloak.authorization.store.StoreFactory;
-import org.keycloak.models.jpa.JpaModel;
+import com.hsbc.unified.iam.facade.model.JpaModel;
 import org.keycloak.representations.idm.authorization.DecisionStrategy;
 import org.keycloak.representations.idm.authorization.PolicyEnforcementMode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +68,6 @@ public class ResourceServerAdapter extends AbstractAuthorizationModel implements
     public void setAllowRemoteResourceManagement(boolean allowRemoteResourceManagement) {
         throwExceptionIfReadonly();
         entity.setAllowRemoteResourceManagement(allowRemoteResourceManagement);
-
     }
 
     @Override
@@ -80,7 +79,6 @@ public class ResourceServerAdapter extends AbstractAuthorizationModel implements
     public void setPolicyEnforcementMode(PolicyEnforcementMode enforcementMode) {
         throwExceptionIfReadonly();
         entity.setPolicyEnforcementMode(enforcementMode);
-
     }
 
     @Override
@@ -107,6 +105,4 @@ public class ResourceServerAdapter extends AbstractAuthorizationModel implements
     public int hashCode() {
         return getId().hashCode();
     }
-
-
 }

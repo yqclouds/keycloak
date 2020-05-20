@@ -18,7 +18,7 @@
 package org.keycloak.authorization.policy.provider.js;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.PolicyModel;
+import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.ScriptModel;
 import org.keycloak.representations.idm.authorization.JSPolicyRepresentation;

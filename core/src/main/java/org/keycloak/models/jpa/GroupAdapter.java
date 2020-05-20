@@ -21,6 +21,7 @@ import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
 import com.hsbc.unified.iam.entity.Group;
 import com.hsbc.unified.iam.entity.GroupAttribute;
 import com.hsbc.unified.iam.entity.GroupRoleMapping;
+import com.hsbc.unified.iam.facade.model.JpaModel;
 import com.hsbc.unified.iam.repository.GroupAttributeRepository;
 import com.hsbc.unified.iam.repository.GroupRepository;
 import com.hsbc.unified.iam.repository.GroupRoleMappingRepository;

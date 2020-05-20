@@ -17,7 +17,7 @@
 package org.keycloak.services.resources.admin.permissions;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.ResourceServerModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import org.keycloak.models.ClientModel;
 
 /**

@@ -18,10 +18,10 @@
 package org.keycloak.authorization.jpa.store;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.jpa.entities.Scope;
-import org.keycloak.authorization.jpa.entities.ScopeRepository;
-import org.keycloak.authorization.model.ResourceServerModel;
-import org.keycloak.authorization.model.ScopeModel;
+import com.hsbc.unified.iam.entity.authorization.Scope;
+import com.hsbc.unified.iam.repository.authorization.ScopeRepository;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
+import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
 import org.keycloak.authorization.store.ScopeStore;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.springframework.beans.factory.annotation.Autowired;

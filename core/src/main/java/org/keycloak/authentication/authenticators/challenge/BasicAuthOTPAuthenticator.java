@@ -24,8 +24,8 @@ import org.keycloak.credential.CredentialProvider;
 import org.keycloak.credential.OTPCredentialProvider;
 import org.keycloak.events.Errors;
 import org.keycloak.models.*;
-import org.keycloak.models.credential.OTPCredentialModel;
-import org.keycloak.models.credential.UserCredentialModel;
+import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
+import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.services.messages.Messages;
 
 import javax.ws.rs.core.Response;

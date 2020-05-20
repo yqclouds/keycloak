@@ -17,7 +17,7 @@
 package org.keycloak.forms.login.freemarker.model;
 
 import org.keycloak.models.*;
-import org.keycloak.models.credential.OTPCredentialModel;
+import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
 import org.keycloak.models.utils.HmacOTP;
 import org.keycloak.utils.TotpUtils;
 

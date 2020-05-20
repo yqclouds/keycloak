@@ -16,11 +16,13 @@
  */
 package org.keycloak.authorization.jpa.store;
 
-import org.keycloak.authorization.jpa.entities.Policy;
-import org.keycloak.authorization.jpa.entities.PolicyRepository;
-import org.keycloak.authorization.model.*;
+import com.hsbc.unified.iam.entity.authorization.Policy;
+import com.hsbc.unified.iam.entity.authorization.Resource;
+import com.hsbc.unified.iam.entity.authorization.Scope;
+import com.hsbc.unified.iam.facade.model.authorization.*;
+import com.hsbc.unified.iam.repository.authorization.PolicyRepository;
 import org.keycloak.authorization.store.StoreFactory;
-import org.keycloak.models.jpa.JpaModel;
+import com.hsbc.unified.iam.facade.model.JpaModel;
 import org.keycloak.representations.idm.authorization.DecisionStrategy;
 import org.keycloak.representations.idm.authorization.Logic;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -176,7 +178,7 @@ public class PolicyAdapter extends AbstractAuthorizationModel implements PolicyM
     @Override
     public Set<ResourceModel> getResources() {
         Set<ResourceModel> set = new HashSet<>();
-        for (org.keycloak.authorization.jpa.entities.Resource res : entity.getResources()) {
+        for (Resource res : entity.getResources()) {
             set.add(storeFactory.getResourceStore().findById(res.getId(), entity.getResourceServer().getId()));
         }
         return Collections.unmodifiableSet(set);
@@ -185,7 +187,7 @@ public class PolicyAdapter extends AbstractAuthorizationModel implements PolicyM
     @Override
     public Set<ScopeModel> getScopes() {
         Set<ScopeModel> set = new HashSet<>();
-        for (org.keycloak.authorization.jpa.entities.Scope res : entity.getScopes()) {
+        for (Scope res : entity.getScopes()) {
             set.add(storeFactory.getScopeStore().findById(res.getId(), entity.getResourceServer().getId()));
         }
         return Collections.unmodifiableSet(set);

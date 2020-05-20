@@ -18,8 +18,8 @@
 package org.keycloak.authorization.store;
 
 
-import org.keycloak.authorization.model.ResourceServerModel;
-import org.keycloak.authorization.model.ScopeModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
+import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
 
 import java.util.List;
 import java.util.Map;

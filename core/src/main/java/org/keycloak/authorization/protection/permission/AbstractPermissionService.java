@@ -18,9 +18,9 @@ package org.keycloak.authorization.protection.permission;
 
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.common.KeycloakIdentity;
-import org.keycloak.authorization.model.ResourceModel;
-import org.keycloak.authorization.model.ResourceServerModel;
-import org.keycloak.authorization.model.ScopeModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
+import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.representations.idm.authorization.Permission;
 import org.keycloak.representations.idm.authorization.PermissionRequest;

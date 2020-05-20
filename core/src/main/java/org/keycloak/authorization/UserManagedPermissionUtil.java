@@ -16,9 +16,9 @@
  */
 package org.keycloak.authorization;
 
-import org.keycloak.authorization.model.PermissionTicketModel;
-import org.keycloak.authorization.model.PolicyModel;
-import org.keycloak.authorization.model.ScopeModel;
+import com.hsbc.unified.iam.facade.model.authorization.PermissionTicketModel;
+import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
+import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
 import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.utils.KeycloakModelUtils;

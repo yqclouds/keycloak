@@ -17,13 +17,18 @@
 package org.keycloak.authorization.jpa.store;
 
 import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
-import org.keycloak.authorization.jpa.entities.*;
-import org.keycloak.authorization.model.AbstractAuthorizationModel;
-import org.keycloak.authorization.model.ResourceModel;
-import org.keycloak.authorization.model.ResourceServerModel;
-import org.keycloak.authorization.model.ScopeModel;
+import com.hsbc.unified.iam.entity.authorization.Resource;
+import com.hsbc.unified.iam.entity.authorization.ResourceAttribute;
+import com.hsbc.unified.iam.entity.authorization.Scope;
+import com.hsbc.unified.iam.repository.authorization.ResourceAttributeRepository;
+import com.hsbc.unified.iam.repository.authorization.ResourceRepository;
+import com.hsbc.unified.iam.repository.authorization.ScopeRepository;
+import com.hsbc.unified.iam.facade.model.authorization.AbstractAuthorizationModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
+import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
 import org.keycloak.authorization.store.StoreFactory;
-import org.keycloak.models.jpa.JpaModel;
+import com.hsbc.unified.iam.facade.model.JpaModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 

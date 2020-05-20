@@ -21,7 +21,7 @@ package org.keycloak.credential;
 import com.webauthn4j.converter.util.ObjectConverter;
 import org.keycloak.authentication.requiredactions.WebAuthnPasswordlessRegisterFactory;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.credential.WebAuthnCredentialModel;
+import com.hsbc.unified.iam.facade.model.credential.WebAuthnCredentialModel;
 
 /**
  * Credential provider for WebAuthn passwordless credential of the user

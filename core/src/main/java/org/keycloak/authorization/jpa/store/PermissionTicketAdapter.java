@@ -16,10 +16,14 @@
  */
 package org.keycloak.authorization.jpa.store;
 
-import org.keycloak.authorization.jpa.entities.*;
-import org.keycloak.authorization.model.*;
+import com.hsbc.unified.iam.entity.authorization.PermissionTicket;
+import com.hsbc.unified.iam.entity.authorization.Policy;
+import com.hsbc.unified.iam.entity.authorization.Scope;
+import com.hsbc.unified.iam.facade.model.authorization.*;
+import com.hsbc.unified.iam.repository.authorization.PermissionTicketRepository;
+import com.hsbc.unified.iam.repository.authorization.PolicyRepository;
 import org.keycloak.authorization.store.StoreFactory;
-import org.keycloak.models.jpa.JpaModel;
+import com.hsbc.unified.iam.facade.model.JpaModel;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.keycloak.authorization.UserManagedPermissionUtil.updatePolicy;

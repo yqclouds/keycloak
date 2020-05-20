@@ -24,7 +24,7 @@ import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.forms.login.freemarker.model.TotpBean;
 import org.keycloak.models.OTPPolicy;
-import org.keycloak.models.credential.OTPCredentialModel;
+import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
 import org.keycloak.models.utils.CredentialValidation;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.validation.Validation;

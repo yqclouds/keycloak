@@ -17,7 +17,7 @@
 package org.keycloak.authorization.policy.provider.permission;
 
 import org.keycloak.authorization.Decision;
-import org.keycloak.authorization.model.PolicyModel;
+import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import org.keycloak.authorization.permission.ResourcePermission;
 import org.keycloak.authorization.policy.evaluation.DefaultEvaluation;
 import org.keycloak.authorization.policy.evaluation.Evaluation;

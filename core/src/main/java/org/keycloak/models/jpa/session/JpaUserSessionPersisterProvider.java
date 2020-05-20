@@ -18,6 +18,12 @@
 package org.keycloak.models.jpa.session;
 
 import com.hsbc.unified.iam.core.util.Time;
+import com.hsbc.unified.iam.entity.session.PersistentClientSession;
+import com.hsbc.unified.iam.entity.session.PersistentUserSession;
+import com.hsbc.unified.iam.facade.model.session.PersistentClientSessionModel;
+import com.hsbc.unified.iam.facade.model.session.PersistentUserSessionModel;
+import com.hsbc.unified.iam.repository.session.PersistentClientSessionRepository;
+import com.hsbc.unified.iam.repository.session.PersistentUserSessionRepository;
 import org.keycloak.models.*;
 import org.keycloak.models.session.*;
 import org.keycloak.models.utils.SessionTimeoutHelper;

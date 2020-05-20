@@ -144,7 +144,7 @@ public class ClientsResource {
     }
 
     private AuthorizationService getAuthorizationService(ClientModel clientModel) {
-        return new AuthorizationService(session, clientModel, auth, adminEvent);
+        return new AuthorizationService(clientModel, auth, adminEvent);
     }
 
     @Autowired

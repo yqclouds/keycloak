@@ -17,7 +17,7 @@
 
 package org.keycloak.models.utils;
 
-import org.keycloak.models.credential.OTPCredentialModel;
+import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>

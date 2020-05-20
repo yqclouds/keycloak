@@ -18,6 +18,7 @@
 package org.keycloak.models.jpa;
 
 import com.hsbc.unified.iam.entity.*;
+import com.hsbc.unified.iam.facade.model.JpaModel;
 import com.hsbc.unified.iam.repository.ClientScopeAttributeRepository;
 import com.hsbc.unified.iam.repository.ClientScopeRepository;
 import com.hsbc.unified.iam.repository.ClientScopeRoleMappingRepository;

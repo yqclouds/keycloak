@@ -21,7 +21,7 @@ import org.keycloak.Config;
 import org.keycloak.common.Version;
 import com.hsbc.unified.iam.entity.SslRequired;
 import org.keycloak.models.*;
-import org.keycloak.models.credential.UserCredentialModel;
+import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.models.utils.DefaultKeyProviders;
 import org.keycloak.representations.idm.CredentialRepresentation;
 

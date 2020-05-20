@@ -18,6 +18,7 @@
 package org.keycloak.models.jpa;
 
 import com.hsbc.unified.iam.entity.*;
+import com.hsbc.unified.iam.facade.model.JpaModel;
 import com.hsbc.unified.iam.repository.*;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;

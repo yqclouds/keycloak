@@ -16,8 +16,8 @@
  */
 package org.keycloak.services.resources.admin.permissions;
 
-import org.keycloak.authorization.model.PolicyModel;
-import org.keycloak.authorization.model.ResourceModel;
+import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
 import org.keycloak.models.GroupModel;
 
 import java.util.Map;

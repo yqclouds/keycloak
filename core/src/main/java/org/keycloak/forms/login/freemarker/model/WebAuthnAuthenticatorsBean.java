@@ -20,7 +20,7 @@ import org.keycloak.models.CredentialModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-import org.keycloak.models.credential.WebAuthnCredentialModel;
+import com.hsbc.unified.iam.facade.model.credential.WebAuthnCredentialModel;
 
 import java.util.LinkedList;
 import java.util.List;

@@ -20,6 +20,7 @@ package org.keycloak.models.jpa;
 import com.hsbc.unified.iam.core.constants.Constants;
 import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
 import com.hsbc.unified.iam.entity.*;
+import com.hsbc.unified.iam.facade.model.JpaModel;
 import com.hsbc.unified.iam.facade.spi.RealmFacade;
 import com.hsbc.unified.iam.repository.*;
 import com.hsbc.unified.iam.service.spi.RealmService;

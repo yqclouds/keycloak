@@ -18,11 +18,10 @@
 
 package org.keycloak.authorization.admin;
 
+import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +42,7 @@ public class AuthorizationService {
     private final AdminEventBuilder adminEvent;
     private ResourceServerModel resourceServer;
 
-    public AuthorizationService(KeycloakSession session, ClientModel client, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public AuthorizationService(ClientModel client, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.client = client;
         this.adminEvent = adminEvent;
         this.auth = auth;

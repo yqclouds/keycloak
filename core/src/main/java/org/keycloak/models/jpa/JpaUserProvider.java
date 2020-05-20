@@ -20,7 +20,7 @@ package org.keycloak.models.jpa;
 import com.hsbc.unified.iam.core.util.Time;
 import com.hsbc.unified.iam.entity.*;
 import com.hsbc.unified.iam.repository.*;
-import org.keycloak.authorization.jpa.entities.Resource;
+import com.hsbc.unified.iam.entity.authorization.Resource;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.UserCredentialStore;
 import org.keycloak.models.*;

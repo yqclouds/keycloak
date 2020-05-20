@@ -17,7 +17,7 @@
 package org.keycloak.storage.ldap.mappers;
 
 import org.keycloak.models.ModelException;
-import org.keycloak.models.credential.UserCredentialModel;
+import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.storage.ldap.idm.model.LDAPObject;
 

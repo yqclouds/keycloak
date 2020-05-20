@@ -17,8 +17,8 @@
 package org.keycloak.services.resources.account.resources;
 
 import org.jboss.resteasy.spi.HttpRequest;
-import org.keycloak.authorization.model.PermissionTicketModel;
-import org.keycloak.authorization.model.ResourceModel;
+import com.hsbc.unified.iam.facade.model.authorization.PermissionTicketModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
 import org.keycloak.authorization.store.PermissionTicketStore;
 import org.keycloak.common.util.KeycloakUriBuilder;
 import org.keycloak.models.KeycloakSession;

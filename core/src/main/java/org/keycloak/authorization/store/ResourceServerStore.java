@@ -18,7 +18,7 @@
 
 package org.keycloak.authorization.store;
 
-import org.keycloak.authorization.model.ResourceServerModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 
 /**
  * A {@link ResourceServerStore} is responsible to manage the persistence of {@link ResourceServerModel} instances.

@@ -18,7 +18,7 @@
 package org.keycloak.authorization.policy.provider.time;
 
 import org.keycloak.authorization.attribute.Attributes;
-import org.keycloak.authorization.model.PolicyModel;
+import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import org.keycloak.authorization.policy.evaluation.Evaluation;
 import org.keycloak.authorization.policy.evaluation.EvaluationContext;
 import org.keycloak.authorization.policy.provider.PolicyProvider;

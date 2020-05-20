@@ -18,10 +18,10 @@
 package org.keycloak.authorization.jpa.store;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.jpa.entities.Resource;
-import org.keycloak.authorization.jpa.entities.ResourceRepository;
-import org.keycloak.authorization.model.ResourceModel;
-import org.keycloak.authorization.model.ResourceServerModel;
+import com.hsbc.unified.iam.entity.authorization.Resource;
+import com.hsbc.unified.iam.repository.authorization.ResourceRepository;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.utils.KeycloakModelUtils;

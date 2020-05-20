@@ -27,7 +27,7 @@ import org.keycloak.events.Errors;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.*;
-import org.keycloak.models.credential.UserCredentialModel;
+import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
@@ -599,7 +599,7 @@ public class ClientResource {
 
     @Path("/authz")
     public AuthorizationService authorization() {
-        AuthorizationService resource = new AuthorizationService(this.session, this.client, this.auth, adminEvent);
+        AuthorizationService resource = new AuthorizationService(this.client, this.auth, adminEvent);
 
         ResteasyProviderFactory.getInstance().injectProperties(resource);
 

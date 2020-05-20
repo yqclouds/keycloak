@@ -18,8 +18,8 @@
 package org.keycloak.authorization.store;
 
 
-import org.keycloak.authorization.model.PolicyModel;
-import org.keycloak.authorization.model.ResourceServerModel;
+import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
 
 import java.util.List;

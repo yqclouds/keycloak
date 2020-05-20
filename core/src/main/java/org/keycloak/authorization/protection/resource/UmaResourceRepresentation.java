@@ -17,7 +17,7 @@
 package org.keycloak.authorization.protection.resource;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.keycloak.authorization.model.ResourceModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
 import org.keycloak.representations.idm.authorization.ScopeRepresentation;
 

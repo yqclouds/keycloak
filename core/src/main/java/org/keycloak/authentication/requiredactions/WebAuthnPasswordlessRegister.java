@@ -23,7 +23,7 @@ import org.keycloak.authentication.RequiredActionContext;
 import org.keycloak.credential.WebAuthnPasswordlessCredentialProviderFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.WebAuthnPolicy;
-import org.keycloak.models.credential.WebAuthnCredentialModel;
+import com.hsbc.unified.iam.facade.model.credential.WebAuthnCredentialModel;
 
 /**
  * Required action for register WebAuthn passwordless credential for the user. This class is temporary and will be likely

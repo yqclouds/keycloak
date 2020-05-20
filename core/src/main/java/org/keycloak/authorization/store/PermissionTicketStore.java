@@ -17,9 +17,9 @@
 package org.keycloak.authorization.store;
 
 
-import org.keycloak.authorization.model.PermissionTicketModel;
-import org.keycloak.authorization.model.ResourceModel;
-import org.keycloak.authorization.model.ResourceServerModel;
+import com.hsbc.unified.iam.facade.model.authorization.PermissionTicketModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 
 import java.util.List;
 import java.util.Map;
