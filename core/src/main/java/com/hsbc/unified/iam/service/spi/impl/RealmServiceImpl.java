@@ -1,4 +1,4 @@
-package com.hsbc.unified.iam.service.impl;
+package com.hsbc.unified.iam.service.spi.impl;
 
 import com.hsbc.unified.iam.core.constants.Constants;
 import com.hsbc.unified.iam.entity.Realm;
@@ -7,7 +7,7 @@ import com.hsbc.unified.iam.entity.RealmRequiredCredential;
 import com.hsbc.unified.iam.entity.SslRequired;
 import com.hsbc.unified.iam.repository.RealmAttributeRepository;
 import com.hsbc.unified.iam.repository.RealmRepository;
-import com.hsbc.unified.iam.service.RealmService;
+import com.hsbc.unified.iam.service.spi.RealmService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

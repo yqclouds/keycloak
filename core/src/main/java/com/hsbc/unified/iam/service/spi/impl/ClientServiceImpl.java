@@ -1,4 +1,4 @@
-package com.hsbc.unified.iam.service.impl;
+package com.hsbc.unified.iam.service.spi.impl;
 
 import com.hsbc.unified.iam.core.util.Time;
 import com.hsbc.unified.iam.entity.Client;
@@ -6,7 +6,7 @@ import com.hsbc.unified.iam.entity.ClientInitialAccess;
 import com.hsbc.unified.iam.entity.Realm;
 import com.hsbc.unified.iam.repository.ClientInitialAccessRepository;
 import com.hsbc.unified.iam.repository.ClientRepository;
-import com.hsbc.unified.iam.service.ClientService;
+import com.hsbc.unified.iam.service.spi.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

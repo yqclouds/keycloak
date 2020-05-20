@@ -1,9 +1,9 @@
-package com.hsbc.unified.iam.service.impl;
+package com.hsbc.unified.iam.service.spi.impl;
 
 import com.hsbc.unified.iam.entity.Group;
 import com.hsbc.unified.iam.entity.Realm;
 import com.hsbc.unified.iam.repository.GroupRepository;
-import com.hsbc.unified.iam.service.GroupService;
+import com.hsbc.unified.iam.service.spi.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

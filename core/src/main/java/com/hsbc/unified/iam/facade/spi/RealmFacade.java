@@ -1,4 +1,4 @@
-package com.hsbc.unified.iam.facade.service;
+package com.hsbc.unified.iam.facade.spi;
 
 import com.hsbc.unified.iam.entity.Realm;
 import org.keycloak.models.RequiredCredentialModel;

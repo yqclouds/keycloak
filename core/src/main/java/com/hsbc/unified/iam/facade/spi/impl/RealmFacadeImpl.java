@@ -1,10 +1,10 @@
-package com.hsbc.unified.iam.facade.service.impl;
+package com.hsbc.unified.iam.facade.spi.impl;
 
 import com.hsbc.unified.iam.entity.Realm;
 import com.hsbc.unified.iam.entity.RealmRequiredCredential;
 import com.hsbc.unified.iam.entity.Role;
-import com.hsbc.unified.iam.facade.service.RealmFacade;
-import com.hsbc.unified.iam.service.RealmService;
+import com.hsbc.unified.iam.facade.spi.RealmFacade;
+import com.hsbc.unified.iam.service.spi.RealmService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.keycloak.models.RequiredCredentialModel;
 import org.springframework.beans.factory.annotation.Autowired;

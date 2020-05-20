@@ -1,4 +1,4 @@
-package com.hsbc.unified.iam.service;
+package com.hsbc.unified.iam.service.spi;
 
 import com.hsbc.unified.iam.entity.Client;
 import com.hsbc.unified.iam.entity.ClientInitialAccess;
