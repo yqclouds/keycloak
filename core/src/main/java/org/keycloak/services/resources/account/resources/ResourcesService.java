@@ -18,6 +18,7 @@ package org.keycloak.services.resources.account.resources;
 
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authorization.model.PermissionTicketModel;
+import org.keycloak.authorization.model.ResourceModel;
 import org.keycloak.authorization.store.PermissionTicketStore;
 import org.keycloak.common.util.KeycloakUriBuilder;
 import org.keycloak.models.KeycloakSession;
@@ -103,7 +104,7 @@ public class ResourcesService extends AbstractResourceService {
 
     @Path("{id}")
     public Object getResource(@PathParam("id") String id) {
-        org.keycloak.authorization.model.Resource resource = resourceStore.findById(id, null);
+        ResourceModel resource = resourceStore.findById(id, null);
 
         if (resource == null) {
             throw new NotFoundException("resource_not_found");
@@ -116,11 +117,11 @@ public class ResourcesService extends AbstractResourceService {
         return new ResourceService(resource, authorizationProvider.getSession(), user, auth, request);
     }
 
-    private Collection<ResourcePermission> toPermissions(List<org.keycloak.authorization.model.Resource> resources, boolean withRequesters) {
+    private Collection<ResourcePermission> toPermissions(List<ResourceModel> resources, boolean withRequesters) {
         Collection<ResourcePermission> permissions = new ArrayList<>();
         PermissionTicketStore ticketStore = authorizationProvider.getStoreFactory().getPermissionTicketStore();
 
-        for (org.keycloak.authorization.model.Resource resource : resources) {
+        for (ResourceModel resource : resources) {
             ResourcePermission permission = new ResourcePermission(resource, authorizationProvider);
 
             List<PermissionTicketModel> tickets;

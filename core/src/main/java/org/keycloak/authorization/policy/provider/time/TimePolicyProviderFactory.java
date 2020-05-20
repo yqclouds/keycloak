@@ -2,7 +2,7 @@ package org.keycloak.authorization.policy.provider.time;
 
 import org.keycloak.Config;
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
+import org.keycloak.authorization.model.PolicyModel;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.models.KeycloakSession;
@@ -46,21 +46,21 @@ public class TimePolicyProviderFactory implements PolicyProviderFactory<TimePoli
     }
 
     @Override
-    public void onCreate(Policy policy, TimePolicyRepresentation representation, AuthorizationProvider authorization) {
+    public void onCreate(PolicyModel policy, TimePolicyRepresentation representation, AuthorizationProvider authorization) {
         updatePolicy(policy, representation);
     }
 
     @Override
-    public void onUpdate(Policy policy, TimePolicyRepresentation representation, AuthorizationProvider authorization) {
+    public void onUpdate(PolicyModel policy, TimePolicyRepresentation representation, AuthorizationProvider authorization) {
         updatePolicy(policy, representation);
     }
 
     @Override
-    public void onRemove(Policy policy, AuthorizationProvider authorization) {
+    public void onRemove(PolicyModel policy, AuthorizationProvider authorization) {
     }
 
     @Override
-    public void onImport(Policy policy, PolicyRepresentation representation, AuthorizationProvider authorization) {
+    public void onImport(PolicyModel policy, PolicyRepresentation representation, AuthorizationProvider authorization) {
         policy.setConfig(representation.getConfig());
     }
 
@@ -70,7 +70,7 @@ public class TimePolicyProviderFactory implements PolicyProviderFactory<TimePoli
     }
 
     @Override
-    public TimePolicyRepresentation toRepresentation(Policy policy, AuthorizationProvider authorization) {
+    public TimePolicyRepresentation toRepresentation(PolicyModel policy, AuthorizationProvider authorization) {
         TimePolicyRepresentation representation = new TimePolicyRepresentation();
         Map<String, String> config = policy.getConfig();
 
@@ -115,7 +115,7 @@ public class TimePolicyProviderFactory implements PolicyProviderFactory<TimePoli
         return "time";
     }
 
-    private void updatePolicy(Policy policy, TimePolicyRepresentation representation) {
+    private void updatePolicy(PolicyModel policy, TimePolicyRepresentation representation) {
         String nbf = representation.getNotBefore();
         String noa = representation.getNotOnOrAfter();
 

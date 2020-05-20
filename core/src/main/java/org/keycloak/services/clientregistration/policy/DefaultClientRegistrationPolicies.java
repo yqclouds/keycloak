@@ -73,7 +73,7 @@ public class DefaultClientRegistrationPolicies {
         ComponentModel consentRequiredModel = createModelInstance("Consent Required", realm, ConsentRequiredClientRegistrationPolicyFactory.PROVIDER_ID, policyTypeKey);
         realm.addComponentModel(consentRequiredModel);
 
-        ComponentModel scopeModel = createModelInstance("Full Scope Disabled", realm, ScopeClientRegistrationPolicyFactory.PROVIDER_ID, policyTypeKey);
+        ComponentModel scopeModel = createModelInstance("Full ScopeModel Disabled", realm, ScopeClientRegistrationPolicyFactory.PROVIDER_ID, policyTypeKey);
         realm.addComponentModel(scopeModel);
 
         ComponentModel maxClientsModel = createModelInstance("Max Clients Limit", realm, MaxClientsClientRegistrationPolicyFactory.PROVIDER_ID, policyTypeKey);

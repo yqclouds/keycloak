@@ -18,8 +18,8 @@
 package org.keycloak.authorization.store;
 
 
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
 
 import java.util.List;
@@ -27,21 +27,21 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 /**
- * A {@link PolicyStore} is responsible to manage the persistence of {@link Policy} instances.
+ * A {@link PolicyStore} is responsible to manage the persistence of {@link PolicyModel} instances.
  *
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
 public interface PolicyStore {
 
     /**
-     * Creates a new {@link Policy} instance. The new instance is not necessarily persisted though, which may require
+     * Creates a new {@link PolicyModel} instance. The new instance is not necessarily persisted though, which may require
      * a call to the {#save} method to actually make it persistent.
      *
      * @param representation the policy representation
      * @param resourceServer the resource server to which this policy belongs
-     * @return a new instance of {@link Policy}
+     * @return a new instance of {@link PolicyModel}
      */
-    Policy create(AbstractPolicyRepresentation representation, ResourceServer resourceServer);
+    PolicyModel create(AbstractPolicyRepresentation representation, ResourceServerModel resourceServer);
 
     /**
      * Deletes a policy from the underlying persistence mechanism.
@@ -51,98 +51,98 @@ public interface PolicyStore {
     void delete(String id);
 
     /**
-     * Returns a {@link Policy} with the given <code>id</code>
+     * Returns a {@link PolicyModel} with the given <code>id</code>
      *
      * @param id               the identifier of the policy
      * @param resourceServerId the resource server id
      * @return a policy with the given identifier.
      */
-    Policy findById(String id, String resourceServerId);
+    PolicyModel findById(String id, String resourceServerId);
 
     /**
-     * Returns a {@link Policy} with the given <code>name</code>
+     * Returns a {@link PolicyModel} with the given <code>name</code>
      *
      * @param name             the name of the policy
      * @param resourceServerId the resource server id
      * @return a policy with the given name.
      */
-    Policy findByName(String name, String resourceServerId);
+    PolicyModel findByName(String name, String resourceServerId);
 
     /**
-     * Returns a list of {@link Policy} associated with a {@link ResourceServer} with the given <code>resourceServerId</code>.
+     * Returns a list of {@link PolicyModel} associated with a {@link ResourceServerModel} with the given <code>resourceServerId</code>.
      *
      * @param resourceServerId the identifier of a resource server
      * @return a list of policies that belong to the given resource server
      */
-    List<Policy> findByResourceServer(String resourceServerId);
+    List<PolicyModel> findByResourceServer(String resourceServerId);
 
     /**
-     * Returns a list of {@link Policy} associated with a {@link ResourceServer} with the given <code>resourceServerId</code>.
+     * Returns a list of {@link PolicyModel} associated with a {@link ResourceServerModel} with the given <code>resourceServerId</code>.
      *
      * @param attributes       a map holding the attributes that will be used as a filter
      * @param resourceServerId the identifier of a resource server
      * @return a list of policies that belong to the given resource server
      */
-    List<Policy> findByResourceServer(Map<String, String[]> attributes, String resourceServerId, int firstResult, int maxResult);
+    List<PolicyModel> findByResourceServer(Map<String, String[]> attributes, String resourceServerId, int firstResult, int maxResult);
 
     /**
-     * Returns a list of {@link Policy} associated with a {@link org.keycloak.authorization.core.model.Resource} with the given <code>resourceId</code>.
+     * Returns a list of {@link PolicyModel} associated with a {@link org.keycloak.authorization.core.model.Resource} with the given <code>resourceId</code>.
      *
      * @param resourceId       the identifier of a resource
      * @param resourceServerId the resource server id
      * @return a list of policies associated with the given resource
      */
-    List<Policy> findByResource(String resourceId, String resourceServerId);
+    List<PolicyModel> findByResource(String resourceId, String resourceServerId);
 
-    void findByResource(String resourceId, String resourceServerId, Consumer<Policy> consumer);
+    void findByResource(String resourceId, String resourceServerId, Consumer<PolicyModel> consumer);
 
     /**
-     * Returns a list of {@link Policy} associated with a {@link org.keycloak.authorization.core.model.Resource} with the given <code>type</code>.
+     * Returns a list of {@link PolicyModel} associated with a {@link org.keycloak.authorization.core.model.Resource} with the given <code>type</code>.
      *
      * @param resourceType     the type of a resource
      * @param resourceServerId the resource server id
      * @return a list of policies associated with the given resource type
      */
-    List<Policy> findByResourceType(String resourceType, String resourceServerId);
+    List<PolicyModel> findByResourceType(String resourceType, String resourceServerId);
 
     /**
-     * Returns a list of {@link Policy} associated with a {@link org.keycloak.authorization.core.model.Scope} with the given <code>scopeIds</code>.
+     * Returns a list of {@link PolicyModel} associated with a {@link org.keycloak.authorization.core.model.Scope} with the given <code>scopeIds</code>.
      *
      * @param scopeIds         the id of the scopes
      * @param resourceServerId the resource server id
      * @return a list of policies associated with the given scopes
      */
-    List<Policy> findByScopeIds(List<String> scopeIds, String resourceServerId);
+    List<PolicyModel> findByScopeIds(List<String> scopeIds, String resourceServerId);
 
     /**
-     * Returns a list of {@link Policy} associated with a {@link org.keycloak.authorization.core.model.Scope} with the given <code>resourceId</code> and <code>scopeIds</code>.
+     * Returns a list of {@link PolicyModel} associated with a {@link org.keycloak.authorization.core.model.Scope} with the given <code>resourceId</code> and <code>scopeIds</code>.
      *
      * @param scopeIds         the id of the scopes
      * @param resourceId       the id of the resource
      * @param resourceServerId the resource server id
      * @return a list of policies associated with the given scopes
      */
-    List<Policy> findByScopeIds(List<String> scopeIds, String resourceId, String resourceServerId);
+    List<PolicyModel> findByScopeIds(List<String> scopeIds, String resourceId, String resourceServerId);
 
-    void findByScopeIds(List<String> scopeIds, String resourceId, String resourceServerId, Consumer<Policy> consumer);
+    void findByScopeIds(List<String> scopeIds, String resourceId, String resourceServerId, Consumer<PolicyModel> consumer);
 
     /**
-     * Returns a list of {@link Policy} with the given <code>type</code>.
+     * Returns a list of {@link PolicyModel} with the given <code>type</code>.
      *
      * @param type             the type of the policy
      * @param resourceServerId the resource server id
      * @return a list of policies with the given type
      */
-    List<Policy> findByType(String type, String resourceServerId);
+    List<PolicyModel> findByType(String type, String resourceServerId);
 
     /**
-     * Returns a list of {@link Policy} that depends on another policy with the given <code>id</code>.
+     * Returns a list of {@link PolicyModel} that depends on another policy with the given <code>id</code>.
      *
      * @param id               the id of the policy to query its dependents
      * @param resourceServerId the resource server id
      * @return a list of policies that depends on the a policy with the given identifier
      */
-    List<Policy> findDependentPolicies(String id, String resourceServerId);
+    List<PolicyModel> findDependentPolicies(String id, String resourceServerId);
 
-    void findByResourceType(String type, String id, Consumer<Policy> policyConsumer);
+    void findByResourceType(String type, String id, Consumer<PolicyModel> policyConsumer);
 }

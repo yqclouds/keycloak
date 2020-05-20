@@ -16,12 +16,11 @@
  */
 package org.keycloak.authorization.jpa.store;
 
-import org.keycloak.authorization.jpa.entities.PermissionTicket;
-import org.keycloak.authorization.jpa.entities.Policy;
-import org.keycloak.authorization.jpa.entities.ScopeEntity;
+import org.keycloak.authorization.jpa.entities.*;
 import org.keycloak.authorization.model.*;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.jpa.JpaModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.keycloak.authorization.UserManagedPermissionUtil.updatePolicy;
 
@@ -34,16 +33,21 @@ public class PermissionTicketAdapter implements PermissionTicketModel, JpaModel<
     private final PermissionTicket entity;
     private final StoreFactory storeFactory;
 
+    @Autowired
+    private PolicyRepository policyRepository;
+    @Autowired
+    private PermissionTicketRepository permissionTicketRepository;
+
     public PermissionTicketAdapter(PermissionTicket entity, StoreFactory storeFactory) {
         this.entity = entity;
         this.storeFactory = storeFactory;
     }
 
-    public org.keycloak.authorization.jpa.entities.PermissionTicket toEntity(PermissionTicketModel permission) {
+    public PermissionTicket toEntity(PermissionTicketModel permission) {
         if (permission instanceof PermissionTicketAdapter) {
             return ((PermissionTicketAdapter) permission).getEntity();
         } else {
-            return em.getReference(org.keycloak.authorization.jpa.entities.PermissionTicket.class, permission.getId());
+            return permissionTicketRepository.getOne(permission.getId());
         }
     }
 
@@ -89,12 +93,12 @@ public class PermissionTicketAdapter implements PermissionTicketModel, JpaModel<
     }
 
     @Override
-    public ResourceServer getResourceServer() {
+    public ResourceServerModel getResourceServer() {
         return storeFactory.getResourceServerStore().findById(entity.getResourceServer().getId());
     }
 
     @Override
-    public org.keycloak.authorization.model.Policy getPolicy() {
+    public PolicyModel getPolicy() {
         Policy policy = entity.getPolicy();
 
         if (policy == null) {
@@ -105,21 +109,20 @@ public class PermissionTicketAdapter implements PermissionTicketModel, JpaModel<
     }
 
     @Override
-    public void setPolicy(org.keycloak.authorization.model.Policy policy) {
+    public void setPolicy(PolicyModel policy) {
         if (policy != null) {
-            entity.setPolicy(entityManager.getReference(Policy.class, policy.getId()));
+            entity.setPolicy(policyRepository.getOne(policy.getId()));
         }
     }
 
     @Override
-    public Resource getResource() {
+    public ResourceModel getResource() {
         return storeFactory.getResourceStore().findById(entity.getResource().getId(), getResourceServer().getId());
     }
 
     @Override
-    public Scope getScope() {
-        ScopeEntity scope = entity.getScope();
-
+    public ScopeModel getScope() {
+        Scope scope = entity.getScope();
         if (scope == null) {
             return null;
         }
@@ -130,7 +133,7 @@ public class PermissionTicketAdapter implements PermissionTicketModel, JpaModel<
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof org.keycloak.authorization.model.Policy)) return false;
+        if (!(o instanceof PolicyModel)) return false;
 
         PermissionTicketModel that = (PermissionTicketModel) o;
         return that.getId().equals(getId());
@@ -140,6 +143,4 @@ public class PermissionTicketAdapter implements PermissionTicketModel, JpaModel<
     public int hashCode() {
         return getId().hashCode();
     }
-
-
 }

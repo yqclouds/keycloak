@@ -17,14 +17,14 @@ public interface PermissionTicketRepository
     List<String> findPermissionIdByScope(String scopeId, String serverId);
 
     @Query(name = "findPermissionTicketIdByServerId", value = "select p.id from PermissionTicketModel p where  p.resourceServer.id = :serverId ")
-    List<String> findPermissionTicketIdByServerId();
+    List<String> findPermissionTicketIdByServerId(String serverId);
 
-    @Query(name = "findGrantedResources", value = "select distinct(r.id) from Resource r inner join PermissionTicketModel p on r.id = p.resource.id where p.grantedTimestamp is not null and p.requester = :requester order by r.id")
+    @Query(name = "findGrantedResources", value = "select distinct(r.id) from ResourceModel r inner join PermissionTicketModel p on r.id = p.resource.id where p.grantedTimestamp is not null and p.requester = :requester order by r.id")
     List<String> findGrantedResources(String requester);
 
-    @Query(name = "findGrantedResourcesByName", value = "select distinct(r.id) from Resource r inner join PermissionTicketModel p on r.id = p.resource.id where p.grantedTimestamp is not null and p.requester = :requester and lower(r.name) like :resourceName order by r.id")
+    @Query(name = "findGrantedResourcesByName", value = "select distinct(r.id) from ResourceModel r inner join PermissionTicketModel p on r.id = p.resource.id where p.grantedTimestamp is not null and p.requester = :requester and lower(r.name) like :resourceName order by r.id")
     List<String> findGrantedResourcesByName(String requester, String resourceName);
 
-    @Query(name = "findGrantedOwnerResources", value = "select distinct(r.id) from Resource r inner join PermissionTicketModel p on r.id = p.resource.id where p.grantedTimestamp is not null and p.owner = :owner order by r.id")
+    @Query(name = "findGrantedOwnerResources", value = "select distinct(r.id) from ResourceModel r inner join PermissionTicketModel p on r.id = p.resource.id where p.grantedTimestamp is not null and p.owner = :owner order by r.id")
     List<String> findGrantedOwnerResources(String owner);
 }

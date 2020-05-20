@@ -18,8 +18,8 @@ package org.keycloak.authorization.policy.provider.permission;
 
 import org.keycloak.Config;
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ScopeModel;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.PolicyStore;
@@ -72,7 +72,7 @@ public class UMAPolicyProviderFactory implements PolicyProviderFactory<UmaPermis
     }
 
     @Override
-    public void onCreate(Policy policy, UmaPermissionRepresentation representation, AuthorizationProvider authorization) {
+    public void onCreate(PolicyModel policy, UmaPermissionRepresentation representation, AuthorizationProvider authorization) {
         policy.setOwner(representation.getOwner());
         PolicyStore policyStore = authorization.getStoreFactory().getPolicyStore();
         Set<String> roles = representation.getRoles();
@@ -115,11 +115,11 @@ public class UMAPolicyProviderFactory implements PolicyProviderFactory<UmaPermis
     }
 
     @Override
-    public void onUpdate(Policy policy, UmaPermissionRepresentation representation, AuthorizationProvider authorization) {
+    public void onUpdate(PolicyModel policy, UmaPermissionRepresentation representation, AuthorizationProvider authorization) {
         PolicyStore policyStore = authorization.getStoreFactory().getPolicyStore();
-        Set<Policy> associatedPolicies = policy.getAssociatedPolicies();
+        Set<PolicyModel> associatedPolicies = policy.getAssociatedPolicies();
 
-        for (Policy associatedPolicy : associatedPolicies) {
+        for (PolicyModel associatedPolicy : associatedPolicies) {
             AbstractPolicyRepresentation associatedRep = ModelToRepresentation.toRepresentation(associatedPolicy, authorization, false, false);
 
             if ("role".equals(associatedRep.getType())) {
@@ -211,7 +211,7 @@ public class UMAPolicyProviderFactory implements PolicyProviderFactory<UmaPermis
         if (updatedRoles != null) {
             boolean createPolicy = true;
 
-            for (Policy associatedPolicy : associatedPolicies) {
+            for (PolicyModel associatedPolicy : associatedPolicies) {
                 if ("role".equals(associatedPolicy.getType())) {
                     createPolicy = false;
                 }
@@ -229,7 +229,7 @@ public class UMAPolicyProviderFactory implements PolicyProviderFactory<UmaPermis
         if (updatedGroups != null) {
             boolean createPolicy = true;
 
-            for (Policy associatedPolicy : associatedPolicies) {
+            for (PolicyModel associatedPolicy : associatedPolicies) {
                 if ("group".equals(associatedPolicy.getType())) {
                     createPolicy = false;
                 }
@@ -247,7 +247,7 @@ public class UMAPolicyProviderFactory implements PolicyProviderFactory<UmaPermis
         if (updatedClients != null) {
             boolean createPolicy = true;
 
-            for (Policy associatedPolicy : associatedPolicies) {
+            for (PolicyModel associatedPolicy : associatedPolicies) {
                 if ("client".equals(associatedPolicy.getType())) {
                     createPolicy = false;
                 }
@@ -265,7 +265,7 @@ public class UMAPolicyProviderFactory implements PolicyProviderFactory<UmaPermis
         if (updatedUsers != null) {
             boolean createPolicy = true;
 
-            for (Policy associatedPolicy : associatedPolicies) {
+            for (PolicyModel associatedPolicy : associatedPolicies) {
                 if ("user".equals(associatedPolicy.getType())) {
                     createPolicy = false;
                 }
@@ -283,7 +283,7 @@ public class UMAPolicyProviderFactory implements PolicyProviderFactory<UmaPermis
         if (condition != null) {
             boolean createPolicy = true;
 
-            for (Policy associatedPolicy : associatedPolicies) {
+            for (PolicyModel associatedPolicy : associatedPolicies) {
                 if ("js".equals(associatedPolicy.getType())) {
                     createPolicy = false;
                 }
@@ -296,17 +296,17 @@ public class UMAPolicyProviderFactory implements PolicyProviderFactory<UmaPermis
     }
 
     @Override
-    public void onImport(Policy policy, PolicyRepresentation representation, AuthorizationProvider authorization) {
+    public void onImport(PolicyModel policy, PolicyRepresentation representation, AuthorizationProvider authorization) {
     }
 
     @Override
-    public UmaPermissionRepresentation toRepresentation(Policy policy, AuthorizationProvider authorization) {
+    public UmaPermissionRepresentation toRepresentation(PolicyModel policy, AuthorizationProvider authorization) {
         UmaPermissionRepresentation representation = new UmaPermissionRepresentation();
 
-        representation.setScopes(policy.getScopes().stream().map(Scope::getName).collect(Collectors.toSet()));
+        representation.setScopes(policy.getScopes().stream().map(ScopeModel::getName).collect(Collectors.toSet()));
         representation.setOwner(policy.getOwner());
 
-        for (Policy associatedPolicy : policy.getAssociatedPolicies()) {
+        for (PolicyModel associatedPolicy : policy.getAssociatedPolicies()) {
             AbstractPolicyRepresentation associatedRep = ModelToRepresentation.toRepresentation(associatedPolicy, authorization, false, false);
             RealmModel realm = authorization.getRealm();
 
@@ -355,10 +355,10 @@ public class UMAPolicyProviderFactory implements PolicyProviderFactory<UmaPermis
     }
 
     @Override
-    public void onRemove(Policy policy, AuthorizationProvider authorization) {
+    public void onRemove(PolicyModel policy, AuthorizationProvider authorization) {
         PolicyStore policyStore = authorization.getStoreFactory().getPolicyStore();
 
-        for (Policy associatedPolicy : policy.getAssociatedPolicies()) {
+        for (PolicyModel associatedPolicy : policy.getAssociatedPolicies()) {
             policyStore.delete(associatedPolicy.getId());
         }
     }
@@ -383,65 +383,65 @@ public class UMAPolicyProviderFactory implements PolicyProviderFactory<UmaPermis
         return "uma";
     }
 
-    private void createJSPolicy(Policy policy, PolicyStore policyStore, String condition, String owner) {
+    private void createJSPolicy(PolicyModel policy, PolicyStore policyStore, String condition, String owner) {
         JSPolicyRepresentation rep = new JSPolicyRepresentation();
 
         rep.setName(KeycloakModelUtils.generateId());
         rep.setCode(condition);
 
-        Policy associatedPolicy = policyStore.create(rep, policy.getResourceServer());
+        PolicyModel associatedPolicy = policyStore.create(rep, policy.getResourceServer());
 
         associatedPolicy.setOwner(owner);
 
         policy.addAssociatedPolicy(associatedPolicy);
     }
 
-    private void createClientPolicy(Policy policy, PolicyStore policyStore, String client, String owner) {
+    private void createClientPolicy(PolicyModel policy, PolicyStore policyStore, String client, String owner) {
         ClientPolicyRepresentation rep = new ClientPolicyRepresentation();
 
         rep.setName(KeycloakModelUtils.generateId());
         rep.addClient(client);
 
-        Policy associatedPolicy = policyStore.create(rep, policy.getResourceServer());
+        PolicyModel associatedPolicy = policyStore.create(rep, policy.getResourceServer());
 
         associatedPolicy.setOwner(owner);
 
         policy.addAssociatedPolicy(associatedPolicy);
     }
 
-    private void createGroupPolicy(Policy policy, PolicyStore policyStore, String group, String owner) {
+    private void createGroupPolicy(PolicyModel policy, PolicyStore policyStore, String group, String owner) {
         GroupPolicyRepresentation rep = new GroupPolicyRepresentation();
 
         rep.setName(KeycloakModelUtils.generateId());
         rep.addGroupPath(group);
 
-        Policy associatedPolicy = policyStore.create(rep, policy.getResourceServer());
+        PolicyModel associatedPolicy = policyStore.create(rep, policy.getResourceServer());
 
         associatedPolicy.setOwner(owner);
 
         policy.addAssociatedPolicy(associatedPolicy);
     }
 
-    private void createRolePolicy(Policy policy, PolicyStore policyStore, String role, String owner) {
+    private void createRolePolicy(PolicyModel policy, PolicyStore policyStore, String role, String owner) {
         RolePolicyRepresentation rep = new RolePolicyRepresentation();
 
         rep.setName(KeycloakModelUtils.generateId());
         rep.addRole(role, false);
 
-        Policy associatedPolicy = policyStore.create(rep, policy.getResourceServer());
+        PolicyModel associatedPolicy = policyStore.create(rep, policy.getResourceServer());
 
         associatedPolicy.setOwner(owner);
 
         policy.addAssociatedPolicy(associatedPolicy);
     }
 
-    private void createUserPolicy(Policy policy, PolicyStore policyStore, String user, String owner) {
+    private void createUserPolicy(PolicyModel policy, PolicyStore policyStore, String user, String owner) {
         UserPolicyRepresentation rep = new UserPolicyRepresentation();
 
         rep.setName(KeycloakModelUtils.generateId());
         rep.addUser(user);
 
-        Policy associatedPolicy = policyStore.create(rep, policy.getResourceServer());
+        PolicyModel associatedPolicy = policyStore.create(rep, policy.getResourceServer());
 
         associatedPolicy.setOwner(owner);
 

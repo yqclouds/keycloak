@@ -18,7 +18,9 @@ package org.keycloak.services.resources.account.resources;
 
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authorization.model.PermissionTicketModel;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
+import org.keycloak.authorization.model.ScopeModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserProvider;
@@ -34,10 +36,10 @@ import java.util.*;
  */
 public class ResourceService extends AbstractResourceService {
 
-    private final org.keycloak.authorization.model.Resource resource;
-    private final ResourceServer resourceServer;
+    private final ResourceModel resource;
+    private final ResourceServerModel resourceServer;
 
-    ResourceService(org.keycloak.authorization.model.Resource resource, KeycloakSession session, UserModel user,
+    ResourceService(ResourceModel resource, KeycloakSession session, UserModel user,
                     Auth auth, HttpRequest request) {
         super(session, user, auth, request);
         this.resource = resource;
@@ -95,7 +97,7 @@ public class ResourceService extends AbstractResourceService {
             throw new BadRequestException("invalid_permissions");
         }
 
-        ResourceServer resourceServer = resource.getResourceServer();
+        ResourceServerModel resourceServer = resource.getResourceServer();
         Map<String, String> filters = new HashMap<>();
 
         filters.put(PermissionTicketModel.RESOURCE, resource.getId());
@@ -116,7 +118,7 @@ public class ResourceService extends AbstractResourceService {
                 Iterator<String> scopesIterator = permission.getScopes().iterator();
 
                 while (scopesIterator.hasNext()) {
-                    org.keycloak.authorization.model.Scope scope = getScope(scopesIterator.next(), resourceServer);
+                    ScopeModel scope = getScope(scopesIterator.next(), resourceServer);
                     Iterator<PermissionTicketModel> ticketIterator = tickets.iterator();
 
                     while (ticketIterator.hasNext()) {
@@ -174,13 +176,13 @@ public class ResourceService extends AbstractResourceService {
     }
 
     private void grantPermission(UserModel user, String scopeId) {
-        org.keycloak.authorization.model.Scope scope = getScope(scopeId, resourceServer);
+        ScopeModel scope = getScope(scopeId, resourceServer);
         PermissionTicketModel ticket = ticketStore.create(resource.getId(), scope.getId(), user.getId(), resourceServer);
         ticket.setGrantedTimestamp(Calendar.getInstance().getTimeInMillis());
     }
 
-    private org.keycloak.authorization.model.Scope getScope(String scopeId, ResourceServer resourceServer) {
-        org.keycloak.authorization.model.Scope scope = scopeStore.findByName(scopeId, resourceServer.getId());
+    private ScopeModel getScope(String scopeId, ResourceServerModel resourceServer) {
+        ScopeModel scope = scopeStore.findByName(scopeId, resourceServer.getId());
 
         if (scope == null) {
             scope = scopeStore.findById(scopeId, resourceServer.getId());

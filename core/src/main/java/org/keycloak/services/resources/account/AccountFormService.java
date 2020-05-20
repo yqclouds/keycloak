@@ -20,9 +20,9 @@ import com.hsbc.unified.iam.core.util.JsonSerialization;
 import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.model.PermissionTicketModel;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ScopeModel;
 import org.keycloak.authorization.store.PermissionTicketStore;
 import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.common.util.Base64Url;
@@ -722,7 +722,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
         csrfCheck(formData);
 
         PermissionTicketStore ticketStore = authorizationProvider.getStoreFactory().getPermissionTicketStore();
-        Resource resource = authorizationProvider.getStoreFactory().getResourceStore().findById(resourceId, null);
+        ResourceModel resource = authorizationProvider.getStoreFactory().getResourceStore().findById(resourceId, null);
 
         if (resource == null) {
             return ErrorResponse.error("Invalid resource", Response.Status.BAD_REQUEST);
@@ -742,7 +742,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
             List<String> ids = new ArrayList<>(Arrays.asList(permissionId));
             Iterator<String> iterator = ids.iterator();
             PolicyStore policyStore = authorizationProvider.getStoreFactory().getPolicyStore();
-            Policy policy = null;
+            PolicyModel policy = null;
 
             while (iterator.hasNext()) {
                 String id = iterator.next();
@@ -754,10 +754,10 @@ public class AccountFormService extends AbstractSecuredLocalService {
                 }
             }
 
-            Set<Scope> scopesToKeep = new HashSet<>();
+            Set<ScopeModel> scopesToKeep = new HashSet<>();
 
             if (isRevokePolicyAll) {
-                for (Scope scope : policy.getScopes()) {
+                for (ScopeModel scope : policy.getScopes()) {
                     policy.removeScope(scope);
                 }
             } else {
@@ -765,7 +765,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
                     scopesToKeep.add(authorizationProvider.getStoreFactory().getScopeStore().findById(id.split(":")[1], client.getId()));
                 }
 
-                for (Scope scope : policy.getScopes()) {
+                for (ScopeModel scope : policy.getScopes()) {
                     if (!scopesToKeep.contains(scope)) {
                         policy.removeScope(scope);
                     }
@@ -773,7 +773,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
             }
 
             if (policy.getScopes().isEmpty()) {
-                for (Policy associated : policy.getAssociatedPolicies()) {
+                for (PolicyModel associated : policy.getAssociatedPolicies()) {
                     policyStore.delete(associated.getId());
                 }
 
@@ -843,7 +843,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
         csrfCheck(formData);
 
         PermissionTicketStore ticketStore = authorizationProvider.getStoreFactory().getPermissionTicketStore();
-        Resource resource = authorizationProvider.getStoreFactory().getResourceStore().findById(resourceId, null);
+        ResourceModel resource = authorizationProvider.getStoreFactory().getResourceStore().findById(resourceId, null);
 
         if (resource == null) {
             return ErrorResponse.error("Invalid resource", Response.Status.BAD_REQUEST);
@@ -889,7 +889,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
                         PermissionTicketModel ticket = ticketStore.create(resourceId, null, user.getId(), resource.getResourceServer());
                         ticket.setGrantedTimestamp(System.currentTimeMillis());
                     } else {
-                        for (Scope scope : resource.getScopes()) {
+                        for (ScopeModel scope : resource.getScopes()) {
                             PermissionTicketModel ticket = ticketStore.create(resourceId, scope.getId(), user.getId(), resource.getResourceServer());
                             ticket.setGrantedTimestamp(System.currentTimeMillis());
                         }
@@ -899,7 +899,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
                 List<String> grantScopes = new ArrayList<>(Arrays.asList(scopes));
 
                 for (PermissionTicketModel ticket : tickets) {
-                    Scope scope = ticket.getScope();
+                    ScopeModel scope = ticket.getScope();
 
                     if (scope != null) {
                         grantScopes.remove(scope.getId());
@@ -933,7 +933,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
         }
 
         for (String resourceId : resourceIds) {
-            Resource resource = authorizationProvider.getStoreFactory().getResourceStore().findById(resourceId, null);
+            ResourceModel resource = authorizationProvider.getStoreFactory().getResourceStore().findById(resourceId, null);
 
             if (resource == null) {
                 return ErrorResponse.error("Invalid resource", Response.Status.BAD_REQUEST);

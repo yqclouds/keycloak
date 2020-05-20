@@ -16,8 +16,8 @@
  */
 package org.keycloak.services.resources.admin.permissions;
 
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.Resource;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.UserModel;
 
@@ -34,19 +34,19 @@ public interface UserPermissionManagement {
 
     Map<String, String> getPermissions();
 
-    Resource resource();
+    ResourceModel resource();
 
-    Policy managePermission();
+    PolicyModel managePermission();
 
-    Policy viewPermission();
+    PolicyModel viewPermission();
 
-    Policy manageGroupMembershipPermission();
+    PolicyModel manageGroupMembershipPermission();
 
-    Policy mapRolesPermission();
+    PolicyModel mapRolesPermission();
 
-    Policy adminImpersonatingPermission();
+    PolicyModel adminImpersonatingPermission();
 
-    Policy userImpersonatedPermission();
+    PolicyModel userImpersonatedPermission();
 
     boolean canClientImpersonate(ClientModel client, UserModel user);
 

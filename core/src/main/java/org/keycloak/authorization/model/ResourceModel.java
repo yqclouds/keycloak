@@ -27,7 +27,7 @@ import java.util.Set;
  *
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
-public interface Resource {
+public interface ResourceModel {
 
     String EXACT_NAME = "EXACT_NAME";
 
@@ -96,11 +96,11 @@ public interface Resource {
     void setType(String type);
 
     /**
-     * Returns a {@link List} containing all the {@link Scope} associated with this resource.
+     * Returns a {@link List} containing all the {@link ScopeModel} associated with this resource.
      *
      * @return a list with all scopes associated with this resource
      */
-    List<Scope> getScopes();
+    List<ScopeModel> getScopes();
 
     /**
      * Returns an icon {@link java.net.URI} for this resource.
@@ -117,11 +117,11 @@ public interface Resource {
     void setIconUri(String iconUri);
 
     /**
-     * Returns the {@link ResourceServer} to where this resource belongs to.
+     * Returns the {@link ResourceServerModel} to where this resource belongs to.
      *
      * @return the resource server associated with this resource
      */
-    ResourceServer getResourceServer();
+    ResourceServerModel getResourceServer();
 
     /**
      * Returns the resource's owner, which is usually an identifier that uniquely identifies the resource's owner.
@@ -149,7 +149,7 @@ public interface Resource {
      *
      * @param scopes the list of scopes to update
      */
-    void updateScopes(Set<Scope> scopes);
+    void updateScopes(Set<ScopeModel> scopes);
 
     /**
      * Returns the attributes associated with this resource.

@@ -18,7 +18,7 @@
 package org.keycloak.authorization.permission.evaluator;
 
 import org.keycloak.authorization.Decision;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.representations.idm.authorization.AuthorizationRequest;
 import org.keycloak.representations.idm.authorization.Permission;
 
@@ -34,5 +34,5 @@ public interface PermissionEvaluator {
 
     <D extends Decision> D evaluate(D decision);
 
-    Collection<Permission> evaluate(ResourceServer resourceServer, AuthorizationRequest request);
+    Collection<Permission> evaluate(ResourceServerModel resourceServer, AuthorizationRequest request);
 }

@@ -24,9 +24,9 @@ import org.keycloak.authorization.common.DefaultEvaluationContext;
 import org.keycloak.authorization.common.KeycloakIdentity;
 import org.keycloak.authorization.common.UserModelIdentity;
 import org.keycloak.authorization.identity.Identity;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
+import org.keycloak.authorization.model.ScopeModel;
 import org.keycloak.authorization.permission.ResourcePermission;
 import org.keycloak.authorization.policy.evaluation.EvaluationContext;
 import org.keycloak.authorization.store.ResourceServerStore;
@@ -56,14 +56,14 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
     protected Identity identity;
     protected UserModel admin;
     protected RealmModel adminsRealm;
-    protected ResourceServer realmResourceServer;
+    protected ResourceServerModel realmResourceServer;
     protected UserPermissions users;
     protected GroupPermissions groups;
     protected RealmPermissions realmPermissions;
     protected ClientPermissions clientPermissions;
     protected IdentityProviderPermissions idpPermissions;
-    protected Scope manageScope;
-    protected Scope viewScope;
+    protected ScopeModel manageScope;
+    protected ScopeModel viewScope;
 
     MgmtPermissions(KeycloakSession session, RealmModel realm) {
         this.session = session;
@@ -231,16 +231,16 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
         return groups;
     }
 
-    public ResourceServer findOrCreateResourceServer(ClientModel client) {
+    public ResourceServerModel findOrCreateResourceServer(ClientModel client) {
         return initializeRealmResourceServer();
     }
 
-    public ResourceServer resourceServer(ClientModel client) {
+    public ResourceServerModel resourceServer(ClientModel client) {
         return realmResourceServer();
     }
 
     @Override
-    public ResourceServer realmResourceServer() {
+    public ResourceServerModel realmResourceServer() {
         if (realmResourceServer != null) return realmResourceServer;
         ClientModel client = getRealmManagementClient();
         if (client == null) return null;
@@ -250,7 +250,7 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
 
     }
 
-    public ResourceServer initializeRealmResourceServer() {
+    public ResourceServerModel initializeRealmResourceServer() {
         if (realmResourceServer != null) return realmResourceServer;
         ClientModel client = getRealmManagementClient();
         realmResourceServer = authz.getStoreFactory().getResourceServerStore().findById(client.getId());
@@ -261,22 +261,22 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
     }
 
     public void initializeRealmDefaultScopes() {
-        ResourceServer server = initializeRealmResourceServer();
+        ResourceServerModel server = initializeRealmResourceServer();
         manageScope = initializeRealmScope(MgmtPermissions.MANAGE_SCOPE);
         viewScope = initializeRealmScope(MgmtPermissions.VIEW_SCOPE);
     }
 
-    public Scope initializeRealmScope(String name) {
-        ResourceServer server = initializeRealmResourceServer();
-        Scope scope = authz.getStoreFactory().getScopeStore().findByName(name, server.getId());
+    public ScopeModel initializeRealmScope(String name) {
+        ResourceServerModel server = initializeRealmResourceServer();
+        ScopeModel scope = authz.getStoreFactory().getScopeStore().findByName(name, server.getId());
         if (scope == null) {
             scope = authz.getStoreFactory().getScopeStore().create(name, server);
         }
         return scope;
     }
 
-    public Scope initializeScope(String name, ResourceServer server) {
-        Scope scope = authz.getStoreFactory().getScopeStore().findByName(name, server.getId());
+    public ScopeModel initializeScope(String name, ResourceServerModel server) {
+        ScopeModel scope = authz.getStoreFactory().getScopeStore().findByName(name, server.getId());
         if (scope == null) {
             scope = authz.getStoreFactory().getScopeStore().create(name, server);
         }
@@ -284,26 +284,26 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
     }
 
 
-    public Scope realmManageScope() {
+    public ScopeModel realmManageScope() {
         if (manageScope != null) return manageScope;
         manageScope = realmScope(MgmtPermissions.MANAGE_SCOPE);
         return manageScope;
     }
 
 
-    public Scope realmViewScope() {
+    public ScopeModel realmViewScope() {
         if (viewScope != null) return viewScope;
         viewScope = realmScope(MgmtPermissions.VIEW_SCOPE);
         return viewScope;
     }
 
-    public Scope realmScope(String scope) {
-        ResourceServer server = realmResourceServer();
+    public ScopeModel realmScope(String scope) {
+        ResourceServerModel server = realmResourceServer();
         if (server == null) return null;
         return authz.getStoreFactory().getScopeStore().findByName(scope, server.getId());
     }
 
-    public boolean evaluatePermission(Resource resource, ResourceServer resourceServer, Scope... scope) {
+    public boolean evaluatePermission(ResourceModel resource, ResourceServerModel resourceServer, ScopeModel... scope) {
         Identity identity = identity();
         if (identity == null) {
             throw new RuntimeException("Identity of admin is not set for permission query");
@@ -311,24 +311,24 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
         return evaluatePermission(resource, resourceServer, identity, scope);
     }
 
-    public Collection<Permission> evaluatePermission(ResourcePermission permission, ResourceServer resourceServer) {
+    public Collection<Permission> evaluatePermission(ResourcePermission permission, ResourceServerModel resourceServer) {
         return evaluatePermission(permission, resourceServer, new DefaultEvaluationContext(identity, session));
     }
 
-    public Collection<Permission> evaluatePermission(ResourcePermission permission, ResourceServer resourceServer, EvaluationContext context) {
+    public Collection<Permission> evaluatePermission(ResourcePermission permission, ResourceServerModel resourceServer, EvaluationContext context) {
         return evaluatePermission(Arrays.asList(permission), resourceServer, context);
     }
 
-    public boolean evaluatePermission(Resource resource, ResourceServer resourceServer, Identity identity, Scope... scope) {
+    public boolean evaluatePermission(ResourceModel resource, ResourceServerModel resourceServer, Identity identity, ScopeModel... scope) {
         EvaluationContext context = new DefaultEvaluationContext(identity, session);
         return evaluatePermission(resource, resourceServer, context, scope);
     }
 
-    public boolean evaluatePermission(Resource resource, ResourceServer resourceServer, EvaluationContext context, Scope... scope) {
+    public boolean evaluatePermission(ResourceModel resource, ResourceServerModel resourceServer, EvaluationContext context, ScopeModel... scope) {
         return !evaluatePermission(Arrays.asList(new ResourcePermission(resource, Arrays.asList(scope), resourceServer)), resourceServer, context).isEmpty();
     }
 
-    public Collection<Permission> evaluatePermission(List<ResourcePermission> permissions, ResourceServer resourceServer, EvaluationContext context) {
+    public Collection<Permission> evaluatePermission(List<ResourcePermission> permissions, ResourceServerModel resourceServer, EvaluationContext context) {
         RealmModel oldRealm = session.getContext().getRealm();
         try {
             session.getContext().setRealm(realm);

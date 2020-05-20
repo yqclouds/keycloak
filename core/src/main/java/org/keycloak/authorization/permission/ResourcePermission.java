@@ -18,9 +18,9 @@
 
 package org.keycloak.authorization.permission;
 
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
+import org.keycloak.authorization.model.ScopeModel;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -32,20 +32,20 @@ import java.util.Map.Entry;
  */
 public class ResourcePermission {
 
-    private final Resource resource;
-    private final List<Scope> scopes;
-    private ResourceServer resourceServer;
+    private final ResourceModel resource;
+    private final List<ScopeModel> scopes;
+    private ResourceServerModel resourceServer;
     private Map<String, Set<String>> claims;
 
-    public ResourcePermission(Resource resource, List<Scope> scopes, ResourceServer resourceServer) {
+    public ResourcePermission(ResourceModel resource, List<ScopeModel> scopes, ResourceServerModel resourceServer) {
         this(resource, scopes, resourceServer, null);
     }
 
-    public ResourcePermission(Resource resource, ResourceServer resourceServer, Map<String, ? extends Collection<String>> claims) {
+    public ResourcePermission(ResourceModel resource, ResourceServerModel resourceServer, Map<String, ? extends Collection<String>> claims) {
         this(resource, new ArrayList<>(resource.getScopes()), resourceServer, claims);
     }
 
-    public ResourcePermission(Resource resource, List<Scope> scopes, ResourceServer resourceServer, Map<String, ? extends Collection<String>> claims) {
+    public ResourcePermission(ResourceModel resource, List<ScopeModel> scopes, ResourceServerModel resourceServer, Map<String, ? extends Collection<String>> claims) {
         this.resource = resource;
         this.scopes = scopes;
         this.resourceServer = resourceServer;
@@ -62,7 +62,7 @@ public class ResourcePermission {
      *
      * @return the resource to which this permission applies
      */
-    public Resource getResource() {
+    public ResourceModel getResource() {
         return this.resource;
     }
 
@@ -71,7 +71,7 @@ public class ResourcePermission {
      *
      * @return a lit of permitted scopes
      */
-    public List<Scope> getScopes() {
+    public List<ScopeModel> getScopes() {
         return this.scopes;
     }
 
@@ -80,7 +80,7 @@ public class ResourcePermission {
      *
      * @return the resource server
      */
-    public ResourceServer getResourceServer() {
+    public ResourceServerModel getResourceServer() {
         return this.resourceServer;
     }
 
@@ -122,7 +122,7 @@ public class ResourcePermission {
         }
     }
 
-    public void addScope(Scope scope) {
+    public void addScope(ScopeModel scope) {
         if (resource != null) {
             if (!resource.getScopes().contains(scope)) {
                 return;

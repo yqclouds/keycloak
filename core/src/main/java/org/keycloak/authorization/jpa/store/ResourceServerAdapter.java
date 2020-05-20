@@ -17,31 +17,35 @@
 package org.keycloak.authorization.jpa.store;
 
 import org.keycloak.authorization.jpa.entities.ResourceServer;
+import org.keycloak.authorization.jpa.entities.ResourceServerRepository;
 import org.keycloak.authorization.model.AbstractAuthorizationModel;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.jpa.JpaModel;
 import org.keycloak.representations.idm.authorization.DecisionStrategy;
 import org.keycloak.representations.idm.authorization.PolicyEnforcementMode;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class ResourceServerAdapter extends AbstractAuthorizationModel implements org.keycloak.authorization.model.ResourceServer, JpaModel<ResourceServer> {
-    private ResourceServer entity;
-    private StoreFactory storeFactory;
+public class ResourceServerAdapter extends AbstractAuthorizationModel implements ResourceServerModel, JpaModel<ResourceServer> {
+    private final ResourceServer entity;
+
+    @Autowired
+    private ResourceServerRepository resourceServerRepository;
 
     public ResourceServerAdapter(ResourceServer entity, StoreFactory storeFactory) {
         super(storeFactory);
         this.entity = entity;
-        this.storeFactory = storeFactory;
     }
 
-    public ResourceServer toEntity(org.keycloak.authorization.model.ResourceServer resource) {
-        if (resource instanceof ResourceAdapter) {
+    public ResourceServer toEntity(ResourceServerModel resource) {
+        if (resource instanceof ResourceServerAdapter) {
             return ((ResourceServerAdapter) resource).getEntity();
         } else {
-            return em.getReference(ResourceServer.class, resource.getId());
+            return resourceServerRepository.getOne(resource.getId());
         }
     }
 
@@ -93,9 +97,9 @@ public class ResourceServerAdapter extends AbstractAuthorizationModel implements
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof org.keycloak.authorization.model.ResourceServer)) return false;
+        if (!(o instanceof ResourceServerModel)) return false;
 
-        org.keycloak.authorization.model.ResourceServer that = (org.keycloak.authorization.model.ResourceServer) o;
+        ResourceServerModel that = (ResourceServerModel) o;
         return that.getId().equals(getId());
     }
 

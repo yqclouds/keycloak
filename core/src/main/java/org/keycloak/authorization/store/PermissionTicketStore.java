@@ -18,8 +18,8 @@ package org.keycloak.authorization.store;
 
 
 import org.keycloak.authorization.model.PermissionTicketModel;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
 
 import java.util.List;
 import java.util.Map;
@@ -38,7 +38,7 @@ public interface PermissionTicketStore {
      * @param resourceServer the resource server to which this policy belongs
      * @return a new instance of {@link PermissionTicketModel}
      */
-    PermissionTicketModel create(String resourceId, String scopeId, String requester, ResourceServer resourceServer);
+    PermissionTicketModel create(String resourceId, String scopeId, String requester, ResourceServerModel resourceServer);
 
     /**
      * Deletes a permission from the underlying persistence mechanism.
@@ -57,7 +57,7 @@ public interface PermissionTicketStore {
     PermissionTicketModel findById(String id, String resourceServerId);
 
     /**
-     * Returns a list of {@link PermissionTicketModel} associated with a {@link ResourceServer} with the given <code>resourceServerId</code>.
+     * Returns a list of {@link PermissionTicketModel} associated with a {@link ResourceServerModel} with the given <code>resourceServerId</code>.
      *
      * @param resourceServerId the identifier of a resource server
      * @return a list of permissions belonging to the given resource server
@@ -112,23 +112,23 @@ public interface PermissionTicketStore {
     List<PermissionTicketModel> findGranted(String resourceName, String userId, String resourceServerId);
 
     /**
-     * Returns a list of {@link Resource} granted to the given {@code requester}
+     * Returns a list of {@link ResourceModel} granted to the given {@code requester}
      *
      * @param requester the requester
      * @param name      the keyword to query resources by name or null if any resource
      * @param first     first  result
      * @param max       max result
-     * @return a list of {@link Resource} granted to the given {@code requester}
+     * @return a list of {@link ResourceModel} granted to the given {@code requester}
      */
-    List<Resource> findGrantedResources(String requester, String name, int first, int max);
+    List<ResourceModel> findGrantedResources(String requester, String name, int first, int max);
 
     /**
-     * Returns a list of {@link Resource} granted by the owner to other users
+     * Returns a list of {@link ResourceModel} granted by the owner to other users
      *
      * @param owner the owner
      * @param first first  result
      * @param max   max result
-     * @return a list of {@link Resource} granted by the owner
+     * @return a list of {@link ResourceModel} granted by the owner
      */
-    List<Resource> findGrantedOwnerResources(String owner, int first, int max);
+    List<ResourceModel> findGrantedOwnerResources(String owner, int first, int max);
 }

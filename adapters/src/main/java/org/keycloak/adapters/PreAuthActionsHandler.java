@@ -233,8 +233,8 @@ public class PreAuthActionsHandler {
             return false;
         }
         if (!deployment.getResourceName().equals(action.getResource())) {
-            LOG.warn("Resource name does not match");
-            facade.getResponse().sendError(400, "Resource name does not match");
+            LOG.warn("ResourceModel name does not match");
+            facade.getResponse().sendError(400, "ResourceModel name does not match");
             return false;
 
         }

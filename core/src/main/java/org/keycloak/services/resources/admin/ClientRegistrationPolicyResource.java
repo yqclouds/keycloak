@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
- * @resource Client Registration Policy
+ * @resource Client Registration PolicyModel
  */
 public class ClientRegistrationPolicyResource {
 

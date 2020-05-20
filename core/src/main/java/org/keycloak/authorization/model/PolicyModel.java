@@ -29,7 +29,7 @@ import java.util.Set;
  *
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
-public interface Policy {
+public interface PolicyModel {
 
     /**
      * Returns the unique identifier for this instance.
@@ -121,49 +121,49 @@ public interface Policy {
     void setDescription(String description);
 
     /**
-     * Returns the {@link ResourceServer} where this policy belongs to.
+     * Returns the {@link ResourceServerModel} where this policy belongs to.
      *
      * @return a resource server
      */
-    ResourceServer getResourceServer();
+    ResourceServerModel getResourceServer();
 
     /**
-     * Returns the {@link Policy} instances associated with this policy and used to evaluate authorization decisions when
+     * Returns the {@link PolicyModel} instances associated with this policy and used to evaluate authorization decisions when
      * this policy applies.
      *
      * @return the associated policies or an empty set if no policy is associated with this policy
      */
-    Set<Policy> getAssociatedPolicies();
+    Set<PolicyModel> getAssociatedPolicies();
 
     /**
-     * Returns the {@link Resource} instances where this policy applies.
+     * Returns the {@link ResourceModel} instances where this policy applies.
      *
      * @return a set with all resource instances where this policy applies. Or an empty set if there is no resource associated with this policy
      */
-    Set<Resource> getResources();
+    Set<ResourceModel> getResources();
 
     /**
-     * Returns the {@link Scope} instances where this policy applies.
+     * Returns the {@link ScopeModel} instances where this policy applies.
      *
      * @return a set with all scope instances where this policy applies. Or an empty set if there is no scope associated with this policy
      */
-    Set<Scope> getScopes();
+    Set<ScopeModel> getScopes();
 
     String getOwner();
 
     void setOwner(String owner);
 
-    void addScope(Scope scope);
+    void addScope(ScopeModel scope);
 
-    void removeScope(Scope scope);
+    void removeScope(ScopeModel scope);
 
-    void addAssociatedPolicy(Policy associatedPolicy);
+    void addAssociatedPolicy(PolicyModel associatedPolicy);
 
-    void removeAssociatedPolicy(Policy associatedPolicy);
+    void removeAssociatedPolicy(PolicyModel associatedPolicy);
 
-    void addResource(Resource resource);
+    void addResource(ResourceModel resource);
 
-    void removeResource(Resource resource);
+    void removeResource(ResourceModel resource);
 
     boolean isFetched(String association);
 }

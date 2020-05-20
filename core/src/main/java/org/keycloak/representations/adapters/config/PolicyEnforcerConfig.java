@@ -161,7 +161,7 @@ public class PolicyEnforcerConfig {
                 pathConfig.setName(resourceDescription.getName());
 
                 if (uri == null || "".equals(uri.trim())) {
-                    throw new RuntimeException("Failed to configure paths. Resource [" + resourceDescription.getName() + "] has an invalid or empty URI [" + uri + "].");
+                    throw new RuntimeException("Failed to configure paths. ResourceModel [" + resourceDescription.getName() + "] has an invalid or empty URI [" + uri + "].");
                 }
 
                 pathConfig.setPath(uri);

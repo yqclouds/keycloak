@@ -22,7 +22,7 @@ import org.keycloak.OAuthErrorException;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.admin.ResourceSetService;
 import org.keycloak.authorization.common.KeycloakIdentity;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.authorization.protection.permission.PermissionService;
 import org.keycloak.authorization.protection.permission.PermissionTicketService;
 import org.keycloak.authorization.protection.policy.UserManagedPermissionService;
@@ -58,7 +58,7 @@ public class ProtectionService {
     @Path("/resource_set")
     public Object resource() {
         KeycloakIdentity identity = createIdentity(true);
-        ResourceServer resourceServer = getResourceServer(identity);
+        ResourceServerModel resourceServer = getResourceServer(identity);
         ResourceSetService resourceManager = new ResourceSetService(this.session, resourceServer, this.authorization, null, createAdminEventBuilder(identity, resourceServer));
 
         ResteasyProviderFactory.getInstance().injectProperties(resourceManager);
@@ -70,7 +70,7 @@ public class ProtectionService {
         return resource;
     }
 
-    private AdminEventBuilder createAdminEventBuilder(KeycloakIdentity identity, ResourceServer resourceServer) {
+    private AdminEventBuilder createAdminEventBuilder(KeycloakIdentity identity, ResourceServerModel resourceServer) {
         RealmModel realm = authorization.getRealm();
         ClientModel client = realm.getClientById(resourceServer.getId());
         KeycloakSession keycloakSession = authorization.getSession();
@@ -114,7 +114,7 @@ public class ProtectionService {
 
     private KeycloakIdentity createIdentity(boolean checkProtectionScope) {
         KeycloakIdentity identity = new KeycloakIdentity(this.authorization.getSession());
-        ResourceServer resourceServer = getResourceServer(identity);
+        ResourceServerModel resourceServer = getResourceServer(identity);
         KeycloakSession keycloakSession = authorization.getSession();
         RealmModel realm = keycloakSession.getContext().getRealm();
         ClientModel client = realm.getClientById(resourceServer.getId());
@@ -128,7 +128,7 @@ public class ProtectionService {
         return identity;
     }
 
-    private ResourceServer getResourceServer(KeycloakIdentity identity) {
+    private ResourceServerModel getResourceServer(KeycloakIdentity identity) {
         String clientId = identity.getAccessToken().getIssuedFor();
         RealmModel realm = authorization.getSession().getContext().getRealm();
         ClientModel clientModel = realm.getClientByClientId(clientId);
@@ -141,7 +141,7 @@ public class ProtectionService {
             }
         }
 
-        ResourceServer resourceServer = this.authorization.getStoreFactory().getResourceServerStore().findById(clientModel.getId());
+        ResourceServerModel resourceServer = this.authorization.getStoreFactory().getResourceServerStore().findById(clientModel.getId());
 
         if (resourceServer == null) {
             throw new ErrorResponseException("invalid_clientId", "Client application [" + clientModel.getClientId() + "] is not registered as a resource server.", Status.FORBIDDEN);

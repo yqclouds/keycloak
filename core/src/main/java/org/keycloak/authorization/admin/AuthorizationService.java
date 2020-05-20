@@ -20,7 +20,7 @@ package org.keycloak.authorization.admin;
 
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.services.resources.admin.AdminEventBuilder;
@@ -41,7 +41,7 @@ public class AuthorizationService {
     @Autowired
     private AuthorizationProvider authorizationProvider;
     private final AdminEventBuilder adminEvent;
-    private ResourceServer resourceServer;
+    private ResourceServerModel resourceServer;
 
     public AuthorizationService(KeycloakSession session, ClientModel client, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.client = client;

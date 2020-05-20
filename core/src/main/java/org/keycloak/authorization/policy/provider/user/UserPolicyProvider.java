@@ -18,7 +18,7 @@
 package org.keycloak.authorization.policy.provider.user;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
+import org.keycloak.authorization.model.PolicyModel;
 import org.keycloak.authorization.policy.evaluation.Evaluation;
 import org.keycloak.authorization.policy.evaluation.EvaluationContext;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
@@ -31,9 +31,9 @@ import java.util.function.BiFunction;
  */
 public class UserPolicyProvider implements PolicyProvider {
 
-    private final BiFunction<Policy, AuthorizationProvider, UserPolicyRepresentation> representationFunction;
+    private final BiFunction<PolicyModel, AuthorizationProvider, UserPolicyRepresentation> representationFunction;
 
-    public UserPolicyProvider(BiFunction<Policy, AuthorizationProvider, UserPolicyRepresentation> representationFunction) {
+    public UserPolicyProvider(BiFunction<PolicyModel, AuthorizationProvider, UserPolicyRepresentation> representationFunction) {
         this.representationFunction = representationFunction;
     }
 

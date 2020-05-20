@@ -18,7 +18,7 @@
 package org.keycloak.authorization.policy.provider.js;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
+import org.keycloak.authorization.model.PolicyModel;
 import org.keycloak.authorization.policy.evaluation.Evaluation;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.scripting.EvaluatableScriptAdapter;
@@ -32,15 +32,15 @@ import java.util.function.BiFunction;
  */
 class JSPolicyProvider implements PolicyProvider {
 
-    private final BiFunction<AuthorizationProvider, Policy, EvaluatableScriptAdapter> evaluatableScript;
+    private final BiFunction<AuthorizationProvider, PolicyModel, EvaluatableScriptAdapter> evaluatableScript;
 
-    JSPolicyProvider(final BiFunction<AuthorizationProvider, Policy, EvaluatableScriptAdapter> evaluatableScript) {
+    JSPolicyProvider(final BiFunction<AuthorizationProvider, PolicyModel, EvaluatableScriptAdapter> evaluatableScript) {
         this.evaluatableScript = evaluatableScript;
     }
 
     @Override
     public void evaluate(Evaluation evaluation) {
-        Policy policy = evaluation.getPolicy();
+        PolicyModel policy = evaluation.getPolicy();
         AuthorizationProvider authorization = evaluation.getAuthorizationProvider();
         EvaluatableScriptAdapter adapter = evaluatableScript.apply(authorization, policy);
 
@@ -51,7 +51,7 @@ class JSPolicyProvider implements PolicyProvider {
 
             adapter.eval(context);
         } catch (Exception e) {
-            throw new RuntimeException("Error evaluating JS Policy [" + policy.getName() + "].", e);
+            throw new RuntimeException("Error evaluating JS PolicyModel [" + policy.getName() + "].", e);
         }
     }
 

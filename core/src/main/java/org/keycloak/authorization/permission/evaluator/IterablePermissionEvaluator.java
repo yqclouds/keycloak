@@ -19,8 +19,8 @@ package org.keycloak.authorization.permission.evaluator;
 
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.Decision;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.authorization.permission.ResourcePermission;
 import org.keycloak.authorization.policy.evaluation.DecisionPermissionCollector;
 import org.keycloak.authorization.policy.evaluation.EvaluationContext;
@@ -56,7 +56,7 @@ class IterablePermissionEvaluator implements PermissionEvaluator {
         StoreFactory storeFactory = authorizationProvider.getStoreFactory();
 
         try {
-            Map<Policy, Map<Object, Decision.Effect>> decisionCache = new HashMap<>();
+            Map<PolicyModel, Map<Object, Decision.Effect>> decisionCache = new HashMap<>();
 
             storeFactory.setReadOnly(true);
 
@@ -75,7 +75,7 @@ class IterablePermissionEvaluator implements PermissionEvaluator {
     }
 
     @Override
-    public Collection<Permission> evaluate(ResourceServer resourceServer, AuthorizationRequest request) {
+    public Collection<Permission> evaluate(ResourceServerModel resourceServer, AuthorizationRequest request) {
         DecisionPermissionCollector decision = new DecisionPermissionCollector(authorizationProvider, resourceServer, request);
 
         evaluate(decision);

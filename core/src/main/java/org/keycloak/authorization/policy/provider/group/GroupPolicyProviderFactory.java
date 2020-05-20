@@ -19,7 +19,7 @@ package org.keycloak.authorization.policy.provider.group;
 
 import org.keycloak.Config;
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
+import org.keycloak.authorization.model.PolicyModel;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.models.GroupModel;
@@ -70,7 +70,7 @@ public class GroupPolicyProviderFactory implements PolicyProviderFactory<GroupPo
     }
 
     @Override
-    public GroupPolicyRepresentation toRepresentation(Policy policy, AuthorizationProvider authorization) {
+    public GroupPolicyRepresentation toRepresentation(PolicyModel policy, AuthorizationProvider authorization) {
         GroupPolicyRepresentation representation = new GroupPolicyRepresentation();
 
         representation.setGroupsClaim(policy.getConfig().get("groupsClaim"));
@@ -89,17 +89,17 @@ public class GroupPolicyProviderFactory implements PolicyProviderFactory<GroupPo
     }
 
     @Override
-    public void onCreate(Policy policy, GroupPolicyRepresentation representation, AuthorizationProvider authorization) {
+    public void onCreate(PolicyModel policy, GroupPolicyRepresentation representation, AuthorizationProvider authorization) {
         updatePolicy(policy, representation.getGroupsClaim(), representation.getGroups(), authorization);
     }
 
     @Override
-    public void onUpdate(Policy policy, GroupPolicyRepresentation representation, AuthorizationProvider authorization) {
+    public void onUpdate(PolicyModel policy, GroupPolicyRepresentation representation, AuthorizationProvider authorization) {
         updatePolicy(policy, representation.getGroupsClaim(), representation.getGroups(), authorization);
     }
 
     @Override
-    public void onImport(Policy policy, PolicyRepresentation representation, AuthorizationProvider authorization) {
+    public void onImport(PolicyModel policy, PolicyRepresentation representation, AuthorizationProvider authorization) {
         try {
             updatePolicy(policy, representation.getConfig().get("groupsClaim"), getGroupsDefinition(representation.getConfig()), authorization);
         } catch (IOException cause) {
@@ -108,7 +108,7 @@ public class GroupPolicyProviderFactory implements PolicyProviderFactory<GroupPo
     }
 
     @Override
-    public void onExport(Policy policy, PolicyRepresentation representation, AuthorizationProvider authorization) {
+    public void onExport(PolicyModel policy, PolicyRepresentation representation, AuthorizationProvider authorization) {
         Map<String, String> config = new HashMap<>();
         GroupPolicyRepresentation groupPolicy = toRepresentation(policy, authorization);
         Set<GroupPolicyRepresentation.GroupDefinition> groups = groupPolicy.getGroups();
@@ -150,7 +150,7 @@ public class GroupPolicyProviderFactory implements PolicyProviderFactory<GroupPo
 
     }
 
-    private void updatePolicy(Policy policy, String groupsClaim, Set<GroupPolicyRepresentation.GroupDefinition> groups, AuthorizationProvider authorization) {
+    private void updatePolicy(PolicyModel policy, String groupsClaim, Set<GroupPolicyRepresentation.GroupDefinition> groups, AuthorizationProvider authorization) {
         if (groups == null || groups.isEmpty()) {
             throw new RuntimeException("You must provide at least one group");
         }

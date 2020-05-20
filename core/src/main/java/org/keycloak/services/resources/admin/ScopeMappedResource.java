@@ -37,7 +37,7 @@ import java.util.*;
  *
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
- * @resource Scope Mappings
+ * @resource ScopeModel Mappings
  */
 public class ScopeMappedResource {
     protected RealmModel realm;

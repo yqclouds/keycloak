@@ -18,7 +18,7 @@
 package org.keycloak.authorization.policy.provider.time;
 
 import org.keycloak.authorization.attribute.Attributes;
-import org.keycloak.authorization.model.Policy;
+import org.keycloak.authorization.model.PolicyModel;
 import org.keycloak.authorization.policy.evaluation.Evaluation;
 import org.keycloak.authorization.policy.evaluation.EvaluationContext;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
@@ -38,7 +38,7 @@ public class TimePolicyProvider implements PolicyProvider {
 
     @Override
     public void evaluate(Evaluation evaluation) {
-        Policy policy = evaluation.getPolicy();
+        PolicyModel policy = evaluation.getPolicy();
         SimpleDateFormat dateFormat = new SimpleDateFormat(DEFAULT_DATE_PATTERN);
         try {
             String contextTime = null;
@@ -82,7 +82,7 @@ public class TimePolicyProvider implements PolicyProvider {
         }
     }
 
-    private boolean isInvalid(Date actualDate, int timeConstant, String configName, Policy policy) {
+    private boolean isInvalid(Date actualDate, int timeConstant, String configName, PolicyModel policy) {
         Calendar calendar = Calendar.getInstance();
 
         calendar.setTime(actualDate);

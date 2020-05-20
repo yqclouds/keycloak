@@ -19,7 +19,7 @@ package org.keycloak.authorization.policy.provider.role;
 
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.identity.Identity;
-import org.keycloak.authorization.model.Policy;
+import org.keycloak.authorization.model.PolicyModel;
 import org.keycloak.authorization.policy.evaluation.Evaluation;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.models.ClientModel;
@@ -35,15 +35,15 @@ import java.util.function.BiFunction;
  */
 public class RolePolicyProvider implements PolicyProvider {
 
-    private final BiFunction<Policy, AuthorizationProvider, RolePolicyRepresentation> representationFunction;
+    private final BiFunction<PolicyModel, AuthorizationProvider, RolePolicyRepresentation> representationFunction;
 
-    public RolePolicyProvider(BiFunction<Policy, AuthorizationProvider, RolePolicyRepresentation> representationFunction) {
+    public RolePolicyProvider(BiFunction<PolicyModel, AuthorizationProvider, RolePolicyRepresentation> representationFunction) {
         this.representationFunction = representationFunction;
     }
 
     @Override
     public void evaluate(Evaluation evaluation) {
-        Policy policy = evaluation.getPolicy();
+        PolicyModel policy = evaluation.getPolicy();
         Set<RolePolicyRepresentation.RoleDefinition> roleIds = representationFunction.apply(policy, evaluation.getAuthorizationProvider()).getRoles();
         AuthorizationProvider authorizationProvider = evaluation.getAuthorizationProvider();
         RealmModel realm = authorizationProvider.getSession().getContext().getRealm();

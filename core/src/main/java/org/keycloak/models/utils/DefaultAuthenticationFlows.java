@@ -223,7 +223,7 @@ public class DefaultAuthenticationFlows {
     public static void directGrantFlow(RealmModel realm, boolean migrate) {
         AuthenticationFlowModel grant = new AuthenticationFlowModel();
         grant.setAlias(DIRECT_GRANT_FLOW);
-        grant.setDescription("OpenID Connect Resource Owner Grant");
+        grant.setDescription("OpenID Connect ResourceModel Owner Grant");
         grant.setProviderId("basic-flow");
         grant.setTopLevel(true);
         grant.setBuiltIn(true);

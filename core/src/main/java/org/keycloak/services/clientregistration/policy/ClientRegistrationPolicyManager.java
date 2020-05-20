@@ -111,7 +111,7 @@ public class ClientRegistrationPolicyManager {
         for (ComponentModel policyModel : policyModels) {
             ClientRegistrationPolicy policy = session.getProvider(ClientRegistrationPolicy.class, policyModel);
             if (policy == null) {
-                throw new ClientRegistrationPolicyException("Policy of type '" + policyModel.getProviderId() + "' not found");
+                throw new ClientRegistrationPolicyException("PolicyModel of type '" + policyModel.getProviderId() + "' not found");
             }
 
             if (LOG.isTraceEnabled()) {

@@ -158,7 +158,7 @@ public class ClientScopeEvaluateResource {
             throw new NotFoundException("No user found");
         }
 
-        LOG.debug("generateExampleAccessToken invoked. User: {}, Scope param: {}", user.getUsername(), scopeParam);
+        LOG.debug("generateExampleAccessToken invoked. User: {}, ScopeModel param: {}", user.getUsername(), scopeParam);
 
         AccessToken token = generateToken(user, scopeParam);
         return token;

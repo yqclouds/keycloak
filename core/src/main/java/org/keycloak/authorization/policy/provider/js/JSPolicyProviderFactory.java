@@ -2,7 +2,7 @@ package org.keycloak.authorization.policy.provider.js;
 
 import org.keycloak.Config;
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
+import org.keycloak.authorization.model.PolicyModel;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.common.Profile;
@@ -51,7 +51,7 @@ public class JSPolicyProviderFactory implements PolicyProviderFactory<JSPolicyRe
     }
 
     @Override
-    public JSPolicyRepresentation toRepresentation(Policy policy, AuthorizationProvider authorization) {
+    public JSPolicyRepresentation toRepresentation(PolicyModel policy, AuthorizationProvider authorization) {
         JSPolicyRepresentation representation = new JSPolicyRepresentation();
         representation.setCode(policy.getConfig().get("code"));
         return representation;
@@ -63,22 +63,22 @@ public class JSPolicyProviderFactory implements PolicyProviderFactory<JSPolicyRe
     }
 
     @Override
-    public void onCreate(Policy policy, JSPolicyRepresentation representation, AuthorizationProvider authorization) {
+    public void onCreate(PolicyModel policy, JSPolicyRepresentation representation, AuthorizationProvider authorization) {
         updatePolicy(policy, representation.getCode(), authorization);
     }
 
     @Override
-    public void onUpdate(Policy policy, JSPolicyRepresentation representation, AuthorizationProvider authorization) {
+    public void onUpdate(PolicyModel policy, JSPolicyRepresentation representation, AuthorizationProvider authorization) {
         updatePolicy(policy, representation.getCode(), authorization);
     }
 
     @Override
-    public void onImport(Policy policy, PolicyRepresentation representation, AuthorizationProvider authorization) {
+    public void onImport(PolicyModel policy, PolicyRepresentation representation, AuthorizationProvider authorization) {
         updatePolicy(policy, representation.getConfig().get("code"), authorization);
     }
 
     @Override
-    public void onRemove(final Policy policy, final AuthorizationProvider authorization) {
+    public void onRemove(final PolicyModel policy, final AuthorizationProvider authorization) {
         scriptCache.remove(policy.getId());
     }
 
@@ -104,14 +104,14 @@ public class JSPolicyProviderFactory implements PolicyProviderFactory<JSPolicyRe
         return !Profile.isFeatureEnabled(Profile.Feature.UPLOAD_SCRIPTS);
     }
 
-    private EvaluatableScriptAdapter getEvaluatableScript(final AuthorizationProvider authz, final Policy policy) {
+    private EvaluatableScriptAdapter getEvaluatableScript(final AuthorizationProvider authz, final PolicyModel policy) {
         return scriptCache.computeIfAbsent(policy.getId(), id -> {
             ScriptModel script = getScriptModel(policy, authz.getRealm(), scriptingProvider);
             return scriptingProvider.prepareEvaluatableScript(script);
         });
     }
 
-    protected ScriptModel getScriptModel(final Policy policy, final RealmModel realm, final ScriptingProvider scripting) {
+    protected ScriptModel getScriptModel(final PolicyModel policy, final RealmModel realm, final ScriptingProvider scripting) {
         String scriptName = policy.getName();
         String scriptCode = policy.getConfig().get("code");
         String scriptDescription = policy.getDescription();
@@ -120,7 +120,7 @@ public class JSPolicyProviderFactory implements PolicyProviderFactory<JSPolicyRe
         return scripting.createScript(realm.getId(), ScriptModel.TEXT_JAVASCRIPT, scriptName, scriptCode, scriptDescription);
     }
 
-    private void updatePolicy(Policy policy, String code, AuthorizationProvider authorization) {
+    private void updatePolicy(PolicyModel policy, String code, AuthorizationProvider authorization) {
         scriptCache.remove(policy.getId());
         if (!Profile.isFeatureEnabled(Profile.Feature.UPLOAD_SCRIPTS) && !authorization.getSession().getAttributeOrDefault("ALLOW_CREATE_POLICY", false) && !isDeployed()) {
             throw new RuntimeException("Script upload is disabled");

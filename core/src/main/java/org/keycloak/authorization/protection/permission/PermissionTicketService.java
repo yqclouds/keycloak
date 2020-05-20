@@ -21,9 +21,9 @@ import org.keycloak.OAuthErrorException;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.common.KeycloakIdentity;
 import org.keycloak.authorization.model.PermissionTicketModel;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
+import org.keycloak.authorization.model.ScopeModel;
 import org.keycloak.authorization.store.PermissionTicketStore;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.authorization.store.ScopeStore;
@@ -50,9 +50,9 @@ public class PermissionTicketService {
 
     private final AuthorizationProvider authorization;
     private final KeycloakIdentity identity;
-    private final ResourceServer resourceServer;
+    private final ResourceServerModel resourceServer;
 
-    public PermissionTicketService(KeycloakIdentity identity, ResourceServer resourceServer, AuthorizationProvider authorization) {
+    public PermissionTicketService(KeycloakIdentity identity, ResourceServerModel resourceServer, AuthorizationProvider authorization) {
         this.identity = identity;
         this.resourceServer = resourceServer;
         this.authorization = authorization;
@@ -75,9 +75,9 @@ public class PermissionTicketService {
             throw new ErrorResponseException("invalid_permission", "created permissions should have requester or requesterName", Response.Status.BAD_REQUEST);
 
         ResourceStore rstore = this.authorization.getStoreFactory().getResourceStore();
-        Resource resource = rstore.findById(representation.getResource(), resourceServer.getId());
+        ResourceModel resource = rstore.findById(representation.getResource(), resourceServer.getId());
         if (resource == null)
-            throw new ErrorResponseException("invalid_resource_id", "Resource set with id [" + representation.getResource() + "] does not exists in this server.", Response.Status.BAD_REQUEST);
+            throw new ErrorResponseException("invalid_resource_id", "ResourceModel set with id [" + representation.getResource() + "] does not exists in this server.", Response.Status.BAD_REQUEST);
 
         if (!resource.getOwner().equals(this.identity.getId()))
             throw new ErrorResponseException("not_authorised", "permissions for [" + representation.getResource() + "] can be only created by the owner", Response.Status.FORBIDDEN);
@@ -91,7 +91,7 @@ public class PermissionTicketService {
         if (user == null)
             throw new ErrorResponseException("invalid_permission", "Requester does not exists in this server as user.", Response.Status.BAD_REQUEST);
 
-        Scope scope = null;
+        ScopeModel scope = null;
         ScopeStore sstore = this.authorization.getStoreFactory().getScopeStore();
 
         if (representation.getScopeName() != null)
@@ -100,14 +100,14 @@ public class PermissionTicketService {
             scope = sstore.findById(representation.getScope(), resourceServer.getId());
 
         if (scope == null && representation.getScope() != null)
-            throw new ErrorResponseException("invalid_scope", "Scope [" + representation.getScope() + "] is invalid", Response.Status.BAD_REQUEST);
+            throw new ErrorResponseException("invalid_scope", "ScopeModel [" + representation.getScope() + "] is invalid", Response.Status.BAD_REQUEST);
         if (scope == null && representation.getScopeName() != null)
-            throw new ErrorResponseException("invalid_scope", "Scope [" + representation.getScopeName() + "] is invalid", Response.Status.BAD_REQUEST);
+            throw new ErrorResponseException("invalid_scope", "ScopeModel [" + representation.getScopeName() + "] is invalid", Response.Status.BAD_REQUEST);
 
         boolean match = resource.getScopes().contains(scope);
 
         if (!match)
-            throw new ErrorResponseException("invalid_resource_id", "Resource set with id [" + representation.getResource() + "] does not have Scope [" + scope.getName() + "]", Response.Status.BAD_REQUEST);
+            throw new ErrorResponseException("invalid_resource_id", "ResourceModel set with id [" + representation.getResource() + "] does not have ScopeModel [" + scope.getName() + "]", Response.Status.BAD_REQUEST);
 
         Map<String, String> attributes = new HashMap<>();
         attributes.put(PermissionTicketModel.RESOURCE, resource.getId());
@@ -191,7 +191,7 @@ public class PermissionTicketService {
 
         if (scopeId != null) {
             ScopeStore scopeStore = storeFactory.getScopeStore();
-            Scope scope = scopeStore.findById(scopeId, resourceServer.getId());
+            ScopeModel scope = scopeStore.findById(scopeId, resourceServer.getId());
 
             if (scope == null) {
                 scope = scopeStore.findByName(scopeId, resourceServer.getId());

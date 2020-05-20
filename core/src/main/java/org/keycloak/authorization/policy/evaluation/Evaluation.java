@@ -19,7 +19,7 @@
 package org.keycloak.authorization.policy.evaluation;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
+import org.keycloak.authorization.model.PolicyModel;
 import org.keycloak.authorization.permission.ResourcePermission;
 
 /**
@@ -45,11 +45,11 @@ public interface Evaluation {
     EvaluationContext getContext();
 
     /**
-     * Returns the {@link Policy}. being evaluated.
+     * Returns the {@link PolicyModel}. being evaluated.
      *
      * @return the evaluation context
      */
-    Policy getPolicy();
+    PolicyModel getPolicy();
 
     /**
      * Returns a {@link Realm} that can be used by policies to query information.

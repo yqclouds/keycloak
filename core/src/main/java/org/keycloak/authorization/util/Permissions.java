@@ -21,9 +21,9 @@ package org.keycloak.authorization.util;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.identity.Identity;
 import org.keycloak.authorization.model.PermissionTicketModel;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
+import org.keycloak.authorization.model.ScopeModel;
 import org.keycloak.authorization.permission.ResourcePermission;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.authorization.store.StoreFactory;
@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
 public final class Permissions {
-    public static ResourcePermission permission(ResourceServer server, Resource resource, Scope scope) {
+    public static ResourcePermission permission(ResourceServerModel server, ResourceModel resource, ScopeModel scope) {
         return new ResourcePermission(resource, new ArrayList<>(Arrays.asList(scope)), server);
     }
 
@@ -53,7 +53,7 @@ public final class Permissions {
      * @param authorization
      * @return
      */
-    public static List<ResourcePermission> all(ResourceServer resourceServer, Identity identity, AuthorizationProvider authorization, AuthorizationRequest request) {
+    public static List<ResourcePermission> all(ResourceServerModel resourceServer, Identity identity, AuthorizationProvider authorization, AuthorizationRequest request) {
         List<ResourcePermission> permissions = new ArrayList<>();
         StoreFactory storeFactory = authorization.getStoreFactory();
         ResourceStore resourceStore = storeFactory.getResourceStore();
@@ -108,8 +108,8 @@ public final class Permissions {
         return permissions;
     }
 
-    public static ResourcePermission createResourcePermissions(Resource resource, Collection<Scope> requestedScopes, AuthorizationProvider authorization, AuthorizationRequest request) {
-        List<Scope> scopes;
+    public static ResourcePermission createResourcePermissions(ResourceModel resource, Collection<ScopeModel> requestedScopes, AuthorizationProvider authorization, AuthorizationRequest request) {
+        List<ScopeModel> scopes;
 
         if (requestedScopes.isEmpty()) {
             scopes = populateTypedScopes(resource, authorization);
@@ -120,8 +120,8 @@ public final class Permissions {
         return new ResourcePermission(resource, scopes, resource.getResourceServer(), request.getClaims());
     }
 
-    public static ResourcePermission createResourcePermissions(Resource resource, AuthorizationProvider authorization, AuthorizationRequest request) {
-        List<Scope> requestedScopes = resource.getScopes();
+    public static ResourcePermission createResourcePermissions(ResourceModel resource, AuthorizationProvider authorization, AuthorizationRequest request) {
+        List<ScopeModel> requestedScopes = resource.getScopes();
 
         if (requestedScopes.isEmpty()) {
             return new ResourcePermission(resource, populateTypedScopes(resource, authorization), resource.getResourceServer(), request.getClaims());
@@ -130,26 +130,26 @@ public final class Permissions {
         return new ResourcePermission(resource, resource.getResourceServer(), request.getClaims());
     }
 
-    private static List<Scope> populateTypedScopes(Resource resource, AuthorizationProvider authorization) {
+    private static List<ScopeModel> populateTypedScopes(ResourceModel resource, AuthorizationProvider authorization) {
         return populateTypedScopes(resource, resource.getScopes(), authorization);
     }
 
-    private static List<Scope> populateTypedScopes(Resource resource, List<Scope> defaultScopes, AuthorizationProvider authorization) {
+    private static List<ScopeModel> populateTypedScopes(ResourceModel resource, List<ScopeModel> defaultScopes, AuthorizationProvider authorization) {
         String type = resource.getType();
-        ResourceServer resourceServer = resource.getResourceServer();
+        ResourceServerModel resourceServer = resource.getResourceServer();
 
         if (type == null || resource.getOwner().equals(resourceServer.getId())) {
             return new ArrayList<>(defaultScopes);
         }
 
-        List<Scope> scopes = new ArrayList<>(defaultScopes);
+        List<ScopeModel> scopes = new ArrayList<>(defaultScopes);
 
         // check if there is a typed resource whose scopes are inherited by the resource being requested. In this case, we assume that parent resource
         // is owned by the resource server itself
         StoreFactory storeFactory = authorization.getStoreFactory();
         ResourceStore resourceStore = storeFactory.getResourceStore();
         resourceStore.findByType(type, resourceServer.getId(), resource1 -> {
-            for (Scope typeScope : resource1.getScopes()) {
+            for (ScopeModel typeScope : resource1.getScopes()) {
                 if (!scopes.contains(typeScope)) {
                     scopes.add(typeScope);
                 }

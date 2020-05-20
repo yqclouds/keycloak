@@ -21,8 +21,8 @@ import org.keycloak.authorization.jpa.entities.PermissionTicket;
 import org.keycloak.authorization.jpa.entities.PermissionTicketRepository;
 import org.keycloak.authorization.jpa.entities.PolicyRepository;
 import org.keycloak.authorization.model.PermissionTicketModel;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.authorization.store.PermissionTicketStore;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.models.utils.KeycloakModelUtils;
@@ -56,7 +56,7 @@ public class JPAPermissionTicketStore implements PermissionTicketStore {
     }
 
     @Override
-    public PermissionTicketModel create(String resourceId, String scopeId, String requester, ResourceServer resourceServer) {
+    public PermissionTicketModel create(String resourceId, String scopeId, String requester, ResourceServerModel resourceServer) {
         PermissionTicket entity = new PermissionTicket();
 
         entity.setId(KeycloakModelUtils.generateId());
@@ -228,17 +228,17 @@ public class JPAPermissionTicketStore implements PermissionTicketStore {
     }
 
     @Override
-    public List<Resource> findGrantedResources(String requester, String name, int first, int max) {
+    public List<ResourceModel> findGrantedResources(String requester, String name, int first, int max) {
         List<String> result;
         if (name != null) {
             result = permissionTicketRepository.findGrantedResourcesByName(requester, "%" + name.toLowerCase() + "%");
         } else {
             result = permissionTicketRepository.findGrantedResources(requester);
         }
-        List<Resource> list = new LinkedList<>();
+        List<ResourceModel> list = new LinkedList<>();
         ResourceStore resourceStore = provider.getStoreFactory().getResourceStore();
         for (String id : result) {
-            Resource resource = resourceStore.findById(id, null);
+            ResourceModel resource = resourceStore.findById(id, null);
 
             if (Objects.nonNull(resource)) {
                 list.add(resource);
@@ -249,13 +249,13 @@ public class JPAPermissionTicketStore implements PermissionTicketStore {
     }
 
     @Override
-    public List<Resource> findGrantedOwnerResources(String owner, int first, int max) {
+    public List<ResourceModel> findGrantedOwnerResources(String owner, int first, int max) {
         List<String> result = permissionTicketRepository.findGrantedOwnerResources(owner);
-        List<Resource> list = new LinkedList<>();
+        List<ResourceModel> list = new LinkedList<>();
         ResourceStore resourceStore = provider.getStoreFactory().getResourceStore();
 
         for (String id : result) {
-            Resource resource = resourceStore.findById(id, null);
+            ResourceModel resource = resourceStore.findById(id, null);
 
             if (Objects.nonNull(resource)) {
                 list.add(resource);

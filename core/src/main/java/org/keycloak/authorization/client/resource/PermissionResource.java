@@ -138,7 +138,7 @@ public class PermissionResource {
      */
     public List<PermissionTicketRepresentation> findByScope(final String scopeId) {
         if (scopeId == null) {
-            throw new IllegalArgumentException("Scope id must not be null");
+            throw new IllegalArgumentException("ScopeModel id must not be null");
         }
         Callable<List<PermissionTicketRepresentation>> callable = new Callable<List<PermissionTicketRepresentation>>() {
             @Override
@@ -165,7 +165,7 @@ public class PermissionResource {
      */
     public List<PermissionTicketRepresentation> findByResource(final String resourceId) {
         if (resourceId == null) {
-            throw new IllegalArgumentException("Resource id must not be null");
+            throw new IllegalArgumentException("ResourceModel id must not be null");
         }
         Callable<List<PermissionTicketRepresentation>> callable = new Callable<List<PermissionTicketRepresentation>>() {
             @Override

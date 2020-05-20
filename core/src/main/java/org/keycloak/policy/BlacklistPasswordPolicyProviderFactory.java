@@ -41,7 +41,7 @@ import java.util.concurrent.ConcurrentMap;
  * <p>
  * Password blacklists are simple text files where every line is a blacklisted password delimited by {@code \n}.
  * Blacklist files are discovered and registered at startup.
- * <p>Blacklists can be configured via the <em>Authentication: Password Policy</em> section in the admin-console.
+ * <p>Blacklists can be configured via the <em>Authentication: Password PolicyModel</em> section in the admin-console.
  * A blacklist-file is referred to by its name in the policy configuration.
  * <p>Users can provide custom blacklists by adding a blacklist password file to the configured blacklist folder.
  * <p>
@@ -60,7 +60,7 @@ import java.util.concurrent.ConcurrentMap;
  * }</pre>
  * <p>A password blacklist with the filename {@code 10_million_password_list_top_1000000-password-blacklist.txt}
  * that is located beneath {@code /data/keycloak/blacklists/} can be referred to
- * as {@code 10_million_password_list_top_1000000-password-blacklist.txt} in the <em>Authentication: Password Policy</em> configuration.
+ * as {@code 10_million_password_list_top_1000000-password-blacklist.txt} in the <em>Authentication: Password PolicyModel</em> configuration.
  *
  * @author <a href="mailto:thomas.darimont@gmail.com">Thomas Darimont</a>
  */

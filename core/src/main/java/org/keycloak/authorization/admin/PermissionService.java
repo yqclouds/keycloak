@@ -17,8 +17,8 @@
 package org.keycloak.authorization.admin;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
 import org.keycloak.services.resources.admin.AdminEventBuilder;
@@ -32,12 +32,12 @@ import java.util.Map;
  */
 public class PermissionService extends PolicyService {
 
-    public PermissionService(ResourceServer resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public PermissionService(ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         super(resourceServer, authorization, auth, adminEvent);
     }
 
     @Override
-    protected PolicyResourceService doCreatePolicyResource(Policy policy) {
+    protected PolicyResourceService doCreatePolicyResource(PolicyModel policy) {
         return new PolicyTypeResourceService(policy, resourceServer, authorization, auth, adminEvent);
     }
 
@@ -60,7 +60,7 @@ public class PermissionService extends PolicyService {
     }
 
     @Override
-    protected AbstractPolicyRepresentation toRepresentation(Policy policy, String fields, AuthorizationProvider authorization) {
+    protected AbstractPolicyRepresentation toRepresentation(PolicyModel policy, String fields, AuthorizationProvider authorization) {
         return ModelToRepresentation.toRepresentation(policy, authorization, false, false, fields != null && fields.equals("*"));
     }
 }

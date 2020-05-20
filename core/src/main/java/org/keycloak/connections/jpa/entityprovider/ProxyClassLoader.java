@@ -78,7 +78,7 @@ public class ProxyClassLoader extends ClassLoader {
             if (resource != null) {
                 return resource;
             }
-            // Resource == null means not found, so let the next one try.
+            // ResourceModel == null means not found, so let the next one try.
         }
         // We could not get the resource from the proxy class loaders, so proceed with 'normal' behavior.
         return super.getResource(name);

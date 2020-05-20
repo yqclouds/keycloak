@@ -44,6 +44,6 @@ public class ClientRegistrationPolicyException extends Exception {
 
     @Override
     public String getMessage() {
-        return policyModel == null ? super.getMessage() : String.format("Policy '%s' rejected request to client-registration service. Details: %s", policyModel.getName(), super.getMessage());
+        return policyModel == null ? super.getMessage() : String.format("PolicyModel '%s' rejected request to client-registration service. Details: %s", policyModel.getName(), super.getMessage());
     }
 }

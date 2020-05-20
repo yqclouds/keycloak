@@ -18,7 +18,7 @@ package org.keycloak.authorization.policy.provider.permission;
 
 import org.keycloak.Config;
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
+import org.keycloak.authorization.model.PolicyModel;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.models.KeycloakSession;
@@ -34,7 +34,7 @@ public class ScopePolicyProviderFactory implements PolicyProviderFactory<ScopePe
 
     @Override
     public String getName() {
-        return "Scope-Based";
+        return "ScopeModel-Based";
     }
 
     @Override
@@ -58,7 +58,7 @@ public class ScopePolicyProviderFactory implements PolicyProviderFactory<ScopePe
     }
 
     @Override
-    public ScopePermissionRepresentation toRepresentation(Policy policy, AuthorizationProvider authorization) {
+    public ScopePermissionRepresentation toRepresentation(PolicyModel policy, AuthorizationProvider authorization) {
         return new ScopePermissionRepresentation();
     }
 

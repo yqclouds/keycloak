@@ -237,18 +237,18 @@ public final class AuthorizationProvider implements Provider {
             ScopeStore delegate = storeFactory.getScopeStore();
 
             @Override
-            public Scope create(String name, ResourceServer resourceServer) {
+            public ScopeModel create(String name, ResourceServerModel resourceServer) {
                 return delegate.create(name, resourceServer);
             }
 
             @Override
-            public Scope create(String id, String name, ResourceServer resourceServer) {
+            public ScopeModel create(String id, String name, ResourceServerModel resourceServer) {
                 return delegate.create(id, name, resourceServer);
             }
 
             @Override
             public void delete(String id) {
-                Scope scope = findById(id, null);
+                ScopeModel scope = findById(id, null);
                 PermissionTicketStore ticketStore = AuthorizationProvider.this.getStoreFactory().getPermissionTicketStore();
                 List<PermissionTicketModel> permissions = ticketStore.findByScope(id, scope.getResourceServer().getId());
 
@@ -260,22 +260,22 @@ public final class AuthorizationProvider implements Provider {
             }
 
             @Override
-            public Scope findById(String id, String resourceServerId) {
+            public ScopeModel findById(String id, String resourceServerId) {
                 return delegate.findById(id, resourceServerId);
             }
 
             @Override
-            public Scope findByName(String name, String resourceServerId) {
+            public ScopeModel findByName(String name, String resourceServerId) {
                 return delegate.findByName(name, resourceServerId);
             }
 
             @Override
-            public List<Scope> findByResourceServer(String id) {
+            public List<ScopeModel> findByResourceServer(String id) {
                 return delegate.findByResourceServer(id);
             }
 
             @Override
-            public List<Scope> findByResourceServer(Map<String, String[]> attributes, String resourceServerId, int firstResult, int maxResult) {
+            public List<ScopeModel> findByResourceServer(Map<String, String[]> attributes, String resourceServerId, int firstResult, int maxResult) {
                 return delegate.findByResourceServer(attributes, resourceServerId, firstResult, maxResult);
             }
         };
@@ -287,19 +287,19 @@ public final class AuthorizationProvider implements Provider {
             PolicyStore policyStore = storeFactory.getPolicyStore();
 
             @Override
-            public Policy create(AbstractPolicyRepresentation representation, ResourceServer resourceServer) {
+            public PolicyModel create(AbstractPolicyRepresentation representation, ResourceServerModel resourceServer) {
                 Set<String> resources = representation.getResources();
 
                 if (resources != null) {
                     representation.setResources(resources.stream().map(id -> {
-                        Resource resource = storeFactory.getResourceStore().findById(id, resourceServer.getId());
+                        ResourceModel resource = storeFactory.getResourceStore().findById(id, resourceServer.getId());
 
                         if (resource == null) {
                             resource = storeFactory.getResourceStore().findByName(id, resourceServer.getId());
                         }
 
                         if (resource == null) {
-                            throw new RuntimeException("Resource [" + id + "] does not exist or is not owned by the resource server.");
+                            throw new RuntimeException("ResourceModel [" + id + "] does not exist or is not owned by the resource server.");
                         }
 
                         return resource.getId();
@@ -310,14 +310,14 @@ public final class AuthorizationProvider implements Provider {
 
                 if (scopes != null) {
                     representation.setScopes(scopes.stream().map(id -> {
-                        Scope scope = storeFactory.getScopeStore().findById(id, resourceServer.getId());
+                        ScopeModel scope = storeFactory.getScopeStore().findById(id, resourceServer.getId());
 
                         if (scope == null) {
                             scope = storeFactory.getScopeStore().findByName(id, resourceServer.getId());
                         }
 
                         if (scope == null) {
-                            throw new RuntimeException("Scope [" + id + "] does not exist");
+                            throw new RuntimeException("ScopeModel [" + id + "] does not exist");
                         }
 
                         return scope.getId();
@@ -329,14 +329,14 @@ public final class AuthorizationProvider implements Provider {
 
                 if (policies != null) {
                     representation.setPolicies(policies.stream().map(id -> {
-                        Policy policy = storeFactory.getPolicyStore().findById(id, resourceServer.getId());
+                        PolicyModel policy = storeFactory.getPolicyStore().findById(id, resourceServer.getId());
 
                         if (policy == null) {
                             policy = storeFactory.getPolicyStore().findByName(id, resourceServer.getId());
                         }
 
                         if (policy == null) {
-                            throw new RuntimeException("Policy [" + id + "] does not exist");
+                            throw new RuntimeException("PolicyModel [" + id + "] does not exist");
                         }
 
                         return policy.getId();
@@ -348,10 +348,10 @@ public final class AuthorizationProvider implements Provider {
 
             @Override
             public void delete(String id) {
-                Policy policy = findById(id, null);
+                PolicyModel policy = findById(id, null);
 
                 if (policy != null) {
-                    ResourceServer resourceServer = policy.getResourceServer();
+                    ResourceServerModel resourceServer = policy.getResourceServer();
 
                     findDependentPolicies(policy.getId(), resourceServer.getId()).forEach(dependentPolicy -> {
                         dependentPolicy.removeAssociatedPolicy(policy);
@@ -365,67 +365,67 @@ public final class AuthorizationProvider implements Provider {
             }
 
             @Override
-            public Policy findById(String id, String resourceServerId) {
+            public PolicyModel findById(String id, String resourceServerId) {
                 return policyStore.findById(id, resourceServerId);
             }
 
             @Override
-            public Policy findByName(String name, String resourceServerId) {
+            public PolicyModel findByName(String name, String resourceServerId) {
                 return policyStore.findByName(name, resourceServerId);
             }
 
             @Override
-            public List<Policy> findByResourceServer(String resourceServerId) {
+            public List<PolicyModel> findByResourceServer(String resourceServerId) {
                 return policyStore.findByResourceServer(resourceServerId);
             }
 
             @Override
-            public List<Policy> findByResourceServer(Map<String, String[]> attributes, String resourceServerId, int firstResult, int maxResult) {
+            public List<PolicyModel> findByResourceServer(Map<String, String[]> attributes, String resourceServerId, int firstResult, int maxResult) {
                 return policyStore.findByResourceServer(attributes, resourceServerId, firstResult, maxResult);
             }
 
             @Override
-            public List<Policy> findByResource(String resourceId, String resourceServerId) {
+            public List<PolicyModel> findByResource(String resourceId, String resourceServerId) {
                 return policyStore.findByResource(resourceId, resourceServerId);
             }
 
             @Override
-            public void findByResource(String resourceId, String resourceServerId, Consumer<Policy> consumer) {
+            public void findByResource(String resourceId, String resourceServerId, Consumer<PolicyModel> consumer) {
                 policyStore.findByResource(resourceId, resourceServerId, consumer);
             }
 
             @Override
-            public List<Policy> findByResourceType(String resourceType, String resourceServerId) {
+            public List<PolicyModel> findByResourceType(String resourceType, String resourceServerId) {
                 return policyStore.findByResourceType(resourceType, resourceServerId);
             }
 
             @Override
-            public List<Policy> findByScopeIds(List<String> scopeIds, String resourceServerId) {
+            public List<PolicyModel> findByScopeIds(List<String> scopeIds, String resourceServerId) {
                 return policyStore.findByScopeIds(scopeIds, resourceServerId);
             }
 
             @Override
-            public List<Policy> findByScopeIds(List<String> scopeIds, String resourceId, String resourceServerId) {
+            public List<PolicyModel> findByScopeIds(List<String> scopeIds, String resourceId, String resourceServerId) {
                 return policyStore.findByScopeIds(scopeIds, resourceId, resourceServerId);
             }
 
             @Override
-            public void findByScopeIds(List<String> scopeIds, String resourceId, String resourceServerId, Consumer<Policy> consumer) {
+            public void findByScopeIds(List<String> scopeIds, String resourceId, String resourceServerId, Consumer<PolicyModel> consumer) {
                 policyStore.findByScopeIds(scopeIds, resourceId, resourceServerId, consumer);
             }
 
             @Override
-            public List<Policy> findByType(String type, String resourceServerId) {
+            public List<PolicyModel> findByType(String type, String resourceServerId) {
                 return policyStore.findByType(type, resourceServerId);
             }
 
             @Override
-            public List<Policy> findDependentPolicies(String id, String resourceServerId) {
+            public List<PolicyModel> findDependentPolicies(String id, String resourceServerId) {
                 return policyStore.findDependentPolicies(id, resourceServerId);
             }
 
             @Override
-            public void findByResourceType(String type, String id, Consumer<Policy> policyConsumer) {
+            public void findByResourceType(String type, String id, Consumer<PolicyModel> policyConsumer) {
                 policyStore.findByResourceType(type, id, policyConsumer);
             }
         };
@@ -436,18 +436,18 @@ public final class AuthorizationProvider implements Provider {
             ResourceStore delegate = storeFactory.getResourceStore();
 
             @Override
-            public Resource create(String name, ResourceServer resourceServer, String owner) {
+            public ResourceModel create(String name, ResourceServerModel resourceServer, String owner) {
                 return delegate.create(name, resourceServer, owner);
             }
 
             @Override
-            public Resource create(String id, String name, ResourceServer resourceServer, String owner) {
+            public ResourceModel create(String id, String name, ResourceServerModel resourceServer, String owner) {
                 return delegate.create(id, name, resourceServer, owner);
             }
 
             @Override
             public void delete(String id) {
-                Resource resource = findById(id, null);
+                ResourceModel resource = findById(id, null);
                 StoreFactory storeFactory = AuthorizationProvider.this.getStoreFactory();
                 PermissionTicketStore ticketStore = storeFactory.getPermissionTicketStore();
                 List<PermissionTicketModel> permissions = ticketStore.findByResource(id, resource.getResourceServer().getId());
@@ -457,9 +457,9 @@ public final class AuthorizationProvider implements Provider {
                 }
 
                 PolicyStore policyStore = storeFactory.getPolicyStore();
-                List<Policy> policies = policyStore.findByResource(id, resource.getResourceServer().getId());
+                List<PolicyModel> policies = policyStore.findByResource(id, resource.getResourceServer().getId());
 
-                for (Policy policyModel : policies) {
+                for (PolicyModel policyModel : policies) {
                     if (policyModel.getResources().size() == 1) {
                         policyStore.delete(policyModel.getId());
                     } else {
@@ -471,87 +471,87 @@ public final class AuthorizationProvider implements Provider {
             }
 
             @Override
-            public Resource findById(String id, String resourceServerId) {
+            public ResourceModel findById(String id, String resourceServerId) {
                 return delegate.findById(id, resourceServerId);
             }
 
             @Override
-            public List<Resource> findByOwner(String ownerId, String resourceServerId) {
+            public List<ResourceModel> findByOwner(String ownerId, String resourceServerId) {
                 return delegate.findByOwner(ownerId, resourceServerId);
             }
 
             @Override
-            public void findByOwner(String ownerId, String resourceServerId, Consumer<Resource> consumer) {
+            public void findByOwner(String ownerId, String resourceServerId, Consumer<ResourceModel> consumer) {
                 delegate.findByOwner(ownerId, resourceServerId, consumer);
             }
 
             @Override
-            public List<Resource> findByOwner(String ownerId, String resourceServerId, int first, int max) {
+            public List<ResourceModel> findByOwner(String ownerId, String resourceServerId, int first, int max) {
                 return delegate.findByOwner(ownerId, resourceServerId, first, max);
             }
 
             @Override
-            public List<Resource> findByUri(String uri, String resourceServerId) {
+            public List<ResourceModel> findByUri(String uri, String resourceServerId) {
                 return delegate.findByUri(uri, resourceServerId);
             }
 
             @Override
-            public List<Resource> findByResourceServer(String resourceServerId) {
+            public List<ResourceModel> findByResourceServer(String resourceServerId) {
                 return delegate.findByResourceServer(resourceServerId);
             }
 
             @Override
-            public List<Resource> findByResourceServer(Map<String, String[]> attributes, String resourceServerId, int firstResult, int maxResult) {
+            public List<ResourceModel> findByResourceServer(Map<String, String[]> attributes, String resourceServerId, int firstResult, int maxResult) {
                 return delegate.findByResourceServer(attributes, resourceServerId, firstResult, maxResult);
             }
 
             @Override
-            public List<Resource> findByScope(List<String> id, String resourceServerId) {
+            public List<ResourceModel> findByScope(List<String> id, String resourceServerId) {
                 return delegate.findByScope(id, resourceServerId);
             }
 
             @Override
-            public void findByScope(List<String> scopes, String resourceServerId, Consumer<Resource> consumer) {
+            public void findByScope(List<String> scopes, String resourceServerId, Consumer<ResourceModel> consumer) {
                 delegate.findByScope(scopes, resourceServerId, consumer);
             }
 
             @Override
-            public Resource findByName(String name, String resourceServerId) {
+            public ResourceModel findByName(String name, String resourceServerId) {
                 return delegate.findByName(name, resourceServerId);
             }
 
             @Override
-            public Resource findByName(String name, String ownerId, String resourceServerId) {
+            public ResourceModel findByName(String name, String ownerId, String resourceServerId) {
                 return delegate.findByName(name, ownerId, resourceServerId);
             }
 
             @Override
-            public List<Resource> findByType(String type, String resourceServerId) {
+            public List<ResourceModel> findByType(String type, String resourceServerId) {
                 return delegate.findByType(type, resourceServerId);
             }
 
             @Override
-            public void findByType(String type, String resourceServerId, Consumer<Resource> consumer) {
+            public void findByType(String type, String resourceServerId, Consumer<ResourceModel> consumer) {
                 delegate.findByType(type, resourceServerId, consumer);
             }
 
             @Override
-            public void findByType(String type, String owner, String resourceServerId, Consumer<Resource> consumer) {
+            public void findByType(String type, String owner, String resourceServerId, Consumer<ResourceModel> consumer) {
                 delegate.findByType(type, owner, resourceServerId, consumer);
             }
 
             @Override
-            public List<Resource> findByType(String type, String owner, String resourceServerId) {
+            public List<ResourceModel> findByType(String type, String owner, String resourceServerId) {
                 return delegate.findByType(type, resourceServerId);
             }
 
             @Override
-            public List<Resource> findByTypeInstance(String type, String resourceServerId) {
+            public List<ResourceModel> findByTypeInstance(String type, String resourceServerId) {
                 return delegate.findByTypeInstance(type, resourceServerId);
             }
 
             @Override
-            public void findByTypeInstance(String type, String resourceServerId, Consumer<Resource> consumer) {
+            public void findByTypeInstance(String type, String resourceServerId, Consumer<ResourceModel> consumer) {
                 delegate.findByTypeInstance(type, resourceServerId, consumer);
             }
         };

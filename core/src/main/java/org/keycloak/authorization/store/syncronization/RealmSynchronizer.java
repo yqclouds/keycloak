@@ -19,7 +19,7 @@
 package org.keycloak.authorization.store.syncronization;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel.RealmRemovedEvent;
@@ -36,7 +36,7 @@ public class RealmSynchronizer implements Synchronizer<RealmRemovedEvent> {
         StoreFactory storeFactory = authorizationProvider.getStoreFactory();
 
         event.getRealm().getClients().forEach(clientModel -> {
-            ResourceServer resourceServer = storeFactory.getResourceServerStore().findById(clientModel.getId());
+            ResourceServerModel resourceServer = storeFactory.getResourceServerStore().findById(clientModel.getId());
 
             if (resourceServer != null) {
                 String id = resourceServer.getId();

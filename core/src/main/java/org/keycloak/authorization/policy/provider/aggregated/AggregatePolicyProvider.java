@@ -19,7 +19,7 @@ package org.keycloak.authorization.policy.provider.aggregated;
 
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.Decision;
-import org.keycloak.authorization.model.Policy;
+import org.keycloak.authorization.model.PolicyModel;
 import org.keycloak.authorization.permission.ResourcePermission;
 import org.keycloak.authorization.policy.evaluation.DecisionResultCollector;
 import org.keycloak.authorization.policy.evaluation.DefaultEvaluation;
@@ -48,12 +48,12 @@ public class AggregatePolicyProvider implements PolicyProvider {
             }
         };
         AuthorizationProvider authorization = evaluation.getAuthorizationProvider();
-        Policy policy = evaluation.getPolicy();
+        PolicyModel policy = evaluation.getPolicy();
         DefaultEvaluation defaultEvaluation = DefaultEvaluation.class.cast(evaluation);
-        Map<Policy, Map<Object, Decision.Effect>> decisionCache = defaultEvaluation.getDecisionCache();
+        Map<PolicyModel, Map<Object, Decision.Effect>> decisionCache = defaultEvaluation.getDecisionCache();
         ResourcePermission permission = evaluation.getPermission();
 
-        for (Policy associatedPolicy : policy.getAssociatedPolicies()) {
+        for (PolicyModel associatedPolicy : policy.getAssociatedPolicies()) {
             Map<Object, Decision.Effect> decisions = decisionCache.computeIfAbsent(associatedPolicy, p -> new HashMap<>());
             Decision.Effect effect = decisions.get(permission);
             DefaultEvaluation eval = new DefaultEvaluation(evaluation.getPermission(), evaluation.getContext(), policy, associatedPolicy, decision, authorization, decisionCache);

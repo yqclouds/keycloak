@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Login module based on Resource Owner password credentials grant from OAuth2 specs. It's supposed to be used in environments. which
+ * Login module based on ResourceModel Owner password credentials grant from OAuth2 specs. It's supposed to be used in environments. which
  * can't rely on HTTP (like SSH authentication for instance). It needs that Direct Grant is enabled on particular realm in Keycloak.
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>

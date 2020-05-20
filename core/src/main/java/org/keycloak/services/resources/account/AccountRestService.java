@@ -441,7 +441,7 @@ public class AccountRestService {
         for (ConsentScopeRepresentation scopeRepresentation : requested.getGrantedScopes()) {
             ClientScopeModel scopeModel = availableGrants.get(scopeRepresentation.getId());
             if (scopeModel == null) {
-                String msg = String.format("Scope id %s does not exist for client %s.", scopeRepresentation, consent.getClient().getName());
+                String msg = String.format("ScopeModel id %s does not exist for client %s.", scopeRepresentation, consent.getClient().getName());
                 event.error(msg);
                 throw new IllegalArgumentException(msg);
             } else {

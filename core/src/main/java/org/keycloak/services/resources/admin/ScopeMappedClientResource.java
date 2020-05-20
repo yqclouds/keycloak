@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
- * @resource Scope Mappings
+ * @resource ScopeModel Mappings
  */
 public class ScopeMappedClientResource {
     protected RealmModel realm;

@@ -33,13 +33,13 @@ public class BrowserSecurityHeaders {
 
     public static final String X_FRAME_OPTIONS_KEY = "xFrameOptions";
 
-    public static final String CONTENT_SECURITY_POLICY = "Content-Security-Policy";
+    public static final String CONTENT_SECURITY_POLICY = "Content-Security-PolicyModel";
 
     public static final String CONTENT_SECURITY_POLICY_DEFAULT = "frame-src 'self'; frame-ancestors 'self'; object-src 'none';";
 
     public static final String CONTENT_SECURITY_POLICY_KEY = "contentSecurityPolicy";
 
-    public static final String CONTENT_SECURITY_POLICY_REPORT_ONLY = "Content-Security-Policy-Report-Only";
+    public static final String CONTENT_SECURITY_POLICY_REPORT_ONLY = "Content-Security-PolicyModel-Report-Only";
 
     public static final String CONTENT_SECURITY_POLICY_REPORT_ONLY_DEFAULT = "";
 

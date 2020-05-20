@@ -17,7 +17,7 @@
 package org.keycloak.authorization.jpa.store;
 
 import org.keycloak.authorization.jpa.entities.Policy;
-import org.keycloak.authorization.jpa.entities.ScopeEntity;
+import org.keycloak.authorization.jpa.entities.PolicyRepository;
 import org.keycloak.authorization.model.*;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.jpa.JpaModel;
@@ -25,18 +25,26 @@ import org.keycloak.representations.idm.authorization.DecisionStrategy;
 import org.keycloak.representations.idm.authorization.Logic;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.persistence.EntityManagerFactory;
 import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class PolicyAdapter extends AbstractAuthorizationModel implements org.keycloak.authorization.model.Policy, JpaModel<Policy> {
-    private Policy entity;
-    private StoreFactory storeFactory;
+public class PolicyAdapter extends AbstractAuthorizationModel implements PolicyModel, JpaModel<Policy> {
+    private final Policy entity;
+    private final StoreFactory storeFactory;
 
     @Autowired
     private ResourceAdapter resourceAdapter;
+    @Autowired
+    private ScopeAdapter scopeAdapter;
+    @Autowired
+    private PolicyRepository policyRepository;
+
+    @Autowired
+    private EntityManagerFactory emf;
 
     public PolicyAdapter(Policy entity, StoreFactory storeFactory) {
         super(storeFactory);
@@ -44,11 +52,11 @@ public class PolicyAdapter extends AbstractAuthorizationModel implements org.key
         this.storeFactory = storeFactory;
     }
 
-    public Policy toEntity(org.keycloak.authorization.model.Policy policy) {
+    public Policy toEntity(PolicyModel policy) {
         if (policy instanceof PolicyAdapter) {
             return ((PolicyAdapter) policy).getEntity();
         } else {
-            return em.getReference(Policy.class, policy.getId());
+            return policyRepository.getOne(policy.getId());
         }
     }
 
@@ -92,7 +100,7 @@ public class PolicyAdapter extends AbstractAuthorizationModel implements org.key
 
     @Override
     public Map<String, String> getConfig() {
-        Map<String, String> result = new HashMap<String, String>();
+        Map<String, String> result = new HashMap<>();
         if (entity.getConfig() != null) result.putAll(entity.getConfig());
         return Collections.unmodifiableMap(result);
     }
@@ -152,13 +160,13 @@ public class PolicyAdapter extends AbstractAuthorizationModel implements org.key
     }
 
     @Override
-    public ResourceServer getResourceServer() {
+    public ResourceServerModel getResourceServer() {
         return storeFactory.getResourceServerStore().findById(entity.getResourceServer().getId());
     }
 
     @Override
-    public Set<org.keycloak.authorization.model.Policy> getAssociatedPolicies() {
-        Set<org.keycloak.authorization.model.Policy> result = new HashSet<>();
+    public Set<PolicyModel> getAssociatedPolicies() {
+        Set<PolicyModel> result = new HashSet<>();
         for (Policy policy : entity.getAssociatedPolicies()) {
             result.add(new PolicyAdapter(policy, storeFactory));
         }
@@ -166,8 +174,8 @@ public class PolicyAdapter extends AbstractAuthorizationModel implements org.key
     }
 
     @Override
-    public Set<org.keycloak.authorization.model.Resource> getResources() {
-        Set<org.keycloak.authorization.model.Resource> set = new HashSet<>();
+    public Set<ResourceModel> getResources() {
+        Set<ResourceModel> set = new HashSet<>();
         for (org.keycloak.authorization.jpa.entities.Resource res : entity.getResources()) {
             set.add(storeFactory.getResourceStore().findById(res.getId(), entity.getResourceServer().getId()));
         }
@@ -175,48 +183,48 @@ public class PolicyAdapter extends AbstractAuthorizationModel implements org.key
     }
 
     @Override
-    public Set<Scope> getScopes() {
-        Set<Scope> set = new HashSet<>();
-        for (ScopeEntity res : entity.getScopes()) {
+    public Set<ScopeModel> getScopes() {
+        Set<ScopeModel> set = new HashSet<>();
+        for (org.keycloak.authorization.jpa.entities.Scope res : entity.getScopes()) {
             set.add(storeFactory.getScopeStore().findById(res.getId(), entity.getResourceServer().getId()));
         }
         return Collections.unmodifiableSet(set);
     }
 
     @Override
-    public void addScope(Scope scope) {
+    public void addScope(ScopeModel scope) {
         throwExceptionIfReadonly();
-        entity.getScopes().add(ScopeAdapter.toEntity(em, scope));
+        entity.getScopes().add(scopeAdapter.toEntity(scope));
     }
 
     @Override
-    public void removeScope(Scope scope) {
+    public void removeScope(ScopeModel scope) {
         throwExceptionIfReadonly();
-        entity.getScopes().remove(ScopeAdapter.toEntity(em, scope));
+        entity.getScopes().remove(scopeAdapter.toEntity(scope));
 
     }
 
     @Override
-    public void addAssociatedPolicy(org.keycloak.authorization.model.Policy associatedPolicy) {
+    public void addAssociatedPolicy(PolicyModel associatedPolicy) {
         throwExceptionIfReadonly();
         entity.getAssociatedPolicies().add(toEntity(associatedPolicy));
     }
 
     @Override
-    public void removeAssociatedPolicy(org.keycloak.authorization.model.Policy associatedPolicy) {
+    public void removeAssociatedPolicy(PolicyModel associatedPolicy) {
         throwExceptionIfReadonly();
         entity.getAssociatedPolicies().remove(toEntity(associatedPolicy));
 
     }
 
     @Override
-    public void addResource(org.keycloak.authorization.model.Resource resource) {
+    public void addResource(ResourceModel resource) {
         throwExceptionIfReadonly();
         entity.getResources().add(resourceAdapter.toEntity(resource));
     }
 
     @Override
-    public void removeResource(org.keycloak.authorization.model.Resource resource) {
+    public void removeResource(ResourceModel resource) {
         throwExceptionIfReadonly();
         entity.getResources().remove(resourceAdapter.toEntity(resource));
     }
@@ -235,9 +243,9 @@ public class PolicyAdapter extends AbstractAuthorizationModel implements org.key
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof org.keycloak.authorization.model.Policy)) return false;
+        if (!(o instanceof PolicyModel)) return false;
 
-        org.keycloak.authorization.model.Policy that = (org.keycloak.authorization.model.Policy) o;
+        PolicyModel that = (PolicyModel) o;
         return that.getId().equals(getId());
     }
 
@@ -248,6 +256,6 @@ public class PolicyAdapter extends AbstractAuthorizationModel implements org.key
 
     @Override
     public boolean isFetched(String association) {
-        return em.getEntityManagerFactory().getPersistenceUnitUtil().isLoaded(entity, association);
+        return emf.getPersistenceUnitUtil().isLoaded(entity, association);
     }
 }

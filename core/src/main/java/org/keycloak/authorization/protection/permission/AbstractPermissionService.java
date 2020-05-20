@@ -18,9 +18,9 @@ package org.keycloak.authorization.protection.permission;
 
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.common.KeycloakIdentity;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
+import org.keycloak.authorization.model.ScopeModel;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.representations.idm.authorization.Permission;
 import org.keycloak.representations.idm.authorization.PermissionRequest;
@@ -40,9 +40,9 @@ public class AbstractPermissionService {
 
     private final AuthorizationProvider authorization;
     private final KeycloakIdentity identity;
-    private final ResourceServer resourceServer;
+    private final ResourceServerModel resourceServer;
 
-    public AbstractPermissionService(KeycloakIdentity identity, ResourceServer resourceServer, AuthorizationProvider authorization) {
+    public AbstractPermissionService(KeycloakIdentity identity, ResourceServerModel resourceServer, AuthorizationProvider authorization) {
         this.identity = identity;
         this.resourceServer = resourceServer;
         this.authorization = authorization;
@@ -62,26 +62,26 @@ public class AbstractPermissionService {
 
         for (PermissionRequest permissionRequest : request) {
             String resourceSetId = permissionRequest.getResourceId();
-            List<Resource> resources = new ArrayList<>();
+            List<ResourceModel> resources = new ArrayList<>();
 
             if (resourceSetId == null) {
                 if (permissionRequest.getScopes() == null || permissionRequest.getScopes().isEmpty()) {
-                    throw new ErrorResponseException("invalid_resource_id", "Resource id or name not provided.", Response.Status.BAD_REQUEST);
+                    throw new ErrorResponseException("invalid_resource_id", "ResourceModel id or name not provided.", Response.Status.BAD_REQUEST);
                 }
             } else {
-                Resource resource = resourceStore.findById(resourceSetId, resourceServer.getId());
+                ResourceModel resource = resourceStore.findById(resourceSetId, resourceServer.getId());
 
                 if (resource != null) {
                     resources.add(resource);
                 } else {
-                    Resource userResource = resourceStore.findByName(resourceSetId, identity.getId(), this.resourceServer.getId());
+                    ResourceModel userResource = resourceStore.findByName(resourceSetId, identity.getId(), this.resourceServer.getId());
 
                     if (userResource != null) {
                         resources.add(userResource);
                     }
 
                     if (!identity.isResourceServer()) {
-                        Resource serverResource = resourceStore.findByName(resourceSetId, this.resourceServer.getId());
+                        ResourceModel serverResource = resourceStore.findByName(resourceSetId, this.resourceServer.getId());
 
                         if (serverResource != null) {
                             resources.add(serverResource);
@@ -90,14 +90,14 @@ public class AbstractPermissionService {
                 }
 
                 if (resources.isEmpty()) {
-                    throw new ErrorResponseException("invalid_resource_id", "Resource set with id [" + resourceSetId + "] does not exists in this server.", Response.Status.BAD_REQUEST);
+                    throw new ErrorResponseException("invalid_resource_id", "ResourceModel set with id [" + resourceSetId + "] does not exists in this server.", Response.Status.BAD_REQUEST);
                 }
             }
 
             if (resources.isEmpty()) {
                 requestedResources.add(new Permission(null, verifyRequestedScopes(permissionRequest, null)));
             } else {
-                for (Resource resource : resources) {
+                for (ResourceModel resource : resources) {
                     requestedResources.add(new Permission(resource.getId(), verifyRequestedScopes(permissionRequest, resource)));
                 }
             }
@@ -106,7 +106,7 @@ public class AbstractPermissionService {
         return requestedResources;
     }
 
-    private Set<String> verifyRequestedScopes(PermissionRequest request, Resource resource) {
+    private Set<String> verifyRequestedScopes(PermissionRequest request, ResourceModel resource) {
         Set<String> requestScopes = request.getScopes();
 
         if (requestScopes == null) {
@@ -116,7 +116,7 @@ public class AbstractPermissionService {
         ResourceStore resourceStore = authorization.getStoreFactory().getResourceStore();
 
         return requestScopes.stream().map(scopeName -> {
-            Scope scope = null;
+            ScopeModel scope = null;
 
             if (resource != null) {
                 scope = resource.getScopes().stream().filter(scope1 -> scope1.getName().equals(scopeName)).findFirst().orElse(null);
@@ -132,7 +132,7 @@ public class AbstractPermissionService {
             }
 
             if (scope == null) {
-                throw new ErrorResponseException("invalid_scope", "Scope [" + scopeName + "] is invalid", Response.Status.BAD_REQUEST);
+                throw new ErrorResponseException("invalid_scope", "ScopeModel [" + scopeName + "] is invalid", Response.Status.BAD_REQUEST);
             }
 
             return scope.getName();

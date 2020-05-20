@@ -18,10 +18,10 @@
 package org.keycloak.authorization.policy.evaluation;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
+import org.keycloak.authorization.model.ScopeModel;
 import org.keycloak.authorization.permission.ResourcePermission;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.representations.idm.authorization.AuthorizationRequest;
@@ -37,48 +37,48 @@ import java.util.stream.Collectors;
 public class DecisionPermissionCollector extends AbstractDecisionCollector {
 
     private final AuthorizationProvider authorizationProvider;
-    private final ResourceServer resourceServer;
+    private final ResourceServerModel resourceServer;
     private final AuthorizationRequest request;
     private final List<Permission> permissions = new ArrayList<>();
 
-    public DecisionPermissionCollector(AuthorizationProvider authorizationProvider, ResourceServer resourceServer, AuthorizationRequest request) {
+    public DecisionPermissionCollector(AuthorizationProvider authorizationProvider, ResourceServerModel resourceServer, AuthorizationRequest request) {
         this.authorizationProvider = authorizationProvider;
         this.resourceServer = resourceServer;
         this.request = request;
     }
 
-    private static boolean isResourcePermission(Policy policy) {
+    private static boolean isResourcePermission(PolicyModel policy) {
         return "resource".equals(policy.getType());
     }
 
-    private static boolean isScopePermission(Policy policy) {
+    private static boolean isScopePermission(PolicyModel policy) {
         return "scope".equals(policy.getType());
     }
 
     @Override
     public void onComplete(Result result) {
         ResourcePermission permission = result.getPermission();
-        Resource resource = permission.getResource();
-        List<Scope> requestedScopes = permission.getScopes();
+        ResourceModel resource = permission.getResource();
+        List<ScopeModel> requestedScopes = permission.getScopes();
 
         if (Effect.PERMIT.equals(result.getEffect())) {
             grantPermission(authorizationProvider, permissions, permission, resource != null ? resource.getScopes() : requestedScopes, resourceServer, request, result);
         } else {
-            Set<Scope> grantedScopes = new HashSet<>();
-            Set<Scope> deniedScopes = new HashSet<>();
+            Set<ScopeModel> grantedScopes = new HashSet<>();
+            Set<ScopeModel> deniedScopes = new HashSet<>();
             List<Result.PolicyResult> userManagedPermissions = new ArrayList<>();
             boolean resourceGranted = false;
             boolean anyDeny = false;
 
             for (Result.PolicyResult policyResult : result.getResults()) {
-                Policy policy = policyResult.getPolicy();
-                Set<Scope> policyScopes = policy.getScopes();
-                Set<Resource> policyResources = policy.getResources();
+                PolicyModel policy = policyResult.getPolicy();
+                Set<ScopeModel> policyScopes = policy.getScopes();
+                Set<ResourceModel> policyResources = policy.getResources();
                 boolean containsResource = policyResources.contains(resource);
 
                 if (isGranted(policyResult)) {
                     if (isScopePermission(policy)) {
-                        for (Scope scope : requestedScopes) {
+                        for (ScopeModel scope : requestedScopes) {
                             if (policyScopes.contains(scope)) {
                                 grantedScopes.add(scope);
                                 // we need to grant any scope granted by a permission in case it is not explicitly
@@ -129,7 +129,7 @@ public class DecisionPermissionCollector extends AbstractDecisionCollector {
                 }
             } else {
                 for (Result.PolicyResult userManagedPermission : userManagedPermissions) {
-                    Set<Scope> scopes = new HashSet<>(userManagedPermission.getPolicy().getScopes());
+                    Set<ScopeModel> scopes = new HashSet<>(userManagedPermission.getPolicy().getScopes());
 
                     if (!requestedScopes.isEmpty()) {
                         scopes.retainAll(requestedScopes);
@@ -162,7 +162,7 @@ public class DecisionPermissionCollector extends AbstractDecisionCollector {
      * @param policy   the policy that grants access to the resources
      * @return {@code true} if the resource should be granted
      */
-    private boolean isGrantingAccessToResource(Resource resource, Policy policy) {
+    private boolean isGrantingAccessToResource(ResourceModel resource, PolicyModel policy) {
         boolean scopePermission = isScopePermission(policy);
 
         if (!scopePermission) {
@@ -181,16 +181,16 @@ public class DecisionPermissionCollector extends AbstractDecisionCollector {
         throw new RuntimeException("Failed to evaluate permissions", cause);
     }
 
-    protected void grantPermission(AuthorizationProvider authorizationProvider, List<Permission> permissions, ResourcePermission permission, Collection<Scope> grantedScopes, ResourceServer resourceServer, AuthorizationRequest request, Result result) {
-        Set<String> scopeNames = grantedScopes.stream().map(Scope::getName).collect(Collectors.toSet());
-        Resource resource = permission.getResource();
+    protected void grantPermission(AuthorizationProvider authorizationProvider, List<Permission> permissions, ResourcePermission permission, Collection<ScopeModel> grantedScopes, ResourceServerModel resourceServer, AuthorizationRequest request, Result result) {
+        Set<String> scopeNames = grantedScopes.stream().map(ScopeModel::getName).collect(Collectors.toSet());
+        ResourceModel resource = permission.getResource();
 
         if (resource != null) {
             permissions.add(createPermission(resource, scopeNames, permission.getClaims(), request));
         } else if (!grantedScopes.isEmpty()) {
             ResourceStore resourceStore = authorizationProvider.getStoreFactory().getResourceStore();
 
-            resourceStore.findByScope(grantedScopes.stream().map(Scope::getId).collect(Collectors.toList()), resourceServer.getId(), resource1 -> permissions.add(createPermission(resource, scopeNames, permission.getClaims(), request)));
+            resourceStore.findByScope(grantedScopes.stream().map(ScopeModel::getId).collect(Collectors.toList()), resourceServer.getId(), resource1 -> permissions.add(createPermission(resource, scopeNames, permission.getClaims(), request)));
 
             if (permissions.isEmpty()) {
                 permissions.add(createPermission(null, scopeNames, permission.getClaims(), request));
@@ -198,7 +198,7 @@ public class DecisionPermissionCollector extends AbstractDecisionCollector {
         }
     }
 
-    private Permission createPermission(Resource resource, Set<String> scopes, Map<String, Set<String>> claims, AuthorizationRequest request) {
+    private Permission createPermission(ResourceModel resource, Set<String> scopes, Map<String, Set<String>> claims, AuthorizationRequest request) {
         AuthorizationRequest.Metadata metadata = null;
 
         if (request != null) {

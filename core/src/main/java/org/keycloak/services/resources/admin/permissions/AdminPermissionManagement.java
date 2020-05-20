@@ -17,7 +17,7 @@
 package org.keycloak.services.resources.admin.permissions;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.models.ClientModel;
 
 /**
@@ -43,5 +43,5 @@ public interface AdminPermissionManagement {
 
     IdentityProviderPermissionManagement idps();
 
-    ResourceServer realmResourceServer();
+    ResourceServerModel realmResourceServer();
 }

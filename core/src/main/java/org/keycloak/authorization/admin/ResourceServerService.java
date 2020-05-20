@@ -19,7 +19,7 @@ package org.keycloak.authorization.admin;
 
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.exportimport.util.ExportUtils;
@@ -52,9 +52,9 @@ public class ResourceServerService {
     private final AdminEventBuilder adminEvent;
     private final KeycloakSession session;
     private final ClientModel client;
-    private ResourceServer resourceServer;
+    private ResourceServerModel resourceServer;
 
-    public ResourceServerService(AuthorizationProvider authorization, ResourceServer resourceServer, ClientModel client, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public ResourceServerService(AuthorizationProvider authorization, ResourceServerModel resourceServer, ClientModel client, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.authorization = authorization;
         this.session = authorization.getSession();
         this.client = client;
@@ -66,7 +66,7 @@ public class ResourceServerService {
     @Autowired
     private RepresentationToModel representationToModel;
 
-    public ResourceServer create(boolean newClient) {
+    public ResourceServerModel create(boolean newClient) {
         this.auth.realm().requireManageAuthorization();
 
         UserModel serviceAccount = this.session.users().getServiceAccount(client);
@@ -186,7 +186,7 @@ public class ResourceServerService {
     private PolicyRepresentation createDefaultPolicy() {
         PolicyRepresentation defaultPolicy = new PolicyRepresentation();
 
-        defaultPolicy.setName("Default Policy");
+        defaultPolicy.setName("Default PolicyModel");
         defaultPolicy.setDescription("A policy that grants access only for users within this realm");
         defaultPolicy.setType("js");
         defaultPolicy.setDecisionStrategy(DecisionStrategy.AFFIRMATIVE);
@@ -208,7 +208,7 @@ public class ResourceServerService {
     private ResourceRepresentation createDefaultResource() {
         ResourceRepresentation defaultResource = new ResourceRepresentation();
 
-        defaultResource.setName("Default Resource");
+        defaultResource.setName("Default ResourceModel");
         defaultResource.setUris(Collections.singleton("/*"));
         defaultResource.setType("urn:" + this.client.getClientId() + ":resources:default");
 

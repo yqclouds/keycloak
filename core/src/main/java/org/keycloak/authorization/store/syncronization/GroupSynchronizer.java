@@ -18,7 +18,7 @@
 package org.keycloak.authorization.store.syncronization;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
+import org.keycloak.authorization.model.PolicyModel;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.authorization.store.StoreFactory;
@@ -50,9 +50,9 @@ public class GroupSynchronizer implements Synchronizer<GroupModel.GroupRemovedEv
         attributes.put("type", new String[]{"group"});
         attributes.put("config:groups", new String[]{group.getId()});
 
-        List<Policy> search = policyStore.findByResourceServer(attributes, null, -1, -1);
+        List<PolicyModel> search = policyStore.findByResourceServer(attributes, null, -1, -1);
 
-        for (Policy policy : search) {
+        for (PolicyModel policy : search) {
             PolicyProviderFactory policyFactory = authorizationProvider.getProviderFactory(policy.getType());
             GroupPolicyRepresentation representation = GroupPolicyRepresentation.class.cast(policyFactory.toRepresentation(policy, authorizationProvider));
             Set<GroupPolicyRepresentation.GroupDefinition> groups = representation.getGroups();

@@ -18,22 +18,18 @@
 package org.keycloak.authorization.jpa.store;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.jpa.entities.ScopeEntity;
-import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.jpa.entities.Scope;
+import org.keycloak.authorization.jpa.entities.ScopeRepository;
+import org.keycloak.authorization.model.ResourceServerModel;
+import org.keycloak.authorization.model.ScopeModel;
 import org.keycloak.authorization.store.ScopeStore;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.*;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.NoResultException;
 import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -44,18 +40,21 @@ public class JPAScopeStore implements ScopeStore {
     @Autowired
     private ResourceServerAdapter resourceServerAdapter;
 
+    @Autowired
+    private ScopeRepository scopeRepository;
+
     public JPAScopeStore(AuthorizationProvider provider) {
         this.provider = provider;
     }
 
     @Override
-    public Scope create(final String name, final ResourceServer resourceServer) {
+    public ScopeModel create(final String name, final ResourceServerModel resourceServer) {
         return create(null, name, resourceServer);
     }
 
     @Override
-    public Scope create(String id, final String name, final ResourceServer resourceServer) {
-        ScopeEntity entity = new ScopeEntity();
+    public ScopeModel create(String id, final String name, final ResourceServerModel resourceServer) {
+        Scope entity = new Scope();
 
         if (id == null) {
             entity.setId(KeycloakModelUtils.generateId());
@@ -65,44 +64,30 @@ public class JPAScopeStore implements ScopeStore {
 
         entity.setName(name);
         entity.setResourceServer(resourceServerAdapter.toEntity(resourceServer));
-
-        this.entityManager.persist(entity);
-        this.entityManager.flush();
+        scopeRepository.save(entity);
 
         return new ScopeAdapter(entity, provider.getStoreFactory());
     }
 
     @Override
     public void delete(String id) {
-        ScopeEntity scope = entityManager.find(ScopeEntity.class, id, LockModeType.PESSIMISTIC_WRITE);
-
-        if (scope != null) {
-            this.entityManager.remove(scope);
-        }
+        scopeRepository.deleteById(id);
     }
 
     @Override
-    public Scope findById(String id, String resourceServerId) {
+    public ScopeModel findById(String id, String resourceServerId) {
         if (id == null) {
             return null;
         }
 
-        ScopeEntity entity = entityManager.find(ScopeEntity.class, id);
-        if (entity == null) return null;
-
-        return new ScopeAdapter(entity, provider.getStoreFactory());
+        Optional<Scope> optional = scopeRepository.findById(id);
+        return optional.map(scope -> new ScopeAdapter(scope, provider.getStoreFactory())).orElse(null);
     }
 
     @Override
-    public Scope findByName(String name, String resourceServerId) {
+    public ScopeModel findByName(String name, String resourceServerId) {
         try {
-            TypedQuery<String> query = entityManager.createNamedQuery("findScopeIdByName", String.class);
-
-            query.setFlushMode(FlushModeType.COMMIT);
-            query.setParameter("serverId", resourceServerId);
-            query.setParameter("name", name);
-
-            String id = query.getSingleResult();
+            String id = scopeRepository.findScopeIdByName(resourceServerId, name);
             return provider.getStoreFactory().getScopeStore().findById(id, resourceServerId);
         } catch (NoResultException nre) {
             return null;
@@ -110,55 +95,42 @@ public class JPAScopeStore implements ScopeStore {
     }
 
     @Override
-    public List<Scope> findByResourceServer(final String serverId) {
-        TypedQuery<String> query = entityManager.createNamedQuery("findScopeIdByResourceServer", String.class);
-
-        query.setFlushMode(FlushModeType.COMMIT);
-        query.setParameter("serverId", serverId);
-
-        List<String> result = query.getResultList();
-        List<Scope> list = new LinkedList<>();
+    public List<ScopeModel> findByResourceServer(final String serverId) {
+        List<String> result = scopeRepository.findScopeIdByResourceServer(serverId);
+        List<ScopeModel> list = new LinkedList<>();
         for (String id : result) {
             list.add(provider.getStoreFactory().getScopeStore().findById(id, serverId));
         }
         return list;
     }
 
+    private Specification<Scope> findByResourceServerSpecification(Map<String, String[]> attributes, String resourceServerId) {
+        return (Specification<Scope>) (root, criteriaQuery, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            predicates.add(cb.equal(root.get("resourceServer").get("id"), resourceServerId));
+
+            attributes.forEach((name, value) -> {
+                if ("id".equals(name)) {
+                    predicates.add(root.get(name).in((Object) value));
+                } else {
+                    predicates.add(cb.like(cb.lower(root.get(name)), "%" + value[0].toLowerCase() + "%"));
+                }
+            });
+
+            criteriaQuery.where(predicates.toArray(new Predicate[0])).orderBy(cb.asc(root.get("name")));
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+    }
+
     @Override
-    public List<Scope> findByResourceServer(Map<String, String[]> attributes, String resourceServerId, int firstResult, int maxResult) {
-        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<ScopeEntity> querybuilder = builder.createQuery(ScopeEntity.class);
-        Root<ScopeEntity> root = querybuilder.from(ScopeEntity.class);
-        querybuilder.select(root.get("id"));
-        List<Predicate> predicates = new ArrayList();
-
-        predicates.add(builder.equal(root.get("resourceServer").get("id"), resourceServerId));
-
-        attributes.forEach((name, value) -> {
-            if ("id".equals(name)) {
-                predicates.add(root.get(name).in(value));
-            } else {
-                predicates.add(builder.like(builder.lower(root.get(name)), "%" + value[0].toLowerCase() + "%"));
-            }
-        });
-
-        querybuilder.where(predicates.toArray(new Predicate[predicates.size()])).orderBy(builder.asc(root.get("name")));
-
-        Query query = entityManager.createQuery(querybuilder);
-
-        if (firstResult != -1) {
-            query.setFirstResult(firstResult);
-        }
-        if (maxResult != -1) {
-            query.setMaxResults(maxResult);
-        }
-
-        List result = query.getResultList();
-        List<Scope> list = new LinkedList<>();
-        for (Object id : result) {
-            list.add(provider.getStoreFactory().getScopeStore().findById((String) id, resourceServerId));
+    public List<ScopeModel> findByResourceServer(Map<String, String[]> attributes, String resourceServerId, int firstResult, int maxResult) {
+        List<Scope> result = scopeRepository.findAll(findByResourceServerSpecification(attributes, resourceServerId));
+        List<ScopeModel> list = new LinkedList<>();
+        for (Scope entity : result) {
+            list.add(provider.getStoreFactory().getScopeStore().findById(entity.getId(), resourceServerId));
         }
         return list;
-
     }
 }

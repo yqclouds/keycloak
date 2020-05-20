@@ -25,22 +25,10 @@ import java.io.Serializable;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@NamedQueries({
-        @NamedQuery(name = "deleteUserSessionsByRealm", query = "delete from PersistentUserSessionEntity sess where sess.realmId = :realmId"),
-        @NamedQuery(name = "deleteUserSessionsByUser", query = "delete from PersistentUserSessionEntity sess where sess.userId = :userId"),
-        @NamedQuery(name = "deleteExpiredUserSessions", query = "delete from PersistentUserSessionEntity sess where sess.realmId = :realmId AND sess.offline = :offline AND sess.lastSessionRefresh < :lastSessionRefresh"),
-        @NamedQuery(name = "updateUserSessionLastSessionRefresh", query = "update PersistentUserSessionEntity sess set lastSessionRefresh = :lastSessionRefresh where sess.realmId = :realmId" +
-                " AND sess.offline = :offline AND sess.userSessionId IN (:userSessionIds)"),
-        @NamedQuery(name = "findUserSessionsCount", query = "select count(sess) from PersistentUserSessionEntity sess where sess.offline = :offline"),
-        @NamedQuery(name = "findUserSessions", query = "select sess from PersistentUserSessionEntity sess where sess.offline = :offline" +
-                " AND (sess.createdOn > :lastCreatedOn OR (sess.createdOn = :lastCreatedOn AND sess.userSessionId > :lastSessionId))" +
-                " order by sess.createdOn,sess.userSessionId")
-
-})
 @Table(name = "OFFLINE_USER_SESSION")
 @Entity
-@IdClass(PersistentUserSessionEntity.Key.class)
-public class PersistentUserSessionEntity {
+@IdClass(PersistentUserSession.Key.class)
+public class PersistentUserSession {
 
     @Id
     @Column(name = "USER_SESSION_ID", length = 36)

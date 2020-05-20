@@ -20,8 +20,8 @@ package org.keycloak.authorization.policy.provider.role;
 
 import org.keycloak.Config;
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.PolicyStore;
@@ -69,7 +69,7 @@ public class RolePolicyProviderFactory implements PolicyProviderFactory<RolePoli
     }
 
     @Override
-    public RolePolicyRepresentation toRepresentation(Policy policy, AuthorizationProvider authorization) {
+    public RolePolicyRepresentation toRepresentation(PolicyModel policy, AuthorizationProvider authorization) {
         RolePolicyRepresentation representation = new RolePolicyRepresentation();
 
         try {
@@ -87,17 +87,17 @@ public class RolePolicyProviderFactory implements PolicyProviderFactory<RolePoli
     }
 
     @Override
-    public void onCreate(Policy policy, RolePolicyRepresentation representation, AuthorizationProvider authorization) {
+    public void onCreate(PolicyModel policy, RolePolicyRepresentation representation, AuthorizationProvider authorization) {
         updateRoles(policy, representation, authorization);
     }
 
     @Override
-    public void onUpdate(Policy policy, RolePolicyRepresentation representation, AuthorizationProvider authorization) {
+    public void onUpdate(PolicyModel policy, RolePolicyRepresentation representation, AuthorizationProvider authorization) {
         updateRoles(policy, representation, authorization);
     }
 
     @Override
-    public void onImport(Policy policy, PolicyRepresentation representation, AuthorizationProvider authorization) {
+    public void onImport(PolicyModel policy, PolicyRepresentation representation, AuthorizationProvider authorization) {
         try {
             updateRoles(policy, authorization, new HashSet<>(Arrays.asList(JsonSerialization.readValue(representation.getConfig().get("roles"), RolePolicyRepresentation.RoleDefinition[].class))));
         } catch (IOException cause) {
@@ -106,7 +106,7 @@ public class RolePolicyProviderFactory implements PolicyProviderFactory<RolePoli
     }
 
     @Override
-    public void onExport(Policy policy, PolicyRepresentation representation, AuthorizationProvider authorizationProvider) {
+    public void onExport(PolicyModel policy, PolicyRepresentation representation, AuthorizationProvider authorizationProvider) {
         Map<String, String> config = new HashMap<>();
         Set<RolePolicyRepresentation.RoleDefinition> roles = toRepresentation(policy, authorizationProvider).getRoles();
 
@@ -129,11 +129,11 @@ public class RolePolicyProviderFactory implements PolicyProviderFactory<RolePoli
         representation.setConfig(config);
     }
 
-    private void updateRoles(Policy policy, RolePolicyRepresentation representation, AuthorizationProvider authorization) {
+    private void updateRoles(PolicyModel policy, RolePolicyRepresentation representation, AuthorizationProvider authorization) {
         updateRoles(policy, authorization, representation.getRoles());
     }
 
-    private void updateRoles(Policy policy, AuthorizationProvider authorization, Set<RolePolicyRepresentation.RoleDefinition> roles) {
+    private void updateRoles(PolicyModel policy, AuthorizationProvider authorization, Set<RolePolicyRepresentation.RoleDefinition> roles) {
         RealmModel realm = authorization.getRealm();
         Set<RolePolicyRepresentation.RoleDefinition> updatedRoles = new HashSet<>();
 
@@ -220,7 +220,7 @@ public class RolePolicyProviderFactory implements PolicyProviderFactory<RolePoli
     }
 
     private void updateResourceServer(ClientModel clientModel, RoleModel removedRole, ResourceServerStore resourceServerStore, PolicyStore policyStore) {
-        ResourceServer resourceServer = resourceServerStore.findById(clientModel.getId());
+        ResourceServerModel resourceServer = resourceServerStore.findById(clientModel.getId());
 
         if (resourceServer != null) {
             policyStore.findByType(getId(), resourceServer.getId()).forEach(policy -> {
@@ -261,7 +261,7 @@ public class RolePolicyProviderFactory implements PolicyProviderFactory<RolePoli
         return "role";
     }
 
-    private Map<String, Object>[] getRoles(Policy policy) {
+    private Map<String, Object>[] getRoles(PolicyModel policy) {
         String roles = policy.getConfig().get("roles");
 
         if (roles != null) {

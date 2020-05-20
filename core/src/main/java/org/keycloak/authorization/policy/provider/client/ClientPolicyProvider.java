@@ -1,7 +1,7 @@
 package org.keycloak.authorization.policy.provider.client;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
+import org.keycloak.authorization.model.PolicyModel;
 import org.keycloak.authorization.policy.evaluation.Evaluation;
 import org.keycloak.authorization.policy.evaluation.EvaluationContext;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
@@ -13,9 +13,9 @@ import java.util.function.BiFunction;
 
 public class ClientPolicyProvider implements PolicyProvider {
 
-    private final BiFunction<Policy, AuthorizationProvider, ClientPolicyRepresentation> representationFunction;
+    private final BiFunction<PolicyModel, AuthorizationProvider, ClientPolicyRepresentation> representationFunction;
 
-    public ClientPolicyProvider(BiFunction<Policy, AuthorizationProvider, ClientPolicyRepresentation> representationFunction) {
+    public ClientPolicyProvider(BiFunction<PolicyModel, AuthorizationProvider, ClientPolicyRepresentation> representationFunction) {
         this.representationFunction = representationFunction;
     }
 

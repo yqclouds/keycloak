@@ -19,10 +19,10 @@ package org.keycloak.authorization.admin;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
+import org.keycloak.authorization.model.ScopeModel;
 import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.events.admin.OperationType;
@@ -58,9 +58,9 @@ public class ScopeService {
     private final AdminPermissionEvaluator auth;
     private final AdminEventBuilder adminEvent;
     private KeycloakSession session;
-    private ResourceServer resourceServer;
+    private ResourceServerModel resourceServer;
 
-    public ScopeService(KeycloakSession session, ResourceServer resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public ScopeService(KeycloakSession session, ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.session = session;
         this.resourceServer = resourceServer;
         this.authorization = authorization;
@@ -74,7 +74,7 @@ public class ScopeService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response create(ScopeRepresentation scope) {
         this.auth.realm().requireManageAuthorization();
-        Scope model = toModel(scope, this.resourceServer, authorization);
+        ScopeModel model = toModel(scope, this.resourceServer, authorization);
 
         scope.setId(model.getId());
 
@@ -91,7 +91,7 @@ public class ScopeService {
         this.auth.realm().requireManageAuthorization();
         scope.setId(id);
         StoreFactory storeFactory = authorization.getStoreFactory();
-        Scope model = storeFactory.getScopeStore().findById(scope.getId(), resourceServer.getId());
+        ScopeModel model = storeFactory.getScopeStore().findById(scope.getId(), resourceServer.getId());
 
         if (model == null) {
             return Response.status(Status.NOT_FOUND).build();
@@ -109,22 +109,22 @@ public class ScopeService {
     public Response delete(@PathParam("id") String id) {
         this.auth.realm().requireManageAuthorization();
         StoreFactory storeFactory = authorization.getStoreFactory();
-        List<Resource> resources = storeFactory.getResourceStore().findByScope(Arrays.asList(id), resourceServer.getId());
+        List<ResourceModel> resources = storeFactory.getResourceStore().findByScope(Arrays.asList(id), resourceServer.getId());
 
         if (!resources.isEmpty()) {
             return ErrorResponse.error("Scopes can not be removed while associated with resources.", Status.BAD_REQUEST);
         }
 
-        Scope scope = storeFactory.getScopeStore().findById(id, resourceServer.getId());
+        ScopeModel scope = storeFactory.getScopeStore().findById(id, resourceServer.getId());
 
         if (scope == null) {
             return Response.status(Status.NOT_FOUND).build();
         }
 
         PolicyStore policyStore = storeFactory.getPolicyStore();
-        List<Policy> policies = policyStore.findByScopeIds(Arrays.asList(scope.getId()), resourceServer.getId());
+        List<PolicyModel> policies = policyStore.findByScopeIds(Arrays.asList(scope.getId()), resourceServer.getId());
 
-        for (Policy policyModel : policies) {
+        for (PolicyModel policyModel : policies) {
             if (policyModel.getScopes().size() == 1) {
                 policyStore.delete(policyModel.getId());
             } else {
@@ -145,7 +145,7 @@ public class ScopeService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response findById(@PathParam("id") String id) {
         this.auth.realm().requireViewAuthorization();
-        Scope model = this.authorization.getStoreFactory().getScopeStore().findById(id, resourceServer.getId());
+        ScopeModel model = this.authorization.getStoreFactory().getScopeStore().findById(id, resourceServer.getId());
 
         if (model == null) {
             return Response.status(Status.NOT_FOUND).build();
@@ -161,7 +161,7 @@ public class ScopeService {
     public Response getResources(@PathParam("id") String id) {
         this.auth.realm().requireViewAuthorization();
         StoreFactory storeFactory = this.authorization.getStoreFactory();
-        Scope model = storeFactory.getScopeStore().findById(id, resourceServer.getId());
+        ScopeModel model = storeFactory.getScopeStore().findById(id, resourceServer.getId());
 
         if (model == null) {
             return Response.status(Status.NOT_FOUND).build();
@@ -184,7 +184,7 @@ public class ScopeService {
     public Response getPermissions(@PathParam("id") String id) {
         this.auth.realm().requireViewAuthorization();
         StoreFactory storeFactory = this.authorization.getStoreFactory();
-        Scope model = storeFactory.getScopeStore().findById(id, resourceServer.getId());
+        ScopeModel model = storeFactory.getScopeStore().findById(id, resourceServer.getId());
 
         if (model == null) {
             return Response.status(Status.NOT_FOUND).build();
@@ -215,7 +215,7 @@ public class ScopeService {
             return Response.status(Status.BAD_REQUEST).build();
         }
 
-        Scope model = storeFactory.getScopeStore().findByName(name, this.resourceServer.getId());
+        ScopeModel model = storeFactory.getScopeStore().findByName(name, this.resourceServer.getId());
 
         if (model == null) {
             return Response.status(Status.OK).build();

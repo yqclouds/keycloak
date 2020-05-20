@@ -19,8 +19,8 @@
 package org.keycloak.authorization.policy.provider;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
@@ -40,30 +40,30 @@ public interface PolicyProviderFactory<R extends AbstractPolicyRepresentation> e
 
     PolicyProvider create(AuthorizationProvider authorization);
 
-    R toRepresentation(Policy policy, AuthorizationProvider authorization);
+    R toRepresentation(PolicyModel policy, AuthorizationProvider authorization);
 
     Class<R> getRepresentationType();
 
-    default void onCreate(Policy policy, R representation, AuthorizationProvider authorization) {
+    default void onCreate(PolicyModel policy, R representation, AuthorizationProvider authorization) {
 
     }
 
-    default void onUpdate(Policy policy, R representation, AuthorizationProvider authorization) {
+    default void onUpdate(PolicyModel policy, R representation, AuthorizationProvider authorization) {
 
     }
 
-    default void onRemove(Policy policy, AuthorizationProvider authorization) {
+    default void onRemove(PolicyModel policy, AuthorizationProvider authorization) {
 
     }
 
-    default void onImport(Policy policy, PolicyRepresentation representation, AuthorizationProvider authorization) {
+    default void onImport(PolicyModel policy, PolicyRepresentation representation, AuthorizationProvider authorization) {
 
     }
 
-    default void onExport(Policy policy, PolicyRepresentation representation, AuthorizationProvider authorizationProvider) {
+    default void onExport(PolicyModel policy, PolicyRepresentation representation, AuthorizationProvider authorizationProvider) {
     }
 
-    default PolicyProviderAdminService getAdminResource(ResourceServer resourceServer, AuthorizationProvider authorization) {
+    default PolicyProviderAdminService getAdminResource(ResourceServerModel resourceServer, AuthorizationProvider authorization) {
         return null;
     }
 }

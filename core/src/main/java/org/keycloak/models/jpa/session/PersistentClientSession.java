@@ -23,21 +23,10 @@ import java.io.Serializable;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-@NamedQueries({
-        @NamedQuery(name = "deleteClientSessionsByRealm", query = "delete from PersistentClientSessionEntity sess where sess.userSessionId IN (select u.userSessionId from PersistentUserSessionEntity u where u.realmId = :realmId)"),
-        @NamedQuery(name = "deleteClientSessionsByClient", query = "delete from PersistentClientSessionEntity sess where sess.clientId = :clientId"),
-        @NamedQuery(name = "deleteClientSessionsByExternalClient", query = "delete from PersistentClientSessionEntity sess where sess.clientStorageProvider = :clientStorageProvider and sess.externalClientId = :externalClientId"),
-        @NamedQuery(name = "deleteClientSessionsByClientStorageProvider", query = "delete from PersistentClientSessionEntity sess where sess.clientStorageProvider = :clientStorageProvider"),
-        @NamedQuery(name = "deleteClientSessionsByUser", query = "delete from PersistentClientSessionEntity sess where sess.userSessionId IN (select u.userSessionId from PersistentUserSessionEntity u where u.userId = :userId)"),
-        @NamedQuery(name = "deleteClientSessionsByUserSession", query = "delete from PersistentClientSessionEntity sess where sess.userSessionId = :userSessionId and sess.offline = :offline"),
-        @NamedQuery(name = "deleteExpiredClientSessions", query = "delete from PersistentClientSessionEntity sess where sess.userSessionId IN (select u.userSessionId from PersistentUserSessionEntity u where u.realmId = :realmId AND u.offline = :offline AND u.lastSessionRefresh < :lastSessionRefresh)"),
-        @NamedQuery(name = "findClientSessionsByUserSession", query = "select sess from PersistentClientSessionEntity sess where sess.userSessionId=:userSessionId and sess.offline = :offline"),
-        @NamedQuery(name = "findClientSessionsByUserSessions", query = "select sess from PersistentClientSessionEntity sess where sess.offline = :offline and sess.userSessionId IN (:userSessionIds) order by sess.userSessionId")
-})
 @Table(name = "OFFLINE_CLIENT_SESSION")
 @Entity
-@IdClass(PersistentClientSessionEntity.Key.class)
-public class PersistentClientSessionEntity {
+@IdClass(PersistentClientSession.Key.class)
+public class PersistentClientSession {
 
     public static final String LOCAL = "local";
     public static final String EXTERNAL = "external";

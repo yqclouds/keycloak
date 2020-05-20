@@ -17,7 +17,7 @@
 package org.keycloak.authorization.policy.provider.permission;
 
 import org.keycloak.authorization.identity.Identity;
-import org.keycloak.authorization.model.Resource;
+import org.keycloak.authorization.model.ResourceModel;
 import org.keycloak.authorization.permission.ResourcePermission;
 import org.keycloak.authorization.policy.evaluation.Evaluation;
 
@@ -29,7 +29,7 @@ public class UMAPolicyProvider extends AbstractPermissionProvider {
     @Override
     public void evaluate(Evaluation evaluation) {
         ResourcePermission permission = evaluation.getPermission();
-        Resource resource = permission.getResource();
+        ResourceModel resource = permission.getResource();
 
         if (resource != null) {
             Identity identity = evaluation.getContext().getIdentity();

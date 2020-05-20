@@ -18,8 +18,8 @@ package org.keycloak.authorization.admin;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.authorization.store.StoreFactory;
@@ -47,13 +47,13 @@ import java.util.stream.Collectors;
  */
 public class PolicyResourceService {
 
-    protected final ResourceServer resourceServer;
+    protected final ResourceServerModel resourceServer;
     protected final AuthorizationProvider authorization;
     protected final AdminPermissionEvaluator auth;
-    private final Policy policy;
+    private final PolicyModel policy;
     private final AdminEventBuilder adminEvent;
 
-    public PolicyResourceService(Policy policy, ResourceServer resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public PolicyResourceService(PolicyModel policy, ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.policy = policy;
         this.resourceServer = resourceServer;
         this.authorization = authorization;
@@ -126,11 +126,11 @@ public class PolicyResourceService {
         return Response.ok(toRepresentation(policy, fields, authorization)).build();
     }
 
-    private AbstractPolicyRepresentation toRepresentation(Policy policy, AuthorizationProvider authorization) {
+    private AbstractPolicyRepresentation toRepresentation(PolicyModel policy, AuthorizationProvider authorization) {
         return toRepresentation(policy, null, authorization);
     }
 
-    protected AbstractPolicyRepresentation toRepresentation(Policy policy, String fields, AuthorizationProvider authorization) {
+    protected AbstractPolicyRepresentation toRepresentation(PolicyModel policy, String fields, AuthorizationProvider authorization) {
         return ModelToRepresentation.toRepresentation(policy, authorization, true, false, fields != null && fields.equals("*"));
     }
 
@@ -147,7 +147,7 @@ public class PolicyResourceService {
             return Response.status(Status.NOT_FOUND).build();
         }
 
-        List<Policy> policies = authorization.getStoreFactory().getPolicyStore().findDependentPolicies(policy.getId(), resourceServer.getId());
+        List<PolicyModel> policies = authorization.getStoreFactory().getPolicyStore().findDependentPolicies(policy.getId(), resourceServer.getId());
 
         return Response.ok(policies.stream().map(policy -> {
             PolicyRepresentation representation1 = new PolicyRepresentation();
@@ -247,7 +247,7 @@ public class PolicyResourceService {
         return authorization.getProviderFactory(policyType);
     }
 
-    protected Policy getPolicy() {
+    protected PolicyModel getPolicy() {
         return policy;
     }
 

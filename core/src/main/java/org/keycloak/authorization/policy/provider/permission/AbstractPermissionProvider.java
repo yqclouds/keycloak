@@ -18,7 +18,7 @@ package org.keycloak.authorization.policy.provider.permission;
 
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.Decision;
-import org.keycloak.authorization.model.Policy;
+import org.keycloak.authorization.model.PolicyModel;
 import org.keycloak.authorization.permission.ResourcePermission;
 import org.keycloak.authorization.policy.evaluation.DefaultEvaluation;
 import org.keycloak.authorization.policy.evaluation.Evaluation;
@@ -36,8 +36,8 @@ public abstract class AbstractPermissionProvider implements PolicyProvider {
     public void evaluate(Evaluation evaluation) {
         AuthorizationProvider authorization = evaluation.getAuthorizationProvider();
         DefaultEvaluation defaultEvaluation = DefaultEvaluation.class.cast(evaluation);
-        Map<Policy, Map<Object, Decision.Effect>> decisionCache = defaultEvaluation.getDecisionCache();
-        Policy policy = evaluation.getPolicy();
+        Map<PolicyModel, Map<Object, Decision.Effect>> decisionCache = defaultEvaluation.getDecisionCache();
+        PolicyModel policy = evaluation.getPolicy();
         ResourcePermission permission = evaluation.getPermission();
 
         policy.getAssociatedPolicies().forEach(associatedPolicy -> {

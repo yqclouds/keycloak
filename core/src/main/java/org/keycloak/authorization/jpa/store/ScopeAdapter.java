@@ -16,37 +16,42 @@
  */
 package org.keycloak.authorization.jpa.store;
 
-import org.keycloak.authorization.jpa.entities.ScopeEntity;
+import org.keycloak.authorization.jpa.entities.Scope;
+import org.keycloak.authorization.jpa.entities.ScopeRepository;
 import org.keycloak.authorization.model.AbstractAuthorizationModel;
-import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.model.ResourceServerModel;
+import org.keycloak.authorization.model.ScopeModel;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.jpa.JpaModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class ScopeAdapter extends AbstractAuthorizationModel implements Scope, JpaModel<ScopeEntity> {
-    private ScopeEntity entity;
-    private StoreFactory storeFactory;
+public class ScopeAdapter extends AbstractAuthorizationModel implements ScopeModel, JpaModel<Scope> {
+    private final Scope entity;
+    private final StoreFactory storeFactory;
 
-    public ScopeAdapter(ScopeEntity entity, StoreFactory storeFactory) {
+    @Autowired
+    private ScopeRepository scopeRepository;
+
+    public ScopeAdapter(Scope entity, StoreFactory storeFactory) {
         super(storeFactory);
         this.entity = entity;
         this.storeFactory = storeFactory;
     }
 
-    public ScopeEntity toEntity(Scope scope) {
+    public Scope toEntity(ScopeModel scope) {
         if (scope instanceof ScopeAdapter) {
             return ((ScopeAdapter) scope).getEntity();
         } else {
-            return em.getReference(ScopeEntity.class, scope.getId());
+            return scopeRepository.getOne(scope.getId());
         }
     }
 
     @Override
-    public ScopeEntity getEntity() {
+    public Scope getEntity() {
         return entity;
     }
 
@@ -91,16 +96,16 @@ public class ScopeAdapter extends AbstractAuthorizationModel implements Scope, J
     }
 
     @Override
-    public ResourceServer getResourceServer() {
+    public ResourceServerModel getResourceServer() {
         return storeFactory.getResourceServerStore().findById(entity.getResourceServer().getId());
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof Scope)) return false;
+        if (!(o instanceof ScopeModel)) return false;
 
-        Scope that = (Scope) o;
+        ScopeModel that = (ScopeModel) o;
         return that.getId().equals(getId());
     }
 

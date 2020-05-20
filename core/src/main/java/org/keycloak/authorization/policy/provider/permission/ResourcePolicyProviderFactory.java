@@ -17,7 +17,7 @@
 package org.keycloak.authorization.policy.provider.permission;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
+import org.keycloak.authorization.model.PolicyModel;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.models.KeycloakSession;
@@ -39,7 +39,7 @@ public class ResourcePolicyProviderFactory implements PolicyProviderFactory<Reso
 
     @Override
     public String getName() {
-        return "Resource-Based";
+        return "ResourceModel-Based";
     }
 
     @Override
@@ -58,7 +58,7 @@ public class ResourcePolicyProviderFactory implements PolicyProviderFactory<Reso
     }
 
     @Override
-    public ResourcePermissionRepresentation toRepresentation(Policy policy, AuthorizationProvider authorization) {
+    public ResourcePermissionRepresentation toRepresentation(PolicyModel policy, AuthorizationProvider authorization) {
         ResourcePermissionRepresentation representation = new ResourcePermissionRepresentation();
         representation.setResourceType(policy.getConfig().get("defaultResourceType"));
         return representation;
@@ -70,16 +70,16 @@ public class ResourcePolicyProviderFactory implements PolicyProviderFactory<Reso
     }
 
     @Override
-    public void onCreate(Policy policy, ResourcePermissionRepresentation representation, AuthorizationProvider authorization) {
+    public void onCreate(PolicyModel policy, ResourcePermissionRepresentation representation, AuthorizationProvider authorization) {
         updateResourceType(policy, representation);
     }
 
     @Override
-    public void onUpdate(Policy policy, ResourcePermissionRepresentation representation, AuthorizationProvider authorization) {
+    public void onUpdate(PolicyModel policy, ResourcePermissionRepresentation representation, AuthorizationProvider authorization) {
         updateResourceType(policy, representation);
     }
 
-    private void updateResourceType(Policy policy, ResourcePermissionRepresentation representation) {
+    private void updateResourceType(PolicyModel policy, ResourcePermissionRepresentation representation) {
         if (representation != null) {
             //TODO: remove this check once we migrate to new API
             if (ResourcePermissionRepresentation.class.equals(representation.getClass())) {
@@ -98,7 +98,7 @@ public class ResourcePolicyProviderFactory implements PolicyProviderFactory<Reso
     }
 
     @Override
-    public void onRemove(Policy policy, AuthorizationProvider authorization) {
+    public void onRemove(PolicyModel policy, AuthorizationProvider authorization) {
 
     }
 

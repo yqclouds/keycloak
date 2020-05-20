@@ -16,8 +16,8 @@
  */
 package org.keycloak.services.resources.admin.permissions;
 
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.Resource;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.IdentityProviderModel;
 
@@ -32,11 +32,11 @@ public interface IdentityProviderPermissionManagement {
 
     void setPermissionsEnabled(IdentityProviderModel idp, boolean enable);
 
-    Resource resource(IdentityProviderModel idp);
+    ResourceModel resource(IdentityProviderModel idp);
 
     Map<String, String> getPermissions(IdentityProviderModel idp);
 
     boolean canExchangeTo(ClientModel authorizedClient, IdentityProviderModel to);
 
-    Policy exchangeToPermission(IdentityProviderModel idp);
+    PolicyModel exchangeToPermission(IdentityProviderModel idp);
 }

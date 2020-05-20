@@ -18,35 +18,35 @@
 
 package org.keycloak.authorization.store;
 
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.ResourceServerModel;
 
 /**
- * A {@link ResourceServerStore} is responsible to manage the persistence of {@link ResourceServer} instances.
+ * A {@link ResourceServerStore} is responsible to manage the persistence of {@link ResourceServerModel} instances.
  *
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
 public interface ResourceServerStore {
 
     /**
-     * <p>Creates a {@link ResourceServer} instance backed by this persistent storage implementation.
+     * <p>Creates a {@link ResourceServerModel} instance backed by this persistent storage implementation.
      *
      * @param clientId the client id acting as a resource server
      * @return an instance backed by the underlying storage implementation
      */
-    ResourceServer create(String clientId);
+    ResourceServerModel create(String clientId);
 
     /**
-     * Removes a {@link ResourceServer} instance, with the given {@code id} from the persistent storage.
+     * Removes a {@link ResourceServerModel} instance, with the given {@code id} from the persistent storage.
      *
      * @param id the identifier of an existing resource server instance
      */
     void delete(String id);
 
     /**
-     * Returns a {@link ResourceServer} instance based on its identifier.
+     * Returns a {@link ResourceServerModel} instance based on its identifier.
      *
      * @param id the identifier of an existing resource server instance
      * @return the resource server instance with the given identifier or null if no instance was found
      */
-    ResourceServer findById(String id);
+    ResourceServerModel findById(String id);
 }

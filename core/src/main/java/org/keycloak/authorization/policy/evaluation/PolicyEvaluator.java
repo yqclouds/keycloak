@@ -20,7 +20,7 @@ package org.keycloak.authorization.policy.evaluation;
 
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.Decision;
-import org.keycloak.authorization.model.Policy;
+import org.keycloak.authorization.model.PolicyModel;
 import org.keycloak.authorization.permission.ResourcePermission;
 
 import java.util.Map;
@@ -38,5 +38,5 @@ public interface PolicyEvaluator {
      *
      * @param decision a {@link Decision} point to where notifications events will be delivered during the evaluation
      */
-    void evaluate(ResourcePermission permission, AuthorizationProvider authorizationProvider, EvaluationContext executionContext, Decision decision, Map<Policy, Map<Object, Decision.Effect>> decisionCache);
+    void evaluate(ResourcePermission permission, AuthorizationProvider authorizationProvider, EvaluationContext executionContext, Decision decision, Map<PolicyModel, Map<Object, Decision.Effect>> decisionCache);
 }

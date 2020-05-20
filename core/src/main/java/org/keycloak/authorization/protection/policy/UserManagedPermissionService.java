@@ -25,9 +25,9 @@ import org.keycloak.authorization.admin.PermissionService;
 import org.keycloak.authorization.admin.PolicyTypeResourceService;
 import org.keycloak.authorization.common.KeycloakIdentity;
 import org.keycloak.authorization.identity.Identity;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.common.Profile;
 import org.keycloak.representations.idm.authorization.UmaPermissionRepresentation;
@@ -47,12 +47,12 @@ import java.util.stream.Collectors;
  */
 public class UserManagedPermissionService {
 
-    private final ResourceServer resourceServer;
+    private final ResourceServerModel resourceServer;
     private final Identity identity;
     private final AuthorizationProvider authorization;
     private final PermissionService delegate;
 
-    public UserManagedPermissionService(KeycloakIdentity identity, ResourceServer resourceServer, AuthorizationProvider authorization, AdminEventBuilder eventBuilder) {
+    public UserManagedPermissionService(KeycloakIdentity identity, ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminEventBuilder eventBuilder) {
         this.identity = identity;
         this.resourceServer = resourceServer;
         this.authorization = authorization;
@@ -122,11 +122,11 @@ public class UserManagedPermissionService {
         return delegate.findAll(null, name, "uma", resource, scope, true, identity.getId(), null, firstResult, maxResult);
     }
 
-    private Policy getPolicy(@PathParam("policyId") String policyId) {
-        Policy existing = authorization.getStoreFactory().getPolicyStore().findById(policyId, resourceServer.getId());
+    private PolicyModel getPolicy(@PathParam("policyId") String policyId) {
+        PolicyModel existing = authorization.getStoreFactory().getPolicyStore().findById(policyId, resourceServer.getId());
 
         if (existing == null) {
-            throw new ErrorResponseException(OAuthErrorException.INVALID_REQUEST, "Policy with [" + policyId + "] does not exist", Status.NOT_FOUND);
+            throw new ErrorResponseException(OAuthErrorException.INVALID_REQUEST, "PolicyModel with [" + policyId + "] does not exist", Status.NOT_FOUND);
         }
 
         return existing;
@@ -134,10 +134,10 @@ public class UserManagedPermissionService {
 
     private void checkRequest(String resourceId, UmaPermissionRepresentation representation) {
         ResourceStore resourceStore = this.authorization.getStoreFactory().getResourceStore();
-        Resource resource = resourceStore.findById(resourceId, resourceServer.getId());
+        ResourceModel resource = resourceStore.findById(resourceId, resourceServer.getId());
 
         if (resource == null) {
-            throw new ErrorResponseException(OAuthErrorException.INVALID_REQUEST, "Resource [" + resourceId + "] cannot be found", Response.Status.BAD_REQUEST);
+            throw new ErrorResponseException(OAuthErrorException.INVALID_REQUEST, "ResourceModel [" + resourceId + "] cannot be found", Response.Status.BAD_REQUEST);
         }
 
         if (!resource.getOwner().equals(identity.getId())) {
@@ -149,7 +149,7 @@ public class UserManagedPermissionService {
         }
 
         if (!resourceServer.isAllowRemoteResourceManagement()) {
-            throw new ErrorResponseException(OAuthErrorException.REQUEST_NOT_SUPPORTED, "Remote Resource Management not enabled on resource server [" + resourceServer.getId() + "]", Status.FORBIDDEN);
+            throw new ErrorResponseException(OAuthErrorException.REQUEST_NOT_SUPPORTED, "Remote ResourceModel Management not enabled on resource server [" + resourceServer.getId() + "]", Status.FORBIDDEN);
         }
 
         if (representation != null) {

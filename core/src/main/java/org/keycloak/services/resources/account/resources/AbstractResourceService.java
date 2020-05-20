@@ -19,7 +19,9 @@ package org.keycloak.services.resources.account.resources;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.model.PermissionTicketModel;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
+import org.keycloak.authorization.model.ScopeModel;
 import org.keycloak.authorization.store.PermissionTicketStore;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.authorization.store.ScopeStore;
@@ -77,7 +79,7 @@ public abstract class AbstractResourceService {
         public Resource() {
         }
 
-        Resource(org.keycloak.authorization.model.Resource resource, UserModel owner, AuthorizationProvider provider) {
+        Resource(ResourceModel resource, UserModel owner, AuthorizationProvider provider) {
             setId(resource.getId());
             setName(resource.getName());
             setDisplayName(resource.getDisplayName());
@@ -86,11 +88,11 @@ public abstract class AbstractResourceService {
 
             setScopes(resource.getScopes().stream().map(Scope::new).collect(Collectors.toSet()));
 
-            ResourceServer resourceServer = resource.getResourceServer();
+            ResourceServerModel resourceServer = resource.getResourceServer();
             this.client = new Client(provider.getRealm().getClientById(resourceServer.getId()));
         }
 
-        Resource(org.keycloak.authorization.model.Resource resource, AuthorizationProvider provider) {
+        Resource(ResourceModel resource, AuthorizationProvider provider) {
             this(resource, null, provider);
         }
 
@@ -112,7 +114,7 @@ public abstract class AbstractResourceService {
             setScopes(new HashSet<>());
         }
 
-        ResourcePermission(org.keycloak.authorization.model.Resource resource, AuthorizationProvider provider) {
+        ResourcePermission(ResourceModel resource, AuthorizationProvider provider) {
             super(resource, provider);
             setScopes(new HashSet<>());
         }
@@ -191,7 +193,7 @@ public abstract class AbstractResourceService {
 
         }
 
-        Scope(org.keycloak.authorization.model.Scope scope) {
+        Scope(ScopeModel scope) {
             setName(scope.getName());
             setDisplayName(scope.getDisplayName());
             setIconUri(scope.getIconUri());

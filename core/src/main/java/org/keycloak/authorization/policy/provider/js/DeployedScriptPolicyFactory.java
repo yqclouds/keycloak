@@ -18,7 +18,7 @@
 package org.keycloak.authorization.policy.provider.js;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
+import org.keycloak.authorization.model.PolicyModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.ScriptModel;
 import org.keycloak.representations.idm.authorization.JSPolicyRepresentation;
@@ -57,7 +57,7 @@ public final class DeployedScriptPolicyFactory extends JSPolicyProviderFactory {
     }
 
     @Override
-    public JSPolicyRepresentation toRepresentation(Policy policy, AuthorizationProvider authorization) {
+    public JSPolicyRepresentation toRepresentation(PolicyModel policy, AuthorizationProvider authorization) {
         JSPolicyRepresentation representation = new JSPolicyRepresentation();
 
         representation.setId(policy.getId());
@@ -70,13 +70,13 @@ public final class DeployedScriptPolicyFactory extends JSPolicyProviderFactory {
     }
 
     @Override
-    protected ScriptModel getScriptModel(Policy policy, RealmModel realm, ScriptingProvider scripting) {
+    protected ScriptModel getScriptModel(PolicyModel policy, RealmModel realm, ScriptingProvider scripting) {
         return scripting.createScript(realm.getId(), ScriptModel.TEXT_JAVASCRIPT, metadata.getName(), metadata.getCode(),
                 metadata.getDescription());
     }
 
     @Override
-    public void onCreate(Policy policy, JSPolicyRepresentation representation, AuthorizationProvider authorization) {
+    public void onCreate(PolicyModel policy, JSPolicyRepresentation representation, AuthorizationProvider authorization) {
         representation.setDescription(metadata.getDescription());
         policy.setDescription(metadata.getDescription());
         super.onCreate(policy, representation, authorization);

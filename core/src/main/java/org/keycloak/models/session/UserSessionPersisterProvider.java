@@ -53,7 +53,7 @@ public interface UserSessionPersisterProvider extends Provider {
     void removeExpired(RealmModel realm);
 
     // Called during startup. For each userSession, it loads also clientSessions
-    List<UserSessionModel> loadUserSessions(int firstResult, int maxResults, boolean offline, int lastCreatedOn, String lastUserSessionId);
+    List<? extends UserSessionModel> loadUserSessions(int firstResult, int maxResults, boolean offline, int lastCreatedOn, String lastUserSessionId);
 
     int getUserSessionsCount(boolean offline);
 

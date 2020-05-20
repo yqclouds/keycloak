@@ -21,7 +21,7 @@ package org.keycloak.authorization.policy.evaluation;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.Decision;
 import org.keycloak.authorization.Decision.Effect;
-import org.keycloak.authorization.model.Policy;
+import org.keycloak.authorization.model.PolicyModel;
 import org.keycloak.authorization.permission.ResourcePermission;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
@@ -39,14 +39,14 @@ public class DefaultEvaluation implements Evaluation {
     private final ResourcePermission permission;
     private final EvaluationContext executionContext;
     private final Decision decision;
-    private final Policy parentPolicy;
+    private final PolicyModel parentPolicy;
     private final AuthorizationProvider authorizationProvider;
     private final Realm realm;
-    private Policy policy;
-    private Map<Policy, Map<Object, Effect>> decisionCache;
+    private PolicyModel policy;
+    private Map<PolicyModel, Map<Object, Effect>> decisionCache;
     private Effect effect;
 
-    public DefaultEvaluation(ResourcePermission permission, EvaluationContext executionContext, Policy parentPolicy, Decision decision, AuthorizationProvider authorizationProvider, Map<Policy, Map<Object, Decision.Effect>> decisionCache) {
+    public DefaultEvaluation(ResourcePermission permission, EvaluationContext executionContext, PolicyModel parentPolicy, Decision decision, AuthorizationProvider authorizationProvider, Map<PolicyModel, Map<Object, Decision.Effect>> decisionCache) {
         this(permission, executionContext, parentPolicy, null, decision, authorizationProvider, decisionCache);
     }
 
@@ -54,7 +54,7 @@ public class DefaultEvaluation implements Evaluation {
         this(permission, executionContext, null, null, decision, authorizationProvider, Collections.emptyMap());
     }
 
-    public DefaultEvaluation(ResourcePermission permission, EvaluationContext executionContext, Policy parentPolicy, Policy policy, Decision decision, AuthorizationProvider authorizationProvider, Map<Policy, Map<Object, Decision.Effect>> decisionCache) {
+    public DefaultEvaluation(ResourcePermission permission, EvaluationContext executionContext, PolicyModel parentPolicy, PolicyModel policy, Decision decision, AuthorizationProvider authorizationProvider, Map<PolicyModel, Map<Object, Decision.Effect>> decisionCache) {
         this.permission = permission;
         this.executionContext = executionContext;
         this.parentPolicy = parentPolicy;
@@ -94,14 +94,14 @@ public class DefaultEvaluation implements Evaluation {
     }
 
     @Override
-    public Policy getPolicy() {
+    public PolicyModel getPolicy() {
         if (policy == null) {
             return parentPolicy;
         }
         return this.policy;
     }
 
-    public void setPolicy(Policy policy) {
+    public void setPolicy(PolicyModel policy) {
         this.policy = policy;
         this.effect = null;
     }
@@ -116,7 +116,7 @@ public class DefaultEvaluation implements Evaluation {
         return authorizationProvider;
     }
 
-    public Policy getParentPolicy() {
+    public PolicyModel getParentPolicy() {
         return this.parentPolicy;
     }
 
@@ -129,7 +129,7 @@ public class DefaultEvaluation implements Evaluation {
         this.decision.onDecision(this);
     }
 
-    public Map<Policy, Map<Object, Effect>> getDecisionCache() {
+    public Map<PolicyModel, Map<Object, Effect>> getDecisionCache() {
         return decisionCache;
     }
 

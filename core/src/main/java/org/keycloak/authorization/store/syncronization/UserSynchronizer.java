@@ -19,8 +19,8 @@ package org.keycloak.authorization.store.syncronization;
 
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.model.PermissionTicketModel;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.*;
 import org.keycloak.models.KeycloakSessionFactory;
@@ -59,9 +59,9 @@ public class UserSynchronizer implements Synchronizer<UserRemovedEvent> {
         attributes.put("type", new String[]{"user"});
         attributes.put("config:users", new String[]{userModel.getId()});
 
-        List<Policy> search = policyStore.findByResourceServer(attributes, null, -1, -1);
+        List<PolicyModel> search = policyStore.findByResourceServer(attributes, null, -1, -1);
 
-        for (Policy policy : search) {
+        for (PolicyModel policy : search) {
             PolicyProviderFactory policyFactory = authorizationProvider.getProviderFactory(policy.getType());
             UserPolicyRepresentation representation = UserPolicyRepresentation.class.cast(policyFactory.toRepresentation(policy, authorizationProvider));
             Set<String> users = representation.getUsers();
@@ -86,7 +86,7 @@ public class UserSynchronizer implements Synchronizer<UserRemovedEvent> {
         UserModel userModel = event.getUser();
 
         realm.getClients().forEach(clientModel -> {
-            ResourceServer resourceServer = resourceServerStore.findById(clientModel.getId());
+            ResourceServerModel resourceServer = resourceServerStore.findById(clientModel.getId());
 
             if (resourceServer != null) {
                 resourceStore.findByOwner(userModel.getId(), resourceServer.getId()).forEach(resource -> {

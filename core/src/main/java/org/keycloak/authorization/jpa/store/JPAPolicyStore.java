@@ -19,18 +19,18 @@ package org.keycloak.authorization.jpa.store;
 
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.jpa.entities.Policy;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.jpa.entities.PolicyRepository;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.*;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.NoResultException;
 import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -44,12 +44,15 @@ public class JPAPolicyStore implements PolicyStore {
     @Autowired
     private ResourceServerAdapter resourceServerAdapter;
 
+    @Autowired
+    private PolicyRepository policyRepository;
+
     public JPAPolicyStore(AuthorizationProvider provider) {
         this.provider = provider;
     }
 
     @Override
-    public org.keycloak.authorization.model.Policy create(AbstractPolicyRepresentation representation, ResourceServer resourceServer) {
+    public PolicyModel create(AbstractPolicyRepresentation representation, ResourceServerModel resourceServer) {
         Policy entity = new Policy();
 
         if (representation.getId() == null) {
@@ -62,61 +65,42 @@ public class JPAPolicyStore implements PolicyStore {
         entity.setName(representation.getName());
         entity.setResourceServer(resourceServerAdapter.toEntity(resourceServer));
 
-        this.entityManager.persist(entity);
-        this.entityManager.flush();
-        org.keycloak.authorization.model.Policy model = new PolicyAdapter(entity, provider.getStoreFactory());
-        return model;
+        policyRepository.save(entity);
+
+        return new PolicyAdapter(entity, provider.getStoreFactory());
     }
 
     @Override
     public void delete(String id) {
-        Policy policy = entityManager.find(Policy.class, id, LockModeType.PESSIMISTIC_WRITE);
-        if (policy != null) {
-            this.entityManager.remove(policy);
-        }
+        policyRepository.deleteById(id);
     }
 
-
     @Override
-    public org.keycloak.authorization.model.Policy findById(String id, String resourceServerId) {
+    public PolicyModel findById(String id, String resourceServerId) {
         if (id == null) {
             return null;
         }
 
-        Policy policyEntity = entityManager.find(Policy.class, id);
+        Optional<Policy> optional = policyRepository.findById(id);
 
-        if (policyEntity == null) {
-            return null;
-        }
-
-        return new PolicyAdapter(policyEntity, provider.getStoreFactory());
+        return optional.map(policy -> new PolicyAdapter(policy, provider.getStoreFactory())).orElse(null);
     }
 
     @Override
-    public org.keycloak.authorization.model.Policy findByName(String name, String resourceServerId) {
-        TypedQuery<Policy> query = entityManager.createNamedQuery("findPolicyIdByName", Policy.class);
-
-        query.setFlushMode(FlushModeType.COMMIT);
-        query.setParameter("serverId", resourceServerId);
-        query.setParameter("name", name);
-
+    public PolicyModel findByName(String name, String resourceServerId) {
         try {
-            return new PolicyAdapter(query.getSingleResult(), provider.getStoreFactory());
+            return new PolicyAdapter(policyRepository.findPolicyIdByName(resourceServerId, name), provider.getStoreFactory());
         } catch (NoResultException ex) {
             return null;
         }
     }
 
     @Override
-    public List<org.keycloak.authorization.model.Policy> findByResourceServer(final String resourceServerId) {
-        TypedQuery<String> query = entityManager.createNamedQuery("findPolicyIdByServerId", String.class);
-
-        query.setParameter("serverId", resourceServerId);
-
-        List<String> result = query.getResultList();
-        List<org.keycloak.authorization.model.Policy> list = new LinkedList<>();
+    public List<PolicyModel> findByResourceServer(final String resourceServerId) {
+        List<String> result = policyRepository.findPolicyIdByServerId(resourceServerId);
+        List<PolicyModel> list = new LinkedList<>();
         for (String id : result) {
-            org.keycloak.authorization.model.Policy policy = provider.getStoreFactory().getPolicyStore().findById(id, resourceServerId);
+            PolicyModel policy = provider.getStoreFactory().getPolicyStore().findById(id, resourceServerId);
             if (Objects.nonNull(policy)) {
                 list.add(policy);
             }
@@ -124,62 +108,53 @@ public class JPAPolicyStore implements PolicyStore {
         return list;
     }
 
-    @Override
-    public List<org.keycloak.authorization.model.Policy> findByResourceServer(Map<String, String[]> attributes, String resourceServerId, int firstResult, int maxResult) {
-        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Policy> querybuilder = builder.createQuery(Policy.class);
-        Root<Policy> root = querybuilder.from(Policy.class);
-        List<Predicate> predicates = new ArrayList();
-        querybuilder.select(root.get("id"));
+    private Specification<Policy> findByResourceServerSpecification(Map<String, String[]> attributes, String resourceServerId) {
+        return (Specification<Policy>) (root, criteriaQuery, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            criteriaQuery.select(root.get("id"));
 
-        if (resourceServerId != null) {
-            predicates.add(builder.equal(root.get("resourceServer").get("id"), resourceServerId));
-        }
+            if (resourceServerId != null) {
+                predicates.add(cb.equal(root.get("resourceServer").get("id"), resourceServerId));
+            }
 
-        attributes.forEach((name, value) -> {
-            if ("permission".equals(name)) {
-                if (Boolean.valueOf(value[0])) {
-                    predicates.add(root.get("type").in("resource", "scope", "uma"));
+            attributes.forEach((name, value) -> {
+                if ("permission".equals(name)) {
+                    if (Boolean.parseBoolean(value[0])) {
+                        predicates.add(root.get("type").in("resource", "scope", "uma"));
+                    } else {
+                        predicates.add(cb.not(root.get("type").in("resource", "scope", "uma")));
+                    }
+                } else if ("id".equals(name)) {
+                    predicates.add(root.get(name).in((Object) value));
+                } else if ("owner".equals(name)) {
+                    predicates.add(root.get(name).in((Object) value));
+                } else if ("owner_is_not_null".equals(name)) {
+                    predicates.add(cb.isNotNull(root.get("owner")));
+                } else if ("resource".equals(name)) {
+                    predicates.add(root.join("resources").get("id").in((Object) value));
+                } else if ("scope".equals(name)) {
+                    predicates.add(root.join("scopes").get("id").in((Object) value));
+                } else if (name.startsWith("config:")) {
+                    predicates.add(root.joinMap("config").key().in(name.substring("config:".length())));
+                    predicates.add(cb.like(root.joinMap("config").value().as(String.class), "%" + value[0] + "%"));
                 } else {
-                    predicates.add(builder.not(root.get("type").in("resource", "scope", "uma")));
+                    predicates.add(cb.like(cb.lower(root.get(name)), "%" + value[0].toLowerCase() + "%"));
                 }
-            } else if ("id".equals(name)) {
-                predicates.add(root.get(name).in(value));
-            } else if ("owner".equals(name)) {
-                predicates.add(root.get(name).in(value));
-            } else if ("owner_is_not_null".equals(name)) {
-                predicates.add(builder.isNotNull(root.get("owner")));
-            } else if ("resource".equals(name)) {
-                predicates.add(root.join("resources").get("id").in(value));
-            } else if ("scope".equals(name)) {
-                predicates.add(root.join("scopes").get("id").in(value));
-            } else if (name.startsWith("config:")) {
-                predicates.add(root.joinMap("config").key().in(name.substring("config:".length())));
-                predicates.add(builder.like(root.joinMap("config").value().as(String.class), "%" + value[0] + "%"));
-            } else {
-                predicates.add(builder.like(builder.lower(root.get(name)), "%" + value[0].toLowerCase() + "%"));
+            });
+
+            if (!attributes.containsKey("owner") && !attributes.containsKey("owner_is_not_null")) {
+                predicates.add(cb.isNull(root.get("owner")));
             }
-        });
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+    }
 
-        if (!attributes.containsKey("owner") && !attributes.containsKey("owner_is_not_null")) {
-            predicates.add(builder.isNull(root.get("owner")));
-        }
-
-        querybuilder.where(predicates.toArray(new Predicate[predicates.size()])).orderBy(builder.asc(root.get("name")));
-
-        Query query = entityManager.createQuery(querybuilder);
-
-        if (firstResult != -1) {
-            query.setFirstResult(firstResult);
-        }
-        if (maxResult != -1) {
-            query.setMaxResults(maxResult);
-        }
-
-        List<String> result = query.getResultList();
-        List<org.keycloak.authorization.model.Policy> list = new LinkedList<>();
-        for (String id : result) {
-            org.keycloak.authorization.model.Policy policy = provider.getStoreFactory().getPolicyStore().findById(id, resourceServerId);
+    @Override
+    public List<PolicyModel> findByResourceServer(Map<String, String[]> attributes, String resourceServerId, int firstResult, int maxResult) {
+        List<Policy> result = policyRepository.findAll(findByResourceServerSpecification(attributes, resourceServerId));
+        List<PolicyModel> list = new LinkedList<>();
+        for (Policy pol : result) {
+            PolicyModel policy = provider.getStoreFactory().getPolicyStore().findById(pol.getId(), resourceServerId);
             if (Objects.nonNull(policy)) {
                 list.add(policy);
             }
@@ -188,8 +163,8 @@ public class JPAPolicyStore implements PolicyStore {
     }
 
     @Override
-    public List<org.keycloak.authorization.model.Policy> findByResource(final String resourceId, String resourceServerId) {
-        List<org.keycloak.authorization.model.Policy> result = new LinkedList<>();
+    public List<PolicyModel> findByResource(final String resourceId, String resourceServerId) {
+        List<PolicyModel> result = new LinkedList<>();
 
         findByResource(resourceId, resourceServerId, result::add);
 
@@ -197,23 +172,17 @@ public class JPAPolicyStore implements PolicyStore {
     }
 
     @Override
-    public void findByResource(String resourceId, String resourceServerId, Consumer<org.keycloak.authorization.model.Policy> consumer) {
-        TypedQuery<Policy> query = entityManager.createNamedQuery("findPolicyIdByResource", Policy.class);
-
-        query.setFlushMode(FlushModeType.COMMIT);
-        query.setParameter("resourceId", resourceId);
-        query.setParameter("serverId", resourceServerId);
-
+    public void findByResource(String resourceId, String resourceServerId, Consumer<PolicyModel> consumer) {
         StoreFactory storeFactory = provider.getStoreFactory();
 
-        query.getResultList().stream()
+        policyRepository.findPolicyIdByResource(resourceId, resourceServerId).stream()
                 .map(entity -> new PolicyAdapter(entity, storeFactory))
-                .forEach(consumer::accept);
+                .forEach(consumer);
     }
 
     @Override
-    public List<org.keycloak.authorization.model.Policy> findByResourceType(final String resourceType, String resourceServerId) {
-        List<org.keycloak.authorization.model.Policy> result = new LinkedList<>();
+    public List<PolicyModel> findByResourceType(final String resourceType, String resourceServerId) {
+        List<PolicyModel> result = new LinkedList<>();
 
         findByResourceType(resourceType, resourceServerId, result::add);
 
@@ -221,35 +190,22 @@ public class JPAPolicyStore implements PolicyStore {
     }
 
     @Override
-    public void findByResourceType(String resourceType, String resourceServerId, Consumer<org.keycloak.authorization.model.Policy> consumer) {
-        TypedQuery<Policy> query = entityManager.createNamedQuery("findPolicyIdByResourceType", Policy.class);
-
-        query.setFlushMode(FlushModeType.COMMIT);
-        query.setParameter("type", resourceType);
-        query.setParameter("serverId", resourceServerId);
-
-        query.getResultList().stream()
+    public void findByResourceType(String resourceType, String resourceServerId, Consumer<PolicyModel> consumer) {
+        policyRepository.findPolicyIdByResourceType(resourceType, resourceServerId).stream()
                 .map(id -> new PolicyAdapter(id, provider.getStoreFactory()))
-                .forEach(consumer::accept);
+                .forEach(consumer);
     }
 
     @Override
-    public List<org.keycloak.authorization.model.Policy> findByScopeIds(List<String> scopeIds, String resourceServerId) {
+    public List<PolicyModel> findByScopeIds(List<String> scopeIds, String resourceServerId) {
         if (scopeIds == null || scopeIds.isEmpty()) {
             return Collections.emptyList();
         }
 
-        // Use separate subquery to handle DB2 and MSSSQL
-        TypedQuery<Policy> query = entityManager.createNamedQuery("findPolicyIdByScope", Policy.class);
-
-        query.setFlushMode(FlushModeType.COMMIT);
-        query.setParameter("scopeIds", scopeIds);
-        query.setParameter("serverId", resourceServerId);
-
-        List<org.keycloak.authorization.model.Policy> list = new LinkedList<>();
+        List<PolicyModel> list = new LinkedList<>();
         StoreFactory storeFactory = provider.getStoreFactory();
 
-        for (Policy entity : query.getResultList()) {
+        for (Policy entity : policyRepository.findPolicyIdByScope(scopeIds, resourceServerId)) {
             list.add(new PolicyAdapter(entity, storeFactory));
         }
 
@@ -257,8 +213,8 @@ public class JPAPolicyStore implements PolicyStore {
     }
 
     @Override
-    public List<org.keycloak.authorization.model.Policy> findByScopeIds(List<String> scopeIds, String resourceId, String resourceServerId) {
-        List<org.keycloak.authorization.model.Policy> result = new LinkedList<>();
+    public List<PolicyModel> findByScopeIds(List<String> scopeIds, String resourceId, String resourceServerId) {
+        List<PolicyModel> result = new LinkedList<>();
 
         findByScopeIds(scopeIds, resourceId, resourceServerId, result::add);
 
@@ -266,40 +222,27 @@ public class JPAPolicyStore implements PolicyStore {
     }
 
     @Override
-    public void findByScopeIds(List<String> scopeIds, String resourceId, String resourceServerId, Consumer<org.keycloak.authorization.model.Policy> consumer) {
+    public void findByScopeIds(List<String> scopeIds, String resourceId, String resourceServerId, Consumer<PolicyModel> consumer) {
         // Use separate subquery to handle DB2 and MSSSQL
-        TypedQuery<Policy> query;
-
+        List<Policy> results;
         if (resourceId == null) {
-            query = entityManager.createNamedQuery("findPolicyIdByNullResourceScope", Policy.class);
+            results = policyRepository.findPolicyIdByNullResourceScope(scopeIds, resourceServerId);
         } else {
-            query = entityManager.createNamedQuery("findPolicyIdByResourceScope", Policy.class);
-            query.setParameter("resourceId", resourceId);
+            results = policyRepository.findPolicyIdByResourceScope(scopeIds, resourceId, resourceServerId);
         }
-
-        query.setFlushMode(FlushModeType.COMMIT);
-        query.setParameter("scopeIds", scopeIds);
-        query.setParameter("serverId", resourceServerId);
 
         StoreFactory storeFactory = provider.getStoreFactory();
 
-        query.getResultList().stream()
-                .map(id -> new PolicyAdapter(id, storeFactory))
-                .forEach(consumer::accept);
+        results.stream().map(id -> new PolicyAdapter(id, storeFactory))
+                .forEach(consumer);
     }
 
     @Override
-    public List<org.keycloak.authorization.model.Policy> findByType(String type, String resourceServerId) {
-        TypedQuery<String> query = entityManager.createNamedQuery("findPolicyIdByType", String.class);
-
-        query.setFlushMode(FlushModeType.COMMIT);
-        query.setParameter("serverId", resourceServerId);
-        query.setParameter("type", type);
-
-        List<String> result = query.getResultList();
-        List<org.keycloak.authorization.model.Policy> list = new LinkedList<>();
+    public List<PolicyModel> findByType(String type, String resourceServerId) {
+        List<String> result = policyRepository.findPolicyIdByType(resourceServerId, type);
+        List<PolicyModel> list = new LinkedList<>();
         for (String id : result) {
-            org.keycloak.authorization.model.Policy policy = provider.getStoreFactory().getPolicyStore().findById(id, resourceServerId);
+            PolicyModel policy = provider.getStoreFactory().getPolicyStore().findById(id, resourceServerId);
             if (Objects.nonNull(policy)) {
                 list.add(policy);
             }
@@ -308,18 +251,11 @@ public class JPAPolicyStore implements PolicyStore {
     }
 
     @Override
-    public List<org.keycloak.authorization.model.Policy> findDependentPolicies(String policyId, String resourceServerId) {
-
-        TypedQuery<String> query = entityManager.createNamedQuery("findPolicyIdByDependentPolices", String.class);
-
-        query.setFlushMode(FlushModeType.COMMIT);
-        query.setParameter("serverId", resourceServerId);
-        query.setParameter("policyId", policyId);
-
-        List<String> result = query.getResultList();
-        List<org.keycloak.authorization.model.Policy> list = new LinkedList<>();
+    public List<PolicyModel> findDependentPolicies(String policyId, String resourceServerId) {
+        List<String> result = policyRepository.findPolicyIdByDependentPolices(resourceServerId, policyId);
+        List<PolicyModel> list = new LinkedList<>();
         for (String id : result) {
-            org.keycloak.authorization.model.Policy policy = provider.getStoreFactory().getPolicyStore().findById(id, resourceServerId);
+            PolicyModel policy = provider.getStoreFactory().getPolicyStore().findById(id, resourceServerId);
             if (Objects.nonNull(policy)) {
                 list.add(policy);
             }

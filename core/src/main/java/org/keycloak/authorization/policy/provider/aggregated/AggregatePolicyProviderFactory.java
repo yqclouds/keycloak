@@ -18,7 +18,7 @@
 package org.keycloak.authorization.policy.provider.aggregated;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
+import org.keycloak.authorization.model.PolicyModel;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.models.KeycloakSession;
@@ -60,22 +60,22 @@ public class AggregatePolicyProviderFactory implements PolicyProviderFactory<Agg
     }
 
     @Override
-    public void onCreate(Policy policy, AggregatePolicyRepresentation representation, AuthorizationProvider authorization) {
+    public void onCreate(PolicyModel policy, AggregatePolicyRepresentation representation, AuthorizationProvider authorization) {
         verifyCircularReference(policy, new ArrayList<>());
     }
 
     @Override
-    public void onUpdate(Policy policy, AggregatePolicyRepresentation representation, AuthorizationProvider authorization) {
+    public void onUpdate(PolicyModel policy, AggregatePolicyRepresentation representation, AuthorizationProvider authorization) {
         verifyCircularReference(policy, new ArrayList<>());
     }
 
     @Override
-    public void onImport(Policy policy, PolicyRepresentation representation, AuthorizationProvider authorization) {
+    public void onImport(PolicyModel policy, PolicyRepresentation representation, AuthorizationProvider authorization) {
         verifyCircularReference(policy, new ArrayList<>());
     }
 
     @Override
-    public AggregatePolicyRepresentation toRepresentation(Policy policy, AuthorizationProvider authorization) {
+    public AggregatePolicyRepresentation toRepresentation(PolicyModel policy, AuthorizationProvider authorization) {
         return new AggregatePolicyRepresentation();
     }
 
@@ -84,7 +84,7 @@ public class AggregatePolicyProviderFactory implements PolicyProviderFactory<Agg
         return AggregatePolicyRepresentation.class;
     }
 
-    private void verifyCircularReference(Policy policy, List<String> ids) {
+    private void verifyCircularReference(PolicyModel policy, List<String> ids) {
         if (!policy.getType().equals("aggregate")) {
             return;
         }
@@ -95,13 +95,13 @@ public class AggregatePolicyProviderFactory implements PolicyProviderFactory<Agg
 
         ids.add(policy.getId());
 
-        for (Policy associated : policy.getAssociatedPolicies()) {
+        for (PolicyModel associated : policy.getAssociatedPolicies()) {
             verifyCircularReference(associated, ids);
         }
     }
 
     @Override
-    public void onRemove(Policy policy, AuthorizationProvider authorization) {
+    public void onRemove(PolicyModel policy, AuthorizationProvider authorization) {
 
     }
 

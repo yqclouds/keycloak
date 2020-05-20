@@ -52,7 +52,7 @@ public class PermissionTicket {
 
     @ManyToOne(optional = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "SCOPE_ID")
-    private ScopeEntity scope;
+    private Scope scope;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "RESOURCE_SERVER_ID")
@@ -86,11 +86,11 @@ public class PermissionTicket {
         this.resource = resource;
     }
 
-    public ScopeEntity getScope() {
+    public Scope getScope() {
         return scope;
     }
 
-    public void setScope(ScopeEntity scope) {
+    public void setScope(Scope scope) {
         this.scope = scope;
     }
 

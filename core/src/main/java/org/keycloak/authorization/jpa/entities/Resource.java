@@ -69,7 +69,7 @@ public class Resource {
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {})
     @JoinTable(name = "RESOURCE_SCOPE", joinColumns = @JoinColumn(name = "RESOURCE_ID"), inverseJoinColumns = @JoinColumn(name = "SCOPE_ID"))
-    private List<ScopeEntity> scopes = new LinkedList<>();
+    private List<Scope> scopes = new LinkedList<>();
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {})
     @JoinTable(name = "RESOURCE_POLICY", joinColumns = @JoinColumn(name = "RESOURCE_ID"), inverseJoinColumns = @JoinColumn(name = "POLICY_ID"))
@@ -120,7 +120,7 @@ public class Resource {
         this.type = type;
     }
 
-    public List<ScopeEntity> getScopes() {
+    public List<Scope> getScopes() {
         return this.scopes;
     }
 

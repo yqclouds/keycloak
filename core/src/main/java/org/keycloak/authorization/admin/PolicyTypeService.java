@@ -18,8 +18,8 @@ package org.keycloak.authorization.admin;
 
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.authorization.policy.provider.PolicyProviderAdminService;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.models.utils.ModelToRepresentation;
@@ -40,7 +40,7 @@ public class PolicyTypeService extends PolicyService {
 
     private final String type;
 
-    public PolicyTypeService(String type, ResourceServer resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public PolicyTypeService(String type, ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         super(resourceServer, authorization, auth, adminEvent);
         this.type = type;
     }
@@ -59,7 +59,7 @@ public class PolicyTypeService extends PolicyService {
     }
 
     @Override
-    protected Object doCreatePolicyResource(Policy policy) {
+    protected Object doCreatePolicyResource(PolicyModel policy) {
         return new PolicyTypeResourceService(policy, resourceServer, authorization, auth, adminEvent);
     }
 
@@ -69,7 +69,7 @@ public class PolicyTypeService extends PolicyService {
         Class<? extends AbstractPolicyRepresentation> representationType = provider.getRepresentationType();
 
         if (representationType == null) {
-            throw new RuntimeException("Policy provider for type [" + type + "] returned a null representation type.");
+            throw new RuntimeException("PolicyModel provider for type [" + type + "] returned a null representation type.");
         }
 
         AbstractPolicyRepresentation representation;
@@ -86,7 +86,7 @@ public class PolicyTypeService extends PolicyService {
     }
 
     @Override
-    protected AbstractPolicyRepresentation toRepresentation(Policy policy, String fields, AuthorizationProvider authorization) {
+    protected AbstractPolicyRepresentation toRepresentation(PolicyModel policy, String fields, AuthorizationProvider authorization) {
         return ModelToRepresentation.toRepresentation(policy, authorization, false, false);
     }
 

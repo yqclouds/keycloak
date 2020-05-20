@@ -18,7 +18,7 @@
 package org.keycloak.authorization.policy.evaluation;
 
 import org.keycloak.authorization.Decision;
-import org.keycloak.authorization.model.Policy;
+import org.keycloak.authorization.model.PolicyModel;
 import org.keycloak.authorization.permission.ResourcePermission;
 import org.keycloak.representations.idm.authorization.DecisionStrategy;
 
@@ -36,7 +36,7 @@ public abstract class AbstractDecisionCollector implements Decision<DefaultEvalu
 
     @Override
     public void onDecision(DefaultEvaluation evaluation) {
-        Policy parentPolicy = evaluation.getParentPolicy();
+        PolicyModel parentPolicy = evaluation.getParentPolicy();
         ResourcePermission permission = evaluation.getPermission();
 
         if (parentPolicy != null) {
@@ -96,7 +96,7 @@ public abstract class AbstractDecisionCollector implements Decision<DefaultEvalu
     }
 
     protected boolean isGranted(Result.PolicyResult policyResult) {
-        Policy policy = policyResult.getPolicy();
+        PolicyModel policy = policyResult.getPolicy();
         DecisionStrategy decisionStrategy = policy.getDecisionStrategy();
 
         switch (decisionStrategy) {

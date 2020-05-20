@@ -17,8 +17,8 @@
 package org.keycloak.authorization.admin;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
 import org.keycloak.services.resources.admin.AdminEventBuilder;
@@ -32,7 +32,7 @@ import java.io.IOException;
  */
 public class PolicyTypeResourceService extends PolicyResourceService {
 
-    public PolicyTypeResourceService(Policy policy, ResourceServer resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public PolicyTypeResourceService(PolicyModel policy, ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         super(policy, resourceServer, authorization, auth, adminEvent);
     }
 
@@ -42,7 +42,7 @@ public class PolicyTypeResourceService extends PolicyResourceService {
         Class<? extends AbstractPolicyRepresentation> representationType = authorization.getProviderFactory(type).getRepresentationType();
 
         if (representationType == null) {
-            throw new RuntimeException("Policy provider for type [" + type + "] returned a null representation type.");
+            throw new RuntimeException("PolicyModel provider for type [" + type + "] returned a null representation type.");
         }
 
         AbstractPolicyRepresentation representation;
@@ -58,7 +58,7 @@ public class PolicyTypeResourceService extends PolicyResourceService {
         return representation;
     }
 
-    protected AbstractPolicyRepresentation toRepresentation(Policy policy, String fields, AuthorizationProvider authorization) {
+    protected AbstractPolicyRepresentation toRepresentation(PolicyModel policy, String fields, AuthorizationProvider authorization) {
         return ModelToRepresentation.toRepresentation(policy, authorization, false, false, fields != null && fields.equals("*"));
     }
 }

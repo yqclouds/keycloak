@@ -20,10 +20,10 @@ package org.keycloak.authorization.admin;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
+import org.keycloak.authorization.model.ScopeModel;
 import org.keycloak.authorization.policy.provider.PolicyProviderAdminService;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.PolicyStore;
@@ -60,12 +60,12 @@ import java.util.stream.Collectors;
  */
 public class PolicyService {
 
-    protected final ResourceServer resourceServer;
+    protected final ResourceServerModel resourceServer;
     protected final AuthorizationProvider authorization;
     protected final AdminPermissionEvaluator auth;
     protected final AdminEventBuilder adminEvent;
 
-    public PolicyService(ResourceServer resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public PolicyService(ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.resourceServer = resourceServer;
         this.authorization = authorization;
         this.auth = auth;
@@ -80,7 +80,7 @@ public class PolicyService {
             return doCreatePolicyTypeResource(type);
         }
 
-        Policy policy = authorization.getStoreFactory().getPolicyStore().findById(type, resourceServer.getId());
+        PolicyModel policy = authorization.getStoreFactory().getPolicyStore().findById(type, resourceServer.getId());
 
         return doCreatePolicyResource(policy);
     }
@@ -89,7 +89,7 @@ public class PolicyService {
         return new PolicyTypeService(type, resourceServer, authorization, auth, adminEvent);
     }
 
-    protected Object doCreatePolicyResource(Policy policy) {
+    protected Object doCreatePolicyResource(PolicyModel policy) {
         return new PolicyResourceService(policy, resourceServer, authorization, auth, adminEvent);
     }
 
@@ -103,7 +103,7 @@ public class PolicyService {
         }
 
         AbstractPolicyRepresentation representation = doCreateRepresentation(payload);
-        Policy policy = create(representation);
+        PolicyModel policy = create(representation);
 
         representation.setId(policy.getId());
 
@@ -124,12 +124,12 @@ public class PolicyService {
         return representation;
     }
 
-    public Policy create(AbstractPolicyRepresentation representation) {
+    public PolicyModel create(AbstractPolicyRepresentation representation) {
         PolicyStore policyStore = authorization.getStoreFactory().getPolicyStore();
-        Policy existing = policyStore.findByName(representation.getName(), resourceServer.getId());
+        PolicyModel existing = policyStore.findByName(representation.getName(), resourceServer.getId());
 
         if (existing != null) {
-            throw new ErrorResponseException("Policy with name [" + representation.getName() + "] already exists", "Conflicting policy", Status.CONFLICT);
+            throw new ErrorResponseException("PolicyModel with name [" + representation.getName() + "] already exists", "Conflicting policy", Status.CONFLICT);
         }
 
         return policyStore.create(representation, resourceServer);
@@ -150,7 +150,7 @@ public class PolicyService {
             return Response.status(Status.BAD_REQUEST).build();
         }
 
-        Policy model = storeFactory.getPolicyStore().findByName(name, this.resourceServer.getId());
+        PolicyModel model = storeFactory.getPolicyStore().findByName(name, this.resourceServer.getId());
 
         if (model == null) {
             return Response.status(Status.OK).build();
@@ -198,7 +198,7 @@ public class PolicyService {
 
         if (resource != null && !"".equals(resource.trim())) {
             ResourceStore resourceStore = storeFactory.getResourceStore();
-            Resource resourceModel = resourceStore.findById(resource, resourceServer.getId());
+            ResourceModel resourceModel = resourceStore.findById(resource, resourceServer.getId());
 
             if (resourceModel == null) {
                 Map<String, String[]> resourceFilters = new HashMap<>();
@@ -209,7 +209,7 @@ public class PolicyService {
                     resourceFilters.put("owner", new String[]{owner});
                 }
 
-                Set<String> resources = resourceStore.findByResourceServer(resourceFilters, resourceServer.getId(), -1, 1).stream().map(Resource::getId).collect(Collectors.toSet());
+                Set<String> resources = resourceStore.findByResourceServer(resourceFilters, resourceServer.getId(), -1, 1).stream().map(ResourceModel::getId).collect(Collectors.toSet());
 
                 if (resources.isEmpty()) {
                     return Response.ok().build();
@@ -223,14 +223,14 @@ public class PolicyService {
 
         if (scope != null && !"".equals(scope.trim())) {
             ScopeStore scopeStore = storeFactory.getScopeStore();
-            Scope scopeModel = scopeStore.findById(scope, resourceServer.getId());
+            ScopeModel scopeModel = scopeStore.findById(scope, resourceServer.getId());
 
             if (scopeModel == null) {
                 Map<String, String[]> scopeFilters = new HashMap<>();
 
                 scopeFilters.put("name", new String[]{scope});
 
-                Set<String> scopes = scopeStore.findByResourceServer(scopeFilters, resourceServer.getId(), -1, 1).stream().map(Scope::getId).collect(Collectors.toSet());
+                Set<String> scopes = scopeStore.findByResourceServer(scopeFilters, resourceServer.getId(), -1, 1).stream().map(ScopeModel::getId).collect(Collectors.toSet());
 
                 if (scopes.isEmpty()) {
                     return Response.ok().build();
@@ -251,7 +251,7 @@ public class PolicyService {
                 .build();
     }
 
-    protected AbstractPolicyRepresentation toRepresentation(Policy model, String fields, AuthorizationProvider authorization) {
+    protected AbstractPolicyRepresentation toRepresentation(PolicyModel model, String fields, AuthorizationProvider authorization) {
         return ModelToRepresentation.toRepresentation(model, authorization, true, false, fields != null && fields.equals("*"));
     }
 

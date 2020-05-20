@@ -16,28 +16,38 @@
  */
 package org.keycloak.authorization.jpa.store;
 
-import org.keycloak.authorization.jpa.entities.ResourceAttribute;
-import org.keycloak.authorization.jpa.entities.Resource;
-import org.keycloak.authorization.jpa.entities.ScopeEntity;
-import org.keycloak.authorization.model.AbstractAuthorizationModel;
-import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.authorization.model.Scope;
-import org.keycloak.authorization.store.StoreFactory;
 import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
+import org.keycloak.authorization.jpa.entities.*;
+import org.keycloak.authorization.model.AbstractAuthorizationModel;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
+import org.keycloak.authorization.model.ScopeModel;
+import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.jpa.JpaModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.persistence.Query;
+import javax.persistence.EntityManagerFactory;
 import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class ResourceAdapter extends AbstractAuthorizationModel implements org.keycloak.authorization.model.Resource, JpaModel<Resource> {
+public class ResourceAdapter extends AbstractAuthorizationModel implements ResourceModel, JpaModel<Resource> {
 
-    private Resource entity;
-    private StoreFactory storeFactory;
+    private final Resource entity;
+    private final StoreFactory storeFactory;
+
+    @Autowired
+    private ResourceRepository resourceRepository;
+    @Autowired
+    private ResourceAttributeRepository resourceAttributeRepository;
+    @Autowired
+    private ScopeRepository scopeRepository;
+
+    @Autowired
+    private EntityManagerFactory emf;
 
     public ResourceAdapter(Resource entity, StoreFactory storeFactory) {
         super(storeFactory);
@@ -45,11 +55,11 @@ public class ResourceAdapter extends AbstractAuthorizationModel implements org.k
         this.storeFactory = storeFactory;
     }
 
-    public Resource toEntity(org.keycloak.authorization.model.Resource resource) {
+    public Resource toEntity(ResourceModel resource) {
         if (resource instanceof ResourceAdapter) {
             return ((ResourceAdapter) resource).getEntity();
         } else {
-            return em.getReference(Resource.class, resource.getId());
+            return resourceRepository.getOne(resource.getId());
         }
     }
 
@@ -110,9 +120,9 @@ public class ResourceAdapter extends AbstractAuthorizationModel implements org.k
     }
 
     @Override
-    public List<Scope> getScopes() {
-        List<Scope> scopes = new LinkedList<>();
-        for (ScopeEntity scope : entity.getScopes()) {
+    public List<ScopeModel> getScopes() {
+        List<ScopeModel> scopes = new LinkedList<>();
+        for (Scope scope : entity.getScopes()) {
             scopes.add(storeFactory.getScopeStore().findById(scope.getId(), entity.getResourceServer().getId()));
         }
 
@@ -132,9 +142,8 @@ public class ResourceAdapter extends AbstractAuthorizationModel implements org.k
     }
 
     @Override
-    public ResourceServer getResourceServer() {
-        ResourceServer temp = storeFactory.getResourceServerStore().findById(entity.getResourceServer().getId());
-        return temp;
+    public ResourceServerModel getResourceServer() {
+        return storeFactory.getResourceServerStore().findById(entity.getResourceServer().getId());
     }
 
     @Override
@@ -154,20 +163,20 @@ public class ResourceAdapter extends AbstractAuthorizationModel implements org.k
     }
 
     @Override
-    public void updateScopes(Set<Scope> toUpdate) {
+    public void updateScopes(Set<ScopeModel> toUpdate) {
         throwExceptionIfReadonly();
         Set<String> ids = new HashSet<>();
-        for (Scope scope : toUpdate) {
+        for (ScopeModel scope : toUpdate) {
             ids.add(scope.getId());
         }
-        Iterator<ScopeEntity> it = entity.getScopes().iterator();
+        Iterator<Scope> it = entity.getScopes().iterator();
         while (it.hasNext()) {
-            ScopeEntity next = it.next();
+            Scope next = it.next();
             if (!ids.contains(next.getId())) it.remove();
             else ids.remove(next.getId());
         }
         for (String addId : ids) {
-            entity.getScopes().add(em.getReference(ScopeEntity.class, addId));
+            entity.getScopes().add(scopeRepository.getOne(addId));
         }
     }
 
@@ -212,7 +221,7 @@ public class ResourceAdapter extends AbstractAuthorizationModel implements org.k
             attr.setName(name);
             attr.setValue(value);
             attr.setResource(entity);
-            em.persist(attr);
+            resourceAttributeRepository.save(attr);
             entity.getAttributes().add(attr);
         }
     }
@@ -220,12 +229,8 @@ public class ResourceAdapter extends AbstractAuthorizationModel implements org.k
     @Override
     public void removeAttribute(String name) {
         throwExceptionIfReadonly();
-        Query query = em.createNamedQuery("deleteResourceAttributesByNameAndResource");
 
-        query.setParameter("name", name);
-        query.setParameter("resourceId", entity.getId());
-
-        query.executeUpdate();
+        resourceAttributeRepository.deleteResourceAttributesByNameAndResource(name, entity.getId());
 
         List<ResourceAttribute> toRemove = new ArrayList<>();
 
@@ -240,15 +245,15 @@ public class ResourceAdapter extends AbstractAuthorizationModel implements org.k
 
     @Override
     public boolean isFetched(String association) {
-        return em.getEntityManagerFactory().getPersistenceUnitUtil().isLoaded(this, association);
+        return emf.getPersistenceUnitUtil().isLoaded(this, association);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof org.keycloak.authorization.model.Resource)) return false;
+        if (!(o instanceof ResourceModel)) return false;
 
-        org.keycloak.authorization.model.Resource that = (org.keycloak.authorization.model.Resource) o;
+        ResourceModel that = (ResourceModel) o;
         return that.getId().equals(getId());
     }
 
@@ -256,6 +261,4 @@ public class ResourceAdapter extends AbstractAuthorizationModel implements org.k
     public int hashCode() {
         return getId().hashCode();
     }
-
-
 }

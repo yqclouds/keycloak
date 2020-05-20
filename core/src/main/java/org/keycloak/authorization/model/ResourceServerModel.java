@@ -27,7 +27,7 @@ import org.keycloak.representations.idm.authorization.PolicyEnforcementMode;
  *
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
-public interface ResourceServer {
+public interface ResourceServerModel {
 
     /**
      * Returns the unique identifier for this instance.

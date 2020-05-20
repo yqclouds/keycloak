@@ -19,7 +19,7 @@ package org.keycloak.authorization.protection.permission;
 
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.common.KeycloakIdentity;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.representations.idm.authorization.PermissionRequest;
 
 import javax.ws.rs.Consumes;
@@ -34,9 +34,9 @@ import java.util.List;
 public class PermissionService extends AbstractPermissionService {
 
     private final AuthorizationProvider authorization;
-    private final ResourceServer resourceServer;
+    private final ResourceServerModel resourceServer;
 
-    public PermissionService(KeycloakIdentity identity, ResourceServer resourceServer, AuthorizationProvider authorization) {
+    public PermissionService(KeycloakIdentity identity, ResourceServerModel resourceServer, AuthorizationProvider authorization) {
         super(identity, resourceServer, authorization);
         this.resourceServer = resourceServer;
         this.authorization = authorization;

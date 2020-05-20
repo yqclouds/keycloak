@@ -47,7 +47,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Resource class for the oauth/openid connect token service
+ * ResourceModel class for the oauth/openid connect token service
  *
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $

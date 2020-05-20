@@ -2,8 +2,8 @@ package org.keycloak.authorization.policy.provider.client;
 
 import org.keycloak.Config;
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.PolicyStore;
@@ -47,7 +47,7 @@ public class ClientPolicyProviderFactory implements PolicyProviderFactory<Client
     }
 
     @Override
-    public ClientPolicyRepresentation toRepresentation(Policy policy, AuthorizationProvider authorization) {
+    public ClientPolicyRepresentation toRepresentation(PolicyModel policy, AuthorizationProvider authorization) {
         ClientPolicyRepresentation representation = new ClientPolicyRepresentation();
         representation.setClients(new HashSet<>(Arrays.asList(getClients(policy))));
         return representation;
@@ -59,22 +59,22 @@ public class ClientPolicyProviderFactory implements PolicyProviderFactory<Client
     }
 
     @Override
-    public void onCreate(Policy policy, ClientPolicyRepresentation representation, AuthorizationProvider authorization) {
+    public void onCreate(PolicyModel policy, ClientPolicyRepresentation representation, AuthorizationProvider authorization) {
         updateClients(policy, representation.getClients(), authorization);
     }
 
     @Override
-    public void onUpdate(Policy policy, ClientPolicyRepresentation representation, AuthorizationProvider authorization) {
+    public void onUpdate(PolicyModel policy, ClientPolicyRepresentation representation, AuthorizationProvider authorization) {
         updateClients(policy, representation.getClients(), authorization);
     }
 
     @Override
-    public void onImport(Policy policy, PolicyRepresentation representation, AuthorizationProvider authorization) {
+    public void onImport(PolicyModel policy, PolicyRepresentation representation, AuthorizationProvider authorization) {
         updateClients(policy, new HashSet<>(Arrays.asList(getClients(policy))), authorization);
     }
 
     @Override
-    public void onExport(Policy policy, PolicyRepresentation representation, AuthorizationProvider authorization) {
+    public void onExport(PolicyModel policy, PolicyRepresentation representation, AuthorizationProvider authorization) {
         ClientPolicyRepresentation userRep = toRepresentation(policy, authorization);
         Map<String, String> config = new HashMap<>();
 
@@ -109,7 +109,7 @@ public class ClientPolicyProviderFactory implements PolicyProviderFactory<Client
                 PolicyStore policyStore = storeFactory.getPolicyStore();
                 ClientModel removedClient = ((ClientRemovedEvent) event).getClient();
                 ResourceServerStore resourceServerStore = storeFactory.getResourceServerStore();
-                ResourceServer resourceServer = resourceServerStore.findById(removedClient.getId());
+                ResourceServerModel resourceServer = resourceServerStore.findById(removedClient.getId());
 
                 if (resourceServer != null) {
                     policyStore.findByType(getId(), resourceServer.getId()).forEach(policy -> {
@@ -146,7 +146,7 @@ public class ClientPolicyProviderFactory implements PolicyProviderFactory<Client
         return "client";
     }
 
-    private void updateClients(Policy policy, Set<String> clients, AuthorizationProvider authorization) {
+    private void updateClients(PolicyModel policy, Set<String> clients, AuthorizationProvider authorization) {
         RealmModel realm = authorization.getRealm();
 
         if (clients == null || clients.isEmpty()) {
@@ -176,7 +176,7 @@ public class ClientPolicyProviderFactory implements PolicyProviderFactory<Client
         }
     }
 
-    private String[] getClients(Policy policy) {
+    private String[] getClients(PolicyModel policy) {
         String clients = policy.getConfig().get("clients");
 
         if (clients != null) {

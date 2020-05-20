@@ -24,10 +24,8 @@ import org.keycloak.models.utils.SessionTimeoutHelper;
 import org.keycloak.storage.StorageId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.persistence.LockModeType;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -40,6 +38,11 @@ public class JpaUserSessionPersisterProvider implements UserSessionPersisterProv
 
     private final KeycloakSession session;
 
+    @Autowired
+    private PersistentUserSessionRepository persistentUserSessionRepository;
+    @Autowired
+    private PersistentClientSessionRepository persistentClientSessionRepository;
+
     public JpaUserSessionPersisterProvider(KeycloakSession session) {
         this.session = session;
     }
@@ -49,7 +52,7 @@ public class JpaUserSessionPersisterProvider implements UserSessionPersisterProv
         PersistentUserSessionAdapter adapter = new PersistentUserSessionAdapter(userSession);
         PersistentUserSessionModel model = adapter.getUpdatedModel();
 
-        PersistentUserSessionEntity entity = new PersistentUserSessionEntity();
+        PersistentUserSession entity = new PersistentUserSession();
         entity.setUserSessionId(model.getUserSessionId());
         entity.setCreatedOn(model.getStarted());
         entity.setRealmId(adapter.getRealm().getId());
@@ -58,8 +61,7 @@ public class JpaUserSessionPersisterProvider implements UserSessionPersisterProv
         entity.setOffline(offlineStr);
         entity.setLastSessionRefresh(model.getLastSessionRefresh());
         entity.setData(model.getData());
-        em.persist(entity);
-        em.flush();
+        persistentUserSessionRepository.save(entity);
     }
 
     @Override
@@ -67,15 +69,15 @@ public class JpaUserSessionPersisterProvider implements UserSessionPersisterProv
         PersistentAuthenticatedClientSessionAdapter adapter = new PersistentAuthenticatedClientSessionAdapter(clientSession);
         PersistentClientSessionModel model = adapter.getUpdatedModel();
 
-        PersistentClientSessionEntity entity = new PersistentClientSessionEntity();
+        PersistentClientSession entity = new PersistentClientSession();
         StorageId clientStorageId = new StorageId(clientSession.getClient().getId());
         if (clientStorageId.isLocal()) {
             entity.setClientId(clientStorageId.getId());
-            entity.setClientStorageProvider(PersistentClientSessionEntity.LOCAL);
-            entity.setExternalClientId(PersistentClientSessionEntity.LOCAL);
+            entity.setClientStorageProvider(PersistentClientSession.LOCAL);
+            entity.setExternalClientId(PersistentClientSession.LOCAL);
 
         } else {
-            entity.setClientId(PersistentClientSessionEntity.EXTERNAL);
+            entity.setClientId(PersistentClientSession.EXTERNAL);
             entity.setClientStorageProvider(clientStorageId.getProviderId());
             entity.setExternalClientId(clientStorageId.getExternalId());
         }
@@ -84,33 +86,24 @@ public class JpaUserSessionPersisterProvider implements UserSessionPersisterProv
         entity.setOffline(offlineStr);
         entity.setUserSessionId(clientSession.getUserSession().getId());
         entity.setData(model.getData());
-        em.persist(entity);
-        em.flush();
+        persistentClientSessionRepository.save(entity);
     }
 
     @Override
     public void removeUserSession(String userSessionId, boolean offline) {
         String offlineStr = offlineToString(offline);
 
-        em.createNamedQuery("deleteClientSessionsByUserSession")
-                .setParameter("userSessionId", userSessionId)
-                .setParameter("offline", offlineStr)
-                .executeUpdate();
-
-        PersistentUserSessionEntity sessionEntity = em.find(PersistentUserSessionEntity.class, new PersistentUserSessionEntity.Key(userSessionId, offlineStr), LockModeType.PESSIMISTIC_WRITE);
-        if (sessionEntity != null) {
-            em.remove(sessionEntity);
-            em.flush();
-        }
+        persistentClientSessionRepository.deleteClientSessionsByUserSession(userSessionId, offlineStr);
+        persistentUserSessionRepository.deleteByUserSessionIdAndOffline(userSessionId, offlineStr);
     }
 
     @Override
     public void removeClientSession(String userSessionId, String clientUUID, boolean offline) {
         String offlineStr = offlineToString(offline);
         StorageId clientStorageId = new StorageId(clientUUID);
-        String clientId = PersistentClientSessionEntity.EXTERNAL;
-        String clientStorageProvider = PersistentClientSessionEntity.LOCAL;
-        String externalId = PersistentClientSessionEntity.LOCAL;
+        String clientId = PersistentClientSession.EXTERNAL;
+        String clientStorageProvider = PersistentClientSession.LOCAL;
+        String externalId = PersistentClientSession.LOCAL;
         if (clientStorageId.isLocal()) {
             clientId = clientUUID;
         } else {
@@ -118,38 +111,31 @@ public class JpaUserSessionPersisterProvider implements UserSessionPersisterProv
             externalId = clientStorageId.getExternalId();
 
         }
-        PersistentClientSessionEntity sessionEntity = em.find(PersistentClientSessionEntity.class, new PersistentClientSessionEntity.Key(userSessionId, clientId, clientStorageProvider, externalId, offlineStr), LockModeType.PESSIMISTIC_WRITE);
+        PersistentClientSession sessionEntity = persistentClientSessionRepository.findByKey(userSessionId, clientId, clientStorageProvider, externalId, offlineStr);
         if (sessionEntity != null) {
-            em.remove(sessionEntity);
+            persistentClientSessionRepository.delete(sessionEntity);
 
             // Remove userSession if it was last clientSession
-            List<PersistentClientSessionEntity> clientSessions = getClientSessionsByUserSession(sessionEntity.getUserSessionId(), offline);
+            List<PersistentClientSession> clientSessions = getClientSessionsByUserSession(sessionEntity.getUserSessionId(), offline);
             if (clientSessions.size() == 0) {
                 offlineStr = offlineToString(offline);
-                PersistentUserSessionEntity userSessionEntity = em.find(PersistentUserSessionEntity.class, new PersistentUserSessionEntity.Key(sessionEntity.getUserSessionId(), offlineStr), LockModeType.PESSIMISTIC_WRITE);
+                PersistentUserSession userSessionEntity = persistentUserSessionRepository.findByKey(sessionEntity.getUserSessionId(), offlineStr);
                 if (userSessionEntity != null) {
-                    em.remove(userSessionEntity);
+                    persistentUserSessionRepository.delete(userSessionEntity);
                 }
             }
-
-            em.flush();
         }
     }
 
-    private List<PersistentClientSessionEntity> getClientSessionsByUserSession(String userSessionId, boolean offline) {
+    private List<PersistentClientSession> getClientSessionsByUserSession(String userSessionId, boolean offline) {
         String offlineStr = offlineToString(offline);
-
-        TypedQuery<PersistentClientSessionEntity> query = em.createNamedQuery("findClientSessionsByUserSession", PersistentClientSessionEntity.class);
-        query.setParameter("userSessionId", userSessionId);
-        query.setParameter("offline", offlineStr);
-        return query.getResultList();
+        return persistentClientSessionRepository.findClientSessionsByUserSession(userSessionId, offlineStr);
     }
-
 
     @Override
     public void onRealmRemoved(RealmModel realm) {
-        int num = em.createNamedQuery("deleteClientSessionsByRealm").setParameter("realmId", realm.getId()).executeUpdate();
-        num = em.createNamedQuery("deleteUserSessionsByRealm").setParameter("realmId", realm.getId()).executeUpdate();
+        persistentClientSessionRepository.deleteClientSessionsByRealm(realm.getId());
+        persistentUserSessionRepository.deleteUserSessionsByRealm(realm.getId());
     }
 
     @Override
@@ -158,15 +144,11 @@ public class JpaUserSessionPersisterProvider implements UserSessionPersisterProv
     }
 
     private void onClientRemoved(String clientUUID) {
-        int num = 0;
         StorageId clientStorageId = new StorageId(clientUUID);
         if (clientStorageId.isLocal()) {
-            num = em.createNamedQuery("deleteClientSessionsByClient").setParameter("clientId", clientUUID).executeUpdate();
+            persistentClientSessionRepository.deleteClientSessionsByClient(clientUUID);
         } else {
-            num = em.createNamedQuery("deleteClientSessionsByExternalClient")
-                    .setParameter("clientStorageProvider", clientStorageId.getProviderId())
-                    .setParameter("externalClientId", clientStorageId.getExternalId())
-                    .executeUpdate();
+            persistentClientSessionRepository.deleteClientSessionsByExternalClient(clientStorageId.getProviderId(), clientStorageId.getExternalId());
         }
     }
 
@@ -176,23 +158,16 @@ public class JpaUserSessionPersisterProvider implements UserSessionPersisterProv
     }
 
     private void onUserRemoved(RealmModel realm, String userId) {
-        int num = em.createNamedQuery("deleteClientSessionsByUser").setParameter("userId", userId).executeUpdate();
-        num = em.createNamedQuery("deleteUserSessionsByUser").setParameter("userId", userId).executeUpdate();
+        persistentClientSessionRepository.deleteClientSessionsByUser(userId);
+        persistentUserSessionRepository.deleteUserSessionsByUser(userId);
     }
-
 
     @Override
     public void updateLastSessionRefreshes(RealmModel realm, int lastSessionRefresh, Collection<String> userSessionIds, boolean offline) {
         String offlineStr = offlineToString(offline);
+        int us = persistentUserSessionRepository.updateUserSessionLastSessionRefresh(realm.getId(), lastSessionRefresh, offlineStr, userSessionIds);
 
-        int us = em.createNamedQuery("updateUserSessionLastSessionRefresh")
-                .setParameter("lastSessionRefresh", lastSessionRefresh)
-                .setParameter("realmId", realm.getId())
-                .setParameter("offline", offlineStr)
-                .setParameter("userSessionIds", userSessionIds)
-                .executeUpdate();
-
-        LOG.debug("Updated lastSessionRefresh of {} user sessions in realm '%s'", us, realm.getName());
+        LOG.debug("Updated lastSessionRefresh of {} user sessions in realm '{}'", us, realm.getName());
     }
 
     @Override
@@ -201,41 +176,17 @@ public class JpaUserSessionPersisterProvider implements UserSessionPersisterProv
 
         String offlineStr = offlineToString(true);
 
-        LOG.trace("Trigger removing expired user sessions for realm '%s'", realm.getName());
+        LOG.trace("Trigger removing expired user sessions for realm '{}'", realm.getName());
+        int us = persistentClientSessionRepository.deleteExpiredClientSessions(realm.getId(), expiredOffline, offlineStr);
+        int cs = persistentUserSessionRepository.deleteExpiredUserSessions(realm.getId(), expiredOffline, offlineStr);
 
-        int cs = em.createNamedQuery("deleteExpiredClientSessions")
-                .setParameter("realmId", realm.getId())
-                .setParameter("lastSessionRefresh", expiredOffline)
-                .setParameter("offline", offlineStr)
-                .executeUpdate();
-
-        int us = em.createNamedQuery("deleteExpiredUserSessions")
-                .setParameter("realmId", realm.getId())
-                .setParameter("lastSessionRefresh", expiredOffline)
-                .setParameter("offline", offlineStr)
-                .executeUpdate();
-
-        LOG.debug("Removed {} expired user sessions and {} expired client sessions in realm '%s'", us, cs, realm.getName());
-
+        LOG.debug("Removed {} expired user sessions and {} expired client sessions in realm '{}'", us, cs, realm.getName());
     }
 
     @Override
-    public List<UserSessionModel> loadUserSessions(int firstResult, int maxResults, boolean offline, int lastCreatedOn, String lastUserSessionId) {
+    public List<? extends UserSessionModel> loadUserSessions(int firstResult, int maxResults, boolean offline, int lastCreatedOn, String lastUserSessionId) {
         String offlineStr = offlineToString(offline);
-
-        TypedQuery<PersistentUserSessionEntity> query = em.createNamedQuery("findUserSessions", PersistentUserSessionEntity.class);
-        query.setParameter("offline", offlineStr);
-        query.setParameter("lastCreatedOn", lastCreatedOn);
-        query.setParameter("lastSessionId", lastUserSessionId);
-
-        if (firstResult != -1) {
-            query.setFirstResult(firstResult);
-        }
-        if (maxResults != -1) {
-            query.setMaxResults(maxResults);
-        }
-
-        List<PersistentUserSessionAdapter> result = query.getResultStream()
+        List<PersistentUserSessionAdapter> result = persistentUserSessionRepository.findUserSessions(offlineStr, lastCreatedOn, lastUserSessionId)
                 .map(this::toAdapter)
                 .collect(Collectors.toList());
 
@@ -247,12 +198,8 @@ public class JpaUserSessionPersisterProvider implements UserSessionPersisterProv
         Set<String> removedClientUUIDs = new HashSet<>();
 
         if (!userSessionIds.isEmpty()) {
-            TypedQuery<PersistentClientSessionEntity> query2 = em.createNamedQuery("findClientSessionsByUserSessions", PersistentClientSessionEntity.class);
-            query2.setParameter("userSessionIds", userSessionIds);
-            query2.setParameter("offline", offlineStr);
-            List<PersistentClientSessionEntity> clientSessions = query2.getResultList();
-
-            for (PersistentClientSessionEntity clientSession : clientSessions) {
+            List<PersistentClientSession> clientSessions = persistentClientSessionRepository.findClientSessionsByUserSessions(userSessionIds, offlineStr);
+            for (PersistentClientSession clientSession : clientSessions) {
                 PersistentUserSessionAdapter userSession = sessionsById.get(clientSession.getUserSessionId());
 
                 PersistentAuthenticatedClientSessionAdapter clientSessAdapter = toAdapter(userSession.getRealm(), userSession, clientSession);
@@ -271,15 +218,15 @@ public class JpaUserSessionPersisterProvider implements UserSessionPersisterProv
             onClientRemoved(clientUUID);
         }
 
-        return (List) result;
+        return result;
     }
 
-    private PersistentUserSessionAdapter toAdapter(PersistentUserSessionEntity entity) {
+    private PersistentUserSessionAdapter toAdapter(PersistentUserSession entity) {
         RealmModel realm = session.realms().getRealm(entity.getRealmId());
         return toAdapter(realm, entity);
     }
 
-    private PersistentUserSessionAdapter toAdapter(RealmModel realm, PersistentUserSessionEntity entity) {
+    private PersistentUserSessionAdapter toAdapter(RealmModel realm, PersistentUserSession entity) {
         PersistentUserSessionModel model = new PersistentUserSessionModel();
         model.setUserSessionId(entity.getUserSessionId());
         model.setStarted(entity.getCreatedOn());
@@ -291,7 +238,7 @@ public class JpaUserSessionPersisterProvider implements UserSessionPersisterProv
         return new PersistentUserSessionAdapter(session, model, realm, entity.getUserId(), clientSessions);
     }
 
-    private PersistentAuthenticatedClientSessionAdapter toAdapter(RealmModel realm, PersistentUserSessionAdapter userSession, PersistentClientSessionEntity entity) {
+    private PersistentAuthenticatedClientSessionAdapter toAdapter(RealmModel realm, PersistentUserSessionAdapter userSession, PersistentClientSession entity) {
         String clientId = entity.getClientId();
         if (!entity.getExternalClientId().equals("local")) {
             clientId = new StorageId(entity.getClientId(), entity.getExternalClientId()).getId();
@@ -310,11 +257,7 @@ public class JpaUserSessionPersisterProvider implements UserSessionPersisterProv
     @Override
     public int getUserSessionsCount(boolean offline) {
         String offlineStr = offlineToString(offline);
-
-        Query query = em.createNamedQuery("findUserSessionsCount");
-        query.setParameter("offline", offlineStr);
-        Number n = (Number) query.getSingleResult();
-        return n.intValue();
+        return persistentUserSessionRepository.findUserSessionsCount(offlineStr);
     }
 
     @Override

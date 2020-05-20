@@ -79,7 +79,7 @@ public class Policy {
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {})
     @JoinTable(name = "SCOPE_POLICY", joinColumns = @JoinColumn(name = "POLICY_ID"), inverseJoinColumns = @JoinColumn(name = "SCOPE_ID"))
-    private Set<ScopeEntity> scopes = new HashSet<>();
+    private Set<Scope> scopes = new HashSet<>();
 
     @Column(name = "OWNER")
     private String owner;
@@ -156,11 +156,11 @@ public class Policy {
         this.resources = resources;
     }
 
-    public Set<ScopeEntity> getScopes() {
+    public Set<Scope> getScopes() {
         return this.scopes;
     }
 
-    public void setScopes(Set<ScopeEntity> scopes) {
+    public void setScopes(Set<Scope> scopes) {
         this.scopes = scopes;
     }
 

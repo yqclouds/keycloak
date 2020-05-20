@@ -20,8 +20,8 @@ package org.keycloak.authorization.protection.resource;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.authorization.admin.ResourceSetService;
 import org.keycloak.authorization.identity.Identity;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.idm.authorization.ResourceOwnerRepresentation;
@@ -38,12 +38,12 @@ import java.util.function.BiFunction;
  */
 public class ResourceService {
 
-    private final ResourceServer resourceServer;
+    private final ResourceServerModel resourceServer;
     private final ResourceSetService resourceManager;
     private final KeycloakSession session;
     private final Identity identity;
 
-    public ResourceService(KeycloakSession session, ResourceServer resourceServer, Identity identity, ResourceSetService resourceManager) {
+    public ResourceService(KeycloakSession session, ResourceServerModel resourceServer, Identity identity, ResourceSetService resourceManager) {
         this.session = session;
         this.identity = identity;
         this.resourceServer = resourceServer;
@@ -122,7 +122,7 @@ public class ResourceService {
         if (deep != null && deep) {
             return resourceManager.find(id, name, uri, owner, type, scope, matchingUri, exactName, deep, firstResult, maxResult);
         } else {
-            return resourceManager.find(id, name, uri, owner, type, scope, matchingUri, exactName, deep, firstResult, maxResult, (BiFunction<Resource, Boolean, String>) (resource, deep1) -> resource.getId());
+            return resourceManager.find(id, name, uri, owner, type, scope, matchingUri, exactName, deep, firstResult, maxResult, (BiFunction<ResourceModel, Boolean, String>) (resource, deep1) -> resource.getId());
         }
     }
 

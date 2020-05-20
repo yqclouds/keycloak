@@ -19,7 +19,7 @@ package org.keycloak.authorization.policy.provider.group;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.attribute.Attributes;
 import org.keycloak.authorization.attribute.Attributes.Entry;
-import org.keycloak.authorization.model.Policy;
+import org.keycloak.authorization.model.PolicyModel;
 import org.keycloak.authorization.policy.evaluation.Evaluation;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.models.GroupModel;
@@ -36,9 +36,9 @@ import static org.keycloak.models.utils.ModelToRepresentation.buildGroupPath;
  */
 public class GroupPolicyProvider implements PolicyProvider {
 
-    private final BiFunction<Policy, AuthorizationProvider, GroupPolicyRepresentation> representationFunction;
+    private final BiFunction<PolicyModel, AuthorizationProvider, GroupPolicyRepresentation> representationFunction;
 
-    public GroupPolicyProvider(BiFunction<Policy, AuthorizationProvider, GroupPolicyRepresentation> representationFunction) {
+    public GroupPolicyProvider(BiFunction<PolicyModel, AuthorizationProvider, GroupPolicyRepresentation> representationFunction) {
         this.representationFunction = representationFunction;
     }
 

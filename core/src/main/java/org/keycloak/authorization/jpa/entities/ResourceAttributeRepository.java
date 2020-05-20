@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ResourceAttributeRepository extends JpaRepository<ResourceAttribute, String>, JpaSpecificationExecutor<ResourceAttribute> {
     @Query(name = "deleteResourceAttributesByNameAndResource", value = "delete from ResourceAttribute attr where attr.resource.id = :resourceId and attr.name = :name")
-    void deleteResourceAttributesByNameAndResource();
+    void deleteResourceAttributesByNameAndResource(String name, String resourceId);
 }

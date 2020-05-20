@@ -24,9 +24,9 @@ import org.keycloak.authorization.admin.representation.PolicyEvaluationResponseB
 import org.keycloak.authorization.attribute.Attributes;
 import org.keycloak.authorization.common.DefaultEvaluationContext;
 import org.keycloak.authorization.common.KeycloakIdentity;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
+import org.keycloak.authorization.model.ScopeModel;
 import org.keycloak.authorization.permission.ResourcePermission;
 import org.keycloak.authorization.policy.evaluation.DecisionPermissionCollector;
 import org.keycloak.authorization.policy.evaluation.EvaluationContext;
@@ -66,9 +66,9 @@ public class PolicyEvaluationService {
 
     private final AuthorizationProvider authorization;
     private final AdminPermissionEvaluator auth;
-    private final ResourceServer resourceServer;
+    private final ResourceServerModel resourceServer;
 
-    PolicyEvaluationService(ResourceServer resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth) {
+    PolicyEvaluationService(ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth) {
         this.resourceServer = resourceServer;
         this.authorization = authorization;
         this.auth = auth;
@@ -149,10 +149,10 @@ public class PolicyEvaluationService {
 
             ScopeStore scopeStore = storeFactory.getScopeStore();
 
-            Set<Scope> scopes = givenScopes.stream().map(scopeRepresentation -> scopeStore.findByName(scopeRepresentation.getName(), resourceServer.getId())).collect(Collectors.toSet());
+            Set<ScopeModel> scopes = givenScopes.stream().map(scopeRepresentation -> scopeStore.findByName(scopeRepresentation.getName(), resourceServer.getId())).collect(Collectors.toSet());
 
             if (resource.getId() != null) {
-                Resource resourceModel = storeFactory.getResourceStore().findById(resource.getId(), resourceServer.getId());
+                ResourceModel resourceModel = storeFactory.getResourceStore().findById(resource.getId(), resourceServer.getId());
                 return new ArrayList<>(Arrays.asList(Permissions.createResourcePermissions(resourceModel, scopes, authorization, request))).stream();
             } else if (resource.getType() != null) {
                 return storeFactory.getResourceStore().findByType(resource.getType(), resourceServer.getId()).stream().map(resource1 -> Permissions.createResourcePermissions(resource1, scopes, authorization, request));
@@ -161,7 +161,7 @@ public class PolicyEvaluationService {
                     return Permissions.all(resourceServer, evaluationContext.getIdentity(), authorization, request).stream();
                 }
 
-                List<Resource> resources = storeFactory.getResourceStore().findByScope(scopes.stream().map(Scope::getId).collect(Collectors.toList()), resourceServer.getId());
+                List<ResourceModel> resources = storeFactory.getResourceStore().findByScope(scopes.stream().map(ScopeModel::getId).collect(Collectors.toList()), resourceServer.getId());
 
                 if (resources.isEmpty()) {
                     return scopes.stream().map(scope -> new ResourcePermission(null, new ArrayList<>(Arrays.asList(scope)), resourceServer));
@@ -283,7 +283,7 @@ public class PolicyEvaluationService {
 
     public class EvaluationDecisionCollector extends DecisionPermissionCollector {
 
-        public EvaluationDecisionCollector(AuthorizationProvider authorizationProvider, ResourceServer resourceServer, AuthorizationRequest request) {
+        public EvaluationDecisionCollector(AuthorizationProvider authorizationProvider, ResourceServerModel resourceServer, AuthorizationRequest request) {
             super(authorizationProvider, resourceServer, request);
         }
 
@@ -297,7 +297,7 @@ public class PolicyEvaluationService {
         }
 
         @Override
-        protected void grantPermission(AuthorizationProvider authorizationProvider, List<Permission> permissions, ResourcePermission permission, Collection<Scope> grantedScopes, ResourceServer resourceServer, AuthorizationRequest request, Result result) {
+        protected void grantPermission(AuthorizationProvider authorizationProvider, List<Permission> permissions, ResourcePermission permission, Collection<ScopeModel> grantedScopes, ResourceServerModel resourceServer, AuthorizationRequest request, Result result) {
             result.setStatus(Effect.PERMIT);
             result.getPermission().getScopes().retainAll(grantedScopes);
             super.grantPermission(authorizationProvider, permissions, permission, grantedScopes, resourceServer, request, result);

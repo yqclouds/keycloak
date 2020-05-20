@@ -17,8 +17,8 @@
 package org.keycloak.authorization;
 
 import org.keycloak.authorization.model.PermissionTicketModel;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ScopeModel;
 import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.utils.KeycloakModelUtils;
@@ -34,8 +34,8 @@ import java.util.List;
 public class UserManagedPermissionUtil {
 
     public static void updatePolicy(PermissionTicketModel ticket, StoreFactory storeFactory) {
-        Scope scope = ticket.getScope();
-        Policy policy = ticket.getPolicy();
+        ScopeModel scope = ticket.getScope();
+        PolicyModel policy = ticket.getPolicy();
 
         if (policy == null) {
             HashMap<String, String> filter = new HashMap<>();
@@ -69,7 +69,7 @@ public class UserManagedPermissionUtil {
     }
 
     public static void removePolicy(PermissionTicketModel ticket, StoreFactory storeFactory) {
-        Policy policy = ticket.getPolicy();
+        PolicyModel policy = ticket.getPolicy();
 
         if (policy != null) {
             HashMap<String, String> filter = new HashMap<>();
@@ -84,7 +84,7 @@ public class UserManagedPermissionUtil {
             if (tickets.isEmpty()) {
                 PolicyStore policyStore = storeFactory.getPolicyStore();
 
-                for (Policy associatedPolicy : policy.getAssociatedPolicies()) {
+                for (PolicyModel associatedPolicy : policy.getAssociatedPolicies()) {
                     policyStore.delete(associatedPolicy.getId());
                 }
 
@@ -95,14 +95,14 @@ public class UserManagedPermissionUtil {
         }
     }
 
-    private static Policy createUserManagedPermission(PermissionTicketModel ticket, StoreFactory storeFactory) {
+    private static PolicyModel createUserManagedPermission(PermissionTicketModel ticket, StoreFactory storeFactory) {
         PolicyStore policyStore = storeFactory.getPolicyStore();
         UserPolicyRepresentation userPolicyRep = new UserPolicyRepresentation();
 
         userPolicyRep.setName(KeycloakModelUtils.generateId());
         userPolicyRep.addUser(ticket.getRequester());
 
-        Policy userPolicy = policyStore.create(userPolicyRep, ticket.getResourceServer());
+        PolicyModel userPolicy = policyStore.create(userPolicyRep, ticket.getResourceServer());
 
         userPolicy.setOwner(ticket.getOwner());
 
@@ -112,12 +112,12 @@ public class UserManagedPermissionUtil {
         policyRep.setType("uma");
         policyRep.addPolicy(userPolicy.getId());
 
-        Policy policy = policyStore.create(policyRep, ticket.getResourceServer());
+        PolicyModel policy = policyStore.create(policyRep, ticket.getResourceServer());
 
         policy.setOwner(ticket.getOwner());
         policy.addResource(ticket.getResource());
 
-        Scope scope = ticket.getScope();
+        ScopeModel scope = ticket.getScope();
 
         if (scope != null) {
             policy.addScope(scope);

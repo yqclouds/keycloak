@@ -16,9 +16,9 @@
  */
 package org.keycloak.services.resources.admin.permissions;
 
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.models.ClientModel;
 
 import java.util.Map;
@@ -37,25 +37,25 @@ public interface ClientPermissionManagement {
 
     void setPermissionsEnabled(ClientModel client, boolean enable);
 
-    Resource resource(ClientModel client);
+    ResourceModel resource(ClientModel client);
 
     Map<String, String> getPermissions(ClientModel client);
 
     boolean canExchangeTo(ClientModel authorizedClient, ClientModel to);
 
-    Policy exchangeToPermission(ClientModel client);
+    PolicyModel exchangeToPermission(ClientModel client);
 
-    Policy mapRolesPermission(ClientModel client);
+    PolicyModel mapRolesPermission(ClientModel client);
 
-    Policy mapRolesClientScopePermission(ClientModel client);
+    PolicyModel mapRolesClientScopePermission(ClientModel client);
 
-    Policy mapRolesCompositePermission(ClientModel client);
+    PolicyModel mapRolesCompositePermission(ClientModel client);
 
-    Policy managePermission(ClientModel client);
+    PolicyModel managePermission(ClientModel client);
 
-    Policy configurePermission(ClientModel client);
+    PolicyModel configurePermission(ClientModel client);
 
-    Policy viewPermission(ClientModel client);
+    PolicyModel viewPermission(ClientModel client);
 
-    ResourceServer resourceServer(ClientModel client);
+    ResourceServerModel resourceServer(ClientModel client);
 }

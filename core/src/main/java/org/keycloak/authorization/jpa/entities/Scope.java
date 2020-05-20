@@ -29,15 +29,7 @@ import java.util.List;
 @Table(name = "RESOURCE_SERVER_SCOPE", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"NAME", "RESOURCE_SERVER_ID"})
 })
-@NamedQueries(
-        {
-                @NamedQuery(name = "findScopeIdByName", query = "select s.id from ScopeEntity s where s.resourceServer.id = :serverId and s.name = :name"),
-                @NamedQuery(name = "findScopeIdByResourceServer", query = "select s.id from ScopeEntity s where s.resourceServer.id = :serverId"),
-                @NamedQuery(name = "deleteScopeByResourceServer", query = "delete from ScopeEntity s where s.resourceServer.id = :serverId")
-        }
-)
-public class ScopeEntity {
-
+public class Scope {
     @Id
     @Column(name = "ID", length = 36)
     @Access(AccessType.PROPERTY)
@@ -118,7 +110,7 @@ public class ScopeEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ScopeEntity that = (ScopeEntity) o;
+        Scope that = (Scope) o;
 
         return getId().equals(that.getId());
     }

@@ -24,7 +24,7 @@ package org.keycloak.authorization.model;
  *
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
-public interface Scope {
+public interface ScopeModel {
 
     /**
      * Returns the unique identifier for this instance.
@@ -76,9 +76,9 @@ public interface Scope {
     void setIconUri(String iconUri);
 
     /**
-     * Returns the {@link ResourceServer} instance to where this scope belongs to.
+     * Returns the {@link ResourceServerModel} instance to where this scope belongs to.
      *
      * @return
      */
-    ResourceServer getResourceServer();
+    ResourceServerModel getResourceServer();
 }

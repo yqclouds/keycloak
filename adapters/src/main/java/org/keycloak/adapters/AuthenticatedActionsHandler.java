@@ -148,7 +148,7 @@ public class AuthenticatedActionsHandler {
         PolicyEnforcer policyEnforcer = this.deployment.getPolicyEnforcer();
 
         if (policyEnforcer == null) {
-            LOG.debug("Policy enforcement is disabled.");
+            LOG.debug("PolicyModel enforcement is disabled.");
             return true;
         }
 

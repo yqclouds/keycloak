@@ -50,18 +50,18 @@ public interface PermissionTicketModel {
     String getRequester();
 
     /**
-     * Returns the {@link Resource} associated with this instance
+     * Returns the {@link ResourceModel} associated with this instance
      *
-     * @return the {@link Resource} associated with this instance
+     * @return the {@link ResourceModel} associated with this instance
      */
-    Resource getResource();
+    ResourceModel getResource();
 
     /**
-     * Returns the {@link Scope} associated with this instance
+     * Returns the {@link ScopeModel} associated with this instance
      *
-     * @return the {@link Scope} associated with this instance
+     * @return the {@link ScopeModel} associated with this instance
      */
-    Scope getScope();
+    ScopeModel getScope();
 
     boolean isGranted();
 
@@ -72,13 +72,13 @@ public interface PermissionTicketModel {
     void setGrantedTimestamp(Long millis);
 
     /**
-     * Returns the {@link ResourceServer} where this policy belongs to.
+     * Returns the {@link ResourceServerModel} where this policy belongs to.
      *
      * @return a resource server
      */
-    ResourceServer getResourceServer();
+    ResourceServerModel getResourceServer();
 
-    Policy getPolicy();
+    PolicyModel getPolicy();
 
-    void setPolicy(Policy policy);
+    void setPolicy(PolicyModel policy);
 }

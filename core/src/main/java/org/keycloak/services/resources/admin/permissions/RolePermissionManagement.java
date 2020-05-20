@@ -16,9 +16,9 @@
  */
 package org.keycloak.services.resources.admin.permissions;
 
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.models.RoleModel;
 
 import java.util.Map;
@@ -38,19 +38,19 @@ public interface RolePermissionManagement {
 
     Map<String, String> getPermissions(RoleModel role);
 
-    Policy mapRolePermission(RoleModel role);
+    PolicyModel mapRolePermission(RoleModel role);
 
-    Policy mapCompositePermission(RoleModel role);
+    PolicyModel mapCompositePermission(RoleModel role);
 
-    Policy mapClientScopePermission(RoleModel role);
+    PolicyModel mapClientScopePermission(RoleModel role);
 
-    Resource resource(RoleModel role);
+    ResourceModel resource(RoleModel role);
 
-    ResourceServer resourceServer(RoleModel role);
+    ResourceServerModel resourceServer(RoleModel role);
 
-    Policy manageUsersPolicy(ResourceServer server);
+    PolicyModel manageUsersPolicy(ResourceServerModel server);
 
-    Policy viewUsersPolicy(ResourceServer server);
+    PolicyModel viewUsersPolicy(ResourceServerModel server);
 
-    Policy rolePolicy(ResourceServer server, RoleModel role);
+    PolicyModel rolePolicy(ResourceServerModel server, RoleModel role);
 }

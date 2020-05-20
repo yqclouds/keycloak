@@ -673,7 +673,7 @@ public class ModelToRepresentation {
             rep.setProtocolMappers(mappings);
         }
 
-        ResourceServer resourceServer = authorizationProvider.getStoreFactory().getResourceServerStore().findById(clientModel.getId());
+        ResourceServerModel resourceServer = authorizationProvider.getStoreFactory().getResourceServerStore().findById(clientModel.getId());
         if (resourceServer != null) {
             rep.setAuthorizationServicesEnabled(true);
         }
@@ -854,7 +854,7 @@ public class ModelToRepresentation {
         return rep;
     }
 
-    public static ScopeRepresentation toRepresentation(Scope model) {
+    public static ScopeRepresentation toRepresentation(ScopeModel model) {
         ScopeRepresentation scope = new ScopeRepresentation();
 
         scope.setId(model.getId());
@@ -865,7 +865,7 @@ public class ModelToRepresentation {
         return scope;
     }
 
-    public static ResourceServerRepresentation toRepresentation(ResourceServer model, ClientModel client) {
+    public static ResourceServerRepresentation toRepresentation(ResourceServerModel model, ClientModel client) {
         ResourceServerRepresentation server = new ResourceServerRepresentation();
 
         server.setId(model.getId());
@@ -878,15 +878,15 @@ public class ModelToRepresentation {
         return server;
     }
 
-    public static <R extends AbstractPolicyRepresentation> R toRepresentation(Policy policy, AuthorizationProvider authorization) {
+    public static <R extends AbstractPolicyRepresentation> R toRepresentation(PolicyModel policy, AuthorizationProvider authorization) {
         return toRepresentation(policy, authorization, false, true);
     }
 
-    public static <R extends AbstractPolicyRepresentation> R toRepresentation(Policy policy, AuthorizationProvider authorization, boolean genericRepresentation, boolean export) {
+    public static <R extends AbstractPolicyRepresentation> R toRepresentation(PolicyModel policy, AuthorizationProvider authorization, boolean genericRepresentation, boolean export) {
         return toRepresentation(policy, authorization, genericRepresentation, export, false);
     }
 
-    public static <R extends AbstractPolicyRepresentation> R toRepresentation(Policy policy, AuthorizationProvider authorization, boolean genericRepresentation, boolean export, boolean allFields) {
+    public static <R extends AbstractPolicyRepresentation> R toRepresentation(PolicyModel policy, AuthorizationProvider authorization, boolean genericRepresentation, boolean export, boolean allFields) {
         PolicyProviderFactory providerFactory = authorization.getProviderFactory(policy.getType());
         R representation;
 
@@ -921,11 +921,11 @@ public class ModelToRepresentation {
         return representation;
     }
 
-    public static ResourceRepresentation toRepresentation(Resource model, ResourceServer resourceServer, AuthorizationProvider authorization) {
+    public static ResourceRepresentation toRepresentation(ResourceModel model, ResourceServerModel resourceServer, AuthorizationProvider authorization) {
         return toRepresentation(model, resourceServer, authorization, true);
     }
 
-    public static ResourceRepresentation toRepresentation(Resource model, ResourceServer resourceServer, AuthorizationProvider authorization, Boolean deep) {
+    public static ResourceRepresentation toRepresentation(ResourceModel model, ResourceServerModel resourceServer, AuthorizationProvider authorization, Boolean deep) {
         ResourceRepresentation resource = new ResourceRepresentation();
 
         resource.setId(model.getId());
@@ -950,7 +950,7 @@ public class ModelToRepresentation {
             UserModel userModel = keycloakSession.users().getUserById(owner.getId(), realm);
 
             if (userModel == null) {
-                throw new RuntimeException("Could not find the user [" + owner.getId() + "] who owns the Resource [" + resource.getId() + "].");
+                throw new RuntimeException("Could not find the user [" + owner.getId() + "] who owns the ResourceModel [" + resource.getId() + "].");
             }
 
             owner.setName(userModel.getUsername());
@@ -988,7 +988,7 @@ public class ModelToRepresentation {
         representation.setOwner(ticket.getOwner());
         representation.setRequester(ticket.getRequester());
 
-        Resource resource = ticket.getResource();
+        ResourceModel resource = ticket.getResource();
 
         representation.setResource(resource.getId());
 
@@ -1002,7 +1002,7 @@ public class ModelToRepresentation {
             representation.setOwnerName(owner.getUsername());
         }
 
-        Scope scope = ticket.getScope();
+        ScopeModel scope = ticket.getScope();
 
         if (scope != null) {
             representation.setScope(scope.getId());

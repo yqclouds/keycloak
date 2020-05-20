@@ -41,9 +41,7 @@ import java.util.*;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class JpaUserFederatedStorageProvider implements
-        UserFederatedStorageProvider,
-        UserCredentialStore {
+public class JpaUserFederatedStorageProvider implements UserFederatedStorageProvider, UserCredentialStore {
 
     protected static final Logger LOG = LoggerFactory.getLogger(JpaUserFederatedStorageProvider.class);
 

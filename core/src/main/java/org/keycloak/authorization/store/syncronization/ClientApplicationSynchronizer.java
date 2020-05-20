@@ -19,8 +19,8 @@
 package org.keycloak.authorization.store.syncronization;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceServerModel;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.ResourceServerStore;
 import org.keycloak.authorization.store.StoreFactory;
@@ -50,7 +50,7 @@ public class ClientApplicationSynchronizer implements Synchronizer<ClientRemoved
     private void removeFromClientPolicies(ClientRemovedEvent event, AuthorizationProvider authorizationProvider) {
         StoreFactory storeFactory = authorizationProvider.getStoreFactory();
         ResourceServerStore store = storeFactory.getResourceServerStore();
-        ResourceServer resourceServer = store.findById(event.getClient().getId());
+        ResourceServerModel resourceServer = store.findById(event.getClient().getId());
 
         if (resourceServer != null) {
             storeFactory.getResourceServerStore().delete(resourceServer.getId());
@@ -61,9 +61,9 @@ public class ClientApplicationSynchronizer implements Synchronizer<ClientRemoved
         attributes.put("type", new String[]{"client"});
         attributes.put("config:clients", new String[]{event.getClient().getId()});
 
-        List<Policy> search = storeFactory.getPolicyStore().findByResourceServer(attributes, null, -1, -1);
+        List<PolicyModel> search = storeFactory.getPolicyStore().findByResourceServer(attributes, null, -1, -1);
 
-        for (Policy policy : search) {
+        for (PolicyModel policy : search) {
             PolicyProviderFactory policyFactory = authorizationProvider.getProviderFactory(policy.getType());
             ClientPolicyRepresentation representation = ClientPolicyRepresentation.class.cast(policyFactory.toRepresentation(policy, authorizationProvider));
             Set<String> clients = representation.getClients();

@@ -90,7 +90,7 @@ public class ClientScopesResource {
     /**
      * Create a new client scope
      * <p>
-     * Client Scope's name must be unique!
+     * Client ScopeModel's name must be unique!
      *
      * @param rep
      * @return
@@ -108,7 +108,7 @@ public class ClientScopesResource {
 
             return Response.created(session.getContext().getUri().getAbsolutePathBuilder().path(clientModel.getId()).build()).build();
         } catch (ModelDuplicateException e) {
-            return ErrorResponse.exists("Client Scope " + rep.getName() + " already exists");
+            return ErrorResponse.exists("Client ScopeModel " + rep.getName() + " already exists");
         }
     }
 

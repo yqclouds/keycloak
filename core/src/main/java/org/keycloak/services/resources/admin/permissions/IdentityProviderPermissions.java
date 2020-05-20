@@ -19,10 +19,10 @@ package org.keycloak.services.resources.admin.permissions;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.common.ClientModelIdentity;
 import org.keycloak.authorization.common.DefaultEvaluationContext;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
+import org.keycloak.authorization.model.ScopeModel;
 import org.keycloak.authorization.policy.evaluation.EvaluationContext;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.IdentityProviderModel;
@@ -64,27 +64,27 @@ class IdentityProviderPermissions implements IdentityProviderPermissionManagemen
     }
 
     private void initialize(IdentityProviderModel idp) {
-        ResourceServer server = root.initializeRealmResourceServer();
-        Scope exchangeToScope = root.initializeScope(TOKEN_EXCHANGE, server);
+        ResourceServerModel server = root.initializeRealmResourceServer();
+        ScopeModel exchangeToScope = root.initializeScope(TOKEN_EXCHANGE, server);
 
         String resourceName = getResourceName(idp);
-        Resource resource = authz.getStoreFactory().getResourceStore().findByName(resourceName, server.getId());
+        ResourceModel resource = authz.getStoreFactory().getResourceStore().findByName(resourceName, server.getId());
         if (resource == null) {
             resource = authz.getStoreFactory().getResourceStore().create(resourceName, server, server.getId());
             resource.setType("IdentityProvider");
-            Set<Scope> scopeset = new HashSet<>();
+            Set<ScopeModel> scopeset = new HashSet<>();
             scopeset.add(exchangeToScope);
             resource.updateScopes(scopeset);
         }
         String exchangeToPermissionName = getExchangeToPermissionName(idp);
-        Policy exchangeToPermission = authz.getStoreFactory().getPolicyStore().findByName(exchangeToPermissionName, server.getId());
+        PolicyModel exchangeToPermission = authz.getStoreFactory().getPolicyStore().findByName(exchangeToPermissionName, server.getId());
         if (exchangeToPermission == null) {
             Helper.addEmptyScopePermission(authz, server, exchangeToPermissionName, resource, exchangeToScope);
         }
     }
 
-    private void deletePolicy(String name, ResourceServer server) {
-        Policy policy = authz.getStoreFactory().getPolicyStore().findByName(name, server.getId());
+    private void deletePolicy(String name, ResourceServerModel server) {
+        PolicyModel policy = authz.getStoreFactory().getPolicyStore().findByName(name, server.getId());
         if (policy != null) {
             authz.getStoreFactory().getPolicyStore().delete(policy.getId());
         }
@@ -92,17 +92,17 @@ class IdentityProviderPermissions implements IdentityProviderPermissionManagemen
     }
 
     private void deletePermissions(IdentityProviderModel idp) {
-        ResourceServer server = root.initializeRealmResourceServer();
+        ResourceServerModel server = root.initializeRealmResourceServer();
         if (server == null) return;
         deletePolicy(getExchangeToPermissionName(idp), server);
-        Resource resource = authz.getStoreFactory().getResourceStore().findByName(getResourceName(idp), server.getId());
+        ResourceModel resource = authz.getStoreFactory().getResourceStore().findByName(getResourceName(idp), server.getId());
         ;
         if (resource != null) authz.getStoreFactory().getResourceStore().delete(resource.getId());
     }
 
     @Override
     public boolean isPermissionsEnabled(IdentityProviderModel idp) {
-        ResourceServer server = root.initializeRealmResourceServer();
+        ResourceServerModel server = root.initializeRealmResourceServer();
         if (server == null) return false;
 
         return authz.getStoreFactory().getResourceStore().findByName(getResourceName(idp), server.getId()) != null;
@@ -118,15 +118,15 @@ class IdentityProviderPermissions implements IdentityProviderPermissionManagemen
     }
 
 
-    private Scope exchangeToScope(ResourceServer server) {
+    private ScopeModel exchangeToScope(ResourceServerModel server) {
         return authz.getStoreFactory().getScopeStore().findByName(TOKEN_EXCHANGE, server.getId());
     }
 
     @Override
-    public Resource resource(IdentityProviderModel idp) {
-        ResourceServer server = root.initializeRealmResourceServer();
+    public ResourceModel resource(IdentityProviderModel idp) {
+        ResourceServerModel server = root.initializeRealmResourceServer();
         if (server == null) return null;
-        Resource resource = authz.getStoreFactory().getResourceStore().findByName(getResourceName(idp), server.getId());
+        ResourceModel resource = authz.getStoreFactory().getResourceStore().findByName(getResourceName(idp), server.getId());
         if (resource == null) return null;
         return resource;
     }
@@ -144,32 +144,32 @@ class IdentityProviderPermissions implements IdentityProviderPermissionManagemen
     public boolean canExchangeTo(ClientModel authorizedClient, IdentityProviderModel to) {
 
         if (!authorizedClient.equals(to)) {
-            ResourceServer server = root.initializeRealmResourceServer();
+            ResourceServerModel server = root.initializeRealmResourceServer();
             if (server == null) {
                 LOG.debug("No resource server set up for target idp");
                 return false;
             }
 
-            Resource resource = authz.getStoreFactory().getResourceStore().findByName(getResourceName(to), server.getId());
+            ResourceModel resource = authz.getStoreFactory().getResourceStore().findByName(getResourceName(to), server.getId());
             if (resource == null) {
                 LOG.debug("No resource object set up for target idp");
                 return false;
             }
 
-            Policy policy = authz.getStoreFactory().getPolicyStore().findByName(getExchangeToPermissionName(to), server.getId());
+            PolicyModel policy = authz.getStoreFactory().getPolicyStore().findByName(getExchangeToPermissionName(to), server.getId());
             if (policy == null) {
                 LOG.debug("No permission object set up for target idp");
                 return false;
             }
 
-            Set<Policy> associatedPolicies = policy.getAssociatedPolicies();
+            Set<PolicyModel> associatedPolicies = policy.getAssociatedPolicies();
             // if no policies attached to permission then just do default behavior
             if (associatedPolicies == null || associatedPolicies.isEmpty()) {
                 LOG.debug("No policies set up for permission on target idp");
                 return false;
             }
 
-            Scope scope = exchangeToScope(server);
+            ScopeModel scope = exchangeToScope(server);
             if (scope == null) {
                 LOG.debug(TOKEN_EXCHANGE + " not initialized");
                 return false;
@@ -190,8 +190,8 @@ class IdentityProviderPermissions implements IdentityProviderPermissionManagemen
     }
 
     @Override
-    public Policy exchangeToPermission(IdentityProviderModel idp) {
-        ResourceServer server = root.initializeRealmResourceServer();
+    public PolicyModel exchangeToPermission(IdentityProviderModel idp) {
+        ResourceServerModel server = root.initializeRealmResourceServer();
         if (server == null) return null;
         return authz.getStoreFactory().getPolicyStore().findByName(getExchangeToPermissionName(idp), server.getId());
     }

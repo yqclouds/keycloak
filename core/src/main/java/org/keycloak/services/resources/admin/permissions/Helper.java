@@ -17,10 +17,10 @@
 package org.keycloak.services.resources.admin.permissions;
 
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
+import org.keycloak.authorization.model.ScopeModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.RoleModel;
 import org.keycloak.representations.idm.authorization.DecisionStrategy;
@@ -36,7 +36,7 @@ import java.util.Map;
  * @version $Revision: 1 $
  */
 class Helper {
-    public static Policy addScopePermission(AuthorizationProvider authz, ResourceServer resourceServer, String name, Resource resource, Scope scope, Policy policy) {
+    public static PolicyModel addScopePermission(AuthorizationProvider authz, ResourceServerModel resourceServer, String name, ResourceModel resource, ScopeModel scope, PolicyModel policy) {
         ScopePermissionRepresentation representation = new ScopePermissionRepresentation();
 
         representation.setName(name);
@@ -49,7 +49,7 @@ class Helper {
         return authz.getStoreFactory().getPolicyStore().create(representation, resourceServer);
     }
 
-    public static Policy addEmptyScopePermission(AuthorizationProvider authz, ResourceServer resourceServer, String name, Resource resource, Scope scope) {
+    public static PolicyModel addEmptyScopePermission(AuthorizationProvider authz, ResourceServerModel resourceServer, String name, ResourceModel resource, ScopeModel scope) {
         ScopePermissionRepresentation representation = new ScopePermissionRepresentation();
 
         representation.setName(name);
@@ -61,12 +61,12 @@ class Helper {
         return authz.getStoreFactory().getPolicyStore().create(representation, resourceServer);
     }
 
-    public static Policy createRolePolicy(AuthorizationProvider authz, ResourceServer resourceServer, RoleModel role) {
+    public static PolicyModel createRolePolicy(AuthorizationProvider authz, ResourceServerModel resourceServer, RoleModel role) {
         String roleName = getRolePolicyName(role);
         return createRolePolicy(authz, resourceServer, role, roleName);
     }
 
-    public static Policy createRolePolicy(AuthorizationProvider authz, ResourceServer resourceServer, RoleModel role, String policyName) {
+    public static PolicyModel createRolePolicy(AuthorizationProvider authz, ResourceServerModel resourceServer, RoleModel role, String policyName) {
         PolicyRepresentation representation = new PolicyRepresentation();
 
         representation.setName(policyName);

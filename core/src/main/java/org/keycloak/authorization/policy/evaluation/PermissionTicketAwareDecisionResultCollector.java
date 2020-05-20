@@ -19,9 +19,9 @@ package org.keycloak.authorization.policy.evaluation;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.identity.Identity;
 import org.keycloak.authorization.model.PermissionTicketModel;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
+import org.keycloak.authorization.model.ScopeModel;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.authorization.store.ScopeStore;
 import org.keycloak.authorization.store.StoreFactory;
@@ -41,9 +41,9 @@ public class PermissionTicketAwareDecisionResultCollector extends DecisionPermis
     private final Identity identity;
     private final AuthorizationProvider authorization;
     private PermissionTicketToken ticket;
-    private ResourceServer resourceServer;
+    private ResourceServerModel resourceServer;
 
-    public PermissionTicketAwareDecisionResultCollector(AuthorizationRequest request, PermissionTicketToken ticket, Identity identity, ResourceServer resourceServer, AuthorizationProvider authorization) {
+    public PermissionTicketAwareDecisionResultCollector(AuthorizationRequest request, PermissionTicketToken ticket, Identity identity, ResourceServerModel resourceServer, AuthorizationProvider authorization) {
         super(authorization, resourceServer, request);
         this.request = request;
         this.ticket = ticket;
@@ -89,7 +89,7 @@ public class PermissionTicketAwareDecisionResultCollector extends DecisionPermis
 
             if (permissions != null) {
                 for (Permission permission : permissions) {
-                    Resource resource = resourceStore.findById(permission.getResourceId(), resourceServer.getId());
+                    ResourceModel resource = resourceStore.findById(permission.getResourceId(), resourceServer.getId());
 
                     if (resource == null) {
                         resource = resourceStore.findByName(permission.getResourceId(), identity.getId(), resourceServer.getId());
@@ -102,7 +102,7 @@ public class PermissionTicketAwareDecisionResultCollector extends DecisionPermis
                     Set<String> scopes = permission.getScopes();
 
                     if (scopes.isEmpty()) {
-                        scopes = resource.getScopes().stream().map(Scope::getName).collect(Collectors.toSet());
+                        scopes = resource.getScopes().stream().map(ScopeModel::getName).collect(Collectors.toSet());
                     }
 
                     if (scopes.isEmpty()) {
@@ -121,7 +121,7 @@ public class PermissionTicketAwareDecisionResultCollector extends DecisionPermis
                         ScopeStore scopeStore = authorization.getStoreFactory().getScopeStore();
 
                         for (String scopeId : scopes) {
-                            Scope scope = scopeStore.findByName(scopeId, resourceServer.getId());
+                            ScopeModel scope = scopeStore.findByName(scopeId, resourceServer.getId());
 
                             if (scope == null) {
                                 scope = scopeStore.findById(scopeId, resourceServer.getId());

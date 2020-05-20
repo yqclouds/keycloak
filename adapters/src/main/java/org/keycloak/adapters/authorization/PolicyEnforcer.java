@@ -82,13 +82,13 @@ public class PolicyEnforcer {
 
     public AuthorizationContext enforce(OIDCHttpFacade facade) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Policy enforcement is enabled. Enforcing policy decisions for path [{}].", facade.getRequest().getURI());
+            LOG.debug("PolicyModel enforcement is enabled. Enforcing policy decisions for path [{}].", facade.getRequest().getURI());
         }
 
         AuthorizationContext context = new KeycloakAdapterPolicyEnforcer(this).authorize(facade);
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Policy enforcement result for path [{}] is : {}", facade.getRequest().getURI(), context.isGranted() ? "GRANTED" : "DENIED");
+            LOG.debug("PolicyModel enforcement result for path [{}] is : {}", facade.getRequest().getURI(), context.isGranted() ? "GRANTED" : "DENIED");
             LOG.debug("Returning authorization context with permissions:");
             for (Permission permission : context.getPermissions()) {
                 LOG.debug(permission.toString());

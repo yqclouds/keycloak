@@ -20,10 +20,10 @@ package org.keycloak.authorization.policy.evaluation;
 
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.Decision;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.authorization.model.Scope;
+import org.keycloak.authorization.model.PolicyModel;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
+import org.keycloak.authorization.model.ScopeModel;
 import org.keycloak.authorization.permission.ResourcePermission;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.store.PolicyStore;
@@ -45,12 +45,12 @@ import java.util.stream.Collectors;
 public class DefaultPolicyEvaluator implements PolicyEvaluator {
 
     @Override
-    public void evaluate(ResourcePermission permission, AuthorizationProvider authorizationProvider, EvaluationContext executionContext, Decision decision, Map<Policy, Map<Object, Decision.Effect>> decisionCache) {
+    public void evaluate(ResourcePermission permission, AuthorizationProvider authorizationProvider, EvaluationContext executionContext, Decision decision, Map<PolicyModel, Map<Object, Decision.Effect>> decisionCache) {
         StoreFactory storeFactory = authorizationProvider.getStoreFactory();
         PolicyStore policyStore = storeFactory.getPolicyStore();
         ResourceStore resourceStore = storeFactory.getResourceStore();
 
-        ResourceServer resourceServer = permission.getResourceServer();
+        ResourceServerModel resourceServer = permission.getResourceServer();
         PolicyEnforcementMode enforcementMode = resourceServer.getPolicyEnforcementMode();
 
         if (PolicyEnforcementMode.DISABLED.equals(enforcementMode)) {
@@ -63,8 +63,8 @@ public class DefaultPolicyEvaluator implements PolicyEvaluator {
         }
 
         AtomicBoolean verified = new AtomicBoolean();
-        Consumer<Policy> policyConsumer = createPolicyEvaluator(permission, authorizationProvider, executionContext, decision, verified, decisionCache);
-        Resource resource = permission.getResource();
+        Consumer<PolicyModel> policyConsumer = createPolicyEvaluator(permission, authorizationProvider, executionContext, decision, verified, decisionCache);
+        ResourceModel resource = permission.getResource();
 
         if (resource != null) {
             policyStore.findByResource(resource.getId(), resourceServer.getId(), policyConsumer);
@@ -73,17 +73,17 @@ public class DefaultPolicyEvaluator implements PolicyEvaluator {
                 policyStore.findByResourceType(resource.getType(), resourceServer.getId(), policyConsumer);
 
                 if (!resource.getOwner().equals(resourceServer.getId())) {
-                    for (Resource typedResource : resourceStore.findByType(resource.getType(), resourceServer.getId())) {
+                    for (ResourceModel typedResource : resourceStore.findByType(resource.getType(), resourceServer.getId())) {
                         policyStore.findByResource(typedResource.getId(), resourceServer.getId(), policyConsumer);
                     }
                 }
             }
         }
 
-        List<Scope> scopes = permission.getScopes();
+        List<ScopeModel> scopes = permission.getScopes();
 
         if (!scopes.isEmpty()) {
-            policyStore.findByScopeIds(scopes.stream().map(Scope::getId).collect(Collectors.toList()), null, resourceServer.getId(), policyConsumer);
+            policyStore.findByScopeIds(scopes.stream().map(ScopeModel::getId).collect(Collectors.toList()), null, resourceServer.getId(), policyConsumer);
         }
 
         if (verified.get()) {
@@ -98,7 +98,7 @@ public class DefaultPolicyEvaluator implements PolicyEvaluator {
         }
     }
 
-    private Consumer<Policy> createPolicyEvaluator(ResourcePermission permission, AuthorizationProvider authorizationProvider, EvaluationContext executionContext, Decision decision, AtomicBoolean verified, Map<Policy, Map<Object, Decision.Effect>> decisionCache) {
+    private Consumer<PolicyModel> createPolicyEvaluator(ResourcePermission permission, AuthorizationProvider authorizationProvider, EvaluationContext executionContext, Decision decision, AtomicBoolean verified, Map<PolicyModel, Map<Object, Decision.Effect>> decisionCache) {
         return parentPolicy -> {
             PolicyProvider policyProvider = authorizationProvider.getProvider(parentPolicy.getType());
 

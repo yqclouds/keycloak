@@ -17,32 +17,32 @@
  */
 package org.keycloak.authorization.store;
 
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.ResourceModel;
+import org.keycloak.authorization.model.ResourceServerModel;
 
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
 /**
- * A {@link ResourceStore} is responsible to manage the persistence of {@link Resource} instances.
+ * A {@link ResourceStore} is responsible to manage the persistence of {@link ResourceModel} instances.
  *
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
 public interface ResourceStore {
 
     /**
-     * <p>Creates a {@link Resource} instance backed by this persistent storage implementation.
+     * <p>Creates a {@link ResourceModel} instance backed by this persistent storage implementation.
      *
      * @param name           the name of this resource. It must be unique.
      * @param resourceServer the resource server to where the given resource belongs to
      * @param owner          the owner of this resource or null if the resource server is the owner
      * @return an instance backed by the underlying storage implementation
      */
-    Resource create(String name, ResourceServer resourceServer, String owner);
+    ResourceModel create(String name, ResourceServerModel resourceServer, String owner);
 
     /**
-     * <p>Creates a {@link Resource} instance backed by this persistent storage implementation.
+     * <p>Creates a {@link ResourceModel} instance backed by this persistent storage implementation.
      *
      * @param id             the id of this resource. It must be unique.
      * @param name           the name of this resource. It must be unique.
@@ -50,118 +50,118 @@ public interface ResourceStore {
      * @param owner          the owner of this resource or null if the resource server is the owner
      * @return an instance backed by the underlying storage implementation
      */
-    Resource create(String id, String name, ResourceServer resourceServer, String owner);
+    ResourceModel create(String id, String name, ResourceServerModel resourceServer, String owner);
 
     /**
-     * Removes a {@link Resource} instance, with the given {@code id} from the persistent storage.
+     * Removes a {@link ResourceModel} instance, with the given {@code id} from the persistent storage.
      *
      * @param id the identifier of an existing resource instance
      */
     void delete(String id);
 
     /**
-     * Returns a {@link Resource} instance based on its identifier.
+     * Returns a {@link ResourceModel} instance based on its identifier.
      *
      * @param id the identifier of an existing resource instance
      * @return the resource instance with the given identifier or null if no instance was found
      */
-    Resource findById(String id, String resourceServerId);
+    ResourceModel findById(String id, String resourceServerId);
 
     /**
-     * Finds all {@link Resource} instances with the given {@code ownerId}.
+     * Finds all {@link ResourceModel} instances with the given {@code ownerId}.
      *
      * @param ownerId the identifier of the owner
      * @return a list with all resource instances owned by the given owner
      */
-    List<Resource> findByOwner(String ownerId, String resourceServerId);
+    List<ResourceModel> findByOwner(String ownerId, String resourceServerId);
 
-    void findByOwner(String ownerId, String resourceServerId, Consumer<Resource> consumer);
+    void findByOwner(String ownerId, String resourceServerId, Consumer<ResourceModel> consumer);
 
-    List<Resource> findByOwner(String ownerId, String resourceServerId, int first, int max);
+    List<ResourceModel> findByOwner(String ownerId, String resourceServerId, int first, int max);
 
     /**
-     * Finds all {@link Resource} instances with the given uri.
+     * Finds all {@link ResourceModel} instances with the given uri.
      *
      * @param uri the identifier of the uri
      * @return a list with all resource instances owned by the given owner
      */
-    List<Resource> findByUri(String uri, String resourceServerId);
+    List<ResourceModel> findByUri(String uri, String resourceServerId);
 
     /**
-     * Finds all {@link Resource} instances associated with a given resource server.
+     * Finds all {@link ResourceModel} instances associated with a given resource server.
      *
      * @param resourceServerId the identifier of the resource server
      * @return a list with all resources associated with the given resource server
      */
-    List<Resource> findByResourceServer(String resourceServerId);
+    List<ResourceModel> findByResourceServer(String resourceServerId);
 
     /**
-     * Finds all {@link Resource} instances associated with a given resource server.
+     * Finds all {@link ResourceModel} instances associated with a given resource server.
      *
      * @param attributes       a map holding the attributes that will be used as a filter
      * @param resourceServerId the identifier of the resource server
      * @return a list with all resources associated with the given resource server
      */
-    List<Resource> findByResourceServer(Map<String, String[]> attributes, String resourceServerId, int firstResult, int maxResult);
+    List<ResourceModel> findByResourceServer(Map<String, String[]> attributes, String resourceServerId, int firstResult, int maxResult);
 
     /**
-     * Finds all {@link Resource} associated with a given scope.
+     * Finds all {@link ResourceModel} associated with a given scope.
      *
      * @param id one or more scope identifiers
      * @return a list of resources associated with the given scope(s)
      */
-    List<Resource> findByScope(List<String> id, String resourceServerId);
+    List<ResourceModel> findByScope(List<String> id, String resourceServerId);
 
-    void findByScope(List<String> scopes, String resourceServerId, Consumer<Resource> consumer);
+    void findByScope(List<String> scopes, String resourceServerId, Consumer<ResourceModel> consumer);
 
     /**
-     * Find a {@link Resource} by its name where the owner is the resource server itself.
+     * Find a {@link ResourceModel} by its name where the owner is the resource server itself.
      *
      * @param name             the name of the resource
      * @param resourceServerId the identifier of the resource server
      * @return a resource with the given name
      */
-    Resource findByName(String name, String resourceServerId);
+    ResourceModel findByName(String name, String resourceServerId);
 
     /**
-     * Find a {@link Resource} by its name where the owner is the given <code>ownerId</code>.
+     * Find a {@link ResourceModel} by its name where the owner is the given <code>ownerId</code>.
      *
      * @param name             the name of the resource
      * @param ownerId          the owner id
      * @param resourceServerId the identifier of the resource server
      * @return a resource with the given name
      */
-    Resource findByName(String name, String ownerId, String resourceServerId);
+    ResourceModel findByName(String name, String ownerId, String resourceServerId);
 
     /**
-     * Finds all {@link Resource} with the given type.
+     * Finds all {@link ResourceModel} with the given type.
      *
      * @param type the type of the resource
      * @return a list of resources with the given type
      */
-    List<Resource> findByType(String type, String resourceServerId);
+    List<ResourceModel> findByType(String type, String resourceServerId);
 
     /**
-     * Finds all {@link Resource} with the given type.
+     * Finds all {@link ResourceModel} with the given type.
      *
      * @param type  the type of the resource
      * @param owner the resource owner or null for any resource with a given type
      * @return a list of resources with the given type
      */
-    List<Resource> findByType(String type, String owner, String resourceServerId);
+    List<ResourceModel> findByType(String type, String owner, String resourceServerId);
 
     /**
-     * Finds all {@link Resource} with the given type.
+     * Finds all {@link ResourceModel} with the given type.
      *
      * @param type             the type of the resource
      * @param resourceServerId the resource server id
      * @param consumer         the result consumer
      * @return a list of resources with the given type
      */
-    void findByType(String type, String resourceServerId, Consumer<Resource> consumer);
+    void findByType(String type, String resourceServerId, Consumer<ResourceModel> consumer);
 
     /**
-     * Finds all {@link Resource} with the given type.
+     * Finds all {@link ResourceModel} with the given type.
      *
      * @param type             the type of the resource
      * @param owner            the resource owner or null for any resource with a given type
@@ -169,9 +169,9 @@ public interface ResourceStore {
      * @param consumer         the result consumer
      * @return a list of resources with the given type
      */
-    void findByType(String type, String owner, String resourceServerId, Consumer<Resource> consumer);
+    void findByType(String type, String owner, String resourceServerId, Consumer<ResourceModel> consumer);
 
-    List<Resource> findByTypeInstance(String type, String resourceServerId);
+    List<ResourceModel> findByTypeInstance(String type, String resourceServerId);
 
-    void findByTypeInstance(String type, String resourceServerId, Consumer<Resource> consumer);
+    void findByTypeInstance(String type, String resourceServerId, Consumer<ResourceModel> consumer);
 }

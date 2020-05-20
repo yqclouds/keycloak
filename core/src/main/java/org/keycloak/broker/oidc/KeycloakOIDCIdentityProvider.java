@@ -137,7 +137,7 @@ public class KeycloakOIDCIdentityProvider extends OIDCIdentityProvider {
                 return false;
             }
             if (!getConfig().getClientId().equals(action.getResource())) {
-                LOG.warn("Resource name does not match");
+                LOG.warn("ResourceModel name does not match");
                 return false;
 
             }

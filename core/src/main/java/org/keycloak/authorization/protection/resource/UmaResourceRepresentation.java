@@ -17,7 +17,7 @@
 package org.keycloak.authorization.protection.resource;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.keycloak.authorization.model.Resource;
+import org.keycloak.authorization.model.ResourceModel;
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
 import org.keycloak.representations.idm.authorization.ScopeRepresentation;
 
@@ -45,7 +45,7 @@ public class UmaResourceRepresentation extends ResourceRepresentation {
         setOwnerManagedAccess(resource.getOwnerManagedAccess());
     }
 
-    public UmaResourceRepresentation(Resource resource) {
+    public UmaResourceRepresentation(ResourceModel resource) {
         setId(resource.getId());
         setName(resource.getName());
         setType(resource.getType());

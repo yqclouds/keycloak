@@ -19,7 +19,7 @@
 package org.keycloak.authorization.policy.evaluation;
 
 import org.keycloak.authorization.Decision.Effect;
-import org.keycloak.authorization.model.Policy;
+import org.keycloak.authorization.model.PolicyModel;
 import org.keycloak.authorization.permission.ResourcePermission;
 
 import java.util.Collection;
@@ -54,7 +54,7 @@ public class Result {
         return evaluation;
     }
 
-    public PolicyResult policy(Policy policy) {
+    public PolicyResult policy(PolicyModel policy) {
         return results.computeIfAbsent(policy.getId(), id -> new PolicyResult(policy));
     }
 
@@ -66,26 +66,26 @@ public class Result {
         return status;
     }
 
-    public PolicyResult getPolicy(Policy policy) {
+    public PolicyResult getPolicy(PolicyModel policy) {
         return results.get(policy.getId());
     }
 
     public static class PolicyResult {
 
-        private final Policy policy;
+        private final PolicyModel policy;
         private final Map<String, PolicyResult> associatedPolicies = new HashMap<>();
         private Effect effect = Effect.DENY;
 
-        public PolicyResult(Policy policy, Effect status) {
+        public PolicyResult(PolicyModel policy, Effect status) {
             this.policy = policy;
             this.effect = status;
         }
 
-        public PolicyResult(Policy policy) {
+        public PolicyResult(PolicyModel policy) {
             this(policy, Effect.DENY);
         }
 
-        public PolicyResult policy(Policy policy, Effect effect) {
+        public PolicyResult policy(PolicyModel policy, Effect effect) {
             PolicyResult policyResult = associatedPolicies.get(policy.getId());
 
             if (policyResult == null) {
@@ -98,7 +98,7 @@ public class Result {
             return policyResult;
         }
 
-        public Policy getPolicy() {
+        public PolicyModel getPolicy() {
             return policy;
         }
 
