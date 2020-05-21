@@ -72,8 +72,8 @@ public class WebAuthnAuthenticatorFactory implements AuthenticatorFactory, Envir
     }
 
     @Override
-    public Authenticator create(KeycloakSession session) {
-        return new WebAuthnAuthenticator(session);
+    public Authenticator create() {
+        return new WebAuthnAuthenticator();
     }
 
     @Override

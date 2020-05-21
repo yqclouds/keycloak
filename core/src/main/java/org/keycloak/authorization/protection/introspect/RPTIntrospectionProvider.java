@@ -19,12 +19,11 @@ package org.keycloak.authorization.protection.introspect;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.keycloak.models.KeycloakSession;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.keycloak.protocol.oidc.AccessTokenIntrospectionProvider;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.AccessToken.Authorization;
 import org.keycloak.representations.idm.authorization.Permission;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,10 +42,6 @@ import java.util.stream.Collectors;
 public class RPTIntrospectionProvider extends AccessTokenIntrospectionProvider {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(RPTIntrospectionProvider.class);
-
-    public RPTIntrospectionProvider(KeycloakSession session) {
-        super(session);
-    }
 
     @Override
     public Response introspect(String token) {

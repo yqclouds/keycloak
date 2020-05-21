@@ -26,11 +26,13 @@ import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.models.ModelException;
 import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
+import org.keycloak.models.UserCredentialManager;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.validation.Validation;
 import org.keycloak.stereotype.ProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -45,7 +47,9 @@ public class ConsoleUpdatePassword extends UpdatePassword implements RequiredAct
     public static final ConsoleUpdatePassword SINGLETON = new ConsoleUpdatePassword();
     public static final String PASSWORD_NEW = "password-new";
     public static final String PASSWORD_CONFIRM = "password-confirm";
-    private static final Logger LOG = LoggerFactory.getLogger(ConsoleUpdatePassword.class);
+
+    @Autowired
+    private UserCredentialManager userCredentialManager;
 
     protected ConsoleDisplayMode challenge(RequiredActionContext context) {
         return ConsoleDisplayMode.challenge(context)
@@ -89,7 +93,7 @@ public class ConsoleUpdatePassword extends UpdatePassword implements RequiredAct
         }
 
         try {
-            context.getSession().userCredentialManager().updateCredential(context.getRealm(), context.getUser(), UserCredentialModel.password(passwordNew, false));
+            userCredentialManager.updateCredential(context.getRealm(), context.getUser(), UserCredentialModel.password(passwordNew, false));
             context.success();
         } catch (ModelException me) {
             errorEvent.detail(Details.REASON, me.getMessage()).error(Errors.PASSWORD_REJECTED);

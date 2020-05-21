@@ -16,6 +16,7 @@
 
 package org.keycloak.authentication.authenticators.browser;
 
+import com.hsbc.unified.iam.facade.model.credential.WebAuthnCredentialModel;
 import com.webauthn4j.data.AuthenticationParameters;
 import com.webauthn4j.data.AuthenticationRequest;
 import com.webauthn4j.data.client.Origin;
@@ -36,13 +37,10 @@ import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.forms.login.freemarker.model.WebAuthnAuthenticatorsBean;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.WebAuthnPolicy;
-import com.hsbc.unified.iam.facade.model.credential.WebAuthnCredentialModel;
+import org.keycloak.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -60,11 +58,11 @@ public class WebAuthnAuthenticator implements Authenticator, CredentialValidator
     private static final Logger LOG = LoggerFactory.getLogger(WebAuthnAuthenticator.class);
     private static final String ERR_LABEL = "web_authn_authentication_error";
     private static final String ERR_DETAIL_LABEL = "web_authn_authentication_error_detail";
-    private KeycloakSession session;
 
-    public WebAuthnAuthenticator(KeycloakSession session) {
-        this.session = session;
-    }
+    @Autowired
+    private UserProvider userProvider;
+    @Autowired
+    private UserCredentialManager userCredentialManager;
 
     public void authenticate(AuthenticationFlowContext context) {
         LoginFormsProvider form = context.form();
@@ -174,7 +172,7 @@ public class WebAuthnAuthenticator implements Authenticator, CredentialValidator
         String userVerificationRequirement = getWebAuthnPolicy(context).getUserVerificationRequirement();
         if (WebAuthnConstants.OPTION_REQUIRED.equals(userVerificationRequirement)) isUVFlagChecked = true;
 
-        UserModel user = session.users().getUserById(userId, context.getRealm());
+        UserModel user = userProvider.getUserById(userId, context.getRealm());
 
         AuthenticationRequest authenticationRequest = new AuthenticationRequest(
                 credentialId,
@@ -194,9 +192,9 @@ public class WebAuthnAuthenticator implements Authenticator, CredentialValidator
         cred.setAuthenticationRequest(authenticationRequest);
         cred.setAuthenticationParameters(authenticationParameters);
 
-        boolean result = false;
+        boolean result;
         try {
-            result = session.userCredentialManager().isValid(context.getRealm(), user, cred);
+            result = userCredentialManager.isValid(context.getRealm(), user, cred);
         } catch (WebAuthnException wae) {
             setErrorResponse(context, WEBAUTHN_ERROR_AUTH_VERIFICATION, wae.getMessage());
             return;

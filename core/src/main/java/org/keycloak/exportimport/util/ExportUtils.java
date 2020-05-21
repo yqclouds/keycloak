@@ -291,7 +291,7 @@ public class ExportUtils {
 
     public static ResourceServerRepresentation exportAuthorizationSettings(KeycloakSession session, ClientModel client) {
         AuthorizationProviderFactory providerFactory = (AuthorizationProviderFactory) session.getSessionFactory().getProviderFactory(AuthorizationProvider.class);
-        AuthorizationProvider authorization = providerFactory.create(session, client.getRealm());
+        AuthorizationProvider authorization = providerFactory.create(client.getRealm());
         StoreFactory storeFactory = authorization.getStoreFactory();
         ResourceServerModel settingsModel = authorization.getStoreFactory().getResourceServerStore().findById(client.getId());
 

@@ -18,17 +18,19 @@
 
 package org.keycloak.forms.login.freemarker.model;
 
+import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
 import org.keycloak.authentication.authenticators.browser.OTPFormAuthenticator;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.credential.OTPCredentialProvider;
 import org.keycloak.credential.OTPCredentialProviderFactory;
 import org.keycloak.models.CredentialModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserCredentialManager;
 import org.keycloak.models.UserModel;
-import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -41,8 +43,13 @@ public class TotpLoginBean {
     private final String selectedCredentialId;
     private final List<OTPCredential> userOtpCredentials;
 
-    public TotpLoginBean(KeycloakSession session, RealmModel realm, UserModel user, String selectedCredentialId) {
-        List<CredentialModel> userOtpCredentials = session.userCredentialManager()
+    @Autowired
+    private UserCredentialManager userCredentialManager;
+    @Autowired
+    private Map<String, CredentialProvider> credentialProviders;
+
+    public TotpLoginBean(RealmModel realm, UserModel user, String selectedCredentialId) {
+        List<CredentialModel> userOtpCredentials = userCredentialManager
                 .getStoredCredentialsByType(realm, user, OTPCredentialModel.TYPE);
 
         this.userOtpCredentials = userOtpCredentials.stream()
@@ -51,9 +58,9 @@ public class TotpLoginBean {
 
         // This means user did not yet manually selected any OTP credential through the UI. So just go with the default one with biggest priority
         if (selectedCredentialId == null || selectedCredentialId.isEmpty()) {
-            OTPCredentialProvider otpCredentialProvider = (OTPCredentialProvider) session.getProvider(CredentialProvider.class, OTPCredentialProviderFactory.PROVIDER_ID);
+            OTPCredentialProvider otpCredentialProvider = (OTPCredentialProvider) credentialProviders.get(OTPCredentialProviderFactory.PROVIDER_ID);
             OTPCredentialModel otpCredential = otpCredentialProvider
-                    .getDefaultCredential(session, realm, user);
+                    .getDefaultCredential(userCredentialManager, realm, user);
 
             selectedCredentialId = otpCredential == null ? null : otpCredential.getId();
         }

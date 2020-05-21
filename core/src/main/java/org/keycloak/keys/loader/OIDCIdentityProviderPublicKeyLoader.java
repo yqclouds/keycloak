@@ -17,17 +17,16 @@
 
 package org.keycloak.keys.loader;
 
+import com.hsbc.unified.iam.core.crypto.Algorithm;
 import org.keycloak.broker.oidc.OIDCIdentityProviderConfig;
 import org.keycloak.common.util.KeyUtils;
 import org.keycloak.common.util.PemUtils;
-import com.hsbc.unified.iam.core.crypto.Algorithm;
 import org.keycloak.crypto.KeyType;
 import org.keycloak.crypto.KeyUse;
 import org.keycloak.crypto.KeyWrapper;
 import org.keycloak.jose.jwk.JSONWebKeySet;
 import org.keycloak.jose.jwk.JWK;
 import org.keycloak.keys.PublicKeyLoader;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.protocol.oidc.utils.JWKSHttpUtils;
 import org.keycloak.util.JWKSUtils;
 import org.slf4j.Logger;
@@ -45,14 +44,12 @@ public class OIDCIdentityProviderPublicKeyLoader implements PublicKeyLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(OIDCIdentityProviderPublicKeyLoader.class);
 
-    private final KeycloakSession session;
     private final OIDCIdentityProviderConfig config;
 
     @Autowired
     private JWKSHttpUtils jwksHttpUtils;
 
-    public OIDCIdentityProviderPublicKeyLoader(KeycloakSession session, OIDCIdentityProviderConfig config) {
-        this.session = session;
+    public OIDCIdentityProviderPublicKeyLoader(OIDCIdentityProviderConfig config) {
         this.config = config;
     }
 
@@ -60,7 +57,7 @@ public class OIDCIdentityProviderPublicKeyLoader implements PublicKeyLoader {
     public Map<String, KeyWrapper> loadKeys() throws Exception {
         if (config.isUseJwksUrl()) {
             String jwksUrl = config.getJwksUrl();
-            JSONWebKeySet jwks = jwksHttpUtils.sendJwksRequest(session, jwksUrl);
+            JSONWebKeySet jwks = jwksHttpUtils.sendJwksRequest(jwksUrl);
             return JWKSUtils.getKeyWrappersForUse(jwks, JWK.Use.SIG);
         } else {
             try {

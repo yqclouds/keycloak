@@ -29,8 +29,8 @@ import org.keycloak.models.KeycloakSessionFactory;
 public class LiquibaseJpaUpdaterProviderFactory implements JpaUpdaterProviderFactory {
 
     @Override
-    public JpaUpdaterProvider create(KeycloakSession session) {
-        return new LiquibaseJpaUpdaterProvider(session);
+    public JpaUpdaterProvider create() {
+        return new LiquibaseJpaUpdaterProvider();
     }
 
     @Override

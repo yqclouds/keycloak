@@ -18,8 +18,8 @@
 package org.keycloak.forms.login.freemarker.model;
 
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.services.util.ResolveRelative;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
 
@@ -30,10 +30,11 @@ import java.util.Map;
 public class ClientBean {
 
     protected ClientModel client;
-    private KeycloakSession session;
 
-    public ClientBean(KeycloakSession session, ClientModel client) {
-        this.session = session;
+    @Autowired
+    private ResolveRelative resolveRelative;
+
+    public ClientBean(ClientModel client) {
         this.client = client;
     }
 
@@ -50,7 +51,7 @@ public class ClientBean {
     }
 
     public String getBaseUrl() {
-        return ResolveRelative.resolveRelativeUri(session, client.getRootUrl(), client.getBaseUrl());
+        return resolveRelative.resolveRelativeUri(client.getRootUrl(), client.getBaseUrl());
     }
 
     public Map<String, String> getAttributes() {

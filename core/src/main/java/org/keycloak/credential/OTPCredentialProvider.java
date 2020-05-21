@@ -17,18 +17,18 @@
 package org.keycloak.credential;
 
 import com.hsbc.unified.iam.core.credential.CredentialInput;
-import org.keycloak.models.CredentialModel;
-import org.keycloak.common.util.ObjectUtil;
 import com.hsbc.unified.iam.core.util.Time;
-import org.keycloak.models.*;
-import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
 import com.hsbc.unified.iam.facade.dto.OTPCredentialData;
 import com.hsbc.unified.iam.facade.dto.OTPSecretData;
+import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
 import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
+import org.keycloak.common.util.ObjectUtil;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.HmacOTP;
 import org.keycloak.models.utils.TimeBasedOTP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.nio.charset.StandardCharsets;
 
@@ -39,30 +39,11 @@ import java.nio.charset.StandardCharsets;
 public class OTPCredentialProvider implements CredentialProvider<OTPCredentialModel>, CredentialInputValidator/*, OnUserCache*/ {
     private static final Logger LOG = LoggerFactory.getLogger(OTPCredentialProvider.class);
 
-    protected KeycloakSession session;
-
-    /*protected List<CredentialModel> getCachedCredentials(UserModel user, String type) {
-        if (!(user instanceof CachedUserModel)) return null;
-        CachedUserModel cached = (CachedUserModel)user;
-        if (cached.isMarkedForEviction()) return null;
-        List<CredentialModel> rtn = (List<CredentialModel>)cached.getCachedWith().get(getType());
-        if (rtn == null) return Collections.EMPTY_LIST;
-        return rtn;
-    }*/
-
-    public OTPCredentialProvider(KeycloakSession session) {
-        this.session = session;
-    }
-
-    /*@Override
-    public void onCache(RealmModel realm, CachedUserModel user, UserModel delegate) {
-        List<CredentialModel> creds = getCredentialStore().getStoredCredentialsByType(realm, user, getType());
-        user.getCachedWith().put(getType(), creds);
-
-    }*/
+    @Autowired
+    private UserCredentialManager userCredentialManager;
 
     private UserCredentialStore getCredentialStore() {
-        return session.userCredentialManager();
+        return userCredentialManager;
     }
 
     @Override
@@ -150,6 +131,6 @@ public class OTPCredentialProvider implements CredentialProvider<OTPCredentialMo
                 .iconCssClass("kcAuthenticatorOTPClass")
                 .createAction(UserModel.RequiredAction.CONFIGURE_TOTP.toString())
                 .removeable(true)
-                .build(session);
+                .build();
     }
 }

@@ -18,7 +18,6 @@
 package org.keycloak.broker.provider;
 
 import org.keycloak.models.IdentityProviderMapperModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.provider.ConfiguredProvider;
@@ -43,34 +42,31 @@ public interface IdentityProviderMapper extends Provider, ProviderFactory<Identi
      * It's called before "FirstBrokerLogin" flow, so can be used to map attributes to BrokeredIdentityContext ( BrokeredIdentityContext.setUserAttribute ),
      * which will be available on "Review Profile" page and in authenticators during FirstBrokerLogin flow
      *
-     * @param session
      * @param realm
      * @param mapperModel
      * @param context
      */
-    void preprocessFederatedIdentity(KeycloakSession session, RealmModel realm, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context);
+    void preprocessFederatedIdentity(RealmModel realm, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context);
 
     /**
      * Called after UserModel is created for first time for this user. Called after "FirstBrokerLogin" flow
      *
-     * @param session
      * @param realm
      * @param user
      * @param mapperModel
      * @param context
      */
-    void importNewUser(KeycloakSession session, RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context);
+    void importNewUser(RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context);
 
     /**
      * Called when this user has logged in before and has already been imported.
      *
-     * @param session
      * @param realm
      * @param user
      * @param mapperModel
      * @param context
      */
-    void updateBrokeredUser(KeycloakSession session, RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context);
+    void updateBrokeredUser(RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context);
 
 
     @Override

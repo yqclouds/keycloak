@@ -18,11 +18,10 @@
 package org.keycloak.services.managers;
 
 import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserSessionModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.keycloak.models.UserSessionProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Objects;
@@ -31,19 +30,12 @@ import java.util.Objects;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class UserSessionCrossDCManager {
-
-    private static final Logger LOG = LoggerFactory.getLogger(UserSessionCrossDCManager.class);
-
-    private final KeycloakSession kcSession;
-
-    public UserSessionCrossDCManager(KeycloakSession session) {
-        this.kcSession = session;
-    }
-
+    @Autowired
+    private UserSessionProvider userSessionProvider;
 
     // get userSession if it has "authenticatedClientSession" of specified client attached to it. Otherwise download it from remoteCache
     public UserSessionModel getUserSessionWithClient(RealmModel realm, String id, boolean offline, String clientUUID) {
-        return kcSession.sessions().getUserSessionWithPredicate(realm, id, offline, userSession -> userSession.getAuthenticatedClientSessionByClient(clientUUID) != null);
+        return userSessionProvider.getUserSessionWithPredicate(realm, id, offline, userSession -> userSession.getAuthenticatedClientSessionByClient(clientUUID) != null);
     }
 
 
@@ -51,7 +43,7 @@ public class UserSessionCrossDCManager {
     // TODO Probably remove this method once AuthenticatedClientSession.getAction is removed and information is moved to OAuth code JWT instead
     public UserSessionModel getUserSessionWithClient(RealmModel realm, String id, String clientUUID) {
 
-        return kcSession.sessions().getUserSessionWithPredicate(realm, id, false, (UserSessionModel userSession) -> {
+        return userSessionProvider.getUserSessionWithPredicate(realm, id, false, (UserSessionModel userSession) -> {
 
             AuthenticatedClientSessionModel authSessions = userSession.getAuthenticatedClientSessionByClient(clientUUID);
             return authSessions != null;
@@ -69,9 +61,9 @@ public class UserSessionCrossDCManager {
             String sessionId = authSessionId.getDecodedId();
 
             // This will remove userSession "locally" if it doesn't exists on remoteCache
-            kcSession.sessions().getUserSessionWithPredicate(realm, sessionId, false, (UserSessionModel userSession2) -> userSession2 == null);
+            userSessionProvider.getUserSessionWithPredicate(realm, sessionId, false, (UserSessionModel userSession2) -> userSession2 == null);
 
-            UserSessionModel userSession = kcSession.sessions().getUserSession(realm, sessionId);
+            UserSessionModel userSession = userSessionProvider.getUserSession(realm, sessionId);
 
             if (userSession != null) {
                 asm.reencodeAuthSessionCookie(oldEncodedId, authSessionId, realm);
@@ -79,6 +71,6 @@ public class UserSessionCrossDCManager {
             }
 
             return null;
-        }).filter(userSession -> Objects.nonNull(userSession)).findFirst().orElse(null);
+        }).filter(Objects::nonNull).findFirst().orElse(null);
     }
 }

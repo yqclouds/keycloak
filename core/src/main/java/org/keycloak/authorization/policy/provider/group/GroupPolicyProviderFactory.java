@@ -65,7 +65,7 @@ public class GroupPolicyProviderFactory implements PolicyProviderFactory<GroupPo
     }
 
     @Override
-    public PolicyProvider create(KeycloakSession session) {
+    public PolicyProvider create() {
         return provider;
     }
 

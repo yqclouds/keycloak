@@ -28,5 +28,5 @@ import org.keycloak.models.RealmModel;
  * @version $Revision: 1 $
  */
 public interface OnCreateComponent {
-    void onCreate(KeycloakSession session, RealmModel realm, ComponentModel model);
+    void onCreate(RealmModel realm, ComponentModel model);
 }

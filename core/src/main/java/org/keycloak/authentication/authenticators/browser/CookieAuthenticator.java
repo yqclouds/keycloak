@@ -25,12 +25,15 @@ import org.keycloak.models.UserModel;
 import org.keycloak.protocol.LoginProtocol;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.sessions.AuthenticationSessionModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public class CookieAuthenticator implements Authenticator {
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     @Override
     public boolean requiresUser() {
@@ -39,8 +42,7 @@ public class CookieAuthenticator implements Authenticator {
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
-        AuthenticationManager.AuthResult authResult = AuthenticationManager.authenticateIdentityCookie(context.getSession(),
-                context.getRealm(), true);
+        AuthenticationManager.AuthResult authResult = authenticationManager.authenticateIdentityCookie(context.getRealm(), true);
         if (authResult == null) {
             context.attempted();
         } else {

@@ -38,7 +38,7 @@ public class IdpEmailVerificationAuthenticatorFactory implements AuthenticatorFa
     static IdpEmailVerificationAuthenticator SINGLETON = new IdpEmailVerificationAuthenticator();
 
     @Override
-    public Authenticator create(KeycloakSession session) {
+    public Authenticator create() {
         return SINGLETON;
     }
 

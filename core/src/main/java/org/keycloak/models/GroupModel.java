@@ -17,8 +17,6 @@
 
 package org.keycloak.models;
 
-import org.keycloak.provider.ProviderEvent;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -86,12 +84,4 @@ public interface GroupModel extends RoleMapperModel {
      * @param subGroup
      */
     void removeChild(GroupModel subGroup);
-
-    interface GroupRemovedEvent extends ProviderEvent {
-        RealmModel getRealm();
-
-        GroupModel getGroup();
-
-        KeycloakSession getSession();
-    }
 }

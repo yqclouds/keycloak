@@ -35,7 +35,7 @@ public class FreeMarkerAccountProviderFactory implements AccountProviderFactory 
     }
 
     @Override
-    public AccountProvider create(KeycloakSession session) {
+    public AccountProvider create() {
         return new FreeMarkerAccountProvider();
     }
 }

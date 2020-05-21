@@ -16,16 +16,32 @@
  */
 package org.keycloak.crypto;
 
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeyManager;
+import org.keycloak.models.KeycloakContext;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.PostConstruct;
 
 public class ServerAsymmetricSignatureSignerContext extends AsymmetricSignatureSignerContext {
+    @Autowired
+    private KeycloakContext context;
+    @Autowired
+    private KeyManager keyManager;
 
-    public ServerAsymmetricSignatureSignerContext(KeycloakSession session, String algorithm) throws SignatureException {
-        super(getKey(session, algorithm));
+    private String algorithm;
+
+    public ServerAsymmetricSignatureSignerContext(String algorithm) throws SignatureException {
+        super(null);
+        this.algorithm = algorithm;
     }
 
-    static KeyWrapper getKey(KeycloakSession session, String algorithm) {
-        KeyWrapper key = session.keys().getActiveKey(session.getContext().getRealm(), KeyUse.SIG, algorithm);
+    @PostConstruct
+    public void afterPropertiesSet() {
+        setKey(getKey(algorithm));
+    }
+
+    public KeyWrapper getKey(String algorithm) {
+        KeyWrapper key = keyManager.getActiveKey(context.getRealm(), KeyUse.SIG, algorithm);
         if (key == null) {
             throw new SignatureException("Active key for " + algorithm + " not found");
         }

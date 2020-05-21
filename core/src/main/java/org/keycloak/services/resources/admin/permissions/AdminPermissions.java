@@ -16,6 +16,9 @@
  */
 package org.keycloak.services.resources.admin.permissions;
 
+import com.hsbc.unified.iam.entity.events.ClientRemovedEvent;
+import com.hsbc.unified.iam.entity.events.GroupRemovedEvent;
+import com.hsbc.unified.iam.entity.events.RoleRemovedEvent;
 import org.keycloak.models.*;
 import org.keycloak.provider.ProviderEventManager;
 import org.keycloak.services.resources.admin.AdminAuth;
@@ -28,30 +31,30 @@ public class AdminPermissions {
 
 
     public static AdminPermissionEvaluator evaluator(KeycloakSession session, RealmModel realm, AdminAuth auth) {
-        return new MgmtPermissions(session, realm, auth);
+        return new MgmtPermissions(realm, auth);
     }
 
     public static AdminPermissionEvaluator evaluator(KeycloakSession session, RealmModel realm, RealmModel adminsRealm, UserModel admin) {
-        return new MgmtPermissions(session, realm, adminsRealm, admin);
+        return new MgmtPermissions(realm, adminsRealm, admin);
     }
 
     public static RealmsPermissionEvaluator realms(KeycloakSession session, AdminAuth auth) {
-        return new MgmtPermissions(session, auth);
+        return new MgmtPermissions(auth);
     }
 
     public static RealmsPermissionEvaluator realms(KeycloakSession session, RealmModel adminsRealm, UserModel admin) {
-        return new MgmtPermissions(session, adminsRealm, admin);
+        return new MgmtPermissions(adminsRealm, admin);
     }
 
-    public static AdminPermissionManagement management(KeycloakSession session, RealmModel realm) {
-        return new MgmtPermissions(session, realm);
+    public static AdminPermissionManagement management(RealmModel realm) {
+        return new MgmtPermissions(realm);
     }
 
     public static void registerListener(ProviderEventManager manager) {
         manager.register(event -> {
-            if (event instanceof RoleContainerModel.RoleRemovedEvent) {
-                RoleContainerModel.RoleRemovedEvent cast = (RoleContainerModel.RoleRemovedEvent) event;
-                RoleModel role = cast.getRole();
+            if (event instanceof RoleRemovedEvent) {
+                RoleRemovedEvent cast = (RoleRemovedEvent) event;
+                RoleModel role = (RoleModel) cast.getSource();
                 RealmModel realm;
                 if (role.getContainer() instanceof ClientModel) {
                     realm = ((ClientModel) role.getContainer()).getRealm();
@@ -59,13 +62,14 @@ public class AdminPermissions {
                 } else {
                     realm = (RealmModel) role.getContainer();
                 }
-                management(cast.getSession(), realm).roles().setPermissionsEnabled(role, false);
-            } else if (event instanceof RealmModel.ClientRemovedEvent) {
-                RealmModel.ClientRemovedEvent cast = (RealmModel.ClientRemovedEvent) event;
-                management(cast.getSession(), cast.getClient().getRealm()).clients().setPermissionsEnabled(cast.getClient(), false);
-            } else if (event instanceof GroupModel.GroupRemovedEvent) {
-                GroupModel.GroupRemovedEvent cast = (GroupModel.GroupRemovedEvent) event;
-                management(cast.getSession(), cast.getRealm()).groups().setPermissionsEnabled(cast.getGroup(), false);
+                management(realm).roles().setPermissionsEnabled(role, false);
+            } else if (event instanceof ClientRemovedEvent) {
+                ClientRemovedEvent cast = (ClientRemovedEvent) event;
+                management(((ClientModel) cast.getSource()).getRealm()).clients()
+                        .setPermissionsEnabled((ClientModel) cast.getSource(), false);
+            } else if (event instanceof GroupRemovedEvent) {
+                GroupRemovedEvent cast = (GroupRemovedEvent) event;
+                management(cast.getRealm()).groups().setPermissionsEnabled(cast.getGroup(), false);
             }
         });
     }

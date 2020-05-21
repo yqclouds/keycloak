@@ -25,6 +25,7 @@ import org.keycloak.services.managers.UserSessionManager;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import org.keycloak.services.util.ResolveRelative;
 import org.keycloak.storage.StorageId;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,7 +38,7 @@ public class ApplicationsBean {
     private List<ApplicationEntry> applications = new LinkedList<>();
 
     public ApplicationsBean(KeycloakSession session, RealmModel realm, UserModel user) {
-        Set<ClientModel> offlineClients = new UserSessionManager(session).findClientsWithOfflineToken(realm, user);
+        Set<ClientModel> offlineClients = new UserSessionManager().findClientsWithOfflineToken(realm, user);
 
         for (ClientModel client : getApplications(session, realm, user)) {
             if (isAdminClient(client) && !AdminPermissions.realms(session, realm, user).isAdmin()) {
@@ -79,7 +80,7 @@ public class ApplicationsBean {
                 additionalGrants.add("${offlineToken}");
             }
 
-            applications.add(new ApplicationEntry(session, realmRolesAvailable, resourceRolesAvailable, client, clientScopesGranted, additionalGrants));
+            applications.add(new ApplicationEntry(realmRolesAvailable, resourceRolesAvailable, client, clientScopesGranted, additionalGrants));
         }
     }
 
@@ -129,18 +130,19 @@ public class ApplicationsBean {
         return applications;
     }
 
-    public static class ApplicationEntry {
+    @Autowired
+    private ResolveRelative resolveRelative;
+
+    public class ApplicationEntry {
 
         private final List<RoleModel> realmRolesAvailable;
         private final MultivaluedHashMap<String, ClientRoleEntry> resourceRolesAvailable;
         private final ClientModel client;
         private final List<String> clientScopesGranted;
         private final List<String> additionalGrants;
-        private KeycloakSession session;
 
-        public ApplicationEntry(KeycloakSession session, List<RoleModel> realmRolesAvailable, MultivaluedHashMap<String, ClientRoleEntry> resourceRolesAvailable,
+        public ApplicationEntry(List<RoleModel> realmRolesAvailable, MultivaluedHashMap<String, ClientRoleEntry> resourceRolesAvailable,
                                 ClientModel client, List<String> clientScopesGranted, List<String> additionalGrants) {
-            this.session = session;
             this.realmRolesAvailable = realmRolesAvailable;
             this.resourceRolesAvailable = resourceRolesAvailable;
             this.client = client;
@@ -161,7 +163,7 @@ public class ApplicationsBean {
         }
 
         public String getEffectiveUrl() {
-            return ResolveRelative.resolveRelativeUri(session, getClient().getRootUrl(), getClient().getBaseUrl());
+            return resolveRelative.resolveRelativeUri(getClient().getRootUrl(), getClient().getBaseUrl());
         }
 
         public ClientModel getClient() {

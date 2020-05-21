@@ -36,7 +36,7 @@ public class SingleFileExportProviderFactory implements ExportProviderFactory {
     public static final String PROVIDER_ID = "singleFile";
 
     @Override
-    public ExportProvider create(KeycloakSession session) {
+    public ExportProvider create() {
         String fileName = ExportImportConfig.getFile();
         return new SingleFileExportProvider(new File(fileName));
     }

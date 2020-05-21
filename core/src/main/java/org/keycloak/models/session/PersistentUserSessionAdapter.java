@@ -18,9 +18,10 @@
 package org.keycloak.models.session;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import com.hsbc.unified.iam.facade.model.session.PersistentUserSessionModel;
 import org.keycloak.models.*;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -37,8 +38,10 @@ public class PersistentUserSessionAdapter implements OfflineUserSessionModel {
     private final Map<String, AuthenticatedClientSessionModel> authenticatedClientSessions;
     private UserModel user;
     private String userId;
-    private KeycloakSession session;
     private PersistentUserSessionData data;
+
+    @Autowired
+    private UserProvider userProvider;
 
     public PersistentUserSessionAdapter(UserSessionModel other) {
         this.data = new PersistentUserSessionData();
@@ -63,8 +66,7 @@ public class PersistentUserSessionAdapter implements OfflineUserSessionModel {
         this.authenticatedClientSessions = other.getAuthenticatedClientSessions();
     }
 
-    public PersistentUserSessionAdapter(KeycloakSession session, PersistentUserSessionModel model, RealmModel realm, String userId, Map<String, AuthenticatedClientSessionModel> clientSessions) {
-        this.session = session;
+    public PersistentUserSessionAdapter(PersistentUserSessionModel model, RealmModel realm, String userId, Map<String, AuthenticatedClientSessionModel> clientSessions) {
         this.model = model;
         this.realm = realm;
         this.userId = userId;
@@ -114,7 +116,7 @@ public class PersistentUserSessionAdapter implements OfflineUserSessionModel {
     @Override
     public UserModel getUser() {
         if (user == null) {
-            user = session.users().getUserById(userId, realm);
+            user = userProvider.getUserById(userId, realm);
         }
         return user;
     }
@@ -240,7 +242,7 @@ public class PersistentUserSessionAdapter implements OfflineUserSessionModel {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof UserSessionModel)) return false;
+        if (!(o instanceof UserSessionModel)) return false;
 
         UserSessionModel that = (UserSessionModel) o;
         return that.getId().equals(getId());

@@ -18,7 +18,6 @@
 package org.keycloak.protocol.oidc.mappers;
 
 import org.keycloak.models.ClientSessionContext;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.UserSessionModel;
 import org.keycloak.representations.IDToken;
@@ -29,6 +28,8 @@ import org.keycloak.representations.IDToken;
  */
 public interface OIDCIDTokenMapper {
 
-    IDToken transformIDToken(IDToken token, ProtocolMapperModel mappingModel, KeycloakSession session,
-                             UserSessionModel userSession, ClientSessionContext clientSession);
+    IDToken transformIDToken(IDToken token,
+                             ProtocolMapperModel mappingModel,
+                             UserSessionModel userSession,
+                             ClientSessionContext clientSession);
 }

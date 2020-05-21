@@ -17,6 +17,7 @@
 
 package org.keycloak.authentication.requiredactions;
 
+import com.hsbc.unified.iam.core.constants.Constants;
 import org.keycloak.authentication.ConsoleDisplayMode;
 import org.keycloak.authentication.RequiredActionContext;
 import org.keycloak.authentication.RequiredActionProvider;
@@ -27,8 +28,7 @@ import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
-import com.hsbc.unified.iam.core.constants.Constants;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.messages.Messages;
@@ -120,14 +120,16 @@ public class ConsoleVerifyEmail implements RequiredActionProvider {
     @Autowired
     private EmailTemplateProvider emailTemplateProvider;
 
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     private Response sendVerifyEmail(RequiredActionContext context) throws UriBuilderException, IllegalArgumentException {
-        KeycloakSession session = context.getSession();
         UserModel user = context.getUser();
         AuthenticationSessionModel authSession = context.getAuthenticationSession();
         EventBuilder event = context.getEvent().clone().event(EventType.SEND_VERIFY_EMAIL).detail(Details.EMAIL, user.getEmail());
         String code = RandomString.randomCode(8);
         authSession.setAuthNote(Constants.VERIFY_EMAIL_CODE, code);
-        RealmModel realm = session.getContext().getRealm();
+        RealmModel realm = keycloakContext.getRealm();
 
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("code", code);

@@ -36,20 +36,16 @@ public class UserSessionManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(UserSessionManager.class);
 
-    private final KeycloakSession kcSession;
-
     @Autowired
     private UserSessionPersisterProvider userSessionPersisterProvider;
-
-    public UserSessionManager(KeycloakSession session) {
-        this.kcSession = session;
-    }
+    @Autowired
+    private UserSessionProvider userSessionProvider;
 
     public void createOrUpdateOfflineSession(AuthenticatedClientSessionModel clientSession, UserSessionModel userSession) {
         UserModel user = userSession.getUser();
 
         // Create and persist offline userSession if we don't have one
-        UserSessionModel offlineUserSession = kcSession.sessions().getOfflineUserSession(clientSession.getRealm(), userSession.getId());
+        UserSessionModel offlineUserSession = userSessionProvider.getOfflineUserSession(clientSession.getRealm(), userSession.getId());
         if (offlineUserSession == null) {
             offlineUserSession = createOfflineUserSession(user, userSession);
         } else {
@@ -66,11 +62,11 @@ public class UserSessionManager {
 
 
     public UserSessionModel findOfflineUserSession(RealmModel realm, String userSessionId) {
-        return kcSession.sessions().getOfflineUserSession(realm, userSessionId);
+        return userSessionProvider.getOfflineUserSession(realm, userSessionId);
     }
 
     public Set<ClientModel> findClientsWithOfflineToken(RealmModel realm, UserModel user) {
-        List<UserSessionModel> userSessions = kcSession.sessions().getOfflineUserSessions(realm, user);
+        List<UserSessionModel> userSessions = userSessionProvider.getOfflineUserSessions(realm, user);
         Set<ClientModel> clients = new HashSet<>();
         for (UserSessionModel userSession : userSessions) {
             Set<String> clientIds = userSession.getAuthenticatedClientSessions().keySet();
@@ -83,13 +79,13 @@ public class UserSessionManager {
     }
 
     public List<UserSessionModel> findOfflineSessions(RealmModel realm, UserModel user) {
-        return kcSession.sessions().getOfflineUserSessions(realm, user);
+        return userSessionProvider.getOfflineUserSessions(realm, user);
     }
 
     public boolean revokeOfflineToken(UserModel user, ClientModel client) {
         RealmModel realm = client.getRealm();
 
-        List<UserSessionModel> userSessions = kcSession.sessions().getOfflineUserSessions(realm, user);
+        List<UserSessionModel> userSessions = userSessionProvider.getOfflineUserSessions(realm, user);
         boolean anyRemoved = false;
         for (UserSessionModel userSession : userSessions) {
             AuthenticatedClientSessionModel clientSession = userSession.getAuthenticatedClientSessionByClient(client.getId());
@@ -113,7 +109,7 @@ public class UserSessionManager {
         if (LOG.isTraceEnabled()) {
             LOG.trace("Removing offline user session '{}' for user '{}' ", userSession.getId(), userSession.getLoginUsername());
         }
-        kcSession.sessions().removeOfflineUserSession(userSession.getRealm(), userSession);
+        userSessionProvider.removeOfflineUserSession(userSession.getRealm(), userSession);
         userSessionPersisterProvider.removeUserSession(userSession.getId(), true);
     }
 
@@ -133,7 +129,7 @@ public class UserSessionManager {
             LOG.trace("Creating new offline user session. UserSessionID: '{}' , Username: '{}'", userSession.getId(), user.getUsername());
         }
 
-        UserSessionModel offlineUserSession = kcSession.sessions().createOfflineUserSession(userSession);
+        UserSessionModel offlineUserSession = userSessionProvider.createOfflineUserSession(userSession);
         userSessionPersisterProvider.createUserSession(offlineUserSession, true);
         return offlineUserSession;
     }
@@ -144,7 +140,7 @@ public class UserSessionManager {
                     clientSession.getId(), offlineUserSession.getId(), user.getUsername(), clientSession.getClient().getClientId());
         }
 
-        kcSession.sessions().createOfflineClientSession(clientSession, offlineUserSession);
+        userSessionProvider.createOfflineClientSession(clientSession, offlineUserSession);
         userSessionPersisterProvider.createClientSession(clientSession, true);
     }
 
@@ -158,7 +154,7 @@ public class UserSessionManager {
         if (LOG.isTraceEnabled()) {
             LOG.trace("Removing offline userSession for user {} as it doesn't have any client sessions attached. UserSessionID: {}", user.getUsername(), userSession.getId());
         }
-        kcSession.sessions().removeOfflineUserSession(realm, userSession);
+        userSessionProvider.removeOfflineUserSession(realm, userSession);
         userSessionPersisterProvider.removeUserSession(userSession.getId(), true);
     }
 }

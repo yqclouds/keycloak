@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public abstract class AbstractIdentityProviderFactory<T extends IdentityProvider> implements IdentityProviderFactory<T> {
     @Override
-    public T create(KeycloakSession session) {
+    public T create() {
         return null;
     }
 

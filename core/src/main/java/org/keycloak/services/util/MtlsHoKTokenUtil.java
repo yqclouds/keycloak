@@ -2,7 +2,6 @@ package org.keycloak.services.util;
 
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.common.util.Base64Url;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.services.x509.X509ClientCertificateLookup;
 import org.slf4j.Logger;
@@ -23,8 +22,8 @@ public class MtlsHoKTokenUtil {
     protected static final Logger LOG = LoggerFactory.getLogger(MtlsHoKTokenUtil.class);
     private static final String DIGEST_ALG = "SHA-256";
 
-    public AccessToken.CertConf bindTokenWithClientCertificate(HttpRequest request, KeycloakSession session) {
-        X509Certificate[] certs = getCertificateChain(request, session);
+    public AccessToken.CertConf bindTokenWithClientCertificate(HttpRequest request) {
+        X509Certificate[] certs = getCertificateChain(request);
 
         if (certs == null || certs.length < 1) {
             LOG.warn("no client certificate available.");
@@ -38,7 +37,7 @@ public class MtlsHoKTokenUtil {
             if (LOG.isTraceEnabled()) dumpCertInfo(certs);
         } catch (NoSuchAlgorithmException | CertificateEncodingException e) {
             // give up issuing MTLS HoK Token
-            LOG.warn("give up issuing hok token. {}", e);
+            LOG.warn("give up issuing hok token. {0}", e);
             return null;
         }
 
@@ -47,7 +46,7 @@ public class MtlsHoKTokenUtil {
         return certConf;
     }
 
-    public boolean verifyTokenBindingWithClientCertificate(AccessToken token, HttpRequest request, KeycloakSession session) {
+    public boolean verifyTokenBindingWithClientCertificate(AccessToken token, HttpRequest request) {
         if (token == null) {
             LOG.warn("token is null");
             return false;
@@ -59,7 +58,7 @@ public class MtlsHoKTokenUtil {
             return false;
         }
 
-        X509Certificate[] certs = getCertificateChain(request, session);
+        X509Certificate[] certs = getCertificateChain(request);
 
         // HoK Token, but no Client Certificate available
         if (certs == null || certs.length < 1) {
@@ -76,7 +75,7 @@ public class MtlsHoKTokenUtil {
             DERX509Base64UrlEncoded = getCertificateThumbprintInSHA256DERX509Base64UrlEncoded(certs[0]);
             if (LOG.isTraceEnabled()) dumpCertInfo(certs);
         } catch (NoSuchAlgorithmException | CertificateEncodingException e) {
-            LOG.warn("client certificate exception. {}", e);
+            LOG.warn("client certificate exception. {0}", e);
             return false;
         }
 
@@ -91,15 +90,14 @@ public class MtlsHoKTokenUtil {
     @Autowired(required = false)
     private X509ClientCertificateLookup x509ClientCertificateLookup;
 
-    private X509Certificate[] getCertificateChain(HttpRequest request, KeycloakSession session) {
+    private X509Certificate[] getCertificateChain(HttpRequest request) {
         try {
             // Get a x509 client certificate
             if (x509ClientCertificateLookup == null) {
                 LOG.error("\"{}\" Spi is not available, did you forget to update the configuration?", X509ClientCertificateLookup.class);
                 return null;
             }
-            X509Certificate[] certs = x509ClientCertificateLookup.getCertificateChain(request);
-            return certs;
+            return x509ClientCertificateLookup.getCertificateChain(request);
         } catch (GeneralSecurityException e) {
             LOG.error(e.getMessage(), e);
         }
@@ -114,28 +112,27 @@ public class MtlsHoKTokenUtil {
         byte[] DERX509Hash = cert.getEncoded();
         MessageDigest md = MessageDigest.getInstance(DIGEST_ALG);
         md.update(DERX509Hash);
-        String DERX509Base64UrlEncoded = Base64Url.encode(md.digest());
-        return DERX509Base64UrlEncoded;
+        return Base64Url.encode(md.digest());
     }
 
     private static void dumpCertInfo(X509Certificate[] certs) throws CertificateEncodingException {
         LOG.trace(":: Try Holder of Key Token");
-        LOG.trace(":: # of x509 Client Certificate in Certificate Chain = %d", certs.length);
+        LOG.trace(":: # of x509 Client Certificate in Certificate Chain = {}", certs.length);
         for (int i = 0; i < certs.length; i++) {
-            LOG.trace(":: certs[%d] Raw Bytes Counts of first x509 Client Certificate in Certificate Chain = %d", i, certs[i].toString().length());
-            LOG.trace(":: certs[%d] Raw Bytes String of first x509 Client Certificate in Certificate Chain = {}", i, certs[i].toString());
-            LOG.trace(":: certs[%d] DER Dump Bytes of first x509 Client Certificate in Certificate Chain = %d", i, certs[i].getEncoded().length);
+            LOG.trace(":: certs[{}] Raw Bytes Counts of first x509 Client Certificate in Certificate Chain = {}", i, certs[i].toString().length());
+            LOG.trace(":: certs[{}] Raw Bytes String of first x509 Client Certificate in Certificate Chain = {}", i, certs[i].toString());
+            LOG.trace(":: certs[{}] DER Dump Bytes of first x509 Client Certificate in Certificate Chain = {}", i, certs[i].getEncoded().length);
             String DERX509Base64UrlEncoded = null;
             try {
                 DERX509Base64UrlEncoded = getCertificateThumbprintInSHA256DERX509Base64UrlEncoded(certs[i]);
             } catch (Exception e) {
             }
-            LOG.trace(":: certs[%d] Base64URL Encoded SHA-256 Hash of DER formatted first x509 Client Certificate in Certificate Chain = {}", i, DERX509Base64UrlEncoded);
-            LOG.trace(":: certs[%d] DER Dump Bytes of first x509 Client Certificate TBScertificate in Certificate Chain = %d", i, certs[i].getTBSCertificate().length);
-            LOG.trace(":: certs[%d] Signature Algorithm of first x509 Client Certificate in Certificate Chain = {}", i, certs[i].getSigAlgName());
-            LOG.trace(":: certs[%d] Certfication Type of first x509 Client Certificate in Certificate Chain = {}", i, certs[i].getType());
-            LOG.trace(":: certs[%d] Issuer DN of first x509 Client Certificate in Certificate Chain = {}", i, certs[i].getIssuerDN().getName());
-            LOG.trace(":: certs[%d] Subject DN of first x509 Client Certificate in Certificate Chain = {}", i, certs[i].getSubjectDN().getName());
+            LOG.trace(":: certs[{}] Base64URL Encoded SHA-256 Hash of DER formatted first x509 Client Certificate in Certificate Chain = {}", i, DERX509Base64UrlEncoded);
+            LOG.trace(":: certs[{}] DER Dump Bytes of first x509 Client Certificate TBScertificate in Certificate Chain = {}", i, certs[i].getTBSCertificate().length);
+            LOG.trace(":: certs[{}] Signature Algorithm of first x509 Client Certificate in Certificate Chain = {}", i, certs[i].getSigAlgName());
+            LOG.trace(":: certs[{}] Certfication Type of first x509 Client Certificate in Certificate Chain = {}", i, certs[i].getType());
+            LOG.trace(":: certs[{}] Issuer DN of first x509 Client Certificate in Certificate Chain = {}", i, certs[i].getIssuerDN().getName());
+            LOG.trace(":: certs[{}] Subject DN of first x509 Client Certificate in Certificate Chain = {}", i, certs[i].getSubjectDN().getName());
         }
     }
 }

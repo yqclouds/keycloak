@@ -18,10 +18,10 @@ package org.keycloak.services.managers;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.authentication.ClientAuthenticator;
 import org.keycloak.authentication.ClientAuthenticatorFactory;
 import org.keycloak.common.constants.ServiceAccountConstants;
-import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.models.*;
 import org.keycloak.models.session.UserSessionPersisterProvider;
 import org.keycloak.models.utils.RepresentationToModel;
@@ -83,28 +83,32 @@ public class ClientManager {
 
     }
 
+    @Autowired
+    private UserProvider userProvider;
     @Autowired(required = false)
     private UserSessionPersisterProvider userSessionPersisterProvider;
+    @Autowired
+    private UserSessionProvider userSessionProvider;
+    @Autowired
+    private AuthenticationSessionProvider authenticationSessionProvider;
 
     public boolean removeClient(RealmModel realm, ClientModel client) {
         if (realm.removeClient(client.getId())) {
-            UserSessionProvider sessions = realmManager.getSession().sessions();
-            if (sessions != null) {
-                sessions.onClientRemoved(realm, client);
+            if (userSessionProvider != null) {
+                userSessionProvider.onClientRemoved(realm, client);
             }
 
             if (userSessionPersisterProvider != null) {
                 userSessionPersisterProvider.onClientRemoved(realm, client);
             }
 
-            AuthenticationSessionProvider authSessions = realmManager.getSession().authenticationSessions();
-            if (authSessions != null) {
-                authSessions.onClientRemoved(realm, client);
+            if (authenticationSessionProvider != null) {
+                authenticationSessionProvider.onClientRemoved(realm, client);
             }
 
-            UserModel serviceAccountUser = realmManager.getSession().users().getServiceAccount(client);
+            UserModel serviceAccountUser = userProvider.getServiceAccount(client);
             if (serviceAccountUser != null) {
-                new UserManager(realmManager.getSession()).removeUser(realm, serviceAccountUser);
+                new UserManager().removeUser(realm, serviceAccountUser);
             }
 
             return true;
@@ -121,9 +125,9 @@ public class ClientManager {
 
         int currentTime = Time.currentTime();
 
-        Set<String> validatedNodes = new TreeSet<String>();
+        Set<String> validatedNodes = new TreeSet<>();
         if (client.getNodeReRegistrationTimeout() > 0) {
-            List<String> toRemove = new LinkedList<String>();
+            List<String> toRemove = new LinkedList<>();
             for (Map.Entry<String, Integer> entry : registeredNodes.entrySet()) {
                 Integer lastReRegistration = entry.getValue();
                 if (lastReRegistration + client.getNodeReRegistrationTimeout() < currentTime) {
@@ -149,12 +153,12 @@ public class ClientManager {
         client.setServiceAccountsEnabled(true);
 
         // Add dedicated user for this service account
-        if (realmManager.getSession().users().getServiceAccount(client) == null) {
+        if (userProvider.getServiceAccount(client) == null) {
             String username = ServiceAccountConstants.SERVICE_ACCOUNT_USER_PREFIX + client.getClientId();
             LOG.debug("Creating service account user '{}'", username);
 
             // Don't use federation for service account user
-            UserModel user = realmManager.getSession().userLocalStorage().addUser(client.getRealm(), username);
+            UserModel user = userProvider.addUser(client.getRealm(), username);
             user.setEnabled(true);
             user.setServiceAccountClientLink(client.getId());
         }
@@ -192,7 +196,7 @@ public class ClientManager {
     public void clientIdChanged(ClientModel client, String newClientId) {
         LOG.debug("Updating clientId from '{}' to '{}'", client.getClientId(), newClientId);
 
-        UserModel serviceAccountUser = realmManager.getSession().users().getServiceAccount(client);
+        UserModel serviceAccountUser = userProvider.getServiceAccount(client);
         if (serviceAccountUser != null) {
             String username = ServiceAccountConstants.SERVICE_ACCOUNT_USER_PREFIX + newClientId;
             serviceAccountUser.setUsername(username);
@@ -270,10 +274,12 @@ public class ClientManager {
         return true;
     }
 
+    @Autowired
+    private ClientAuthenticatorFactory clientAuthenticatorFactory;
+
     private Map<String, Object> getClientCredentialsAdapterConfig(ClientModel client) {
-        String clientAuthenticator = client.getClientAuthenticatorType();
-        ClientAuthenticatorFactory authenticator = (ClientAuthenticatorFactory) realmManager.getSession().getSessionFactory().getProviderFactory(ClientAuthenticator.class, clientAuthenticator);
-        return authenticator.getAdapterConfiguration(client);
+        // String clientAuthenticator = client.getClientAuthenticatorType();
+        return clientAuthenticatorFactory.getAdapterConfiguration(client);
     }
 
     @JsonPropertyOrder({"realm", "realm-public-key", "bearer-only", "auth-server-url", "ssl-required",

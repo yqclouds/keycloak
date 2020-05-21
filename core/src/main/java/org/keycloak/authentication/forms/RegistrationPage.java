@@ -91,7 +91,7 @@ public class RegistrationPage implements FormAuthenticator, FormAuthenticatorFac
     }
 
     @Override
-    public FormAuthenticator create(KeycloakSession session) {
+    public FormAuthenticator create() {
         return this;
     }
 

@@ -16,19 +16,16 @@
  */
 package org.keycloak.jose.jws;
 
+import com.hsbc.unified.iam.core.crypto.Algorithm;
 import org.keycloak.Token;
 import org.keycloak.TokenCategory;
-import com.hsbc.unified.iam.core.crypto.Algorithm;
 import org.keycloak.crypto.*;
 import org.keycloak.jose.jwe.JWEException;
 import org.keycloak.jose.jwe.alg.JWEAlgorithmProvider;
 import org.keycloak.jose.jwe.enc.JWEEncryptionProvider;
 import org.keycloak.jose.jwk.JWK;
 import org.keycloak.keys.loader.PublicKeyStorageManager;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.TokenManager;
+import org.keycloak.models.*;
 import org.keycloak.protocol.oidc.OIDCConfigAttributes;
 import org.keycloak.util.TokenUtil;
 import org.slf4j.Logger;
@@ -37,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.UnsupportedEncodingException;
 import java.security.Key;
+import java.util.Map;
 
 public class DefaultTokenManager implements TokenManager {
 
@@ -168,21 +166,28 @@ public class DefaultTokenManager implements TokenManager {
     @Autowired
     private PublicKeyStorageManager publicKeyStorageManager;
 
+    @Autowired
+    private Map<String, ContentEncryptionProvider> contentEncryptionProviders;
+    @Autowired
+    private Map<String, CekManagementProvider> cekManagementProviders;
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     private String getEncryptedToken(TokenCategory category, String encodedToken) {
         String encryptedToken = null;
 
         String algAlgorithm = cekManagementAlgorithm(category);
         String encAlgorithm = encryptAlgorithm(category);
 
-        CekManagementProvider cekManagementProvider = session.getProvider(CekManagementProvider.class, algAlgorithm);
+        CekManagementProvider cekManagementProvider = cekManagementProviders.get(algAlgorithm);
         JWEAlgorithmProvider jweAlgorithmProvider = cekManagementProvider.jweAlgorithmProvider();
 
-        ContentEncryptionProvider contentEncryptionProvider = session.getProvider(ContentEncryptionProvider.class, encAlgorithm);
+        ContentEncryptionProvider contentEncryptionProvider = contentEncryptionProviders.get(encAlgorithm);
         JWEEncryptionProvider jweEncryptionProvider = contentEncryptionProvider.jweEncryptionProvider();
 
-        ClientModel client = session.getContext().getClient();
+        ClientModel client = keycloakContext.getClient();
 
-        KeyWrapper keyWrapper = publicKeyStorageManager.getClientPublicKeyWrapper(session, client, JWK.Use.ENCRYPTION, algAlgorithm);
+        KeyWrapper keyWrapper = publicKeyStorageManager.getClientPublicKeyWrapper(client, JWK.Use.ENCRYPTION, algAlgorithm);
         if (keyWrapper == null) {
             throw new RuntimeException("can not get encryption KEK");
         }

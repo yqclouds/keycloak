@@ -214,7 +214,7 @@ public abstract class AbstractJsonUserAttributeMapper extends AbstractIdentityPr
     }
 
     @Override
-    public void preprocessFederatedIdentity(KeycloakSession session, RealmModel realm, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
+    public void preprocessFederatedIdentity(RealmModel realm, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
         String attribute = mapperModel.getConfig().get(CONF_USER_ATTRIBUTE);
         if (attribute == null || attribute.trim().isEmpty()) {
             LOG.warn("Attribute is not configured for mapper {}", mapperModel.getName());
@@ -233,7 +233,7 @@ public abstract class AbstractJsonUserAttributeMapper extends AbstractIdentityPr
     }
 
     @Override
-    public void updateBrokeredUser(KeycloakSession session, RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
+    public void updateBrokeredUser(RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
         // we do not update user profile from social provider
     }
 

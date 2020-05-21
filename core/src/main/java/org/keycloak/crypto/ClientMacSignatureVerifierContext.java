@@ -19,7 +19,6 @@ package org.keycloak.crypto;
 import com.hsbc.unified.iam.core.crypto.Algorithm;
 import org.keycloak.common.VerificationException;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -27,11 +26,11 @@ import java.nio.charset.StandardCharsets;
 
 public class ClientMacSignatureVerifierContext extends MacSignatureVerifierContext {
 
-    public ClientMacSignatureVerifierContext(KeycloakSession session, ClientModel client, String algorithm) throws VerificationException {
-        super(getKey(session, client, algorithm));
+    public ClientMacSignatureVerifierContext(ClientModel client, String algorithm) throws VerificationException {
+        super(getKey(client, algorithm));
     }
 
-    private static KeyWrapper getKey(KeycloakSession session, ClientModel client, String algorithm) throws VerificationException {
+    private static KeyWrapper getKey(ClientModel client, String algorithm) throws VerificationException {
         if (algorithm == null) algorithm = Algorithm.HS256;
         String clientSecretString = client.getSecret();
         SecretKey clientSecret = new SecretKeySpec(clientSecretString.getBytes(StandardCharsets.UTF_8), JavaAlgorithm.getJavaAlgorithm(algorithm));

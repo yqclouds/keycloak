@@ -34,7 +34,7 @@ public class IdpUsernamePasswordFormFactory extends UsernamePasswordFormFactory 
     public static final UsernamePasswordForm IDP_SINGLETON = new IdpUsernamePasswordForm();
 
     @Override
-    public Authenticator create(KeycloakSession session) {
+    public Authenticator create() {
         return IDP_SINGLETON;
     }
 

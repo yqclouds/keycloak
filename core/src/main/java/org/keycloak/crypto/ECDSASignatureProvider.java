@@ -11,11 +11,9 @@ import java.math.BigInteger;
 
 public class ECDSASignatureProvider implements SignatureProvider {
 
-    private final KeycloakSession session;
     private final String algorithm;
 
-    public ECDSASignatureProvider(KeycloakSession session, String algorithm) {
-        this.session = session;
+    public ECDSASignatureProvider(String algorithm) {
         this.algorithm = algorithm;
     }
 
@@ -64,12 +62,12 @@ public class ECDSASignatureProvider implements SignatureProvider {
 
     @Override
     public SignatureSignerContext signer() throws SignatureException {
-        return new ServerECDSASignatureSignerContext(session, algorithm);
+        return new ServerECDSASignatureSignerContext(algorithm);
     }
 
     @Override
     public SignatureVerifierContext verifier(String kid) throws VerificationException {
-        return new ServerECDSASignatureVerifierContext(session, kid, algorithm);
+        return new ServerECDSASignatureVerifierContext(kid, algorithm);
     }
 
     public enum ECDSA {

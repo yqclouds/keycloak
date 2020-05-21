@@ -17,13 +17,13 @@
 
 package org.keycloak.authentication;
 
+import com.hsbc.unified.iam.core.ClientConnection;
 import com.hsbc.unified.iam.core.constants.Constants;
+import com.hsbc.unified.iam.core.util.Time;
 import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAuthenticator;
 import org.keycloak.authentication.authenticators.client.ClientAuthUtil;
-import com.hsbc.unified.iam.core.ClientConnection;
-import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
@@ -122,7 +122,7 @@ public class AuthenticationProcessor {
     }
 
     // Clone new authentication session from the given authSession. New authenticationSession will have same parent (rootSession) and will use same client
-    public static AuthenticationSessionModel clone(KeycloakSession session, AuthenticationSessionModel authSession) {
+    public static AuthenticationSessionModel clone(AuthenticationSessionModel authSession) {
         AuthenticationSessionModel clone = authSession.getParentSession().createAuthenticationSession(authSession.getClient());
 
         clone.setRedirectUri(authSession.getRedirectUri());
@@ -140,8 +140,11 @@ public class AuthenticationProcessor {
         return clone;
     }
 
+    @Autowired
+    private TokenManager tokenManager;
+
     // May create new userSession too (if userSession argument is null)
-    public static ClientSessionContext attachSession(AuthenticationSessionModel authSession, UserSessionModel userSession, KeycloakSession session, RealmModel realm, ClientConnection connection, EventBuilder event) {
+    public ClientSessionContext attachSession(AuthenticationSessionModel authSession, UserSessionModel userSession, RealmModel realm, ClientConnection connection, EventBuilder event) {
         String username = authSession.getAuthenticatedUser().getUsername();
         String attemptedUsername = authSession.getAuthNote(AbstractUsernameFormAuthenticator.ATTEMPTED_USERNAME);
         if (attemptedUsername != null) username = attemptedUsername;
@@ -166,7 +169,7 @@ public class AuthenticationProcessor {
                 if (!authSession.getAuthenticatedUser().equals(userSession.getUser())) {
                     event.detail(Details.EXISTING_USER, userSession.getUser().getId());
                     event.error(Errors.DIFFERENT_USER_AUTHENTICATED);
-                    throw new ErrorPageException(session, authSession, Response.Status.INTERNAL_SERVER_ERROR, Messages.DIFFERENT_USER_AUTHENTICATED, userSession.getUser().getUsername());
+                    throw new ErrorPageException(authSession, Response.Status.INTERNAL_SERVER_ERROR, Messages.DIFFERENT_USER_AUTHENTICATED, userSession.getUser().getUsername());
                 }
             }
             userSession.setState(UserSessionModel.State.LOGGED_IN);
@@ -176,7 +179,7 @@ public class AuthenticationProcessor {
             event.detail(Details.REMEMBER_ME, "true");
         }
 
-        ClientSessionContext clientSessionCtx = TokenManager.attachAuthenticationSession(session, userSession, authSession);
+        ClientSessionContext clientSessionCtx = tokenManager.attachAuthenticationSession(userSession, authSession);
 
         event.user(userSession.getUser())
                 .detail(Details.USERNAME, username)
@@ -280,13 +283,13 @@ public class AuthenticationProcessor {
     }
 
     public String generateCode() {
-        ClientSessionCode accessCode = new ClientSessionCode(session, getRealm(), getAuthenticationSession());
+        ClientSessionCode accessCode = new ClientSessionCode(getRealm(), getAuthenticationSession());
         authenticationSession.getParentSession().setTimestamp(Time.currentTime());
         return accessCode.getOrGenerateCode();
     }
 
     public EventBuilder newEvent() {
-        this.event = new EventBuilder(realm, session, connection);
+        this.event = new EventBuilder(realm, connection);
         return this.event;
     }
 
@@ -341,6 +344,9 @@ public class AuthenticationProcessor {
                 .build(getRealm().getName());
     }
 
+    @Autowired
+    private KeycloakModelUtils keycloakModelUtils;
+
     public void logFailure() {
         if (realm.isBruteForceProtected()) {
             String username = authenticationSession.getAuthNote(AbstractUsernameFormAuthenticator.ATTEMPTED_USERNAME);
@@ -348,7 +354,7 @@ public class AuthenticationProcessor {
             if (username == null) {
 
             } else {
-                UserModel user = KeycloakModelUtils.findUserByNameOrEmail(session, realm, username);
+                UserModel user = keycloakModelUtils.findUserByNameOrEmail(realm, username);
                 if (user != null) {
                     getBruteForceProtector().failedLogin(realm, user, connection);
                 }
@@ -428,34 +434,34 @@ public class AuthenticationProcessor {
                 //ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.USER_NOT_FOUND);
                 if (e.getResponse() != null) return e.getResponse();
-                return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.INVALID_USER);
+                return errorPage.error(authenticationSession, Response.Status.BAD_REQUEST, Messages.INVALID_USER);
             } else if (e.getError() == AuthenticationFlowError.USER_DISABLED) {
                 //ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.USER_DISABLED);
                 if (e.getResponse() != null) return e.getResponse();
-                return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.ACCOUNT_DISABLED);
+                return errorPage.error(authenticationSession, Response.Status.BAD_REQUEST, Messages.ACCOUNT_DISABLED);
             } else if (e.getError() == AuthenticationFlowError.USER_TEMPORARILY_DISABLED) {
                 //ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.USER_TEMPORARILY_DISABLED);
                 if (e.getResponse() != null) return e.getResponse();
-                return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.INVALID_USER);
+                return errorPage.error(authenticationSession, Response.Status.BAD_REQUEST, Messages.INVALID_USER);
 
             } else if (e.getError() == AuthenticationFlowError.INVALID_CLIENT_SESSION) {
                 //ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.INVALID_CODE);
                 if (e.getResponse() != null) return e.getResponse();
-                return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.INVALID_CODE);
+                return errorPage.error(authenticationSession, Response.Status.BAD_REQUEST, Messages.INVALID_CODE);
 
             } else if (e.getError() == AuthenticationFlowError.EXPIRED_CODE) {
                 //ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.EXPIRED_CODE);
                 if (e.getResponse() != null) return e.getResponse();
-                return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.EXPIRED_CODE);
+                return errorPage.error(authenticationSession, Response.Status.BAD_REQUEST, Messages.EXPIRED_CODE);
 
             } else if (e.getError() == AuthenticationFlowError.FORK_FLOW) {
                 ForkFlowException reset = (ForkFlowException) e;
 
-                AuthenticationSessionModel clone = clone(session, authenticationSession);
+                AuthenticationSessionModel clone = clone(authenticationSession);
 
                 clone.setAction(AuthenticationSessionModel.Action.AUTHENTICATE.name());
                 setAuthenticationSession(clone);
@@ -481,23 +487,23 @@ public class AuthenticationProcessor {
                 //ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.DISPLAY_UNSUPPORTED);
                 if (e.getResponse() != null) return e.getResponse();
-                return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.DISPLAY_UNSUPPORTED);
+                return errorPage.error(authenticationSession, Response.Status.BAD_REQUEST, Messages.DISPLAY_UNSUPPORTED);
             } else if (e.getError() == AuthenticationFlowError.CREDENTIAL_SETUP_REQUIRED) {
                 // ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.INVALID_USER_CREDENTIALS);
                 if (e.getResponse() != null) return e.getResponse();
-                return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.CREDENTIAL_SETUP_REQUIRED);
+                return errorPage.error(authenticationSession, Response.Status.BAD_REQUEST, Messages.CREDENTIAL_SETUP_REQUIRED);
             } else {
                 // ServicesLogger.LOGGER.failedAuthentication(e);
                 event.error(Errors.INVALID_USER_CREDENTIALS);
                 if (e.getResponse() != null) return e.getResponse();
-                return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.INVALID_USER);
+                return errorPage.error(authenticationSession, Response.Status.BAD_REQUEST, Messages.INVALID_USER);
             }
 
         } else {
             // ServicesLogger.LOGGER.failedAuthentication(failure);
             event.error(Errors.INVALID_USER_CREDENTIALS);
-            return errorPage.error(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.UNEXPECTED_ERROR_HANDLING_REQUEST);
+            return errorPage.error(authenticationSession, Response.Status.BAD_REQUEST, Messages.UNEXPECTED_ERROR_HANDLING_REQUEST);
         }
 
     }
@@ -569,7 +575,7 @@ public class AuthenticationProcessor {
     }
 
     public Response redirectToFlow() {
-        URI redirect = new AuthenticationFlowURLHelper(session, realm, uriInfo).getLastExecutionUrl(authenticationSession);
+        URI redirect = new AuthenticationFlowURLHelper(realm, uriInfo).getLastExecutionUrl(authenticationSession);
 
         LOG.debug("Redirecting to URL: " + redirect.toString());
 
@@ -591,7 +597,7 @@ public class AuthenticationProcessor {
         String current = authenticationSession.getAuthNote(CURRENT_AUTHENTICATION_EXECUTION);
         if (execution == null || !execution.equals(current)) {
             LOG.debug("Current execution does not equal executed execution.  Might be a page refresh");
-            return new AuthenticationFlowURLHelper(session, realm, uriInfo).showPageExpired(authenticationSession);
+            return new AuthenticationFlowURLHelper(realm, uriInfo).showPageExpired(authenticationSession);
         }
         UserModel authUser = authenticationSession.getAuthenticatedUser();
         validateUser(authUser);
@@ -623,7 +629,7 @@ public class AuthenticationProcessor {
     }
 
     private void checkClientSession(boolean checkAction) {
-        ClientSessionCode code = new ClientSessionCode(session, realm, authenticationSession);
+        ClientSessionCode code = new ClientSessionCode(realm, authenticationSession);
 
         if (checkAction) {
             String action = AuthenticationSessionModel.Action.AUTHENTICATE.name();
@@ -664,7 +670,7 @@ public class AuthenticationProcessor {
 
     // May create userSession too
     public ClientSessionContext attachSession() {
-        ClientSessionContext clientSessionCtx = attachSession(authenticationSession, userSession, session, realm, connection, event);
+        ClientSessionContext clientSessionCtx = attachSession(authenticationSession, userSession, realm, connection, event);
 
         if (userSession == null) {
             userSession = clientSessionCtx.getClientSession().getUserSession();
@@ -673,18 +679,18 @@ public class AuthenticationProcessor {
         return clientSessionCtx;
     }
 
-    public void evaluateRequiredActionTriggers() {
-        AuthenticationManager.evaluateRequiredActionTriggers(session, authenticationSession, connection, request, uriInfo, event, realm, authenticationSession.getAuthenticatedUser());
-    }
-
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    public void evaluateRequiredActionTriggers() {
+        authenticationManager.evaluateRequiredActionTriggers(authenticationSession, connection, request, uriInfo, event, realm, authenticationSession.getAuthenticatedUser());
+    }
 
     public Response finishAuthentication(LoginProtocol protocol) {
         event.success();
         RealmModel realm = authenticationSession.getRealm();
         ClientSessionContext clientSessionCtx = attachSession();
-        return authenticationManager.redirectAfterSuccessfulFlow(session, realm, userSession, clientSessionCtx, request, uriInfo, connection, event, authenticationSession, protocol);
+        return authenticationManager.redirectAfterSuccessfulFlow(realm, userSession, clientSessionCtx, request, uriInfo, connection, event, authenticationSession, protocol);
     }
 
     public void validateUser(UserModel authenticatedUser) {
@@ -701,15 +707,15 @@ public class AuthenticationProcessor {
 
         String nextRequiredAction = nextRequiredAction();
         if (nextRequiredAction != null) {
-            return AuthenticationManager.redirectToRequiredActions(session, realm, authenticationSession, uriInfo, nextRequiredAction);
+            return authenticationManager.redirectToRequiredActions(realm, authenticationSession, uriInfo, nextRequiredAction);
         } else {
             event.detail(Details.CODE_ID, authenticationSession.getParentSession().getId());  // todo This should be set elsewhere.  find out why tests fail.  Don't know where this is supposed to be set
-            return authenticationManager.finishedRequiredActions(session, authenticationSession, userSession, connection, request, uriInfo, event);
+            return authenticationManager.finishedRequiredActions(authenticationSession, userSession, connection, request, uriInfo, event);
         }
     }
 
     public String nextRequiredAction() {
-        return AuthenticationManager.nextRequiredAction(session, authenticationSession, connection, request, uriInfo, event);
+        return authenticationManager.nextRequiredAction(authenticationSession, connection, request, uriInfo, event);
     }
 
     public AuthenticationProcessor.Result createAuthenticatorContext(AuthenticationExecutionModel model, Authenticator authenticator, List<AuthenticationExecutionModel> executions) {

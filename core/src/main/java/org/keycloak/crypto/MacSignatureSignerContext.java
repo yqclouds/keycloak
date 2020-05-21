@@ -20,9 +20,13 @@ import javax.crypto.Mac;
 
 public class MacSignatureSignerContext implements SignatureSignerContext {
 
-    private final KeyWrapper key;
+    private KeyWrapper key;
 
     public MacSignatureSignerContext(KeyWrapper key) throws SignatureException {
+        this.key = key;
+    }
+
+    public void setKey(KeyWrapper key) {
         this.key = key;
     }
 

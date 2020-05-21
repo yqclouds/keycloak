@@ -17,11 +17,11 @@
 
 package org.keycloak.authentication;
 
+import com.hsbc.unified.iam.core.constants.Constants;
 import com.hsbc.unified.iam.core.constants.OAuth2Constants;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticator;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticationFlowModel;
-import com.hsbc.unified.iam.core.constants.Constants;
 import org.keycloak.models.UserModel;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.slf4j.Logger;
@@ -72,7 +72,7 @@ public class DefaultAuthenticationFlow implements AuthenticationFlow {
 
     protected Authenticator createAuthenticator(AuthenticatorFactory factory) {
         String display = processor.getAuthenticationSession().getAuthNote(OAuth2Constants.DISPLAY);
-        if (display == null) return factory.create(processor.getSession());
+        if (display == null) return factory.create();
 
         if (factory instanceof DisplayTypeAuthenticatorFactory) {
             Authenticator authenticator = ((DisplayTypeAuthenticatorFactory) factory).createDisplay(processor.getSession(), display);
@@ -84,7 +84,7 @@ public class DefaultAuthenticationFlow implements AuthenticationFlow {
             throw new AuthenticationFlowException(AuthenticationFlowError.DISPLAY_NOT_SUPPORTED,
                     consoleDisplayMode.browserContinue(processor.getRefreshUrl(true).toString()));
         } else {
-            return factory.create(processor.getSession());
+            return factory.create();
         }
     }
 

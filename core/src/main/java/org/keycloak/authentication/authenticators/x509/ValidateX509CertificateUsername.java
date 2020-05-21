@@ -122,7 +122,7 @@ public class ValidateX509CertificateUsername extends AbstractX509ClientCertifica
             return;
         }
         if (context.getRealm().isBruteForceProtected()) {
-            if (context.getProtector().isTemporarilyDisabled(context.getSession(), context.getRealm(), user)) {
+            if (context.getProtector().isTemporarilyDisabled(context.getRealm(), user)) {
                 context.getEvent().user(user);
                 context.getEvent().error(Errors.USER_TEMPORARILY_DISABLED);
                 Response challengeResponse = errorResponse(Response.Status.BAD_REQUEST.getStatusCode(), "invalid_grant", "Account temporarily disabled");

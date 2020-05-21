@@ -18,6 +18,7 @@
 package org.keycloak.broker.oidc;
 
 import com.hsbc.unified.iam.core.constants.OAuth2Constants;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.util.SimpleHttp;
@@ -27,7 +28,6 @@ import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.jose.jws.JWSInputException;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserSessionModel;
 import org.keycloak.representations.AccessTokenResponse;
@@ -36,7 +36,7 @@ import org.keycloak.representations.adapters.action.AdminAction;
 import org.keycloak.representations.adapters.action.LogoutAction;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.managers.AuthenticationManager;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -52,8 +52,8 @@ public class KeycloakOIDCIdentityProvider extends OIDCIdentityProvider {
 
     public static final String VALIDATED_ACCESS_TOKEN = "VALIDATED_ACCESS_TOKEN";
 
-    public KeycloakOIDCIdentityProvider(KeycloakSession session, OIDCIdentityProviderConfig config) {
-        super(session, config);
+    public KeycloakOIDCIdentityProvider(OIDCIdentityProviderConfig config) {
+        super(config);
     }
 
     @Override
@@ -82,6 +82,9 @@ public class KeycloakOIDCIdentityProvider extends OIDCIdentityProvider {
         }
         return validateJwt(event, subjectToken, subjectTokenType);
     }
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     protected class KeycloakEndpoint extends OIDCEndpoint {
         public KeycloakEndpoint(AuthenticationCallback callback, RealmModel realm, EventBuilder event) {
@@ -119,7 +122,7 @@ public class KeycloakOIDCIdentityProvider extends OIDCIdentityProvider {
                             && userSession.getState() != UserSessionModel.State.LOGGING_OUT
                             && userSession.getState() != UserSessionModel.State.LOGGED_OUT
                     ) {
-                        AuthenticationManager.backchannelLogout(session, realm, userSession, session.getContext().getUri(), clientConnection, headers, false);
+                        authenticationManager.backchannelLogout(realm, userSession, session.getContext().getUri(), clientConnection, headers, false);
                     }
                 }
 

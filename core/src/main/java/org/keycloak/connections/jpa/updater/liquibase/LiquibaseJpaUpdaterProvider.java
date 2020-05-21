@@ -45,7 +45,6 @@ import org.keycloak.connections.jpa.entityprovider.JpaEntityProvider;
 import org.keycloak.connections.jpa.updater.JpaUpdaterProvider;
 import org.keycloak.connections.jpa.updater.liquibase.conn.LiquibaseConnectionProvider;
 import org.keycloak.connections.jpa.util.JpaUtils;
-import org.keycloak.models.KeycloakSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,14 +68,9 @@ public class LiquibaseJpaUpdaterProvider implements JpaUpdaterProvider {
     public static final String CHANGELOG = "META-INF/jpa-changelog-master.xml";
     public static final String DEPLOYMENT_ID_COLUMN = "DEPLOYMENT_ID";
     private static final Logger LOG = LoggerFactory.getLogger(LiquibaseJpaUpdaterProvider.class);
-    private final KeycloakSession session;
 
     @Autowired
     private LiquibaseConnectionProvider connectionProvider;
-
-    public LiquibaseJpaUpdaterProvider(KeycloakSession session) {
-        this.session = session;
-    }
 
     public static String getTable(String table, String defaultSchema) {
         return defaultSchema != null ? defaultSchema + "." + table : table;
@@ -92,11 +86,14 @@ public class LiquibaseJpaUpdaterProvider implements JpaUpdaterProvider {
         update(connection, file, defaultSchema);
     }
 
+    @Autowired
+    private Set<JpaEntityProvider> jpaProviders;
+
     private void update(Connection connection, File file, String defaultSchema) {
         LOG.debug("Starting database update");
 
         // Need ThreadLocal as liquibase doesn't seem to have API to inject custom objects into tasks
-        ThreadLocalSessionContext.setCurrentSession(session);
+        ThreadLocalSessionContext.setCurrentSession(null);
 
         Writer exportWriter = null;
         try {
@@ -108,7 +105,6 @@ public class LiquibaseJpaUpdaterProvider implements JpaUpdaterProvider {
             updateChangeSet(liquibase, connection, exportWriter);
 
             // Run update for each custom JpaEntityProvider
-            Set<JpaEntityProvider> jpaProviders = session.getAllProviders(JpaEntityProvider.class);
             for (JpaEntityProvider jpaProvider : jpaProviders) {
                 String customChangelog = jpaProvider.getChangelogLocation();
                 if (customChangelog != null) {
@@ -219,7 +215,7 @@ public class LiquibaseJpaUpdaterProvider implements JpaUpdaterProvider {
     @Override
     public Status validate(Connection connection, String defaultSchema) {
         LOG.debug("Validating if database is updated");
-        ThreadLocalSessionContext.setCurrentSession(session);
+        ThreadLocalSessionContext.setCurrentSession(null);
 
         try {
             // Validate with keycloak master changelog first
@@ -231,7 +227,6 @@ public class LiquibaseJpaUpdaterProvider implements JpaUpdaterProvider {
             }
 
             // Validate each custom JpaEntityProvider
-            Set<JpaEntityProvider> jpaProviders = session.getAllProviders(JpaEntityProvider.class);
             for (JpaEntityProvider jpaProvider : jpaProviders) {
                 String customChangelog = jpaProvider.getChangelogLocation();
                 if (customChangelog != null) {

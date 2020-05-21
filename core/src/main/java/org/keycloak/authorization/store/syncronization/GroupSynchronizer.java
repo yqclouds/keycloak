@@ -17,15 +17,16 @@
 
 package org.keycloak.authorization.store.syncronization;
 
-import org.keycloak.authorization.AuthorizationProvider;
+import com.hsbc.unified.iam.entity.events.GroupRemovedEvent;
 import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
+import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.GroupModel;
 import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.idm.authorization.GroupPolicyRepresentation;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
 import java.util.List;
@@ -35,16 +36,15 @@ import java.util.Set;
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
-public class GroupSynchronizer implements Synchronizer<GroupModel.GroupRemovedEvent> {
+public class GroupSynchronizer implements Synchronizer<GroupRemovedEvent> {
+    @Autowired
+    private AuthorizationProvider authorizationProvider;
 
     @Override
-    public void synchronize(GroupModel.GroupRemovedEvent event, KeycloakSessionFactory factory) {
-        ProviderFactory<AuthorizationProvider> providerFactory = factory.getProviderFactory(AuthorizationProvider.class);
-        AuthorizationProvider authorizationProvider = providerFactory.create(event.getSession());
-
+    public void synchronize(GroupRemovedEvent event, KeycloakSessionFactory factory) {
         StoreFactory storeFactory = authorizationProvider.getStoreFactory();
         PolicyStore policyStore = storeFactory.getPolicyStore();
-        GroupModel group = event.getGroup();
+        GroupModel group = (GroupModel) event.getSource();
         Map<String, String[]> attributes = new HashMap<>();
 
         attributes.put("type", new String[]{"group"});

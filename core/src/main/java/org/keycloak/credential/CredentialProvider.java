@@ -17,8 +17,8 @@
 package org.keycloak.credential;
 
 import org.keycloak.models.CredentialModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserCredentialManager;
 import org.keycloak.models.UserModel;
 import org.keycloak.provider.Provider;
 
@@ -29,10 +29,8 @@ import java.util.List;
  * @version $Revision: 1 $
  */
 public interface CredentialProvider<T extends CredentialModel> extends Provider {
-
     @Override
     default void close() {
-
     }
 
     String getType();
@@ -43,8 +41,8 @@ public interface CredentialProvider<T extends CredentialModel> extends Provider 
 
     T getCredentialFromModel(CredentialModel model);
 
-    default T getDefaultCredential(KeycloakSession session, RealmModel realm, UserModel user) {
-        List<CredentialModel> models = session.userCredentialManager().getStoredCredentialsByType(realm, user, getType());
+    default T getDefaultCredential(UserCredentialManager userCredentialManager, RealmModel realm, UserModel user) {
+        List<CredentialModel> models = userCredentialManager.getStoredCredentialsByType(realm, user, getType());
         if (models.isEmpty()) {
             return null;
         }

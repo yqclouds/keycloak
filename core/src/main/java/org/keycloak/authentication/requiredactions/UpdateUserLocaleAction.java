@@ -48,7 +48,7 @@ public class UpdateUserLocaleAction implements RequiredActionProvider, RequiredA
     }
 
     @Override
-    public RequiredActionProvider create(KeycloakSession session) {
+    public RequiredActionProvider create() {
         return this;
     }
 

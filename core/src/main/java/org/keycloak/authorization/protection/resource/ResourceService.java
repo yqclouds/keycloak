@@ -17,13 +17,12 @@
  */
 package org.keycloak.authorization.protection.resource;
 
+import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.authorization.admin.ResourceSetService;
 import org.keycloak.authorization.identity.Identity;
-import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
-import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import org.keycloak.events.admin.OperationType;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.idm.authorization.ResourceOwnerRepresentation;
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
 import org.keycloak.services.ErrorResponseException;
@@ -40,11 +39,9 @@ public class ResourceService {
 
     private final ResourceServerModel resourceServer;
     private final ResourceSetService resourceManager;
-    private final KeycloakSession session;
     private final Identity identity;
 
-    public ResourceService(KeycloakSession session, ResourceServerModel resourceServer, Identity identity, ResourceSetService resourceManager) {
-        this.session = session;
+    public ResourceService(ResourceServerModel resourceServer, Identity identity, ResourceSetService resourceManager) {
         this.identity = identity;
         this.resourceServer = resourceServer;
         this.resourceManager = resourceManager;

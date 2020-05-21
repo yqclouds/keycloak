@@ -17,10 +17,8 @@
 
 package org.keycloak.connections.jpa;
 
-import org.hibernate.cfg.AvailableSettings;
 import org.keycloak.ServerStartupError;
 import org.keycloak.connections.jpa.updater.JpaUpdaterProvider;
-import org.keycloak.connections.jpa.util.JpaUtils;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.KeycloakSessionTask;
@@ -44,7 +42,8 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -75,12 +74,9 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
     private TimerProvider timerProvider;
 
     @Override
-    public JpaConnectionProvider create(KeycloakSession session) {
+    public JpaConnectionProvider create() {
         LOG.trace("Create JpaConnectionProvider");
-        lazyInit(session);
-
         EntityManager em = PersistenceExceptionConverter.create(entityManagerFactory.createEntityManager());
-        if (!jtaEnabled) session.getTransactionManager().enlist(new JpaKeycloakTransaction(em));
         return new DefaultJpaConnectionProvider(em);
     }
 
@@ -88,79 +84,6 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
     public void destroy() throws Exception {
         if (entityManagerFactory != null) {
             entityManagerFactory.close();
-        }
-    }
-
-    private void lazyInit(KeycloakSession session) {
-        if (entityManagerFactory == null) {
-            synchronized (this) {
-                if (entityManagerFactory == null) {
-                    KeycloakModelUtils.suspendJtaTransaction(session.getSessionFactory(), () -> {
-                        LOG.debug("Initializing JPA connections");
-
-                        Map<String, Object> properties = new HashMap<>();
-
-                        String unitName = "keycloak-default";
-
-                        properties.put(AvailableSettings.JPA_JDBC_URL, "jdbc:h2:mem:keycloak");
-                        properties.put(AvailableSettings.JPA_JDBC_DRIVER, "org.h2.Driver");
-                        properties.put(AvailableSettings.JPA_JDBC_USER, "sa");
-                        properties.put(AvailableSettings.JPA_JDBC_PASSWORD, "sa");
-
-                        String schema = getSchema();
-                        if (schema != null) {
-                            properties.put(JpaUtils.HIBERNATE_DEFAULT_SCHEMA, schema);
-                        }
-
-                        MigrationStrategy migrationStrategy = getMigrationStrategy();
-                        boolean initializeEmpty = true; // config.getBoolean("initializeEmpty", true);
-                        File databaseUpdateFile = getDatabaseUpdateFile();
-
-                        properties.put("hibernate.show_sql", true);
-                        properties.put("hibernate.format_sql", true);
-
-                        Connection connection = getConnection();
-                        try {
-                            prepareOperationalInfo(connection);
-
-                            String driverDialect = detectDialect(connection);
-                            if (driverDialect != null) {
-                                properties.put("hibernate.dialect", driverDialect);
-                            }
-
-                            migration(migrationStrategy, initializeEmpty, schema, databaseUpdateFile, connection, session);
-
-                            int globalStatsInterval = this.globalStatsInterval;
-                            if (globalStatsInterval != -1) {
-                                properties.put("hibernate.generate_statistics", true);
-                            }
-
-                            LOG.trace("Creating EntityManagerFactory");
-                            Collection<ClassLoader> classLoaders = new ArrayList<>();
-                            if (properties.containsKey(AvailableSettings.CLASSLOADERS)) {
-                                classLoaders.addAll((Collection<ClassLoader>) properties.get(AvailableSettings.CLASSLOADERS));
-                            }
-                            classLoaders.add(getClass().getClassLoader());
-                            properties.put(AvailableSettings.CLASSLOADERS, classLoaders);
-                            entityManagerFactory = JpaUtils.createEntityManagerFactory(session, unitName, properties, jtaEnabled);
-                            LOG.trace("EntityManagerFactory created");
-
-                            if (globalStatsInterval != -1) {
-                                startGlobalStats(globalStatsInterval);
-                            }
-                        } finally {
-                            // Close after creating EntityManagerFactory to prevent in-mem databases from closing
-                            if (connection != null) {
-                                try {
-                                    connection.close();
-                                } catch (SQLException e) {
-                                    LOG.warn("Can't close connection", e);
-                                }
-                            }
-                        }
-                    });
-                }
-            }
         }
     }
 

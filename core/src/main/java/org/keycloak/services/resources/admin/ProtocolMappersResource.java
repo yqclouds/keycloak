@@ -24,12 +24,14 @@ import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.ProtocolMapperConfigException;
+import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -39,8 +41,6 @@ import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-
-import static org.keycloak.protocol.ProtocolMapperUtils.isEnabled;
 
 /**
  * Base resource for managing users
@@ -64,6 +64,8 @@ public class ProtocolMappersResource {
 
     @Context
     protected KeycloakSession session;
+    @Autowired
+    private ProtocolMapperUtils protocolMapperUtils;
 
     public ProtocolMappersResource(RealmModel realm, ProtocolMapperContainerModel client, AdminPermissionEvaluator auth,
                                    AdminEventBuilder adminEvent,
@@ -91,9 +93,9 @@ public class ProtocolMappersResource {
     public List<ProtocolMapperRepresentation> getMappersPerProtocol(@PathParam("protocol") String protocol) {
         viewPermission.require();
 
-        List<ProtocolMapperRepresentation> mappers = new LinkedList<ProtocolMapperRepresentation>();
+        List<ProtocolMapperRepresentation> mappers = new LinkedList<>();
         for (ProtocolMapperModel mapper : client.getProtocolMappers()) {
-            if (isEnabled(session, mapper) && mapper.getProtocol().equals(protocol))
+            if (protocolMapperUtils.isEnabled(mapper) && mapper.getProtocol().equals(protocol))
                 mappers.add(ModelToRepresentation.toRepresentation(mapper));
         }
         return mappers;
@@ -158,7 +160,7 @@ public class ProtocolMappersResource {
 
         List<ProtocolMapperRepresentation> mappers = new LinkedList<ProtocolMapperRepresentation>();
         for (ProtocolMapperModel mapper : client.getProtocolMappers()) {
-            if (isEnabled(session, mapper)) {
+            if (protocolMapperUtils.isEnabled(mapper)) {
                 mappers.add(ModelToRepresentation.toRepresentation(mapper));
             }
         }

@@ -36,7 +36,7 @@ public class SHA512HashProviderFactory implements HashProviderFactory {
     }
 
     @Override
-    public HashProvider create(KeycloakSession session) {
+    public HashProvider create() {
         return new JavaAlgorithmHashProvider(ID);
     }
 }

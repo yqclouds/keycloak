@@ -51,7 +51,7 @@ public class IdpCreateUserIfUniqueAuthenticatorFactory implements AuthenticatorF
     }
 
     @Override
-    public Authenticator create(KeycloakSession session) {
+    public Authenticator create() {
         return SINGLETON;
     }
 

@@ -18,11 +18,11 @@
 package org.keycloak.authentication.requiredactions;
 
 import com.hsbc.unified.iam.core.constants.OAuth2Constants;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.authentication.DisplayTypeRequiredActionFactory;
 import org.keycloak.authentication.RequiredActionContext;
 import org.keycloak.authentication.RequiredActionFactory;
 import org.keycloak.authentication.RequiredActionProvider;
-import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
@@ -41,12 +41,12 @@ public class TermsAndConditions implements RequiredActionProvider, RequiredActio
     public static final String USER_ATTRIBUTE = PROVIDER_ID;
 
     @Override
-    public RequiredActionProvider create(KeycloakSession session) {
+    public RequiredActionProvider create() {
         return this;
     }
 
     @Override
-    public RequiredActionProvider createDisplay(KeycloakSession session, String displayType) {
+    public RequiredActionProvider createDisplay(String displayType) {
         if (displayType == null) return this;
         if (!OAuth2Constants.DISPLAY_CONSOLE.equalsIgnoreCase(displayType)) return null;
         return ConsoleTermsAndConditions.SINGLETON;

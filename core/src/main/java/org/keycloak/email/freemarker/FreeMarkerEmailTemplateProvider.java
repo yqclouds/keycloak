@@ -27,10 +27,7 @@ import org.keycloak.email.freemarker.beans.ProfileBean;
 import org.keycloak.events.EventModel;
 import org.keycloak.events.EventType;
 import org.keycloak.forms.login.freemarker.model.UrlBean;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakUriInfo;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.theme.FreeMarkerException;
 import org.keycloak.theme.FreeMarkerUtil;
@@ -55,7 +52,6 @@ import java.util.*;
 public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
 
     protected final Map<String, Object> attributes = new HashMap<>();
-    protected KeycloakSession session;
     /**
      * authenticationSession can be null for some email sendings, it is filled only for email sendings performed as part of the authentication session (email verification, password reset, broker link
      * etc.)!
@@ -65,8 +61,7 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
     protected RealmModel realm;
     protected UserModel user;
 
-    public FreeMarkerEmailTemplateProvider(KeycloakSession session, FreeMarkerUtil freeMarker) {
-        this.session = session;
+    public FreeMarkerEmailTemplateProvider(FreeMarkerUtil freeMarker) {
         this.freeMarker = freeMarker;
     }
 
@@ -122,9 +117,12 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
         send("passwordResetSubject", "password-reset.ftl", attributes);
     }
 
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     @Override
     public void sendSmtpTestEmail(Map<String, String> config, UserModel user) throws EmailException {
-        setRealm(session.getContext().getRealm());
+        setRealm(keycloakContext.getRealm());
         setUser(user);
 
         Map<String, Object> attributes = new HashMap<>(this.attributes);
@@ -186,10 +184,10 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
     protected void addLinkInfoIntoAttributes(String link, long expirationInMinutes, Map<String, Object> attributes) throws EmailException {
         attributes.put("link", link);
         attributes.put("linkExpiration", expirationInMinutes);
-        KeycloakUriInfo uriInfo = session.getContext().getUri();
+        KeycloakUriInfo uriInfo = keycloakContext.getUri();
         URI baseUri = uriInfo.getBaseUri();
         try {
-            Locale locale = session.getContext().resolveLocale(user);
+            Locale locale = keycloakContext.resolveLocale(user);
             attributes.put("linkExpirationFormatter", new LinkExpirationFormatterMethod(getTheme().getMessages(locale), locale));
             attributes.put("url", new UrlBean(realm, getTheme(), baseUri, null));
         } catch (IOException e) {
@@ -205,7 +203,7 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
     protected EmailTemplate processTemplate(String subjectKey, List<Object> subjectAttributes, String template, Map<String, Object> attributes) throws EmailException {
         try {
             Theme theme = getTheme();
-            Locale locale = session.getContext().resolveLocale(user);
+            Locale locale = keycloakContext.resolveLocale(user);
             attributes.put("locale", locale);
             Properties rb = theme.getMessages(locale);
             attributes.put("msg", new MessageFormatterMethod(locale, rb));
@@ -232,8 +230,11 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
         }
     }
 
+    @Autowired
+    private ThemeManager themeManager;
+
     protected Theme getTheme() throws IOException {
-        return session.theme().getTheme(Theme.Type.EMAIL);
+        return themeManager.getTheme(Theme.Type.EMAIL);
     }
 
     @Override

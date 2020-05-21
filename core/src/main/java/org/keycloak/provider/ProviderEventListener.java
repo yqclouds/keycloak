@@ -17,10 +17,12 @@
 
 package org.keycloak.provider;
 
+import org.springframework.context.ApplicationEvent;
+
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public interface ProviderEventListener {
-    void onEvent(ProviderEvent event);
+    void onEvent(ApplicationEvent event);
 }

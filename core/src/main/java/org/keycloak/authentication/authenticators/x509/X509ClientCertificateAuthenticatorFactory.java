@@ -54,7 +54,7 @@ public class X509ClientCertificateAuthenticatorFactory extends AbstractX509Clien
 
 
     @Override
-    public Authenticator create(KeycloakSession session) {
+    public Authenticator create() {
         return SINGLETON;
     }
 

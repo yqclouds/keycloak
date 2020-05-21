@@ -35,7 +35,7 @@ public class DirExportProviderFactory implements ExportProviderFactory {
     public static final String PROVIDER_ID = "dir";
 
     @Override
-    public ExportProvider create(KeycloakSession session) {
+    public ExportProvider create() {
         String dir = ExportImportConfig.getDir();
         return dir != null ? new DirExportProvider(new File(dir)) : new DirExportProvider();
     }

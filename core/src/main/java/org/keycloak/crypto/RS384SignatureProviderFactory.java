@@ -17,7 +17,6 @@
 package org.keycloak.crypto;
 
 import com.hsbc.unified.iam.core.crypto.Algorithm;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 
@@ -33,8 +32,8 @@ public class RS384SignatureProviderFactory implements SignatureProviderFactory {
     }
 
     @Override
-    public SignatureProvider create(KeycloakSession session) {
-        return new AsymmetricSignatureProvider(session, Algorithm.RS384);
+    public SignatureProvider create() {
+        return new AsymmetricSignatureProvider(Algorithm.RS384);
     }
 
 }

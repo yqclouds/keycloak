@@ -37,6 +37,7 @@ import org.keycloak.services.managers.RealmManager;
 import org.keycloak.services.resources.admin.AdminAuth;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,10 +48,8 @@ import java.util.List;
  * @version $Revision: 1 $
  */
 class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManagement, RealmsPermissionEvaluator {
-    private static final Logger LOG = LoggerFactory.getLogger(MgmtPermissions.class);
-
     protected RealmModel realm;
-    protected KeycloakSession session;
+    @Autowired
     protected AuthorizationProvider authz;
     protected AdminAuth auth;
     protected Identity identity;
@@ -65,54 +64,48 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
     protected ScopeModel manageScope;
     protected ScopeModel viewScope;
 
-    MgmtPermissions(KeycloakSession session, RealmModel realm) {
-        this.session = session;
+    public MgmtPermissions(RealmModel realm) {
         this.realm = realm;
-        KeycloakSessionFactory keycloakSessionFactory = session.getSessionFactory();
-        AuthorizationProviderFactory factory = (AuthorizationProviderFactory) keycloakSessionFactory.getProviderFactory(AuthorizationProvider.class);
-        this.authz = factory.create(session, realm);
     }
 
-    MgmtPermissions(KeycloakSession session, RealmModel realm, AdminAuth auth) {
-        this(session, realm);
+    public MgmtPermissions(RealmModel realm, AdminAuth auth) {
+        this(realm);
         this.auth = auth;
         this.admin = auth.getUser();
         this.adminsRealm = auth.getRealm();
         if (!auth.getRealm().equals(realm)
-                && !auth.getRealm().equals(new RealmManager(session).getKeycloakAdministrationRealm())) {
+                && !auth.getRealm().equals(new RealmManager().getKeycloakAdministrationRealm())) {
             throw new ForbiddenException();
         }
-        initIdentity(session, auth);
+        initIdentity(auth);
     }
 
-    MgmtPermissions(KeycloakSession session, AdminAuth auth) {
-        this.session = session;
+    public  MgmtPermissions(AdminAuth auth) {
         this.auth = auth;
         this.admin = auth.getUser();
         this.adminsRealm = auth.getRealm();
-        initIdentity(session, auth);
+        initIdentity(auth);
     }
 
-    MgmtPermissions(KeycloakSession session, RealmModel adminsRealm, UserModel admin) {
-        this.session = session;
+    public MgmtPermissions(RealmModel adminsRealm, UserModel admin) {
         this.admin = admin;
         this.adminsRealm = adminsRealm;
         this.identity = new UserModelIdentity(adminsRealm, admin);
     }
 
-    MgmtPermissions(KeycloakSession session, RealmModel realm, RealmModel adminsRealm, UserModel admin) {
-        this(session, realm);
+    MgmtPermissions(RealmModel realm, RealmModel adminsRealm, UserModel admin) {
+        this(realm);
         this.admin = admin;
         this.adminsRealm = adminsRealm;
         this.identity = new UserModelIdentity(realm, admin);
     }
 
-    private void initIdentity(KeycloakSession session, AdminAuth auth) {
+    private void initIdentity(AdminAuth auth) {
         if (Constants.ADMIN_CLI_CLIENT_ID.equals(auth.getToken().getIssuedFor())
                 || Constants.ADMIN_CONSOLE_CLIENT_ID.equals(auth.getToken().getIssuedFor())) {
             this.identity = new UserModelIdentity(auth.getRealm(), auth.getUser());
         } else {
-            this.identity = new KeycloakIdentity(auth.getToken(), session);
+            this.identity = new KeycloakIdentity(auth.getToken());
         }
     }
 

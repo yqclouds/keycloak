@@ -16,10 +16,12 @@
  */
 package org.keycloak.storage.client;
 
-import org.keycloak.models.ClientModel;
+import com.hsbc.unified.iam.entity.events.ClientUpdatedEvent;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.storage.StorageId;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 
 import java.util.Collections;
 import java.util.Map;
@@ -32,12 +34,14 @@ import java.util.Map;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public abstract class AbstractClientStorageAdapter extends UnsupportedOperationsClientStorageAdapter {
+public abstract class AbstractClientStorageAdapter extends UnsupportedOperationsClientStorageAdapter
+        implements ApplicationEventPublisherAware {
     protected KeycloakSession session;
     protected RealmModel realm;
     protected ClientStorageProviderModel component;
     private StorageId storageId;
 
+    private ApplicationEventPublisher applicationEventPublisher;
 
     public AbstractClientStorageAdapter(KeycloakSession session, RealmModel realm, ClientStorageProviderModel component) {
         this.session = session;
@@ -119,20 +123,11 @@ public abstract class AbstractClientStorageAdapter extends UnsupportedOperations
      */
     @Override
     public void updateClient() {
-        session.getSessionFactory().publish(new RealmModel.ClientUpdatedEvent() {
-
-            @Override
-            public ClientModel getUpdatedClient() {
-                return AbstractClientStorageAdapter.this;
-            }
-
-            @Override
-            public KeycloakSession getSession() {
-                return session;
-            }
-        });
-
+        applicationEventPublisher.publishEvent(new ClientUpdatedEvent(this));
     }
 
-
+    @Override
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        this.applicationEventPublisher = applicationEventPublisher;
+    }
 }

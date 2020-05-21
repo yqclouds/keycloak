@@ -17,9 +17,9 @@
 
 package org.keycloak.authentication;
 
+import com.hsbc.unified.iam.core.ClientConnection;
 import com.hsbc.unified.iam.core.constants.Constants;
 import org.jboss.resteasy.spi.HttpRequest;
-import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.*;
@@ -44,7 +44,6 @@ public class FormAuthenticationFlow implements AuthenticationFlow {
     AuthenticationProcessor processor;
     AuthenticationExecutionModel formExecution;
 
-
     public FormAuthenticationFlow(AuthenticationProcessor processor, AuthenticationExecutionModel execution) {
         this.processor = processor;
         this.formExecution = execution;
@@ -67,7 +66,7 @@ public class FormAuthenticationFlow implements AuthenticationFlow {
                 continue;
             }
             FormActionFactory factory = (FormActionFactory) processor.getSession().getSessionFactory().getProviderFactory(FormAction.class, formActionExecution.getAuthenticator());
-            FormAction action = factory.create(processor.getSession());
+            FormAction action = factory.create();
 
             UserModel authUser = processor.getAuthenticationSession().getAuthenticatedUser();
             if (action.requiresUser() && authUser == null) {

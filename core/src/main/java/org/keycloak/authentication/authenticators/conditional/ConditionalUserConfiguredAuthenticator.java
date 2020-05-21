@@ -32,7 +32,7 @@ public class ConditionalUserConfiguredAuthenticator implements ConditionalAuthen
             try {
                 AuthenticatorFactory factory = (AuthenticatorFactory) context.getSession().getSessionFactory().getProviderFactory(Authenticator.class, e.getAuthenticator());
                 if (factory != null) {
-                    Authenticator auth = factory.create(context.getSession());
+                    Authenticator auth = factory.create();
                     if (auth instanceof ConditionalAuthenticator) {
                         isConditionalAuthenticator = true;
                     }
@@ -61,7 +61,7 @@ public class ConditionalUserConfiguredAuthenticator implements ConditionalAuthen
             return matchConditionInFlow(context, model.getId());
         }
         AuthenticatorFactory factory = (AuthenticatorFactory) context.getSession().getSessionFactory().getProviderFactory(Authenticator.class, model.getAuthenticator());
-        Authenticator authenticator = factory.create(context.getSession());
+        Authenticator authenticator = factory.create();
         return authenticator.configuredFor(context.getSession(), context.getRealm(), context.getUser());
     }
 

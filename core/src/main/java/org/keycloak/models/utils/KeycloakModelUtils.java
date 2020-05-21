@@ -18,15 +18,16 @@
 package org.keycloak.models.utils;
 
 import com.hsbc.unified.iam.core.constants.Constants;
+import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.common.util.CertificateUtils;
 import org.keycloak.common.util.KeyUtils;
 import org.keycloak.common.util.PemUtils;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.*;
-import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.representations.idm.CertificateRepresentation;
 import org.keycloak.storage.UserStorageProviderModel;
 import org.keycloak.transaction.JtaTransactionManagerLookup;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.crypto.spec.SecretKeySpec;
 import javax.transaction.InvalidTransactionException;
@@ -171,6 +172,9 @@ public final class KeycloakModelUtils {
                         .isPresent();
     }
 
+    @Autowired
+    private UserProvider userProvider;
+
     /**
      * Try to find user by username or email for authentication
      *
@@ -178,15 +182,15 @@ public final class KeycloakModelUtils {
      * @param username username or email of user
      * @return found user
      */
-    public static UserModel findUserByNameOrEmail(KeycloakSession session, RealmModel realm, String username) {
+    public UserModel findUserByNameOrEmail(RealmModel realm, String username) {
         if (realm.isLoginWithEmailAllowed() && username.indexOf('@') != -1) {
-            UserModel user = session.users().getUserByEmail(username, realm);
+            UserModel user = userProvider.getUserByEmail(username, realm);
             if (user != null) {
                 return user;
             }
         }
 
-        return session.users().getUserByUsername(username, realm);
+        return userProvider.getUserByUsername(username, realm);
     }
 
     /**
@@ -670,7 +674,7 @@ public final class KeycloakModelUtils {
 
     }
 
-    public static String getIdentityProviderDisplayName(KeycloakSession session, IdentityProviderModel provider) {
+    public static String getIdentityProviderDisplayName(IdentityProviderModel provider) {
         String displayName = provider.getDisplayName();
         if (displayName != null && !displayName.isEmpty()) {
             return displayName;

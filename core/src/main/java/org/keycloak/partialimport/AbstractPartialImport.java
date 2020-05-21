@@ -17,7 +17,6 @@
 
 package org.keycloak.partialimport;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.representations.idm.PartialImportRepresentation;
 import org.keycloak.services.ErrorResponse;
@@ -41,27 +40,26 @@ public abstract class AbstractPartialImport<T> implements PartialImport<T> {
 
     public abstract String getName(T resourceRep);
 
-    public abstract String getModelId(RealmModel realm, KeycloakSession session, T resourceRep);
+    public abstract String getModelId(RealmModel realm, T resourceRep);
 
-    public abstract boolean exists(RealmModel realm, KeycloakSession session, T resourceRep);
+    public abstract boolean exists(RealmModel realm, T resourceRep);
 
     public abstract String existsMessage(RealmModel realm, T resourceRep);
 
     public abstract ResourceType getResourceType();
 
-    public abstract void remove(RealmModel realm, KeycloakSession session, T resourceRep);
+    public abstract void remove(RealmModel realm, T resourceRep);
 
-    public abstract void create(RealmModel realm, KeycloakSession session, T resourceRep);
+    public abstract void create(RealmModel realm, T resourceRep);
 
     @Override
     public void prepare(PartialImportRepresentation partialImportRep,
-                        RealmModel realm,
-                        KeycloakSession session) throws ErrorResponseException {
+                        RealmModel realm) throws ErrorResponseException {
         List<T> repList = getRepList(partialImportRep);
         if ((repList == null) || repList.isEmpty()) return;
 
         for (T resourceRep : getRepList(partialImportRep)) {
-            if (exists(realm, session, resourceRep)) {
+            if (exists(realm, resourceRep)) {
                 switch (partialImportRep.getPolicy()) {
                     case SKIP:
                         toSkip.add(resourceRep);
@@ -94,32 +92,32 @@ public abstract class AbstractPartialImport<T> implements PartialImport<T> {
     }
 
     @Override
-    public void removeOverwrites(RealmModel realm, KeycloakSession session) {
+    public void removeOverwrites(RealmModel realm) {
         for (T resourceRep : toOverwrite) {
-            remove(realm, session, resourceRep);
+            remove(realm, resourceRep);
         }
     }
 
     @Override
-    public PartialImportResults doImport(PartialImportRepresentation partialImportRep, RealmModel realm, KeycloakSession session) throws ErrorResponseException {
+    public PartialImportResults doImport(PartialImportRepresentation partialImportRep, RealmModel realm) throws ErrorResponseException {
         PartialImportResults results = new PartialImportResults();
         List<T> repList = getRepList(partialImportRep);
         if ((repList == null) || repList.isEmpty()) return results;
 
         for (T resourceRep : toOverwrite) {
             try {
-                create(realm, session, resourceRep);
+                create(realm, resourceRep);
             } catch (Exception e) {
 //                ServicesLogger.LOGGER.overwriteError(e, getName(resourceRep));
                 throw new ErrorResponseException(ErrorResponse.error(e.getMessage(), Response.Status.INTERNAL_SERVER_ERROR));
             }
 
-            String modelId = getModelId(realm, session, resourceRep);
+            String modelId = getModelId(realm, resourceRep);
             results.addResult(overwritten(modelId, resourceRep));
         }
 
         for (T resourceRep : toSkip) {
-            String modelId = getModelId(realm, session, resourceRep);
+            String modelId = getModelId(realm, resourceRep);
             results.addResult(skipped(modelId, resourceRep));
         }
 
@@ -128,8 +126,8 @@ public abstract class AbstractPartialImport<T> implements PartialImport<T> {
             if (toSkip.contains(resourceRep)) continue;
 
             try {
-                create(realm, session, resourceRep);
-                String modelId = getModelId(realm, session, resourceRep);
+                create(realm, resourceRep);
+                String modelId = getModelId(realm, resourceRep);
                 results.addResult(added(modelId, resourceRep));
             } catch (Exception e) {
 //                ServicesLogger.LOGGER.creationError(e, getName(resourceRep));

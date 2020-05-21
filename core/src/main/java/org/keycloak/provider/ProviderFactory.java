@@ -18,7 +18,6 @@
 package org.keycloak.provider;
 
 import org.keycloak.Config;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 
 /**
@@ -30,7 +29,7 @@ import org.keycloak.models.KeycloakSessionFactory;
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public interface ProviderFactory<T extends Provider> {
-    T create(KeycloakSession session);
+    T create();
 
     /**
      * Only called once when the factory is first created.  This config is pulled from keycloak_server.json

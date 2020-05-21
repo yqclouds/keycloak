@@ -37,8 +37,8 @@ public class FreeMarkerLoginFormsProviderFactory implements LoginFormsProviderFa
     private FreeMarkerUtil freeMarker;
 
     @Override
-    public LoginFormsProvider create(KeycloakSession session) {
-        return new FreeMarkerLoginFormsProvider(session, freeMarker);
+    public LoginFormsProvider create() {
+        return new FreeMarkerLoginFormsProvider(freeMarker);
     }
 
     @PreDestroy

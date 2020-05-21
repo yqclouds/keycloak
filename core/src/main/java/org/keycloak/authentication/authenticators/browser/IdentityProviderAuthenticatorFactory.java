@@ -81,7 +81,7 @@ public class IdentityProviderAuthenticatorFactory implements AuthenticatorFactor
     }
 
     @Override
-    public Authenticator create(KeycloakSession session) {
+    public Authenticator create() {
         return new IdentityProviderAuthenticator();
     }
 

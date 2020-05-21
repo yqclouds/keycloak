@@ -33,8 +33,8 @@ public class HS256SignatureProviderFactory implements SignatureProviderFactory {
     }
 
     @Override
-    public SignatureProvider create(KeycloakSession session) {
-        return new MacSecretSignatureProvider(session, Algorithm.HS256);
+    public SignatureProvider create() {
+        return new MacSecretSignatureProvider(Algorithm.HS256);
     }
 
 }

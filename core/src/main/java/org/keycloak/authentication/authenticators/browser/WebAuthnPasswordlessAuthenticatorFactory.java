@@ -49,8 +49,8 @@ public class WebAuthnPasswordlessAuthenticatorFactory extends WebAuthnAuthentica
     }
 
     @Override
-    public Authenticator create(KeycloakSession session) {
-        return new WebAuthnPasswordlessAuthenticator(session);
+    public Authenticator create() {
+        return new WebAuthnPasswordlessAuthenticator();
     }
 
     @Override

@@ -19,16 +19,19 @@ package org.keycloak.authentication.authenticators.broker.util;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hsbc.unified.iam.core.constants.Constants;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.keycloak.authentication.requiredactions.util.UpdateProfileContext;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.IdentityProvider;
 import org.keycloak.broker.provider.IdentityProviderDataMarshaller;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.common.util.reflections.Reflections;
-import org.keycloak.models.*;
+import org.keycloak.models.IdentityProviderModel;
+import org.keycloak.models.ModelException;
+import org.keycloak.models.RealmModel;
 import org.keycloak.services.resources.IdentityBrokerService;
 import org.keycloak.sessions.AuthenticationSessionModel;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -285,7 +288,10 @@ public class SerializedBrokeredIdentityContext implements UpdateProfileContext {
         }
     }
 
-    public BrokeredIdentityContext deserialize(KeycloakSession session, AuthenticationSessionModel authSession) {
+    @Autowired
+    private IdentityBrokerService identityBrokerService;
+
+    public BrokeredIdentityContext deserialize(AuthenticationSessionModel authSession) {
         BrokeredIdentityContext ctx = new BrokeredIdentityContext(getId());
 
         ctx.setUsername(getBrokerUsername());
@@ -302,7 +308,7 @@ public class SerializedBrokeredIdentityContext implements UpdateProfileContext {
         if (idpConfig == null) {
             throw new ModelException("Can't find identity provider with ID " + getIdentityProviderId() + " in realm " + realm.getName());
         }
-        IdentityProvider idp = IdentityBrokerService.getIdentityProvider(session, realm, idpConfig.getAlias());
+        IdentityProvider idp = identityBrokerService.getIdentityProvider(realm, idpConfig.getAlias());
         ctx.setIdpConfig(idpConfig);
         ctx.setIdp(idp);
 

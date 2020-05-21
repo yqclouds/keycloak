@@ -17,7 +17,6 @@
 package org.keycloak.crypto;
 
 import com.hsbc.unified.iam.core.crypto.Algorithm;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 
@@ -33,8 +32,8 @@ public class ES256SignatureProviderFactory implements SignatureProviderFactory {
     }
 
     @Override
-    public SignatureProvider create(KeycloakSession session) {
-        return new ECDSASignatureProvider(session, Algorithm.ES256);
+    public SignatureProvider create() {
+        return new ECDSASignatureProvider(Algorithm.ES256);
     }
 
 }

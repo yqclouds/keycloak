@@ -30,8 +30,8 @@ public class PasswordCredentialProviderFactory implements CredentialProviderFact
     public static final String PROVIDER_ID = "keycloak-password";
 
     @Override
-    public PasswordCredentialProvider create(KeycloakSession session) {
-        return new PasswordCredentialProvider(session);
+    public PasswordCredentialProvider create() {
+        return new PasswordCredentialProvider();
     }
 
     @Override

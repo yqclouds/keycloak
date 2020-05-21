@@ -19,8 +19,8 @@ package org.keycloak.models.jpa;
 
 import com.hsbc.unified.iam.core.util.Time;
 import com.hsbc.unified.iam.entity.*;
-import com.hsbc.unified.iam.repository.*;
 import com.hsbc.unified.iam.entity.authorization.Resource;
+import com.hsbc.unified.iam.repository.*;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.UserCredentialStore;
 import org.keycloak.models.*;
@@ -30,6 +30,7 @@ import org.keycloak.storage.StorageId;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.client.ClientStorageProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.LockModeType;
@@ -52,8 +53,8 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
     private static final String FIRST_NAME = "firstName";
     private static final String LAST_NAME = "lastName";
 
-    private final KeycloakSession session;
-    private final JpaUserCredentialStore credentialStore;
+    @Autowired
+    private JpaUserCredentialStore credentialStore;
 
     @Autowired
     private UserRepository userRepository;
@@ -74,10 +75,12 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
     @Autowired
     private UserAttributeRepository userAttributeRepository;
 
-    public JpaUserProvider(KeycloakSession session) {
-        this.session = session;
-        credentialStore = new JpaUserCredentialStore();
-    }
+    @Autowired
+    private UserProvider userProvider;
+    @Value("${keycloak.session.realm.users.query.groups}")
+    private Set<String> userGroups;
+    @Value("${keycloak.session.realm.users.query.include_service_account}")
+    private boolean includeServiceAccount;
 
     @Override
     public UserModel addUser(RealmModel realm, String id, String username, boolean addDefaultRoles, boolean addDefaultRequiredActions) {
@@ -655,13 +658,13 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
         return searchForUser(attributes, realm, -1, -1);
     }
 
-    private static Specification<User> searchForUserSpecification(KeycloakSession session, Map<String, String> attributes, RealmModel realm) {
+    private Specification<User> searchForUserSpecification(Map<String, String> attributes, RealmModel realm) {
         return (Specification<User>) (root, query, cb) -> {
             List<Predicate> restrictions = new ArrayList<>();
 
             restrictions.add(cb.equal(root.get("realmId"), realm.getId()));
 
-            if (!session.getAttributeOrDefault(UserModel.INCLUDE_SERVICE_ACCOUNT, true)) {
+            if (!this.includeServiceAccount) {
                 restrictions.add(root.get("serviceAccountClientLink").isNull());
             }
 
@@ -685,7 +688,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
                                         cb.coalesce(root.get(UserModel.LAST_NAME), cb.literal("")))),
                                 "%" + value.toLowerCase() + "%"));
 
-                        restrictions.add(cb.or(orPredicates.toArray(new Predicate[orPredicates.size()])));
+                        restrictions.add(cb.or(orPredicates.toArray(new Predicate[0])));
 
                         break;
 
@@ -697,9 +700,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
                 }
             }
 
-            Set<String> userGroups = (Set<String>) session.getAttribute(UserModel.GROUPS);
-
-            if (userGroups != null) {
+            if (this.userGroups != null) {
                 Subquery subquery = query.subquery(String.class);
                 Root<UserGroupMembership> from = subquery.from(UserGroupMembership.class);
 
@@ -738,10 +739,9 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
     @Override
     public List<UserModel> searchForUser(Map<String, String> attributes, RealmModel realm, int firstResult, int maxResults) {
         List<UserModel> results = new ArrayList<>();
-        UserProvider users = session.users();
 
-        for (User entity : userRepository.findAll(searchForUserSpecification(session, attributes, realm))) {
-            results.add(users.getUserById(entity.getId(), realm));
+        for (User entity : userRepository.findAll(searchForUserSpecification(attributes, realm))) {
+            results.add(userProvider.getUserById(entity.getId(), realm));
         }
 
         return results;
@@ -786,11 +786,11 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
             removeImportedUsers(realm, component.getId());
         }
         if (component.getProviderType().equals(ClientStorageProvider.class.getName())) {
-            removeConsentByClientStorageProvider(realm, component.getId());
+            removeConsentByClientStorageProvider(component.getId());
         }
     }
 
-    protected void removeConsentByClientStorageProvider(RealmModel realm, String providerId) {
+    protected void removeConsentByClientStorageProvider(String providerId) {
         userConsentClientScopeRepository.deleteUserConsentClientScopesByClientStorageProvider(providerId);
         userConsentRepository.deleteUserConsentsByClientStorageProvider(providerId);
     }
@@ -813,7 +813,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
     public boolean removeStoredCredential(RealmModel realm, UserModel user, String id) {
         Credential entity = credentialStore.removeCredentialEntity(realm, user, id);
         User userEntity = userRepository.getOne(user.getId());
-        if (entity != null && userEntity != null) {
+        if (entity != null) {
             userEntity.getCredentials().remove(entity);
         }
         return entity != null;

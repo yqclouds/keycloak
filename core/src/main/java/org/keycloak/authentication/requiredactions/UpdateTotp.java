@@ -18,27 +18,26 @@
 package org.keycloak.authentication.requiredactions;
 
 import com.hsbc.unified.iam.core.constants.OAuth2Constants;
+import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
 import org.keycloak.authentication.*;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.credential.OTPCredentialProvider;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
-import org.keycloak.models.CredentialModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.OTPPolicy;
-import org.keycloak.models.UserModel;
-import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.CredentialValidation;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.validation.Validation;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.utils.CredentialHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -63,6 +62,13 @@ public class UpdateTotp implements RequiredActionProvider, RequiredActionFactory
                 .createResponse(UserModel.RequiredAction.CONFIGURE_TOTP);
         context.challenge(challenge);
     }
+
+    @Autowired
+    private Map<String, CredentialProvider> credentialProviders;
+    @Autowired
+    private CredentialHelper credentialHelper;
+    @Autowired
+    private UserCredentialManager userCredentialManager;
 
     @Override
     public void processAction(RequiredActionContext context) {
@@ -91,9 +97,9 @@ public class UpdateTotp implements RequiredActionProvider, RequiredActionFactory
             context.challenge(challenge);
             return;
         }
-        OTPCredentialProvider otpCredentialProvider = (OTPCredentialProvider) context.getSession().getProvider(CredentialProvider.class, "keycloak-otp");
+        OTPCredentialProvider otpCredentialProvider = (OTPCredentialProvider) credentialProviders.get("keycloak-otp");
         final List<CredentialModel> otpCredentials = (otpCredentialProvider.isConfiguredFor(context.getRealm(), context.getUser()))
-                ? context.getSession().userCredentialManager().getStoredCredentialsByType(context.getRealm(), context.getUser(), OTPCredentialModel.TYPE)
+                ? userCredentialManager.getStoredCredentialsByType(context.getRealm(), context.getUser(), OTPCredentialModel.TYPE)
                 : Collections.EMPTY_LIST;
         if (otpCredentials.size() >= 1 && Validation.isBlank(userLabel)) {
             Response challenge = context.form()
@@ -104,7 +110,7 @@ public class UpdateTotp implements RequiredActionProvider, RequiredActionFactory
             return;
         }
 
-        if (!CredentialHelper.createOTPCredential(context.getSession(), context.getRealm(), context.getUser(), challengeResponse, credentialModel)) {
+        if (!credentialHelper.createOTPCredential(context.getRealm(), context.getUser(), challengeResponse, credentialModel)) {
             Response challenge = context.form()
                     .setAttribute("mode", mode)
                     .setError(Messages.INVALID_TOTP)
@@ -128,13 +134,13 @@ public class UpdateTotp implements RequiredActionProvider, RequiredActionFactory
     }
 
     @Override
-    public RequiredActionProvider create(KeycloakSession session) {
+    public RequiredActionProvider create() {
         return this;
     }
 
 
     @Override
-    public RequiredActionProvider createDisplay(KeycloakSession session, String displayType) {
+    public RequiredActionProvider createDisplay(String displayType) {
         if (displayType == null) return this;
         if (!OAuth2Constants.DISPLAY_CONSOLE.equalsIgnoreCase(displayType)) return null;
         return ConsoleUpdateTotp.SINGLETON;

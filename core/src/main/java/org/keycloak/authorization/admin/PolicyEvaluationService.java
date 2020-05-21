@@ -18,15 +18,15 @@
 package org.keycloak.authorization.admin;
 
 
+import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
+import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.admin.representation.PolicyEvaluationResponseBuilder;
 import org.keycloak.authorization.attribute.Attributes;
 import org.keycloak.authorization.common.DefaultEvaluationContext;
 import org.keycloak.authorization.common.KeycloakIdentity;
-import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
-import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
-import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
 import org.keycloak.authorization.permission.ResourcePermission;
 import org.keycloak.authorization.policy.evaluation.DecisionPermissionCollector;
 import org.keycloak.authorization.policy.evaluation.EvaluationContext;
@@ -46,6 +46,7 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluato
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -173,6 +174,9 @@ public class PolicyEvaluationService {
         }).collect(Collectors.toList());
     }
 
+    @Autowired
+    private TokenManager tokenManager;
+
     private CloseableKeycloakIdentity createIdentity(PolicyEvaluationRequest representation) {
         KeycloakSession keycloakSession = this.authorization.getSession();
         RealmModel realm = keycloakSession.getContext().getRealm();
@@ -206,9 +210,9 @@ public class PolicyEvaluationService {
                     userSession = keycloakSession.sessions().createUserSession(authSession.getParentSession().getId(), realm, userModel, userModel.getUsername(), "127.0.0.1", "passwd", false, null, null);
 
                     AuthenticationManager.setClientScopesInSession(authSession);
-                    ClientSessionContext clientSessionCtx = TokenManager.attachAuthenticationSession(keycloakSession, userSession, authSession);
+                    ClientSessionContext clientSessionCtx = tokenManager.attachAuthenticationSession(userSession, authSession);
 
-                    accessToken = new TokenManager().createClientAccessToken(keycloakSession, realm, clientModel, userModel, userSession, clientSessionCtx);
+                    accessToken = tokenManager.createClientAccessToken(realm, clientModel, userModel, userSession, clientSessionCtx);
                 }
             }
         }
@@ -243,22 +247,26 @@ public class PolicyEvaluationService {
             representation.getRoleIds().forEach(realmAccess::addRole);
         }
 
-        return new CloseableKeycloakIdentity(accessToken, keycloakSession, userSession);
+        return new CloseableKeycloakIdentity(accessToken, userSession);
     }
 
-    private static class CloseableKeycloakIdentity extends KeycloakIdentity {
+    @Autowired
+    private UserSessionProvider userSessionProvider;
+    @Autowired
+    private UserProvider userProvider;
+
+    private class CloseableKeycloakIdentity extends KeycloakIdentity {
         private UserSessionModel userSession;
 
-        public CloseableKeycloakIdentity(AccessToken accessToken, KeycloakSession keycloakSession, UserSessionModel userSession) {
-            super(accessToken, keycloakSession);
+        public CloseableKeycloakIdentity(AccessToken accessToken, UserSessionModel userSession) {
+            super(accessToken);
             this.userSession = userSession;
         }
 
         public void close() {
             if (userSession != null) {
-                keycloakSession.sessions().removeUserSession(realm, userSession);
+                userSessionProvider.removeUserSession(realm, userSession);
             }
-
         }
 
         @Override
@@ -270,7 +278,7 @@ public class PolicyEvaluationService {
             String issuedFor = accessToken.getIssuedFor();
 
             if (issuedFor != null) {
-                UserModel serviceAccount = keycloakSession.users().getServiceAccount(realm.getClientByClientId(issuedFor));
+                UserModel serviceAccount = userProvider.getServiceAccount(realm.getClientByClientId(issuedFor));
 
                 if (serviceAccount != null) {
                     return serviceAccount.getId();

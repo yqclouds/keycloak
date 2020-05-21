@@ -39,7 +39,7 @@ public class BasicAuthOTPAuthenticatorFactory implements AuthenticatorFactory {
     public static final BasicAuthOTPAuthenticator SINGLETON = new BasicAuthOTPAuthenticator();
 
     @Override
-    public Authenticator create(KeycloakSession session) {
+    public Authenticator create() {
         return SINGLETON;
     }
 

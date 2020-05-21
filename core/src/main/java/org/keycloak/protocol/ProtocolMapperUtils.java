@@ -17,10 +17,12 @@
 
 package org.keycloak.protocol;
 
-import org.keycloak.models.*;
+import org.keycloak.models.ClientSessionContext;
+import org.keycloak.models.ProtocolMapperModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.OIDCLoginProtocolFactory;
-import org.keycloak.provider.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -97,15 +99,16 @@ public class ProtocolMapperUtils {
         return null;
     }
 
+    @Autowired
+    private List<LoginProtocolFactory> loginProtocolFactories;
+
     /**
      * Find the builtin locale mapper.
      *
-     * @param session A KeycloakSession
      * @return The builtin locale mapper.
      */
-    public static ProtocolMapperModel findLocaleMapper(KeycloakSession session) {
-        for (ProviderFactory p : session.getSessionFactory().getProviderFactories(LoginProtocol.class)) {
-            LoginProtocolFactory factory = (LoginProtocolFactory) p;
+    public ProtocolMapperModel findLocaleMapper() {
+        for (LoginProtocolFactory factory : loginProtocolFactories) {
             ProtocolMapperModel found = factory.getBuiltinMappers().get(OIDCLoginProtocolFactory.LOCALE);
             if (found != null && found.getProtocol().equals(OIDCLoginProtocol.LOGIN_PROTOCOL)) {
                 return found;
@@ -114,14 +117,14 @@ public class ProtocolMapperUtils {
         return null;
     }
 
+    private Map<String, ProtocolMapper> protocolMappers;
 
-    public static List<Map.Entry<ProtocolMapperModel, ProtocolMapper>> getSortedProtocolMappers(KeycloakSession session, ClientSessionContext ctx) {
+    public List<Map.Entry<ProtocolMapperModel, ProtocolMapper>> getSortedProtocolMappers(ClientSessionContext ctx) {
         Set<ProtocolMapperModel> mapperModels = ctx.getProtocolMappers();
         Map<ProtocolMapperModel, ProtocolMapper> result = new HashMap<>();
 
-        KeycloakSessionFactory sessionFactory = session.getSessionFactory();
         for (ProtocolMapperModel mapperModel : mapperModels) {
-            ProtocolMapper mapper = (ProtocolMapper) sessionFactory.getProviderFactory(ProtocolMapper.class, mapperModel.getProtocolMapper());
+            ProtocolMapper mapper = protocolMappers.get(mapperModel.getProtocolMapper());
             if (mapper == null) {
                 continue;
             }
@@ -136,11 +139,10 @@ public class ProtocolMapperUtils {
     }
 
     public static int compare(Map.Entry<ProtocolMapperModel, ProtocolMapper> entry) {
-        int priority = entry.getValue().getPriority();
-        return priority;
+        return entry.getValue().getPriority();
     }
 
-    public static boolean isEnabled(KeycloakSession session, ProtocolMapperModel mapper) {
-        return session.getSessionFactory().getProviderFactory(ProtocolMapper.class, mapper.getProtocolMapper()) != null;
+    public boolean isEnabled(ProtocolMapperModel mapper) {
+        return protocolMappers.containsKey(mapper.getProtocolMapper());
     }
 }

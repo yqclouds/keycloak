@@ -18,9 +18,9 @@
 package org.keycloak.models.utils;
 
 import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.idm.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -45,8 +45,8 @@ public class StripSecretsUtils {
         );
     }
 
-    public static ComponentRepresentation strip(KeycloakSession session, ComponentRepresentation rep) {
-        Map<String, ProviderConfigProperty> configProperties = ComponentUtil.getComponentConfigProperties(session, rep);
+    public ComponentRepresentation strip(ComponentRepresentation rep) {
+        Map<String, ProviderConfigProperty> configProperties = componentUtil.getComponentConfigProperties(rep);
         if (rep.getConfig() == null) {
             return rep;
         }
@@ -84,7 +84,7 @@ public class StripSecretsUtils {
         return rep;
     }
 
-    public static RealmRepresentation stripForExport(KeycloakSession session, RealmRepresentation rep) {
+    public RealmRepresentation stripForExport(RealmRepresentation rep) {
         strip(rep);
 
         List<ClientRepresentation> clients = rep.getClients();
@@ -104,7 +104,7 @@ public class StripSecretsUtils {
         if (components != null) {
             for (Map.Entry<String, List<ComponentExportRepresentation>> ent : components.entrySet()) {
                 for (ComponentExportRepresentation c : ent.getValue()) {
-                    strip(session, ent.getKey(), c);
+                    strip(ent.getKey(), c);
                 }
             }
         }
@@ -138,8 +138,11 @@ public class StripSecretsUtils {
         return rep;
     }
 
-    public static ComponentExportRepresentation strip(KeycloakSession session, String providerType, ComponentExportRepresentation rep) {
-        Map<String, ProviderConfigProperty> configProperties = ComponentUtil.getComponentConfigProperties(session, providerType, rep.getProviderId());
+    @Autowired
+    private ComponentUtil componentUtil;
+
+    public ComponentExportRepresentation strip(String providerType, ComponentExportRepresentation rep) {
+        Map<String, ProviderConfigProperty> configProperties = componentUtil.getComponentConfigProperties(providerType, rep.getProviderId());
         if (rep.getConfig() == null) {
             return rep;
         }
@@ -164,7 +167,7 @@ public class StripSecretsUtils {
         MultivaluedHashMap<String, ComponentExportRepresentation> sub = rep.getSubComponents();
         for (Map.Entry<String, List<ComponentExportRepresentation>> ent : sub.entrySet()) {
             for (ComponentExportRepresentation c : ent.getValue()) {
-                strip(session, ent.getKey(), c);
+                strip(ent.getKey(), c);
             }
         }
         return rep;

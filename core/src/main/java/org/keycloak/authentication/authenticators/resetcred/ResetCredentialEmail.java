@@ -17,6 +17,7 @@
 
 package org.keycloak.authentication.authenticators.resetcred;
 
+import com.hsbc.unified.iam.core.util.Time;
 import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
@@ -25,7 +26,6 @@ import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.authentication.actiontoken.DefaultActionTokenKey;
 import org.keycloak.authentication.actiontoken.resetcred.ResetCredentialsActionToken;
 import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAuthenticator;
-import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.credential.PasswordCredentialProvider;
 import org.keycloak.credential.PasswordCredentialProviderFactory;
@@ -120,7 +120,7 @@ public class ResetCredentialEmail implements Authenticator, AuthenticatorFactory
         String authSessionEncodedId = AuthenticationSessionCompoundId.fromAuthSession(authenticationSession).getEncodedId();
         ResetCredentialsActionToken token = new ResetCredentialsActionToken(user.getId(), absoluteExpirationInSecs, authSessionEncodedId, authenticationSession.getClient().getClientId());
         String link = UriBuilder
-                .fromUri(context.getActionTokenUrl(token.serialize(context.getSession(), context.getRealm(), context.getUriInfo())))
+                .fromUri(context.getActionTokenUrl(token.serialize(context.getRealm(), context.getUriInfo())))
                 .build()
                 .toString();
         long expirationInMinutes = TimeUnit.SECONDS.toMinutes(validityInSecs);
@@ -207,7 +207,7 @@ public class ResetCredentialEmail implements Authenticator, AuthenticatorFactory
     }
 
     @Override
-    public Authenticator create(KeycloakSession session) {
+    public Authenticator create() {
         return this;
     }
 

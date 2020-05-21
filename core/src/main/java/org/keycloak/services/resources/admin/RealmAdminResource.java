@@ -390,13 +390,13 @@ public class RealmAdminResource {
             }
 
             boolean wasDuplicateEmailsAllowed = realm.isDuplicateEmailsAllowed();
-            RepresentationToModel.updateRealm(rep, realm, session);
+            RepresentationToModel.updateRealm(rep, realm);
 
             // Refresh periodic sync tasks for configured federationProviders
             List<UserStorageProviderModel> federationProviders = realm.getUserStorageProviders();
             UserStorageSyncManager usersSyncManager = new UserStorageSyncManager();
             for (final UserStorageProviderModel fedProvider : federationProviders) {
-                usersSyncManager.notifyToRefreshPeriodicSync(session, realm, fedProvider, false);
+                usersSyncManager.notifyToRefreshPeriodicSync(realm, fedProvider, false);
             }
 
             adminEvent.operation(OperationType.UPDATE).representation(StripSecretsUtils.strip(rep)).success();

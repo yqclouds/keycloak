@@ -16,6 +16,8 @@
 
 package org.keycloak.authentication.requiredactions;
 
+import com.hsbc.unified.iam.core.crypto.Algorithm;
+import com.hsbc.unified.iam.facade.model.credential.WebAuthnCredentialModel;
 import com.webauthn4j.WebAuthnManager;
 import com.webauthn4j.converter.util.ObjectConverter;
 import com.webauthn4j.data.RegistrationData;
@@ -45,25 +47,24 @@ import org.keycloak.authentication.RequiredActionContext;
 import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.common.util.UriUtils;
-import org.keycloak.credential.*;
-import com.hsbc.unified.iam.core.crypto.Algorithm;
+import org.keycloak.credential.CredentialProvider;
+import org.keycloak.credential.WebAuthnCredentialModelInput;
+import org.keycloak.credential.WebAuthnCredentialProvider;
+import org.keycloak.credential.WebAuthnCredentialProviderFactory;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.models.CredentialModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.UserCredentialManager;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.WebAuthnPolicy;
-import com.hsbc.unified.iam.facade.model.credential.WebAuthnCredentialModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.keycloak.services.messages.Messages.*;
@@ -77,11 +78,12 @@ public class WebAuthnRegister implements RequiredActionProvider, CredentialRegis
     private static final Logger LOG = LoggerFactory.getLogger(WebAuthnRegister.class);
     private static final String ERR_LABEL = "web_authn_registration_error";
     private static final String ERR_DETAIL_LABEL = "web_authn_registration_error_detail";
-    private KeycloakSession session;
     private CertPathTrustworthinessValidator certPathtrustValidator;
 
-    public WebAuthnRegister(KeycloakSession session, CertPathTrustworthinessValidator certPathtrustValidator) {
-        this.session = session;
+    @Autowired
+    private UserCredentialManager userCredentialManager;
+
+    public WebAuthnRegister(CertPathTrustworthinessValidator certPathtrustValidator) {
         this.certPathtrustValidator = certPathtrustValidator;
     }
 
@@ -122,7 +124,7 @@ public class WebAuthnRegister implements RequiredActionProvider, CredentialRegis
 
         String excludeCredentialIds = "";
         if (avoidSameAuthenticatorRegister) {
-            List<CredentialModel> webAuthnCredentials = session.userCredentialManager().getStoredCredentialsByType(context.getRealm(), userModel, getCredentialType());
+            List<CredentialModel> webAuthnCredentials = userCredentialManager.getStoredCredentialsByType(context.getRealm(), userModel, getCredentialType());
             List<String> webAuthnCredentialPubKeyIds = webAuthnCredentials.stream().map(credentialModel -> {
 
                 WebAuthnCredentialModel credModel = WebAuthnCredentialModel.createFromCredentialModel(credentialModel);
@@ -164,6 +166,9 @@ public class WebAuthnRegister implements RequiredActionProvider, CredentialRegis
     protected String getCredentialProviderId() {
         return WebAuthnCredentialProviderFactory.PROVIDER_ID;
     }
+
+    @Autowired
+    private Map<String, CredentialProvider> credentialProviders;
 
     @Override
     public void processAction(RequiredActionContext context) {
@@ -220,7 +225,7 @@ public class WebAuthnRegister implements RequiredActionProvider, CredentialRegis
             credential.setCount(registrationData.getAttestationObject().getAuthenticatorData().getSignCount());
 
             // Save new webAuthn credential
-            WebAuthnCredentialProvider webAuthnCredProvider = (WebAuthnCredentialProvider) this.session.getProvider(CredentialProvider.class, getCredentialProviderId());
+            WebAuthnCredentialProvider webAuthnCredProvider = (WebAuthnCredentialProvider) credentialProviders.get(getCredentialProviderId());
             WebAuthnCredentialModel newCredentialModel = webAuthnCredProvider.getCredentialModelFromCredentialInput(credential, label);
 
             webAuthnCredProvider.createCredential(context.getRealm(), context.getUser(), newCredentialModel);

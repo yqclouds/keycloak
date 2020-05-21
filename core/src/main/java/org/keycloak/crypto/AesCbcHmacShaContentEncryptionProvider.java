@@ -19,15 +19,12 @@ package org.keycloak.crypto;
 
 import org.keycloak.jose.jwe.enc.AesCbcHmacShaJWEEncryptionProvider;
 import org.keycloak.jose.jwe.enc.JWEEncryptionProvider;
-import org.keycloak.models.KeycloakSession;
 
 public class AesCbcHmacShaContentEncryptionProvider implements ContentEncryptionProvider {
 
-    private final KeycloakSession session;
     private final String jweAlgorithmName;
 
-    public AesCbcHmacShaContentEncryptionProvider(KeycloakSession session, String jweAlgorithmName) {
-        this.session = session;
+    public AesCbcHmacShaContentEncryptionProvider(String jweAlgorithmName) {
         this.jweAlgorithmName = jweAlgorithmName;
     }
 

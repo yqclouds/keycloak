@@ -19,16 +19,17 @@ package org.keycloak.events.email;
 
 import org.keycloak.email.EmailException;
 import org.keycloak.email.EmailTemplateProvider;
-import org.keycloak.events.EventModel;
 import org.keycloak.events.EventListenerProvider;
+import org.keycloak.events.EventModel;
 import org.keycloak.events.EventType;
 import org.keycloak.events.admin.AdminEventModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RealmProvider;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.UserProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Set;
 
@@ -39,14 +40,15 @@ public class EmailEventListenerProvider implements EventListenerProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(EmailEventListenerProvider.class);
 
-    private KeycloakSession session;
-    private RealmProvider model;
     private EmailTemplateProvider emailTemplateProvider;
     private Set<EventType> includedEvents;
 
-    public EmailEventListenerProvider(KeycloakSession session, EmailTemplateProvider emailTemplateProvider, Set<EventType> includedEvents) {
-        this.session = session;
-        this.model = session.realms();
+    @Autowired
+    private RealmProvider realmProvider;
+    @Autowired
+    private UserProvider userProvider;
+
+    public EmailEventListenerProvider(EmailTemplateProvider emailTemplateProvider, Set<EventType> includedEvents) {
         this.emailTemplateProvider = emailTemplateProvider;
         this.includedEvents = includedEvents;
     }
@@ -55,8 +57,8 @@ public class EmailEventListenerProvider implements EventListenerProvider {
     public void onEvent(EventModel event) {
         if (includedEvents.contains(event.getType())) {
             if (event.getRealmId() != null && event.getUserId() != null) {
-                RealmModel realm = model.getRealm(event.getRealmId());
-                UserModel user = session.users().getUserById(event.getUserId(), realm);
+                RealmModel realm = realmProvider.getRealm(event.getRealmId());
+                UserModel user = userProvider.getUserById(event.getUserId(), realm);
                 if (user != null && user.getEmail() != null && user.isEmailVerified()) {
                     try {
                         emailTemplateProvider.setRealm(realm).setUser(user).sendEvent(event);
@@ -70,7 +72,6 @@ public class EmailEventListenerProvider implements EventListenerProvider {
 
     @Override
     public void onEvent(AdminEventModel event, boolean includeRepresentation) {
-
     }
 
     @Override

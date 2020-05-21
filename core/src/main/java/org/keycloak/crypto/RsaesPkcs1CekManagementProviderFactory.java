@@ -34,8 +34,8 @@ public class RsaesPkcs1CekManagementProviderFactory implements CekManagementProv
     }
 
     @Override
-    public CekManagementProvider create(KeycloakSession session) {
-        return new RsaCekManagementProvider(session, ID);
+    public CekManagementProvider create() {
+        return new RsaCekManagementProvider(ID);
     }
 
 }

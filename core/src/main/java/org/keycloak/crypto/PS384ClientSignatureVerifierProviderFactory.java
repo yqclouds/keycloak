@@ -33,7 +33,7 @@ public class PS384ClientSignatureVerifierProviderFactory implements ClientSignat
     }
 
     @Override
-    public ClientSignatureVerifierProvider create(KeycloakSession session) {
-        return new AsymmetricClientSignatureVerifierProvider(session, Algorithm.PS384);
+    public ClientSignatureVerifierProvider create() {
+        return new AsymmetricClientSignatureVerifierProvider( Algorithm.PS384);
     }
 }

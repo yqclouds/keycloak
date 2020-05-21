@@ -200,7 +200,7 @@ public class RegistrationUserCreation implements FormAction, FormActionFactory {
     }
 
     @Override
-    public FormAction create(KeycloakSession session) {
+    public FormAction create() {
         return this;
     }
 

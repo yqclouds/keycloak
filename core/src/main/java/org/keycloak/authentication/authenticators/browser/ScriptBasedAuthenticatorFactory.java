@@ -21,7 +21,6 @@ import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.common.Profile;
 import org.keycloak.common.util.StreamUtil;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
@@ -55,7 +54,7 @@ public class ScriptBasedAuthenticatorFactory implements AuthenticatorFactory, En
     private static final Logger LOGGER = LoggerFactory.getLogger(ScriptBasedAuthenticatorFactory.class);
 
     @Override
-    public Authenticator create(KeycloakSession session) {
+    public Authenticator create() {
 
         /*
          would be great to have the actual authenticatorId here in order to initialize the authenticator in the ctor with

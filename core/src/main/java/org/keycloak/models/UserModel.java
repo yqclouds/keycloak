@@ -152,12 +152,4 @@ public interface UserModel extends RoleMapperModel {
     enum RequiredAction {
         VERIFY_EMAIL, UPDATE_PROFILE, CONFIGURE_TOTP, UPDATE_PASSWORD, TERMS_AND_CONDITIONS
     }
-
-    interface UserRemovedEvent extends ProviderEvent {
-        RealmModel getRealm();
-
-        UserModel getUser();
-
-        KeycloakSession getSession();
-    }
 }

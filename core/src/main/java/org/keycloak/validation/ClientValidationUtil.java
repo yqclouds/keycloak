@@ -17,7 +17,6 @@
 package org.keycloak.validation;
 
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.BadRequestException;
@@ -26,9 +25,9 @@ public class ClientValidationUtil {
     @Autowired(required = false)
     private ClientValidationProvider clientValidationProvider;
 
-    public void validate(KeycloakSession session, ClientModel client, boolean create, ErrorHandler errorHandler) throws BadRequestException {
+    public void validate(ClientModel client, boolean create, ErrorHandler errorHandler) throws BadRequestException {
         if (clientValidationProvider != null) {
-            DefaultClientValidationContext context = new DefaultClientValidationContext(create ? ClientValidationContext.Event.CREATE : ClientValidationContext.Event.UPDATE, session, client);
+            DefaultClientValidationContext context = new DefaultClientValidationContext(create ? ClientValidationContext.Event.CREATE : ClientValidationContext.Event.UPDATE, client);
             clientValidationProvider.validate(context);
 
             if (!context.isValid()) {
@@ -46,14 +45,12 @@ public class ClientValidationUtil {
     private static class DefaultClientValidationContext implements ClientValidationContext {
 
         private Event event;
-        private KeycloakSession session;
         private ClientModel client;
 
         private String error;
 
-        public DefaultClientValidationContext(Event event, KeycloakSession session, ClientModel client) {
+        public DefaultClientValidationContext(Event event, ClientModel client) {
             this.event = event;
-            this.session = session;
             this.client = client;
         }
 
@@ -68,11 +65,6 @@ public class ClientValidationUtil {
         @Override
         public Event getEvent() {
             return event;
-        }
-
-        @Override
-        public KeycloakSession getSession() {
-            return session;
         }
 
         @Override

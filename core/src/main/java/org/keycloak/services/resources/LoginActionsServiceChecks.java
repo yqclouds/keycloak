@@ -49,6 +49,10 @@ public class LoginActionsServiceChecks {
 
     @Autowired
     private LoginFormsProvider loginFormsProvider;
+    @Autowired
+    private UserSessionProvider userSessionProvider;
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     /**
      * Verifies that the authentication session has not yet been converted to user session, in other words
@@ -59,7 +63,7 @@ public class LoginActionsServiceChecks {
             return;
         }
 
-        UserSessionModel userSession = context.getSession().sessions().getUserSession(context.getRealm(), authSessionId);
+        UserSessionModel userSession = userSessionProvider.getUserSession(context.getRealm(), authSessionId);
         boolean hasNoRequiredActions =
                 (userSession == null || userSession.getUser().getRequiredActions() == null || userSession.getUser().getRequiredActions().isEmpty())
                         &&
@@ -69,7 +73,7 @@ public class LoginActionsServiceChecks {
             LoginFormsProvider loginForm = this.loginFormsProvider.setAuthenticationSession(context.getAuthenticationSession())
                     .setSuccess(Messages.ALREADY_LOGGED_IN);
 
-            if (context.getSession().getContext().getClient() == null) {
+            if (keycloakContext.getClient() == null) {
                 loginForm.setAttribute(Constants.SKIP_LINK, true);
             }
 
@@ -77,12 +81,15 @@ public class LoginActionsServiceChecks {
         }
     }
 
+    @Autowired
+    private UserProvider userProvider;
+
     /**
      * Verifies whether the user given by ID both exists in the current realm. If yes,
      * it optionally also injects the user using the given function (e.g. into session context).
      */
-    public static void checkIsUserValid(KeycloakSession session, RealmModel realm, String userId, Consumer<UserModel> userSetter) throws VerificationException {
-        UserModel user = userId == null ? null : session.users().getUserById(userId, realm);
+    public void checkIsUserValid(RealmModel realm, String userId, Consumer<UserModel> userSetter) throws VerificationException {
+        UserModel user = userId == null ? null : userProvider.getUserById(userId, realm);
 
         if (user == null) {
             throw new ExplainedVerificationException(Errors.USER_NOT_FOUND, Messages.INVALID_USER);
@@ -101,9 +108,9 @@ public class LoginActionsServiceChecks {
      * Verifies whether the user given by ID both exists in the current realm. If yes,
      * it optionally also injects the user using the given function (e.g. into session context).
      */
-    public static <T extends JsonWebToken & ActionTokenKeyModel> void checkIsUserValid(T token, ActionTokenContext<T> context) throws VerificationException {
+    public <T extends JsonWebToken & ActionTokenKeyModel> void checkIsUserValid(T token, ActionTokenContext<T> context) throws VerificationException {
         try {
-            checkIsUserValid(context.getSession(), context.getRealm(), token.getUserId(), context.getAuthenticationSession()::setAuthenticatedUser);
+            checkIsUserValid(context.getRealm(), token.getUserId(), context.getAuthenticationSession()::setAuthenticatedUser);
         } catch (ExplainedVerificationException ex) {
             throw new ExplainedTokenVerificationException(token, ex);
         }
@@ -113,7 +120,7 @@ public class LoginActionsServiceChecks {
      * Verifies whether the client denoted by client ID in token's {@code iss} ({@code issuedFor})
      * field both exists and is enabled.
      */
-    public static void checkIsClientValid(KeycloakSession session, ClientModel client) throws VerificationException {
+    public static void checkIsClientValid(ClientModel client) throws VerificationException {
         if (client == null) {
             throw new ExplainedVerificationException(Errors.CLIENT_NOT_FOUND, Messages.UNKNOWN_LOGIN_REQUESTER);
         }
@@ -133,7 +140,7 @@ public class LoginActionsServiceChecks {
         ClientModel client = authSession == null ? null : authSession.getClient();
 
         try {
-            checkIsClientValid(context.getSession(), client);
+            checkIsClientValid(client);
 
             if (clientId != null && !Objects.equals(client.getClientId(), clientId)) {
                 throw new ExplainedTokenVerificationException(token, Errors.CLIENT_NOT_FOUND, Messages.UNKNOWN_LOGIN_REQUESTER);
@@ -268,7 +275,7 @@ public class LoginActionsServiceChecks {
             if (authSession != null && !Objects.equals(authSession.getAction(), this.expectedAction.name())) {
                 if (Objects.equals(AuthenticationSessionModel.Action.REQUIRED_ACTIONS.name(), authSession.getAction())) {
                     throw new LoginActionsServiceException(
-                            authenticationManager.nextActionAfterAuthentication(context.getSession(), authSession,
+                            authenticationManager.nextActionAfterAuthentication(authSession,
                                     context.getClientConnection(), context.getRequest(), context.getUriInfo(), context.getEvent()));
                 }
                 throw new ExplainedTokenVerificationException(t, Errors.INVALID_TOKEN, Messages.INVALID_CODE);
@@ -278,10 +285,13 @@ public class LoginActionsServiceChecks {
         }
     }
 
+    @Autowired
+    private RedirectUtils redirectUtils;
+
     /**
      * Verifies whether the given redirect URL, when set, is valid for the given client.
      */
-    public static class IsRedirectValid implements Predicate<JsonWebToken> {
+    public class IsRedirectValid implements Predicate<JsonWebToken> {
 
         private final ActionTokenContext<?> context;
 
@@ -300,7 +310,7 @@ public class LoginActionsServiceChecks {
 
             ClientModel client = context.getAuthenticationSession().getClient();
 
-            if (RedirectUtils.verifyRedirectUri(context.getSession(), redirectUri, client) == null) {
+            if (redirectUtils.verifyRedirectUri(redirectUri, client) == null) {
                 throw new ExplainedTokenVerificationException(t, Errors.INVALID_REDIRECT_URI, Messages.INVALID_REDIRECT_URI);
             }
 

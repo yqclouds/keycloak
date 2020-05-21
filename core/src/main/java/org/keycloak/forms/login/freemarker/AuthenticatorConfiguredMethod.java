@@ -20,11 +20,12 @@ package org.keycloak.forms.login.freemarker;
 import freemarker.template.TemplateMethodModelEx;
 import freemarker.template.TemplateModelException;
 import org.keycloak.authentication.Authenticator;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -32,18 +33,19 @@ import java.util.List;
 public class AuthenticatorConfiguredMethod implements TemplateMethodModelEx {
     private final RealmModel realm;
     private final UserModel user;
-    private final KeycloakSession session;
 
-    public AuthenticatorConfiguredMethod(RealmModel realm, UserModel user, KeycloakSession session) {
+    public AuthenticatorConfiguredMethod(RealmModel realm, UserModel user) {
         this.realm = realm;
         this.user = user;
-        this.session = session;
     }
+
+    @Autowired
+    private Map<String, Authenticator> authenticators;
 
     @Override
     public Object exec(List list) throws TemplateModelException {
         String providerId = list.get(0).toString();
-        Authenticator authenticator = session.getProvider(Authenticator.class, providerId);
-        return authenticator.configuredFor(session, realm, user);
+        Authenticator authenticator = authenticators.get(providerId);
+        return authenticator.configuredFor(realm, user);
     }
 }

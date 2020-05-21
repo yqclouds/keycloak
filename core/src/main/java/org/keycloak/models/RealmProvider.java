@@ -17,7 +17,6 @@
 
 package org.keycloak.models;
 
-import org.keycloak.migration.MigrationModel;
 import org.keycloak.provider.Provider;
 
 import java.util.List;

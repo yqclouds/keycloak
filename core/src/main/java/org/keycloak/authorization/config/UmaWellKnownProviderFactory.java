@@ -33,8 +33,8 @@ public class UmaWellKnownProviderFactory implements WellKnownProviderFactory {
     public static final String PROVIDER_ID = "uma2-configuration";
 
     @Override
-    public WellKnownProvider create(KeycloakSession session) {
-        return new UmaWellKnownProvider(session);
+    public WellKnownProvider create() {
+        return new UmaWellKnownProvider();
     }
 
     @Override

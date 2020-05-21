@@ -17,18 +17,18 @@
 
 package org.keycloak.authorization.store.syncronization;
 
-import org.keycloak.authorization.AuthorizationProvider;
+import com.hsbc.unified.iam.entity.events.UserRemovedEvent;
 import com.hsbc.unified.iam.facade.model.authorization.PermissionTicketModel;
 import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
+import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.*;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-import org.keycloak.models.UserModel.UserRemovedEvent;
-import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.idm.authorization.UserPolicyRepresentation;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
 import java.util.List;
@@ -40,17 +40,17 @@ import java.util.Set;
  */
 public class UserSynchronizer implements Synchronizer<UserRemovedEvent> {
 
+    @Autowired
+    private AuthorizationProvider authorizationProvider;
+
     @Override
     public void synchronize(UserRemovedEvent event, KeycloakSessionFactory factory) {
-        ProviderFactory<AuthorizationProvider> providerFactory = factory.getProviderFactory(AuthorizationProvider.class);
-        AuthorizationProvider authorizationProvider = providerFactory.create(event.getSession());
-
-        removeFromUserPermissionTickets(event, authorizationProvider);
-        removeUserResources(event, authorizationProvider);
-        removeFromUserPolicies(event, authorizationProvider);
+        removeFromUserPermissionTickets(event);
+        removeUserResources(event);
+        removeFromUserPolicies(event);
     }
 
-    private void removeFromUserPolicies(UserRemovedEvent event, AuthorizationProvider authorizationProvider) {
+    private void removeFromUserPolicies(UserRemovedEvent event) {
         StoreFactory storeFactory = authorizationProvider.getStoreFactory();
         PolicyStore policyStore = storeFactory.getPolicyStore();
         UserModel userModel = event.getUser();
@@ -77,7 +77,7 @@ public class UserSynchronizer implements Synchronizer<UserRemovedEvent> {
         }
     }
 
-    private void removeUserResources(UserRemovedEvent event, AuthorizationProvider authorizationProvider) {
+    private void removeUserResources(UserRemovedEvent event) {
         StoreFactory storeFactory = authorizationProvider.getStoreFactory();
         PolicyStore policyStore = storeFactory.getPolicyStore();
         ResourceStore resourceStore = storeFactory.getResourceStore();
@@ -104,10 +104,10 @@ public class UserSynchronizer implements Synchronizer<UserRemovedEvent> {
         });
     }
 
-    private void removeFromUserPermissionTickets(UserRemovedEvent event, AuthorizationProvider authorizationProvider) {
+    private void removeFromUserPermissionTickets(UserRemovedEvent event) {
         StoreFactory storeFactory = authorizationProvider.getStoreFactory();
         PermissionTicketStore ticketStore = storeFactory.getPermissionTicketStore();
-        UserModel userModel = event.getUser();
+        UserModel userModel = (UserModel) event.getSource();
         Map<String, String> attributes = new HashMap<>();
 
         attributes.put(PermissionTicketModel.OWNER, userModel.getId());

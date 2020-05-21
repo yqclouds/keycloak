@@ -32,8 +32,8 @@ public class WebAuthnCredentialProviderFactory implements CredentialProviderFact
     private static ObjectConverter converter = new ObjectConverter();
 
     @Override
-    public CredentialProvider create(KeycloakSession session) {
-        return new WebAuthnCredentialProvider(session, converter);
+    public CredentialProvider create() {
+        return new WebAuthnCredentialProvider(converter);
     }
 
     @Override

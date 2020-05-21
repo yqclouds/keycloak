@@ -18,20 +18,23 @@
 package org.keycloak.authorization.admin;
 
 import com.hsbc.unified.iam.core.constants.Constants;
-import org.jboss.resteasy.annotations.cache.NoCache;
-import org.keycloak.OAuthErrorException;
-import org.keycloak.authorization.AuthorizationProvider;
 import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
+import org.jboss.resteasy.annotations.cache.NoCache;
+import org.keycloak.OAuthErrorException;
+import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.common.util.PathMatcher;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.*;
+import org.keycloak.models.ClientModel;
+import org.keycloak.models.KeycloakContext;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.representations.idm.authorization.ResourceOwnerRepresentation;
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
@@ -39,6 +42,7 @@ import org.keycloak.representations.idm.authorization.ScopeRepresentation;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
@@ -59,11 +63,9 @@ public class ResourceSetService {
     private final AuthorizationProvider authorization;
     private final AdminPermissionEvaluator auth;
     private final AdminEventBuilder adminEvent;
-    private KeycloakSession session;
     private ResourceServerModel resourceServer;
 
-    public ResourceSetService(KeycloakSession session, ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
-        this.session = session;
+    public ResourceSetService(ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.resourceServer = resourceServer;
         this.authorization = authorization;
         this.auth = auth;
@@ -455,11 +457,14 @@ public class ResourceSetService {
         audit(resource, null, operation);
     }
 
+    @Autowired
+    private KeycloakContext context;
+
     public void audit(ResourceRepresentation resource, String id, OperationType operation) {
         if (id != null) {
-            adminEvent.operation(operation).resourcePath(session.getContext().getUri(), id).representation(resource).success();
+            adminEvent.operation(operation).resourcePath(context.getUri(), id).representation(resource).success();
         } else {
-            adminEvent.operation(operation).resourcePath(session.getContext().getUri()).representation(resource).success();
+            adminEvent.operation(operation).resourcePath(context.getUri()).representation(resource).success();
         }
     }
 }

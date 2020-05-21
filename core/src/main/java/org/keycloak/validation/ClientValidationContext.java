@@ -23,8 +23,6 @@ public interface ClientValidationContext {
 
     Event getEvent();
 
-    KeycloakSession getSession();
-
     ClientModel getClient();
 
     String getError();

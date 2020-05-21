@@ -16,10 +16,11 @@
  */
 package org.keycloak.forms.login.freemarker.model;
 
-import org.keycloak.models.*;
 import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.HmacOTP;
 import org.keycloak.utils.TotpUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.UriBuilder;
 import java.util.Collections;
@@ -40,12 +41,15 @@ public class TotpBean {
     private final List<CredentialModel> otpCredentials;
     private UriBuilder uriBuilder;
 
-    public TotpBean(KeycloakSession session, RealmModel realm, UserModel user, UriBuilder uriBuilder) {
+    @Autowired
+    private UserCredentialManager userCredentialManager;
+
+    public TotpBean(RealmModel realm, UserModel user, UriBuilder uriBuilder) {
         this.realm = realm;
         this.uriBuilder = uriBuilder;
-        this.enabled = session.userCredentialManager().isConfiguredFor(realm, user, OTPCredentialModel.TYPE);
+        this.enabled = userCredentialManager.isConfiguredFor(realm, user, OTPCredentialModel.TYPE);
         if (enabled) {
-            otpCredentials = session.userCredentialManager().getStoredCredentialsByType(realm, user, OTPCredentialModel.TYPE);
+            otpCredentials = userCredentialManager.getStoredCredentialsByType(realm, user, OTPCredentialModel.TYPE);
         } else {
             otpCredentials = Collections.EMPTY_LIST;
         }

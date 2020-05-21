@@ -17,6 +17,7 @@
 
 package org.keycloak.exportimport.dir;
 
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.keycloak.Config;
 import org.keycloak.exportimport.ImportProvider;
 import org.keycloak.exportimport.Strategy;
@@ -28,9 +29,9 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.RealmRepresentation;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -59,7 +60,7 @@ public class DirImportProvider implements ImportProvider {
             throw new IllegalStateException("Directory " + this.rootDirectory + " doesn't exists");
         }
 
-        LOG.info("Importing from directory %s", this.rootDirectory.getAbsolutePath());
+        LOG.info("Importing from directory {}", this.rootDirectory.getAbsolutePath());
     }
 
     public DirImportProvider(File rootDirectory) {
@@ -69,7 +70,7 @@ public class DirImportProvider implements ImportProvider {
             throw new IllegalStateException("Directory " + this.rootDirectory + " doesn't exists");
         }
 
-        LOG.info("Importing from directory %s", this.rootDirectory.getAbsolutePath());
+        LOG.info("Importing from directory {}", this.rootDirectory.getAbsolutePath());
     }
 
     @Override
@@ -112,6 +113,11 @@ public class DirImportProvider implements ImportProvider {
         return realmNames;
     }
 
+    @Autowired
+    private RepresentationToModel representationToModel;
+    @Autowired
+    private ImportUtils importUtils;
+
     @Override
     public void importRealm(KeycloakSessionFactory factory, final String realmName, final Strategy strategy) throws IOException {
         File realmFile = new File(this.rootDirectory + File.separator + realmName + "-realm.json");
@@ -152,8 +158,8 @@ public class DirImportProvider implements ImportProvider {
                 KeycloakModelUtils.runJobInTransaction(factory, new ExportImportSessionTask() {
                     @Override
                     protected void runExportImportTask(KeycloakSession session) throws IOException {
-                        ImportUtils.importUsersFromStream(session, realmName, JsonSerialization.mapper, fis);
-                        LOG.info("Imported users from %s", userFile.getAbsolutePath());
+                        importUtils.importUsersFromStream(realmName, JsonSerialization.mapper, fis);
+                        LOG.info("Imported users from {}", userFile.getAbsolutePath());
                     }
                 });
             }
@@ -162,8 +168,8 @@ public class DirImportProvider implements ImportProvider {
                 KeycloakModelUtils.runJobInTransaction(factory, new ExportImportSessionTask() {
                     @Override
                     protected void runExportImportTask(KeycloakSession session) throws IOException {
-                        ImportUtils.importFederatedUsersFromStream(session, realmName, JsonSerialization.mapper, fis);
-                        LOG.info("Imported federated users from %s", userFile.getAbsolutePath());
+                        importUtils.importFederatedUsersFromStream(realmName, JsonSerialization.mapper, fis);
+                        LOG.info("Imported federated users from {}", userFile.getAbsolutePath());
                     }
                 });
             }
@@ -175,7 +181,7 @@ public class DirImportProvider implements ImportProvider {
             @Override
             public void runExportImportTask(KeycloakSession session) throws IOException {
                 RealmModel realm = session.realms().getRealmByName(realmName);
-                RepresentationToModel.importRealmAuthorizationSettings(realmRep, realm, session);
+                representationToModel.importRealmAuthorizationSettings(realmRep, realm);
             }
 
         });

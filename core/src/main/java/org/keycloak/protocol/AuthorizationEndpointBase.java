@@ -17,9 +17,9 @@
 
 package org.keycloak.protocol;
 
+import com.hsbc.unified.iam.core.ClientConnection;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authentication.AuthenticationProcessor;
-import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
@@ -156,14 +156,14 @@ public abstract class AuthorizationEndpointBase {
     protected void checkSsl() {
         if (!session.getContext().getUri().getBaseUri().getScheme().equals("https") && realm.getSslRequired().isRequired(clientConnection)) {
             event.error(Errors.SSL_REQUIRED);
-            throw new ErrorPageException(session, Response.Status.BAD_REQUEST, Messages.HTTPS_REQUIRED);
+            throw new ErrorPageException(Response.Status.BAD_REQUEST, Messages.HTTPS_REQUIRED);
         }
     }
 
     protected void checkRealm() {
         if (!realm.isEnabled()) {
             event.error(Errors.REALM_DISABLED);
-            throw new ErrorPageException(session, Response.Status.BAD_REQUEST, Messages.REALM_NOT_ENABLED);
+            throw new ErrorPageException(Response.Status.BAD_REQUEST, Messages.REALM_NOT_ENABLED);
         }
     }
 
@@ -171,7 +171,7 @@ public abstract class AuthorizationEndpointBase {
     private LoginFormsProvider loginFormsProvider;
 
     protected AuthenticationSessionModel createAuthenticationSession(ClientModel client, String requestState) {
-        AuthenticationSessionManager manager = new AuthenticationSessionManager(session);
+        AuthenticationSessionManager manager = new AuthenticationSessionManager();
         RootAuthenticationSessionModel rootAuthSession = manager.getCurrentRootAuthenticationSession(realm);
 
         AuthenticationSessionModel authSession;
@@ -182,7 +182,7 @@ public abstract class AuthorizationEndpointBase {
             LOG.debug("Sent request to authz endpoint. Root authentication session with ID '{}' exists. Client is '{}' . Created new authentication session with tab ID: {}",
                     rootAuthSession.getId(), client.getClientId(), authSession.getTabId());
         } else {
-            UserSessionCrossDCManager userSessionCrossDCManager = new UserSessionCrossDCManager(session);
+            UserSessionCrossDCManager userSessionCrossDCManager = new UserSessionCrossDCManager();
             UserSessionModel userSession = userSessionCrossDCManager.getUserSessionIfExistsRemotely(manager, realm);
 
             if (userSession != null) {

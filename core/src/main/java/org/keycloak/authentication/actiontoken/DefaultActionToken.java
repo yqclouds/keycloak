@@ -19,13 +19,14 @@ package org.keycloak.authentication.actiontoken;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.TokenVerifier.Predicate;
 import org.keycloak.common.VerificationException;
-import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.models.ActionTokenValueModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.TokenManager;
 import org.keycloak.services.Urls;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.UriInfo;
 import java.util.HashMap;
@@ -130,6 +131,9 @@ public class DefaultActionToken extends DefaultActionTokenKey implements ActionT
         return res instanceof String ? (String) res : null;
     }
 
+    @Autowired
+    private TokenManager tokenManager;
+
     /**
      * Updates the following fields and serializes this token into a signed JWT. The list of updated fields follows:
      * <ul>
@@ -138,13 +142,8 @@ public class DefaultActionToken extends DefaultActionTokenKey implements ActionT
      * <li>{@code issuer}: URI of the given realm</li>
      * <li>{@code audience}: URI of the given realm (same as issuer)</li>
      * </ul>
-     *
-     * @param session
-     * @param realm
-     * @param uri
-     * @return
      */
-    public String serialize(KeycloakSession session, RealmModel realm, UriInfo uri) {
+    public String serialize(RealmModel realm, UriInfo uri) {
         String issuerUri = getIssuer(realm, uri);
 
         this
@@ -153,7 +152,7 @@ public class DefaultActionToken extends DefaultActionTokenKey implements ActionT
                 .issuer(issuerUri)
                 .audience(issuerUri);
 
-        return session.tokens().encode(this);
+        return tokenManager.encode(this);
     }
 
 }

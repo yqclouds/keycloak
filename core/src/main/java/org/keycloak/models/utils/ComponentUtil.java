@@ -19,17 +19,16 @@ package org.keycloak.models.utils;
 
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
-import org.keycloak.provider.Provider;
+import org.keycloak.models.UserProvider;
 import org.keycloak.provider.ProviderConfigProperty;
-import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.idm.ComponentRepresentation;
 import org.keycloak.storage.OnCreateComponent;
 import org.keycloak.storage.OnUpdateComponent;
 import org.keycloak.storage.UserStorageProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
 import java.util.List;
@@ -42,25 +41,27 @@ public class ComponentUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(ComponentUtil.class);
 
-    public static Map<String, ProviderConfigProperty> getComponentConfigProperties(KeycloakSession session, ComponentRepresentation component) {
-        return getComponentConfigProperties(session, component.getProviderType(), component.getProviderId());
+    @Autowired
+    private UserProvider userProvider;
+
+    public Map<String, ProviderConfigProperty> getComponentConfigProperties(ComponentRepresentation component) {
+        return getComponentConfigProperties(component.getProviderType(), component.getProviderId());
     }
 
-    public static Map<String, ProviderConfigProperty> getComponentConfigProperties(KeycloakSession session, ComponentModel component) {
-        return getComponentConfigProperties(session, component.getProviderType(), component.getProviderId());
+    public Map<String, ProviderConfigProperty> getComponentConfigProperties(ComponentModel component) {
+        return getComponentConfigProperties(component.getProviderType(), component.getProviderId());
     }
 
-    public static ComponentFactory getComponentFactory(KeycloakSession session, ComponentRepresentation component) {
-        return getComponentFactory(session, component.getProviderType(), component.getProviderId());
+    public ComponentFactory getComponentFactory(ComponentRepresentation component) {
+        return getComponentFactory(component.getProviderType(), component.getProviderId());
     }
 
-    public static ComponentFactory getComponentFactory(KeycloakSession session, ComponentModel component) {
-        return getComponentFactory(session, component.getProviderType(), component.getProviderId());
+    public ComponentFactory getComponentFactory(ComponentModel component) {
+        return getComponentFactory(component.getProviderType(), component.getProviderId());
     }
 
-    public static Map<String, ProviderConfigProperty> getComponentConfigProperties(KeycloakSession session, String providerType, String providerId) {
+    public Map<String, ProviderConfigProperty> getComponentConfigProperties(String providerType, String providerId) {
         try {
-            ComponentFactory componentFactory = getComponentFactory(session, providerType, providerId);
             List<ProviderConfigProperty> l = componentFactory.getConfigProperties();
             Map<String, ProviderConfigProperty> properties = new HashMap<>();
             for (ProviderConfigProperty p : l) {
@@ -77,45 +78,36 @@ public class ComponentUtil {
         }
     }
 
-    private static ComponentFactory getComponentFactory(KeycloakSession session, String providerType, String providerId) {
-        Class<? extends Provider> provider = session.getProviderClass(providerType);
-        if (provider == null) {
-            throw new IllegalArgumentException("Invalid provider type '" + providerType + "'");
-        }
+    @Autowired
+    private ComponentFactory componentFactory;
 
-        ProviderFactory<? extends Provider> f = session.getSessionFactory().getProviderFactory(provider, providerId);
-        if (f == null) {
-            throw new IllegalArgumentException("No such provider '" + providerId + "'");
-        }
-
-        ComponentFactory cf = (ComponentFactory) f;
-        return cf;
+    private ComponentFactory getComponentFactory(String providerType, String providerId) {
+        return componentFactory;
     }
 
-    public static void notifyCreated(KeycloakSession session, RealmModel realm, ComponentModel model) {
-        ComponentFactory factory = getComponentFactory(session, model);
-        factory.onCreate(session, realm, model);
+    public void notifyCreated(RealmModel realm, ComponentModel model) {
+        ComponentFactory factory = getComponentFactory(model);
+        factory.onCreate(realm, model);
         if (factory instanceof UserStorageProviderFactory) {
-            ((OnCreateComponent) session.userStorageManager()).onCreate(session, realm, model);
+            ((OnCreateComponent) userProvider).onCreate(realm, model);
         }
     }
 
-    public static void notifyUpdated(KeycloakSession session, RealmModel realm, ComponentModel oldModel, ComponentModel newModel) {
-        ComponentFactory factory = getComponentFactory(session, newModel);
-        factory.onUpdate(session, realm, oldModel, newModel);
+    public void notifyUpdated(RealmModel realm, ComponentModel oldModel, ComponentModel newModel) {
+        ComponentFactory factory = getComponentFactory(newModel);
+        factory.onUpdate(realm, oldModel, newModel);
         if (factory instanceof UserStorageProviderFactory) {
-            ((OnUpdateComponent) session.userStorageManager()).onUpdate(session, realm, oldModel, newModel);
+            ((OnUpdateComponent) userProvider).onUpdate(realm, oldModel, newModel);
         }
     }
 
-    public static void notifyPreRemove(KeycloakSession session, RealmModel realm, ComponentModel model) {
+    public void notifyPreRemove(RealmModel realm, ComponentModel model) {
         try {
-            ComponentFactory factory = getComponentFactory(session, model);
-            factory.preRemove(session, realm, model);
+            ComponentFactory factory = getComponentFactory(model);
+            factory.preRemove(realm, model);
         } catch (IllegalArgumentException iae) {
             // We allow to remove broken providers without throwing an exception
             LOG.warn(iae.getMessage());
         }
     }
-
 }

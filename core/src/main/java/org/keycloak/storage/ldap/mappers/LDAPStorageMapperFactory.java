@@ -77,7 +77,7 @@ public interface LDAPStorageMapperFactory<T extends LDAPStorageMapper> extends S
     }
 
     @Override
-    default void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel config) throws ComponentValidationException {
+    default void validateConfiguration(RealmModel realm, ComponentModel config) throws ComponentValidationException {
 
     }
 
@@ -94,7 +94,7 @@ public interface LDAPStorageMapperFactory<T extends LDAPStorageMapper> extends S
      * @param model
      */
     @Override
-    default void onCreate(KeycloakSession session, RealmModel realm, ComponentModel model) {
+    default void onCreate(RealmModel realm, ComponentModel model) {
 
     }
 }

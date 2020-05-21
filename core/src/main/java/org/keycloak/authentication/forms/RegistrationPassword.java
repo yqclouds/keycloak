@@ -160,7 +160,7 @@ public class RegistrationPassword implements FormAction, FormActionFactory {
     }
 
     @Override
-    public FormAction create(KeycloakSession session) {
+    public FormAction create() {
         return this;
     }
 

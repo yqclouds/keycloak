@@ -17,10 +17,9 @@
 
 package org.keycloak.services.util;
 
+import com.hsbc.unified.iam.core.constants.Constants;
 import org.keycloak.authentication.AuthenticationProcessor;
 import org.keycloak.forms.login.LoginFormsProvider;
-import com.hsbc.unified.iam.core.constants.Constants;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.AuthorizationEndpointBase;
 import org.keycloak.services.resources.LoginActionsService;
@@ -41,12 +40,10 @@ public class AuthenticationFlowURLHelper {
 
     protected static final Logger LOG = LoggerFactory.getLogger(AuthenticationFlowURLHelper.class);
 
-    private final KeycloakSession session;
     private final RealmModel realm;
     private final UriInfo uriInfo;
 
-    public AuthenticationFlowURLHelper(KeycloakSession session, RealmModel realm, UriInfo uriInfo) {
-        this.session = session;
+    public AuthenticationFlowURLHelper(RealmModel realm, UriInfo uriInfo) {
         this.realm = realm;
         this.uriInfo = uriInfo;
     }

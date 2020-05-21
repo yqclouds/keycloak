@@ -19,12 +19,12 @@
 package org.keycloak.authorization.store.syncronization;
 
 import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.provider.ProviderEvent;
+import org.springframework.context.ApplicationEvent;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
-public interface Synchronizer<E extends ProviderEvent> {
+public interface Synchronizer<E extends ApplicationEvent> {
 
     void synchronize(E event, KeycloakSessionFactory factory);
 

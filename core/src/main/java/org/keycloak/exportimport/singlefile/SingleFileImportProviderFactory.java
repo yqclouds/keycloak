@@ -34,7 +34,7 @@ import java.io.File;
 public class SingleFileImportProviderFactory implements ImportProviderFactory {
 
     @Override
-    public ImportProvider create(KeycloakSession session) {
+    public ImportProvider create() {
         String fileName = ExportImportConfig.getFile();
         if (fileName == null) {
             throw new IllegalArgumentException("Property " + ExportImportConfig.FILE + " needs to be provided!");

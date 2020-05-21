@@ -99,7 +99,7 @@ public class ResetCredentialsActionTokenHandler extends AbstractActionTokenHandl
                 LOG.debug("Forget-password flow finished when authenticated user '%s' after first broker login with identity provider '%s'.",
                         linkingUser.getUsername(), serializedCtx.getIdentityProviderId());
 
-                return LoginActionsService.redirectToAfterBrokerLoginEndpoint(session, realm, uriInfo, authenticationSession, true);
+                return LoginActionsService.redirectToAfterBrokerLoginEndpoint(realm, uriInfo, authenticationSession, true);
             } else {
                 return super.authenticationComplete();
             }

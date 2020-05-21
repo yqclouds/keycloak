@@ -186,7 +186,7 @@ public class ResetCredentialChooseUser implements Authenticator, AuthenticatorFa
     }
 
     @Override
-    public Authenticator create(KeycloakSession session) {
+    public Authenticator create() {
         return this;
     }
 

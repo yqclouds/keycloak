@@ -18,16 +18,17 @@
 
 package org.keycloak.authorization.store.syncronization;
 
-import org.keycloak.authorization.AuthorizationProvider;
+import com.hsbc.unified.iam.entity.events.ClientRemovedEvent;
 import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
+import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.ResourceServerStore;
 import org.keycloak.authorization.store.StoreFactory;
+import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.RealmModel.ClientRemovedEvent;
-import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.idm.authorization.ClientPolicyRepresentation;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
 import java.util.List;
@@ -38,19 +39,18 @@ import java.util.Set;
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
 public class ClientApplicationSynchronizer implements Synchronizer<ClientRemovedEvent> {
+    @Autowired
+    private AuthorizationProvider authorizationProvider;
 
     @Override
     public void synchronize(ClientRemovedEvent event, KeycloakSessionFactory factory) {
-        ProviderFactory<AuthorizationProvider> providerFactory = factory.getProviderFactory(AuthorizationProvider.class);
-        AuthorizationProvider authorizationProvider = providerFactory.create(event.getSession());
-
-        removeFromClientPolicies(event, authorizationProvider);
+        removeFromClientPolicies(event);
     }
 
-    private void removeFromClientPolicies(ClientRemovedEvent event, AuthorizationProvider authorizationProvider) {
+    private void removeFromClientPolicies(ClientRemovedEvent event) {
         StoreFactory storeFactory = authorizationProvider.getStoreFactory();
         ResourceServerStore store = storeFactory.getResourceServerStore();
-        ResourceServerModel resourceServer = store.findById(event.getClient().getId());
+        ResourceServerModel resourceServer = store.findById(((ClientModel) event.getSource()).getId());
 
         if (resourceServer != null) {
             storeFactory.getResourceServerStore().delete(resourceServer.getId());
@@ -59,7 +59,7 @@ public class ClientApplicationSynchronizer implements Synchronizer<ClientRemoved
         Map<String, String[]> attributes = new HashMap<>();
 
         attributes.put("type", new String[]{"client"});
-        attributes.put("config:clients", new String[]{event.getClient().getId()});
+        attributes.put("config:clients", new String[]{((ClientModel) event.getSource()).getId()});
 
         List<PolicyModel> search = storeFactory.getPolicyStore().findByResourceServer(attributes, null, -1, -1);
 
@@ -68,7 +68,7 @@ public class ClientApplicationSynchronizer implements Synchronizer<ClientRemoved
             ClientPolicyRepresentation representation = ClientPolicyRepresentation.class.cast(policyFactory.toRepresentation(policy, authorizationProvider));
             Set<String> clients = representation.getClients();
 
-            clients.remove(event.getClient().getId());
+            clients.remove(((ClientModel) event.getSource()).getId());
 
             if (clients.isEmpty()) {
                 policyFactory.onRemove(policy, authorizationProvider);

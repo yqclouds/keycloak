@@ -20,7 +20,6 @@ import com.hsbc.unified.iam.core.constants.Constants;
 import lombok.Getter;
 import org.keycloak.TokenVerifier.Predicate;
 import org.keycloak.authentication.RequiredActionFactory;
-import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.authentication.actiontoken.AbstractActionTokenHandler;
 import org.keycloak.authentication.actiontoken.ActionTokenContext;
 import org.keycloak.authentication.actiontoken.ActionTokenHandler;
@@ -28,7 +27,9 @@ import org.keycloak.authentication.actiontoken.TokenUtils;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventType;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.*;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.RequiredActionProviderModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.utils.RedirectUtils;
 import org.keycloak.services.Urls;
@@ -44,6 +45,7 @@ import org.springframework.stereotype.Component;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -65,13 +67,16 @@ public class ExecuteActionsActionTokenHandler extends AbstractActionTokenHandler
         );
     }
 
+    @Autowired
+    private RedirectUtils redirectUtils;
+
     @Override
     public Predicate<? super ExecuteActionsActionToken>[] getVerifiers(ActionTokenContext<ExecuteActionsActionToken> tokenContext) {
         return TokenUtils.predicates(
                 TokenUtils.checkThat(
                         // either redirect URI is not specified or must be valid for the client
                         t -> t.getRedirectUri() == null
-                                || RedirectUtils.verifyRedirectUri(tokenContext.getSession(), t.getRedirectUri(),
+                                || redirectUtils.verifyRedirectUri(t.getRedirectUri(),
                                 tokenContext.getAuthenticationSession().getClient()) != null,
                         Errors.INVALID_REDIRECT_URI,
                         Messages.INVALID_REDIRECT_URI
@@ -81,18 +86,19 @@ public class ExecuteActionsActionTokenHandler extends AbstractActionTokenHandler
 
     @Autowired
     private LoginFormsProvider loginFormsProvider;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     @Override
     public Response handleToken(ExecuteActionsActionToken token, ActionTokenContext<ExecuteActionsActionToken> tokenContext) {
         AuthenticationSessionModel authSession = tokenContext.getAuthenticationSession();
         final UriInfo uriInfo = tokenContext.getUriInfo();
         final RealmModel realm = tokenContext.getRealm();
-        final KeycloakSession session = tokenContext.getSession();
         if (tokenContext.isAuthenticationSessionFresh()) {
             // Update the authentication session in the token
             String authSessionEncodedId = AuthenticationSessionCompoundId.fromAuthSession(authSession).getEncodedId();
             token.setCompoundAuthenticationSessionId(authSessionEncodedId);
-            UriBuilder builder = Urls.actionTokenBuilder(uriInfo.getBaseUri(), token.serialize(session, realm, uriInfo),
+            UriBuilder builder = Urls.actionTokenBuilder(uriInfo.getBaseUri(), token.serialize(realm, uriInfo),
                     authSession.getClient().getClientId(), authSession.getTabId());
             String confirmUri = builder.build(realm.getName()).toString();
 
@@ -104,7 +110,7 @@ public class ExecuteActionsActionTokenHandler extends AbstractActionTokenHandler
                     .createInfoPage();
         }
 
-        String redirectUri = RedirectUtils.verifyRedirectUri(tokenContext.getSession(), token.getRedirectUri(), authSession.getClient());
+        String redirectUri = redirectUtils.verifyRedirectUri(token.getRedirectUri(), authSession.getClient());
 
         if (redirectUri != null) {
             authSession.setAuthNote(AuthenticationManager.SET_REDIRECT_URI_AFTER_REQUIRED_ACTIONS, "true");
@@ -113,31 +119,30 @@ public class ExecuteActionsActionTokenHandler extends AbstractActionTokenHandler
             authSession.setClientNote(OIDCLoginProtocol.REDIRECT_URI_PARAM, redirectUri);
         }
 
-        token.getRequiredActions().stream().forEach(authSession::addRequiredAction);
+        token.getRequiredActions().forEach(authSession::addRequiredAction);
 
         UserModel user = tokenContext.getAuthenticationSession().getAuthenticatedUser();
         // verify user email as we know it is valid as this entry point would never have gotten here.
         user.setEmailVerified(true);
 
-        String nextAction = AuthenticationManager.nextRequiredAction(tokenContext.getSession(), authSession, tokenContext.getClientConnection(), tokenContext.getRequest(), tokenContext.getUriInfo(), tokenContext.getEvent());
-        return AuthenticationManager.redirectToRequiredActions(tokenContext.getSession(), tokenContext.getRealm(), authSession, tokenContext.getUriInfo(), nextAction);
+        String nextAction = authenticationManager.nextRequiredAction(authSession, tokenContext.getClientConnection(), tokenContext.getRequest(), tokenContext.getUriInfo(), tokenContext.getEvent());
+        return authenticationManager.redirectToRequiredActions(tokenContext.getRealm(), authSession, tokenContext.getUriInfo(), nextAction);
     }
+
+    @Autowired
+    private Map<String, RequiredActionFactory> requiredActionFactories;
 
     @Override
     public boolean canUseTokenRepeatedly(ExecuteActionsActionToken token, ActionTokenContext<ExecuteActionsActionToken> tokenContext) {
         RealmModel realm = tokenContext.getRealm();
-        KeycloakSessionFactory sessionFactory = tokenContext.getSession().getSessionFactory();
 
         return token.getRequiredActions().stream()
-                .map(actionName -> realm.getRequiredActionProviderByAlias(actionName))    // get realm-specific model from action name and filter out irrelevant
+                .map(realm::getRequiredActionProviderByAlias)    // get realm-specific model from action name and filter out irrelevant
                 .filter(Objects::nonNull)
                 .filter(RequiredActionProviderModel::isEnabled)
-
                 .map(RequiredActionProviderModel::getProviderId)      // get provider ID from model
-
-                .map(providerId -> (RequiredActionFactory) sessionFactory.getProviderFactory(RequiredActionProvider.class, providerId))
+                .map(providerId -> requiredActionFactories.get(providerId))
                 .filter(Objects::nonNull)
-
                 .noneMatch(RequiredActionFactory::isOneTimeAction);
     }
 }

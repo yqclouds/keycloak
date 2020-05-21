@@ -20,14 +20,16 @@ package org.keycloak.authorization.config;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.keycloak.authorization.AuthorizationService;
 import org.keycloak.authorization.protection.ProtectionService;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.oidc.OIDCWellKnownProviderFactory;
 import org.keycloak.protocol.oidc.representations.OIDCConfigurationRepresentation;
 import org.keycloak.services.resources.RealmsResource;
 import org.keycloak.wellknown.WellKnownProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.UriBuilder;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -41,8 +43,13 @@ public class UmaConfiguration extends OIDCConfigurationRepresentation {
     @JsonProperty("policy_endpoint")
     private String policyEndpoint;
 
-    public static final UmaConfiguration create(KeycloakSession session) {
-        WellKnownProvider oidcProvider = session.getProvider(WellKnownProvider.class, OIDCWellKnownProviderFactory.PROVIDER_ID);
+    @Autowired
+    private KeycloakContext context;
+    @Autowired
+    private Map<String, WellKnownProvider> wellKnownProviders;
+
+    public final UmaConfiguration create() {
+        WellKnownProvider oidcProvider = wellKnownProviders.get(OIDCWellKnownProviderFactory.PROVIDER_ID);
         OIDCConfigurationRepresentation oidcConfig = OIDCConfigurationRepresentation.class.cast(oidcProvider.getConfig());
         UmaConfiguration configuration = new UmaConfiguration();
 
@@ -60,9 +67,9 @@ public class UmaConfiguration extends OIDCConfigurationRepresentation {
         configuration.setTokenIntrospectionEndpoint(oidcConfig.getTokenIntrospectionEndpoint());
         configuration.setLogoutEndpoint(oidcConfig.getLogoutEndpoint());
 
-        UriBuilder uriBuilder = session.getContext().getUri().getBaseUriBuilder();
+        UriBuilder uriBuilder = context.getUri().getBaseUriBuilder();
 
-        RealmModel realm = session.getContext().getRealm();
+        RealmModel realm = context.getRealm();
 
         configuration.setPermissionEndpoint(uriBuilder.clone().path(RealmsResource.class).path(RealmsResource.class, "getAuthorizationService").path(AuthorizationService.class, "getProtectionService").path(ProtectionService.class, "permission").build(realm.getName()).toString());
         configuration.setResourceRegistrationEndpoint(uriBuilder.clone().path(RealmsResource.class).path(RealmsResource.class, "getAuthorizationService").path(AuthorizationService.class, "getProtectionService").path(ProtectionService.class, "resource").build(realm.getName()).toString());

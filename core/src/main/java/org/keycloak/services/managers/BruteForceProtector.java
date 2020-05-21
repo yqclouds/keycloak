@@ -18,7 +18,6 @@
 package org.keycloak.services.managers;
 
 import com.hsbc.unified.iam.core.ClientConnection;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.provider.Provider;
@@ -32,5 +31,5 @@ public interface BruteForceProtector extends Provider {
 
     void successfulLogin(RealmModel realm, UserModel user, ClientConnection clientConnection);
 
-    boolean isTemporarilyDisabled(KeycloakSession session, RealmModel realm, UserModel user);
+    boolean isTemporarilyDisabled(RealmModel realm, UserModel user);
 }

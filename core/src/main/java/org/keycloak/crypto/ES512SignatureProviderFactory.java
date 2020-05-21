@@ -33,8 +33,8 @@ public class ES512SignatureProviderFactory implements SignatureProviderFactory {
     }
 
     @Override
-    public SignatureProvider create(KeycloakSession session) {
-        return new ECDSASignatureProvider(session, Algorithm.ES512);
+    public SignatureProvider create() {
+        return new ECDSASignatureProvider(Algorithm.ES512);
     }
 
 }

@@ -18,29 +18,27 @@
 package org.keycloak.authentication.requiredactions;
 
 import com.hsbc.unified.iam.core.constants.OAuth2Constants;
-import org.keycloak.authentication.*;
 import com.hsbc.unified.iam.core.util.Time;
-import org.keycloak.credential.CredentialProvider;
+import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
+import org.keycloak.authentication.*;
 import org.keycloak.credential.PasswordCredentialProvider;
 import org.keycloak.credential.PasswordCredentialProviderFactory;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
-import org.keycloak.models.CredentialModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ModelException;
-import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.validation.Validation;
 import org.keycloak.stereotype.ProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -57,11 +55,14 @@ public class UpdatePassword implements RequiredActionProvider, RequiredActionFac
         return InitiatedActionSupport.SUPPORTED;
     }
 
+    @Autowired
+    private Map<String, PasswordCredentialProvider> passwordCredentialProviders;
+
     @Override
     public void evaluateTriggers(RequiredActionContext context) {
         int daysToExpirePassword = context.getRealm().getPasswordPolicy().getDaysToExpirePassword();
         if (daysToExpirePassword != -1) {
-            PasswordCredentialProvider passwordProvider = (PasswordCredentialProvider) context.getSession().getProvider(CredentialProvider.class, PasswordCredentialProviderFactory.PROVIDER_ID);
+            PasswordCredentialProvider passwordProvider = passwordCredentialProviders.get(PasswordCredentialProviderFactory.PROVIDER_ID);
             CredentialModel password = passwordProvider.getPassword(context.getRealm(), context.getUser());
             if (password != null) {
                 if (password.getCreatedDate() == null) {
@@ -87,6 +88,9 @@ public class UpdatePassword implements RequiredActionProvider, RequiredActionFac
                 .createResponse(UserModel.RequiredAction.UPDATE_PASSWORD);
         context.challenge(challenge);
     }
+
+    @Autowired
+    private UserCredentialManager userCredentialManager;
 
     @Override
     public void processAction(RequiredActionContext context) {
@@ -119,7 +123,7 @@ public class UpdatePassword implements RequiredActionProvider, RequiredActionFac
         }
 
         try {
-            context.getSession().userCredentialManager().updateCredential(context.getRealm(), context.getUser(), UserCredentialModel.password(passwordNew, false));
+            userCredentialManager.updateCredential(context.getRealm(), context.getUser(), UserCredentialModel.password(passwordNew, false));
             context.success();
         } catch (ModelException me) {
             errorEvent.detail(Details.REASON, me.getMessage()).error(Errors.PASSWORD_REJECTED);
@@ -128,7 +132,6 @@ public class UpdatePassword implements RequiredActionProvider, RequiredActionFac
                     .setError(me.getMessage(), me.getParameters())
                     .createResponse(UserModel.RequiredAction.UPDATE_PASSWORD);
             context.challenge(challenge);
-            return;
         } catch (Exception ape) {
             errorEvent.detail(Details.REASON, ape.getMessage()).error(Errors.PASSWORD_REJECTED);
             Response challenge = context.form()
@@ -136,7 +139,6 @@ public class UpdatePassword implements RequiredActionProvider, RequiredActionFac
                     .setError(ape.getMessage())
                     .createResponse(UserModel.RequiredAction.UPDATE_PASSWORD);
             context.challenge(challenge);
-            return;
         }
     }
 
@@ -145,12 +147,12 @@ public class UpdatePassword implements RequiredActionProvider, RequiredActionFac
     }
 
     @Override
-    public RequiredActionProvider create(KeycloakSession session) {
+    public RequiredActionProvider create() {
         return this;
     }
 
     @Override
-    public RequiredActionProvider createDisplay(KeycloakSession session, String displayType) {
+    public RequiredActionProvider createDisplay(String displayType) {
         if (displayType == null) return this;
         if (!OAuth2Constants.DISPLAY_CONSOLE.equalsIgnoreCase(displayType)) return null;
         return ConsoleUpdatePassword.SINGLETON;

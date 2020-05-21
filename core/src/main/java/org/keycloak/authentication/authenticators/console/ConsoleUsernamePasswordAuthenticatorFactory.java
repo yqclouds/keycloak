@@ -42,7 +42,7 @@ public class ConsoleUsernamePasswordAuthenticatorFactory implements Authenticato
     };
 
     @Override
-    public Authenticator create(KeycloakSession session) {
+    public Authenticator create() {
         return ConsoleUsernamePasswordAuthenticator.SINGLETON;
     }
 

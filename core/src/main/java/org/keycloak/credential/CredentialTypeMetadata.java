@@ -18,11 +18,12 @@
 
 package org.keycloak.credential;
 
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RequiredActionProviderModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -224,7 +225,7 @@ public class CredentialTypeMetadata implements Comparable<CredentialTypeMetadata
          *
          * @return metadata
          */
-        public CredentialTypeMetadata build(KeycloakSession session) {
+        public CredentialTypeMetadata build() {
             assertNotNull(instance.type, "type");
             assertNotNull(instance.displayName, "displayName");
             assertNotNull(instance.helpText, "helpText");
@@ -232,10 +233,10 @@ public class CredentialTypeMetadata implements Comparable<CredentialTypeMetadata
             assertNotNull(instance.removeable, "removeable");
             assertNotNull(instance.category, "category");
 
-            if (!verifyRequiredAction(session, instance.createAction)) {
+            if (!verifyRequiredAction(instance.createAction)) {
                 instance.createAction = null;
             }
-            if (!verifyRequiredAction(session, instance.updateAction)) {
+            if (!verifyRequiredAction(instance.updateAction)) {
                 instance.updateAction = null;
             }
             // Assume credential can't have both createAction and updateAction.
@@ -252,13 +253,16 @@ public class CredentialTypeMetadata implements Comparable<CredentialTypeMetadata
             }
         }
 
+        @Autowired
+        private KeycloakContext keycloakContext;
+
         // Check if required action of specified providerId is registered in the realm and enabled
-        private boolean verifyRequiredAction(KeycloakSession session, String requiredActionProviderId) {
+        private boolean verifyRequiredAction(String requiredActionProviderId) {
             if (requiredActionProviderId == null) {
                 return false;
             }
 
-            RealmModel realm = session.getContext().getRealm();
+            RealmModel realm = keycloakContext.getRealm();
             if (realm == null) {
                 LOG.warn("Realm was not set in context when trying to get credential metadata of provider '{}'", instance.type);
                 return false;

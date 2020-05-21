@@ -82,7 +82,7 @@ public interface UserStorageProviderFactory<T extends UserStorageProvider> exten
     }
 
     @Override
-    default void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel config) throws ComponentValidationException {
+    default void validateConfiguration(RealmModel realm, ComponentModel config) throws ComponentValidationException {
 
     }
 
@@ -90,12 +90,11 @@ public interface UserStorageProviderFactory<T extends UserStorageProvider> exten
      * Called when UserStorageProviderModel is created.  This allows you to do initialization of any additional configuration
      * you need to add.  For example, you may be introspecting a database or ldap schema to automatically create mappings.
      *
-     * @param session
      * @param realm
      * @param model
      */
     @Override
-    default void onCreate(KeycloakSession session, RealmModel realm, ComponentModel model) {
+    default void onCreate(RealmModel realm, ComponentModel model) {
 
     }
 

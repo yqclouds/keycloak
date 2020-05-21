@@ -18,9 +18,10 @@
 package org.keycloak.services.resources.admin;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.jboss.resteasy.annotations.cache.NoCache;
 import com.hsbc.unified.iam.core.ClientConnection;
+import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.models.*;
+import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.TokenManager;
 import org.keycloak.representations.AccessToken;
@@ -32,6 +33,7 @@ import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -39,8 +41,6 @@ import javax.ws.rs.core.UriInfo;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-
-import static org.keycloak.protocol.ProtocolMapperUtils.isEnabled;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -56,6 +56,9 @@ public class ClientScopeEvaluateResource {
     private final UriInfo uriInfo;
     private final KeycloakSession session;
     private final ClientConnection clientConnection;
+
+    @Autowired
+    private ProtocolMapperUtils protocolMapperUtils;
 
     public ClientScopeEvaluateResource(KeycloakSession session, UriInfo uriInfo, RealmModel realm, AdminPermissionEvaluator auth,
                                        ClientModel client, ClientConnection clientConnection) {
@@ -110,7 +113,7 @@ public class ClientScopeEvaluateResource {
         for (ClientScopeModel mapperContainer : clientScopes) {
             Set<ProtocolMapperModel> currentMappers = mapperContainer.getProtocolMappers();
             for (ProtocolMapperModel current : currentMappers) {
-                if (isEnabled(session, current) && current.getProtocol().equals(client.getProtocol())) {
+                if (protocolMapperUtils.isEnabled(current) && current.getProtocol().equals(client.getProtocol())) {
                     ProtocolMapperEvaluationRepresentation rep = new ProtocolMapperEvaluationRepresentation();
                     rep.setMapperId(current.getId());
                     rep.setMapperName(current.getName());
@@ -164,11 +167,13 @@ public class ClientScopeEvaluateResource {
         return token;
     }
 
+    @Autowired
+    private TokenManager tokenManager;
 
     private AccessToken generateToken(UserModel user, String scopeParam) {
         AuthenticationSessionModel authSession = null;
         UserSessionModel userSession = null;
-        AuthenticationSessionManager authSessionManager = new AuthenticationSessionManager(session);
+        AuthenticationSessionManager authSessionManager = new AuthenticationSessionManager();
 
         try {
             RootAuthenticationSessionModel rootAuthSession = authSessionManager.createAuthenticationSession(realm, false);
@@ -183,15 +188,12 @@ public class ClientScopeEvaluateResource {
                     clientConnection.getRemoteAddr(), "example-auth", false, null, null);
 
             AuthenticationManager.setClientScopesInSession(authSession);
-            ClientSessionContext clientSessionCtx = TokenManager.attachAuthenticationSession(session, userSession, authSession);
+            ClientSessionContext clientSessionCtx = tokenManager.attachAuthenticationSession(userSession, authSession);
 
-            TokenManager tokenManager = new TokenManager();
-
-            TokenManager.AccessTokenResponseBuilder responseBuilder = tokenManager.responseBuilder(realm, client, null, session, userSession, clientSessionCtx)
+            TokenManager.AccessTokenResponseBuilder responseBuilder = tokenManager.responseBuilder(realm, client, null, userSession, clientSessionCtx)
                     .generateAccessToken();
 
             return responseBuilder.getAccessToken();
-
         } finally {
             if (authSession != null) {
                 authSessionManager.removeAuthenticationSession(realm, authSession, false);
@@ -201,7 +203,6 @@ public class ClientScopeEvaluateResource {
             }
         }
     }
-
 
     public static class ProtocolMapperEvaluationRepresentation {
 

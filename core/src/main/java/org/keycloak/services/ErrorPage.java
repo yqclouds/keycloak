@@ -17,7 +17,6 @@
 package org.keycloak.services;
 
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -30,7 +29,7 @@ public class ErrorPage {
     @Autowired
     private LoginFormsProvider loginFormsProvider;
 
-    public Response error(KeycloakSession session, AuthenticationSessionModel authenticationSession, Response.Status status, String message, Object... parameters) {
+    public Response error(AuthenticationSessionModel authenticationSession, Response.Status status, String message, Object... parameters) {
         return loginFormsProvider.setAuthenticationSession(authenticationSession).setError(message, parameters).createErrorPage(status);
     }
 }

@@ -20,11 +20,11 @@ import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.HttpResponse;
 import org.keycloak.common.util.CollectionUtil;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.protocol.oidc.utils.WebOriginsUtils;
 import org.keycloak.representations.AccessToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -99,9 +99,12 @@ public class Cors {
         return this;
     }
 
-    public Cors allowedOrigins(KeycloakSession session, ClientModel client) {
+    @Autowired
+    private WebOriginsUtils webOriginsUtils;
+
+    public Cors allowedOrigins(ClientModel client) {
         if (client != null) {
-            allowedOrigins = WebOriginsUtils.resolveValidWebOrigins(session, client);
+            allowedOrigins = webOriginsUtils.resolveValidWebOrigins(client);
         }
         return this;
     }

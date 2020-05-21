@@ -17,11 +17,10 @@
  */
 package org.keycloak.authorization.policy.provider.aggregated;
 
-import org.keycloak.authorization.AuthorizationProvider;
 import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
+import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.idm.authorization.AggregatePolicyRepresentation;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
@@ -55,7 +54,7 @@ public class AggregatePolicyProviderFactory implements PolicyProviderFactory<Agg
     }
 
     @Override
-    public PolicyProvider create(KeycloakSession session) {
+    public PolicyProvider create() {
         return null;
     }
 

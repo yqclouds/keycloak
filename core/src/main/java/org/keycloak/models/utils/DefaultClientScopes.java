@@ -19,10 +19,12 @@ package org.keycloak.models.utils;
 
 import com.hsbc.unified.iam.core.constants.Constants;
 import com.hsbc.unified.iam.core.constants.OAuth2Constants;
-import org.keycloak.models.*;
-import org.keycloak.protocol.LoginProtocol;
+import org.keycloak.models.ClientScopeModel;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.RoleModel;
 import org.keycloak.protocol.LoginProtocolFactory;
 import org.keycloak.provider.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
@@ -30,14 +32,14 @@ import java.util.List;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class DefaultClientScopes {
+    @Autowired
+    private List<LoginProtocolFactory> loginProtocolFactories;
 
     /**
-     * @param session
      * @param realm
      * @param addScopesToExistingClients true when creating new realm. False when migrating from previous version
      */
-    public static void createDefaultClientScopes(KeycloakSession session, RealmModel realm, boolean addScopesToExistingClients) {
-        List<ProviderFactory> loginProtocolFactories = session.getSessionFactory().getProviderFactories(LoginProtocol.class);
+    public void createDefaultClientScopes(RealmModel realm, boolean addScopesToExistingClients) {
         for (ProviderFactory factory : loginProtocolFactories) {
             LoginProtocolFactory lpf = (LoginProtocolFactory) factory;
             lpf.createDefaultClientScopes(realm, addScopesToExistingClients);

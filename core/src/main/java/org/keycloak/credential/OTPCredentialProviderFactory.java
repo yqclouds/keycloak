@@ -30,8 +30,8 @@ public class OTPCredentialProviderFactory implements CredentialProviderFactory<O
     public static final String PROVIDER_ID = "keycloak-otp";
 
     @Override
-    public OTPCredentialProvider create(KeycloakSession session) {
-        return new OTPCredentialProvider(session);
+    public OTPCredentialProvider create() {
+        return new OTPCredentialProvider();
     }
 
     @Override

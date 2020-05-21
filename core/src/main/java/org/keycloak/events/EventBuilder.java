@@ -19,7 +19,10 @@ package org.keycloak.events;
 
 import com.hsbc.unified.iam.core.ClientConnection;
 import com.hsbc.unified.iam.core.util.Time;
-import org.keycloak.models.*;
+import org.keycloak.models.ClientModel;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
+import org.keycloak.models.UserSessionModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,8 +45,10 @@ public class EventBuilder {
 
     @Autowired(required = false)
     private EventStoreProvider eventStoreProvider;
+    @Autowired
+    private EventListenerProvider eventListenerProvider;
 
-    public EventBuilder(RealmModel realm, KeycloakSession session, ClientConnection clientConnection) {
+    public EventBuilder(RealmModel realm, ClientConnection clientConnection) {
         this.realm = realm;
 
         event = new EventModel();
@@ -55,9 +60,8 @@ public class EventBuilder {
         if (realm.getEventsListeners() != null && !realm.getEventsListeners().isEmpty()) {
             this.listeners = new LinkedList<>();
             for (String id : realm.getEventsListeners()) {
-                EventListenerProvider listener = session.getProvider(EventListenerProvider.class, id);
-                if (listener != null) {
-                    listeners.add(listener);
+                if (eventListenerProvider != null) {
+                    listeners.add(eventListenerProvider);
                 } else {
                     LOG.error("EventModel listener '" + id + "' registered, but provider not found");
                 }

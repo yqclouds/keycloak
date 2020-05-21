@@ -20,6 +20,8 @@ package org.keycloak.models.jpa;
 import com.hsbc.unified.iam.core.constants.Constants;
 import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
 import com.hsbc.unified.iam.entity.*;
+import com.hsbc.unified.iam.entity.events.IdentityProviderRemovedEvent;
+import com.hsbc.unified.iam.entity.events.IdentityProviderUpdatedEvent;
 import com.hsbc.unified.iam.facade.model.JpaModel;
 import com.hsbc.unified.iam.facade.spi.RealmFacade;
 import com.hsbc.unified.iam.repository.*;
@@ -30,6 +32,8 @@ import org.keycloak.models.*;
 import org.keycloak.models.utils.ComponentUtil;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -39,16 +43,17 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class RealmAdapter implements RealmModel, JpaModel<Realm> {
+public class RealmAdapter implements RealmModel, JpaModel<Realm>, ApplicationEventPublisherAware {
     /**
      * This just exists for testing purposes
      */
     public static final String COMPONENT_PROVIDER_EXISTS_DISABLED = "component.provider.exists.disabled";
     private static final String BROWSER_HEADER_PREFIX = "_browser_header.";
     protected Realm realm;
-    protected KeycloakSession session;
     private PasswordPolicy passwordPolicy;
     private OTPPolicy otpPolicy;
+
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @Autowired
     private RoleAdapter roleAdapter;
@@ -89,8 +94,12 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
     @Autowired
     private RealmFacade realmFacade;
 
-    public RealmAdapter(KeycloakSession session, Realm realm) {
-        this.session = session;
+    @Autowired
+    private RealmProvider realmProvider;
+    @Autowired
+    private UserProvider userProvider;
+
+    public RealmAdapter(Realm realm) {
         this.realm = realm;
     }
 
@@ -667,7 +676,7 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
         if (entities == null || entities.isEmpty()) return Collections.EMPTY_LIST;
         List<GroupModel> defaultGroups = new LinkedList<>();
         for (Group entity : entities) {
-            defaultGroups.add(session.realms().getGroupById(entity.getId(), this));
+            defaultGroups.add(realmProvider.getGroupById(entity.getId(), this));
         }
         return Collections.unmodifiableList(defaultGroups);
     }
@@ -700,27 +709,27 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
 
     @Override
     public List<ClientModel> getClients() {
-        return session.realms().getClients(this);
+        return realmProvider.getClients(this);
     }
 
     @Override
     public List<ClientModel> getClients(Integer firstResult, Integer maxResults) {
-        return session.realms().getClients(this, firstResult, maxResults);
+        return realmProvider.getClients(this, firstResult, maxResults);
     }
 
     @Override
     public List<ClientModel> getAlwaysDisplayInConsoleClients() {
-        return session.realms().getAlwaysDisplayInConsoleClients(this);
+        return realmProvider.getAlwaysDisplayInConsoleClients(this);
     }
 
     @Override
     public ClientModel addClient(String name) {
-        return session.realms().addClient(this, name);
+        return realmProvider.addClient(this, name);
     }
 
     @Override
     public ClientModel addClient(String id, String clientId) {
-        return session.realms().addClient(this, id, clientId);
+        return realmProvider.addClient(this, id, clientId);
     }
 
     @Override
@@ -728,22 +737,22 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
         if (id == null) return false;
         ClientModel client = getClientById(id);
         if (client == null) return false;
-        return session.realms().removeClient(id, this);
+        return realmProvider.removeClient(id, this);
     }
 
     @Override
     public ClientModel getClientById(String id) {
-        return session.realms().getClientById(id, this);
+        return realmProvider.getClientById(id, this);
     }
 
     @Override
     public ClientModel getClientByClientId(String clientId) {
-        return session.realms().getClientByClientId(clientId, this);
+        return realmProvider.getClientByClientId(clientId, this);
     }
 
     @Override
     public List<ClientModel> searchClientByClientId(String clientId, Integer firstResult, Integer maxResults) {
-        return session.realms().searchClientsByClientId(clientId, firstResult, maxResults, this);
+        return realmProvider.searchClientsByClientId(clientId, firstResult, maxResults, this);
     }
 
     @Override
@@ -781,48 +790,48 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
 
     @Override
     public RoleModel getRole(String name) {
-        return session.realms().getRealmRole(this, name);
+        return realmProvider.getRealmRole(this, name);
     }
 
     @Override
     public RoleModel addRole(String name) {
-        return session.realms().addRealmRole(this, name);
+        return realmProvider.addRealmRole(this, name);
     }
 
     @Override
     public RoleModel addRole(String id, String name) {
-        return session.realms().addRealmRole(this, id, name);
+        return realmProvider.addRealmRole(this, id, name);
     }
 
     @Override
     public boolean removeRole(RoleModel role) {
-        return session.realms().removeRole(this, role);
+        return realmProvider.removeRole(this, role);
     }
 
     @Override
     public Set<RoleModel> getRoles() {
-        return session.realms().getRealmRoles(this);
+        return realmProvider.getRealmRoles(this);
     }
 
     @Override
     public Set<RoleModel> getRoles(Integer first, Integer max) {
-        return session.realms().getRealmRoles(this, first, max);
+        return realmProvider.getRealmRoles(this, first, max);
     }
 
     @Override
     public Set<RoleModel> searchForRoles(String search, Integer first, Integer max) {
-        return session.realms().searchForRoles(this, search, first, max);
+        return realmProvider.searchForRoles(this, search, first, max);
     }
 
     @Override
     public RoleModel getRoleById(String id) {
-        return session.realms().getRoleById(id, this);
+        return realmProvider.getRoleById(id, this);
     }
 
     @Override
     public PasswordPolicy getPasswordPolicy() {
         if (passwordPolicy == null) {
-            passwordPolicy = PasswordPolicy.parse(session, realm.getPasswordPolicy());
+            passwordPolicy = passwordPolicy.parse(realm.getPasswordPolicy());
         }
         return passwordPolicy;
     }
@@ -1124,9 +1133,9 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
         if (masterAdminClientRealmId.equals(getId())) {
             masterRealm = this;
         } else {
-            masterRealm = session.realms().getRealm(masterAdminClientRealmId);
+            masterRealm = realmProvider.getRealm(masterAdminClientRealmId);
         }
-        return session.realms().getClientById(masterAdminClient.getId(), masterRealm);
+        return realmProvider.getClientById(masterAdminClient.getId(), masterRealm);
     }
 
     @Override
@@ -1219,24 +1228,7 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
                 IdentityProviderModel model = entityToModel(entity);
                 identityProviderRepository.delete(entity);
 
-                session.getSessionFactory().publish(new RealmModel.IdentityProviderRemovedEvent() {
-
-                    @Override
-                    public RealmModel getRealm() {
-                        return RealmAdapter.this;
-                    }
-
-                    @Override
-                    public IdentityProviderModel getRemovedIdentityProvider() {
-                        return model;
-                    }
-
-                    @Override
-                    public KeycloakSession getSession() {
-                        return session;
-                    }
-                });
-
+                applicationEventPublisher.publishEvent(new IdentityProviderRemovedEvent(model));
             }
         }
     }
@@ -1261,22 +1253,7 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
 
         realmRepository.saveAndFlush(realm);
 
-        session.getSessionFactory().publish(new RealmModel.IdentityProviderUpdatedEvent() {
-            @Override
-            public RealmModel getRealm() {
-                return RealmAdapter.this;
-            }
-
-            @Override
-            public IdentityProviderModel getUpdatedIdentityProvider() {
-                return identityProvider;
-            }
-
-            @Override
-            public KeycloakSession getSession() {
-                return session;
-            }
-        });
+        applicationEventPublisher.publishEvent(new IdentityProviderUpdatedEvent(identityProvider));
     }
 
     @Override
@@ -1299,8 +1276,7 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
     public Set<String> getSupportedLocales() {
         Set<String> supportedLocales = realm.getSupportedLocales();
         if (supportedLocales == null || supportedLocales.isEmpty()) return Collections.EMPTY_SET;
-        Set<String> copy = new HashSet<>();
-        copy.addAll(supportedLocales);
+        Set<String> copy = new HashSet<>(supportedLocales);
         return Collections.unmodifiableSet(copy);
     }
 
@@ -1829,52 +1805,52 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
 
     @Override
     public GroupModel createGroup(String id, String name, GroupModel toParent) {
-        return session.realms().createGroup(this, id, name, toParent);
+        return realmProvider.createGroup(this, id, name, toParent);
     }
 
     @Override
     public void moveGroup(GroupModel group, GroupModel toParent) {
-        session.realms().moveGroup(this, group, toParent);
+        realmProvider.moveGroup(this, group, toParent);
     }
 
     @Override
     public GroupModel getGroupById(String id) {
-        return session.realms().getGroupById(id, this);
+        return realmProvider.getGroupById(id, this);
     }
 
     @Override
     public List<GroupModel> getGroups() {
-        return session.realms().getGroups(this);
+        return realmProvider.getGroups(this);
     }
 
     @Override
     public Long getGroupsCount(Boolean onlyTopGroups) {
-        return session.realms().getGroupsCount(this, onlyTopGroups);
+        return realmProvider.getGroupsCount(this, onlyTopGroups);
     }
 
     @Override
     public Long getGroupsCountByNameContaining(String search) {
-        return session.realms().getGroupsCountByNameContaining(this, search);
+        return realmProvider.getGroupsCountByNameContaining(this, search);
     }
 
     @Override
     public List<GroupModel> getTopLevelGroups() {
-        return session.realms().getTopLevelGroups(this);
+        return realmProvider.getTopLevelGroups(this);
     }
 
     @Override
     public List<GroupModel> getTopLevelGroups(Integer first, Integer max) {
-        return session.realms().getTopLevelGroups(this, first, max);
+        return realmProvider.getTopLevelGroups(this, first, max);
     }
 
     @Override
     public List<GroupModel> searchForGroupByName(String search, Integer first, Integer max) {
-        return session.realms().searchForGroupByName(this, search, first, max);
+        return realmProvider.searchForGroupByName(this, search, first, max);
     }
 
     @Override
     public boolean removeGroup(GroupModel group) {
-        return session.realms().removeGroup(this, group);
+        return realmProvider.removeGroup(this, group);
     }
 
     @Override
@@ -1883,7 +1859,7 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
         if (entities == null || entities.isEmpty()) return Collections.EMPTY_LIST;
         List<ClientScopeModel> list = new LinkedList<>();
         for (ClientScope entity : entities) {
-            list.add(session.realms().getClientScopeById(entity.getId(), this));
+            list.add(realmProvider.getClientScopeById(entity.getId(), this));
         }
         return Collections.unmodifiableList(list);
     }
@@ -1902,7 +1878,7 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
         entity.setRealm(realm);
         realm.getClientScopes().add(entity);
         clientScopeRepository.save(entity);
-        return new ClientScopeAdapter(this, session, entity);
+        return new ClientScopeAdapter(this, entity);
     }
 
     @Override
@@ -1925,7 +1901,7 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
             }
         }
 
-        session.users().preRemove(clientScope);
+        userProvider.preRemove(clientScope);
 
         clientScopeRoleMappingRepository.deleteClientScopeRoleMappingByClientScope(clientScopeEntity);
         clientScopeRepository.delete(clientScopeEntity);
@@ -1935,7 +1911,7 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
 
     @Override
     public ClientScopeModel getClientScopeById(String id) {
-        return session.realms().getClientScopeById(id, this);
+        return realmProvider.getClientScopeById(id, this);
     }
 
     @Override
@@ -1967,10 +1943,13 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
         return clientScopes;
     }
 
+    @Autowired
+    private ComponentUtil componentUtil;
+
     @Override
     public ComponentModel addComponentModel(ComponentModel model) {
         model = importComponentModel(model);
-        ComponentUtil.notifyCreated(session, this, model);
+        componentUtil.notifyCreated(this, model);
 
         return model;
     }
@@ -1979,11 +1958,11 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
     public ComponentModel importComponentModel(ComponentModel model) {
         ComponentFactory componentFactory;
         try {
-            componentFactory = ComponentUtil.getComponentFactory(session, model);
+            componentFactory = componentUtil.getComponentFactory(model);
             if (componentFactory == null && System.getProperty(COMPONENT_PROVIDER_EXISTS_DISABLED) == null) {
                 throw new IllegalArgumentException("Invalid component type");
             }
-            componentFactory.validateConfiguration(session, this, model);
+            componentFactory.validateConfiguration(this, model);
         } catch (Exception e) {
             if (System.getProperty(COMPONENT_PROVIDER_EXISTS_DISABLED) == null) {
                 throw e;
@@ -2034,7 +2013,7 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
 
     @Override
     public void updateComponent(ComponentModel component) {
-        ComponentUtil.getComponentFactory(session, component).validateConfiguration(session, this, component);
+        componentUtil.getComponentFactory(component).validateConfiguration(this, component);
 
         Optional<Component> optional = componentRepository.findById(component.getId());
         if (!optional.isPresent()) return;
@@ -2046,15 +2025,15 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
         c.setParentId(component.getParentId());
         c.setSubType(component.getSubType());
         setConfig(component, c);
-        ComponentUtil.notifyUpdated(session, this, old, component);
+        componentUtil.notifyUpdated(this, old, component);
     }
 
     @Override
     public void removeComponent(ComponentModel component) {
         Optional<Component> optional = componentRepository.findById(component.getId());
         if (!optional.isPresent()) return;
-        session.users().preRemove(this, component);
-        ComponentUtil.notifyPreRemove(session, this, component);
+        userProvider.preRemove(this, component);
+        componentUtil.notifyPreRemove(this, component);
         removeComponents(component.getId());
         getEntity().getComponents().remove(optional.get());
     }
@@ -2066,8 +2045,8 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
                 .filter(sameParent)
                 .map(this::entityToModel)
                 .forEach((ComponentModel c) -> {
-                    session.users().preRemove(this, c);
-                    ComponentUtil.notifyPreRemove(session, this, c);
+                    userProvider.preRemove(this, c);
+                    componentUtil.notifyPreRemove(this, c);
                 });
 
         getEntity().getComponents().removeIf(sameParent);
@@ -2119,5 +2098,10 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm> {
         Optional<Component> optional = componentRepository.findById(id);
         if (!optional.isPresent()) return null;
         return entityToModel(optional.get());
+    }
+
+    @Override
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 }

@@ -41,7 +41,7 @@ public class TimePolicyProviderFactory implements PolicyProviderFactory<TimePoli
     }
 
     @Override
-    public PolicyProvider create(KeycloakSession session) {
+    public PolicyProvider create() {
         return null;
     }
 

@@ -16,11 +16,11 @@
  */
 package org.keycloak.broker.oidc;
 
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.keycloak.broker.provider.AbstractIdentityProviderFactory;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.protocol.oidc.representations.OIDCConfigurationRepresentation;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,8 +60,8 @@ public class OIDCIdentityProviderFactory extends AbstractIdentityProviderFactory
     }
 
     @Override
-    public OIDCIdentityProvider create(KeycloakSession session, IdentityProviderModel model) {
-        return new OIDCIdentityProvider(session, new OIDCIdentityProviderConfig(model));
+    public OIDCIdentityProvider create(IdentityProviderModel model) {
+        return new OIDCIdentityProvider(new OIDCIdentityProviderConfig(model));
     }
 
     @Override

@@ -16,9 +16,11 @@
  */
 package org.keycloak.services.resources;
 
+import com.hsbc.unified.iam.core.ClientConnection;
 import com.hsbc.unified.iam.core.constants.Constants;
-import org.jboss.resteasy.spi.HttpRequest;
 import com.hsbc.unified.iam.core.constants.OAuth2Constants;
+import com.hsbc.unified.iam.core.util.Time;
+import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.TokenVerifier;
 import org.keycloak.authentication.*;
 import org.keycloak.authentication.actiontoken.ActionTokenContext;
@@ -31,9 +33,7 @@ import org.keycloak.authentication.authenticators.broker.util.PostBrokerLoginCon
 import org.keycloak.authentication.authenticators.broker.util.SerializedBrokeredIdentityContext;
 import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAuthenticator;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
-import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.common.VerificationException;
-import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.crypto.SignatureProvider;
 import org.keycloak.crypto.SignatureVerifierContext;
 import org.keycloak.events.Details;
@@ -153,8 +153,8 @@ public class LoginActionsService {
         return baseUriBuilder.path(RealmsResource.class).path(RealmsResource.class, "getLoginActionsService");
     }
 
-    public static Response redirectToAfterBrokerLoginEndpoint(KeycloakSession session, RealmModel realm, UriInfo uriInfo, AuthenticationSessionModel authSession, boolean firstBrokerLogin) {
-        ClientSessionCode<AuthenticationSessionModel> accessCode = new ClientSessionCode<>(session, realm, authSession);
+    public static Response redirectToAfterBrokerLoginEndpoint(RealmModel realm, UriInfo uriInfo, AuthenticationSessionModel authSession, boolean firstBrokerLogin) {
+        ClientSessionCode<AuthenticationSessionModel> accessCode = new ClientSessionCode<>(realm, authSession);
         authSession.getParentSession().setTimestamp(Time.currentTime());
 
         String clientId = authSession.getClient().getClientId();
@@ -174,14 +174,17 @@ public class LoginActionsService {
         }
     }
 
+    @Autowired
+    private KeycloakContext context;
+
     private SessionCodeChecks checksForCode(String authSessionId, String code, String execution, String clientId, String tabId, String flowPath) {
-        SessionCodeChecks res = new SessionCodeChecks(realm, session.getContext().getUri(), request, clientConnection, session, event, authSessionId, code, execution, clientId, tabId, flowPath);
+        SessionCodeChecks res = new SessionCodeChecks(realm, context.getUri(), request, clientConnection, event, authSessionId, code, execution, clientId, tabId, flowPath);
         res.initialVerify();
         return res;
     }
 
     protected URI getLastExecutionUrl(String flowPath, String executionId, String clientId, String tabId) {
-        return new AuthenticationFlowURLHelper(session, realm, session.getContext().getUri())
+        return new AuthenticationFlowURLHelper(realm, session.getContext().getUri())
                 .getLastExecutionUrl(flowPath, executionId, clientId, tabId);
     }
 
@@ -196,7 +199,7 @@ public class LoginActionsService {
                                    @QueryParam(Constants.CLIENT_ID) String clientId,
                                    @QueryParam(Constants.TAB_ID) String tabId) {
         event.event(EventType.RESTART_AUTHENTICATION);
-        SessionCodeChecks checks = new SessionCodeChecks(realm, session.getContext().getUri(), request, clientConnection, session, event, authSessionId, null, null, clientId, tabId, null);
+        SessionCodeChecks checks = new SessionCodeChecks(realm, context.getUri(), request, clientConnection, event, authSessionId, null, null, clientId, tabId, null);
 
         AuthenticationSessionModel authSession = checks.initialVerifyAuthSession();
         if (authSession == null) {
@@ -211,7 +214,7 @@ public class LoginActionsService {
         AuthenticationProcessor.resetFlow(authSession, flowPath);
 
         URI redirectUri = getLastExecutionUrl(flowPath, null, authSession.getClient().getClientId(), tabId);
-        LOG.debug("Flow restart requested. Redirecting to %s", redirectUri);
+        LOG.debug("Flow restart requested. Redirecting to {}", redirectUri);
         return Response.status(Response.Status.FOUND).location(redirectUri).build();
     }
 
@@ -299,7 +302,7 @@ public class LoginActionsService {
             authSession = processor.getAuthenticationSession(); // Could be changed (eg. Forked flow)
         }
 
-        return BrowserHistoryHelper.getInstance().saveResponseAndRedirect(session, authSession, response, action, request);
+        return BrowserHistoryHelper.getInstance().saveResponseAndRedirect(authSession, response, action, request);
     }
 
     /**
@@ -354,7 +357,7 @@ public class LoginActionsService {
                                         @QueryParam(Constants.CLIENT_ID) String clientId,
                                         @QueryParam(Constants.TAB_ID) String tabId) {
         ClientModel client = realm.getClientByClientId(clientId);
-        AuthenticationSessionModel authSession = new AuthenticationSessionManager(session).getCurrentAuthenticationSession(realm, client, tabId);
+        AuthenticationSessionModel authSession = new AuthenticationSessionManager().getCurrentAuthenticationSession(realm, client, tabId);
         processLocaleParam(authSession);
 
         // we allow applications to link to reset credentials without going through OAuth or SAML handshakes
@@ -362,7 +365,7 @@ public class LoginActionsService {
             if (!realm.isResetPasswordAllowed()) {
                 event.event(EventType.RESET_PASSWORD);
                 event.error(Errors.NOT_ALLOWED);
-                return errorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.RESET_CREDENTIAL_NOT_ALLOWED);
+                return errorPage.error(authSession, Response.Status.BAD_REQUEST, Messages.RESET_CREDENTIAL_NOT_ALLOWED);
 
             }
             authSession = createAuthenticationSessionForClient();
@@ -380,7 +383,7 @@ public class LoginActionsService {
         // set up the account service as the endpoint to call.
         ClientModel client = SystemClientUtil.getSystemClient(realm);
 
-        RootAuthenticationSessionModel rootAuthSession = new AuthenticationSessionManager(session).createAuthenticationSession(realm, true);
+        RootAuthenticationSessionModel rootAuthSession = new AuthenticationSessionManager().createAuthenticationSession(realm, true);
         authSession = rootAuthSession.createAuthenticationSession(client);
 
         authSession.setAction(AuthenticationSessionModel.Action.AUTHENTICATE.name());
@@ -409,7 +412,7 @@ public class LoginActionsService {
 
         if (!realm.isResetPasswordAllowed()) {
             event.error(Errors.NOT_ALLOWED);
-            return errorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.RESET_CREDENTIAL_NOT_ALLOWED);
+            return errorPage.error(authSession, Response.Status.BAD_REQUEST, Messages.RESET_CREDENTIAL_NOT_ALLOWED);
 
         }
 
@@ -448,7 +451,7 @@ public class LoginActionsService {
         if (clientId != null) {
             client = realm.getClientByClientId(clientId);
         }
-        AuthenticationSessionManager authenticationSessionManager = new AuthenticationSessionManager(session);
+        AuthenticationSessionManager authenticationSessionManager = new AuthenticationSessionManager();
         if (client != null) {
             session.getContext().setClient(client);
             authSession = authenticationSessionManager.getCurrentAuthenticationSession(realm, client, tabId);
@@ -521,7 +524,7 @@ public class LoginActionsService {
         }
 
         // Now proceed with the verification and handle the token
-        tokenContext = new ActionTokenContext(session, realm, session.getContext().getUri(), clientConnection, request, event, handler, execution, this::processFlow, this::brokerLoginFlow);
+        tokenContext = new ActionTokenContext(realm, context.getUri(), clientConnection, request, event, handler, execution, this::processFlow, this::brokerLoginFlow);
 
         try {
             String tokenAuthSessionCompoundId = handler.getAuthenticationSessionIdFromToken(token, tokenContext, authSession);
@@ -550,7 +553,7 @@ public class LoginActionsService {
             initLoginEvent(authSession);
             event.event(handler.eventType());
 
-            LoginActionsServiceChecks.checkIsUserValid(token, tokenContext);
+            loginActionsServiceChecks.checkIsUserValid(token, tokenContext);
             LoginActionsServiceChecks.checkIsClientValid(token, tokenContext);
 
             session.getContext().setClient(authSession.getClient());
@@ -593,7 +596,7 @@ public class LoginActionsService {
         } else if (RESET_CREDENTIALS_PATH.equals(flowPath)) {
             return processResetCredentials(false, null, authSession, errorMessage);
         } else {
-            return errorPage.error(session, authSession, Response.Status.BAD_REQUEST, errorMessage == null ? Messages.INVALID_REQUEST : errorMessage);
+            return errorPage.error(authSession, Response.Status.BAD_REQUEST, errorMessage == null ? Messages.INVALID_REQUEST : errorMessage);
         }
     }
 
@@ -611,13 +614,13 @@ public class LoginActionsService {
 
     private Response handleActionTokenVerificationException(ActionTokenContext<?> tokenContext, VerificationException ex, String eventError, String errorMessage) {
         if (tokenContext != null && tokenContext.getAuthenticationSession() != null) {
-            new AuthenticationSessionManager(session).removeAuthenticationSession(realm, tokenContext.getAuthenticationSession(), true);
+            new AuthenticationSessionManager().removeAuthenticationSession(realm, tokenContext.getAuthenticationSession(), true);
         }
 
         event
                 .detail(Details.REASON, ex == null ? "<unknown>" : ex.getMessage())
                 .error(eventError == null ? Errors.INVALID_CODE : eventError);
-        return errorPage.error(session, null, Response.Status.BAD_REQUEST, errorMessage == null ? Messages.INVALID_CODE : errorMessage);
+        return errorPage.error(null, Response.Status.BAD_REQUEST, errorMessage == null ? Messages.INVALID_CODE : errorMessage);
     }
 
     protected Response processResetCredentials(boolean actionRequest, String execution, AuthenticationSessionModel authSession, String errorMessage) {
@@ -666,7 +669,7 @@ public class LoginActionsService {
         event.event(EventType.REGISTER);
         if (!realm.isRegistrationAllowed()) {
             event.error(Errors.REGISTRATION_DISABLED);
-            return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.REGISTRATION_NOT_ALLOWED);
+            return errorPage.error(null, Response.Status.BAD_REQUEST, Messages.REGISTRATION_NOT_ALLOWED);
         }
 
         SessionCodeChecks checks = checksForCode(authSessionId, code, execution, clientId, tabId, REGISTRATION_PATH);
@@ -742,20 +745,20 @@ public class LoginActionsService {
         SerializedBrokeredIdentityContext serializedCtx = SerializedBrokeredIdentityContext.readFromAuthenticationSession(authSession, noteKey);
         if (serializedCtx == null) {
 //            ServicesLogger.LOGGER.notFoundSerializedCtxInClientSession(noteKey);
-            throw new WebApplicationException(errorPage.error(session, authSession, Response.Status.BAD_REQUEST, "Not found serialized context in authenticationSession."));
+            throw new WebApplicationException(errorPage.error(authSession, Response.Status.BAD_REQUEST, "Not found serialized context in authenticationSession."));
         }
-        BrokeredIdentityContext brokerContext = serializedCtx.deserialize(session, authSession);
+        BrokeredIdentityContext brokerContext = serializedCtx.deserialize(authSession);
         final String identityProviderAlias = brokerContext.getIdpConfig().getAlias();
 
         String flowId = firstBrokerLogin ? brokerContext.getIdpConfig().getFirstBrokerLoginFlowId() : brokerContext.getIdpConfig().getPostBrokerLoginFlowId();
         if (flowId == null) {
 //            ServicesLogger.LOGGER.flowNotConfigForIDP(identityProviderAlias);
-            throw new WebApplicationException(errorPage.error(session, authSession, Response.Status.BAD_REQUEST, "Flow not configured for identity provider"));
+            throw new WebApplicationException(errorPage.error(authSession, Response.Status.BAD_REQUEST, "Flow not configured for identity provider"));
         }
         AuthenticationFlowModel brokerLoginFlow = realm.getAuthenticationFlowById(flowId);
         if (brokerLoginFlow == null) {
 //            ServicesLogger.LOGGER.flowNotFoundForIDP(flowId, identityProviderAlias);
-            throw new WebApplicationException(errorPage.error(session, authSession, Response.Status.BAD_REQUEST, "Flow not found for identity provider"));
+            throw new WebApplicationException(errorPage.error(authSession, Response.Status.BAD_REQUEST, "Flow not found for identity provider"));
         }
 
         event.detail(Details.IDENTITY_PROVIDER, identityProviderAlias)
@@ -799,7 +802,7 @@ public class LoginActionsService {
     }
 
     private Response redirectToAfterBrokerLoginEndpoint(AuthenticationSessionModel authSession, boolean firstBrokerLogin) {
-        return redirectToAfterBrokerLoginEndpoint(session, realm, session.getContext().getUri(), authSession, firstBrokerLogin);
+        return redirectToAfterBrokerLoginEndpoint(realm, session.getContext().getUri(), authSession, firstBrokerLogin);
     }
 
     /**
@@ -868,9 +871,12 @@ public class LoginActionsService {
         event.detail(Details.CONSENT, Details.CONSENT_VALUE_CONSENT_GRANTED);
         event.success();
 
-        ClientSessionContext clientSessionCtx = AuthenticationProcessor.attachSession(authSession, null, session, realm, clientConnection, event);
-        return authenticationManager.redirectAfterSuccessfulFlow(session, realm, clientSessionCtx.getClientSession().getUserSession(), clientSessionCtx, request, session.getContext().getUri(), clientConnection, event, authSession);
+        ClientSessionContext clientSessionCtx = authenticationProcessor.attachSession(authSession, null, realm, clientConnection, event);
+        return authenticationManager.redirectAfterSuccessfulFlow(realm, clientSessionCtx.getClientSession().getUserSession(), clientSessionCtx, request, session.getContext().getUri(), clientConnection, event, authSession);
     }
+
+    @Autowired
+    private AuthenticationProcessor authenticationProcessor;
 
     private void initLoginEvent(AuthenticationSessionModel authSession) {
         String responseType = authSession.getClientNote(OIDCLoginProtocol.RESPONSE_TYPE_PARAM);
@@ -947,7 +953,7 @@ public class LoginActionsService {
         if (!checks.isActionRequest()) {
             initLoginEvent(authSession);
             event.event(EventType.CUSTOM_REQUIRED_ACTION);
-            return authenticationManager.nextActionAfterAuthentication(session, authSession, clientConnection, request, session.getContext().getUri(), event);
+            return authenticationManager.nextActionAfterAuthentication(authSession, clientConnection, request, session.getContext().getUri(), event);
         }
 
         initLoginEvent(authSession);
@@ -958,9 +964,9 @@ public class LoginActionsService {
         if (factory == null) {
 //            ServicesLogger.LOGGER.actionProviderNull();
             event.error(Errors.INVALID_CODE);
-            throw new WebApplicationException(errorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.INVALID_CODE));
+            throw new WebApplicationException(errorPage.error(authSession, Response.Status.BAD_REQUEST, Messages.INVALID_CODE));
         }
-        RequiredActionContextResult context = new RequiredActionContextResult(authSession, realm, event, session, request, authSession.getAuthenticatedUser(), factory) {
+        RequiredActionContextResult context = new RequiredActionContextResult(authSession, realm, event, request, authSession.getAuthenticatedUser(), factory) {
             @Override
             public void ignore() {
                 throw new RuntimeException("Cannot call ignore within processAction()");
@@ -973,7 +979,7 @@ public class LoginActionsService {
             if (e.getResponse() != null) {
                 return e.getResponse();
             }
-            throw new WebApplicationException(errorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.DISPLAY_UNSUPPORTED));
+            throw new WebApplicationException(errorPage.error(authSession, Response.Status.BAD_REQUEST, Messages.DISPLAY_UNSUPPORTED));
         }
 
 
@@ -1000,7 +1006,7 @@ public class LoginActionsService {
             authSession.removeAuthNote(AuthenticationProcessor.CURRENT_AUTHENTICATION_EXECUTION);
             authenticationManager.setKcActionStatus(factory.getId(), RequiredActionContext.KcActionStatus.SUCCESS, authSession);
 
-            response = authenticationManager.nextActionAfterAuthentication(session, authSession, clientConnection, request, session.getContext().getUri(), event);
+            response = authenticationManager.nextActionAfterAuthentication(authSession, clientConnection, request, session.getContext().getUri(), event);
         } else if (context.getStatus() == RequiredActionContext.Status.CHALLENGE) {
             response = context.getChallenge();
         } else if (context.getStatus() == RequiredActionContext.Status.FAILURE) {
@@ -1009,11 +1015,14 @@ public class LoginActionsService {
             throw new RuntimeException("Unreachable");
         }
 
-        return BrowserHistoryHelper.getInstance().saveResponseAndRedirect(session, authSession, response, true, request);
+        return BrowserHistoryHelper.getInstance().saveResponseAndRedirect(authSession, response, true, request);
     }
 
+    @Autowired
+    private Map<String, LoginProtocol> loginProtocols;
+
     private Response interruptionResponse(RequiredActionContextResult context, AuthenticationSessionModel authSession, String action, Error error) {
-        LoginProtocol protocol = context.getSession().getProvider(LoginProtocol.class, authSession.getProtocol());
+        LoginProtocol protocol = loginProtocols.get(authSession.getProtocol());
         protocol.setRealm(context.getRealm())
                 .setHttpHeaders(context.getHttpRequest().getHttpHeaders())
                 .setUriInfo(context.getUriInfo())

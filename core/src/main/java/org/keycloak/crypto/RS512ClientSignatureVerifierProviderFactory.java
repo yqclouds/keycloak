@@ -33,8 +33,8 @@ public class RS512ClientSignatureVerifierProviderFactory implements ClientSignat
     }
 
     @Override
-    public ClientSignatureVerifierProvider create(KeycloakSession session) {
-        return new AsymmetricClientSignatureVerifierProvider(session, Algorithm.RS512);
+    public ClientSignatureVerifierProvider create() {
+        return new AsymmetricClientSignatureVerifierProvider(Algorithm.RS512);
     }
 
 }

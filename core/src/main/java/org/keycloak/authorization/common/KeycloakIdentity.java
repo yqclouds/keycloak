@@ -19,6 +19,7 @@ package org.keycloak.authorization.common;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.apache.commons.lang.StringUtils;
 import org.keycloak.authorization.attribute.Attributes;
 import org.keycloak.authorization.identity.Identity;
@@ -29,7 +30,7 @@ import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.IDToken;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.util.DefaultClientSessionContext;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.Response.Status;
 import java.util.*;
@@ -41,30 +42,22 @@ public class KeycloakIdentity implements Identity {
 
     protected final AccessToken accessToken;
     protected final RealmModel realm;
-    protected final KeycloakSession keycloakSession;
     protected final Attributes attributes;
     private final boolean resourceServer;
     private final String id;
 
-    public KeycloakIdentity(KeycloakSession keycloakSession) {
-        this(Tokens.getAccessToken(keycloakSession), keycloakSession);
-    }
+    @Autowired
+    private UserProvider userProvider;
+    @Autowired
+    private UserSessionProvider userSessionProvider;
 
-    public KeycloakIdentity(KeycloakSession keycloakSession, IDToken token) {
-        this(token, keycloakSession, keycloakSession.getContext().getRealm());
-    }
-
-    public KeycloakIdentity(IDToken token, KeycloakSession keycloakSession, RealmModel realm) {
+    public KeycloakIdentity(IDToken token, RealmModel realm) {
         if (token == null) {
             throw new ErrorResponseException("invalid_bearer_token", "Could not obtain bearer access_token from request.", Status.FORBIDDEN);
-        }
-        if (keycloakSession == null) {
-            throw new ErrorResponseException("no_keycloak_session", "No keycloak session", Status.FORBIDDEN);
         }
         if (realm == null) {
             throw new ErrorResponseException("no_keycloak_session", "No realm set", Status.FORBIDDEN);
         }
-        this.keycloakSession = keycloakSession;
         this.realm = realm;
 
         Map<String, Collection<String>> attributes = new HashMap<>();
@@ -99,18 +92,16 @@ public class KeycloakIdentity implements Identity {
             if (token instanceof AccessToken) {
                 this.accessToken = (AccessToken) token;
             } else {
-                UserSessionProvider sessions = keycloakSession.sessions();
-                UserSessionModel userSession = sessions.getUserSession(realm, token.getSessionState());
-
+                UserSessionModel userSession = userSessionProvider.getUserSession(realm, token.getSessionState());
                 if (userSession == null) {
-                    userSession = sessions.getOfflineUserSession(realm, token.getSessionState());
+                    userSession = userSessionProvider.getOfflineUserSession(realm, token.getSessionState());
                 }
 
                 ClientModel client = realm.getClientByClientId(token.getIssuedFor());
                 AuthenticatedClientSessionModel clientSessionModel = userSession.getAuthenticatedClientSessions().get(client.getId());
 
-                ClientSessionContext clientSessionCtx = DefaultClientSessionContext.fromClientSessionScopeParameter(clientSessionModel, keycloakSession);
-                this.accessToken = new TokenManager().createClientAccessToken(keycloakSession, realm, client, userSession.getUser(), userSession, clientSessionCtx);
+                ClientSessionContext clientSessionCtx = DefaultClientSessionContext.fromClientSessionScopeParameter(clientSessionModel);
+                this.accessToken = new TokenManager().createClientAccessToken(realm, client, userSession.getUser(), userSession, clientSessionCtx);
             }
 
             AccessToken.Access realmAccess = this.accessToken.getRealmAccess();
@@ -129,7 +120,7 @@ public class KeycloakIdentity implements Identity {
             UserModel clientUser = null;
 
             if (clientModel != null) {
-                clientUser = this.keycloakSession.users().getServiceAccount(clientModel);
+                clientUser = userProvider.getServiceAccount(clientModel);
             }
 
             UserModel userSession = getUserFromSessionState();
@@ -148,16 +139,15 @@ public class KeycloakIdentity implements Identity {
         this.attributes = Attributes.from(attributes);
     }
 
-    public KeycloakIdentity(AccessToken accessToken, KeycloakSession keycloakSession) {
+    @Autowired
+    private KeycloakContext keycloakContext;
+
+    public KeycloakIdentity(AccessToken accessToken) {
         if (accessToken == null) {
             throw new ErrorResponseException("invalid_bearer_token", "Could not obtain bearer access_token from request.", Status.FORBIDDEN);
         }
-        if (keycloakSession == null) {
-            throw new ErrorResponseException("no_keycloak_session", "No keycloak session", Status.FORBIDDEN);
-        }
         this.accessToken = accessToken;
-        this.keycloakSession = keycloakSession;
-        this.realm = keycloakSession.getContext().getRealm();
+        this.realm = keycloakContext.getRealm();
 
         Map<String, Collection<String>> attributes = new HashMap<>();
 
@@ -204,7 +194,7 @@ public class KeycloakIdentity implements Identity {
             UserModel clientUser = null;
 
             if (clientModel != null) {
-                clientUser = this.keycloakSession.users().getServiceAccount(clientModel);
+                clientUser = userProvider.getServiceAccount(clientModel);
             }
 
             UserModel userSession = getUserFromSessionState();
@@ -255,11 +245,9 @@ public class KeycloakIdentity implements Identity {
     }
 
     private UserModel getUserFromSessionState() {
-        UserSessionProvider sessions = keycloakSession.sessions();
-        UserSessionModel userSession = sessions.getUserSession(realm, accessToken.getSessionState());
-
+        UserSessionModel userSession = userSessionProvider.getUserSession(realm, accessToken.getSessionState());
         if (userSession == null) {
-            userSession = sessions.getOfflineUserSession(realm, accessToken.getSessionState());
+            userSession = userSessionProvider.getOfflineUserSession(realm, accessToken.getSessionState());
         }
 
         return userSession.getUser();

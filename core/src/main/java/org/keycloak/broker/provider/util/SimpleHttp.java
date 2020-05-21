@@ -20,6 +20,8 @@ package org.keycloak.broker.provider.util;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hsbc.unified.iam.core.util.Base64;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.apache.http.*;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -28,10 +30,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicNameValuePair;
-import com.hsbc.unified.iam.core.util.Base64;
 import org.keycloak.connections.httpclient.HttpClientProvider;
-import org.keycloak.models.KeycloakSession;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
@@ -75,7 +74,7 @@ public class SimpleHttp {
     @Autowired
     private HttpClientProvider httpClientProvider;
 
-    public SimpleHttp doDelete(String url, KeycloakSession session) {
+    public SimpleHttp doDelete(String url) {
         return doDelete(url, httpClientProvider.getHttpClient());
     }
 
@@ -83,7 +82,7 @@ public class SimpleHttp {
         return new SimpleHttp(url, "DELETE", client);
     }
 
-    public SimpleHttp doGet(String url, KeycloakSession session) {
+    public SimpleHttp doGet(String url) {
         return doGet(url, httpClientProvider.getHttpClient());
     }
 
@@ -91,7 +90,7 @@ public class SimpleHttp {
         return new SimpleHttp(url, "GET", client);
     }
 
-    public SimpleHttp doPost(String url, KeycloakSession session) {
+    public SimpleHttp doPost(String url) {
         return doPost(url, httpClientProvider.getHttpClient());
     }
 

@@ -17,13 +17,10 @@
 
 package org.keycloak.connections.jpa.updater.liquibase.lock;
 
-import org.keycloak.common.util.Retry;
 import org.keycloak.connections.jpa.JpaConnectionProviderFactory;
 import org.keycloak.connections.jpa.updater.liquibase.conn.LiquibaseConnectionProviderFactory;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.dblock.DBLockProvider;
 import org.keycloak.models.dblock.DBLockProviderFactory;
-import org.keycloak.models.utils.KeycloakModelUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +34,6 @@ import java.sql.SQLException;
 public class LiquibaseDBLockProvider implements DBLockProvider {
     private static final Logger LOG = LoggerFactory.getLogger(LiquibaseDBLockProvider.class);
 
-    private final KeycloakSession session;
     // 10 should be sufficient
     private int DEFAULT_MAX_ATTEMPTS = 10;
     private Connection dbConnection;
@@ -50,10 +46,6 @@ public class LiquibaseDBLockProvider implements DBLockProvider {
     private LiquibaseConnectionProviderFactory liquibaseConnectionProviderFactory;
     @Autowired
     private DBLockProviderFactory dbLockProviderFactory;
-
-    public LiquibaseDBLockProvider(KeycloakSession session) {
-        this.session = session;
-    }
 
     private void lazyInit() {
         if (!initialized) {
@@ -71,34 +63,10 @@ public class LiquibaseDBLockProvider implements DBLockProvider {
 
     @Override
     public void waitForLock(Namespace lock) {
-        KeycloakModelUtils.suspendJtaTransaction(session.getSessionFactory(), () -> {
-
-            lazyInit();
-
-            LOG.debug("Going to lock namespace={}", lock);
-            Retry.executeWithBackoff((int iteration) -> {
-                namespaceLocked = lock;
-            }, (int iteration, Throwable e) -> {
-
-                if (e instanceof LockRetryException && iteration < (DEFAULT_MAX_ATTEMPTS - 1)) {
-                    // Indicates we should try to acquire lock again in different transaction
-                    safeRollbackConnection();
-                    restart();
-                } else {
-                    safeRollbackConnection();
-                    safeCloseConnection();
-                }
-
-            }, DEFAULT_MAX_ATTEMPTS, 10);
-        });
-
     }
 
     @Override
     public void releaseLock() {
-        KeycloakModelUtils.suspendJtaTransaction(session.getSessionFactory(), () -> {
-            lazyInit();
-        });
     }
 
     @Override
@@ -114,22 +82,10 @@ public class LiquibaseDBLockProvider implements DBLockProvider {
 
     @Override
     public void destroyLockInfo() {
-        KeycloakModelUtils.suspendJtaTransaction(session.getSessionFactory(), () -> {
-            lazyInit();
-
-            try {
-                dbConnection.commit();
-                LOG.debug("Destroyed lock table");
-            } catch (SQLException de) {
-                LOG.error("Failed to destroy lock table");
-                safeRollbackConnection();
-            }
-        });
     }
 
     @Override
     public void close() {
-        KeycloakModelUtils.suspendJtaTransaction(session.getSessionFactory(), this::safeCloseConnection);
     }
 
     private void safeRollbackConnection() {

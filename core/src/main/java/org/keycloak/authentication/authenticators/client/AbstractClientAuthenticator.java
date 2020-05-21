@@ -19,13 +19,11 @@ package org.keycloak.authentication.authenticators.client;
 
 import org.keycloak.authentication.ClientAuthenticator;
 import org.keycloak.authentication.ClientAuthenticatorFactory;
-import org.keycloak.models.KeycloakSession;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public abstract class AbstractClientAuthenticator implements ClientAuthenticator, ClientAuthenticatorFactory {
-
     @Override
     public ClientAuthenticator create() {
         return this;
@@ -33,11 +31,6 @@ public abstract class AbstractClientAuthenticator implements ClientAuthenticator
 
     @Override
     public void close() {
-    }
-
-    @Override
-    public ClientAuthenticator create(KeycloakSession session) {
-        return this;
     }
 
     @Override

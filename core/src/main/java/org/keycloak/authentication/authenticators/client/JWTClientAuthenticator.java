@@ -18,12 +18,12 @@
 package org.keycloak.authentication.authenticators.client;
 
 
-import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import com.hsbc.unified.iam.core.constants.OAuth2Constants;
+import com.hsbc.unified.iam.core.util.Time;
+import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.ClientAuthenticationFlowContext;
 import org.keycloak.authentication.ClientAuthenticator;
-import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.keys.loader.PublicKeyStorageManager;
 import org.keycloak.models.ClientModel;
@@ -175,7 +175,7 @@ public class JWTClientAuthenticator extends AbstractClientAuthenticator {
     }
 
     protected PublicKey getSignatureValidationKey(ClientModel client, ClientAuthenticationFlowContext context, JWSInput jws) {
-        PublicKey publicKey = publicKeyStorageManager.getClientPublicKey(context.getSession(), client, jws);
+        PublicKey publicKey = publicKeyStorageManager.getClientPublicKey(client, jws);
         if (publicKey == null) {
             Response challengeResponse = ClientAuthUtil.errorResponse(Response.Status.BAD_REQUEST.getStatusCode(), "unauthorized_client", "Unable to load public key");
             context.failure(AuthenticationFlowError.CLIENT_CREDENTIALS_SETUP_REQUIRED, challengeResponse);

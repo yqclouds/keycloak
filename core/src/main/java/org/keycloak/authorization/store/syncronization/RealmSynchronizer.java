@@ -18,31 +18,29 @@
 
 package org.keycloak.authorization.store.syncronization;
 
-import org.keycloak.authorization.AuthorizationProvider;
+import com.hsbc.unified.iam.entity.events.RealmRemovedEvent;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
+import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.RealmModel.RealmRemovedEvent;
-import org.keycloak.provider.ProviderFactory;
+import org.keycloak.models.RealmModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /*
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
 public class RealmSynchronizer implements Synchronizer<RealmRemovedEvent> {
+    @Autowired
+    private AuthorizationProvider authorizationProvider;
+
     @Override
     public void synchronize(RealmRemovedEvent event, KeycloakSessionFactory factory) {
-        ProviderFactory<AuthorizationProvider> providerFactory = factory.getProviderFactory(AuthorizationProvider.class);
-        AuthorizationProvider authorizationProvider = providerFactory.create(event.getSession());
         StoreFactory storeFactory = authorizationProvider.getStoreFactory();
-
-        event.getRealm().getClients().forEach(clientModel -> {
+        ((RealmModel) event.getSource()).getClients().forEach(clientModel -> {
             ResourceServerModel resourceServer = storeFactory.getResourceServerStore().findById(clientModel.getId());
 
             if (resourceServer != null) {
                 String id = resourceServer.getId();
-                //storeFactory.getResourceStore().findByResourceServer(id).forEach(resource -> storeFactory.getResourceStore().delete(resource.getId()));
-                //storeFactory.getScopeStore().findByResourceServer(id).forEach(scope -> storeFactory.getScopeStore().delete(scope.getId()));
-                //storeFactory.getPolicyStore().findByResourceServer(id).forEach(scope -> storeFactory.getPolicyStore().delete(scope.getId()));
                 storeFactory.getResourceServerStore().delete(id);
             }
         });

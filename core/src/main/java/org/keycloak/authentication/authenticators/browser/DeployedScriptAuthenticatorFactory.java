@@ -44,7 +44,7 @@ public final class DeployedScriptAuthenticatorFactory extends ScriptBasedAuthent
     }
 
     @Override
-    public Authenticator create(KeycloakSession session) {
+    public Authenticator create() {
         return new ScriptBasedAuthenticator() {
             @Override
             protected AuthenticatorConfigModel getAuthenticatorConfig(AuthenticationFlowContext context) {

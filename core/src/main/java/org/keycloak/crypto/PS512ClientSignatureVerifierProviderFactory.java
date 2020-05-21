@@ -17,7 +17,6 @@
 package org.keycloak.crypto;
 
 import com.hsbc.unified.iam.core.crypto.Algorithm;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +32,7 @@ public class PS512ClientSignatureVerifierProviderFactory implements ClientSignat
     }
 
     @Override
-    public ClientSignatureVerifierProvider create(KeycloakSession session) {
-        return new AsymmetricClientSignatureVerifierProvider(session, Algorithm.PS512);
+    public ClientSignatureVerifierProvider create() {
+        return new AsymmetricClientSignatureVerifierProvider(Algorithm.PS512);
     }
 }

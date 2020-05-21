@@ -33,8 +33,8 @@ public class ES512ClientSignatureVerifierProviderFactory implements ClientSignat
     }
 
     @Override
-    public ClientSignatureVerifierProvider create(KeycloakSession session) {
-        return new ECDSAClientSignatureVerifierProvider(session, Algorithm.ES512);
+    public ClientSignatureVerifierProvider create() {
+        return new ECDSAClientSignatureVerifierProvider(Algorithm.ES512);
     }
 
 }

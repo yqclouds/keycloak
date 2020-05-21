@@ -17,6 +17,7 @@
 
 package org.keycloak.authentication.authenticators.browser;
 
+import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.authentication.AbstractFormAuthenticator;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
@@ -26,7 +27,6 @@ import org.keycloak.events.Errors;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.ModelDuplicateException;
 import org.keycloak.models.PasswordPolicy;
-import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.representations.idm.CredentialRepresentation;
@@ -133,6 +133,8 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
         return user != null && validateUser(context, user, inputData);
     }
 
+    private KeycloakModelUtils keycloakModelUtils;
+
     private UserModel getUser(AuthenticationFlowContext context, MultivaluedMap<String, String> inputData) {
         String username = inputData.getFirst(AuthenticationManager.FORM_USERNAME);
         if (username == null) {
@@ -150,7 +152,7 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
 
         UserModel user = null;
         try {
-            user = KeycloakModelUtils.findUserByNameOrEmail(context.getSession(), context.getRealm(), username);
+            user = keycloakModelUtils.findUserByNameOrEmail(context.getRealm(), username);
         } catch (ModelDuplicateException mde) {
             //ServicesLogger.LOGGER.modelDuplicateException(mde);
 
@@ -221,7 +223,7 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
 
     protected boolean isTemporarilyDisabledByBruteForce(AuthenticationFlowContext context, UserModel user) {
         if (context.getRealm().isBruteForceProtected()) {
-            if (context.getProtector().isTemporarilyDisabled(context.getSession(), context.getRealm(), user)) {
+            if (context.getProtector().isTemporarilyDisabled(context.getRealm(), user)) {
                 context.getEvent().user(user);
                 context.getEvent().error(Errors.USER_TEMPORARILY_DISABLED);
                 Response challengeResponse = challenge(context, tempDisabledError());

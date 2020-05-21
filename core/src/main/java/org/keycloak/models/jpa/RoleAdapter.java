@@ -22,7 +22,6 @@ import com.hsbc.unified.iam.entity.RoleAttribute;
 import com.hsbc.unified.iam.facade.model.JpaModel;
 import com.hsbc.unified.iam.repository.RoleAttributeRepository;
 import com.hsbc.unified.iam.repository.RoleRepository;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleContainerModel;
 import org.keycloak.models.RoleModel;
@@ -38,17 +37,15 @@ import java.util.*;
 public class RoleAdapter implements RoleModel, JpaModel<Role> {
     protected Role role;
     protected RealmModel realm;
-    protected KeycloakSession session;
 
     @Autowired
     private RoleRepository roleRepository;
     @Autowired
     private RoleAttributeRepository roleAttributeRepository;
 
-    public RoleAdapter(KeycloakSession session, RealmModel realm, Role role) {
+    public RoleAdapter(RealmModel realm, Role role) {
         this.realm = realm;
         this.role = role;
-        this.session = session;
     }
 
     public Role toRoleEntity(RoleModel model) {
@@ -117,7 +114,7 @@ public class RoleAdapter implements RoleModel, JpaModel<Role> {
         Set<RoleModel> set = new HashSet<>();
 
         for (Role composite : getEntity().getCompositeRoles()) {
-            set.add(new RoleAdapter(session, realm, composite));
+            set.add(new RoleAdapter(realm, composite));
 
             // todo I want to do this, but can't as you get stack overflow
             // set.add(session.realms().getRoleById(composite.getId(), realm));

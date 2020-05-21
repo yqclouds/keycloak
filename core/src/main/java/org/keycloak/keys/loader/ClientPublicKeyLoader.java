@@ -17,9 +17,9 @@
 
 package org.keycloak.keys.loader;
 
+import com.hsbc.unified.iam.core.crypto.Algorithm;
 import org.keycloak.authentication.authenticators.client.JWTClientAuthenticator;
 import org.keycloak.common.util.KeyUtils;
-import com.hsbc.unified.iam.core.crypto.Algorithm;
 import org.keycloak.crypto.KeyType;
 import org.keycloak.crypto.KeyUse;
 import org.keycloak.crypto.KeyWrapper;
@@ -27,7 +27,6 @@ import org.keycloak.jose.jwk.JSONWebKeySet;
 import org.keycloak.jose.jwk.JWK;
 import org.keycloak.keys.PublicKeyLoader;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ModelException;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.protocol.oidc.OIDCAdvancedConfigWrapper;
@@ -52,21 +51,18 @@ public class ClientPublicKeyLoader implements PublicKeyLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClientPublicKeyLoader.class);
 
-    private final KeycloakSession session;
     private final ClientModel client;
     private final JWK.Use keyUse;
 
     @Autowired
     private JWKSHttpUtils jwksHttpUtils;
 
-    public ClientPublicKeyLoader(KeycloakSession session, ClientModel client) {
-        this.session = session;
+    public ClientPublicKeyLoader(ClientModel client) {
         this.client = client;
         this.keyUse = JWK.Use.SIG;
     }
 
-    public ClientPublicKeyLoader(KeycloakSession session, ClientModel client, JWK.Use keyUse) {
-        this.session = session;
+    public ClientPublicKeyLoader(ClientModel client, JWK.Use keyUse) {
         this.client = client;
         this.keyUse = keyUse;
     }
@@ -105,13 +101,16 @@ public class ClientPublicKeyLoader implements PublicKeyLoader {
         return keyWrapper;
     }
 
+    @Autowired
+    private ResolveRelative resolveRelative;
+
     @Override
     public Map<String, KeyWrapper> loadKeys() throws Exception {
         OIDCAdvancedConfigWrapper config = OIDCAdvancedConfigWrapper.fromClientModel(client);
         if (config.isUseJwksUrl()) {
             String jwksUrl = config.getJwksUrl();
-            jwksUrl = ResolveRelative.resolveRelativeUri(session, client.getRootUrl(), jwksUrl);
-            JSONWebKeySet jwks = jwksHttpUtils.sendJwksRequest(session, jwksUrl);
+            jwksUrl = resolveRelative.resolveRelativeUri(client.getRootUrl(), jwksUrl);
+            JSONWebKeySet jwks = jwksHttpUtils.sendJwksRequest(jwksUrl);
             return JWKSUtils.getKeyWrappersForUse(jwks, keyUse);
         } else if (keyUse == JWK.Use.SIG) {
             try {
@@ -127,6 +126,4 @@ public class ClientPublicKeyLoader implements PublicKeyLoader {
             return Collections.emptyMap();
         }
     }
-
-
 }

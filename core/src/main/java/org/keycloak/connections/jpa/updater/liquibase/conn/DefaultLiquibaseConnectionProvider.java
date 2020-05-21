@@ -49,7 +49,7 @@ public class DefaultLiquibaseConnectionProvider implements LiquibaseConnectionPr
     private volatile boolean initialized = false;
 
     @Override
-    public LiquibaseConnectionProvider create(KeycloakSession session) {
+    public LiquibaseConnectionProvider create() {
         if (!initialized) {
             synchronized (this) {
                 if (!initialized) {

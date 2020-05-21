@@ -16,14 +16,13 @@
  */
 package org.keycloak.authentication.actiontoken;
 
-import org.jboss.resteasy.spi.HttpRequest;
-import com.hsbc.unified.iam.core.constants.OAuth2Constants;
-import org.keycloak.authentication.AuthenticationProcessor;
 import com.hsbc.unified.iam.core.ClientConnection;
+import com.hsbc.unified.iam.core.constants.OAuth2Constants;
+import org.jboss.resteasy.spi.HttpRequest;
+import org.keycloak.authentication.AuthenticationProcessor;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.SystemClientUtil;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
@@ -41,13 +40,8 @@ import javax.ws.rs.core.UriInfo;
  * @author hmlnarik
  */
 public class ActionTokenContext<T extends JsonWebToken> {
-
-    private final KeycloakSession session;
-
-    ;
     private final RealmModel realm;
 
-    ;
     private final UriInfo uriInfo;
     private final ClientConnection clientConnection;
     private final HttpRequest request;
@@ -59,11 +53,15 @@ public class ActionTokenContext<T extends JsonWebToken> {
     private boolean authenticationSessionFresh;
     private String executionId;
 
-    public ActionTokenContext(KeycloakSession session, RealmModel realm, UriInfo uriInfo,
-                              ClientConnection clientConnection, HttpRequest request,
-                              EventBuilder event, ActionTokenHandler<T> handler, String executionId,
-                              ProcessAuthenticateFlow processFlow, ProcessBrokerFlow processBrokerFlow) {
-        this.session = session;
+    public ActionTokenContext(RealmModel realm,
+                              UriInfo uriInfo,
+                              ClientConnection clientConnection,
+                              HttpRequest request,
+                              EventBuilder event,
+                              ActionTokenHandler<T> handler,
+                              String executionId,
+                              ProcessAuthenticateFlow processFlow,
+                              ProcessBrokerFlow processBrokerFlow) {
         this.realm = realm;
         this.uriInfo = uriInfo;
         this.clientConnection = clientConnection;
@@ -81,10 +79,6 @@ public class ActionTokenContext<T extends JsonWebToken> {
 
     public void setEvent(EventBuilder event) {
         this.event = event;
-    }
-
-    public KeycloakSession getSession() {
-        return session;
     }
 
     public RealmModel getRealm() {
@@ -110,7 +104,7 @@ public class ActionTokenContext<T extends JsonWebToken> {
         // set up the account service as the endpoint to call.
         ClientModel client = clientId != null ? realm.getClientByClientId(clientId) : SystemClientUtil.getSystemClient(realm);
 
-        RootAuthenticationSessionModel rootAuthSession = new AuthenticationSessionManager(session).createAuthenticationSession(realm, true);
+        RootAuthenticationSessionModel rootAuthSession = new AuthenticationSessionManager().createAuthenticationSession(realm, true);
         authSession = rootAuthSession.createAuthenticationSession(client);
 
         authSession.setAction(AuthenticationSessionModel.Action.AUTHENTICATE.name());
@@ -137,7 +131,7 @@ public class ActionTokenContext<T extends JsonWebToken> {
         this.authenticationSessionFresh = isFresh;
         if (this.event != null) {
             ClientModel client = authenticationSession == null ? null : authenticationSession.getClient();
-            this.event.client((String) (client == null ? null : client.getClientId()));
+            this.event.client(client == null ? null : client.getClientId());
         }
     }
 

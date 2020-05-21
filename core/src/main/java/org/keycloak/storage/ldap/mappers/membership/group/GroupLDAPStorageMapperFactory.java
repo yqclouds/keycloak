@@ -245,7 +245,7 @@ public class GroupLDAPStorageMapperFactory extends AbstractLDAPStorageMapperFact
     }
 
     @Override
-    public void onUpdate(KeycloakSession session, RealmModel realm, ComponentModel oldModel, ComponentModel newModel) {
+    public void onUpdate(RealmModel realm, ComponentModel oldModel, ComponentModel newModel) {
         ComponentModel parentModel = realm.getComponent(newModel.getParentId());
         UserStorageProviderModel parent = new UserStorageProviderModel(parentModel);
         onParentUpdate(realm, parent, parent, newModel);

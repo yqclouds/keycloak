@@ -21,22 +21,20 @@ import org.keycloak.models.KeycloakSession;
 
 public class AsymmetricSignatureProvider implements SignatureProvider {
 
-    private final KeycloakSession session;
     private final String algorithm;
 
-    public AsymmetricSignatureProvider(KeycloakSession session, String algorithm) {
-        this.session = session;
+    public AsymmetricSignatureProvider(String algorithm) {
         this.algorithm = algorithm;
     }
 
     @Override
     public SignatureSignerContext signer() throws SignatureException {
-        return new ServerAsymmetricSignatureSignerContext(session, algorithm);
+        return new ServerAsymmetricSignatureSignerContext(algorithm);
     }
 
     @Override
     public SignatureVerifierContext verifier(String kid) throws VerificationException {
-        return new ServerAsymmetricSignatureVerifierContext(session, kid, algorithm);
+        return new ServerAsymmetricSignatureVerifierContext(kid, algorithm);
     }
 
 }

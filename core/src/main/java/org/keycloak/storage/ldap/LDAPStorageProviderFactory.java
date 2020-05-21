@@ -211,7 +211,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
 
 
     @Override
-    public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel config) throws ComponentValidationException {
+    public void validateConfiguration(RealmModel realm, ComponentModel config) throws ComponentValidationException {
         LDAPConfig cfg = new LDAPConfig(config.getConfig());
         String customFilter = cfg.getCustomUserSearchFilter();
         LDAPUtils.validateCustomLdapFilter(customFilter);
@@ -256,7 +256,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
 
     // Best effort to create appropriate mappers according to our LDAP config
     @Override
-    public void onCreate(KeycloakSession session, RealmModel realm, ComponentModel model) {
+    public void onCreate(RealmModel realm, ComponentModel model) {
         LDAPConfig ldapConfig = new LDAPConfig(model.getConfig());
 
         boolean activeDirectory = ldapConfig.isActiveDirectory();
@@ -373,11 +373,11 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
     }
 
     @Override
-    public void onUpdate(KeycloakSession session, RealmModel realm, ComponentModel oldModel, ComponentModel newModel) {
+    public void onUpdate(RealmModel realm, ComponentModel oldModel, ComponentModel newModel) {
     }
 
     @Override
-    public void preRemove(KeycloakSession session, RealmModel realm, ComponentModel model) {
+    public void preRemove(RealmModel realm, ComponentModel model) {
     }
 
     @Override

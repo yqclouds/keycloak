@@ -18,12 +18,15 @@
 package org.keycloak.models.jpa;
 
 import com.hsbc.unified.iam.entity.*;
+import com.hsbc.unified.iam.entity.events.ClientUpdatedEvent;
 import com.hsbc.unified.iam.facade.model.JpaModel;
 import com.hsbc.unified.iam.repository.*;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 
 import java.security.MessageDigest;
 import java.util.*;
@@ -33,11 +36,13 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class ClientAdapter implements ClientModel, JpaModel<Client> {
+public class ClientAdapter implements ClientModel, JpaModel<Client>, ApplicationEventPublisherAware {
 
-    protected KeycloakSession session;
     protected RealmModel realm;
     protected Client entity;
+
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @Autowired
     private RoleAdapter roleAdapter;
@@ -54,8 +59,12 @@ public class ClientAdapter implements ClientModel, JpaModel<Client> {
     @Autowired
     private ProtocolMapperRepository protocolMapperRepository;
 
-    public ClientAdapter(RealmModel realm, KeycloakSession session, Client entity) {
-        this.session = session;
+    @Autowired
+    private UserProvider userProvider;
+    @Autowired
+    private RealmProvider realmProvider;
+
+    public ClientAdapter(RealmModel realm, Client entity) {
         this.realm = realm;
         this.entity = entity;
     }
@@ -447,7 +456,7 @@ public class ClientAdapter implements ClientModel, JpaModel<Client> {
     public void removeProtocolMapper(ProtocolMapperModel mapping) {
         ProtocolMapper toDelete = getProtocolMapperEntity(mapping.getId());
         if (toDelete != null) {
-            session.users().preRemove(mapping);
+            userProvider.preRemove(mapping);
             this.entity.getProtocolMappers().remove(toDelete);
             protocolMapperRepository.delete(toDelete);
         }
@@ -494,17 +503,7 @@ public class ClientAdapter implements ClientModel, JpaModel<Client> {
 
     @Override
     public void updateClient() {
-        session.getSessionFactory().publish(new RealmModel.ClientUpdatedEvent() {
-            @Override
-            public ClientModel getUpdatedClient() {
-                return ClientAdapter.this;
-            }
-
-            @Override
-            public KeycloakSession getSession() {
-                return session;
-            }
-        });
+        applicationEventPublisher.publishEvent(new ClientUpdatedEvent(this));
     }
 
     @Override
@@ -619,37 +618,37 @@ public class ClientAdapter implements ClientModel, JpaModel<Client> {
 
     @Override
     public RoleModel getRole(String name) {
-        return session.realms().getClientRole(realm, this, name);
+        return realmProvider.getClientRole(realm, this, name);
     }
 
     @Override
     public RoleModel addRole(String name) {
-        return session.realms().addClientRole(realm, this, name);
+        return realmProvider.addClientRole(realm, this, name);
     }
 
     @Override
     public RoleModel addRole(String id, String name) {
-        return session.realms().addClientRole(realm, this, id, name);
+        return realmProvider.addClientRole(realm, this, id, name);
     }
 
     @Override
     public boolean removeRole(RoleModel roleModel) {
-        return session.realms().removeRole(realm, roleModel);
+        return realmProvider.removeRole(realm, roleModel);
     }
 
     @Override
     public Set<RoleModel> getRoles() {
-        return session.realms().getClientRoles(realm, this);
+        return realmProvider.getClientRoles(realm, this);
     }
 
     @Override
     public Set<RoleModel> getRoles(Integer first, Integer max) {
-        return session.realms().getClientRoles(realm, this, first, max);
+        return realmProvider.getClientRoles(realm, this, first, max);
     }
 
     @Override
     public Set<RoleModel> searchForRoles(String search, Integer first, Integer max) {
-        return session.realms().searchForClientRoles(realm, this, search, first, max);
+        return realmProvider.searchForClientRoles(realm, this, search, first, max);
     }
 
     @Override
@@ -779,5 +778,10 @@ public class ClientAdapter implements ClientModel, JpaModel<Client> {
 
     public String toString() {
         return getClientId();
+    }
+
+    @Override
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 }

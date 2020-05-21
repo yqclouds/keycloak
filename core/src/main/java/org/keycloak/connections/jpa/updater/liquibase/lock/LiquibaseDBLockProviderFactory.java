@@ -50,8 +50,8 @@ public class LiquibaseDBLockProviderFactory implements DBLockProviderFactory {
     private LiquibaseConnectionProviderFactory liquibaseConnectionProviderFactory;
 
     @Override
-    public LiquibaseDBLockProvider create(KeycloakSession session) {
-        LiquibaseDBLockProvider provider = new LiquibaseDBLockProvider(session);
+    public LiquibaseDBLockProvider create() {
+        LiquibaseDBLockProvider provider = new LiquibaseDBLockProvider();
         provider.setDbLockProviderFactory(this);
         provider.setJpaConnectionProviderFactory(jpaConnectionProviderFactory);
         provider.setLiquibaseConnectionProviderFactory(liquibaseConnectionProviderFactory);

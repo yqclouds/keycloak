@@ -18,9 +18,10 @@
 
 package org.keycloak.authorization;
 
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -34,13 +35,16 @@ public class DefaultAuthorizationProviderFactory implements AuthorizationProvide
         return "authorization";
     }
 
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     @Override
-    public AuthorizationProvider create(KeycloakSession session) {
-        return create(session, session.getContext().getRealm());
+    public AuthorizationProvider create() {
+        return create(keycloakContext.getRealm());
     }
 
     @Override
-    public AuthorizationProvider create(KeycloakSession session, RealmModel realm) {
+    public AuthorizationProvider create(RealmModel realm) {
         return new AuthorizationProvider(realm);
     }
 }

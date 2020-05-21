@@ -28,5 +28,5 @@ import org.keycloak.models.RealmModel;
  * @version $Revision: 1 $
  */
 public interface OnUpdateComponent {
-    void onUpdate(KeycloakSession session, RealmModel realm, ComponentModel oldModel, ComponentModel newModel);
+    void onUpdate(RealmModel realm, ComponentModel oldModel, ComponentModel newModel);
 }

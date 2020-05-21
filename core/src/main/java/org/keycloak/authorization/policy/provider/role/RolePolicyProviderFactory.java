@@ -18,21 +18,21 @@
 
 package org.keycloak.authorization.policy.provider.role;
 
-import org.keycloak.Config;
-import org.keycloak.authorization.AuthorizationProvider;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
+import com.hsbc.unified.iam.entity.events.RoleRemovedEvent;
 import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
+import org.keycloak.Config;
+import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.authorization.store.ResourceServerStore;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.*;
-import org.keycloak.models.RoleContainerModel.RoleRemovedEvent;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.representations.idm.authorization.RolePolicyRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -64,7 +64,7 @@ public class RolePolicyProviderFactory implements PolicyProviderFactory<RolePoli
     }
 
     @Override
-    public PolicyProvider create(KeycloakSession session) {
+    public PolicyProvider create() {
         return provider;
     }
 
@@ -204,7 +204,7 @@ public class RolePolicyProviderFactory implements PolicyProviderFactory<RolePoli
             if (event instanceof RoleRemovedEvent) {
                 StoreFactory storeFactory = authorizationProvider.getStoreFactory();
                 PolicyStore policyStore = storeFactory.getPolicyStore();
-                RoleModel removedRole = ((RoleRemovedEvent) event).getRole();
+                RoleModel removedRole = (RoleModel) event.getSource();
                 RoleContainerModel container = removedRole.getContainer();
                 ResourceServerStore resourceServerStore = storeFactory.getResourceServerStore();
 

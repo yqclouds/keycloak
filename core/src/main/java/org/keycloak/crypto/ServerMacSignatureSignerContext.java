@@ -16,16 +16,30 @@
  */
 package org.keycloak.crypto;
 
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeyManager;
+import org.keycloak.models.KeycloakContext;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class ServerMacSignatureSignerContext extends MacSignatureSignerContext {
+    private String algorithm;
 
-    public ServerMacSignatureSignerContext(KeycloakSession session, String algorithm) throws SignatureException {
-        super(getKey(session, algorithm));
+    public ServerMacSignatureSignerContext(String algorithm) throws SignatureException {
+        super(null);
+        this.algorithm = algorithm;
     }
 
-    private static KeyWrapper getKey(KeycloakSession session, String algorithm) {
-        KeyWrapper key = session.keys().getActiveKey(session.getContext().getRealm(), KeyUse.SIG, algorithm);
+    @Override
+    public void setKey(KeyWrapper key) {
+        super.setKey(getKey(algorithm));
+    }
+
+    @Autowired
+    private KeycloakContext keycloakContext;
+    @Autowired
+    private KeyManager keyManager;
+
+    private KeyWrapper getKey(String algorithm) {
+        KeyWrapper key = keyManager.getActiveKey(keycloakContext.getRealm(), KeyUse.SIG, algorithm);
         if (key == null) {
             throw new SignatureException("Active key for " + algorithm + " not found");
         }

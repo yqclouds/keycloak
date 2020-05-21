@@ -65,15 +65,15 @@ class CodeGenerateUtil {
 
     interface ClientSessionParser<CS extends CommonClientSessionModel> {
 
-        CS parseSession(String code, String tabId, KeycloakSession session, RealmModel realm, ClientModel client, EventBuilder event);
+        CS parseSession(String code, String tabId, RealmModel realm, ClientModel client, EventBuilder event);
 
-        String retrieveCode(KeycloakSession session, CS clientSession);
+        String retrieveCode(CS clientSession);
 
-        void removeExpiredSession(KeycloakSession session, CS clientSession);
+        void removeExpiredSession(CS clientSession);
 
-        boolean verifyCode(KeycloakSession session, String code, CS clientSession);
+        boolean verifyCode(String code, CS clientSession);
 
-        boolean isExpired(KeycloakSession session, String code, CS clientSession);
+        boolean isExpired(String code, CS clientSession);
 
         int getTimestamp(CS clientSession);
 
@@ -90,13 +90,13 @@ class CodeGenerateUtil {
     private static class AuthenticationSessionModelParser implements ClientSessionParser<AuthenticationSessionModel> {
 
         @Override
-        public AuthenticationSessionModel parseSession(String code, String tabId, KeycloakSession session, RealmModel realm, ClientModel client, EventBuilder event) {
+        public AuthenticationSessionModel parseSession(String code, String tabId, RealmModel realm, ClientModel client, EventBuilder event) {
             // Read authSessionID from cookie. Code is ignored for now
-            return new AuthenticationSessionManager(session).getCurrentAuthenticationSession(realm, client, tabId);
+            return new AuthenticationSessionManager().getCurrentAuthenticationSession(realm, client, tabId);
         }
 
         @Override
-        public String retrieveCode(KeycloakSession session, AuthenticationSessionModel authSession) {
+        public String retrieveCode(AuthenticationSessionModel authSession) {
             String nextCode = authSession.getAuthNote(ACTIVE_CODE);
             if (nextCode == null) {
                 String actionId = Base64Url.encode(KeycloakModelUtils.generateSecret());
@@ -111,13 +111,13 @@ class CodeGenerateUtil {
 
 
         @Override
-        public void removeExpiredSession(KeycloakSession session, AuthenticationSessionModel clientSession) {
-            new AuthenticationSessionManager(session).removeAuthenticationSession(clientSession.getRealm(), clientSession, true);
+        public void removeExpiredSession(AuthenticationSessionModel clientSession) {
+            new AuthenticationSessionManager().removeAuthenticationSession(clientSession.getRealm(), clientSession, true);
         }
 
 
         @Override
-        public boolean verifyCode(KeycloakSession session, String code, AuthenticationSessionModel authSession) {
+        public boolean verifyCode(String code, AuthenticationSessionModel authSession) {
             String activeCode = authSession.getAuthNote(ACTIVE_CODE);
             if (activeCode == null) {
                 LOG.debug("Active code not found in authentication session");
@@ -131,7 +131,7 @@ class CodeGenerateUtil {
 
 
         @Override
-        public boolean isExpired(KeycloakSession session, String code, AuthenticationSessionModel clientSession) {
+        public boolean isExpired(String code, AuthenticationSessionModel clientSession) {
             return false;
         }
 

@@ -230,7 +230,7 @@ public class RegistrationRecaptcha implements FormAction, FormActionFactory, Con
     }
 
     @Override
-    public FormAction create(KeycloakSession session) {
+    public FormAction create() {
         return this;
     }
 

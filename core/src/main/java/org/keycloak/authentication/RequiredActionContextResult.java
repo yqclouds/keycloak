@@ -17,13 +17,16 @@
 
 package org.keycloak.authentication;
 
-import com.hsbc.unified.iam.core.constants.Constants;
-import org.jboss.resteasy.spi.HttpRequest;
 import com.hsbc.unified.iam.core.ClientConnection;
+import com.hsbc.unified.iam.core.constants.Constants;
 import com.hsbc.unified.iam.core.util.Time;
+import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.*;
+import org.keycloak.models.ClientModel;
+import org.keycloak.models.KeycloakContext;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.services.managers.ClientSessionCode;
 import org.keycloak.services.resources.LoginActionsService;
 import org.keycloak.sessions.AuthenticationSessionModel;
@@ -42,24 +45,24 @@ public class RequiredActionContextResult implements RequiredActionContext {
     protected AuthenticationSessionModel authenticationSession;
     protected RealmModel realm;
     protected EventBuilder eventBuilder;
-    protected KeycloakSession session;
     protected Status status;
     protected Response challenge;
     protected HttpRequest httpRequest;
     protected UserModel user;
     protected RequiredActionFactory factory;
 
+    @Autowired
+    private KeycloakContext context;
+
     public RequiredActionContextResult(AuthenticationSessionModel authSession,
-                                       RealmModel realm, EventBuilder eventBuilder, KeycloakSession session,
+                                       RealmModel realm, EventBuilder eventBuilder,
                                        HttpRequest httpRequest,
                                        UserModel user, RequiredActionFactory factory) {
         this.authenticationSession = authSession;
         this.realm = realm;
         this.eventBuilder = eventBuilder;
-        this.session = session;
         this.httpRequest = httpRequest;
         this.user = user;
-        this.factory = factory;
     }
 
     public RequiredActionFactory getFactory() {
@@ -88,17 +91,12 @@ public class RequiredActionContextResult implements RequiredActionContext {
 
     @Override
     public ClientConnection getConnection() {
-        return session.getContext().getConnection();
+        return context.getConnection();
     }
 
     @Override
     public UriInfo getUriInfo() {
-        return session.getContext().getUri();
-    }
-
-    @Override
-    public KeycloakSession getSession() {
-        return session;
+        return context.getUri();
     }
 
     @Override
@@ -115,7 +113,6 @@ public class RequiredActionContextResult implements RequiredActionContext {
     public void challenge(Response response) {
         status = Status.CHALLENGE;
         challenge = response;
-
     }
 
     @Override
@@ -151,7 +148,7 @@ public class RequiredActionContextResult implements RequiredActionContext {
 
     @Override
     public String generateCode() {
-        ClientSessionCode<AuthenticationSessionModel> accessCode = new ClientSessionCode<>(session, getRealm(), getAuthenticationSession());
+        ClientSessionCode<AuthenticationSessionModel> accessCode = new ClientSessionCode<>(getRealm(), getAuthenticationSession());
         authenticationSession.getParentSession().setTimestamp(Time.currentTime());
         return accessCode.getOrGenerateCode();
     }

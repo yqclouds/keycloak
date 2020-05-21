@@ -105,12 +105,12 @@ public class LogoutEndpoint {
         String redirect = postLogoutRedirectUri != null ? postLogoutRedirectUri : redirectUri;
 
         if (redirect != null) {
-            String validatedUri = RedirectUtils.verifyRealmRedirectUri(session, redirect);
+            String validatedUri = RedirectUtils.verifyRealmRedirectUri(redirect);
             if (validatedUri == null) {
                 event.event(EventType.LOGOUT);
                 event.detail(Details.REDIRECT_URI, redirect);
                 event.error(Errors.INVALID_REDIRECT_URI);
-                return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.INVALID_REDIRECT_URI);
+                return errorPage.error(null, Response.Status.BAD_REQUEST, Messages.INVALID_REDIRECT_URI);
             }
             redirect = validatedUri;
         }
@@ -128,7 +128,7 @@ public class LogoutEndpoint {
             } catch (OAuthErrorException e) {
                 event.event(EventType.LOGOUT);
                 event.error(Errors.INVALID_TOKEN);
-                return errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.SESSION_NOT_ACTIVE);
+                return errorPage.error(null, Response.Status.BAD_REQUEST, Messages.SESSION_NOT_ACTIVE);
             }
         }
 
@@ -139,7 +139,7 @@ public class LogoutEndpoint {
             return initiateBrowserLogout(userSession, redirect, state, initiatingIdp);
         } else if (userSession != null) {
             // identity cookie is missing but there's valid id_token_hint which matches session cookie => continue with browser logout
-            if (idToken != null && idToken.getSessionState().equals(AuthenticationManager.getSessionIdFromSessionCookie(session))) {
+            if (idToken != null && idToken.getSessionState().equals(AuthenticationManager.getSessionIdFromSessionCookie())) {
                 return initiateBrowserLogout(userSession, redirect, state, initiatingIdp);
             }
             // non browser logout

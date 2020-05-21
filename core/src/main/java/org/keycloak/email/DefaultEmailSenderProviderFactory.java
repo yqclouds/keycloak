@@ -29,8 +29,8 @@ import org.springframework.stereotype.Component;
 public class DefaultEmailSenderProviderFactory implements EmailSenderProviderFactory {
 
     @Override
-    public EmailSenderProvider create(KeycloakSession session) {
-        return new DefaultEmailSenderProvider(session);
+    public EmailSenderProvider create() {
+        return new DefaultEmailSenderProvider();
     }
 
     @Override

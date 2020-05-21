@@ -17,13 +17,14 @@
 
 package org.keycloak.authentication.requiredactions;
 
+import com.hsbc.unified.iam.core.constants.Constants;
 import com.hsbc.unified.iam.core.constants.OAuth2Constants;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.authentication.DisplayTypeRequiredActionFactory;
 import org.keycloak.authentication.RequiredActionContext;
 import org.keycloak.authentication.RequiredActionFactory;
 import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.authentication.actiontoken.verifyemail.VerifyEmailActionToken;
-import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.email.EmailException;
 import org.keycloak.email.EmailTemplateProvider;
 import org.keycloak.events.Details;
@@ -31,7 +32,7 @@ import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.forms.login.LoginFormsProvider;
-import com.hsbc.unified.iam.core.constants.Constants;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -92,7 +93,7 @@ public class VerifyEmail implements RequiredActionProvider, RequiredActionFactor
         if (!Objects.equals(authSession.getAuthNote(Constants.VERIFY_EMAIL_KEY), email)) {
             authSession.setAuthNote(Constants.VERIFY_EMAIL_KEY, email);
             EventBuilder event = context.getEvent().clone().event(EventType.SEND_VERIFY_EMAIL).detail(Details.EMAIL, email);
-            challenge = sendVerifyEmail(context.getSession(), loginFormsProvider, context.getUser(), context.getAuthenticationSession(), event);
+            challenge = sendVerifyEmail(loginFormsProvider, context.getUser(), context.getAuthenticationSession(), event);
         } else {
             challenge = loginFormsProvider.createResponse(UserModel.RequiredAction.VERIFY_EMAIL);
         }
@@ -118,13 +119,13 @@ public class VerifyEmail implements RequiredActionProvider, RequiredActionFactor
     }
 
     @Override
-    public RequiredActionProvider create(KeycloakSession session) {
+    public RequiredActionProvider create() {
         return this;
     }
 
 
     @Override
-    public RequiredActionProvider createDisplay(KeycloakSession session, String displayType) {
+    public RequiredActionProvider createDisplay(String displayType) {
         if (displayType == null) return this;
         if (!OAuth2Constants.DISPLAY_CONSOLE.equalsIgnoreCase(displayType)) return null;
         return ConsoleVerifyEmail.SINGLETON;
@@ -143,16 +144,19 @@ public class VerifyEmail implements RequiredActionProvider, RequiredActionFactor
         return UserModel.RequiredAction.VERIFY_EMAIL.name();
     }
 
-    private Response sendVerifyEmail(KeycloakSession session, LoginFormsProvider forms, UserModel user, AuthenticationSessionModel authSession, EventBuilder event) throws UriBuilderException, IllegalArgumentException {
-        RealmModel realm = session.getContext().getRealm();
-        UriInfo uriInfo = session.getContext().getUri();
+    @Autowired
+    private KeycloakContext context;
+
+    private Response sendVerifyEmail(LoginFormsProvider forms, UserModel user, AuthenticationSessionModel authSession, EventBuilder event) throws UriBuilderException, IllegalArgumentException {
+        RealmModel realm = context.getRealm();
+        UriInfo uriInfo = context.getUri();
 
         int validityInSecs = realm.getActionTokenGeneratedByUserLifespan(VerifyEmailActionToken.TOKEN_TYPE);
         int absoluteExpirationInSecs = Time.currentTime() + validityInSecs;
 
         String authSessionEncodedId = AuthenticationSessionCompoundId.fromAuthSession(authSession).getEncodedId();
         VerifyEmailActionToken token = new VerifyEmailActionToken(user.getId(), absoluteExpirationInSecs, authSessionEncodedId, user.getEmail(), authSession.getClient().getClientId());
-        UriBuilder builder = Urls.actionTokenBuilder(uriInfo.getBaseUri(), token.serialize(session, realm, uriInfo),
+        UriBuilder builder = Urls.actionTokenBuilder(uriInfo.getBaseUri(), token.serialize(realm, uriInfo),
                 authSession.getClient().getClientId(), authSession.getTabId());
         String link = builder.build(realm.getName()).toString();
         long expirationInMinutes = TimeUnit.SECONDS.toMinutes(validityInSecs);

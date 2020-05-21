@@ -18,7 +18,6 @@
 package org.keycloak.crypto;
 
 import org.keycloak.jose.jwe.JWEConstants;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +32,7 @@ public class Aes128CbcHmacSha256ContentEncryptionProviderFactory implements Cont
     }
 
     @Override
-    public ContentEncryptionProvider create(KeycloakSession session) {
-        return new AesCbcHmacShaContentEncryptionProvider(session, ID);
+    public ContentEncryptionProvider create() {
+        return new AesCbcHmacShaContentEncryptionProvider(ID);
     }
 }

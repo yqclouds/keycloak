@@ -42,7 +42,7 @@ public class CliUsernamePasswordAuthenticatorFactory implements AuthenticatorFac
     };
 
     @Override
-    public Authenticator create(KeycloakSession session) {
+    public Authenticator create() {
         return SINGLETON;
     }
 

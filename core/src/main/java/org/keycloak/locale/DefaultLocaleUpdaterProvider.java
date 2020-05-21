@@ -16,7 +16,7 @@
  */
 package org.keycloak.locale;
 
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.managers.AuthenticationManager;
@@ -24,18 +24,13 @@ import org.keycloak.services.util.CookieHelper;
 import org.keycloak.storage.ReadOnlyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.UriInfo;
 
 public class DefaultLocaleUpdaterProvider implements LocaleUpdaterProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(LocaleSelectorProvider.class);
-
-    private KeycloakSession session;
-
-    public DefaultLocaleUpdaterProvider(KeycloakSession session) {
-        this.session = session;
-    }
 
     @Override
     public void updateUsersLocale(UserModel user, String locale) {
@@ -50,10 +45,13 @@ public class DefaultLocaleUpdaterProvider implements LocaleUpdaterProvider {
         LOG.debug("Setting locale for user {} to {}", user.getUsername(), locale);
     }
 
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     @Override
     public void updateLocaleCookie(String locale) {
-        RealmModel realm = session.getContext().getRealm();
-        UriInfo uriInfo = session.getContext().getUri();
+        RealmModel realm = keycloakContext.getRealm();
+        UriInfo uriInfo = keycloakContext.getUri();
 
         boolean secure = realm.getSslRequired().isRequired(uriInfo.getRequestUri().getHost());
         CookieHelper.addCookie(LocaleSelectorProvider.LOCALE_COOKIE, locale, AuthenticationManager.getRealmCookiePath(realm, uriInfo), null, null, -1, secure, true);
@@ -62,10 +60,10 @@ public class DefaultLocaleUpdaterProvider implements LocaleUpdaterProvider {
 
     @Override
     public void expireLocaleCookie() {
-        RealmModel realm = session.getContext().getRealm();
-        UriInfo uriInfo = session.getContext().getUri();
+        RealmModel realm = keycloakContext.getRealm();
+        UriInfo uriInfo = keycloakContext.getUri();
 
-        boolean secure = realm.getSslRequired().isRequired(session.getContext().getConnection());
+        boolean secure = realm.getSslRequired().isRequired(keycloakContext.getConnection());
         CookieHelper.addCookie(LocaleSelectorProvider.LOCALE_COOKIE, "", AuthenticationManager.getRealmCookiePath(realm, uriInfo), null, "Expiring cookie", 0, secure, true);
     }
 

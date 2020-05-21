@@ -18,21 +18,21 @@
 
 package org.keycloak.authorization.policy.provider.user;
 
-import org.keycloak.Config;
-import org.keycloak.authorization.AuthorizationProvider;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
+import com.hsbc.unified.iam.entity.events.UserRemovedEvent;
 import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
+import org.keycloak.Config;
+import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.authorization.store.ResourceServerStore;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.*;
-import org.keycloak.models.UserModel.UserRemovedEvent;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.representations.idm.authorization.UserPolicyRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -65,7 +65,7 @@ public class UserPolicyProviderFactory implements PolicyProviderFactory<UserPoli
     }
 
     @Override
-    public PolicyProvider create(KeycloakSession session) {
+    public PolicyProvider create() {
         return null;
     }
 

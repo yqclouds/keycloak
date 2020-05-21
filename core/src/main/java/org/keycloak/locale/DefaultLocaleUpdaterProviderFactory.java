@@ -24,8 +24,8 @@ import org.springframework.stereotype.Component;
 @ProviderFactory(id = "default", providerClasses = LocaleUpdaterProvider.class)
 public class DefaultLocaleUpdaterProviderFactory implements LocaleUpdaterProviderFactory {
     @Override
-    public LocaleUpdaterProvider create(KeycloakSession session) {
-        return new DefaultLocaleUpdaterProvider(session);
+    public LocaleUpdaterProvider create() {
+        return new DefaultLocaleUpdaterProvider();
     }
 
     @Override

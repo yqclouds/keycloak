@@ -17,7 +17,6 @@
 
 package org.keycloak.services;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -29,23 +28,20 @@ import javax.ws.rs.core.Response;
  */
 public class ErrorPageException extends WebApplicationException {
 
-    private final KeycloakSession session;
     private final String errorMessage;
     private final Object[] parameters;
     private final AuthenticationSessionModel authSession;
     private Response.Status status;
 
 
-    public ErrorPageException(KeycloakSession session, Response.Status status, String errorMessage, Object... parameters) {
-        this.session = session;
+    public ErrorPageException(Response.Status status, String errorMessage, Object... parameters) {
         this.status = status;
         this.errorMessage = errorMessage;
         this.parameters = parameters;
         this.authSession = null;
     }
 
-    public ErrorPageException(KeycloakSession session, AuthenticationSessionModel authSession, Response.Status status, String errorMessage, Object... parameters) {
-        this.session = session;
+    public ErrorPageException(AuthenticationSessionModel authSession, Response.Status status, String errorMessage, Object... parameters) {
         this.status = status;
         this.errorMessage = errorMessage;
         this.parameters = parameters;
@@ -57,7 +53,7 @@ public class ErrorPageException extends WebApplicationException {
 
     @Override
     public Response getResponse() {
-        return errorPage.error(session, authSession, status, errorMessage, parameters);
+        return errorPage.error(authSession, status, errorMessage, parameters);
     }
 
 }

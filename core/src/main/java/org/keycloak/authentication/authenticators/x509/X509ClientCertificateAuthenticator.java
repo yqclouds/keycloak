@@ -142,7 +142,7 @@ public class X509ClientCertificateAuthenticator extends AbstractX509ClientCertif
                 return;
             }
             if (context.getRealm().isBruteForceProtected()) {
-                if (context.getProtector().isTemporarilyDisabled(context.getSession(), context.getRealm(), user)) {
+                if (context.getProtector().isTemporarilyDisabled(context.getRealm(), user)) {
                     context.getEvent().user(user);
                     context.getEvent().error(Errors.USER_TEMPORARILY_DISABLED);
                     // TODO use specific locale to load error messages

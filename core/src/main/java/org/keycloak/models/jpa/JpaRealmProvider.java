@@ -37,15 +37,12 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public class JpaRealmProvider implements RealmProvider, ApplicationEventPublisherAware {
     private ApplicationEventPublisher applicationEventPublisher;
-
-    private final KeycloakSession session;
 
     @Autowired
     private RealmService realmService;
@@ -76,9 +73,10 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
     @Autowired
     private ClientScopeClientMappingRepository clientScopeClientMappingRepository;
 
-    public JpaRealmProvider(KeycloakSession session) {
-        this.session = session;
-    }
+    @Autowired
+    private RealmProvider realmProvider;
+    @Autowired
+    private UserProvider userProvider;
 
     @Override
     public RealmModel createRealm(String name) {
@@ -89,12 +87,12 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
     public RealmModel createRealm(String id, String name) {
         Realm realm = this.realmService.createRealm(id, name);
         applicationEventPublisher.publishEvent(new RealmCreationEvent(realm));
-        return new RealmAdapter(session, realm);
+        return new RealmAdapter(realm);
     }
 
     @Override
     public RealmModel getRealm(String id) {
-        return new RealmAdapter(session, this.realmService.getRealm(id));
+        return new RealmAdapter(this.realmService.getRealm(id));
     }
 
     @Override
@@ -110,7 +108,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
     private List<RealmModel> getRealms(List<String> entities) {
         List<RealmModel> realms = new ArrayList<>();
         for (String id : entities) {
-            RealmModel realm = session.realms().getRealm(id);
+            RealmModel realm = realmProvider.getRealm(id);
             if (realm != null) realms.add(realm);
         }
         return realms;
@@ -127,7 +125,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
             throw new IllegalStateException("Should not be more than one realm with same name");
         }
 
-        return session.realms().getRealm(entities.get(0));
+        return realmProvider.getRealm(entities.get(0));
     }
 
     @Override
@@ -136,8 +134,8 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
         if (realm == null) {
             return false;
         }
-        final RealmAdapter adapter = new RealmAdapter(session, realm);
-        session.users().preRemove(adapter);
+        final RealmAdapter adapter = new RealmAdapter(realm);
+        userProvider.preRemove(adapter);
 
         realmService.removeDefaultGroups(realm);
         groupRoleMappingRepository.deleteGroupRoleMappingsByRealm(realm);
@@ -157,7 +155,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
         }
 
         for (GroupModel group : adapter.getGroups()) {
-            session.realms().removeGroup(adapter, group);
+            realmProvider.removeGroup(adapter, group);
         }
 
         clientInitialAccessRepository.removeClientInitialAccessByRealm(realm);
@@ -184,14 +182,14 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
         Realm ref = realmRepository.getOne(realm.getId());
         Role entity = roleService.createRole(id, name, ref);
-        return new RoleAdapter(session, realm, entity);
+        return new RoleAdapter(realm, entity);
     }
 
     @Override
     public RoleModel getRealmRole(RealmModel realm, String name) {
         List<String> roles = roleRepository.getRealmRoleIdByName(name, realm.getId());
         if (roles.isEmpty()) return null;
-        return session.realms().getRoleById(roles.get(0), realm);
+        return realmProvider.getRoleById(roles.get(0), realm);
     }
 
     @Override
@@ -207,7 +205,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
         Client clientEntity = clientRepository.getOne(client.getId());
         Role roleEntity = roleService.createRole(id, name, clientEntity, realm.getId());
-        return new RoleAdapter(session, realm, roleEntity);
+        return new RoleAdapter(realm, roleEntity);
     }
 
     @Override
@@ -216,7 +214,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
         if (roles.isEmpty()) return Collections.EMPTY_SET;
         Set<RoleModel> list = new HashSet<>();
         for (String id : roles) {
-            list.add(session.realms().getRoleById(id, realm));
+            list.add(realmProvider.getRoleById(id, realm));
         }
         return Collections.unmodifiableSet(list);
     }
@@ -225,9 +223,8 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
     public RoleModel getClientRole(RealmModel realm, ClientModel client, String name) {
         List<String> roles = roleRepository.getClientRoleIdByName(name, client.getId());
         if (roles.isEmpty()) return null;
-        return session.realms().getRoleById(roles.get(0), realm);
+        return realmProvider.getRoleById(roles.get(0), realm);
     }
-
 
     @Override
     public Set<RoleModel> getClientRoles(RealmModel realm, ClientModel client) {
@@ -235,7 +232,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
         List<String> roles = roleRepository.getClientRoleIds(client.getId());
         for (String id : roles) {
-            list.add(session.realms().getRoleById(id, realm));
+            list.add(realmProvider.getRoleById(id, realm));
         }
 
         return list;
@@ -255,7 +252,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
     protected Set<RoleModel> getRoles(List<Role> results, RealmModel realm) {
         return results.stream()
-                .map(role -> new RoleAdapter(session, realm, role))
+                .map(role -> new RoleAdapter(realm, role))
                 .collect(Collectors.collectingAndThen(
                         Collectors.toCollection(LinkedHashSet::new), Collections::unmodifiableSet));
     }
@@ -274,14 +271,14 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
     private Set<RoleModel> searchForRoles(List<Role> results, RealmModel realm) {
         return results.stream()
-                .map(role -> new RoleAdapter(session, realm, role))
+                .map(role -> new RoleAdapter(realm, role))
                 .collect(Collectors.collectingAndThen(
                         Collectors.toSet(), Collections::unmodifiableSet));
     }
 
     @Override
     public boolean removeRole(RealmModel realm, RoleModel role) {
-        session.users().preRemove(realm, role);
+        userProvider.preRemove(realm, role);
         RoleContainerModel container = role.getContainer();
         if (container.getDefaultRoles().contains(role.getName())) {
             container.removeDefaultRoles(role.getName());
@@ -306,7 +303,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
         Role entity = optional.get();
         if (!realm.getId().equals(entity.getRealmId())) return null;
-        return new RoleAdapter(session, realm, entity);
+        return new RoleAdapter(realm, entity);
     }
 
     @Override
@@ -331,7 +328,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
         if (toParent != null) {
             toParent.addChild(group);
         } else {
-            session.realms().addTopLevelGroup(realm, group);
+            realmProvider.addTopLevelGroup(realm, group);
         }
     }
 
@@ -339,7 +336,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
     public List<GroupModel> getGroups(RealmModel realm) {
         Realm ref = realmRepository.getOne(realm.getId());
         return ref.getGroups().stream()
-                .map(g -> session.realms().getGroupById(g.getId(), realm))
+                .map(g -> realmProvider.getGroupById(g.getId(), realm))
                 .sorted(Comparator.comparing(GroupModel::getName))
                 .collect(Collectors.collectingAndThen(
                         Collectors.toList(), Collections::unmodifiableList));
@@ -379,7 +376,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
         Realm ref = realmRepository.getOne(realm.getId());
         return ref.getGroups().stream()
                 .filter(g -> Group.TOP_PARENT_ID.equals(g.getParentId()))
-                .map(g -> session.realms().getGroupById(g.getId(), realm))
+                .map(g -> realmProvider.getGroupById(g.getId(), realm))
                 .sorted(Comparator.comparing(GroupModel::getName))
                 .collect(Collectors.collectingAndThen(
                         Collectors.toList(), Collections::unmodifiableList));
@@ -404,14 +401,14 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
         if (group == null) {
             return false;
         }
-        session.users().preRemove(realm, group);
+        userProvider.preRemove(realm, group);
 
         realm.removeDefaultGroup(group);
         for (GroupModel subGroup : group.getSubGroups()) {
-            session.realms().removeGroup(realm, subGroup);
+            realmProvider.removeGroup(realm, subGroup);
         }
         Group groupEntity = groupRepository.getOne(group.getId());
-        if ((groupEntity == null) || (!groupEntity.getRealm().getId().equals(realm.getId()))) {
+        if (!groupEntity.getRealm().getId().equals(realm.getId())) {
             return false;
         }
         groupRoleMappingRepository.deleteGroupRoleMappingsByGroup(groupEntity);
@@ -460,7 +457,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
         Client entity = clientService.createClient(id, clientId, realmRef);
         applicationEventPublisher.publishEvent(new ClientCreationEvent(entity));
 
-        return new ClientAdapter(realm, session, entity);
+        return new ClientAdapter(realm, entity);
     }
 
     @Override
@@ -469,7 +466,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
         if (clients.isEmpty()) return Collections.EMPTY_LIST;
         List<ClientModel> list = new LinkedList<>();
         for (String id : clients) {
-            ClientModel client = session.realms().getClientById(id, realm);
+            ClientModel client = realmProvider.getClientById(id, realm);
             if (client != null) list.add(client);
         }
         return Collections.unmodifiableList(list);
@@ -486,7 +483,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
         if (clients.isEmpty()) return Collections.EMPTY_LIST;
         List<ClientModel> list = new LinkedList<>();
         for (String id : clients) {
-            ClientModel client = session.realms().getClientById(id, realm);
+            ClientModel client = realmProvider.getClientById(id, realm);
             if (client != null) list.add(client);
         }
         return Collections.unmodifiableList(list);
@@ -497,21 +494,21 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
         Optional<Client> optional = clientRepository.findById(id);
         // Check if application belongs to this realm
         if (!optional.isPresent() || !realm.getId().equals(optional.get().getRealm().getId())) return null;
-        return new ClientAdapter(realm, session, optional.get());
+        return new ClientAdapter(realm, optional.get());
     }
 
     @Override
     public ClientModel getClientByClientId(String clientId, RealmModel realm) {
         List<String> results = clientRepository.findClientIdByClientId(clientId, realm.getId());
         if (results.isEmpty()) return null;
-        return session.realms().getClientById(results.get(0), realm);
+        return realmProvider.getClientById(results.get(0), realm);
     }
 
     @Override
     public List<ClientModel> searchClientsByClientId(String clientId, Integer firstResult, Integer maxResults, RealmModel realm) {
         List<String> results = clientRepository.searchClientsByClientId(clientId, realm.getId());
         if (results.isEmpty()) return Collections.EMPTY_LIST;
-        return results.stream().map(id -> session.realms().getClientById(id, realm)).collect(Collectors.toList());
+        return results.stream().map(id -> realmProvider.getClientById(id, realm)).collect(Collectors.toList());
     }
 
     @Override
@@ -519,7 +516,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
         final ClientModel client = getClientById(id, realm);
         if (client == null) return false;
 
-        session.users().preRemove(realm, client);
+        userProvider.preRemove(realm, client);
 
         for (RoleModel role : client.getRoles()) {
             // No need to go through cache. Roles were already invalidated
@@ -541,7 +538,7 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
 
         // Check if application belongs to this realm
         if (!app.isPresent() || !realm.getId().equals(app.get().getRealm().getId())) return null;
-        return new ClientScopeAdapter(realm, session, app.get());
+        return new ClientScopeAdapter(realm, app.get());
     }
 
     @Override
@@ -550,9 +547,9 @@ public class JpaRealmProvider implements RealmProvider, ApplicationEventPublishe
         if (Objects.isNull(groups)) return Collections.EMPTY_LIST;
         List<GroupModel> list = new ArrayList<>();
         for (String id : groups) {
-            GroupModel groupById = session.realms().getGroupById(id, realm);
+            GroupModel groupById = realmProvider.getGroupById(id, realm);
             while (Objects.nonNull(groupById.getParentId())) {
-                groupById = session.realms().getGroupById(groupById.getParentId(), realm);
+                groupById = realmProvider.getGroupById(groupById.getParentId(), realm);
             }
             if (!list.contains(groupById)) {
                 list.add(groupById);

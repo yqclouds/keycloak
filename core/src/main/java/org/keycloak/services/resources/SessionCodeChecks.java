@@ -17,16 +17,19 @@
 
 package org.keycloak.services.resources;
 
+import com.hsbc.unified.iam.core.ClientConnection;
 import com.hsbc.unified.iam.core.constants.Constants;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authentication.AuthenticationProcessor;
-import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.common.util.ObjectUtil;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.*;
+import org.keycloak.models.ClientModel;
+import org.keycloak.models.KeycloakContext;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserSessionModel;
 import org.keycloak.protocol.AuthorizationEndpointBase;
 import org.keycloak.protocol.RestartLoginCookie;
 import org.keycloak.services.ErrorPage;
@@ -54,7 +57,6 @@ public class SessionCodeChecks {
     private final UriInfo uriInfo;
     private final HttpRequest request;
     private final ClientConnection clientConnection;
-    private final KeycloakSession session;
     private final EventBuilder event;
     private final String code;
     private final String execution;
@@ -67,13 +69,15 @@ public class SessionCodeChecks {
     private Response response;
     private boolean actionRequest;
 
-    public SessionCodeChecks(RealmModel realm, UriInfo uriInfo, HttpRequest request, ClientConnection clientConnection, KeycloakSession session, EventBuilder event,
+    @Autowired
+    private KeycloakContext keycloakContext;
+
+    public SessionCodeChecks(RealmModel realm, UriInfo uriInfo, HttpRequest request, ClientConnection clientConnection, EventBuilder event,
                              String authSessionId, String code, String execution, String clientId, String tabId, String flowPath) {
         this.realm = realm;
         this.uriInfo = uriInfo;
         this.request = request;
         this.clientConnection = clientConnection;
-        this.session = session;
         this.event = event;
 
         this.code = code;
@@ -126,12 +130,12 @@ public class SessionCodeChecks {
         // Basic realm checks
         if (!checkSsl()) {
             event.error(Errors.SSL_REQUIRED);
-            response = errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.HTTPS_REQUIRED);
+            response = errorPage.error(null, Response.Status.BAD_REQUEST, Messages.HTTPS_REQUIRED);
             return null;
         }
         if (!realm.isEnabled()) {
             event.error(Errors.REALM_DISABLED);
-            response = errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.REALM_NOT_ENABLED);
+            response = errorPage.error(null, Response.Status.BAD_REQUEST, Messages.REALM_NOT_ENABLED);
             return null;
         }
 
@@ -142,12 +146,12 @@ public class SessionCodeChecks {
             client = realm.getClientByClientId(clientId);
         }
         if (client != null) {
-            session.getContext().setClient(client);
+            keycloakContext.setClient(client);
         }
 
 
         // object retrieve
-        AuthenticationSessionManager authSessionManager = new AuthenticationSessionManager(session);
+        AuthenticationSessionManager authSessionManager = new AuthenticationSessionManager();
         AuthenticationSessionModel authSession = null;
         if (authSessionId != null)
             authSession = authSessionManager.getAuthenticationSessionByIdAndClient(realm, authSessionId, client, tabId);
@@ -156,7 +160,7 @@ public class SessionCodeChecks {
         if (authSession != null && authSessionCookie != null && !authSession.getParentSession().getId().equals(authSessionCookie.getParentSession().getId())) {
             event.detail(Details.REASON, "cookie does not match auth_session query parameter");
             event.error(Errors.INVALID_CODE);
-            response = errorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.INVALID_CODE);
+            response = errorPage.error(null, Response.Status.BAD_REQUEST, Messages.INVALID_CODE);
             return null;
 
         }
@@ -201,7 +205,7 @@ public class SessionCodeChecks {
         }
 
         // Check cached response from previous action request
-        response = BrowserHistoryHelper.getInstance().loadSavedResponse(session, authSession);
+        response = BrowserHistoryHelper.getInstance().loadSavedResponse(authSession);
         if (response != null) {
             return false;
         }
@@ -211,17 +215,17 @@ public class SessionCodeChecks {
         ClientModel client = authSession.getClient();
         if (client == null) {
             event.error(Errors.CLIENT_NOT_FOUND);
-            response = errorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.UNKNOWN_LOGIN_REQUESTER);
+            response = errorPage.error(authSession, Response.Status.BAD_REQUEST, Messages.UNKNOWN_LOGIN_REQUESTER);
             clientCode.removeExpiredClientSession();
             return false;
         }
 
         event.client(client);
-        session.getContext().setClient(client);
+        keycloakContext.setClient(client);
 
         if (!client.isEnabled()) {
             event.error(Errors.CLIENT_DISABLED);
-            response = errorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.LOGIN_REQUESTER_NOT_ENABLED);
+            response = errorPage.error(authSession, Response.Status.BAD_REQUEST, Messages.LOGIN_REQUESTER_NOT_ENABLED);
             clientCode.removeExpiredClientSession();
             return false;
         }
@@ -246,7 +250,7 @@ public class SessionCodeChecks {
 
             if (execution == null || execution.equals(lastExecFromSession)) {
                 // Allow refresh of previous page
-                clientCode = new ClientSessionCode<>(session, realm, authSession);
+                clientCode = new ClientSessionCode<>(realm, authSession);
                 actionRequest = false;
 
                 // Allow refresh, but rewrite browser history
@@ -261,7 +265,7 @@ public class SessionCodeChecks {
                 return false;
             }
         } else {
-            ClientSessionCode.ParseResult<AuthenticationSessionModel> result = ClientSessionCode.parseResult(code, tabId, session, realm, client, event, authSession);
+            ClientSessionCode.ParseResult<AuthenticationSessionModel> result = ClientSessionCode.parseResult(code, tabId, realm, client, event, authSession);
             clientCode = result.getCode();
             if (clientCode == null) {
 
@@ -306,7 +310,7 @@ public class SessionCodeChecks {
                 return false;
             } else {
                 LOG.error("Bad action. Expected action '{}', current action '{}'", expectedAction, authSession.getAction());
-                response = errorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.EXPIRED_CODE);
+                response = errorPage.error(authSession, Response.Status.BAD_REQUEST, Messages.EXPIRED_CODE);
                 return false;
             }
         }
@@ -361,13 +365,15 @@ public class SessionCodeChecks {
         return true;
     }
 
+    @Autowired
+    private RestartLoginCookie restartLoginCookie;
 
     private Response restartAuthenticationSessionFromCookie(RootAuthenticationSessionModel existingRootSession) {
         LOG.debug("Authentication session not found. Trying to restart from cookie.");
         AuthenticationSessionModel authSession = null;
 
         try {
-            authSession = RestartLoginCookie.restartSession(session, realm, existingRootSession, clientId);
+            authSession = restartLoginCookie.restartSession(realm, existingRootSession, clientId);
         } catch (Exception e) {
 //            ServicesLogger.LOGGER.failedToParseRestartLoginCookie(e);
         }
@@ -392,7 +398,7 @@ public class SessionCodeChecks {
         } else {
             // Finally need to show error as all the fallbacks failed
             event.error(Errors.INVALID_CODE);
-            return errorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.INVALID_CODE);
+            return errorPage.error(authSession, Response.Status.BAD_REQUEST, Messages.INVALID_CODE);
         }
     }
 
@@ -415,13 +421,13 @@ public class SessionCodeChecks {
 
 
     private URI getLastExecutionUrl(String flowPath, String executionId, String tabId) {
-        return new AuthenticationFlowURLHelper(session, realm, uriInfo)
+        return new AuthenticationFlowURLHelper(realm, uriInfo)
                 .getLastExecutionUrl(flowPath, executionId, clientId, tabId);
     }
 
 
     private Response showPageExpired(AuthenticationSessionModel authSession) {
-        return new AuthenticationFlowURLHelper(session, realm, uriInfo)
+        return new AuthenticationFlowURLHelper(realm, uriInfo)
                 .showPageExpired(authSession);
     }
 }

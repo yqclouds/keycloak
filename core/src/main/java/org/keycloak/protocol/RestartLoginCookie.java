@@ -18,12 +18,13 @@
 package org.keycloak.protocol;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.Token;
 import org.keycloak.TokenCategory;
-import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.TokenManager;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.managers.AuthenticationSessionManager;
 import org.keycloak.services.util.CookieHelper;
@@ -31,6 +32,7 @@ import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.UriInfo;
@@ -79,9 +81,9 @@ public class RestartLoginCookie implements Token {
         }
     }
 
-    public static void setRestartCookie(KeycloakSession session, RealmModel realm, ClientConnection connection, UriInfo uriInfo, AuthenticationSessionModel authSession) {
+    public void setRestartCookie(RealmModel realm, ClientConnection connection, UriInfo uriInfo, AuthenticationSessionModel authSession) {
         RestartLoginCookie restart = new RestartLoginCookie(authSession);
-        String encoded = session.tokens().encode(restart);
+        String encoded = tokenManager.encode(restart);
         String path = AuthenticationManager.getRealmCookiePath(realm, uriInfo);
         boolean secureOnly = realm.getSslRequired().isRequired(connection);
         CookieHelper.addCookie(KC_RESTART, encoded, path, null, null, -1, secureOnly, true);
@@ -93,16 +95,21 @@ public class RestartLoginCookie implements Token {
         CookieHelper.addCookie(KC_RESTART, "", path, null, null, 0, secureOnly, true);
     }
 
-    public static AuthenticationSessionModel restartSession(KeycloakSession session, RealmModel realm,
-                                                            RootAuthenticationSessionModel rootSession, String expectedClientId) throws Exception {
-        Cookie cook = session.getContext().getRequestHeaders().getCookies().get(KC_RESTART);
+    @Autowired
+    private KeycloakContext keycloakContext;
+    @Autowired
+    private TokenManager tokenManager;
+
+    public AuthenticationSessionModel restartSession(RealmModel realm,
+                                                     RootAuthenticationSessionModel rootSession, String expectedClientId) throws Exception {
+        Cookie cook = keycloakContext.getRequestHeaders().getCookies().get(KC_RESTART);
         if (cook == null) {
             LOG.debug("KC_RESTART cookie doesn't exist");
             return null;
         }
         String encodedCookie = cook.getValue();
 
-        RestartLoginCookie cookie = session.tokens().decode(encodedCookie, RestartLoginCookie.class);
+        RestartLoginCookie cookie = tokenManager.decode(encodedCookie, RestartLoginCookie.class);
         if (cookie == null) {
             LOG.debug("Failed to verify encoded RestartLoginCookie");
             return null;
@@ -119,7 +126,7 @@ public class RestartLoginCookie implements Token {
 
         // Need to create brand new session and setup cookie
         if (rootSession == null) {
-            rootSession = new AuthenticationSessionManager(session).createAuthenticationSession(realm, true);
+            rootSession = new AuthenticationSessionManager().createAuthenticationSession(realm, true);
         }
 
         AuthenticationSessionModel authSession = rootSession.createAuthenticationSession(client);

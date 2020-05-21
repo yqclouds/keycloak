@@ -17,24 +17,23 @@
  */
 package org.keycloak.authorization.protection;
 
+import com.hsbc.unified.iam.core.ClientConnection;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.admin.ResourceSetService;
 import org.keycloak.authorization.common.KeycloakIdentity;
-import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import org.keycloak.authorization.protection.permission.PermissionService;
 import org.keycloak.authorization.protection.permission.PermissionTicketService;
 import org.keycloak.authorization.protection.policy.UserManagedPermissionService;
 import org.keycloak.authorization.protection.resource.ResourceService;
-import com.hsbc.unified.iam.core.ClientConnection;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.authorization.util.Tokens;
+import org.keycloak.models.*;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.resources.admin.AdminAuth;
 import org.keycloak.services.resources.admin.AdminEventBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
@@ -48,8 +47,6 @@ public class ProtectionService {
     private final AuthorizationProvider authorization;
     @Context
     protected ClientConnection clientConnection;
-    @Context
-    private KeycloakSession session;
 
     public ProtectionService(AuthorizationProvider authorization) {
         this.authorization = authorization;
@@ -59,11 +56,11 @@ public class ProtectionService {
     public Object resource() {
         KeycloakIdentity identity = createIdentity(true);
         ResourceServerModel resourceServer = getResourceServer(identity);
-        ResourceSetService resourceManager = new ResourceSetService(this.session, resourceServer, this.authorization, null, createAdminEventBuilder(identity, resourceServer));
+        ResourceSetService resourceManager = new ResourceSetService(resourceServer, this.authorization, null, createAdminEventBuilder(identity, resourceServer));
 
         ResteasyProviderFactory.getInstance().injectProperties(resourceManager);
 
-        ResourceService resource = new ResourceService(this.session, resourceServer, identity, resourceManager);
+        ResourceService resource = new ResourceService(resourceServer, identity, resourceManager);
 
         ResteasyProviderFactory.getInstance().injectProperties(resource);
 
@@ -112,8 +109,13 @@ public class ProtectionService {
         return resource;
     }
 
+    @Autowired
+    private KeycloakContext context;
+    @Autowired
+    private Tokens tokens;
+
     private KeycloakIdentity createIdentity(boolean checkProtectionScope) {
-        KeycloakIdentity identity = new KeycloakIdentity(this.authorization.getSession());
+        KeycloakIdentity identity = new KeycloakIdentity(tokens.getAccessToken(), context.getRealm());
         ResourceServerModel resourceServer = getResourceServer(identity);
         KeycloakSession keycloakSession = authorization.getSession();
         RealmModel realm = keycloakSession.getContext().getRealm();

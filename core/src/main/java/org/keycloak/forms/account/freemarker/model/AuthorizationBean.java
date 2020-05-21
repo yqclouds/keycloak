@@ -17,15 +17,14 @@
 
 package org.keycloak.forms.account.freemarker.model;
 
-import org.keycloak.authorization.AuthorizationProvider;
+import com.hsbc.unified.iam.core.util.Time;
 import com.hsbc.unified.iam.facade.model.authorization.PermissionTicketModel;
 import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
 import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
+import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.store.PermissionTicketStore;
-import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.ModelToRepresentation;
@@ -43,7 +42,6 @@ import java.util.stream.Collectors;
  */
 public class AuthorizationBean {
 
-    private final KeycloakSession session;
     private final UserModel user;
     @Autowired
     private AuthorizationProvider authorizationProvider;
@@ -54,8 +52,7 @@ public class AuthorizationBean {
     private Collection<ResourceBean> requestsWaitingPermission;
     private Collection<ResourceBean> resourcesWaitingOthersApproval;
 
-    public AuthorizationBean(KeycloakSession session, UserModel user, UriInfo uriInfo) {
-        this.session = session;
+    public AuthorizationBean(UserModel user, UriInfo uriInfo) {
         this.user = user;
         this.uriInfo = uriInfo;
     }
@@ -383,9 +380,12 @@ public class AuthorizationBean {
         }
 
         public String getBaseUri() {
-            return ResolveRelative.resolveRelativeUri(session, clientModel.getRootUrl(), clientModel.getBaseUrl());
+            return resolveRelative.resolveRelativeUri(clientModel.getRootUrl(), clientModel.getBaseUrl());
         }
     }
+
+    @Autowired
+    private ResolveRelative resolveRelative;
 
     public class ManagedPermissionBean {
 

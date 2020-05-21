@@ -33,7 +33,7 @@ import java.io.File;
 @ProviderFactory(id = "dir", providerClasses = ImportProvider.class)
 public class DirImportProviderFactory implements ImportProviderFactory {
     @Override
-    public ImportProvider create(KeycloakSession session) {
+    public ImportProvider create() {
         String dir = ExportImportConfig.getDir();
         return dir != null ? new DirImportProvider(new File(dir)) : new DirImportProvider();
     }

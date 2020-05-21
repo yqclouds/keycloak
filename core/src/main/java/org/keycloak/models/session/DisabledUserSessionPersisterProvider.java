@@ -38,7 +38,7 @@ public class DisabledUserSessionPersisterProvider implements UserSessionPersiste
     public static final String ID = "disabled";
 
     @Override
-    public UserSessionPersisterProvider create(KeycloakSession session) {
+    public UserSessionPersisterProvider create() {
         return this;
     }
 

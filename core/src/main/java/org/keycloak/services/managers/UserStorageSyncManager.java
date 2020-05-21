@@ -16,11 +16,11 @@
  */
 package org.keycloak.services.managers;
 
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterListener;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.cluster.ExecutionResult;
-import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.KeycloakSessionTask;
@@ -158,13 +158,13 @@ public class UserStorageSyncManager {
 
     @Autowired
     private ClusterProvider clusterProvider;
+    @Autowired
+    private UserStorageProviderFactory userStorageProviderFactory;
 
     // Ensure all cluster nodes are notified
-    public void notifyToRefreshPeriodicSync(KeycloakSession session, RealmModel realm, UserStorageProviderModel provider, boolean removed) {
-        UserStorageProviderFactory factory = (UserStorageProviderFactory) session.getSessionFactory().getProviderFactory(UserStorageProvider.class, provider.getProviderId());
-        if (!(factory instanceof ImportSynchronization) || !provider.isImportEnabled()) {
+    public void notifyToRefreshPeriodicSync(RealmModel realm, UserStorageProviderModel provider, boolean removed) {
+        if (!(userStorageProviderFactory instanceof ImportSynchronization) || !provider.isImportEnabled()) {
             return;
-
         }
         UserStorageProviderClusterEvent event = UserStorageProviderClusterEvent.createEvent(removed, realm.getId(), provider);
         clusterProvider.notify(USER_STORAGE_TASK_KEY, event, false, ClusterProvider.DCNotify.ALL_DCS);

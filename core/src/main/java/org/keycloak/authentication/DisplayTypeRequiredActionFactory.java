@@ -9,5 +9,5 @@ import org.keycloak.models.KeycloakSession;
  * will be called.
  */
 public interface DisplayTypeRequiredActionFactory {
-    RequiredActionProvider createDisplay(KeycloakSession session, String displayType);
+    RequiredActionProvider createDisplay(String displayType);
 }

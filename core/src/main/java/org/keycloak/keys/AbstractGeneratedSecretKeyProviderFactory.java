@@ -20,7 +20,6 @@ package org.keycloak.keys;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ConfigurationValidationHelper;
@@ -32,7 +31,7 @@ import org.slf4j.Logger;
 public abstract class AbstractGeneratedSecretKeyProviderFactory<T extends KeyProvider> implements KeyProviderFactory<T> {
 
     @Override
-    public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel model) throws ComponentValidationException {
+    public void validateConfiguration(RealmModel realm, ComponentModel model) throws ComponentValidationException {
         ConfigurationValidationHelper validation = SecretKeyProviderUtils.validateConfiguration(model);
         validation.checkList(Attributes.SECRET_SIZE_PROPERTY, false);
 

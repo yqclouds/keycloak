@@ -34,7 +34,7 @@ public class JWKSHttpUtils {
     @Autowired
     private HttpClientProvider httpClientProvider;
 
-    public JSONWebKeySet sendJwksRequest(KeycloakSession session, String jwksURI) throws IOException {
+    public JSONWebKeySet sendJwksRequest(String jwksURI) throws IOException {
         try (InputStream is = httpClientProvider.get(jwksURI)) {
             String keySetString = StreamUtil.readString(is);
             return JsonSerialization.readValue(keySetString, JSONWebKeySet.class);

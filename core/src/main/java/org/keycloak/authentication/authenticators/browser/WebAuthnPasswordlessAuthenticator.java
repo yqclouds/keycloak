@@ -40,8 +40,8 @@ import java.util.List;
  */
 public class WebAuthnPasswordlessAuthenticator extends WebAuthnAuthenticator {
 
-    public WebAuthnPasswordlessAuthenticator(KeycloakSession session) {
-        super(session);
+    public WebAuthnPasswordlessAuthenticator() {
+        super();
     }
 
     @Override

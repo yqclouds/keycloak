@@ -19,7 +19,6 @@ package org.keycloak.email.freemarker;
 
 import org.keycloak.email.EmailTemplateProvider;
 import org.keycloak.email.EmailTemplateProviderFactory;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.theme.FreeMarkerUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +36,8 @@ public class FreeMarkerEmailTemplateProviderFactory implements EmailTemplateProv
     private FreeMarkerUtil freeMarker;
 
     @Override
-    public EmailTemplateProvider create(KeycloakSession session) {
-        return new FreeMarkerEmailTemplateProvider(session, freeMarker);
+    public EmailTemplateProvider create() {
+        return new FreeMarkerEmailTemplateProvider(freeMarker);
     }
 
     @PostConstruct

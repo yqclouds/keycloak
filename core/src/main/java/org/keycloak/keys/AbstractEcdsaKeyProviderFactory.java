@@ -16,10 +16,9 @@
  */
 package org.keycloak.keys;
 
+import com.hsbc.unified.iam.core.crypto.Algorithm;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
-import com.hsbc.unified.iam.core.crypto.Algorithm;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ConfigurationValidationHelper;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -108,7 +107,7 @@ public abstract class AbstractEcdsaKeyProviderFactory implements KeyProviderFact
     }
 
     @Override
-    public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel model) throws ComponentValidationException {
+    public void validateConfiguration(RealmModel realm, ComponentModel model) throws ComponentValidationException {
         ConfigurationValidationHelper.check(model)
                 .checkLong(Attributes.PRIORITY_PROPERTY, false)
                 .checkBoolean(Attributes.ENABLED_PROPERTY, false)

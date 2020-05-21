@@ -17,10 +17,8 @@
 package org.keycloak.crypto;
 
 import com.hsbc.unified.iam.core.crypto.Algorithm;
-import org.keycloak.models.KeycloakSession;
 
 public class PS256SignatureProviderFactory implements SignatureProviderFactory {
-
     public static final String ID = Algorithm.PS256;
 
     @Override
@@ -29,8 +27,7 @@ public class PS256SignatureProviderFactory implements SignatureProviderFactory {
     }
 
     @Override
-    public SignatureProvider create(KeycloakSession session) {
-        return new AsymmetricSignatureProvider(session, Algorithm.PS256);
+    public SignatureProvider create() {
+        return new AsymmetricSignatureProvider(Algorithm.PS256);
     }
-
 }

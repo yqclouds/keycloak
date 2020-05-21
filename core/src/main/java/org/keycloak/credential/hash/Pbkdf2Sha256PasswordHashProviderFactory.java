@@ -20,7 +20,7 @@ public class Pbkdf2Sha256PasswordHashProviderFactory implements PasswordHashProv
     public static final int DEFAULT_ITERATIONS = 27500;
 
     @Override
-    public PasswordHashProvider create(KeycloakSession session) {
+    public PasswordHashProvider create() {
         return new Pbkdf2PasswordHashProvider(ID, PBKDF2_ALGORITHM, DEFAULT_ITERATIONS);
     }
 

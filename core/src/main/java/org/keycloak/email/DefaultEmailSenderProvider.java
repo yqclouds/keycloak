@@ -23,8 +23,10 @@ import org.keycloak.models.UserModel;
 import org.keycloak.truststore.HostnameVerificationPolicy;
 import org.keycloak.truststore.JSSETruststoreConfigurator;
 import org.keycloak.vault.VaultStringSecret;
+import org.keycloak.vault.VaultTranscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.mail.*;
 import javax.mail.internet.AddressException;
@@ -43,15 +45,10 @@ import java.util.Properties;
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class DefaultEmailSenderProvider implements EmailSenderProvider {
-
     private static final Logger LOG = LoggerFactory.getLogger(DefaultEmailSenderProvider.class);
 
-    private final KeycloakSession session;
-
-    public DefaultEmailSenderProvider(KeycloakSession session) {
-        this.session = session;
-    }
-
+    @Autowired
+    private VaultTranscriber vaultTranscriber;
     @Override
     public void send(Map<String, String> config, UserModel user, String subject, String textBody, String htmlBody) throws EmailException {
         Transport transport = null;
@@ -132,7 +129,7 @@ public class DefaultEmailSenderProvider implements EmailSenderProvider {
 
             transport = session.getTransport("smtp");
             if (auth) {
-                try (VaultStringSecret vaultStringSecret = this.session.vault().getStringSecret(config.get("password"))) {
+                try (VaultStringSecret vaultStringSecret = vaultTranscriber.getStringSecret(config.get("password"))) {
                     transport.connect(config.get("user"), vaultStringSecret.get().orElse(config.get("password")));
                 }
             } else {
@@ -169,7 +166,7 @@ public class DefaultEmailSenderProvider implements EmailSenderProvider {
 
     private void setupTruststore(Properties props) throws NoSuchAlgorithmException, KeyManagementException {
 
-        JSSETruststoreConfigurator configurator = new JSSETruststoreConfigurator(session);
+        JSSETruststoreConfigurator configurator = new JSSETruststoreConfigurator();
 
         SSLSocketFactory factory = configurator.getSSLSocketFactory();
         if (factory != null) {

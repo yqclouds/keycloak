@@ -30,12 +30,15 @@ import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.*;
+import org.keycloak.models.ClientModel;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.services.Urls;
 import org.keycloak.services.managers.AuthenticationSessionManager;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
+import org.keycloak.sessions.AuthenticationSessionProvider;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -74,6 +77,8 @@ public class IdpVerifyAccountLinkActionTokenHandler extends AbstractActionTokenH
 
     @Autowired
     private LoginFormsProvider loginFormsProvider;
+    @Autowired
+    private AuthenticationSessionProvider authenticationSessionProvider;
 
     @Override
     public Response handleToken(IdpVerifyAccountLinkActionToken token, ActionTokenContext<IdpVerifyAccountLinkActionToken> tokenContext) {
@@ -81,7 +86,6 @@ public class IdpVerifyAccountLinkActionTokenHandler extends AbstractActionTokenH
         EventBuilder event = tokenContext.getEvent();
         final UriInfo uriInfo = tokenContext.getUriInfo();
         final RealmModel realm = tokenContext.getRealm();
-        final KeycloakSession session = tokenContext.getSession();
 
         event.event(EventType.IDENTITY_PROVIDER_LINK_ACCOUNT)
                 .detail(Details.EMAIL, user.getEmail())
@@ -95,7 +99,7 @@ public class IdpVerifyAccountLinkActionTokenHandler extends AbstractActionTokenH
 
             String authSessionEncodedId = AuthenticationSessionCompoundId.fromAuthSession(authSession).getEncodedId();
             token.setCompoundAuthenticationSessionId(authSessionEncodedId);
-            UriBuilder builder = Urls.actionTokenBuilder(uriInfo.getBaseUri(), token.serialize(session, realm, uriInfo),
+            UriBuilder builder = Urls.actionTokenBuilder(uriInfo.getBaseUri(), token.serialize(realm, uriInfo),
                     authSession.getClient().getClientId(), authSession.getTabId());
             String confirmUri = builder.build(realm.getName()).toString();
 
@@ -109,7 +113,7 @@ public class IdpVerifyAccountLinkActionTokenHandler extends AbstractActionTokenH
         user.setEmailVerified(true);
 
         if (token.getOriginalCompoundAuthenticationSessionId() != null) {
-            AuthenticationSessionManager asm = new AuthenticationSessionManager(session);
+            AuthenticationSessionManager asm = new AuthenticationSessionManager();
             asm.removeAuthenticationSession(realm, authSession, true);
 
             AuthenticationSessionCompoundId compoundId = AuthenticationSessionCompoundId.encoded(token.getOriginalCompoundAuthenticationSessionId());
@@ -120,7 +124,7 @@ public class IdpVerifyAccountLinkActionTokenHandler extends AbstractActionTokenH
                 authSession.setAuthNote(IdpEmailVerificationAuthenticator.VERIFY_ACCOUNT_IDP_USERNAME, token.getIdentityProviderUsername());
             } else {
 
-                session.authenticationSessions().updateNonlocalSessionAuthNotes(
+                authenticationSessionProvider.updateNonlocalSessionAuthNotes(
                         compoundId,
                         Collections.singletonMap(IdpEmailVerificationAuthenticator.VERIFY_ACCOUNT_IDP_USERNAME, token.getIdentityProviderUsername())
                 );

@@ -34,6 +34,7 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.services.managers.RealmManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,8 +69,8 @@ public class ImportUtils {
         if (masterImported) {
             for (RealmModel realm : session.realms().getRealms()) {
                 if (realm.getMasterAdminClient() == null) {
-                    LOG.info("Re-created management client in master realm for realm '%s'", realm.getName());
-                    new RealmManager(session).setupMasterAdminManagement(realm);
+                    LOG.info("Re-created management client in master realm for realm '{}'", realm.getName());
+                    new RealmManager().setupMasterAdminManagement(realm);
                 }
             }
         }
@@ -91,10 +92,10 @@ public class ImportUtils {
 
         if (realm != null) {
             if (strategy == Strategy.IGNORE_EXISTING) {
-                LOG.info("Realm '%s' already exists. Import skipped", realmName);
+                LOG.info("Realm '{}' already exists. Import skipped", realmName);
                 return false;
             } else {
-                LOG.info("Realm '%s' already exists. Removing it before import", realmName);
+                LOG.info("Realm '{}' already exists. Removing it before import", realmName);
                 if (Config.getAdminRealm().equals(realm.getId())) {
                     // Delete all masterAdmin apps due to foreign key constraints
                     for (RealmModel currRealm : model.getRealms()) {
@@ -106,11 +107,11 @@ public class ImportUtils {
             }
         }
 
-        RealmManager realmManager = new RealmManager(session);
+        RealmManager realmManager = new RealmManager();
         realmManager.importRealm(rep, skipUserDependent);
 
         if (System.getProperty(ExportImportConfig.ACTION) != null) {
-            LOG.info("Realm '%s' imported", realmName);
+            LOG.info("Realm '{}' imported", realmName);
         }
 
         return true;
@@ -172,8 +173,7 @@ public class ImportUtils {
 
 
     // Assuming that it's invoked inside transaction
-    public static void importUsersFromStream(KeycloakSession session, String realmName, ObjectMapper mapper, InputStream is) throws IOException {
-        RealmProvider model = session.realms();
+    public void importUsersFromStream(String realmName, ObjectMapper mapper, InputStream is) throws IOException {
         JsonFactory factory = mapper.getJsonFactory();
         JsonParser parser = factory.createJsonParser(is);
         try {
@@ -201,7 +201,7 @@ public class ImportUtils {
                         parser.nextToken();
                     }
 
-                    importUsers(session, model, realmName, userReps);
+                    importUsers(realmProvider, realmName, userReps);
 
                     if (parser.getCurrentToken() == JsonToken.END_ARRAY) {
                         parser.nextToken();
@@ -213,9 +213,11 @@ public class ImportUtils {
         }
     }
 
+    @Autowired
+    private RealmProvider realmProvider;
+
     // Assuming that it's invoked inside transaction
-    public static void importFederatedUsersFromStream(KeycloakSession session, String realmName, ObjectMapper mapper, InputStream is) throws IOException {
-        RealmProvider model = session.realms();
+    public void importFederatedUsersFromStream(String realmName, ObjectMapper mapper, InputStream is) throws IOException {
         JsonFactory factory = mapper.getJsonFactory();
         JsonParser parser = factory.createJsonParser(is);
         try {
@@ -243,7 +245,7 @@ public class ImportUtils {
                         parser.nextToken();
                     }
 
-                    importFederatedUsers(session, model, realmName, userReps);
+                    importFederatedUsers(realmProvider, realmName, userReps);
 
                     if (parser.getCurrentToken() == JsonToken.END_ARRAY) {
                         parser.nextToken();
@@ -255,20 +257,22 @@ public class ImportUtils {
         }
     }
 
-    private static void importUsers(KeycloakSession session, RealmProvider model, String realmName, List<UserRepresentation> userReps) {
+    private RepresentationToModel representationToModel;
+
+    private void importUsers(RealmProvider model, String realmName, List<UserRepresentation> userReps) {
         RealmModel realm = model.getRealmByName(realmName);
         for (UserRepresentation user : userReps) {
             if (!user.getUsername().startsWith(ServiceAccountConstants.SERVICE_ACCOUNT_USER_PREFIX)) {
-                RepresentationToModel.createUser(session, realm, user);
+                representationToModel.createUser(realm, user);
             }
         }
     }
 
 
-    private static void importFederatedUsers(KeycloakSession session, RealmProvider model, String realmName, List<UserRepresentation> userReps) {
+    private void importFederatedUsers(RealmProvider model, String realmName, List<UserRepresentation> userReps) {
         RealmModel realm = model.getRealmByName(realmName);
         for (UserRepresentation user : userReps) {
-            RepresentationToModel.importFederatedUser(session, realm, user);
+            representationToModel.importFederatedUser(realm, user);
         }
     }
 

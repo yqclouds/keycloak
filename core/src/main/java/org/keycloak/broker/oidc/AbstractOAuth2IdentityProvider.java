@@ -18,14 +18,17 @@ package org.keycloak.broker.oidc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hsbc.unified.iam.core.crypto.Algorithm;
+import com.hsbc.unified.iam.core.ClientConnection;
 import com.hsbc.unified.iam.core.constants.OAuth2Constants;
+import com.hsbc.unified.iam.core.crypto.Algorithm;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.broker.provider.*;
 import org.keycloak.broker.provider.util.SimpleHttp;
-import com.hsbc.unified.iam.core.ClientConnection;
-import com.hsbc.unified.iam.core.util.Time;
-import org.keycloak.crypto.*;
+import org.keycloak.crypto.AsymmetricSignatureProvider;
+import org.keycloak.crypto.KeyWrapper;
+import org.keycloak.crypto.MacSignatureSignerContext;
+import org.keycloak.crypto.SignatureSignerContext;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
@@ -43,6 +46,7 @@ import org.keycloak.services.Urls;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.vault.VaultStringSecret;
+import org.keycloak.vault.VaultTranscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,8 +86,8 @@ public abstract class AbstractOAuth2IdentityProvider<C extends OAuth2IdentityPro
     protected static ObjectMapper mapper = new ObjectMapper();
 
 
-    public AbstractOAuth2IdentityProvider(KeycloakSession session, C config) {
-        super(session, config);
+    public AbstractOAuth2IdentityProvider(C config) {
+        super(config);
 
         if (config.getDefaultScope() == null || config.getDefaultScope().isEmpty()) {
             config.setDefaultScope(getDefaultScopes());
@@ -107,7 +111,7 @@ public abstract class AbstractOAuth2IdentityProvider<C extends OAuth2IdentityPro
     }
 
     @Override
-    public Response retrieveToken(KeycloakSession session, FederatedIdentityModel identity) {
+    public Response retrieveToken(FederatedIdentityModel identity) {
         return Response.ok(identity.getToken()).build();
     }
 
@@ -221,8 +225,13 @@ public abstract class AbstractOAuth2IdentityProvider<C extends OAuth2IdentityPro
         return null;
     }
 
+    @Autowired
+    private UserProvider userProvider;
+    @Autowired
+    private KeycloakContext context;
+
     protected Response exchangeStoredToken(UriInfo uriInfo, EventBuilder event, ClientModel authorizedClient, UserSessionModel tokenUserSession, UserModel tokenSubject) {
-        FederatedIdentityModel model = session.users().getFederatedIdentity(tokenSubject, getConfig().getAlias(), authorizedClient.getRealm());
+        FederatedIdentityModel model = userProvider.getFederatedIdentity(tokenSubject, getConfig().getAlias(), authorizedClient.getRealm());
         if (model == null || model.getToken() == null) {
             event.detail(Details.REASON, "requested_issuer is not linked");
             event.error(Errors.INVALID_TOKEN);
@@ -231,7 +240,7 @@ public abstract class AbstractOAuth2IdentityProvider<C extends OAuth2IdentityPro
         String accessToken = extractTokenFromResponse(model.getToken(), getAccessTokenResponseParameter());
         if (accessToken == null) {
             model.setToken(null);
-            session.users().updateFederatedIdentity(authorizedClient.getRealm(), tokenSubject, model);
+            userProvider.updateFederatedIdentity(authorizedClient.getRealm(), tokenSubject, model);
             event.detail(Details.REASON, "requested_issuer token expired");
             event.error(Errors.INVALID_TOKEN);
             return exchangeTokenExpired(uriInfo, authorizedClient, tokenUserSession, tokenSubject);
@@ -304,7 +313,7 @@ public abstract class AbstractOAuth2IdentityProvider<C extends OAuth2IdentityPro
         }
 
         if (getConfig().isUiLocales()) {
-            uriBuilder.queryParam(OIDCLoginProtocol.UI_LOCALES_PARAM, session.getContext().resolveLocale(null).toLanguageTag());
+            uriBuilder.queryParam(OIDCLoginProtocol.UI_LOCALES_PARAM, context.resolveLocale(null).toLanguageTag());
         }
 
         String prompt = getConfig().getPrompt();
@@ -362,6 +371,9 @@ public abstract class AbstractOAuth2IdentityProvider<C extends OAuth2IdentityPro
         if (token != null) authSession.setUserSessionNote(FEDERATED_ACCESS_TOKEN, token);
     }
 
+    @Autowired
+    private VaultTranscriber vaultTranscriber;
+
     public SimpleHttp authenticateTokenRequest(final SimpleHttp tokenRequest) {
         if (getConfig().isJWTAuthentication()) {
             String jws = new JWSBuilder().type(OAuth2Constants.JWT).jsonContent(generateToken()).sign(getSignatureContext());
@@ -369,7 +381,7 @@ public abstract class AbstractOAuth2IdentityProvider<C extends OAuth2IdentityPro
                     .param(OAuth2Constants.CLIENT_ASSERTION_TYPE, OAuth2Constants.CLIENT_ASSERTION_TYPE_JWT)
                     .param(OAuth2Constants.CLIENT_ASSERTION, jws);
         } else {
-            try (VaultStringSecret vaultStringSecret = session.vault().getStringSecret(getConfig().getClientSecret())) {
+            try (VaultStringSecret vaultStringSecret = vaultTranscriber.getStringSecret(getConfig().getClientSecret())) {
                 if (getConfig().isBasicAuthentication()) {
                     return tokenRequest.authBasic(getConfig().getClientId(), vaultStringSecret.get().orElse(getConfig().getClientSecret()));
                 }
@@ -387,7 +399,7 @@ public abstract class AbstractOAuth2IdentityProvider<C extends OAuth2IdentityPro
         jwt.issuer(getConfig().getClientId());
         jwt.subject(getConfig().getClientId());
         jwt.audience(getConfig().getTokenUrl());
-        int expirationDelay = session.getContext().getRealm().getAccessCodeLifespan();
+        int expirationDelay = context.getRealm().getAccessCodeLifespan();
         jwt.expiration(Time.currentTime() + expirationDelay);
         jwt.issuedNow();
         return jwt;
@@ -395,7 +407,7 @@ public abstract class AbstractOAuth2IdentityProvider<C extends OAuth2IdentityPro
 
     protected SignatureSignerContext getSignatureContext() {
         if (getConfig().getClientAuthMethod().equals(OIDCLoginProtocol.CLIENT_SECRET_JWT)) {
-            try (VaultStringSecret vaultStringSecret = session.vault().getStringSecret(getConfig().getClientSecret())) {
+            try (VaultStringSecret vaultStringSecret = vaultTranscriber.getStringSecret(getConfig().getClientSecret())) {
                 KeyWrapper key = new KeyWrapper();
                 key.setAlgorithm(Algorithm.HS256);
                 byte[] decodedSecret = vaultStringSecret.get().orElse(getConfig().getClientSecret()).getBytes();
@@ -404,7 +416,7 @@ public abstract class AbstractOAuth2IdentityProvider<C extends OAuth2IdentityPro
                 return new MacSignatureSignerContext(key);
             }
         }
-        return new AsymmetricSignatureProvider(session, Algorithm.RS256).signer();
+        return new AsymmetricSignatureProvider(Algorithm.RS256).signer();
     }
 
     protected String getProfileEndpointForValidation(EventBuilder event) {
@@ -455,7 +467,7 @@ public abstract class AbstractOAuth2IdentityProvider<C extends OAuth2IdentityPro
     private SimpleHttp simpleHttp;
 
     protected SimpleHttp buildUserInfoRequest(String subjectToken, String userInfoUrl) {
-        return simpleHttp.doGet(userInfoUrl, session)
+        return simpleHttp.doGet(userInfoUrl)
                 .header("Authorization", "Bearer " + subjectToken);
     }
 
@@ -579,12 +591,12 @@ public abstract class AbstractOAuth2IdentityProvider<C extends OAuth2IdentityPro
             }
             event.event(EventType.LOGIN);
             event.error(Errors.IDENTITY_PROVIDER_LOGIN_FAILURE);
-            return errorPage.error(session, null, Response.Status.BAD_GATEWAY, Messages.IDENTITY_PROVIDER_UNEXPECTED_ERROR);
+            return errorPage.error(null, Response.Status.BAD_GATEWAY, Messages.IDENTITY_PROVIDER_UNEXPECTED_ERROR);
         }
 
         public SimpleHttp generateTokenRequest(String authorizationCode) {
             KeycloakContext context = session.getContext();
-            SimpleHttp tokenRequest = simpleHttp.doPost(getConfig().getTokenUrl(), session)
+            SimpleHttp tokenRequest = simpleHttp.doPost(getConfig().getTokenUrl())
                     .param(OAUTH2_PARAMETER_CODE, authorizationCode)
                     .param(OAUTH2_PARAMETER_REDIRECT_URI, Urls.identityProviderAuthnResponse(context.getUri().getBaseUri(),
                             getConfig().getAlias(), context.getRealm().getName()).toString())

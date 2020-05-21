@@ -30,8 +30,8 @@ import org.springframework.stereotype.Component;
 @ProviderFactory(id = "requesting_party_token", providerClasses = TokenIntrospectionProvider.class)
 public class RPTIntrospectionProviderFactory implements TokenIntrospectionProviderFactory {
     @Override
-    public TokenIntrospectionProvider create(KeycloakSession session) {
-        return new RPTIntrospectionProvider(session);
+    public TokenIntrospectionProvider create() {
+        return new RPTIntrospectionProvider();
     }
 
     @Override

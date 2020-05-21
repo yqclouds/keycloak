@@ -18,12 +18,13 @@
 
 package org.keycloak.authentication.authenticators.x509;
 
-import org.keycloak.authentication.AuthenticationFlowContext;
 import com.hsbc.unified.iam.core.constants.Constants;
+import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ModelDuplicateException;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Arrays;
 import java.util.List;
@@ -36,8 +37,10 @@ import java.util.stream.Collectors;
  */
 
 public abstract class UserIdentityToModelMapper {
+    @Autowired
+    private KeycloakModelUtils keycloakModelUtils;
 
-    public static UserIdentityToModelMapper getUsernameOrEmailMapper() {
+    public UserIdentityToModelMapper getUsernameOrEmailMapper() {
         return new UsernameOrEmailMapper();
     }
 
@@ -47,11 +50,10 @@ public abstract class UserIdentityToModelMapper {
 
     public abstract UserModel find(AuthenticationFlowContext context, Object userIdentity) throws Exception;
 
-    static class UsernameOrEmailMapper extends UserIdentityToModelMapper {
-
+    public class UsernameOrEmailMapper extends UserIdentityToModelMapper {
         @Override
         public UserModel find(AuthenticationFlowContext context, Object userIdentity) throws Exception {
-            return KeycloakModelUtils.findUserByNameOrEmail(context.getSession(), context.getRealm(), userIdentity.toString().trim());
+            return keycloakModelUtils.findUserByNameOrEmail(context.getRealm(), userIdentity.toString().trim());
         }
     }
 

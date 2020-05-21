@@ -17,26 +17,23 @@
 package org.keycloak.crypto;
 
 import org.keycloak.common.VerificationException;
-import org.keycloak.models.KeycloakSession;
 
 public class MacSecretSignatureProvider implements SignatureProvider {
 
-    private final KeycloakSession session;
     private final String algorithm;
 
-    public MacSecretSignatureProvider(KeycloakSession session, String algorithm) {
-        this.session = session;
+    public MacSecretSignatureProvider(String algorithm) {
         this.algorithm = algorithm;
     }
 
     @Override
     public SignatureSignerContext signer() throws SignatureException {
-        return new ServerMacSignatureSignerContext(session, algorithm);
+        return new ServerMacSignatureSignerContext(algorithm);
     }
 
     @Override
     public SignatureVerifierContext verifier(String kid) throws VerificationException {
-        return new ServerMacSignatureVerifierContext(session, kid, algorithm);
+        return new ServerMacSignatureVerifierContext( kid, algorithm);
     }
 
 }

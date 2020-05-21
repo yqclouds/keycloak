@@ -23,7 +23,10 @@ import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.ConfigConstants;
 import org.keycloak.broker.provider.IdentityBrokerException;
 import org.keycloak.broker.provider.IdentityProviderMapper;
-import org.keycloak.models.*;
+import org.keycloak.models.IdentityProviderMapperModel;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.RoleModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.JsonWebToken;
@@ -89,7 +92,7 @@ public class ExternalKeycloakRoleToRoleMapper extends AbstractClaimMapper {
     }
 
     @Override
-    public void importNewUser(KeycloakSession session, RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
+    public void importNewUser(RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
         RoleModel role = hasRole(realm, mapperModel, context);
         if (role != null) {
             user.grantRole(role);
@@ -118,7 +121,7 @@ public class ExternalKeycloakRoleToRoleMapper extends AbstractClaimMapper {
     }
 
     @Override
-    public void updateBrokeredUser(KeycloakSession session, RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
+    public void updateBrokeredUser(RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
         RoleModel role = hasRole(realm, mapperModel, context);
         if (role == null) {
             user.deleteRoleMapping(role);

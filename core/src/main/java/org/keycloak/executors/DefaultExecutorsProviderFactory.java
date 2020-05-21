@@ -18,7 +18,6 @@
 package org.keycloak.executors;
 
 import org.keycloak.Config;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,12 +53,12 @@ public class DefaultExecutorsProviderFactory implements ExecutorsProviderFactory
     private Boolean managed = null;
 
     @Override
-    public ExecutorsProvider create(KeycloakSession session) {
+    public ExecutorsProvider create() {
         return new ExecutorsProvider() {
 
             @Override
             public ExecutorService getExecutor(String taskType) {
-                return DefaultExecutorsProviderFactory.this.getExecutor(taskType, session);
+                return DefaultExecutorsProviderFactory.this.getExecutor(taskType);
             }
 
             @Override
@@ -85,13 +84,13 @@ public class DefaultExecutorsProviderFactory implements ExecutorsProviderFactory
     }
     // IMPL
 
-    protected ExecutorService getExecutor(String taskType, KeycloakSession session) {
+    protected ExecutorService getExecutor(String taskType) {
         ExecutorService existing = executors.get(taskType);
 
         if (existing == null) {
             synchronized (this) {
                 if (!executors.containsKey(taskType)) {
-                    ExecutorService executor = retrievePool(taskType, session);
+                    ExecutorService executor = retrievePool(taskType);
                     executors.put(taskType, executor);
                 }
 
@@ -103,15 +102,15 @@ public class DefaultExecutorsProviderFactory implements ExecutorsProviderFactory
     }
 
 
-    protected ExecutorService retrievePool(String taskType, KeycloakSession session) {
+    protected ExecutorService retrievePool(String taskType) {
         if (managed == null) {
             detectManaged();
         }
 
         if (managed) {
-            return getPoolManaged(taskType, session);
+            return getPoolManaged(taskType);
         } else {
-            return createPoolEmbedded(taskType, session);
+            return createPoolEmbedded(taskType);
         }
     }
 
@@ -128,7 +127,7 @@ public class DefaultExecutorsProviderFactory implements ExecutorsProviderFactory
     }
 
 
-    protected ExecutorService getPoolManaged(String taskType, KeycloakSession session) {
+    protected ExecutorService getPoolManaged(String taskType) {
         try {
             InitialContext ctx = new InitialContext();
 
@@ -151,7 +150,7 @@ public class DefaultExecutorsProviderFactory implements ExecutorsProviderFactory
     }
 
 
-    protected ExecutorService createPoolEmbedded(String taskType, KeycloakSession session) {
+    protected ExecutorService createPoolEmbedded(String taskType) {
         Config.Scope currentScope = config.scope(taskType);
         int min = DEFAULT_MIN_THREADS;
         int max = DEFAULT_MAX_THREADS;
@@ -161,9 +160,9 @@ public class DefaultExecutorsProviderFactory implements ExecutorsProviderFactory
             max = currentScope.getInt("max", DEFAULT_MAX_THREADS);
         }
 
-        LOG.debug("Creating pool for task '%s': min=%d, max=%d", taskType, min, max);
+        LOG.debug("Creating pool for task '{}': min={}, max={}", taskType, min, max);
 
-        ThreadFactory threadFactory = createThreadFactory(taskType, session);
+        ThreadFactory threadFactory = createThreadFactory(taskType);
 
         if (min == max) {
             return Executors.newFixedThreadPool(min, threadFactory);
@@ -177,7 +176,7 @@ public class DefaultExecutorsProviderFactory implements ExecutorsProviderFactory
     }
 
 
-    protected ThreadFactory createThreadFactory(String taskType, KeycloakSession session) {
+    protected ThreadFactory createThreadFactory(String taskType) {
         return new ThreadFactory() {
 
             private AtomicInteger i = new AtomicInteger(0);

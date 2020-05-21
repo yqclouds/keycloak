@@ -44,7 +44,7 @@ public class UsernameFormFactory implements AuthenticatorFactory, DisplayTypeAut
     };
 
     @Override
-    public Authenticator create(KeycloakSession session) {
+    public Authenticator create() {
         return SINGLETON;
     }
 

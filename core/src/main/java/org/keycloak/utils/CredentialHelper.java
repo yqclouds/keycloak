@@ -18,14 +18,17 @@
 package org.keycloak.utils;
 
 import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
+import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
+import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.authentication.*;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.models.*;
-import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
-import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Map;
 
 /**
  * used to set an execution a state based on type.
@@ -77,17 +80,22 @@ public class CredentialHelper {
         return factory;
     }
 
+    @Autowired
+    private Map<String, CredentialProvider> credentialProviders;
+    @Autowired
+    private UserCredentialManager userCredentialManager;
+
     /**
      * Create OTP credential either in userStorage or local storage (Keycloak DB)
      *
      * @return true if credential was successfully created either in the user storage or Keycloak DB. False if error happened (EG. during HOTP validation)
      */
-    public static boolean createOTPCredential(KeycloakSession session, RealmModel realm, UserModel user, String totpCode, OTPCredentialModel credentialModel) {
-        CredentialProvider otpCredentialProvider = session.getProvider(CredentialProvider.class, "keycloak-otp");
+    public boolean createOTPCredential(RealmModel realm, UserModel user, String totpCode, OTPCredentialModel credentialModel) {
+        CredentialProvider otpCredentialProvider = credentialProviders.get("keycloak-otp");
         String totpSecret = credentialModel.getOTPSecretData().getValue();
 
         UserCredentialModel otpUserCredential = new UserCredentialModel("", realm.getOTPPolicy().getType(), totpSecret);
-        boolean userStorageCreated = session.userCredentialManager().updateCredential(realm, user, otpUserCredential);
+        boolean userStorageCreated = userCredentialManager.updateCredential(realm, user, otpUserCredential);
 
         String credentialId = null;
         if (userStorageCreated) {
@@ -99,7 +107,7 @@ public class CredentialHelper {
 
         //If the type is HOTP, call verify once to consume the OTP used for registration and increase the counter.
         UserCredentialModel credential = new UserCredentialModel(credentialId, otpCredentialProvider.getType(), totpCode);
-        return session.userCredentialManager().isValid(realm, user, credential);
+        return userCredentialManager.isValid(realm, user, credential);
     }
 
     public static void deleteOTPCredential(KeycloakSession session, RealmModel realm, UserModel user, String credentialId) {

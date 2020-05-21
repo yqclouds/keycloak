@@ -41,6 +41,7 @@ import org.keycloak.theme.beans.*;
 import org.keycloak.utils.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -76,7 +77,6 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
     protected List<FormMessage> messages = null;
     protected MessageType messageType = MessageType.ERROR;
     protected MultivaluedMap<String, String> formData;
-    protected KeycloakSession session;
     /**
      * authenticationSession can be null for some renderings, mainly error pages
      */
@@ -87,13 +87,15 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
     protected FreeMarkerUtil freeMarker;
     protected UserModel user;
 
-    public FreeMarkerLoginFormsProvider(KeycloakSession session, FreeMarkerUtil freeMarker) {
-        this.session = session;
+    @Autowired
+    private KeycloakContext keycloakContext;
+
+    public FreeMarkerLoginFormsProvider(FreeMarkerUtil freeMarker) {
         this.freeMarker = freeMarker;
         this.attributes.put("scripts", new LinkedList<>());
-        this.realm = session.getContext().getRealm();
-        this.client = session.getContext().getClient();
-        this.uriInfo = session.getContext().getUri();
+        this.realm = keycloakContext.getRealm();
+        this.client = keycloakContext.getClient();
+        this.uriInfo = keycloakContext.getUri();
     }
 
     @SuppressWarnings("unchecked")
@@ -151,7 +153,7 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
             return Response.serverError().build();
         }
 
-        Locale locale = session.getContext().resolveLocale(user);
+        Locale locale = keycloakContext.resolveLocale(user);
         Properties messagesBundle = handleThemeResources(theme, locale);
 
         handleMessages(locale, messagesBundle);
@@ -167,7 +169,7 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
 
         switch (page) {
             case LOGIN_CONFIG_TOTP:
-                attributes.put("totp", new TotpBean(session, realm, user, uriInfo.getRequestUriBuilder()));
+                attributes.put("totp", new TotpBean(realm, user, uriInfo.getRequestUriBuilder()));
                 break;
             case LOGIN_UPDATE_PROFILE:
                 UpdateProfileContext userCtx = (UpdateProfileContext) attributes.get(LoginFormsProvider.UPDATE_PROFILE_CONTEXT_ATTR);
@@ -183,7 +185,7 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
                 attributes.put("idpAlias", idpAlias);
                 break;
             case LOGIN_TOTP:
-                attributes.put("otpLogin", new TotpLoginBean(session, realm, user, (String) this.attributes.get(OTPFormAuthenticator.SELECTED_OTP_CREDENTIAL_ID)));
+                attributes.put("otpLogin", new TotpLoginBean(realm, user, (String) this.attributes.get(OTPFormAuthenticator.SELECTED_OTP_CREDENTIAL_ID)));
                 break;
             case REGISTER:
                 attributes.put("register", new RegisterBean(formData));
@@ -214,7 +216,7 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
             return Response.serverError().build();
         }
 
-        Locale locale = session.getContext().resolveLocale(user);
+        Locale locale = keycloakContext.resolveLocale(user);
         Properties messagesBundle = handleThemeResources(theme, locale);
 
         handleMessages(locale, messagesBundle);
@@ -247,6 +249,9 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
         return uriBuilder;
     }
 
+    @Autowired
+    private ThemeManager themeManager;
+
     /**
      * Get Theme used for page rendering.
      *
@@ -254,7 +259,7 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
      * @throws IOException in case of Theme loading problem
      */
     protected Theme getTheme() throws IOException {
-        return session.theme().getTheme(Theme.Type.LOGIN);
+        return themeManager.getTheme(Theme.Type.LOGIN);
     }
 
     /**
@@ -319,7 +324,7 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
             throw new RuntimeException("Failed to create theme");
         }
 
-        Locale locale = session.getContext().resolveLocale(user);
+        Locale locale = keycloakContext.resolveLocale(user);
         Properties messagesBundle = handleThemeResources(theme, locale);
         FormMessage msg = new FormMessage(null, message);
         return formatMessage(msg, messagesBundle, locale);
@@ -335,13 +340,15 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
             throw new RuntimeException("Failed to create theme");
         }
 
-        Locale locale = session.getContext().resolveLocale(user);
+        Locale locale = keycloakContext.resolveLocale(user);
         Properties messagesBundle = handleThemeResources(theme, locale);
         FormMessage msg = new FormMessage(message, (Object[]) parameters);
         return formatMessage(msg, messagesBundle, locale);
     }
 
 
+    @Autowired
+    private LoginFormsUtil loginFormsUtil;
     /**
      * Create common attributes used in all templates.
      *
@@ -359,15 +366,15 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
         URI baseUriWithCodeAndClientId = baseUriBuilder.build();
 
         if (client != null) {
-            attributes.put("client", new ClientBean(session, client));
+            attributes.put("client", new ClientBean( client));
         }
 
         if (realm != null) {
             attributes.put("realm", new RealmBean(realm));
 
             List<IdentityProviderModel> identityProviders = realm.getIdentityProviders();
-            identityProviders = LoginFormsUtil.filterIdentityProviders(identityProviders, session, realm, attributes, formData, context);
-            attributes.put("social", new IdentityProviderBean(realm, session, identityProviders, baseUriWithCodeAndClientId));
+            identityProviders = loginFormsUtil.filterIdentityProviders(identityProviders, realm, attributes, formData, context);
+            attributes.put("social", new IdentityProviderBean(realm, identityProviders, baseUriWithCodeAndClientId));
 
             attributes.put("url", new UrlBean(realm, theme, baseUri, this.actionUri));
             attributes.put("requiredActionUrl", new RequiredActionUrlFormatterMethod(realm, baseUri));
@@ -406,8 +413,8 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
                 attributes.put("locale", new LocaleBean(realm, locale, b, messagesBundle));
             }
         }
-        if (realm != null && user != null && session != null) {
-            attributes.put("authenticatorConfigured", new AuthenticatorConfiguredMethod(realm, user, session));
+        if (realm != null && user != null) {
+            attributes.put("authenticatorConfigured", new AuthenticatorConfiguredMethod(realm, user));
         }
 
         if (authenticationSession != null && authenticationSession.getClientNote(Constants.KC_ACTION_EXECUTING) != null) {

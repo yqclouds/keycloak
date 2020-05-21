@@ -18,12 +18,12 @@
 package org.keycloak.partialimport;
 
 import org.keycloak.models.IdentityProviderModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.IdentityProviderRepresentation;
 import org.keycloak.representations.idm.PartialImportRepresentation;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
@@ -45,12 +45,12 @@ public class IdentityProvidersPartialImport extends AbstractPartialImport<Identi
     }
 
     @Override
-    public String getModelId(RealmModel realm, KeycloakSession session, IdentityProviderRepresentation idpRep) {
+    public String getModelId(RealmModel realm, IdentityProviderRepresentation idpRep) {
         return realm.getIdentityProviderByAlias(getName(idpRep)).getInternalId();
     }
 
     @Override
-    public boolean exists(RealmModel realm, KeycloakSession session, IdentityProviderRepresentation idpRep) {
+    public boolean exists(RealmModel realm, IdentityProviderRepresentation idpRep) {
         return realm.getIdentityProviderByAlias(getName(idpRep)) != null;
     }
 
@@ -65,14 +65,17 @@ public class IdentityProvidersPartialImport extends AbstractPartialImport<Identi
     }
 
     @Override
-    public void remove(RealmModel realm, KeycloakSession session, IdentityProviderRepresentation idpRep) {
+    public void remove(RealmModel realm, IdentityProviderRepresentation idpRep) {
         realm.removeIdentityProviderByAlias(getName(idpRep));
     }
 
+    @Autowired
+    private RepresentationToModel representationToModel;
+
     @Override
-    public void create(RealmModel realm, KeycloakSession session, IdentityProviderRepresentation idpRep) {
+    public void create(RealmModel realm, IdentityProviderRepresentation idpRep) {
         idpRep.setInternalId(KeycloakModelUtils.generateId());
-        IdentityProviderModel identityProvider = RepresentationToModel.toModel(realm, idpRep, session);
+        IdentityProviderModel identityProvider = representationToModel.toModel(realm, idpRep);
         realm.addIdentityProvider(identityProvider);
     }
 

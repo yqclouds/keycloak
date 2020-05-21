@@ -19,20 +19,16 @@ package org.keycloak.crypto;
 import org.keycloak.common.VerificationException;
 import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
 
 public class AsymmetricClientSignatureVerifierProvider implements ClientSignatureVerifierProvider {
-    private final KeycloakSession session;
     private final String algorithm;
 
-    public AsymmetricClientSignatureVerifierProvider(KeycloakSession session, String algorithm) {
-        this.session = session;
+    public AsymmetricClientSignatureVerifierProvider(String algorithm) {
         this.algorithm = algorithm;
     }
 
     @Override
     public SignatureVerifierContext verifier(ClientModel client, JWSInput input) throws VerificationException {
-        return new ClientAsymmetricSignatureVerifierContext(session, client, input);
+        return new ClientAsymmetricSignatureVerifierContext(client, input);
     }
-
 }

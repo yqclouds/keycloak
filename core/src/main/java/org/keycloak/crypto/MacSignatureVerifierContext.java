@@ -23,9 +23,13 @@ import java.security.MessageDigest;
 
 public class MacSignatureVerifierContext implements SignatureVerifierContext {
 
-    private final KeyWrapper key;
+    private KeyWrapper key;
 
     public MacSignatureVerifierContext(KeyWrapper key) {
+        this.key = key;
+    }
+
+    public void setKey(KeyWrapper key) throws VerificationException {
         this.key = key;
     }
 

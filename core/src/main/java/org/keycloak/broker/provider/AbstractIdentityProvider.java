@@ -38,11 +38,9 @@ import java.util.UUID;
 public abstract class AbstractIdentityProvider<C extends IdentityProviderModel> implements IdentityProvider<C> {
 
     public static final String ACCOUNT_LINK_URL = "account-link-url";
-    protected final KeycloakSession session;
     private final C config;
 
-    public AbstractIdentityProvider(KeycloakSession session, C config) {
-        this.session = session;
+    public AbstractIdentityProvider(C config) {
         this.config = config;
     }
 
@@ -71,12 +69,12 @@ public abstract class AbstractIdentityProvider<C extends IdentityProviderModel> 
     }
 
     @Override
-    public Response keycloakInitiatedBrowserLogout(KeycloakSession session, UserSessionModel userSession, UriInfo uriInfo, RealmModel realm) {
+    public Response keycloakInitiatedBrowserLogout(UserSessionModel userSession, UriInfo uriInfo, RealmModel realm) {
         return null;
     }
 
     @Override
-    public void backchannelLogout(KeycloakSession session, UserSessionModel userSession, UriInfo uriInfo, RealmModel realm) {
+    public void backchannelLogout(UserSessionModel userSession, UriInfo uriInfo, RealmModel realm) {
 
     }
 
@@ -143,17 +141,17 @@ public abstract class AbstractIdentityProvider<C extends IdentityProviderModel> 
     }
 
     @Override
-    public void preprocessFederatedIdentity(KeycloakSession session, RealmModel realm, BrokeredIdentityContext context) {
+    public void preprocessFederatedIdentity(RealmModel realm, BrokeredIdentityContext context) {
 
     }
 
     @Override
-    public void importNewUser(KeycloakSession session, RealmModel realm, UserModel user, BrokeredIdentityContext context) {
+    public void importNewUser(RealmModel realm, UserModel user, BrokeredIdentityContext context) {
 
     }
 
     @Override
-    public void updateBrokeredUser(KeycloakSession session, RealmModel realm, UserModel user, BrokeredIdentityContext context) {
+    public void updateBrokeredUser(RealmModel realm, UserModel user, BrokeredIdentityContext context) {
 
     }
 

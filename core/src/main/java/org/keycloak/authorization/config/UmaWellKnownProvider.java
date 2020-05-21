@@ -17,23 +17,15 @@
  */
 package org.keycloak.authorization.config;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.wellknown.WellKnownProvider;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
 public class UmaWellKnownProvider implements WellKnownProvider {
-
-    private final KeycloakSession session;
-
-    public UmaWellKnownProvider(KeycloakSession session) {
-        this.session = session;
-    }
-
     @Override
     public Object getConfig() {
-        return UmaConfiguration.create(session);
+        return new UmaConfiguration().create();
     }
 
     @Override

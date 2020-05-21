@@ -19,7 +19,6 @@ package org.keycloak.models;
 
 import com.hsbc.unified.iam.entity.SslRequired;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.provider.ProviderEvent;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.UserStorageProviderModel;
 import org.keycloak.storage.client.ClientStorageProvider;
@@ -529,56 +528,4 @@ public interface RealmModel extends RoleContainerModel {
     void removeDefaultClientScope(ClientScopeModel clientScope);
 
     List<ClientScopeModel> getDefaultClientScopes(boolean defaultScope);
-
-    interface RealmCreationEvent extends ProviderEvent {
-        RealmModel getCreatedRealm();
-
-        KeycloakSession getSession();
-    }
-
-    interface RealmPostCreateEvent extends ProviderEvent {
-        RealmModel getCreatedRealm();
-
-        KeycloakSession getSession();
-    }
-
-    interface RealmRemovedEvent extends ProviderEvent {
-        RealmModel getRealm();
-
-        KeycloakSession getSession();
-    }
-
-    interface ClientCreationEvent extends ProviderEvent {
-        ClientModel getCreatedClient();
-    }
-
-    // Called also during client creation after client is fully initialized (including all attributes etc)
-    interface ClientUpdatedEvent extends ProviderEvent {
-        ClientModel getUpdatedClient();
-
-        KeycloakSession getSession();
-    }
-
-    interface ClientRemovedEvent extends ProviderEvent {
-        ClientModel getClient();
-
-        KeycloakSession getSession();
-    }
-
-    interface IdentityProviderUpdatedEvent extends ProviderEvent {
-        RealmModel getRealm();
-
-        IdentityProviderModel getUpdatedIdentityProvider();
-
-        KeycloakSession getSession();
-    }
-
-    interface IdentityProviderRemovedEvent extends ProviderEvent {
-        RealmModel getRealm();
-
-        IdentityProviderModel getRemovedIdentityProvider();
-
-        KeycloakSession getSession();
-    }
-
 }

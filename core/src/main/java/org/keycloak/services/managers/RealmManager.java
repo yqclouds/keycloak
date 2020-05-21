@@ -17,8 +17,9 @@
 package org.keycloak.services.managers;
 
 import com.hsbc.unified.iam.core.constants.Constants;
-import org.keycloak.Config;
 import com.hsbc.unified.iam.entity.SslRequired;
+import com.hsbc.unified.iam.entity.events.RealmPostCreateEvent;
+import org.keycloak.Config;
 import org.keycloak.models.*;
 import org.keycloak.models.session.UserSessionPersisterProvider;
 import org.keycloak.models.utils.*;
@@ -33,6 +34,8 @@ import org.keycloak.sessions.AuthenticationSessionProvider;
 import org.keycloak.storage.UserStorageProviderModel;
 import org.keycloak.utils.ReservedCharValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -44,33 +47,25 @@ import java.util.List;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class RealmManager {
-
-    protected KeycloakSession session;
-    protected RealmProvider model;
+public class RealmManager implements ApplicationEventPublisherAware {
+    @Autowired
+    protected RealmProvider realmProvider;
 
     @Autowired(required = false)
     private UserSessionPersisterProvider userSessionPersisterProvider;
 
-    public RealmManager(KeycloakSession session) {
-        this.session = session;
-        this.model = session.realms();
-    }
-
-    public KeycloakSession getSession() {
-        return session;
-    }
+    private ApplicationEventPublisher applicationEventPublisher;
 
     public RealmModel getKeycloakAdministrationRealm() {
         return getRealm(Config.getAdminRealm());
     }
 
     public RealmModel getRealm(String id) {
-        return model.getRealm(id);
+        return realmProvider.getRealm(id);
     }
 
     public RealmModel getRealmByName(String name) {
-        return model.getRealmByName(name);
+        return realmProvider.getRealmByName(name);
     }
 
     public RealmModel createRealm(String name) {
@@ -80,7 +75,7 @@ public class RealmManager {
     public RealmModel createRealm(String id, String name) {
         if (id == null) id = KeycloakModelUtils.generateId();
         ReservedCharValidator.validate(name);
-        RealmModel realm = model.createRealm(id, name);
+        RealmModel realm = realmProvider.createRealm(id, name);
         realm.setName(name);
 
         // setup defaults
@@ -114,6 +109,9 @@ public class RealmManager {
         if (realm.getRequiredActionProviders().size() == 0) DefaultRequiredActions.addActions(realm);
     }
 
+    @Autowired
+    private DefaultClientScopes defaultClientScopes;
+
     private void setupOfflineTokens(RealmModel realm, RealmRepresentation realmRep) {
         RoleModel offlineRole = KeycloakModelUtils.setupOfflineRole(realm);
 
@@ -134,7 +132,7 @@ public class RealmManager {
     }
 
     protected void createDefaultClientScopes(RealmModel realm) {
-        DefaultClientScopes.createDefaultClientScopes(session, realm, true);
+        defaultClientScopes.createDefaultClientScopes(realm, true);
     }
 
     protected void setupAdminConsole(RealmModel realm) {
@@ -158,12 +156,15 @@ public class RealmManager {
         adminConsole.setAttribute(OIDCConfigAttributes.PKCE_CODE_CHALLENGE_METHOD, "S256");
     }
 
+    @Autowired
+    private ProtocolMapperUtils protocolMapperUtils;
+
     protected void setupAdminConsoleLocaleMapper(RealmModel realm) {
         ClientModel adminConsole = realm.getClientByClientId(Constants.ADMIN_CONSOLE_CLIENT_ID);
         ProtocolMapperModel localeMapper = adminConsole.getProtocolMapperByName(OIDCLoginProtocol.LOGIN_PROTOCOL, OIDCLoginProtocolFactory.LOCALE);
 
         if (localeMapper == null) {
-            localeMapper = ProtocolMapperUtils.findLocaleMapper(session);
+            localeMapper = protocolMapperUtils.findLocaleMapper();
             if (localeMapper != null) {
                 adminConsole.addProtocolMapper(localeMapper);
             }
@@ -227,36 +228,38 @@ public class RealmManager {
         realm.setEventsListeners(Collections.singleton("jboss-logging"));
     }
 
+    @Autowired
+    private UserSessionProvider userSessionProvider;
+    @Autowired
+    private AuthenticationSessionProvider authenticationSessionProvider;
+
     public boolean removeRealm(RealmModel realm) {
 
         ClientModel masterAdminClient = realm.getMasterAdminClient();
-        boolean removed = model.removeRealm(realm.getId());
+        boolean removed = realmProvider.removeRealm(realm.getId());
         if (removed) {
             if (masterAdminClient != null) {
                 new ClientManager(this).removeClient(getKeycloakAdministrationRealm(), masterAdminClient);
             }
 
-            UserSessionProvider sessions = session.sessions();
-            if (sessions != null) {
-                sessions.onRealmRemoved(realm);
+            if (userSessionProvider != null) {
+                userSessionProvider.onRealmRemoved(realm);
             }
 
             if (userSessionPersisterProvider != null) {
                 userSessionPersisterProvider.onRealmRemoved(realm);
             }
 
-            AuthenticationSessionProvider authSessions = session.authenticationSessions();
-            if (authSessions != null) {
-                authSessions.onRealmRemoved(realm);
+            if (authenticationSessionProvider != null) {
+                authenticationSessionProvider.onRealmRemoved(realm);
             }
 
             // Refresh periodic sync tasks for configured storageProviders
             List<UserStorageProviderModel> storageProviders = realm.getUserStorageProviders();
             UserStorageSyncManager storageSync = new UserStorageSyncManager();
             for (UserStorageProviderModel provider : storageProviders) {
-                storageSync.notifyToRefreshPeriodicSync(session, realm, provider, true);
+                storageSync.notifyToRefreshPeriodicSync(realm, provider, true);
             }
-
         }
         return removed;
     }
@@ -282,7 +285,7 @@ public class RealmManager {
     public void setupMasterAdminManagement(RealmModel realm) {
         // Need to refresh masterApp for current realm
         String adminRealmId = Config.getAdminRealm();
-        RealmModel adminRealm = model.getRealm(adminRealmId);
+        RealmModel adminRealm = realmProvider.getRealm(adminRealmId);
         ClientModel masterApp = adminRealm.getClientByClientId(KeycloakModelUtils.getMasterRealmAdminApplicationClientId(realm.getName()));
         if (masterApp != null) {
             realm.setMasterAdminClient(masterApp);
@@ -304,7 +307,7 @@ public class RealmManager {
             adminRole.addCompositeRole(createRealmRole);
             createRealmRole.setDescription("${role_" + AdminRoles.CREATE_REALM + "}");
         } else {
-            adminRealm = model.getRealm(Config.getAdminRealm());
+            adminRealm = realmProvider.getRealm(Config.getAdminRealm());
             adminRole = adminRealm.getRole(AdminRoles.ADMIN);
         }
         adminRole.setDescription("${role_" + AdminRoles.ADMIN + "}");
@@ -324,7 +327,7 @@ public class RealmManager {
     }
 
     private void checkMasterAdminManagementRoles(RealmModel realm) {
-        RealmModel adminRealm = model.getRealmByName(Config.getAdminRealm());
+        RealmModel adminRealm = realmProvider.getRealmByName(Config.getAdminRealm());
         RoleModel adminRole = adminRealm.getRole(AdminRoles.ADMIN);
 
         ClientModel masterAdminClient = realm.getMasterAdminClient();
@@ -456,8 +459,11 @@ public class RealmManager {
         }
     }
 
+    @Autowired
+    private ImpersonationConstants impersonationConstants;
+
     public void setupImpersonationService(RealmModel realm) {
-        ImpersonationConstants.setupImpersonationService(session, realm);
+        impersonationConstants.setupImpersonationService(realm);
     }
 
     public void setupBrokerService(RealmModel realm) {
@@ -492,7 +498,7 @@ public class RealmManager {
         if (id == null) {
             id = KeycloakModelUtils.generateId();
         }
-        RealmModel realm = model.createRealm(id, rep.getRealm());
+        RealmModel realm = realmProvider.createRealm(id, rep.getRealm());
         ReservedCharValidator.validate(rep.getRealm());
         realm.setName(rep.getRealm());
 
@@ -536,11 +542,11 @@ public class RealmManager {
             createDefaultClientScopes(realm);
         }
 
-        representationToModel.importRealm(session, rep, realm, skipUserDependent);
+        representationToModel.importRealm(rep, realm, skipUserDependent);
         List<ClientRepresentation> clients = rep.getClients();
 
         if (clients != null) {
-            ClientManager clientManager = new ClientManager(new RealmManager(session));
+            ClientManager clientManager = new ClientManager(new RealmManager());
 
             for (ClientRepresentation client : clients) {
                 ClientModel clientModel = realm.getClientById(client.getId());
@@ -550,9 +556,9 @@ public class RealmManager {
                 }
 
                 if (Boolean.TRUE.equals(client.getAuthorizationServicesEnabled())) {
-                    representationToModel.createResourceServer(clientModel, session, true);
+                    representationToModel.createResourceServer(clientModel, true);
                     if (!skipUserDependent) {
-                        RepresentationToModel.importAuthorizationSettings(client, clientModel, session);
+                        representationToModel.importAuthorizationSettings(client, clientModel);
                     }
                 }
             }
@@ -588,7 +594,7 @@ public class RealmManager {
         List<UserStorageProviderModel> storageProviders = realm.getUserStorageProviders();
         UserStorageSyncManager storageSync = new UserStorageSyncManager();
         for (UserStorageProviderModel provider : storageProviders) {
-            storageSync.notifyToRefreshPeriodicSync(session, realm, provider, false);
+            storageSync.notifyToRefreshPeriodicSync(realm, provider, false);
         }
 
         setupAuthorizationServices(realm);
@@ -684,6 +690,9 @@ public class RealmManager {
         return false;
     }
 
+    @Autowired
+    private UserProvider userProvider;
+
     /**
      * Query users based on a search string:
      * <p/>
@@ -699,7 +708,7 @@ public class RealmManager {
         if (searchString == null) {
             return Collections.emptyList();
         }
-        return session.users().searchForUser(searchString.trim(), realmModel);
+        return userProvider.searchForUser(searchString.trim(), realmModel);
     }
 
     private void setupAuthorizationServices(RealmModel realm) {
@@ -711,18 +720,11 @@ public class RealmManager {
     }
 
     private void fireRealmPostCreate(RealmModel realm) {
-        session.getSessionFactory().publish(new RealmModel.RealmPostCreateEvent() {
-            @Override
-            public RealmModel getCreatedRealm() {
-                return realm;
-            }
-
-            @Override
-            public KeycloakSession getSession() {
-                return session;
-            }
-        });
-
+        applicationEventPublisher.publishEvent(new RealmPostCreateEvent(realm));
     }
 
+    @Override
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        this.applicationEventPublisher = applicationEventPublisher;
+    }
 }

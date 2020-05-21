@@ -16,15 +16,16 @@
  */
 package org.keycloak.authorization.authorization;
 
+import com.hsbc.unified.iam.core.util.JsonSerialization;
+import com.hsbc.unified.iam.facade.model.authorization.PermissionTicketModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
+import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.common.DefaultEvaluationContext;
 import org.keycloak.authorization.common.KeycloakIdentity;
-import com.hsbc.unified.iam.facade.model.authorization.PermissionTicketModel;
-import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
-import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
-import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
 import org.keycloak.authorization.permission.ResourcePermission;
 import org.keycloak.authorization.policy.evaluation.EvaluationContext;
 import org.keycloak.authorization.policy.evaluation.PermissionTicketAwareDecisionResultCollector;
@@ -58,10 +59,11 @@ import org.keycloak.services.resources.Cors;
 import org.keycloak.services.util.DefaultClientSessionContext;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.PostConstruct;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -87,7 +89,11 @@ public class AuthorizationTokenService {
     private static final AuthorizationTokenService INSTANCE = new AuthorizationTokenService();
     private static Map<String, BiFunction<KeycloakAuthorizationRequest, AuthorizationProvider, EvaluationContext>> SUPPORTED_CLAIM_TOKEN_FORMATS;
 
-    static {
+    @Autowired
+    private KeycloakContext context;
+
+    @PostConstruct
+    public void afterPropertiesSet() {
         SUPPORTED_CLAIM_TOKEN_FORMATS = new HashMap<>();
         SUPPORTED_CLAIM_TOKEN_FORMATS.put("urn:ietf:params:oauth:token-type:jwt", (request, authorization) -> {
             String claimToken = request.getClaimToken();
@@ -106,8 +112,7 @@ public class AuthorizationTokenService {
                 KeycloakIdentity identity;
 
                 try {
-                    identity = new KeycloakIdentity(authorization.getSession(),
-                            Tokens.getAccessToken(request.getSubjectToken(), authorization.getSession()));
+                    identity = new KeycloakIdentity(Tokens.getAccessToken(request.getSubjectToken(), authorization.getSession()));
                 } catch (Exception cause) {
                     throw new CorsErrorResponseException(request.getCors(), "unauthorized_client", "Invalid identity", Status.BAD_REQUEST);
                 }
@@ -129,7 +134,7 @@ public class AuthorizationTokenService {
             IDToken idToken;
 
             try {
-                idToken = new TokenManager().verifyIDTokenSignature(keycloakSession, subjectToken);
+                idToken = new TokenManager().verifyIDTokenSignature(subjectToken);
             } catch (Exception cause) {
                 throw new CorsErrorResponseException(request.getCors(), "unauthorized_client", "Invalid signature", Status.BAD_REQUEST);
             }
@@ -137,7 +142,7 @@ public class AuthorizationTokenService {
             KeycloakIdentity identity;
 
             try {
-                identity = new KeycloakIdentity(keycloakSession, idToken);
+                identity = new KeycloakIdentity(idToken, context.getRealm());
             } catch (Exception cause) {
                 throw new CorsErrorResponseException(request.getCors(), "unauthorized_client", "Invalid identity", Status.BAD_REQUEST);
             }
@@ -219,7 +224,7 @@ public class AuthorizationTokenService {
 
     private Response createSuccessfulResponse(Object response, KeycloakAuthorizationRequest request) {
         return Cors.add(request.getHttpRequest(), Response.status(Status.OK).type(MediaType.APPLICATION_JSON_TYPE).entity(response))
-                .allowedOrigins(request.getSession(), request.getSession().getContext().getClient())
+                .allowedOrigins(request.getSession().getContext().getClient())
                 .allowedMethods(HttpMethod.POST)
                 .exposedHeaders(Cors.ACCESS_CONTROL_ALLOW_METHODS).build();
     }
@@ -249,6 +254,9 @@ public class AuthorizationTokenService {
                 .evaluate(resourceServer, request);
     }
 
+    @Autowired
+    private TokenManager tokenManager;
+
     private AuthorizationResponse createAuthorizationResponse(KeycloakIdentity identity, Collection<Permission> entitlements, KeycloakAuthorizationRequest request, ClientModel targetClient) {
         KeycloakSession keycloakSession = request.getSession();
         AccessToken accessToken = identity.getAccessToken();
@@ -272,7 +280,7 @@ public class AuthorizationTokenService {
                     rootAuthSession = keycloakSession.authenticationSessions().createRootAuthenticationSession(userSessionModel.getId(), realm);
                 } else {
                     // if the user session is associated with a service account
-                    rootAuthSession = new AuthenticationSessionManager(keycloakSession).createAuthenticationSession(realm, false);
+                    rootAuthSession = new AuthenticationSessionManager().createAuthenticationSession(realm, false);
                 }
             }
 
@@ -283,14 +291,14 @@ public class AuthorizationTokenService {
             authSession.setClientNote(OIDCLoginProtocol.ISSUER, Urls.realmIssuer(keycloakSession.getContext().getUri().getBaseUri(), realm.getName()));
 
             AuthenticationManager.setClientScopesInSession(authSession);
-            clientSessionCtx = TokenManager.attachAuthenticationSession(keycloakSession, userSessionModel, authSession);
+            clientSessionCtx = tokenManager.attachAuthenticationSession(userSessionModel, authSession);
         } else {
-            clientSessionCtx = DefaultClientSessionContext.fromClientSessionScopeParameter(clientSession, keycloakSession);
+            clientSessionCtx = DefaultClientSessionContext.fromClientSessionScopeParameter(clientSession);
         }
 
         TokenManager tokenManager = request.getTokenManager();
         EventBuilder event = request.getEvent();
-        AccessTokenResponseBuilder responseBuilder = tokenManager.responseBuilder(realm, client, event, keycloakSession, userSessionModel, clientSessionCtx)
+        AccessTokenResponseBuilder responseBuilder = tokenManager.responseBuilder(realm, client, event, userSessionModel, clientSessionCtx)
                 .generateAccessToken()
                 .generateRefreshToken();
         AccessToken rpt = responseBuilder.getAccessToken();

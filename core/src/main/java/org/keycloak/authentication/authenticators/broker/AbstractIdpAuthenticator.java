@@ -88,7 +88,7 @@ public abstract class AbstractIdpAuthenticator implements Authenticator {
         if (serializedCtx == null) {
             throw new AuthenticationFlowException("Not found serialized context in clientSession", AuthenticationFlowError.IDENTITY_PROVIDER_ERROR);
         }
-        BrokeredIdentityContext brokerContext = serializedCtx.deserialize(context.getSession(), authSession);
+        BrokeredIdentityContext brokerContext = serializedCtx.deserialize(authSession);
 
         if (!brokerContext.getIdpConfig().isEnabled()) {
             sendFailureChallenge(context, Response.Status.BAD_REQUEST, Errors.IDENTITY_PROVIDER_ERROR, Messages.IDENTITY_PROVIDER_UNEXPECTED_ERROR, AuthenticationFlowError.IDENTITY_PROVIDER_ERROR);
@@ -105,7 +105,7 @@ public abstract class AbstractIdpAuthenticator implements Authenticator {
         if (serializedCtx == null) {
             throw new AuthenticationFlowException("Not found serialized context in clientSession", AuthenticationFlowError.IDENTITY_PROVIDER_ERROR);
         }
-        BrokeredIdentityContext brokerContext = serializedCtx.deserialize(context.getSession(), clientSession);
+        BrokeredIdentityContext brokerContext = serializedCtx.deserialize(clientSession);
 
         if (!brokerContext.getIdpConfig().isEnabled()) {
             sendFailureChallenge(context, Response.Status.BAD_REQUEST, Errors.IDENTITY_PROVIDER_ERROR, Messages.IDENTITY_PROVIDER_UNEXPECTED_ERROR, AuthenticationFlowError.IDENTITY_PROVIDER_ERROR);

@@ -35,7 +35,6 @@ import java.util.*;
  */
 public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScope> {
 
-    protected KeycloakSession session;
     protected RealmModel realm;
     protected ClientScope entity;
 
@@ -51,8 +50,10 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
     @Autowired
     private ClientScopeRoleMappingRepository clientScopeRoleMappingRepository;
 
-    public ClientScopeAdapter(RealmModel realm, KeycloakSession session, ClientScope entity) {
-        this.session = session;
+    @Autowired
+    private UserProvider userProvider;
+
+    public ClientScopeAdapter(RealmModel realm, ClientScope entity) {
         this.realm = realm;
         this.entity = entity;
     }
@@ -172,7 +173,7 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
     public void removeProtocolMapper(ProtocolMapperModel mapping) {
         ProtocolMapper toDelete = getProtocolMapperEntity(mapping.getId());
         if (toDelete != null) {
-            session.users().preRemove(mapping);
+            userProvider.preRemove(mapping);
             this.entity.getProtocolMappers().remove(toDelete);
             protocolMapperRepository.delete(toDelete);
         }

@@ -24,7 +24,10 @@ import org.keycloak.broker.oidc.OIDCIdentityProviderFactory;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.ConfigConstants;
 import org.keycloak.broker.provider.IdentityBrokerException;
-import org.keycloak.models.*;
+import org.keycloak.models.IdentityProviderMapperModel;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.RoleModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
@@ -94,7 +97,7 @@ public class ClaimToRoleMapper extends AbstractClaimMapper {
     }
 
     @Override
-    public void importNewUser(KeycloakSession session, RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
+    public void importNewUser(RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
         String roleName = mapperModel.getConfig().get(ConfigConstants.ROLE);
         if (hasClaimValue(mapperModel, context)) {
             RoleModel role = KeycloakModelUtils.getRoleFromString(realm, roleName);
@@ -104,7 +107,7 @@ public class ClaimToRoleMapper extends AbstractClaimMapper {
     }
 
     @Override
-    public void updateBrokeredUser(KeycloakSession session, RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
+    public void updateBrokeredUser(RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
         String roleName = mapperModel.getConfig().get(ConfigConstants.ROLE);
         if (!hasClaimValue(mapperModel, context)) {
             RoleModel role = KeycloakModelUtils.getRoleFromString(realm, roleName);

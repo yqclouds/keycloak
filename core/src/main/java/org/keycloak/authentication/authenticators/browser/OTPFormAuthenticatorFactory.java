@@ -43,7 +43,7 @@ public class OTPFormAuthenticatorFactory implements AuthenticatorFactory, Displa
     public static final OTPFormAuthenticator SINGLETON = new OTPFormAuthenticator();
 
     @Override
-    public Authenticator create(KeycloakSession session) {
+    public Authenticator create() {
         return SINGLETON;
     }
 

@@ -20,7 +20,6 @@ package org.keycloak.authentication.authenticators.broker;
 import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
@@ -37,7 +36,7 @@ public class IdpAutoLinkAuthenticatorFactory implements AuthenticatorFactory {
     static IdpAutoLinkAuthenticator SINGLETON = new IdpAutoLinkAuthenticator();
 
     @Override
-    public Authenticator create(KeycloakSession session) {
+    public Authenticator create() {
         return SINGLETON;
     }
 

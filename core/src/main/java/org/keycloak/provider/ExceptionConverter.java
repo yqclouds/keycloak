@@ -37,7 +37,7 @@ public interface ExceptionConverter extends Provider, ProviderFactory<ExceptionC
     Throwable convert(Throwable t);
 
     @Override
-    default ExceptionConverter create(KeycloakSession session) {
+    default ExceptionConverter create() {
         return this;
     }
 

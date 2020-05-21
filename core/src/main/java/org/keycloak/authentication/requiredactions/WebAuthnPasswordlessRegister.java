@@ -18,12 +18,11 @@
 
 package org.keycloak.authentication.requiredactions;
 
+import com.hsbc.unified.iam.facade.model.credential.WebAuthnCredentialModel;
 import com.webauthn4j.validator.attestation.trustworthiness.certpath.CertPathTrustworthinessValidator;
 import org.keycloak.authentication.RequiredActionContext;
 import org.keycloak.credential.WebAuthnPasswordlessCredentialProviderFactory;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.WebAuthnPolicy;
-import com.hsbc.unified.iam.facade.model.credential.WebAuthnCredentialModel;
 
 /**
  * Required action for register WebAuthn passwordless credential for the user. This class is temporary and will be likely
@@ -31,8 +30,8 @@ import com.hsbc.unified.iam.facade.model.credential.WebAuthnCredentialModel;
  */
 public class WebAuthnPasswordlessRegister extends WebAuthnRegister {
 
-    public WebAuthnPasswordlessRegister(KeycloakSession session, CertPathTrustworthinessValidator certPathtrustValidator) {
-        super(session, certPathtrustValidator);
+    public WebAuthnPasswordlessRegister(CertPathTrustworthinessValidator certPathtrustValidator) {
+        super(certPathtrustValidator);
     }
 
     @Override

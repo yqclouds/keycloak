@@ -18,7 +18,6 @@ package org.keycloak.broker.provider;
 
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.broker.provider.util.IdentityBrokerState;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
@@ -29,7 +28,6 @@ import javax.ws.rs.core.UriInfo;
  */
 public class AuthenticationRequest {
 
-    private final KeycloakSession session;
     private final UriInfo uriInfo;
     private final IdentityBrokerState state;
     private final HttpRequest httpRequest;
@@ -37,18 +35,13 @@ public class AuthenticationRequest {
     private final String redirectUri;
     private final AuthenticationSessionModel authSession;
 
-    public AuthenticationRequest(KeycloakSession session, RealmModel realm, AuthenticationSessionModel authSession, HttpRequest httpRequest, UriInfo uriInfo, IdentityBrokerState state, String redirectUri) {
-        this.session = session;
+    public AuthenticationRequest(RealmModel realm, AuthenticationSessionModel authSession, HttpRequest httpRequest, UriInfo uriInfo, IdentityBrokerState state, String redirectUri) {
         this.realm = realm;
         this.httpRequest = httpRequest;
         this.uriInfo = uriInfo;
         this.state = state;
         this.redirectUri = redirectUri;
         this.authSession = authSession;
-    }
-
-    public KeycloakSession getSession() {
-        return session;
     }
 
     public UriInfo getUriInfo() {
@@ -70,8 +63,6 @@ public class AuthenticationRequest {
     /**
      * <p>Returns the redirect url that must be included in an authentication request in order to process responses from an
      * identity provider.</p>
-     *
-     * @return
      */
     public String getRedirectUri() {
         return this.redirectUri;

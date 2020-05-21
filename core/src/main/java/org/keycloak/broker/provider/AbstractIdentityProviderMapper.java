@@ -18,7 +18,6 @@
 package org.keycloak.broker.provider;
 
 import org.keycloak.models.IdentityProviderMapperModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
@@ -28,15 +27,15 @@ import org.keycloak.models.UserModel;
  */
 public abstract class AbstractIdentityProviderMapper implements IdentityProviderMapper {
     @Override
-    public IdentityProviderMapper create(KeycloakSession session) {
+    public IdentityProviderMapper create() {
         return null;
     }
 
     @Override
-    public void preprocessFederatedIdentity(KeycloakSession session, RealmModel realm, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
+    public void preprocessFederatedIdentity(RealmModel realm, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
     }
 
     @Override
-    public void importNewUser(KeycloakSession session, RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
+    public void importNewUser(RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
     }
 }

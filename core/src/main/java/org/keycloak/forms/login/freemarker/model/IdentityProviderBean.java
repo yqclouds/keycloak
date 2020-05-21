@@ -17,11 +17,11 @@
 package org.keycloak.forms.login.freemarker.model;
 
 import org.keycloak.models.IdentityProviderModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.OrderedModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.services.Urls;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -35,14 +35,12 @@ import java.util.Map;
 public class IdentityProviderBean {
 
     public static OrderedModel.OrderedModelComparator<IdentityProvider> IDP_COMPARATOR_INSTANCE = new OrderedModel.OrderedModelComparator<>();
-    private final KeycloakSession session;
     private boolean displaySocial;
     private List<IdentityProvider> providers;
     private RealmModel realm;
 
-    public IdentityProviderBean(RealmModel realm, KeycloakSession session, List<IdentityProviderModel> identityProviders, URI baseURI) {
+    public IdentityProviderBean(RealmModel realm, List<IdentityProviderModel> identityProviders, URI baseURI) {
         this.realm = realm;
-        this.session = session;
 
         if (!identityProviders.isEmpty()) {
             List<IdentityProvider> orderedList = new ArrayList<>();
@@ -60,9 +58,12 @@ public class IdentityProviderBean {
         }
     }
 
+    @Autowired
+    private KeycloakModelUtils keycloakModelUtils;
+
     private void addIdentityProvider(List<IdentityProvider> orderedSet, RealmModel realm, URI baseURI, IdentityProviderModel identityProvider) {
         String loginUrl = Urls.identityProviderAuthnRequest(baseURI, identityProvider.getAlias(), realm.getName()).toString();
-        String displayName = KeycloakModelUtils.getIdentityProviderDisplayName(session, identityProvider);
+        String displayName = keycloakModelUtils.getIdentityProviderDisplayName(identityProvider);
         Map<String, String> config = identityProvider.getConfig();
         boolean hideOnLoginPage = config != null && Boolean.parseBoolean(config.get("hideOnLoginPage"));
         if (!hideOnLoginPage) {

@@ -16,12 +16,14 @@
  */
 package org.keycloak.locale;
 
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
@@ -30,19 +32,12 @@ import java.util.Locale;
 import java.util.Set;
 
 public class DefaultLocaleSelectorProvider implements LocaleSelectorProvider {
-
-    private static final Logger LOG = LoggerFactory.getLogger(LocaleSelectorProvider.class);
-
-    private KeycloakSession session;
-
-    public DefaultLocaleSelectorProvider(KeycloakSession session) {
-        this.session = session;
-    }
-
+    @Autowired
+    private KeycloakContext keycloakContext;
     @Override
     public Locale resolveLocale(RealmModel realm, UserModel user) {
-        HttpHeaders requestHeaders = session.getContext().getRequestHeaders();
-        AuthenticationSessionModel session = this.session.getContext().getAuthenticationSession();
+        HttpHeaders requestHeaders = keycloakContext.getRequestHeaders();
+        AuthenticationSessionModel session = keycloakContext.getAuthenticationSession();
 
         if (!realm.isInternationalizationEnabled()) {
             return Locale.ENGLISH;
@@ -85,11 +80,7 @@ public class DefaultLocaleSelectorProvider implements LocaleSelectorProvider {
         }
 
         locale = getAcceptLanguageHeaderLocale(realm, requestHeaders);
-        if (locale != null) {
-            return locale;
-        }
-
-        return null;
+        return locale;
     }
 
     private Locale getUserSelectedLocale(RealmModel realm, AuthenticationSessionModel session) {

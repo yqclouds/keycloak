@@ -9,7 +9,7 @@ import org.keycloak.models.KeycloakSession;
 public interface ConditionalAuthenticatorFactory extends AuthenticatorFactory, DisplayTypeAuthenticatorFactory {
 
     @Override
-    default Authenticator create(KeycloakSession session) {
+    default Authenticator create() {
         return getSingleton();
     }
 

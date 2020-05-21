@@ -1,23 +1,22 @@
 package org.keycloak.authorization.policy.provider.client;
 
-import org.keycloak.Config;
-import org.keycloak.authorization.AuthorizationProvider;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
+import com.hsbc.unified.iam.entity.events.ClientRemovedEvent;
 import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
+import org.keycloak.Config;
+import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.authorization.store.ResourceServerStore;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
-import org.keycloak.models.RealmModel.ClientRemovedEvent;
 import org.keycloak.representations.idm.authorization.ClientPolicyRepresentation;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -89,7 +88,7 @@ public class ClientPolicyProviderFactory implements PolicyProviderFactory<Client
     }
 
     @Override
-    public PolicyProvider create(KeycloakSession session) {
+    public PolicyProvider create() {
         return null;
     }
 
@@ -107,7 +106,7 @@ public class ClientPolicyProviderFactory implements PolicyProviderFactory<Client
             if (event instanceof ClientRemovedEvent) {
                 StoreFactory storeFactory = authorizationProvider.getStoreFactory();
                 PolicyStore policyStore = storeFactory.getPolicyStore();
-                ClientModel removedClient = ((ClientRemovedEvent) event).getClient();
+                ClientModel removedClient = (ClientModel) ((ClientRemovedEvent) event).getSource();
                 ResourceServerStore resourceServerStore = storeFactory.getResourceServerStore();
                 ResourceServerModel resourceServer = resourceServerStore.findById(removedClient.getId());
 

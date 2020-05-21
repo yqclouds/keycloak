@@ -16,6 +16,7 @@
  */
 package org.keycloak.authentication.actiontoken.verifyemail;
 
+import com.hsbc.unified.iam.core.constants.Constants;
 import lombok.Getter;
 import org.keycloak.TokenVerifier.Predicate;
 import org.keycloak.authentication.actiontoken.AbstractActionTokenHandler;
@@ -27,8 +28,6 @@ import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.forms.login.LoginFormsProvider;
-import com.hsbc.unified.iam.core.constants.Constants;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserModel.RequiredAction;
@@ -81,6 +80,8 @@ public class VerifyEmailActionTokenHandler extends AbstractActionTokenHandler<Ve
 
     @Autowired
     private LoginFormsProvider loginFormsProvider;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     @Override
     public Response handleToken(VerifyEmailActionToken token, ActionTokenContext<VerifyEmailActionToken> tokenContext) {
@@ -92,7 +93,6 @@ public class VerifyEmailActionTokenHandler extends AbstractActionTokenHandler<Ve
         AuthenticationSessionModel authSession = tokenContext.getAuthenticationSession();
         final UriInfo uriInfo = tokenContext.getUriInfo();
         final RealmModel realm = tokenContext.getRealm();
-        final KeycloakSession session = tokenContext.getSession();
 
         if (tokenContext.isAuthenticationSessionFresh()) {
             // Update the authentication session in the token
@@ -100,7 +100,7 @@ public class VerifyEmailActionTokenHandler extends AbstractActionTokenHandler<Ve
 
             String authSessionEncodedId = AuthenticationSessionCompoundId.fromAuthSession(authSession).getEncodedId();
             token.setCompoundAuthenticationSessionId(authSessionEncodedId);
-            UriBuilder builder = Urls.actionTokenBuilder(uriInfo.getBaseUri(), token.serialize(session, realm, uriInfo),
+            UriBuilder builder = Urls.actionTokenBuilder(uriInfo.getBaseUri(), token.serialize(realm, uriInfo),
                     authSession.getClient().getClientId(), authSession.getTabId());
             String confirmUri = builder.build(realm.getName()).toString();
 
@@ -119,7 +119,7 @@ public class VerifyEmailActionTokenHandler extends AbstractActionTokenHandler<Ve
         event.success();
 
         if (token.getCompoundOriginalAuthenticationSessionId() != null) {
-            AuthenticationSessionManager asm = new AuthenticationSessionManager(tokenContext.getSession());
+            AuthenticationSessionManager asm = new AuthenticationSessionManager();
             asm.removeAuthenticationSession(tokenContext.getRealm(), authSession, true);
 
             return this.loginFormsProvider.setAuthenticationSession(authSession)
@@ -129,8 +129,7 @@ public class VerifyEmailActionTokenHandler extends AbstractActionTokenHandler<Ve
 
         tokenContext.setEvent(event.clone().removeDetail(Details.EMAIL).event(EventType.LOGIN));
 
-        String nextAction = AuthenticationManager.nextRequiredAction(session, authSession, tokenContext.getClientConnection(), tokenContext.getRequest(), uriInfo, event);
-        return AuthenticationManager.redirectToRequiredActions(session, realm, authSession, uriInfo, nextAction);
+        String nextAction = authenticationManager.nextRequiredAction(authSession, tokenContext.getClientConnection(), tokenContext.getRequest(), uriInfo, event);
+        return authenticationManager.redirectToRequiredActions(realm, authSession, uriInfo, nextAction);
     }
-
 }

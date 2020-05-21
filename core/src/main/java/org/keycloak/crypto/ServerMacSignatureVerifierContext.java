@@ -17,16 +17,32 @@
 package org.keycloak.crypto;
 
 import org.keycloak.common.VerificationException;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeyManager;
+import org.keycloak.models.KeycloakContext;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class ServerMacSignatureVerifierContext extends MacSignatureVerifierContext {
+    private String kid;
+    private String algorithm;
 
-    public ServerMacSignatureVerifierContext(KeycloakSession session, String kid, String algorithm) throws VerificationException {
-        super(getKey(session, kid, algorithm));
+    public ServerMacSignatureVerifierContext(String kid, String algorithm) throws VerificationException {
+        super(null);
+        this.kid = kid;
+        this.algorithm = algorithm;
     }
 
-    private static KeyWrapper getKey(KeycloakSession session, String kid, String algorithm) throws VerificationException {
-        KeyWrapper key = session.keys().getKey(session.getContext().getRealm(), kid, KeyUse.SIG, algorithm);
+    @Override
+    public void setKey(KeyWrapper key) throws VerificationException {
+        super.setKey(getKey(kid, algorithm));
+    }
+
+    @Autowired
+    private KeyManager keyManager;
+    @Autowired
+    private KeycloakContext keycloakContext;
+
+    private KeyWrapper getKey(String kid, String algorithm) throws VerificationException {
+        KeyWrapper key = keyManager.getKey(keycloakContext.getRealm(), kid, KeyUse.SIG, algorithm);
         if (key == null) {
             throw new VerificationException("Key not found");
         }

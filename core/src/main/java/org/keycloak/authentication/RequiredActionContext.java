@@ -96,8 +96,6 @@ public interface RequiredActionContext {
 
     UriInfo getUriInfo();
 
-    KeycloakSession getSession();
-
     HttpRequest getHttpRequest();
 
     /**

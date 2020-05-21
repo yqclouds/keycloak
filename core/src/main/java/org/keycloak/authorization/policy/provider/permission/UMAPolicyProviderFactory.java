@@ -67,7 +67,7 @@ public class UMAPolicyProviderFactory implements PolicyProviderFactory<UmaPermis
     }
 
     @Override
-    public PolicyProvider create(KeycloakSession session) {
+    public PolicyProvider create() {
         return provider;
     }
 

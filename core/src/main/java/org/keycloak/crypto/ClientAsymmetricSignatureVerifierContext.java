@@ -20,34 +20,31 @@ import org.keycloak.common.VerificationException;
 import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.keys.loader.PublicKeyStorageManager;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 
 public class ClientAsymmetricSignatureVerifierContext extends AsymmetricSignatureVerifierContext {
-    private final KeycloakSession session;
     private final ClientModel client;
     private final JWSInput input;
 
     @Autowired
     private PublicKeyStorageManager publicKeyStorageManager;
 
-    public ClientAsymmetricSignatureVerifierContext(KeycloakSession session, ClientModel client, JWSInput input) {
+    public ClientAsymmetricSignatureVerifierContext(ClientModel client, JWSInput input) {
         super();
 
-        this.session = session;
         this.client = client;
         this.input = input;
     }
 
     @PostConstruct
     public void afterPropertiesSet() throws VerificationException {
-        setKey(getKey(session, client, input));
+        setKey(getKey(client, input));
     }
 
-    private KeyWrapper getKey(KeycloakSession session, ClientModel client, JWSInput input) throws VerificationException {
-        KeyWrapper key = publicKeyStorageManager.getClientPublicKeyWrapper(session, client, input);
+    private KeyWrapper getKey(ClientModel client, JWSInput input) throws VerificationException {
+        KeyWrapper key = publicKeyStorageManager.getClientPublicKeyWrapper(client, input);
         if (key == null) {
             throw new VerificationException("Key not found");
         }

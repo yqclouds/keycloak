@@ -17,7 +17,6 @@
 
 package org.keycloak.partialimport;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.representations.idm.PartialImportRepresentation;
 
@@ -32,15 +31,12 @@ public interface PartialImport<T> {
      * Find which resources will need to be skipped or overwritten.  Also,
      * do a preliminary check for errors.
      *
-     * @param rep     Everything in the PartialImport request.
-     * @param realm   Realm to be imported into.
-     * @param session The KeycloakSession.
+     * @param rep   Everything in the PartialImport request.
+     * @param realm Realm to be imported into.
      * @throws ErrorResponseException If the PartialImport can not be performed,
      *                                throw this exception.
      */
-    void prepare(PartialImportRepresentation rep,
-                 RealmModel realm,
-                 KeycloakSession session) throws ErrorResponseException;
+    void prepare(PartialImportRepresentation rep, RealmModel realm) throws ErrorResponseException;
 
     /**
      * Delete resources that will be overwritten.  This is done separately so
@@ -49,21 +45,18 @@ public interface PartialImport<T> {
      * It was found that doing delete/add per resource causes errors because of
      * cascading deletes.
      *
-     * @param realm   Realm to be imported into.
-     * @param session The KeycloakSession
+     * @param realm Realm to be imported into.
      */
-    void removeOverwrites(RealmModel realm, KeycloakSession session);
+    void removeOverwrites(RealmModel realm);
 
     /**
      * Create (or re-create) all the imported resources.
      *
-     * @param rep     Everything in the PartialImport request.
-     * @param realm   Realm to be imported into.
-     * @param session The KeycloakSession.
+     * @param rep   Everything in the PartialImport request.
+     * @param realm Realm to be imported into.
      * @return The final results of the PartialImport request.
      * @throws ErrorResponseException if an error was detected trying to doImport a resource.
      */
     PartialImportResults doImport(PartialImportRepresentation rep,
-                                  RealmModel realm,
-                                  KeycloakSession session) throws ErrorResponseException;
+                                  RealmModel realm) throws ErrorResponseException;
 }

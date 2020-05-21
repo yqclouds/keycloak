@@ -23,6 +23,7 @@ import org.keycloak.authentication.authenticators.broker.util.SerializedBrokered
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.*;
 import org.keycloak.sessions.AuthenticationSessionModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.*;
@@ -34,10 +35,12 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class LoginFormsUtil {
+    @Autowired
+    private UserProvider userProvider;
 
     // Display just those identityProviders on login screen, which are already linked to "known" established user
-    public static List<IdentityProviderModel> filterIdentityProvidersByUser(List<IdentityProviderModel> providers, KeycloakSession session, RealmModel realm,
-                                                                            Map<String, Object> attributes, MultivaluedMap<String, String> formData) {
+    public List<IdentityProviderModel> filterIdentityProvidersByUser(List<IdentityProviderModel> providers, RealmModel realm,
+                                                                     Map<String, Object> attributes, MultivaluedMap<String, String> formData) {
 
         Boolean usernameEditDisabled = (Boolean) attributes.get(LoginFormsProvider.USERNAME_EDIT_DISABLED);
         if (usernameEditDisabled != null && usernameEditDisabled) {
@@ -46,12 +49,12 @@ public class LoginFormsUtil {
                 throw new IllegalStateException("USERNAME_EDIT_DISABLED but username not known");
             }
 
-            UserModel user = session.users().getUserByUsername(username, realm);
+            UserModel user = userProvider.getUserByUsername(username, realm);
             if (user == null || !user.isEnabled()) {
                 throw new IllegalStateException("User " + username + " not found or disabled");
             }
 
-            Set<FederatedIdentityModel> fedLinks = session.users().getFederatedIdentities(user, realm);
+            Set<FederatedIdentityModel> fedLinks = userProvider.getFederatedIdentities(user, realm);
             Set<String> federatedIdentities = new HashSet<>();
             for (FederatedIdentityModel fedLink : fedLinks) {
                 federatedIdentities.add(fedLink.getIdentityProvider());
@@ -69,7 +72,7 @@ public class LoginFormsUtil {
         }
     }
 
-    public static List<IdentityProviderModel> filterIdentityProviders(List<IdentityProviderModel> providers, KeycloakSession session, RealmModel realm,
+    public static List<IdentityProviderModel> filterIdentityProviders(List<IdentityProviderModel> providers, RealmModel realm,
                                                                       Map<String, Object> attributes, MultivaluedMap<String, String> formData, AuthenticationFlowContext context) {
 
         if (context != null) {
@@ -77,7 +80,7 @@ public class LoginFormsUtil {
             SerializedBrokeredIdentityContext serializedCtx = SerializedBrokeredIdentityContext.readFromAuthenticationSession(authSession, AbstractIdpAuthenticator.BROKERED_CONTEXT_NOTE);
 
             if (serializedCtx != null) {
-                IdentityProviderModel idp = serializedCtx.deserialize(session, authSession).getIdpConfig();
+                IdentityProviderModel idp = serializedCtx.deserialize(authSession).getIdpConfig();
                 return providers.stream()
                         .filter(p -> !Objects.equals(p.getProviderId(), idp.getProviderId()))
                         .collect(Collectors.toList());

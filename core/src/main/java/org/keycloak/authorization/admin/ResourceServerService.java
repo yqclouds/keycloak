@@ -17,9 +17,9 @@
  */
 package org.keycloak.authorization.admin;
 
+import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authorization.AuthorizationProvider;
-import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.exportimport.util.ExportUtils;
@@ -47,7 +47,7 @@ import static org.keycloak.models.utils.ModelToRepresentation.toRepresentation;
  */
 public class ResourceServerService {
 
-    private final AuthorizationProvider authorization;
+    private final AuthorizationProvider authorizationProvider;
     private final AdminPermissionEvaluator auth;
     private final AdminEventBuilder adminEvent;
     private final KeycloakSession session;
@@ -55,7 +55,7 @@ public class ResourceServerService {
     private ResourceServerModel resourceServer;
 
     public ResourceServerService(AuthorizationProvider authorization, ResourceServerModel resourceServer, ClientModel client, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
-        this.authorization = authorization;
+        this.authorizationProvider = authorization;
         this.session = authorization.getSession();
         this.client = client;
         this.resourceServer = resourceServer;
@@ -76,7 +76,7 @@ public class ResourceServerService {
         }
 
         if (this.resourceServer == null) {
-            this.resourceServer = representationToModel.createResourceServer(client, session, true);
+            this.resourceServer = representationToModel.createResourceServer(client, true);
             createDefaultPermission(createDefaultResource(), createDefaultPolicy());
             audit(OperationType.CREATE, session.getContext().getUri(), newClient);
         }
@@ -98,7 +98,7 @@ public class ResourceServerService {
 
     public void delete() {
         this.auth.realm().requireManageAuthorization();
-        authorization.getStoreFactory().getResourceServerStore().delete(resourceServer.getId());
+        authorizationProvider.getStoreFactory().getResourceServerStore().delete(resourceServer.getId());
         audit(OperationType.DELETE, session.getContext().getUri(), false);
     }
 
@@ -125,7 +125,7 @@ public class ResourceServerService {
 
         rep.setClientId(client.getId());
 
-        RepresentationToModel.toModel(rep, authorization);
+        RepresentationToModel.toModel(rep, authorizationProvider);
 
         audit(OperationType.UPDATE, session.getContext().getUri(), false);
 
@@ -134,7 +134,7 @@ public class ResourceServerService {
 
     @Path("/resource")
     public ResourceSetService getResourceSetResource() {
-        ResourceSetService resource = new ResourceSetService(this.session, this.resourceServer, this.authorization, this.auth, adminEvent);
+        ResourceSetService resource = new ResourceSetService(this.resourceServer, this.authorizationProvider, this.auth, adminEvent);
 
         ResteasyProviderFactory.getInstance().injectProperties(resource);
 
@@ -143,7 +143,7 @@ public class ResourceServerService {
 
     @Path("/scope")
     public ScopeService getScopeResource() {
-        ScopeService resource = new ScopeService(this.session, this.resourceServer, this.authorization, this.auth, adminEvent);
+        ScopeService resource = new ScopeService(this.session, this.resourceServer, this.authorizationProvider, this.auth, adminEvent);
 
         ResteasyProviderFactory.getInstance().injectProperties(resource);
 
@@ -152,7 +152,7 @@ public class ResourceServerService {
 
     @Path("/policy")
     public PolicyService getPolicyResource() {
-        PolicyService resource = new PolicyService(this.resourceServer, this.authorization, this.auth, adminEvent);
+        PolicyService resource = new PolicyService(this.resourceServer, this.authorizationProvider, this.auth, adminEvent);
 
         ResteasyProviderFactory.getInstance().injectProperties(resource);
 
@@ -162,7 +162,7 @@ public class ResourceServerService {
     @Path("/permission")
     public Object getPermissionTypeResource() {
         this.auth.realm().requireViewAuthorization();
-        PermissionService resource = new PermissionService(this.resourceServer, this.authorization, this.auth, adminEvent);
+        PermissionService resource = new PermissionService(this.resourceServer, this.authorizationProvider, this.auth, adminEvent);
 
         ResteasyProviderFactory.getInstance().injectProperties(resource);
 

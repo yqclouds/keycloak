@@ -710,7 +710,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
         if (!component.getProviderType().equals(UserStorageProvider.class.getName())) return;
         localStorage().preRemove(realm, component);
         if (getFederatedStorage() != null) getFederatedStorage().preRemove(realm, component);
-        new UserStorageSyncManager().notifyToRefreshPeriodicSync(session, realm, new UserStorageProviderModel(component), true);
+        new UserStorageSyncManager().notifyToRefreshPeriodicSync(realm, new UserStorageProviderModel(component), true);
 
     }
 
@@ -746,7 +746,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
     public void onCreate(KeycloakSession session, RealmModel realm, ComponentModel model) {
         ComponentFactory factory = ComponentUtil.getComponentFactory(session, model);
         if (!(factory instanceof UserStorageProviderFactory)) return;
-        new UserStorageSyncManager().notifyToRefreshPeriodicSync(session, realm, new UserStorageProviderModel(model), false);
+        new UserStorageSyncManager().notifyToRefreshPeriodicSync(realm, new UserStorageProviderModel(model), false);
 
     }
 
@@ -758,7 +758,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
         UserStorageProviderModel newP = new UserStorageProviderModel(newModel);
         if (old.getChangedSyncPeriod() != newP.getChangedSyncPeriod() || old.getFullSyncPeriod() != newP.getFullSyncPeriod()
                 || old.isImportEnabled() != newP.isImportEnabled()) {
-            new UserStorageSyncManager().notifyToRefreshPeriodicSync(session, realm, new UserStorageProviderModel(newModel), false);
+            new UserStorageSyncManager().notifyToRefreshPeriodicSync(realm, new UserStorageProviderModel(newModel), false);
         }
 
     }

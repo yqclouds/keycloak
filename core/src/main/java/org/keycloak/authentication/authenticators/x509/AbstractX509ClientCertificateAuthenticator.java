@@ -18,6 +18,7 @@
 
 package org.keycloak.authentication.authenticators.x509;
 
+import com.hsbc.unified.iam.core.constants.Constants;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
@@ -29,7 +30,6 @@ import org.keycloak.crypto.JavaAlgorithm;
 import org.keycloak.events.Details;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.jose.jws.crypto.HashUtils;
-import com.hsbc.unified.iam.core.constants.Constants;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -154,9 +154,12 @@ public abstract class AbstractX509ClientCertificateAuthenticator implements Auth
         return UserIdentityExtractorBuilder.fromConfig(config);
     }
 
+    @Autowired
+    private UserIdentityToModelMapperBuilder userIdentityToModelMapperBuilder;
+
     // Purely for unit testing
     public UserIdentityToModelMapper getUserIdentityToModelMapper(X509AuthenticatorConfigModel config) {
-        return UserIdentityToModelMapperBuilder.fromConfig(config);
+        return userIdentityToModelMapperBuilder.fromConfig(config);
     }
 
     @Override
@@ -286,9 +289,12 @@ public abstract class AbstractX509ClientCertificateAuthenticator implements Auth
         }
     }
 
-    protected static class UserIdentityToModelMapperBuilder {
+    @Autowired
+    private UserIdentityToModelMapper userIdentityToModelMapper;
 
-        static UserIdentityToModelMapper fromConfig(X509AuthenticatorConfigModel config) {
+    protected class UserIdentityToModelMapperBuilder {
+
+        public UserIdentityToModelMapper fromConfig(X509AuthenticatorConfigModel config) {
 
             X509AuthenticatorConfigModel.IdentityMapperType mapperType = config.getUserIdentityMapperType();
             String attributeName = config.getCustomAttributeName();
@@ -299,7 +305,7 @@ public abstract class AbstractX509ClientCertificateAuthenticator implements Auth
                     mapper = UserIdentityToModelMapper.getUserIdentityToCustomAttributeMapper(attributeName);
                     break;
                 case USERNAME_EMAIL:
-                    mapper = UserIdentityToModelMapper.getUsernameOrEmailMapper();
+                    mapper = userIdentityToModelMapper.getUsernameOrEmailMapper();
                     break;
                 default:
                     LOG.warn("[UserIdentityToModelMapperBuilder:fromConfig] Unknown or unsupported user identity mapper: \"%s\"", mapperType.getName());

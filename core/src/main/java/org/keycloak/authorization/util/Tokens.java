@@ -23,16 +23,18 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.AuthenticationManager.AuthResult;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
 public class Tokens {
+    @Autowired
+    private KeycloakContext context;
 
-    public static AccessToken getAccessToken(KeycloakSession keycloakSession) {
+    public AccessToken getAccessToken() {
         AppAuthManager authManager = new AppAuthManager();
-        KeycloakContext context = keycloakSession.getContext();
-        AuthResult authResult = authManager.authenticateBearerToken(keycloakSession, context.getRealm(), context.getUri(), context.getConnection(), context.getRequestHeaders());
+        AuthResult authResult = authManager.authenticateBearerToken(context.getRealm(), context.getUri(), context.getConnection(), context.getRequestHeaders());
 
         if (authResult != null) {
             return authResult.getToken();
@@ -44,7 +46,7 @@ public class Tokens {
     public static AccessToken getAccessToken(String accessToken, KeycloakSession keycloakSession) {
         AppAuthManager authManager = new AppAuthManager();
         KeycloakContext context = keycloakSession.getContext();
-        AuthResult authResult = authManager.authenticateBearerToken(accessToken, keycloakSession, context.getRealm(), context.getUri(), context.getConnection(), context.getRequestHeaders());
+        AuthResult authResult = authManager.authenticateBearerToken(accessToken, context.getRealm(), context.getUri(), context.getConnection(), context.getRequestHeaders());
 
         if (authResult != null) {
             return authResult.getToken();

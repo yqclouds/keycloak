@@ -38,7 +38,7 @@ public abstract class AbstractRsaKeyProviderFactory implements KeyProviderFactor
     }
 
     @Override
-    public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel model) throws ComponentValidationException {
+    public void validateConfiguration(RealmModel realm, ComponentModel model) throws ComponentValidationException {
         ConfigurationValidationHelper.check(model)
                 .checkLong(Attributes.PRIORITY_PROPERTY, false)
                 .checkBoolean(Attributes.ENABLED_PROPERTY, false)

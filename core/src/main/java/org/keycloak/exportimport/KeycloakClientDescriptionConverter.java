@@ -50,7 +50,7 @@ public class KeycloakClientDescriptionConverter implements ClientDescriptionConv
     }
 
     @Override
-    public ClientDescriptionConverter create(KeycloakSession session) {
+    public ClientDescriptionConverter create() {
         return this;
     }
 

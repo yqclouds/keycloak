@@ -41,7 +41,7 @@ public class CookieAuthenticatorFactory implements AuthenticatorFactory, Display
     static CookieAuthenticator SINGLETON = new CookieAuthenticator();
 
     @Override
-    public Authenticator create(KeycloakSession session) {
+    public Authenticator create() {
         return SINGLETON;
     }
 

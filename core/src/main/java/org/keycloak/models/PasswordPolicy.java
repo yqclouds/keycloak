@@ -19,6 +19,7 @@ package org.keycloak.models;
 
 import org.keycloak.policy.PasswordPolicyConfigException;
 import org.keycloak.policy.PasswordPolicyProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -46,6 +47,9 @@ public class PasswordPolicy implements Serializable {
     private Map<String, Object> policyConfig;
     private Builder builder;
 
+    @Autowired
+    private PasswordPolicyProvider passwordPolicyProvider;
+
     private PasswordPolicy(Builder builder, Map<String, Object> policyConfig) {
         this.builder = builder;
         this.policyConfig = policyConfig;
@@ -55,12 +59,12 @@ public class PasswordPolicy implements Serializable {
         return new PasswordPolicy(null, new HashMap<>());
     }
 
-    public static Builder build() {
+    public Builder build() {
         return new Builder();
     }
 
-    public static PasswordPolicy parse(KeycloakSession session, String policyString) {
-        return new Builder(policyString).build(session);
+    public PasswordPolicy parse(String policyString) {
+        return new Builder(policyString).build();
     }
 
     public Set<String> getPolicies() {
@@ -112,11 +116,11 @@ public class PasswordPolicy implements Serializable {
         return builder.clone();
     }
 
-    public static class Builder {
+    public class Builder {
 
         private LinkedHashMap<String, String> map;
 
-        private Builder() {
+        public Builder() {
             this.map = new LinkedHashMap<>();
         }
 
@@ -124,7 +128,7 @@ public class PasswordPolicy implements Serializable {
             this.map = map;
         }
 
-        private Builder(String policyString) {
+        public Builder(String policyString) {
             map = new LinkedHashMap<>();
 
             if (policyString != null && !policyString.trim().isEmpty()) {
@@ -165,18 +169,17 @@ public class PasswordPolicy implements Serializable {
             return this;
         }
 
-        public PasswordPolicy build(KeycloakSession session) {
+        public PasswordPolicy build() {
             Map<String, Object> config = new HashMap<>();
             for (Map.Entry<String, String> e : map.entrySet()) {
 
-                PasswordPolicyProvider provider = session.getProvider(PasswordPolicyProvider.class, e.getKey());
-                if (provider == null) {
+                if (passwordPolicyProvider == null) {
                     throw new PasswordPolicyConfigException("Password policy not found");
                 }
 
                 Object o;
                 try {
-                    o = provider.parseConfig(e.getValue());
+                    o = passwordPolicyProvider.parseConfig(e.getValue());
                 } catch (PasswordPolicyConfigException ex) {
                     throw new ModelException("Invalid config for " + e.getKey() + ": " + ex.getMessage());
                 }

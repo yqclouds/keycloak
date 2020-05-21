@@ -837,7 +837,7 @@ public class ModelToRepresentation {
     public static ComponentRepresentation toRepresentation(KeycloakSession session, ComponentModel component, boolean internal) {
         ComponentRepresentation rep = toRepresentationWithoutConfig(component);
         if (!internal) {
-            rep = StripSecretsUtils.strip(session, rep);
+            rep = StripSecretsUtils.strip(rep);
         }
         return rep;
     }

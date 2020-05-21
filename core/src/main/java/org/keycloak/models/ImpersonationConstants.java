@@ -20,6 +20,7 @@ package org.keycloak.models;
 import com.hsbc.unified.iam.core.constants.Constants;
 import org.keycloak.Config;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -28,6 +29,8 @@ import org.keycloak.models.utils.KeycloakModelUtils;
 public class ImpersonationConstants {
     public static String IMPERSONATION_ROLE = "impersonation";
 
+    @Autowired
+    private RealmProvider realmProvider;
 
     public static void setupMasterRealmRole(RealmProvider model, RealmModel realm) {
         RealmModel adminRealm;
@@ -61,8 +64,8 @@ public class ImpersonationConstants {
     }
 
 
-    public static void setupImpersonationService(KeycloakSession session, RealmModel realm) {
-        setupMasterRealmRole(session.realms(), realm);
+    public void setupImpersonationService(RealmModel realm) {
+        setupMasterRealmRole(realmProvider, realm);
         setupRealmRole(realm);
     }
 

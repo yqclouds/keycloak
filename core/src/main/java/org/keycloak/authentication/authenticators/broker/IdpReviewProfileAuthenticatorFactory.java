@@ -41,7 +41,7 @@ public class IdpReviewProfileAuthenticatorFactory implements AuthenticatorFactor
 
     public static final String PROVIDER_ID = "idp-review-profile";
     public static final String UPDATE_PROFILE_ON_FIRST_LOGIN = "update.profile.on.first.login";
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
     static IdpReviewProfileAuthenticator SINGLETON = new IdpReviewProfileAuthenticator();
 
     static {
@@ -62,7 +62,7 @@ public class IdpReviewProfileAuthenticatorFactory implements AuthenticatorFactor
     }
 
     @Override
-    public Authenticator create(KeycloakSession session) {
+    public Authenticator create() {
         return SINGLETON;
     }
 

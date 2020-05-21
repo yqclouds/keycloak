@@ -167,12 +167,12 @@ public class FreeMarkerAccountProvider implements AccountProvider {
                 if (!realm.isUserManagedAccessAllowed()) {
                     return Response.status(Status.FORBIDDEN).build();
                 }
-                attributes.put("authorization", new AuthorizationBean(session, user, uriInfo));
+                attributes.put("authorization", new AuthorizationBean(user, uriInfo));
             case RESOURCE_DETAIL:
                 if (!realm.isUserManagedAccessAllowed()) {
                     return Response.status(Status.FORBIDDEN).build();
                 }
-                attributes.put("authorization", new AuthorizationBean(session, user, uriInfo));
+                attributes.put("authorization", new AuthorizationBean(user, uriInfo));
         }
 
         return processTemplate(theme, page, attributes, locale);

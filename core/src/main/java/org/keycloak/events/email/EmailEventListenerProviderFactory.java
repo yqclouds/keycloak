@@ -54,8 +54,8 @@ public class EmailEventListenerProviderFactory implements EventListenerProviderF
     private Set<EventType> includedEvents = new HashSet<>();
 
     @Override
-    public EventListenerProvider create(KeycloakSession session) {
-        return new EmailEventListenerProvider(session, emailTemplateProvider, includedEvents);
+    public EventListenerProvider create() {
+        return new EmailEventListenerProvider(emailTemplateProvider, includedEvents);
     }
 
     @PostConstruct

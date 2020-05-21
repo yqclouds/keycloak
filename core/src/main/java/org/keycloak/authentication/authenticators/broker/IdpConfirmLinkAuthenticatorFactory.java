@@ -38,7 +38,7 @@ public class IdpConfirmLinkAuthenticatorFactory implements AuthenticatorFactory 
     static IdpConfirmLinkAuthenticator SINGLETON = new IdpConfirmLinkAuthenticator();
 
     @Override
-    public Authenticator create(KeycloakSession session) {
+    public Authenticator create() {
         return SINGLETON;
     }
 

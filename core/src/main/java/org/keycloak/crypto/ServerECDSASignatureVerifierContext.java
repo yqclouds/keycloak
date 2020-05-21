@@ -1,26 +1,27 @@
 package org.keycloak.crypto;
 
 import org.keycloak.common.VerificationException;
-import org.keycloak.models.KeycloakSession;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 
 public class ServerECDSASignatureVerifierContext extends AsymmetricSignatureVerifierContext {
-    private final KeycloakSession session;
     private final String kid;
     private final String algorithm;
 
-    public ServerECDSASignatureVerifierContext(KeycloakSession session, String kid, String algorithm) throws VerificationException {
+    public ServerECDSASignatureVerifierContext(String kid, String algorithm) throws VerificationException {
         super();
 
-        this.session = session;
         this.kid = kid;
         this.algorithm = algorithm;
     }
 
+    @Autowired
+    private ServerAsymmetricSignatureVerifierContext serverAsymmetricSignatureVerifierContext;
+
     @PostConstruct
     public void afterPropertiesSet() throws VerificationException {
-        setKey(ServerAsymmetricSignatureVerifierContext.getKey(session, kid, algorithm));
+        setKey(serverAsymmetricSignatureVerifierContext.getKey(kid, algorithm));
     }
 
     @Override

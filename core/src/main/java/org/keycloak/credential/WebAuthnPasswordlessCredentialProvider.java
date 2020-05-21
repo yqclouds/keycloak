@@ -18,10 +18,9 @@
 
 package org.keycloak.credential;
 
+import com.hsbc.unified.iam.facade.model.credential.WebAuthnCredentialModel;
 import com.webauthn4j.converter.util.ObjectConverter;
 import org.keycloak.authentication.requiredactions.WebAuthnPasswordlessRegisterFactory;
-import org.keycloak.models.KeycloakSession;
-import com.hsbc.unified.iam.facade.model.credential.WebAuthnCredentialModel;
 
 /**
  * Credential provider for WebAuthn passwordless credential of the user
@@ -30,8 +29,8 @@ import com.hsbc.unified.iam.facade.model.credential.WebAuthnCredentialModel;
  */
 public class WebAuthnPasswordlessCredentialProvider extends WebAuthnCredentialProvider {
 
-    public WebAuthnPasswordlessCredentialProvider(KeycloakSession session, ObjectConverter objectConverter) {
-        super(session, objectConverter);
+    public WebAuthnPasswordlessCredentialProvider(ObjectConverter objectConverter) {
+        super(objectConverter);
     }
 
     @Override
@@ -49,6 +48,6 @@ public class WebAuthnPasswordlessCredentialProvider extends WebAuthnCredentialPr
                 .iconCssClass("kcAuthenticatorWebAuthnPasswordlessClass")
                 .createAction(WebAuthnPasswordlessRegisterFactory.PROVIDER_ID)
                 .removeable(true)
-                .build(getSession());
+                .build();
     }
 }

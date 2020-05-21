@@ -43,7 +43,7 @@ public class NoCookieFlowRedirectAuthenticatorFactory implements AuthenticatorFa
     };
 
     @Override
-    public Authenticator create(KeycloakSession session) {
+    public Authenticator create() {
         return SINGLETON;
     }
 

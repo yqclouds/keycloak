@@ -19,10 +19,10 @@ package org.keycloak.truststore;
 
 import org.apache.http.conn.ssl.BrowserCompatHostnameVerifier;
 import org.apache.http.conn.ssl.StrictHostnameVerifier;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.net.ssl.*;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
@@ -33,11 +33,13 @@ public class JSSETruststoreConfigurator {
     private volatile javax.net.ssl.SSLSocketFactory sslFactory;
     private volatile TrustManager[] tm;
 
-    public JSSETruststoreConfigurator(KeycloakSession session) {
-        KeycloakSessionFactory factory = session.getSessionFactory();
-        TruststoreProviderFactory truststoreFactory = (TruststoreProviderFactory) factory.getProviderFactory(TruststoreProvider.class, "file");
+    @Autowired
+    private Map<String, TruststoreProviderFactory> truststoreProviderFactories;
 
-        provider = truststoreFactory.create(session);
+    public JSSETruststoreConfigurator() {
+        TruststoreProviderFactory truststoreFactory = truststoreProviderFactories.get("file");
+
+        provider = truststoreFactory.create();
         if (provider != null && provider.getTruststore() == null) {
             provider = null;
         }

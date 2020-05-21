@@ -18,12 +18,13 @@
 package org.keycloak.services.util;
 
 import org.jboss.resteasy.spi.HttpRequest;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.theme.BrowserSecurityHeaderSetup;
 import org.keycloak.utils.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.Response;
 import java.net.URI;
@@ -50,6 +51,9 @@ public abstract class BrowserHistoryHelper {
 
     protected static final Logger LOG = LoggerFactory.getLogger(BrowserHistoryHelper.class);
 
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     // Always rely on javascript for now
     public static BrowserHistoryHelper getInstance() {
         return new JavascriptHistoryReplace();
@@ -57,9 +61,9 @@ public abstract class BrowserHistoryHelper {
         //return new NoOpHelper();
     }
 
-    public abstract Response saveResponseAndRedirect(KeycloakSession session, AuthenticationSessionModel authSession, Response response, boolean actionRequest, HttpRequest httpRequest);
+    public abstract Response saveResponseAndRedirect(AuthenticationSessionModel authSession, Response response, boolean actionRequest, HttpRequest httpRequest);
 
-    public abstract Response loadSavedResponse(KeycloakSession session, AuthenticationSessionModel authSession);
+    public abstract Response loadSavedResponse(AuthenticationSessionModel authSession);
 
     protected boolean shouldReplaceBrowserHistory(boolean actionRequest, HttpRequest httpRequest) {
         if (actionRequest) {
@@ -77,18 +81,21 @@ public abstract class BrowserHistoryHelper {
 
         private static final Pattern HEAD_END_PATTERN = Pattern.compile("</[hH][eE][aA][dD]>");
 
+        @Autowired
+        private KeycloakContext keycloakContext;
+
         @Override
-        public Response saveResponseAndRedirect(KeycloakSession session, AuthenticationSessionModel authSession, Response response, boolean actionRequest, HttpRequest httpRequest) {
+        public Response saveResponseAndRedirect(AuthenticationSessionModel authSession, Response response, boolean actionRequest, HttpRequest httpRequest) {
             if (!shouldReplaceBrowserHistory(actionRequest, httpRequest)) {
                 return response;
             }
 
             // For now, handle just status 200 with String body. See if more is needed...
             Object entity = response.getEntity();
-            if (entity != null && entity instanceof String) {
+            if (entity instanceof String) {
                 String responseString = (String) entity;
 
-                URI lastExecutionURL = new AuthenticationFlowURLHelper(session, session.getContext().getRealm(), session.getContext().getUri()).getLastExecutionUrl(authSession);
+                URI lastExecutionURL = new AuthenticationFlowURLHelper(keycloakContext.getRealm(), keycloakContext.getUri()).getLastExecutionUrl(authSession);
 
                 // Inject javascript for history "replaceState"
                 String responseWithJavascript = responseWithJavascript(responseString, lastExecutionURL.toString());
@@ -96,12 +103,11 @@ public abstract class BrowserHistoryHelper {
                 return Response.fromResponse(response).entity(responseWithJavascript).build();
             }
 
-
             return response;
         }
 
         @Override
-        public Response loadSavedResponse(KeycloakSession session, AuthenticationSessionModel authSession) {
+        public Response loadSavedResponse(AuthenticationSessionModel authSession) {
             return null;
         }
 
@@ -136,12 +142,12 @@ public abstract class BrowserHistoryHelper {
 
 
     // This impl is limited ATM. Saved request doesn't save response HTTP headers, so they may not be fully restored..
-    private static class RedirectAfterPostHelper extends BrowserHistoryHelper {
+    private class RedirectAfterPostHelper extends BrowserHistoryHelper {
 
         private static final String CACHED_RESPONSE = "cached.response";
 
         @Override
-        public Response saveResponseAndRedirect(KeycloakSession session, AuthenticationSessionModel authSession, Response response, boolean actionRequest, HttpRequest httpRequest) {
+        public Response saveResponseAndRedirect(AuthenticationSessionModel authSession, Response response, boolean actionRequest, HttpRequest httpRequest) {
             if (!shouldReplaceBrowserHistory(actionRequest, httpRequest)) {
                 return response;
             }
@@ -153,7 +159,7 @@ public abstract class BrowserHistoryHelper {
                     String responseString = (String) entity;
                     authSession.setAuthNote(CACHED_RESPONSE, responseString);
 
-                    URI lastExecutionURL = new AuthenticationFlowURLHelper(session, session.getContext().getRealm(), session.getContext().getUri()).getLastExecutionUrl(authSession);
+                    URI lastExecutionURL = new AuthenticationFlowURLHelper(keycloakContext.getRealm(), keycloakContext.getUri()).getLastExecutionUrl(authSession);
 
                     if (LOG.isTraceEnabled()) {
                         LOG.trace("Saved response challenge and redirect to {}", lastExecutionURL);
@@ -168,7 +174,7 @@ public abstract class BrowserHistoryHelper {
 
 
         @Override
-        public Response loadSavedResponse(KeycloakSession session, AuthenticationSessionModel authSession) {
+        public Response loadSavedResponse(AuthenticationSessionModel authSession) {
             String savedResponse = authSession.getAuthNote(CACHED_RESPONSE);
             if (savedResponse != null) {
                 authSession.removeAuthNote(CACHED_RESPONSE);
@@ -178,7 +184,7 @@ public abstract class BrowserHistoryHelper {
                 }
 
                 Response.ResponseBuilder builder = Response.status(200).type(MediaType.TEXT_HTML_UTF_8).entity(savedResponse);
-                BrowserSecurityHeaderSetup.headers(builder, session.getContext().getRealm()); // TODO rather all the headers from the saved response should be added here.
+                BrowserSecurityHeaderSetup.headers(builder, keycloakContext.getRealm()); // TODO rather all the headers from the saved response should be added here.
                 return builder.build();
             }
 
@@ -191,13 +197,13 @@ public abstract class BrowserHistoryHelper {
     private static class NoOpHelper extends BrowserHistoryHelper {
 
         @Override
-        public Response saveResponseAndRedirect(KeycloakSession session, AuthenticationSessionModel authSession, Response response, boolean actionRequest, HttpRequest httpRequest) {
+        public Response saveResponseAndRedirect(AuthenticationSessionModel authSession, Response response, boolean actionRequest, HttpRequest httpRequest) {
             return response;
         }
 
 
         @Override
-        public Response loadSavedResponse(KeycloakSession session, AuthenticationSessionModel authSession) {
+        public Response loadSavedResponse(AuthenticationSessionModel authSession) {
             return null;
         }
 

@@ -17,7 +17,10 @@
 package org.keycloak.credential;
 
 import com.hsbc.unified.iam.core.credential.CredentialInput;
-import org.keycloak.models.CredentialModel;
+import com.hsbc.unified.iam.core.util.Base64;
+import com.hsbc.unified.iam.core.util.Time;
+import com.hsbc.unified.iam.facade.dto.WebAuthnCredentialData;
+import com.hsbc.unified.iam.facade.model.credential.WebAuthnCredentialModel;
 import com.webauthn4j.WebAuthnManager;
 import com.webauthn4j.authenticator.Authenticator;
 import com.webauthn4j.authenticator.AuthenticatorImpl;
@@ -29,15 +32,13 @@ import com.webauthn4j.data.attestation.authenticator.AttestedCredentialData;
 import com.webauthn4j.data.attestation.authenticator.COSEKey;
 import com.webauthn4j.util.exception.WebAuthnException;
 import org.keycloak.authentication.requiredactions.WebAuthnRegisterFactory;
-import com.hsbc.unified.iam.core.util.Base64;
-import com.hsbc.unified.iam.core.util.Time;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.CredentialModel;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserCredentialManager;
 import org.keycloak.models.UserModel;
-import com.hsbc.unified.iam.facade.model.credential.WebAuthnCredentialModel;
-import com.hsbc.unified.iam.facade.dto.WebAuthnCredentialData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -52,13 +53,13 @@ public class WebAuthnCredentialProvider implements CredentialProvider<WebAuthnCr
 
     private static final Logger LOG = LoggerFactory.getLogger(WebAuthnCredentialProvider.class);
 
-    private KeycloakSession session;
-
     private CredentialPublicKeyConverter credentialPublicKeyConverter;
     private AttestationStatementConverter attestationStatementConverter;
 
-    public WebAuthnCredentialProvider(KeycloakSession session, ObjectConverter objectConverter) {
-        this.session = session;
+    @Autowired
+    private UserCredentialManager userCredentialManager;
+
+    public WebAuthnCredentialProvider(ObjectConverter objectConverter) {
         if (credentialPublicKeyConverter == null)
             credentialPublicKeyConverter = new CredentialPublicKeyConverter(objectConverter);
         if (attestationStatementConverter == null)
@@ -66,7 +67,7 @@ public class WebAuthnCredentialProvider implements CredentialProvider<WebAuthnCr
     }
 
     private UserCredentialStore getCredentialStore() {
-        return session.userCredentialManager();
+        return userCredentialManager;
     }
 
     @Override
@@ -156,7 +157,7 @@ public class WebAuthnCredentialProvider implements CredentialProvider<WebAuthnCr
     @Override
     public boolean isConfiguredFor(RealmModel realm, UserModel user, String credentialType) {
         if (!supportsCredentialType(credentialType)) return false;
-        return !session.userCredentialManager().getStoredCredentialsByType(realm, user, credentialType).isEmpty();
+        return !userCredentialManager.getStoredCredentialsByType(realm, user, credentialType).isEmpty();
     }
 
 
@@ -223,7 +224,7 @@ public class WebAuthnCredentialProvider implements CredentialProvider<WebAuthnCr
 
 
     private List<WebAuthnCredentialModelInput> getWebAuthnCredentialModelList(RealmModel realm, UserModel user) {
-        List<CredentialModel> credentialModels = session.userCredentialManager().getStoredCredentialsByType(realm, user, getType());
+        List<CredentialModel> credentialModels = userCredentialManager.getStoredCredentialsByType(realm, user, getType());
 
         return credentialModels.stream()
                 .map(this::getCredentialInputFromCredentialModel)
@@ -249,11 +250,6 @@ public class WebAuthnCredentialProvider implements CredentialProvider<WebAuthnCr
                 .iconCssClass("kcAuthenticatorWebAuthnClass")
                 .createAction(WebAuthnRegisterFactory.PROVIDER_ID)
                 .removeable(true)
-                .build(session);
+                .build();
     }
-
-    protected KeycloakSession getSession() {
-        return session;
-    }
-
 }

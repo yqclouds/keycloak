@@ -18,12 +18,12 @@ package org.keycloak.credential;
 
 import com.hsbc.unified.iam.core.credential.CredentialInput;
 import com.hsbc.unified.iam.core.util.Time;
+import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.credential.hash.PasswordHashProvider;
 import org.keycloak.models.*;
 import org.keycloak.models.cache.CachedUserModel;
 import org.keycloak.models.cache.OnUserCache;
 import org.keycloak.models.cache.UserCache;
-import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.policy.PasswordPolicyManagerProvider;
 import org.keycloak.policy.PolicyError;
 import org.slf4j.Logger;
@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -43,14 +44,11 @@ public class PasswordCredentialProvider implements CredentialProvider<PasswordCr
     public static final String PASSWORD_CACHE_KEY = PasswordCredentialProvider.class.getName() + "." + PasswordCredentialModel.TYPE;
     private static final Logger LOG = LoggerFactory.getLogger(PasswordCredentialProvider.class);
 
-    protected final KeycloakSession session;
-
-    public PasswordCredentialProvider(KeycloakSession session) {
-        this.session = session;
-    }
+    @Autowired
+    private UserCredentialManager userCredentialManager;
 
     protected UserCredentialStore getCredentialStore() {
-        return session.userCredentialManager();
+        return userCredentialManager;
     }
 
     public PasswordCredentialModel getPassword(RealmModel realm, UserModel user) {
@@ -87,6 +85,9 @@ public class PasswordCredentialProvider implements CredentialProvider<PasswordCr
         createCredential(realm, user, credentialModel);
         return true;
     }
+
+    @Autowired
+    private UserCache userCache;
 
     @Override
     public CredentialModel createCredential(RealmModel realm, UserModel user, PasswordCredentialModel credentialModel) {
@@ -125,7 +126,6 @@ public class PasswordCredentialProvider implements CredentialProvider<PasswordCr
                     .forEach(p -> getCredentialStore().removeStoredCredential(realm, user, p.getId()));
         }
 
-        UserCache userCache = session.userCache();
         if (userCache != null) {
             userCache.evict(realm, user);
         }
@@ -142,12 +142,14 @@ public class PasswordCredentialProvider implements CredentialProvider<PasswordCr
         return PasswordCredentialModel.createFromCredentialModel(model);
     }
 
+    @Autowired
+    private Map<String, PasswordHashProvider> passwordHashProviders;
 
     protected PasswordHashProvider getHashProvider(PasswordPolicy policy) {
-        PasswordHashProvider hash = session.getProvider(PasswordHashProvider.class, policy.getHashAlgorithm());
+        PasswordHashProvider hash = passwordHashProviders.get(policy.getHashAlgorithm());
         if (hash == null) {
             LOG.warn("Realm PasswordPolicy PasswordHashProvider {} not found", policy.getHashAlgorithm());
-            return session.getProvider(PasswordHashProvider.class, PasswordPolicy.HASH_ALGORITHM_DEFAULT);
+            return passwordHashProviders.get(PasswordPolicy.HASH_ALGORITHM_DEFAULT);
         }
         return hash;
     }
@@ -246,7 +248,7 @@ public class PasswordCredentialProvider implements CredentialProvider<PasswordCr
             LOG.debug("No password cached or stored for user {} ", user.getUsername());
             return false;
         }
-        PasswordHashProvider hash = session.getProvider(PasswordHashProvider.class, password.getPasswordCredentialData().getAlgorithm());
+        PasswordHashProvider hash = passwordHashProviders.get(password.getPasswordCredentialData().getAlgorithm());
         if (hash == null) {
             LOG.debug("PasswordHashProvider {} not found for user {} ", password.getPasswordCredentialData().getAlgorithm(), user.getUsername());
             return false;
@@ -273,7 +275,6 @@ public class PasswordCredentialProvider implements CredentialProvider<PasswordCr
         newPassword.setUserLabel(password.getUserLabel());
         getCredentialStore().updateCredential(realm, user, newPassword);
 
-        UserCache userCache = session.userCache();
         if (userCache != null) {
             userCache.evict(realm, user);
         }
@@ -295,6 +296,8 @@ public class PasswordCredentialProvider implements CredentialProvider<PasswordCr
         return PasswordCredentialModel.TYPE;
     }
 
+    @Autowired
+    private KeycloakContext keycloakContext;
     @Override
     public CredentialTypeMetadata getCredentialTypeMetadata(CredentialTypeMetadataContext metadataContext) {
         CredentialTypeMetadata.CredentialTypeMetadataBuilder metadataBuilder = CredentialTypeMetadata.builder()
@@ -306,7 +309,7 @@ public class PasswordCredentialProvider implements CredentialProvider<PasswordCr
 
         // Check if we are creating or updating password
         UserModel user = metadataContext.getUser();
-        if (user != null && session.userCredentialManager().isConfiguredFor(session.getContext().getRealm(), user, getType())) {
+        if (user != null && userCredentialManager.isConfiguredFor(keycloakContext.getRealm(), user, getType())) {
             metadataBuilder.updateAction(UserModel.RequiredAction.UPDATE_PASSWORD.toString());
         } else {
             metadataBuilder.createAction(UserModel.RequiredAction.UPDATE_PASSWORD.toString());
@@ -314,6 +317,6 @@ public class PasswordCredentialProvider implements CredentialProvider<PasswordCr
 
         return metadataBuilder
                 .removeable(false)
-                .build(session);
+                .build();
     }
 }

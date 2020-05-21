@@ -17,7 +17,6 @@
 package org.keycloak.crypto;
 
 import com.hsbc.unified.iam.core.crypto.Algorithm;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 
@@ -33,8 +32,8 @@ public class ES256ClientSignatureVerifierProviderFactory implements ClientSignat
     }
 
     @Override
-    public ClientSignatureVerifierProvider create(KeycloakSession session) {
-        return new ECDSAClientSignatureVerifierProvider(session, Algorithm.ES256);
+    public ClientSignatureVerifierProvider create() {
+        return new ECDSAClientSignatureVerifierProvider(Algorithm.ES256);
     }
 
 }

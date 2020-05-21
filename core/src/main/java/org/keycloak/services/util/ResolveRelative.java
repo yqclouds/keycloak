@@ -18,8 +18,9 @@
 package org.keycloak.services.util;
 
 import com.hsbc.unified.iam.core.constants.Constants;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.urls.UrlType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.UriBuilder;
 
@@ -28,10 +29,12 @@ import javax.ws.rs.core.UriBuilder;
  * @version $Revision: 1 $
  */
 public class ResolveRelative {
+    @Autowired
+    private KeycloakContext context;
 
-    public static String resolveRelativeUri(KeycloakSession session, String rootUrl, String url) {
-        String frontendUrl = session.getContext().getUri(UrlType.FRONTEND).getBaseUri().toString();
-        String adminUrl = session.getContext().getUri(UrlType.ADMIN).getBaseUri().toString();
+    public String resolveRelativeUri(String rootUrl, String url) {
+        String frontendUrl = context.getUri(UrlType.FRONTEND).getBaseUri().toString();
+        String adminUrl = context.getUri(UrlType.ADMIN).getBaseUri().toString();
         return resolveRelativeUri(frontendUrl, adminUrl, rootUrl, url);
     }
 
@@ -45,9 +48,9 @@ public class ResolveRelative {
         }
     }
 
-    public static String resolveRootUrl(KeycloakSession session, String rootUrl) {
-        String frontendUrl = session.getContext().getUri(UrlType.FRONTEND).getBaseUri().toString();
-        String adminUrl = session.getContext().getUri(UrlType.ADMIN).getBaseUri().toString();
+    public String resolveRootUrl(String rootUrl) {
+        String frontendUrl = context.getUri(UrlType.FRONTEND).getBaseUri().toString();
+        String adminUrl = context.getUri(UrlType.ADMIN).getBaseUri().toString();
         return resolveRootUrl(frontendUrl, adminUrl, rootUrl);
     }
 

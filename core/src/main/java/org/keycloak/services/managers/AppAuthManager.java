@@ -107,22 +107,23 @@ public class AppAuthManager extends AuthenticationManager {
         return tokenString;
     }
 
-    public AuthResult authenticateBearerToken(KeycloakSession session, RealmModel realm) {
-        KeycloakContext ctx = session.getContext();
-        return authenticateBearerToken(session, realm, ctx.getUri(), ctx.getConnection(), ctx.getRequestHeaders());
+    private KeycloakContext context;
+
+    public AuthResult authenticateBearerToken(RealmModel realm) {
+        return authenticateBearerToken(realm, context.getUri(), context.getConnection(), context.getRequestHeaders());
     }
 
-    public AuthResult authenticateBearerToken(KeycloakSession session) {
-        return authenticateBearerToken(session, session.getContext().getRealm(), session.getContext().getUri(), session.getContext().getConnection(), session.getContext().getRequestHeaders());
+    public AuthResult authenticateBearerToken() {
+        return authenticateBearerToken(context.getRealm(), context.getUri(), context.getConnection(), context.getRequestHeaders());
     }
 
-    public AuthResult authenticateBearerToken(KeycloakSession session, RealmModel realm, UriInfo uriInfo, ClientConnection connection, HttpHeaders headers) {
-        return authenticateBearerToken(extractAuthorizationHeaderToken(headers), session, realm, uriInfo, connection, headers);
+    public AuthResult authenticateBearerToken(RealmModel realm, UriInfo uriInfo, ClientConnection connection, HttpHeaders headers) {
+        return authenticateBearerToken(extractAuthorizationHeaderToken(headers), realm, uriInfo, connection, headers);
     }
 
-    public AuthResult authenticateBearerToken(String tokenString, KeycloakSession session, RealmModel realm, UriInfo uriInfo, ClientConnection connection, HttpHeaders headers) {
+    public AuthResult authenticateBearerToken(String tokenString, RealmModel realm, UriInfo uriInfo, ClientConnection connection, HttpHeaders headers) {
         if (tokenString == null) return null;
-        AuthResult authResult = verifyIdentityToken(session, realm, uriInfo, connection, true, true, false, tokenString, headers);
+        AuthResult authResult = verifyIdentityToken(realm, uriInfo, connection, true, true, false, tokenString, headers);
         return authResult;
     }
 

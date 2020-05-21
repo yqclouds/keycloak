@@ -25,7 +25,9 @@ import com.hsbc.unified.iam.facade.model.session.PersistentUserSessionModel;
 import com.hsbc.unified.iam.repository.session.PersistentClientSessionRepository;
 import com.hsbc.unified.iam.repository.session.PersistentUserSessionRepository;
 import org.keycloak.models.*;
-import org.keycloak.models.session.*;
+import org.keycloak.models.session.PersistentAuthenticatedClientSessionAdapter;
+import org.keycloak.models.session.PersistentUserSessionAdapter;
+import org.keycloak.models.session.UserSessionPersisterProvider;
 import org.keycloak.models.utils.SessionTimeoutHelper;
 import org.keycloak.storage.StorageId;
 import org.slf4j.Logger;
@@ -42,16 +44,13 @@ import java.util.stream.Collectors;
 public class JpaUserSessionPersisterProvider implements UserSessionPersisterProvider {
     private static final Logger LOG = LoggerFactory.getLogger(JpaUserSessionPersisterProvider.class);
 
-    private final KeycloakSession session;
-
     @Autowired
     private PersistentUserSessionRepository persistentUserSessionRepository;
     @Autowired
     private PersistentClientSessionRepository persistentClientSessionRepository;
 
-    public JpaUserSessionPersisterProvider(KeycloakSession session) {
-        this.session = session;
-    }
+    @Autowired
+    private RealmProvider realmProvider;
 
     @Override
     public void createUserSession(UserSessionModel userSession, boolean offline) {
@@ -160,10 +159,10 @@ public class JpaUserSessionPersisterProvider implements UserSessionPersisterProv
 
     @Override
     public void onUserRemoved(RealmModel realm, UserModel user) {
-        onUserRemoved(realm, user.getId());
+        onUserRemoved(user.getId());
     }
 
-    private void onUserRemoved(RealmModel realm, String userId) {
+    private void onUserRemoved(String userId) {
         persistentClientSessionRepository.deleteClientSessionsByUser(userId);
         persistentUserSessionRepository.deleteUserSessionsByUser(userId);
     }
@@ -228,7 +227,7 @@ public class JpaUserSessionPersisterProvider implements UserSessionPersisterProv
     }
 
     private PersistentUserSessionAdapter toAdapter(PersistentUserSession entity) {
-        RealmModel realm = session.realms().getRealm(entity.getRealmId());
+        RealmModel realm = realmProvider.getRealm(entity.getRealmId());
         return toAdapter(realm, entity);
     }
 
@@ -241,7 +240,7 @@ public class JpaUserSessionPersisterProvider implements UserSessionPersisterProv
         model.setOffline(offlineFromString(entity.getOffline()));
 
         Map<String, AuthenticatedClientSessionModel> clientSessions = new HashMap<>();
-        return new PersistentUserSessionAdapter(session, model, realm, entity.getUserId(), clientSessions);
+        return new PersistentUserSessionAdapter(model, realm, entity.getUserId(), clientSessions);
     }
 
     private PersistentAuthenticatedClientSessionAdapter toAdapter(RealmModel realm, PersistentUserSessionAdapter userSession, PersistentClientSession entity) {

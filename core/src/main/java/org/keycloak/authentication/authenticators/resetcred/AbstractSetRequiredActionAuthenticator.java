@@ -77,7 +77,7 @@ public abstract class AbstractSetRequiredActionAuthenticator implements Authenti
     }
 
     @Override
-    public Authenticator create(KeycloakSession session) {
+    public Authenticator create() {
         return this;
     }
 

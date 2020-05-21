@@ -49,7 +49,7 @@ public class DBLockManager {
     }
 
     public DBLockProvider getDBLock() {
-        return dbLockProviderFactory.create(this.session);
+        return dbLockProviderFactory.create();
     }
 
     public void setForceUnlock(boolean forceUnlock) {

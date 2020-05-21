@@ -25,11 +25,13 @@ import org.keycloak.events.EventType;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.UserProvider;
 import org.keycloak.models.utils.FormMessage;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.AttributeFormDataProcessor;
 import org.keycloak.services.validation.Validation;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -60,18 +62,19 @@ public class UpdateProfile implements RequiredActionProvider, RequiredActionFact
         context.challenge(challenge);
     }
 
+    @Autowired
+    private UserProvider userProvider;
+
     @Override
     public void processAction(RequiredActionContext context) {
         EventBuilder event = context.getEvent();
         event.event(EventType.UPDATE_PROFILE);
         MultivaluedMap<String, String> formData = context.getHttpRequest().getDecodedFormParameters();
         UserModel user = context.getUser();
-        KeycloakSession session = context.getSession();
         RealmModel realm = context.getRealm();
 
-
         List<FormMessage> errors = Validation.validateUpdateProfileForm(realm, formData);
-        if (errors != null && !errors.isEmpty()) {
+        if (!errors.isEmpty()) {
             Response challenge = context.form()
                     .setErrors(errors)
                     .setFormData(formData)
@@ -88,7 +91,7 @@ public class UpdateProfile implements RequiredActionProvider, RequiredActionFact
 
             if (usernameChanged) {
 
-                if (session.users().getUserByUsername(username, realm) != null) {
+                if (userProvider.getUserByUsername(username, realm) != null) {
                     Response challenge = context.form()
                             .setError(Messages.USERNAME_EXISTS)
                             .setFormData(formData)
@@ -112,7 +115,7 @@ public class UpdateProfile implements RequiredActionProvider, RequiredActionFact
 
         if (emailChanged) {
             if (!realm.isDuplicateEmailsAllowed()) {
-                UserModel userByEmail = session.users().getUserByEmail(email, realm);
+                UserModel userByEmail = userProvider.getUserByEmail(email, realm);
 
                 // check for duplicated email
                 if (userByEmail != null && !userByEmail.getId().equals(user.getId())) {
@@ -145,13 +148,13 @@ public class UpdateProfile implements RequiredActionProvider, RequiredActionFact
     }
 
     @Override
-    public RequiredActionProvider create(KeycloakSession session) {
+    public RequiredActionProvider create() {
         return this;
     }
 
 
     @Override
-    public RequiredActionProvider createDisplay(KeycloakSession session, String displayType) {
+    public RequiredActionProvider createDisplay(String displayType) {
         if (displayType == null) return this;
         if (!OAuth2Constants.DISPLAY_CONSOLE.equalsIgnoreCase(displayType)) return null;
         return ConsoleUpdateProfile.SINGLETON;

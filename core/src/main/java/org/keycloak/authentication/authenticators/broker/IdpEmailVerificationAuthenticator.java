@@ -17,12 +17,13 @@
 
 package org.keycloak.authentication.authenticators.broker;
 
+import com.hsbc.unified.iam.core.constants.Constants;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.actiontoken.idpverifyemail.IdpVerifyAccountLinkActionToken;
 import org.keycloak.authentication.authenticators.broker.util.SerializedBrokeredIdentityContext;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
-import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.email.EmailException;
 import org.keycloak.email.EmailTemplateProvider;
 import org.keycloak.events.Details;
@@ -30,7 +31,6 @@ import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.forms.login.LoginFormsProvider;
-import com.hsbc.unified.iam.core.constants.Constants;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -136,7 +136,7 @@ public class IdpEmailVerificationAuthenticator extends AbstractIdpAuthenticator 
                 existingUser.getId(), absoluteExpirationInSecs, authSessionEncodedId,
                 brokerContext.getUsername(), brokerContext.getIdpConfig().getAlias(), authSession.getClient().getClientId()
         );
-        UriBuilder builder = Urls.actionTokenBuilder(uriInfo.getBaseUri(), token.serialize(session, realm, uriInfo),
+        UriBuilder builder = Urls.actionTokenBuilder(uriInfo.getBaseUri(), token.serialize(realm, uriInfo),
                 authSession.getClient().getClientId(), authSession.getTabId());
         String link = builder
                 .queryParam(Constants.EXECUTION, context.getExecution().getId())

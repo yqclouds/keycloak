@@ -45,7 +45,7 @@ public class PasswordFormFactory implements AuthenticatorFactory, DisplayTypeAut
     public static final PasswordForm SINGLETON = new PasswordForm();
 
     @Override
-    public Authenticator create(KeycloakSession session) {
+    public Authenticator create() {
         return SINGLETON;
     }
 

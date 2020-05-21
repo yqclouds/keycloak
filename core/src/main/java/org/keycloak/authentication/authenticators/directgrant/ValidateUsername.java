@@ -32,6 +32,7 @@ import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -46,11 +47,13 @@ import java.util.List;
 @Component("ValidateUsername")
 @ProviderFactory(id = "direct-grant-validate-username", providerClasses = Authenticator.class)
 public class ValidateUsername extends AbstractDirectGrantAuthenticator {
-
     public static final String PROVIDER_ID = "direct-grant-validate-username";
     public static final AuthenticationExecutionRequirement[] REQUIREMENT_CHOICES = {
             AuthenticationExecutionRequirement.REQUIRED
     };
+
+    @Autowired
+    private KeycloakModelUtils keycloakModelUtils;
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
@@ -64,9 +67,9 @@ public class ValidateUsername extends AbstractDirectGrantAuthenticator {
         context.getEvent().detail(Details.USERNAME, username);
         context.getAuthenticationSession().setAuthNote(AbstractUsernameFormAuthenticator.ATTEMPTED_USERNAME, username);
 
-        UserModel user = null;
+        UserModel user;
         try {
-            user = KeycloakModelUtils.findUserByNameOrEmail(context.getSession(), context.getRealm(), username);
+            user = keycloakModelUtils.findUserByNameOrEmail(context.getRealm(), username);
         } catch (ModelDuplicateException mde) {
 //            ServicesLogger.LOGGER.modelDuplicateException(mde);
             Response challengeResponse = errorResponse(Response.Status.UNAUTHORIZED.getStatusCode(), "invalid_request", "Invalid user credentials");
@@ -89,7 +92,7 @@ public class ValidateUsername extends AbstractDirectGrantAuthenticator {
             return;
         }
         if (context.getRealm().isBruteForceProtected()) {
-            if (context.getProtector().isTemporarilyDisabled(context.getSession(), context.getRealm(), user)) {
+            if (context.getProtector().isTemporarilyDisabled(context.getRealm(), user)) {
                 context.getEvent().user(user);
                 context.getEvent().error(Errors.USER_TEMPORARILY_DISABLED);
                 Response challengeResponse = errorResponse(Response.Status.UNAUTHORIZED.getStatusCode(), "invalid_grant", "Invalid user credentials");

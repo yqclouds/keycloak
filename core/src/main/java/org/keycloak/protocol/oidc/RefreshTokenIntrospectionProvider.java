@@ -25,6 +25,6 @@ import org.keycloak.models.KeycloakSession;
 public class RefreshTokenIntrospectionProvider extends AccessTokenIntrospectionProvider {
 
     public RefreshTokenIntrospectionProvider(KeycloakSession session) {
-        super(session);
+        super();
     }
 }

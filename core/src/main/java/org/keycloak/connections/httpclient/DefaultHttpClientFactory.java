@@ -27,7 +27,6 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.keycloak.common.util.EnvUtil;
 import org.keycloak.common.util.KeystoreUtil;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.truststore.TruststoreProvider;
 import org.slf4j.Logger;
@@ -96,8 +95,8 @@ public class DefaultHttpClientFactory implements HttpClientFactory {
     private volatile CloseableHttpClient httpClient;
 
     @Override
-    public HttpClientProvider create(KeycloakSession session) {
-        lazyInit(session);
+    public HttpClientProvider create() {
+        lazyInit();
 
         return new HttpClientProvider() {
             @Override
@@ -157,7 +156,7 @@ public class DefaultHttpClientFactory implements HttpClientFactory {
     @Autowired(required = false)
     private TruststoreProvider truststoreProvider;
 
-    private void lazyInit(KeycloakSession session) {
+    private void lazyInit() {
         if (httpClient == null) {
             synchronized (this) {
                 if (httpClient == null) {

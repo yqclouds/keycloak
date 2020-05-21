@@ -17,44 +17,30 @@
 
 package org.keycloak.models;
 
+import com.hsbc.unified.iam.entity.events.UserRemovedEvent;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
+
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-public class UserManager {
-
-    private KeycloakSession session;
-
-    public UserManager(KeycloakSession session) {
-        this.session = session;
-    }
+public class UserManager implements ApplicationEventPublisherAware {
+    @Autowired
+    private UserProvider userProvider;
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     public boolean removeUser(RealmModel realm, UserModel user) {
-        return removeUser(realm, user, session.users());
-    }
-
-    public boolean removeUser(RealmModel realm, UserModel user, UserProvider userProvider) {
         if (userProvider.removeUser(realm, user)) {
-            session.getSessionFactory().publish(new UserModel.UserRemovedEvent() {
-
-                @Override
-                public RealmModel getRealm() {
-                    return realm;
-                }
-
-                @Override
-                public UserModel getUser() {
-                    return user;
-                }
-
-                @Override
-                public KeycloakSession getSession() {
-                    return session;
-                }
-
-            });
+            applicationEventPublisher.publishEvent(new UserRemovedEvent(this, realm, user));
             return true;
         }
         return false;
     }
 
+    @Override
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        this.applicationEventPublisher = applicationEventPublisher;
+    }
 }

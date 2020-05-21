@@ -31,7 +31,7 @@ public class AccessTokenIntrospectionProviderFactory implements TokenIntrospecti
 
     @Override
     public TokenIntrospectionProvider create(KeycloakSession session) {
-        return new AccessTokenIntrospectionProvider(session);
+        return new AccessTokenIntrospectionProvider();
     }
 
     @Override

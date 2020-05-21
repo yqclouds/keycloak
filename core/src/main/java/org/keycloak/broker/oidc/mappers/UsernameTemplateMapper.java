@@ -22,7 +22,6 @@ import org.keycloak.broker.oidc.OIDCIdentityProviderFactory;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.IdentityProviderMapper;
 import org.keycloak.models.IdentityProviderMapperModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
@@ -89,11 +88,11 @@ public class UsernameTemplateMapper extends AbstractClaimMapper {
     }
 
     @Override
-    public void updateBrokeredUser(KeycloakSession session, RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
+    public void updateBrokeredUser(RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
     }
 
     @Override
-    public void preprocessFederatedIdentity(KeycloakSession session, RealmModel realm, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
+    public void preprocessFederatedIdentity(RealmModel realm, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
         String template = mapperModel.getConfig().get(TEMPLATE);
         Matcher m = substitution.matcher(template);
         StringBuffer sb = new StringBuffer();

@@ -17,30 +17,34 @@
 package org.keycloak.crypto;
 
 import org.keycloak.common.VerificationException;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeyManager;
+import org.keycloak.models.KeycloakContext;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 
 public class ServerAsymmetricSignatureVerifierContext extends AsymmetricSignatureVerifierContext {
-    private final KeycloakSession session;
     private final String kid;
     private final String algorithm;
 
-    public ServerAsymmetricSignatureVerifierContext(KeycloakSession session, String kid, String algorithm) throws VerificationException {
-        super();
+    @Autowired
+    private KeyManager keyManager;
+    @Autowired
+    private KeycloakContext context;
 
-        this.session = session;
+    public ServerAsymmetricSignatureVerifierContext(String kid, String algorithm) throws VerificationException {
+        super();
         this.kid = kid;
         this.algorithm = algorithm;
     }
 
     @PostConstruct
     public void afterPropertiesSet() throws VerificationException {
-        setKey(getKey(session, kid, algorithm));
+        setKey(getKey(kid, algorithm));
     }
 
-    static KeyWrapper getKey(KeycloakSession session, String kid, String algorithm) throws VerificationException {
-        KeyWrapper key = session.keys().getKey(session.getContext().getRealm(), kid, KeyUse.SIG, algorithm);
+    KeyWrapper getKey(String kid, String algorithm) throws VerificationException {
+        KeyWrapper key = keyManager.getKey(context.getRealm(), kid, KeyUse.SIG, algorithm);
         if (key == null) {
             throw new VerificationException("Key not found");
         }
