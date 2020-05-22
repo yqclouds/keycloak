@@ -34,7 +34,7 @@ public class ForceExpiredPasswordPolicyProviderFactory implements PasswordPolicy
     public static final int DEFAULT_VALUE = 365;
 
     @Override
-    public PasswordPolicyProvider create(KeycloakSession session) {
+    public PasswordPolicyProvider create() {
         return this;
     }
 

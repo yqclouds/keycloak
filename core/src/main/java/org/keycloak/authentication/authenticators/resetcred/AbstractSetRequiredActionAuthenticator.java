@@ -44,7 +44,7 @@ public abstract class AbstractSetRequiredActionAuthenticator implements Authenti
     }
 
     @Override
-    public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
+    public void setRequiredActions(RealmModel realm, UserModel user) {
     }
 
     @Override
@@ -82,7 +82,7 @@ public abstract class AbstractSetRequiredActionAuthenticator implements Authenti
     }
 
     @Override
-    public boolean configuredFor(KeycloakSession session, RealmModel realm, UserModel user) {
+    public boolean configuredFor(RealmModel realm, UserModel user) {
         return true;
     }
 }

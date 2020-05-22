@@ -18,16 +18,17 @@
 
 package org.keycloak.authorization.policy.evaluation;
 
+import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.Decision;
 import org.keycloak.authorization.Decision.Effect;
-import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import org.keycloak.authorization.permission.ResourcePermission;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RoleUtils;
 import org.keycloak.representations.idm.authorization.Logic;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -140,19 +141,21 @@ public class DefaultEvaluation implements Evaluation {
         }
     }
 
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     private Realm createRealm() {
         return new Realm() {
 
             @Override
             public boolean isUserInGroup(String id, String groupId, boolean checkParent) {
-                KeycloakSession session = authorizationProvider.getSession();
-                UserModel user = getUser(id, session);
+                UserModel user = getUser(id);
 
                 if (Objects.isNull(user)) {
                     return false;
                 }
 
-                RealmModel realm = session.getContext().getRealm();
+                RealmModel realm = keycloakContext.getRealm();
                 GroupModel group = KeycloakModelUtils.findGroupByPath(realm, groupId);
 
                 if (Objects.isNull(group)) {
@@ -166,18 +169,23 @@ public class DefaultEvaluation implements Evaluation {
                 return user.isMemberOf(group);
             }
 
-            private UserModel getUser(String id, KeycloakSession session) {
-                RealmModel realm = session.getContext().getRealm();
-                UserModel user = session.users().getUserById(id, realm);
+            @Autowired
+            private KeycloakContext keycloakContext;
+            @Autowired
+            private UserProvider userProvider;
+
+            private UserModel getUser(String id) {
+                RealmModel realm = keycloakContext.getRealm();
+                UserModel user = userProvider.getUserById(id, realm);
 
                 if (Objects.isNull(user)) {
-                    user = session.users().getUserByUsername(id, realm);
+                    user = userProvider.getUserByUsername(id, realm);
                 }
                 if (Objects.isNull(user)) {
-                    user = session.users().getUserByEmail(id, realm);
+                    user = userProvider.getUserByEmail(id, realm);
                 }
                 if (Objects.isNull(user)) {
-                    user = session.users().getServiceAccount(realm.getClientById(id));
+                    user = userProvider.getServiceAccount(realm.getClientById(id));
                 }
 
                 return user;
@@ -185,8 +193,7 @@ public class DefaultEvaluation implements Evaluation {
 
             @Override
             public boolean isUserInRealmRole(String id, String roleName) {
-                KeycloakSession session = authorizationProvider.getSession();
-                UserModel user = getUser(id, session);
+                UserModel user = getUser(id);
 
                 if (Objects.isNull(user)) {
                     return false;
@@ -196,14 +203,13 @@ public class DefaultEvaluation implements Evaluation {
                         .filter(role -> !role.isClientRole())
                         .collect(Collectors.toSet());
 
-                return RoleUtils.hasRole(roleMappings, session.getContext().getRealm().getRole(roleName));
+                return RoleUtils.hasRole(roleMappings, keycloakContext.getRealm().getRole(roleName));
             }
 
             @Override
             public boolean isUserInClientRole(String id, String clientId, String roleName) {
-                KeycloakSession session = authorizationProvider.getSession();
-                RealmModel realm = session.getContext().getRealm();
-                UserModel user = getUser(id, session);
+                RealmModel realm = keycloakContext.getRealm();
+                UserModel user = getUser(id);
 
                 if (Objects.isNull(user)) {
                     return false;
@@ -228,8 +234,7 @@ public class DefaultEvaluation implements Evaluation {
 
             @Override
             public boolean isGroupInRole(String id, String role) {
-                KeycloakSession session = authorizationProvider.getSession();
-                RealmModel realm = session.getContext().getRealm();
+                RealmModel realm = keycloakContext.getRealm();
                 GroupModel group = KeycloakModelUtils.findGroupByPath(realm, id);
 
                 return RoleUtils.hasRoleFromGroup(group, realm.getRole(role), false);
@@ -237,7 +242,7 @@ public class DefaultEvaluation implements Evaluation {
 
             @Override
             public List<String> getUserRealmRoles(String id) {
-                return getUser(id, authorizationProvider.getSession()).getRoleMappings().stream()
+                return getUser(id).getRoleMappings().stream()
                         .filter(role -> !role.isClientRole())
                         .map(RoleModel::getName)
                         .collect(Collectors.toList());
@@ -245,7 +250,7 @@ public class DefaultEvaluation implements Evaluation {
 
             @Override
             public List<String> getUserClientRoles(String id, String clientId) {
-                return getUser(id, authorizationProvider.getSession()).getRoleMappings().stream()
+                return getUser(id).getRoleMappings().stream()
                         .filter(role -> role.isClientRole())
                         .map(RoleModel::getName)
                         .collect(Collectors.toList());
@@ -253,14 +258,14 @@ public class DefaultEvaluation implements Evaluation {
 
             @Override
             public List<String> getUserGroups(String id) {
-                return getUser(id, authorizationProvider.getSession()).getGroups().stream()
+                return getUser(id).getGroups().stream()
                         .map(ModelToRepresentation::buildGroupPath)
                         .collect(Collectors.toList());
             }
 
             @Override
             public Map<String, List<String>> getUserAttributes(String id) {
-                return Collections.unmodifiableMap(getUser(id, authorizationProvider.getSession()).getAttributes());
+                return Collections.unmodifiableMap(getUser(id).getAttributes());
             }
         };
     }

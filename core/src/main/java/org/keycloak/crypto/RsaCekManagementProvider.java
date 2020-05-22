@@ -20,15 +20,12 @@ package org.keycloak.crypto;
 import org.keycloak.jose.jwe.JWEConstants;
 import org.keycloak.jose.jwe.alg.JWEAlgorithmProvider;
 import org.keycloak.jose.jwe.alg.RsaKeyEncryptionJWEAlgorithmProvider;
-import org.keycloak.models.KeycloakSession;
 
 public class RsaCekManagementProvider implements CekManagementProvider {
 
-    private final KeycloakSession session;
     private final String jweAlgorithmName;
 
-    public RsaCekManagementProvider(KeycloakSession session, String jweAlgorithmName) {
-        this.session = session;
+    public RsaCekManagementProvider(String jweAlgorithmName) {
         this.jweAlgorithmName = jweAlgorithmName;
     }
 

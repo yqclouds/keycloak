@@ -19,7 +19,10 @@ package org.keycloak.services.resources.admin.permissions;
 import com.hsbc.unified.iam.entity.events.ClientRemovedEvent;
 import com.hsbc.unified.iam.entity.events.GroupRemovedEvent;
 import com.hsbc.unified.iam.entity.events.RoleRemovedEvent;
-import org.keycloak.models.*;
+import org.keycloak.models.ClientModel;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.RoleModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.provider.ProviderEventManager;
 import org.keycloak.services.resources.admin.AdminAuth;
 
@@ -30,19 +33,19 @@ import org.keycloak.services.resources.admin.AdminAuth;
 public class AdminPermissions {
 
 
-    public static AdminPermissionEvaluator evaluator(KeycloakSession session, RealmModel realm, AdminAuth auth) {
+    public static AdminPermissionEvaluator evaluator(RealmModel realm, AdminAuth auth) {
         return new MgmtPermissions(realm, auth);
     }
 
-    public static AdminPermissionEvaluator evaluator(KeycloakSession session, RealmModel realm, RealmModel adminsRealm, UserModel admin) {
+    public static AdminPermissionEvaluator evaluator(RealmModel realm, RealmModel adminsRealm, UserModel admin) {
         return new MgmtPermissions(realm, adminsRealm, admin);
     }
 
-    public static RealmsPermissionEvaluator realms(KeycloakSession session, AdminAuth auth) {
+    public static RealmsPermissionEvaluator realms(AdminAuth auth) {
         return new MgmtPermissions(auth);
     }
 
-    public static RealmsPermissionEvaluator realms(KeycloakSession session, RealmModel adminsRealm, UserModel admin) {
+    public static RealmsPermissionEvaluator realms(RealmModel adminsRealm, UserModel admin) {
         return new MgmtPermissions(adminsRealm, admin);
     }
 

@@ -16,10 +16,10 @@
  */
 package org.keycloak.authorization.policy.provider.permission;
 
-import org.keycloak.Config;
-import org.keycloak.authorization.AuthorizationProvider;
 import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
+import org.keycloak.Config;
+import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.PolicyStore;
@@ -31,6 +31,7 @@ import org.keycloak.representations.idm.authorization.*;
 import org.keycloak.representations.idm.authorization.GroupPolicyRepresentation.GroupDefinition;
 import org.keycloak.representations.idm.authorization.RolePolicyRepresentation.RoleDefinition;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -299,6 +300,9 @@ public class UMAPolicyProviderFactory implements PolicyProviderFactory<UmaPermis
     public void onImport(PolicyModel policy, PolicyRepresentation representation, AuthorizationProvider authorization) {
     }
 
+    @Autowired
+    private UserProvider userProvider;
+
     @Override
     public UmaPermissionRepresentation toRepresentation(PolicyModel policy, AuthorizationProvider authorization) {
         UmaPermissionRepresentation representation = new UmaPermissionRepresentation();
@@ -341,7 +345,7 @@ public class UMAPolicyProviderFactory implements PolicyProviderFactory<UmaPermis
                 UserPolicyRepresentation rep = UserPolicyRepresentation.class.cast(associatedRep);
 
                 for (String user : rep.getUsers()) {
-                    representation.addUser(authorization.getSession().users().getUserById(user, realm).getUsername());
+                    representation.addUser(userProvider.getUserById(user, realm).getUsername());
                 }
             }
         }

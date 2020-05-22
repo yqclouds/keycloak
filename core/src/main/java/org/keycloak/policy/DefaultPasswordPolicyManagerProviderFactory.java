@@ -17,7 +17,6 @@
 
 package org.keycloak.policy;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 
@@ -29,8 +28,8 @@ import org.springframework.stereotype.Component;
 public class DefaultPasswordPolicyManagerProviderFactory implements PasswordPolicyManagerProviderFactory {
 
     @Override
-    public PasswordPolicyManagerProvider create(KeycloakSession session) {
-        return new DefaultPasswordPolicyManagerProvider(session);
+    public PasswordPolicyManagerProvider create() {
+        return new DefaultPasswordPolicyManagerProvider();
     }
 
     @Override

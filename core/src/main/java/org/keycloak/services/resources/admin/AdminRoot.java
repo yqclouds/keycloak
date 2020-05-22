@@ -254,7 +254,7 @@ public class AdminRoot {
         }
 
         AdminAuth auth = authenticateRealmAdminRequest(headers);
-        if (!AdminPermissions.realms(session, auth).isAdmin()) {
+        if (!AdminPermissions.realms(auth).isAdmin()) {
             throw new ForbiddenException();
         }
 

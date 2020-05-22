@@ -103,7 +103,7 @@ public class ClientsResource {
             boolean view = auth.clients().canView();
             for (ClientModel clientModel : clientModels) {
                 if (view || auth.clients().canView(clientModel)) {
-                    ClientRepresentation representation = modelToRepresentation.toRepresentation(clientModel, session);
+                    ClientRepresentation representation = modelToRepresentation.toRepresentation(clientModel);
                     rep.add(representation);
                     representation.setAccess(auth.clients().getAccess(clientModel));
                 } else if (!viewableOnly && auth.clients().canView(clientModel)) {
@@ -127,7 +127,7 @@ public class ClientsResource {
             if (clientModels != null) {
                 for (ClientModel clientModel : clientModels) {
                     if (auth.clients().canView(clientModel)) {
-                        ClientRepresentation representation = modelToRepresentation.toRepresentation(clientModel, session);
+                        ClientRepresentation representation = modelToRepresentation.toRepresentation(clientModel);
                         representation.setAccess(auth.clients().getAccess(clientModel));
                         rep.add(representation);
                     } else if (!viewableOnly && auth.clients().canView(clientModel)) {

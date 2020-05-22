@@ -18,12 +18,14 @@
 package org.keycloak.policy;
 
 import org.keycloak.credential.hash.PasswordHashProvider;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.PasswordPolicy;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -31,12 +33,8 @@ import org.springframework.stereotype.Component;
 @Component("HashAlgorithmPasswordPolicyProviderFactory")
 @ProviderFactory(id = PasswordPolicy.HASH_ALGORITHM_ID, providerClasses = PasswordPolicyProvider.class)
 public class HashAlgorithmPasswordPolicyProviderFactory implements PasswordPolicyProviderFactory, PasswordPolicyProvider {
-
-    private KeycloakSession session;
-
     @Override
-    public PasswordPolicyProvider create(KeycloakSession session) {
-        this.session = session;
+    public PasswordPolicyProvider create() {
         return this;
     }
 
@@ -79,10 +77,13 @@ public class HashAlgorithmPasswordPolicyProviderFactory implements PasswordPolic
         return false;
     }
 
+    @Autowired
+    private Map<String, PasswordHashProvider> passwordHashProviders;
+
     @Override
     public Object parseConfig(String value) {
         String providerId = value != null && value.length() > 0 ? value : PasswordPolicy.HASH_ALGORITHM_DEFAULT;
-        PasswordHashProvider provider = session.getProvider(PasswordHashProvider.class, providerId);
+        PasswordHashProvider provider = passwordHashProviders.get(providerId);
         if (provider == null) {
             throw new PasswordPolicyConfigException("Password hashing provider not found");
         }

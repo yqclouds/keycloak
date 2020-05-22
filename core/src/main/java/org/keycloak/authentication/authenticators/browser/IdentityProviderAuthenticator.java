@@ -104,12 +104,12 @@ public class IdentityProviderAuthenticator implements Authenticator {
     }
 
     @Override
-    public boolean configuredFor(KeycloakSession session, RealmModel realm, UserModel user) {
+    public boolean configuredFor(RealmModel realm, UserModel user) {
         return true;
     }
 
     @Override
-    public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
+    public void setRequiredActions(RealmModel realm, UserModel user) {
     }
 
     @Override

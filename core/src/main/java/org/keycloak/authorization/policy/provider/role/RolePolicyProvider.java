@@ -17,15 +17,17 @@
  */
 package org.keycloak.authorization.policy.provider.role;
 
+import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.identity.Identity;
-import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import org.keycloak.authorization.policy.evaluation.Evaluation;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.models.ClientModel;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleModel;
 import org.keycloak.representations.idm.authorization.RolePolicyRepresentation;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -41,12 +43,14 @@ public class RolePolicyProvider implements PolicyProvider {
         this.representationFunction = representationFunction;
     }
 
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     @Override
     public void evaluate(Evaluation evaluation) {
         PolicyModel policy = evaluation.getPolicy();
         Set<RolePolicyRepresentation.RoleDefinition> roleIds = representationFunction.apply(policy, evaluation.getAuthorizationProvider()).getRoles();
-        AuthorizationProvider authorizationProvider = evaluation.getAuthorizationProvider();
-        RealmModel realm = authorizationProvider.getSession().getContext().getRealm();
+        RealmModel realm = keycloakContext.getRealm();
         Identity identity = evaluation.getContext().getIdentity();
 
         for (RolePolicyRepresentation.RoleDefinition roleDefinition : roleIds) {

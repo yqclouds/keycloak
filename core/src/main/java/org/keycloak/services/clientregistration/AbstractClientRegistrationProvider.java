@@ -86,7 +86,7 @@ public abstract class AbstractClientRegistrationProvider implements ClientRegist
 
             ClientRegistrationPolicyManager.triggerAfterRegister(context, registrationAuth, clientModel);
 
-            client = modelToRepresentation.toRepresentation(clientModel, session);
+            client = modelToRepresentation.toRepresentation(clientModel);
 
             client.setSecret(clientModel.getSecret());
 
@@ -115,7 +115,7 @@ public abstract class AbstractClientRegistrationProvider implements ClientRegist
 
         auth.requireView(client);
 
-        ClientRepresentation rep = modelToRepresentation.toRepresentation(client, session);
+        ClientRepresentation rep = modelToRepresentation.toRepresentation(client);
         if (client.getSecret() != null) {
             rep.setSecret(client.getSecret());
         }
@@ -159,7 +159,7 @@ public abstract class AbstractClientRegistrationProvider implements ClientRegist
             throw new ErrorResponseException(ErrorCodes.INVALID_CLIENT_METADATA, c.getError(), Response.Status.BAD_REQUEST);
         });
 
-        rep = modelToRepresentation.toRepresentation(client, session);
+        rep = modelToRepresentation.toRepresentation(client);
 
         if (auth.isRegistrationAccessToken()) {
             String registrationAccessToken = ClientRegistrationTokenUtils.updateRegistrationAccessToken(session, client, auth.getRegistrationAuth());

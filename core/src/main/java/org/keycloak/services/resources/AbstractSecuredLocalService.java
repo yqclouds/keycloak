@@ -16,16 +16,16 @@
  */
 package org.keycloak.services.resources;
 
+import com.hsbc.unified.iam.core.ClientConnection;
+import com.hsbc.unified.iam.core.constants.OAuth2Constants;
 import org.jboss.resteasy.spi.BadRequestException;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.AbstractOAuthClient;
-import com.hsbc.unified.iam.core.constants.OAuth2Constants;
 import org.keycloak.OAuthErrorException;
-import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.common.util.KeycloakUriBuilder;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.oidc.OIDCLoginProtocolService;
 import org.keycloak.services.ForbiddenException;
@@ -61,10 +61,10 @@ public abstract class AbstractSecuredLocalService {
     protected ClientConnection clientConnection;
     protected String stateChecker;
     @Context
-    protected KeycloakSession session;
-    @Context
     protected HttpRequest request;
     protected Auth auth;
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     @Autowired
     private LoginFormsProvider loginFormsProvider;
@@ -86,7 +86,7 @@ public abstract class AbstractSecuredLocalService {
             if (error != null) {
                 if (OAuthErrorException.ACCESS_DENIED.equals(error)) {
                     // cased by CANCELLED_BY_USER or CONSENT_DENIED
-                    session.getContext().setClient(client);
+                    keycloakContext.setClient(client);
                     return loginFormsProvider.setError(Messages.NO_ACCESS).createErrorPage(Response.Status.FORBIDDEN);
                 } else {
                     LOG.debug("error from oauth");
@@ -131,7 +131,7 @@ public abstract class AbstractSecuredLocalService {
 
     protected Response login(String path) {
         OAuthRedirect oauth = new OAuthRedirect();
-        String authUrl = OIDCLoginProtocolService.authUrl(session.getContext().getUri()).build(realm.getName()).toString();
+        String authUrl = OIDCLoginProtocolService.authUrl(keycloakContext.getUri()).build(realm.getName()).toString();
         oauth.setAuthUrl(authUrl);
 
         oauth.setClientId(client.getClientId());
@@ -144,12 +144,12 @@ public abstract class AbstractSecuredLocalService {
             uriBuilder.queryParam("path", path);
         }
 
-        String referrer = session.getContext().getUri().getQueryParameters().getFirst("referrer");
+        String referrer = keycloakContext.getUri().getQueryParameters().getFirst("referrer");
         if (referrer != null) {
             uriBuilder.queryParam("referrer", referrer);
         }
 
-        String referrerUri = session.getContext().getUri().getQueryParameters().getFirst("referrer_uri");
+        String referrerUri = keycloakContext.getUri().getQueryParameters().getFirst("referrer_uri");
         if (referrerUri != null) {
             uriBuilder.queryParam("referrer_uri", referrerUri);
         }
@@ -157,7 +157,7 @@ public abstract class AbstractSecuredLocalService {
         URI accountUri = uriBuilder.build(realm.getName());
 
         oauth.setStateCookiePath(accountUri.getRawPath());
-        return oauth.redirect(session.getContext().getUri(), accountUri.toString());
+        return oauth.redirect(keycloakContext.getUri(), accountUri.toString());
     }
 
     static class OAuthRedirect extends AbstractOAuthClient {

@@ -16,21 +16,22 @@
  */
 package org.keycloak.authorization.admin.representation;
 
-import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.Decision;
-import org.keycloak.authorization.admin.PolicyEvaluationService;
-import org.keycloak.authorization.common.KeycloakIdentity;
 import com.hsbc.unified.iam.facade.model.authorization.PermissionTicketModel;
 import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
+import org.keycloak.authorization.AuthorizationProvider;
+import org.keycloak.authorization.Decision;
+import org.keycloak.authorization.admin.PolicyEvaluationService;
+import org.keycloak.authorization.common.KeycloakIdentity;
 import org.keycloak.authorization.policy.evaluation.Result;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.UserProvider;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.idm.authorization.*;
 import org.keycloak.representations.idm.authorization.PolicyEvaluationResponse.PolicyResultRepresentation;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 import java.util.function.Function;
@@ -42,7 +43,7 @@ import java.util.stream.Stream;
  * @version $Revision: 1 $
  */
 public class PolicyEvaluationResponseBuilder {
-    public static PolicyEvaluationResponse build(PolicyEvaluationService.EvaluationDecisionCollector decision, ResourceServerModel resourceServer, AuthorizationProvider authorization, KeycloakIdentity identity) {
+    public PolicyEvaluationResponse build(PolicyEvaluationService.EvaluationDecisionCollector decision, ResourceServerModel resourceServer, AuthorizationProvider authorization, KeycloakIdentity identity) {
         PolicyEvaluationResponse response = new PolicyEvaluationResponse();
         List<PolicyEvaluationResponse.EvaluationResultRepresentation> resultsRep = new ArrayList<>();
         AccessToken accessToken = identity.getAccessToken();
@@ -164,7 +165,10 @@ public class PolicyEvaluationResponseBuilder {
         return response;
     }
 
-    private static PolicyEvaluationResponse.PolicyResultRepresentation toRepresentation(Result.PolicyResult result, AuthorizationProvider authorization) {
+    @Autowired
+    private UserProvider userProvider;
+
+    private PolicyEvaluationResponse.PolicyResultRepresentation toRepresentation(Result.PolicyResult result, AuthorizationProvider authorization) {
         PolicyEvaluationResponse.PolicyResultRepresentation policyResultRep = new PolicyEvaluationResponse.PolicyResultRepresentation();
 
         PolicyRepresentation representation = new PolicyRepresentation();
@@ -184,10 +188,9 @@ public class PolicyEvaluationResponseBuilder {
             List<PermissionTicketModel> tickets = authorization.getStoreFactory().getPermissionTicketStore().find(filters, policy.getResourceServer().getId(), -1, 1);
 
             if (!tickets.isEmpty()) {
-                KeycloakSession keycloakSession = authorization.getSession();
                 PermissionTicketModel ticket = tickets.get(0);
-                UserModel owner = keycloakSession.users().getUserById(ticket.getOwner(), authorization.getRealm());
-                UserModel requester = keycloakSession.users().getUserById(ticket.getRequester(), authorization.getRealm());
+                UserModel owner = userProvider.getUserById(ticket.getOwner(), authorization.getRealm());
+                UserModel requester = userProvider.getUserById(ticket.getRequester(), authorization.getRealm());
 
                 representation.setDescription("ResourceModel owner (" + getUserEmailOrUserName(owner) + ") grants access to " + getUserEmailOrUserName(requester));
             } else {

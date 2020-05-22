@@ -17,14 +17,20 @@
 
 package org.keycloak.authentication.authenticators.console;
 
+import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.ConsoleDisplayMode;
 import org.keycloak.authentication.authenticators.browser.OTPFormAuthenticator;
-import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
+import org.keycloak.models.CredentialModel;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserCredentialManager;
+import org.keycloak.models.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.util.List;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -32,6 +38,17 @@ import java.net.URI;
  */
 public class ConsoleOTPFormAuthenticator extends OTPFormAuthenticator implements Authenticator {
     public static final ConsoleOTPFormAuthenticator SINGLETON = new ConsoleOTPFormAuthenticator();
+
+    @Autowired
+    private UserCredentialManager userCredentialManager;
+
+    public List<CredentialModel> getCredentials(RealmModel realm, UserModel user) {
+        return userCredentialManager.getStoredCredentialsByType(realm, user, getCredentialProvider().getType());
+    }
+
+    public String getType() {
+        return getCredentialProvider().getType();
+    }
 
     public static URI getCallbackUrl(AuthenticationFlowContext context) {
         return context.getActionUrl(context.generateAccessCode(), true);
@@ -67,6 +84,5 @@ public class ConsoleOTPFormAuthenticator extends OTPFormAuthenticator implements
 
     @Override
     public void close() {
-
     }
 }

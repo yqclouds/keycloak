@@ -166,7 +166,7 @@ public class ClientResource {
     public ClientRepresentation getClient() {
         auth.clients().requireView(client);
 
-        ClientRepresentation representation = modelToRepresentation.toRepresentation(client, session);
+        ClientRepresentation representation = modelToRepresentation.toRepresentation(client);
 
         representation.setAccess(auth.clients().getAccess(client));
 
@@ -244,7 +244,7 @@ public class ClientResource {
 
         String token = ClientRegistrationTokenUtils.updateRegistrationAccessToken(session, realm, client, RegistrationAuth.AUTHENTICATED);
 
-        ClientRepresentation rep = modelToRepresentation.toRepresentation(client, session);
+        ClientRepresentation rep = modelToRepresentation.toRepresentation(client);
         rep.setRegistrationAccessToken(token);
 
         adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).representation(rep).success();

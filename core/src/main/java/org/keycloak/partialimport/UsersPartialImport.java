@@ -17,14 +17,15 @@
 
 package org.keycloak.partialimport;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserManager;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.UserProvider;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.PartialImportRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
 import java.util.List;
@@ -53,33 +54,36 @@ public class UsersPartialImport extends AbstractPartialImport<UserRepresentation
         return user.getEmail();
     }
 
+    @Autowired
+    private UserProvider userProvider;
+
     @Override
-    public String getModelId(RealmModel realm, KeycloakSession session, UserRepresentation user) {
+    public String getModelId(RealmModel realm, UserRepresentation user) {
         if (createdIds.containsKey(getName(user))) return createdIds.get(getName(user));
 
         String userName = user.getUsername();
         if (userName != null) {
-            return session.users().getUserByUsername(userName, realm).getId();
+            return userProvider.getUserByUsername(userName, realm).getId();
         } else if (!realm.isDuplicateEmailsAllowed()) {
             String email = user.getEmail();
-            return session.users().getUserByEmail(email, realm).getId();
+            return userProvider.getUserByEmail(email, realm).getId();
         }
 
         return null;
     }
 
     @Override
-    public boolean exists(RealmModel realm, KeycloakSession session, UserRepresentation user) {
-        return userNameExists(realm, session, user) || userEmailExists(realm, session, user);
+    public boolean exists(RealmModel realm, UserRepresentation user) {
+        return userNameExists(realm, user) || userEmailExists(realm, user);
     }
 
-    private boolean userNameExists(RealmModel realm, KeycloakSession session, UserRepresentation user) {
-        return session.users().getUserByUsername(user.getUsername(), realm) != null;
+    private boolean userNameExists(RealmModel realm, UserRepresentation user) {
+        return userProvider.getUserByUsername(user.getUsername(), realm) != null;
     }
 
-    private boolean userEmailExists(RealmModel realm, KeycloakSession session, UserRepresentation user) {
+    private boolean userEmailExists(RealmModel realm, UserRepresentation user) {
         return (user.getEmail() != null) && !realm.isDuplicateEmailsAllowed() &&
-                (session.users().getUserByEmail(user.getEmail(), realm) != null);
+                (userProvider.getUserByEmail(user.getEmail(), realm) != null);
     }
 
     @Override
@@ -97,21 +101,24 @@ public class UsersPartialImport extends AbstractPartialImport<UserRepresentation
     }
 
     @Override
-    public void remove(RealmModel realm, KeycloakSession session, UserRepresentation user) {
-        UserModel userModel = session.users().getUserByUsername(user.getUsername(), realm);
+    public void remove(RealmModel realm, UserRepresentation user) {
+        UserModel userModel = userProvider.getUserByUsername(user.getUsername(), realm);
         if (userModel == null && !realm.isDuplicateEmailsAllowed()) {
-            userModel = session.users().getUserByEmail(user.getEmail(), realm);
+            userModel = userProvider.getUserByEmail(user.getEmail(), realm);
         }
         if (userModel != null) {
-            boolean success = new UserManager(session).removeUser(realm, userModel);
+            boolean success = new UserManager().removeUser(realm, userModel);
             if (!success) throw new RuntimeException("Unable to overwrite user " + getName(user));
         }
     }
 
+    @Autowired
+    private RepresentationToModel representationToModel;
+
     @Override
-    public void create(RealmModel realm, KeycloakSession session, UserRepresentation user) {
+    public void create(RealmModel realm, UserRepresentation user) {
         user.setId(KeycloakModelUtils.generateId());
-        UserModel userModel = RepresentationToModel.createUser(session, realm, user);
+        UserModel userModel = representationToModel.createUser(realm, user);
         if (userModel == null) throw new RuntimeException("Unable to create user " + getName(user));
         createdIds.put(getName(user), userModel.getId());
     }

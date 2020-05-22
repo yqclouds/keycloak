@@ -1905,7 +1905,7 @@ public class RepresentationToModel {
         }
     }
 
-    public static ResourceServerModel toModel(ResourceServerRepresentation rep, AuthorizationProvider authorizationProvider) {
+    public ResourceServerModel toModel(ResourceServerRepresentation rep, AuthorizationProvider authorizationProvider) {
         ResourceServerStore resourceServerStore = authorizationProvider.getStoreFactory().getResourceServerStore();
         ResourceServerModel resourceServer;
         ResourceServerModel existing = resourceServerStore.findById(rep.getClientId());
@@ -1933,7 +1933,6 @@ public class RepresentationToModel {
             toModel(scope, resourceServer, authorizationProvider);
         }
 
-        KeycloakSession session = authorizationProvider.getSession();
         RealmModel realm = authorizationProvider.getRealm();
 
         for (ResourceRepresentation resource : rep.getResources()) {
@@ -1944,7 +1943,7 @@ public class RepresentationToModel {
                 owner.setId(resourceServer.getId());
                 resource.setOwner(owner);
             } else if (owner.getName() != null) {
-                UserModel user = session.users().getUserByUsername(owner.getName(), realm);
+                UserModel user = userProvider.getUserByUsername(owner.getName(), realm);
 
                 if (user != null) {
                     owner.setId(user.getId());
@@ -2240,7 +2239,7 @@ public class RepresentationToModel {
         policy.removeConfig("resources");
     }
 
-    public static ResourceModel toModel(ResourceRepresentation resource, ResourceServerModel resourceServer, AuthorizationProvider authorization) {
+    public ResourceModel toModel(ResourceRepresentation resource, ResourceServerModel resourceServer, AuthorizationProvider authorization) {
         ResourceStore resourceStore = authorization.getStoreFactory().getResourceStore();
         ResourceOwnerRepresentation owner = resource.getOwner();
 
@@ -2257,12 +2256,10 @@ public class RepresentationToModel {
 
         if (!resourceServer.getId().equals(ownerId)) {
             RealmModel realm = authorization.getRealm();
-            KeycloakSession keycloakSession = authorization.getSession();
-            UserProvider users = keycloakSession.users();
-            UserModel ownerModel = users.getUserById(ownerId, realm);
+            UserModel ownerModel = userProvider.getUserById(ownerId, realm);
 
             if (ownerModel == null) {
-                ownerModel = users.getUserByUsername(ownerId, realm);
+                ownerModel = userProvider.getUserByUsername(ownerId, realm);
             }
 
             if (ownerModel == null) {

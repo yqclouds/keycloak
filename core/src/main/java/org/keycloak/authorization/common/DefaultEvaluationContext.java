@@ -21,8 +21,9 @@ package org.keycloak.authorization.common;
 import org.keycloak.authorization.attribute.Attributes;
 import org.keycloak.authorization.identity.Identity;
 import org.keycloak.authorization.policy.evaluation.EvaluationContext;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.representations.AccessToken;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -33,19 +34,20 @@ import java.util.Map.Entry;
  */
 public class DefaultEvaluationContext implements EvaluationContext {
 
-    protected final KeycloakSession keycloakSession;
     protected final Identity identity;
     private final Map<String, List<String>> claims;
     private Attributes attributes;
 
-    public DefaultEvaluationContext(Identity identity, KeycloakSession keycloakSession) {
-        this(identity, null, keycloakSession);
+    @Autowired
+    private KeycloakContext keycloakContext;
+
+    public DefaultEvaluationContext(Identity identity) {
+        this(identity, null);
     }
 
-    public DefaultEvaluationContext(Identity identity, Map<String, List<String>> claims, KeycloakSession keycloakSession) {
+    public DefaultEvaluationContext(Identity identity, Map<String, List<String>> claims) {
         this.identity = identity;
         this.claims = claims;
-        this.keycloakSession = keycloakSession;
     }
 
     @Override
@@ -57,16 +59,16 @@ public class DefaultEvaluationContext implements EvaluationContext {
         Map<String, Collection<String>> attributes = new HashMap<>();
 
         attributes.put("kc.time.date_time", Arrays.asList(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())));
-        attributes.put("kc.client.network.ip_address", Arrays.asList(this.keycloakSession.getContext().getConnection().getRemoteAddr()));
-        attributes.put("kc.client.network.host", Arrays.asList(this.keycloakSession.getContext().getConnection().getRemoteHost()));
+        attributes.put("kc.client.network.ip_address", Arrays.asList(keycloakContext.getConnection().getRemoteAddr()));
+        attributes.put("kc.client.network.host", Arrays.asList(keycloakContext.getConnection().getRemoteHost()));
 
-        List<String> userAgents = this.keycloakSession.getContext().getRequestHeaders().getRequestHeader("User-Agent");
+        List<String> userAgents = keycloakContext.getRequestHeaders().getRequestHeader("User-Agent");
 
         if (userAgents != null) {
             attributes.put("kc.client.user_agent", userAgents);
         }
 
-        attributes.put("kc.realm.name", Arrays.asList(this.keycloakSession.getContext().getRealm().getName()));
+        attributes.put("kc.realm.name", Arrays.asList(keycloakContext.getRealm().getName()));
 
         if (claims != null) {
             for (Entry<String, List<String>> entry : claims.entrySet()) {
@@ -74,8 +76,8 @@ public class DefaultEvaluationContext implements EvaluationContext {
             }
         }
 
-        if (KeycloakIdentity.class.isInstance(identity)) {
-            AccessToken accessToken = KeycloakIdentity.class.cast(this.identity).getAccessToken();
+        if (identity instanceof KeycloakIdentity) {
+            AccessToken accessToken = ((KeycloakIdentity) this.identity).getAccessToken();
 
             if (accessToken != null) {
                 attributes.put("kc.client.id", Arrays.asList(accessToken.getIssuedFor()));

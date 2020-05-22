@@ -22,15 +22,33 @@ import org.keycloak.authentication.CredentialValidator;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.credential.PasswordCredentialProvider;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.CredentialModel;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserCredentialManager;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.messages.Messages;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import java.util.List;
+import java.util.Map;
 
 public class PasswordForm extends UsernamePasswordForm implements CredentialValidator<PasswordCredentialProvider> {
+    @Autowired
+    private UserCredentialManager userCredentialManager;
+    @Autowired
+    private Map<String, CredentialProvider> credentialProviders;
+
+    @Override
+    public List<CredentialModel> getCredentials(RealmModel realm, UserModel user) {
+        return userCredentialManager.getStoredCredentialsByType(realm, user, getCredentialProvider().getType());
+    }
+
+    @Override
+    public String getType() {
+        return getCredentialProvider().getType();
+    }
 
     protected boolean validateForm(AuthenticationFlowContext context, MultivaluedMap<String, String> formData) {
         return validatePassword(context, context.getUser(), formData, false);
@@ -43,9 +61,9 @@ public class PasswordForm extends UsernamePasswordForm implements CredentialVali
     }
 
     @Override
-    public boolean configuredFor(KeycloakSession session, RealmModel realm, UserModel user) {
+    public boolean configuredFor(RealmModel realm, UserModel user) {
         // never called
-        return getCredentialProvider(session).isConfiguredFor(realm, user, getType(session));
+        return getCredentialProvider().isConfiguredFor(realm, user, getType());
     }
 
     @Override
@@ -64,7 +82,7 @@ public class PasswordForm extends UsernamePasswordForm implements CredentialVali
     }
 
     @Override
-    public PasswordCredentialProvider getCredentialProvider(KeycloakSession session) {
-        return (PasswordCredentialProvider) session.getProvider(CredentialProvider.class, "keycloak-password");
+    public PasswordCredentialProvider getCredentialProvider() {
+        return (PasswordCredentialProvider) credentialProviders.get("keycloak-password");
     }
 }

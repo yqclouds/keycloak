@@ -17,28 +17,23 @@
 
 package org.keycloak.policy;
 
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.PasswordPolicy;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class DefaultPasswordPolicyManagerProvider implements PasswordPolicyManagerProvider {
-
-    private KeycloakSession session;
-
-    public DefaultPasswordPolicyManagerProvider(KeycloakSession session) {
-        this.session = session;
-    }
-
     @Override
     public PolicyError validate(RealmModel realm, UserModel user, String password) {
-        for (PasswordPolicyProvider p : getProviders(realm, session)) {
+        for (PasswordPolicyProvider p : getProviders(realm)) {
             PolicyError policyError = p.validate(realm, user, password);
             if (policyError != null) {
                 return policyError;
@@ -49,7 +44,7 @@ public class DefaultPasswordPolicyManagerProvider implements PasswordPolicyManag
 
     @Override
     public PolicyError validate(String user, String password) {
-        for (PasswordPolicyProvider p : getProviders(session)) {
+        for (PasswordPolicyProvider p : getProviders()) {
             PolicyError policyError = p.validate(user, password);
             if (policyError != null) {
                 return policyError;
@@ -62,16 +57,22 @@ public class DefaultPasswordPolicyManagerProvider implements PasswordPolicyManag
     public void close() {
     }
 
-    private List<PasswordPolicyProvider> getProviders(KeycloakSession session) {
-        return getProviders(session.getContext().getRealm(), session);
+    @Autowired
+    private KeycloakContext keycloakContext;
+
+    private List<PasswordPolicyProvider> getProviders() {
+        return getProviders(keycloakContext.getRealm());
 
     }
 
-    private List<PasswordPolicyProvider> getProviders(RealmModel realm, KeycloakSession session) {
+    @Autowired
+    private Map<String, PasswordPolicyProvider> passwordPolicyProviders;
+
+    private List<PasswordPolicyProvider> getProviders(RealmModel realm) {
         LinkedList<PasswordPolicyProvider> list = new LinkedList<>();
         PasswordPolicy policy = realm.getPasswordPolicy();
         for (String id : policy.getPolicies()) {
-            PasswordPolicyProvider provider = session.getProvider(PasswordPolicyProvider.class, id);
+            PasswordPolicyProvider provider = passwordPolicyProviders.get(id);
             list.add(provider);
         }
         return list;

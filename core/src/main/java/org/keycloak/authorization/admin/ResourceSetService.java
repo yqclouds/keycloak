@@ -31,10 +31,7 @@ import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.common.util.PathMatcher;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakContext;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.representations.idm.authorization.ResourceOwnerRepresentation;
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
@@ -249,8 +246,8 @@ public class ResourceSetService {
             }
         }
 
-        policies.addAll(policyStore.findByScopeIds(model.getScopes().stream().map(scope -> scope.getId()).collect(Collectors.toList()), id, resourceServer.getId()));
-        policies.addAll(policyStore.findByScopeIds(model.getScopes().stream().map(scope -> scope.getId()).collect(Collectors.toList()), null, resourceServer.getId()));
+        policies.addAll(policyStore.findByScopeIds(model.getScopes().stream().map(ScopeModel::getId).collect(Collectors.toList()), id, resourceServer.getId()));
+        policies.addAll(policyStore.findByScopeIds(model.getScopes().stream().map(ScopeModel::getId).collect(Collectors.toList()), null, resourceServer.getId()));
 
         List<PolicyRepresentation> representation = new ArrayList<>();
 
@@ -325,6 +322,11 @@ public class ResourceSetService {
         return find(id, name, uri, owner, type, scope, matchingUri, exactName, deep, firstResult, maxResult, (BiFunction<ResourceModel, Boolean, ResourceRepresentation>) (resource, deep1) -> toRepresentation(resource, resourceServer, authorization, deep1));
     }
 
+    @Autowired
+    private KeycloakContext keycloakContext;
+    @Autowired
+    private UserProvider userProvider;
+
     public Response find(@QueryParam("_id") String id,
                          @QueryParam("name") String name,
                          @QueryParam("uri") String uri,
@@ -364,13 +366,13 @@ public class ResourceSetService {
         }
 
         if (owner != null && !"".equals(owner.trim())) {
-            RealmModel realm = authorization.getSession().getContext().getRealm();
+            RealmModel realm = keycloakContext.getRealm();
             ClientModel clientModel = realm.getClientByClientId(owner);
 
             if (clientModel != null) {
                 owner = clientModel.getId();
             } else {
-                UserModel user = authorization.getSession().users().getUserByUsername(owner, realm);
+                UserModel user = userProvider.getUserByUsername(owner, realm);
 
                 if (user != null) {
                     owner = user.getId();

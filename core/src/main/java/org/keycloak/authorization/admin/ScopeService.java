@@ -17,24 +17,25 @@
  */
 package org.keycloak.authorization.admin;
 
-import org.jboss.resteasy.annotations.cache.NoCache;
-import org.keycloak.authorization.AuthorizationProvider;
+import com.hsbc.unified.iam.core.constants.Constants;
 import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
+import org.jboss.resteasy.annotations.cache.NoCache;
+import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import com.hsbc.unified.iam.core.constants.Constants;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
 import org.keycloak.representations.idm.authorization.ScopeRepresentation;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -57,11 +58,9 @@ public class ScopeService {
     private final AuthorizationProvider authorization;
     private final AdminPermissionEvaluator auth;
     private final AdminEventBuilder adminEvent;
-    private KeycloakSession session;
     private ResourceServerModel resourceServer;
 
-    public ScopeService(KeycloakSession session, ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
-        this.session = session;
+    public ScopeService(ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.resourceServer = resourceServer;
         this.authorization = authorization;
         this.auth = auth;
@@ -254,11 +253,14 @@ public class ScopeService {
         audit(resource, null, operation);
     }
 
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     private void audit(ScopeRepresentation resource, String id, OperationType operation) {
         if (id != null) {
-            adminEvent.operation(operation).resourcePath(session.getContext().getUri(), id).representation(resource).success();
+            adminEvent.operation(operation).resourcePath(keycloakContext.getUri(), id).representation(resource).success();
         } else {
-            adminEvent.operation(operation).resourcePath(session.getContext().getUri()).representation(resource).success();
+            adminEvent.operation(operation).resourcePath(keycloakContext.getUri()).representation(resource).success();
         }
     }
 }

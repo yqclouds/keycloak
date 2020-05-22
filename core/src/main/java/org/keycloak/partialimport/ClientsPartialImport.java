@@ -18,7 +18,10 @@
 package org.keycloak.partialimport;
 
 import com.hsbc.unified.iam.core.constants.Constants;
-import org.keycloak.models.*;
+import org.keycloak.models.ClientModel;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
+import org.keycloak.models.UserProvider;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.ClientRepresentation;
@@ -26,6 +29,7 @@ import org.keycloak.representations.idm.PartialImportRepresentation;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 
@@ -73,12 +77,12 @@ public class ClientsPartialImport extends AbstractPartialImport<ClientRepresenta
     }
 
     @Override
-    public String getModelId(RealmModel realm, KeycloakSession session, ClientRepresentation clientRep) {
+    public String getModelId(RealmModel realm, ClientRepresentation clientRep) {
         return realm.getClientByClientId(getName(clientRep)).getId();
     }
 
     @Override
-    public boolean exists(RealmModel realm, KeycloakSession session, ClientRepresentation clientRep) {
+    public boolean exists(RealmModel realm, ClientRepresentation clientRep) {
         return realm.getClientByClientId(getName(clientRep)) != null;
     }
 
@@ -92,14 +96,17 @@ public class ClientsPartialImport extends AbstractPartialImport<ClientRepresenta
         return ResourceType.CLIENT;
     }
 
+    @Autowired
+    private UserProvider userProvider;
+
     @Override
-    public void remove(RealmModel realm, KeycloakSession session, ClientRepresentation clientRep) {
+    public void remove(RealmModel realm, ClientRepresentation clientRep) {
         ClientModel clientModel = realm.getClientByClientId(getName(clientRep));
         // remove the associated service account if the account exists
         if (clientModel.isServiceAccountsEnabled()) {
-            UserModel serviceAccountUser = session.users().getServiceAccount(clientModel);
+            UserModel serviceAccountUser = userProvider.getServiceAccount(clientModel);
             if (serviceAccountUser != null) {
-                session.users().removeUser(realm, serviceAccountUser);
+                userProvider.removeUser(realm, serviceAccountUser);
             }
         }
         // the authorization resource server seems to be removed using the delete event, so it's not needed
@@ -107,8 +114,11 @@ public class ClientsPartialImport extends AbstractPartialImport<ClientRepresenta
         realm.removeClient(clientModel.getId());
     }
 
+    @Autowired
+    private RepresentationToModel representationToModel;
+
     @Override
-    public void create(RealmModel realm, KeycloakSession session, ClientRepresentation clientRep) {
+    public void create(RealmModel realm, ClientRepresentation clientRep) {
         clientRep.setId(KeycloakModelUtils.generateId());
 
         List<ProtocolMapperRepresentation> mappers = clientRep.getProtocolMappers();
@@ -118,7 +128,7 @@ public class ClientsPartialImport extends AbstractPartialImport<ClientRepresenta
             }
         }
 
-        ClientModel client = RepresentationToModel.createClient(session, realm, clientRep, true);
-        RepresentationToModel.importAuthorizationSettings(clientRep, client, session);
+        ClientModel client = RepresentationToModel.createClient(realm, clientRep, true);
+        representationToModel.importAuthorizationSettings(clientRep, client);
     }
 }

@@ -67,12 +67,14 @@ public class ProtectionService {
         return resource;
     }
 
+    @Autowired
+    private UserProvider userProvider;
+
     private AdminEventBuilder createAdminEventBuilder(KeycloakIdentity identity, ResourceServerModel resourceServer) {
         RealmModel realm = authorization.getRealm();
         ClientModel client = realm.getClientById(resourceServer.getId());
-        KeycloakSession keycloakSession = authorization.getSession();
-        UserModel serviceAccount = keycloakSession.users().getServiceAccount(client);
-        AdminEventBuilder adminEvent = new AdminEventBuilder(realm, new AdminAuth(realm, identity.getAccessToken(), serviceAccount, client), keycloakSession, clientConnection);
+        UserModel serviceAccount = userProvider.getServiceAccount(client);
+        AdminEventBuilder adminEvent = new AdminEventBuilder(realm, new AdminAuth(realm, identity.getAccessToken(), serviceAccount, client), clientConnection);
         return adminEvent.realm(realm).authClient(client).authUser(serviceAccount);
     }
 
@@ -117,8 +119,7 @@ public class ProtectionService {
     private KeycloakIdentity createIdentity(boolean checkProtectionScope) {
         KeycloakIdentity identity = new KeycloakIdentity(tokens.getAccessToken(), context.getRealm());
         ResourceServerModel resourceServer = getResourceServer(identity);
-        KeycloakSession keycloakSession = authorization.getSession();
-        RealmModel realm = keycloakSession.getContext().getRealm();
+        RealmModel realm = context.getRealm();
         ClientModel client = realm.getClientById(resourceServer.getId());
 
         if (checkProtectionScope) {
@@ -132,7 +133,7 @@ public class ProtectionService {
 
     private ResourceServerModel getResourceServer(KeycloakIdentity identity) {
         String clientId = identity.getAccessToken().getIssuedFor();
-        RealmModel realm = authorization.getSession().getContext().getRealm();
+        RealmModel realm = context.getRealm();
         ClientModel clientModel = realm.getClientByClientId(clientId);
 
         if (clientModel == null) {

@@ -37,8 +37,8 @@ public class HistoryPasswordPolicyProviderFactory implements PasswordPolicyProvi
     }
 
     @Override
-    public PasswordPolicyProvider create(KeycloakSession session) {
-        return new HistoryPasswordPolicyProvider(session);
+    public PasswordPolicyProvider create() {
+        return new HistoryPasswordPolicyProvider();
     }
 
     @Override

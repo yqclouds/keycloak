@@ -4,7 +4,6 @@ import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.models.AuthenticationExecutionModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
@@ -62,7 +61,7 @@ public class ConditionalUserConfiguredAuthenticator implements ConditionalAuthen
         }
         AuthenticatorFactory factory = (AuthenticatorFactory) context.getSession().getSessionFactory().getProviderFactory(Authenticator.class, model.getAuthenticator());
         Authenticator authenticator = factory.create();
-        return authenticator.configuredFor(context.getSession(), context.getRealm(), context.getUser());
+        return authenticator.configuredFor(context.getRealm(), context.getUser());
     }
 
     @Override
@@ -76,7 +75,7 @@ public class ConditionalUserConfiguredAuthenticator implements ConditionalAuthen
     }
 
     @Override
-    public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
+    public void setRequiredActions(RealmModel realm, UserModel user) {
         // Not used
     }
 

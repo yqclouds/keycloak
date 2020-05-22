@@ -17,8 +17,9 @@
 
 package org.keycloak.policy;
 
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -34,9 +35,12 @@ public class DigitsPasswordPolicyProviderFactory implements PasswordPolicyProvid
         return ID;
     }
 
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     @Override
-    public PasswordPolicyProvider create(KeycloakSession session) {
-        return new DigitsPasswordPolicyProvider(session.getContext());
+    public PasswordPolicyProvider create() {
+        return new DigitsPasswordPolicyProvider(keycloakContext);
     }
 
     @Override

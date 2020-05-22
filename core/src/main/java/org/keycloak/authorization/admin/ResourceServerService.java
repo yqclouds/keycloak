@@ -23,9 +23,7 @@ import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.exportimport.util.ExportUtils;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.authorization.*;
@@ -33,6 +31,7 @@ import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -50,13 +49,11 @@ public class ResourceServerService {
     private final AuthorizationProvider authorizationProvider;
     private final AdminPermissionEvaluator auth;
     private final AdminEventBuilder adminEvent;
-    private final KeycloakSession session;
     private final ClientModel client;
     private ResourceServerModel resourceServer;
 
     public ResourceServerService(AuthorizationProvider authorization, ResourceServerModel resourceServer, ClientModel client, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.authorizationProvider = authorization;
-        this.session = authorization.getSession();
         this.client = client;
         this.resourceServer = resourceServer;
         this.auth = auth;
@@ -65,11 +62,15 @@ public class ResourceServerService {
 
     @Autowired
     private RepresentationToModel representationToModel;
+    @Autowired
+    private UserProvider userProvider;
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     public ResourceServerModel create(boolean newClient) {
         this.auth.realm().requireManageAuthorization();
 
-        UserModel serviceAccount = this.session.users().getServiceAccount(client);
+        UserModel serviceAccount = userProvider.getServiceAccount(client);
 
         if (serviceAccount == null) {
             throw new RuntimeException("Client does not have a service account.");
@@ -78,7 +79,7 @@ public class ResourceServerService {
         if (this.resourceServer == null) {
             this.resourceServer = representationToModel.createResourceServer(client, true);
             createDefaultPermission(createDefaultResource(), createDefaultPolicy());
-            audit(OperationType.CREATE, session.getContext().getUri(), newClient);
+            audit(OperationType.CREATE, keycloakContext.getUri(), newClient);
         }
 
         return resourceServer;
@@ -92,14 +93,14 @@ public class ResourceServerService {
         this.resourceServer.setAllowRemoteResourceManagement(server.isAllowRemoteResourceManagement());
         this.resourceServer.setPolicyEnforcementMode(server.getPolicyEnforcementMode());
         this.resourceServer.setDecisionStrategy(server.getDecisionStrategy());
-        audit(OperationType.UPDATE, session.getContext().getUri(), false);
+        audit(OperationType.UPDATE, keycloakContext.getUri(), false);
         return Response.noContent().build();
     }
 
     public void delete() {
         this.auth.realm().requireManageAuthorization();
         authorizationProvider.getStoreFactory().getResourceServerStore().delete(resourceServer.getId());
-        audit(OperationType.DELETE, session.getContext().getUri(), false);
+        audit(OperationType.DELETE, keycloakContext.getUri(), false);
     }
 
     @GET
@@ -109,12 +110,15 @@ public class ResourceServerService {
         return Response.ok(toRepresentation(this.resourceServer, this.client)).build();
     }
 
+    @Autowired
+    private ExportUtils exportUtils;
+
     @Path("/settings")
     @GET
     @Produces("application/json")
     public Response exportSettings() {
         this.auth.realm().requireManageAuthorization();
-        return Response.ok(ExportUtils.exportAuthorizationSettings(session, client)).build();
+        return Response.ok(exportUtils.exportAuthorizationSettings(client)).build();
     }
 
     @Path("/import")
@@ -127,7 +131,7 @@ public class ResourceServerService {
 
         RepresentationToModel.toModel(rep, authorizationProvider);
 
-        audit(OperationType.UPDATE, session.getContext().getUri(), false);
+        audit(OperationType.UPDATE, keycloakContext.getUri(), false);
 
         return Response.noContent().build();
     }
@@ -143,7 +147,7 @@ public class ResourceServerService {
 
     @Path("/scope")
     public ScopeService getScopeResource() {
-        ScopeService resource = new ScopeService(this.session, this.resourceServer, this.authorizationProvider, this.auth, adminEvent);
+        ScopeService resource = new ScopeService(this.resourceServer, this.authorizationProvider, this.auth, adminEvent);
 
         ResteasyProviderFactory.getInstance().injectProperties(resource);
 
@@ -183,6 +187,8 @@ public class ResourceServerService {
         getPolicyResource().create(defaultPermission);
     }
 
+    private HttpSession httpSession;
+
     private PolicyRepresentation createDefaultPolicy() {
         PolicyRepresentation defaultPolicy = new PolicyRepresentation();
 
@@ -198,7 +204,7 @@ public class ResourceServerService {
 
         defaultPolicy.setConfig(defaultPolicyConfig);
 
-        session.setAttribute("ALLOW_CREATE_POLICY", true);
+        httpSession.setAttribute("ALLOW_CREATE_POLICY", true);
 
         getPolicyResource().create(defaultPolicy);
 

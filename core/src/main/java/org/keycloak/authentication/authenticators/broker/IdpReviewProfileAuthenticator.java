@@ -137,7 +137,7 @@ public class IdpReviewProfileAuthenticator extends AbstractIdpAuthenticator {
     }
 
     @Override
-    public boolean configuredFor(KeycloakSession session, RealmModel realm, UserModel user) {
+    public boolean configuredFor(RealmModel realm, UserModel user) {
         return true;
     }
 

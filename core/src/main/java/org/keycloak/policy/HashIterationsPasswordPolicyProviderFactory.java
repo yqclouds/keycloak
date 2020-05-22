@@ -17,7 +17,6 @@
 
 package org.keycloak.policy;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.PasswordPolicy;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -31,7 +30,7 @@ import org.springframework.stereotype.Component;
 @ProviderFactory(id = PasswordPolicy.HASH_ITERATIONS_ID, providerClasses = PasswordPolicyProvider.class)
 public class HashIterationsPasswordPolicyProviderFactory implements PasswordPolicyProvider, PasswordPolicyProviderFactory {
     @Override
-    public PasswordPolicyProvider create(KeycloakSession session) {
+    public PasswordPolicyProvider create() {
         return this;
     }
 

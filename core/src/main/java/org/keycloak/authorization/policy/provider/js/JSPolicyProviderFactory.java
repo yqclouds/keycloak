@@ -1,12 +1,11 @@
 package org.keycloak.authorization.policy.provider.js;
 
+import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import org.keycloak.Config;
 import org.keycloak.authorization.AuthorizationProvider;
-import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.common.Profile;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.ScriptModel;
 import org.keycloak.representations.idm.authorization.JSPolicyRepresentation;
@@ -16,6 +15,8 @@ import org.keycloak.scripting.ScriptingProvider;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.servlet.http.HttpSession;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -120,9 +121,11 @@ public class JSPolicyProviderFactory implements PolicyProviderFactory<JSPolicyRe
         return scripting.createScript(realm.getId(), ScriptModel.TEXT_JAVASCRIPT, scriptName, scriptCode, scriptDescription);
     }
 
+    private HttpSession httpSession;
+
     private void updatePolicy(PolicyModel policy, String code, AuthorizationProvider authorization) {
         scriptCache.remove(policy.getId());
-        if (!Profile.isFeatureEnabled(Profile.Feature.UPLOAD_SCRIPTS) && !authorization.getSession().getAttributeOrDefault("ALLOW_CREATE_POLICY", false) && !isDeployed()) {
+        if (!Profile.isFeatureEnabled(Profile.Feature.UPLOAD_SCRIPTS) && !(Boolean) httpSession.getAttribute("ALLOW_CREATE_POLICY") && !isDeployed()) {
             throw new RuntimeException("Script upload is disabled");
         }
         policy.putConfig("code", code);

@@ -16,18 +16,18 @@
  */
 package org.keycloak.services.resources.account.resources;
 
-import org.jboss.resteasy.spi.HttpRequest;
-import org.keycloak.authorization.AuthorizationProvider;
 import com.hsbc.unified.iam.facade.model.authorization.PermissionTicketModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
+import org.jboss.resteasy.spi.HttpRequest;
+import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.store.PermissionTicketStore;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.authorization.store.ScopeStore;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.UserProvider;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
@@ -55,7 +55,7 @@ public abstract class AbstractResourceService {
     protected HttpRequest request;
     protected Auth auth;
 
-    protected AbstractResourceService(KeycloakSession session, UserModel user, Auth auth, HttpRequest request) {
+    protected AbstractResourceService(UserModel user, Auth auth, HttpRequest request) {
         this.user = user;
         this.auth = auth;
         this.request = request;
@@ -147,16 +147,18 @@ public abstract class AbstractResourceService {
         }
     }
 
-    public static class Permission extends UserRepresentation {
+    @Autowired
+    private UserProvider userProvider;
+
+    public class Permission extends UserRepresentation {
 
         private List<String> scopes;
 
         public Permission() {
-
         }
 
         Permission(String userId, AuthorizationProvider provider) {
-            UserModel user = provider.getSession().users().getUserById(userId, provider.getRealm());
+            UserModel user = userProvider.getUserById(userId, provider.getRealm());
 
             setUsername(user.getUsername());
             setFirstName(user.getFirstName());

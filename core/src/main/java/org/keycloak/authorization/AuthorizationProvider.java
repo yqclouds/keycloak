@@ -24,7 +24,6 @@ import org.keycloak.authorization.policy.evaluation.PolicyEvaluator;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.*;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.cache.authorization.CachedStoreFactoryProvider;
@@ -81,10 +80,8 @@ public final class AuthorizationProvider implements Provider {
 
     @Autowired
     private KeycloakSessionFactory sessionFactory;
-    private KeycloakSession session;
 
     public AuthorizationProvider(RealmModel realm) {
-        this.session = sessionFactory.create();
         this.realm = realm;
     }
 
@@ -124,14 +121,16 @@ public final class AuthorizationProvider implements Provider {
         return storeFactoryDelegate;
     }
 
+    @Autowired
+    private Map<String, PolicyProviderFactory> policyProviderFactories;
+
     /**
      * Returns the registered {@link PolicyProviderFactory}.
      *
      * @return a {@link List} containing all registered {@link PolicyProviderFactory}
      */
     public Collection<PolicyProviderFactory> getProviderFactories() {
-        return session.getSessionFactory().getProviderFactories(PolicyProvider.class).stream().map(
-                PolicyProviderFactory.class::cast).collect(Collectors.toList());
+        return policyProviderFactories.values();
     }
 
     /**
@@ -141,7 +140,7 @@ public final class AuthorizationProvider implements Provider {
      * @return a {@link PolicyProviderFactory} with the given <code>type</code>
      */
     public PolicyProviderFactory getProviderFactory(String type) {
-        return (PolicyProviderFactory) session.getSessionFactory().getProviderFactory(PolicyProvider.class, type);
+        return policyProviderFactories.get(type);
     }
 
     /**
@@ -159,10 +158,6 @@ public final class AuthorizationProvider implements Provider {
         }
 
         return (P) policyProviderFactory.create(this);
-    }
-
-    public KeycloakSession getSession() {
-        return this.session;
     }
 
     public RealmModel getRealm() {

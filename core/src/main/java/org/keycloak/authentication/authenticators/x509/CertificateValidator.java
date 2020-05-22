@@ -18,9 +18,9 @@
 
 package org.keycloak.authentication.authenticators.x509;
 
-import org.keycloak.common.util.OCSPUtils;
-import com.hsbc.unified.iam.core.util.Time;
 import com.hsbc.unified.iam.core.constants.Constants;
+import com.hsbc.unified.iam.core.util.Time;
+import org.keycloak.common.util.OCSPUtils;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.truststore.TruststoreProvider;
 import org.keycloak.utils.CRLUtils;
@@ -617,11 +617,6 @@ public class CertificateValidator {
         public CertificateValidatorBuilder() {
             _extendedKeyUsage = new LinkedList<>();
             _keyUsageBits = 0;
-        }
-
-        public CertificateValidatorBuilder session(KeycloakSession session) {
-            this.session = session;
-            return this;
         }
 
         public KeyUsageValidationBuilder keyUsage() {

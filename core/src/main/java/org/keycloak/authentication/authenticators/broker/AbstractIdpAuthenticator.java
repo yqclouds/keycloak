@@ -128,7 +128,7 @@ public abstract class AbstractIdpAuthenticator implements Authenticator {
     }
 
     @Override
-    public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
+    public void setRequiredActions(RealmModel realm, UserModel user) {
     }
 
     @Override

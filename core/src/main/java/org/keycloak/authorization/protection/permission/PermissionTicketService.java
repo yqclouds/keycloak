@@ -17,18 +17,18 @@
  */
 package org.keycloak.authorization.protection.permission;
 
-import org.keycloak.OAuthErrorException;
-import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.common.KeycloakIdentity;
+import com.hsbc.unified.iam.core.constants.Constants;
 import com.hsbc.unified.iam.facade.model.authorization.PermissionTicketModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
+import org.keycloak.OAuthErrorException;
+import org.keycloak.authorization.AuthorizationProvider;
+import org.keycloak.authorization.common.KeycloakIdentity;
 import org.keycloak.authorization.store.PermissionTicketStore;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.authorization.store.ScopeStore;
 import org.keycloak.authorization.store.StoreFactory;
-import com.hsbc.unified.iam.core.constants.Constants;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserProvider;
@@ -36,6 +36,8 @@ import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.authorization.PermissionTicketRepresentation;
 import org.keycloak.services.ErrorResponseException;
+import org.keycloak.storage.UserStorageManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
@@ -57,6 +59,9 @@ public class PermissionTicketService {
         this.resourceServer = resourceServer;
         this.authorization = authorization;
     }
+
+    @Autowired
+    private UserStorageManager userStorageManager;
 
     @POST
     @Consumes("application/json")
@@ -84,9 +89,9 @@ public class PermissionTicketService {
 
         UserModel user = null;
         if (representation.getRequester() != null)
-            user = this.authorization.getSession().userStorageManager().getUserById(representation.getRequester(), this.authorization.getRealm());
+            user = userStorageManager.getUserById(representation.getRequester(), this.authorization.getRealm());
         else
-            user = this.authorization.getSession().userStorageManager().getUserByUsername(representation.getRequesterName(), this.authorization.getRealm());
+            user = userStorageManager.getUserByUsername(representation.getRequesterName(), this.authorization.getRealm());
 
         if (user == null)
             throw new ErrorResponseException("invalid_permission", "Requester does not exists in this server as user.", Response.Status.BAD_REQUEST);
@@ -219,8 +224,10 @@ public class PermissionTicketService {
                 .build();
     }
 
+    @Autowired
+    private UserProvider userProvider;
+
     private String getUserId(String userIdOrName) {
-        UserProvider userProvider = authorization.getSession().users();
         RealmModel realm = authorization.getRealm();
         UserModel userModel = userProvider.getUserById(userIdOrName, realm);
 

@@ -17,25 +17,26 @@
 
 package org.keycloak.authentication.authenticators.browser;
 
+import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
+import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.authentication.*;
-import org.keycloak.authentication.requiredactions.UpdateTotp;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.credential.OTPCredentialProvider;
 import org.keycloak.credential.OTPCredentialProviderFactory;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
-import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
+import org.keycloak.models.UserCredentialManager;
 import org.keycloak.models.UserModel;
-import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
 import org.keycloak.services.messages.Messages;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -62,6 +63,8 @@ public class OTPFormAuthenticator extends AbstractUsernameFormAuthenticator impl
         context.challenge(challengeResponse);
     }
 
+    @Autowired
+    private UserCredentialManager userCredentialManager;
 
     public void validateOTP(AuthenticationFlowContext context) {
         MultivaluedMap<String, String> inputData = context.getHttpRequest().getDecodedFormParameters();
@@ -71,8 +74,8 @@ public class OTPFormAuthenticator extends AbstractUsernameFormAuthenticator impl
         String credentialId = inputData.getFirst("selectedCredentialId");
 
         if (credentialId == null || credentialId.isEmpty()) {
-            OTPCredentialModel defaultOtpCredential = getCredentialProvider(context.getSession())
-                    .getDefaultCredential(context.getSession(), context.getRealm(), context.getUser());
+            OTPCredentialModel defaultOtpCredential = getCredentialProvider()
+                    .getDefaultCredential(userCredentialManager, context.getRealm(), context.getUser());
             credentialId = defaultOtpCredential == null ? "" : defaultOtpCredential.getId();
         }
         context.getEvent().detail(Details.SELECTED_CREDENTIAL_ID, credentialId);
@@ -91,7 +94,7 @@ public class OTPFormAuthenticator extends AbstractUsernameFormAuthenticator impl
             return;
         }
         boolean valid = context.getSession().userCredentialManager().isValid(context.getRealm(), context.getUser(),
-                new UserCredentialModel(credentialId, getCredentialProvider(context.getSession()).getType(), otp));
+                new UserCredentialModel(credentialId, getCredentialProvider().getType(), otp));
         if (!valid) {
             context.getEvent().user(userModel)
                     .error(Errors.INVALID_USER_CREDENTIALS);
@@ -118,29 +121,34 @@ public class OTPFormAuthenticator extends AbstractUsernameFormAuthenticator impl
     }
 
     @Override
-    public boolean configuredFor(KeycloakSession session, RealmModel realm, UserModel user) {
-        return session.userCredentialManager().isConfiguredFor(realm, user, getCredentialProvider(session).getType());
+    public boolean configuredFor(RealmModel realm, UserModel user) {
+        return userCredentialManager.isConfiguredFor(realm, user, getCredentialProvider().getType());
     }
 
     @Override
-    public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
+    public void setRequiredActions(RealmModel realm, UserModel user) {
         if (!user.getRequiredActions().contains(UserModel.RequiredAction.CONFIGURE_TOTP.name())) {
             user.addRequiredAction(UserModel.RequiredAction.CONFIGURE_TOTP.name());
         }
     }
 
-    public List<RequiredActionFactory> getRequiredActions(KeycloakSession session) {
-        return Collections.singletonList((UpdateTotp) session.getSessionFactory().getProviderFactory(RequiredActionProvider.class, UserModel.RequiredAction.CONFIGURE_TOTP.name()));
+    @Autowired
+    private Map<String, RequiredActionFactory> requiredActionFactories;
+
+    public List<RequiredActionFactory> getRequiredActions() {
+        return Collections.singletonList(requiredActionFactories.get(UserModel.RequiredAction.CONFIGURE_TOTP.name()));
     }
 
     @Override
     public void close() {
-
     }
 
+    @Autowired
+    private Map<String, CredentialProvider> credentialProviders;
+
     @Override
-    public OTPCredentialProvider getCredentialProvider(KeycloakSession session) {
-        return (OTPCredentialProvider) session.getProvider(CredentialProvider.class, OTPCredentialProviderFactory.PROVIDER_ID);
+    public OTPCredentialProvider getCredentialProvider() {
+        return (OTPCredentialProvider) credentialProviders.get(OTPCredentialProviderFactory.PROVIDER_ID);
     }
 
 }

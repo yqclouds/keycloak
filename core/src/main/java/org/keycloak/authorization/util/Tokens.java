@@ -19,7 +19,6 @@
 package org.keycloak.authorization.util;
 
 import org.keycloak.models.KeycloakContext;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.AuthenticationManager.AuthResult;
@@ -43,9 +42,8 @@ public class Tokens {
         return null;
     }
 
-    public static AccessToken getAccessToken(String accessToken, KeycloakSession keycloakSession) {
+    public AccessToken getAccessToken(String accessToken) {
         AppAuthManager authManager = new AppAuthManager();
-        KeycloakContext context = keycloakSession.getContext();
         AuthResult authResult = authManager.authenticateBearerToken(accessToken, context.getRealm(), context.getUri(), context.getConnection(), context.getRequestHeaders());
 
         if (authResult != null) {

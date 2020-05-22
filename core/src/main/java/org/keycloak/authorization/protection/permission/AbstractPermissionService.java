@@ -16,18 +16,21 @@
  */
 package org.keycloak.authorization.protection.permission;
 
-import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.common.KeycloakIdentity;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
+import org.keycloak.authorization.AuthorizationProvider;
+import org.keycloak.authorization.common.KeycloakIdentity;
 import org.keycloak.authorization.store.ResourceStore;
+import org.keycloak.models.KeycloakContext;
+import org.keycloak.models.TokenManager;
 import org.keycloak.representations.idm.authorization.Permission;
 import org.keycloak.representations.idm.authorization.PermissionRequest;
 import org.keycloak.representations.idm.authorization.PermissionResponse;
 import org.keycloak.representations.idm.authorization.PermissionTicketToken;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.Urls;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.Response;
 import java.util.*;
@@ -116,7 +119,7 @@ public class AbstractPermissionService {
         ResourceStore resourceStore = authorization.getStoreFactory().getResourceStore();
 
         return requestScopes.stream().map(scopeName -> {
-            ScopeModel scope = null;
+            ScopeModel scope;
 
             if (resource != null) {
                 scope = resource.getScopes().stream().filter(scope1 -> scope1.getName().equals(scopeName)).findFirst().orElse(null);
@@ -139,10 +142,15 @@ public class AbstractPermissionService {
         }).collect(Collectors.toSet());
     }
 
+    @Autowired
+    private KeycloakContext keycloakContext;
+    @Autowired
+    private TokenManager tokenManager;
+
     private String createPermissionTicket(List<PermissionRequest> request) {
         List<Permission> permissions = verifyRequestedResource(request);
 
-        String audience = Urls.realmIssuer(this.authorization.getSession().getContext().getUri().getBaseUri(), this.authorization.getRealm().getName());
+        String audience = Urls.realmIssuer(keycloakContext.getUri().getBaseUri(), this.authorization.getRealm().getName());
         PermissionTicketToken token = new PermissionTicketToken(permissions, audience, this.identity.getAccessToken());
         Map<String, List<String>> claims = new HashMap<>();
 
@@ -158,6 +166,6 @@ public class AbstractPermissionService {
             token.setClaims(claims);
         }
 
-        return this.authorization.getSession().tokens().encode(token);
+        return tokenManager.encode(token);
     }
 }

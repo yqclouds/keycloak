@@ -737,7 +737,7 @@ public class TokenEndpoint {
                 event.detail(Details.IMPERSONATOR, tokenUser.getUsername());
                 // for this case, the user represented by the token, must have permission to impersonate.
                 AdminAuth auth = new AdminAuth(realm, token, tokenUser, client);
-                if (!AdminPermissions.evaluator(session, realm, auth).users().canImpersonate(requestedUser)) {
+                if (!AdminPermissions.evaluator(realm, auth).users().canImpersonate(requestedUser)) {
                     event.detail(Details.REASON, "subject not allowed to impersonate");
                     event.error(Errors.NOT_ALLOWED);
                     throw new CorsErrorResponseException(cors, OAuthErrorException.ACCESS_DENIED, "Client not allowed to exchange", Response.Status.FORBIDDEN);

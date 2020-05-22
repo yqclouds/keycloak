@@ -44,6 +44,7 @@ import org.keycloak.services.Urls;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.sessions.AuthenticationSessionModel;
+import org.keycloak.sessions.AuthenticationSessionProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,7 +114,7 @@ public class PolicyEvaluationService {
     }
 
     private EvaluationContext createEvaluationContext(PolicyEvaluationRequest representation, KeycloakIdentity identity) {
-        return new DefaultEvaluationContext(identity, this.authorization.getSession()) {
+        return new DefaultEvaluationContext(identity) {
             @Override
             public Attributes getAttributes() {
                 Map<String, Collection<String>> attributes = new HashMap<>(super.getAttributes().toMap());
@@ -176,21 +177,27 @@ public class PolicyEvaluationService {
 
     @Autowired
     private TokenManager tokenManager;
+    @Autowired
+    private KeycloakContext keycloakContext;
+    @Autowired
+    private UserProvider userProvider;
+    @Autowired
+    private AuthenticationSessionProvider authenticationSessionProvider;
+    @Autowired
+    private UserSessionProvider userSessionProvider;
 
     private CloseableKeycloakIdentity createIdentity(PolicyEvaluationRequest representation) {
-        KeycloakSession keycloakSession = this.authorization.getSession();
-        RealmModel realm = keycloakSession.getContext().getRealm();
+        RealmModel realm = keycloakContext.getRealm();
         AccessToken accessToken = null;
-
 
         String subject = representation.getUserId();
 
         UserSessionModel userSession = null;
         if (subject != null) {
-            UserModel userModel = keycloakSession.users().getUserById(subject, realm);
+            UserModel userModel = userProvider.getUserById(subject, realm);
 
             if (userModel == null) {
-                userModel = keycloakSession.users().getUserByUsername(subject, realm);
+                userModel = userProvider.getUserByUsername(subject, realm);
             }
 
             if (userModel != null) {
@@ -203,11 +210,11 @@ public class PolicyEvaluationService {
                 if (clientId != null) {
                     ClientModel clientModel = realm.getClientById(clientId);
 
-                    AuthenticationSessionModel authSession = keycloakSession.authenticationSessions().createRootAuthenticationSession(realm)
+                    AuthenticationSessionModel authSession = authenticationSessionProvider.createRootAuthenticationSession(realm)
                             .createAuthenticationSession(clientModel);
                     authSession.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
                     authSession.setAuthenticatedUser(userModel);
-                    userSession = keycloakSession.sessions().createUserSession(authSession.getParentSession().getId(), realm, userModel, userModel.getUsername(), "127.0.0.1", "passwd", false, null, null);
+                    userSession = userSessionProvider.createUserSession(authSession.getParentSession().getId(), realm, userModel, userModel.getUsername(), "127.0.0.1", "passwd", false, null, null);
 
                     AuthenticationManager.setClientScopesInSession(authSession);
                     ClientSessionContext clientSessionCtx = tokenManager.attachAuthenticationSession(userSession, authSession);
@@ -234,7 +241,7 @@ public class PolicyEvaluationService {
 
             accessToken.issuedFor(client.getClientId());
             accessToken.audience(client.getId());
-            accessToken.issuer(Urls.realmIssuer(keycloakSession.getContext().getUri().getBaseUri(), realm.getName()));
+            accessToken.issuer(Urls.realmIssuer(keycloakContext.getUri().getBaseUri(), realm.getName()));
             accessToken.setRealmAccess(new AccessToken.Access());
         }
 
@@ -249,11 +256,6 @@ public class PolicyEvaluationService {
 
         return new CloseableKeycloakIdentity(accessToken, userSession);
     }
-
-    @Autowired
-    private UserSessionProvider userSessionProvider;
-    @Autowired
-    private UserProvider userProvider;
 
     private class CloseableKeycloakIdentity extends KeycloakIdentity {
         private UserSessionModel userSession;

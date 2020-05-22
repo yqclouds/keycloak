@@ -93,9 +93,9 @@ public class RealmsAdminResource {
     }
 
     protected void addRealmRep(List<RealmRepresentation> reps, RealmModel realm) {
-        if (AdminPermissions.realms(session, auth).canView(realm)) {
+        if (AdminPermissions.realms(auth).canView(realm)) {
             reps.add(ModelToRepresentation.toRepresentation(realm, false));
-        } else if (AdminPermissions.realms(session, auth).isAdmin(realm)) {
+        } else if (AdminPermissions.realms(auth).isAdmin(realm)) {
             RealmRepresentation rep = new RealmRepresentation();
             rep.setRealm(realm.getName());
             reps.add(rep);
@@ -114,7 +114,7 @@ public class RealmsAdminResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response importRealm(final RealmRepresentation rep) {
         RealmManager realmManager = new RealmManager(session);
-        AdminPermissions.realms(session, auth).requireCreateRealm();
+        AdminPermissions.realms(auth).requireCreateRealm();
 
         LOG.debug("importRealm: {}", rep.getRealm());
 
@@ -167,7 +167,7 @@ public class RealmsAdminResource {
                 && !auth.getRealm().equals(realm)) {
             throw new ForbiddenException();
         }
-        AdminPermissionEvaluator realmAuth = AdminPermissions.evaluator(session, realm, auth);
+        AdminPermissionEvaluator realmAuth = AdminPermissions.evaluator(realm, auth);
 
         AdminEventBuilder adminEvent = new AdminEventBuilder(realm, auth, session, clientConnection);
         session.getContext().setRealm(realm);

@@ -16,6 +16,8 @@
  */
 package org.keycloak.authentication.authenticators.challenge;
 
+import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
+import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
@@ -24,17 +26,28 @@ import org.keycloak.credential.CredentialProvider;
 import org.keycloak.credential.OTPCredentialProvider;
 import org.keycloak.events.Errors;
 import org.keycloak.models.*;
-import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
-import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.services.messages.Messages;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.Response;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public class BasicAuthOTPAuthenticator extends BasicAuthAuthenticator implements Authenticator, CredentialValidator<OTPCredentialProvider> {
+    @Autowired
+    private UserCredentialManager userCredentialManager;
+
+    public List<CredentialModel> getCredentials(RealmModel realm, UserModel user) {
+        return userCredentialManager.getStoredCredentialsByType(realm, user, getCredentialProvider().getType());
+    }
+
+    public String getType() {
+        return getCredentialProvider().getType();
+    }
 
     @Override
     protected boolean onAuthenticate(AuthenticationFlowContext context, String[] challenge) {
@@ -61,10 +74,10 @@ public class BasicAuthOTPAuthenticator extends BasicAuthAuthenticator implements
     }
 
     private boolean checkOtp(AuthenticationFlowContext context, String otp) {
-        OTPCredentialModel preferredCredential = getCredentialProvider(context.getSession())
-                .getDefaultCredential(context.getSession(), context.getRealm(), context.getUser());
-        boolean valid = getCredentialProvider(context.getSession()).isValid(context.getRealm(), context.getUser(),
-                new UserCredentialModel(preferredCredential.getId(), getCredentialProvider(context.getSession()).getType(), otp));
+        OTPCredentialModel preferredCredential = getCredentialProvider()
+                .getDefaultCredential(userCredentialManager, context.getRealm(), context.getUser());
+        boolean valid = getCredentialProvider().isValid(context.getRealm(), context.getUser(),
+                new UserCredentialModel(preferredCredential.getId(), getCredentialProvider().getType(), otp));
 
         if (!valid) {
             context.getEvent().user(context.getUser()).error(Errors.INVALID_USER_CREDENTIALS);
@@ -81,13 +94,16 @@ public class BasicAuthOTPAuthenticator extends BasicAuthAuthenticator implements
     }
 
     @Override
-    public boolean configuredFor(KeycloakSession session, RealmModel realm, UserModel user) {
-        return getCredentialProvider(session).isConfiguredFor(realm, user);
+    public boolean configuredFor(RealmModel realm, UserModel user) {
+        return getCredentialProvider().isConfiguredFor(realm, user);
     }
 
+    @Autowired
+    private Map<String, CredentialProvider> credentialProviders;
+
     @Override
-    public OTPCredentialProvider getCredentialProvider(KeycloakSession session) {
-        return (OTPCredentialProvider) session.getProvider(CredentialProvider.class, "keycloak-otp");
+    public OTPCredentialProvider getCredentialProvider() {
+        return (OTPCredentialProvider) credentialProviders.get("keycloak-otp");
     }
 }
 

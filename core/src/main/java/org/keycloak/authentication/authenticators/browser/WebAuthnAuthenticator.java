@@ -47,6 +47,7 @@ import javax.ws.rs.core.Response;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.keycloak.services.messages.Messages.*;
 
@@ -54,7 +55,6 @@ import static org.keycloak.services.messages.Messages.*;
  * Authenticator for WebAuthn authentication, which will be typically used when WebAuthn is used as second factor.
  */
 public class WebAuthnAuthenticator implements Authenticator, CredentialValidator<WebAuthnCredentialProvider> {
-
     private static final Logger LOG = LoggerFactory.getLogger(WebAuthnAuthenticator.class);
     private static final String ERR_LABEL = "web_authn_authentication_error";
     private static final String ERR_DETAIL_LABEL = "web_authn_authentication_error_detail";
@@ -63,6 +63,19 @@ public class WebAuthnAuthenticator implements Authenticator, CredentialValidator
     private UserProvider userProvider;
     @Autowired
     private UserCredentialManager userCredentialManager;
+
+    @Autowired
+    private Map<String, CredentialProvider> credentialProviders;
+
+    @Override
+    public List<CredentialModel> getCredentials(RealmModel realm, UserModel user) {
+        return userCredentialManager.getStoredCredentialsByType(realm, user, getCredentialProvider().getType());
+    }
+
+    @Override
+    public String getType() {
+        return getCredentialProvider().getType();
+    }
 
     public void authenticate(AuthenticationFlowContext context) {
         LoginFormsProvider form = context.form();
@@ -221,11 +234,11 @@ public class WebAuthnAuthenticator implements Authenticator, CredentialValidator
         return true;
     }
 
-    public boolean configuredFor(KeycloakSession session, RealmModel realm, UserModel user) {
-        return session.userCredentialManager().isConfiguredFor(realm, user, getCredentialType());
+    public boolean configuredFor(RealmModel realm, UserModel user) {
+        return userCredentialManager.isConfiguredFor(realm, user, getCredentialType());
     }
 
-    public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
+    public void setRequiredActions(RealmModel realm, UserModel user) {
         // ask the user to do required action to register webauthn authenticator
         if (!user.getRequiredActions().contains(WebAuthnRegisterFactory.PROVIDER_ID)) {
             user.addRequiredAction(WebAuthnRegisterFactory.PROVIDER_ID);
@@ -241,8 +254,8 @@ public class WebAuthnAuthenticator implements Authenticator, CredentialValidator
     }
 
     @Override
-    public WebAuthnCredentialProvider getCredentialProvider(KeycloakSession session) {
-        return (WebAuthnCredentialProvider) session.getProvider(CredentialProvider.class, WebAuthnCredentialProviderFactory.PROVIDER_ID);
+    public WebAuthnCredentialProvider getCredentialProvider() {
+        return (WebAuthnCredentialProvider) credentialProviders.get(WebAuthnCredentialProviderFactory.PROVIDER_ID);
     }
 
     private void setErrorResponse(AuthenticationFlowContext context, final String errorCase, final String errorMessage) {

@@ -95,7 +95,7 @@ public class ComponentResource {
             if (name != null && !name.equals(component.getName())) continue;
             ComponentRepresentation rep = null;
             try {
-                rep = ModelToRepresentation.toRepresentation(session, component, false);
+                rep = ModelToRepresentation.toRepresentation(component, false);
             } catch (Exception e) {
                 LOG.error("Failed to get component list for component model" + component.getName() + "of realm " + realm.getName());
                 rep = ModelToRepresentation.toRepresentationWithoutConfig(component);
@@ -134,7 +134,7 @@ public class ComponentResource {
         if (model == null) {
             throw new NotFoundException("Could not find component");
         }
-        ComponentRepresentation rep = ModelToRepresentation.toRepresentation(session, model, false);
+        ComponentRepresentation rep = ModelToRepresentation.toRepresentation(model, false);
         return rep;
     }
 

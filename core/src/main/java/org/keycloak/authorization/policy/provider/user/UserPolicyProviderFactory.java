@@ -29,7 +29,10 @@ import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.authorization.store.ResourceServerStore;
 import org.keycloak.authorization.store.StoreFactory;
-import org.keycloak.models.*;
+import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
+import org.keycloak.models.UserProvider;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.representations.idm.authorization.UserPolicyRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
@@ -106,13 +109,15 @@ public class UserPolicyProviderFactory implements PolicyProviderFactory<UserPoli
         }
     }
 
+    @Autowired
+    private UserProvider userProvider;
+
     @Override
     public void onExport(PolicyModel policy, PolicyRepresentation representation, AuthorizationProvider authorizationProvider) {
         UserPolicyRepresentation userRep = toRepresentation(policy, authorizationProvider);
         Map<String, String> config = new HashMap<>();
 
         try {
-            UserProvider userProvider = authorizationProvider.getSession().users();
             RealmModel realm = authorizationProvider.getRealm();
 
             config.put("users", JsonSerialization.writeValueAsString(userRep.getUsers().stream().map(id -> userProvider.getUserById(id, realm).getUsername()).collect(Collectors.toList())));
@@ -128,9 +133,7 @@ public class UserPolicyProviderFactory implements PolicyProviderFactory<UserPoli
     }
 
     private void updateUsers(PolicyModel policy, AuthorizationProvider authorization, Set<String> users) {
-        KeycloakSession session = authorization.getSession();
         RealmModel realm = authorization.getRealm();
-        UserProvider userProvider = session.users();
         Set<String> updatedUsers = new HashSet<>();
 
         if (users != null) {

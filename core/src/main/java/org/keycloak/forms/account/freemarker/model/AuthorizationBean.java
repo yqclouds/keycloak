@@ -27,6 +27,7 @@ import org.keycloak.authorization.store.PermissionTicketStore;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.UserProvider;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.authorization.ScopeRepresentation;
 import org.keycloak.services.util.ResolveRelative;
@@ -180,8 +181,11 @@ public class AuthorizationBean {
         private List<PermissionScopeBean> scopes = new ArrayList<>();
         private boolean granted;
 
+        @Autowired
+        private UserProvider userProvider;
+
         public RequesterBean(PermissionTicketModel ticket, AuthorizationProvider authorization) {
-            this.requester = authorization.getSession().users().getUserById(ticket.getRequester(), authorization.getRealm());
+            this.requester = userProvider.getUserById(ticket.getRequester(), authorization.getRealm());
             granted = ticket.isGranted();
             createdTimestamp = ticket.getCreatedTimestamp();
             grantedTimestamp = ticket.getGrantedTimestamp();
@@ -261,11 +265,14 @@ public class AuthorizationBean {
         private Map<String, RequesterBean> permissions = new HashMap<>();
         private Collection<RequesterBean> shares;
 
+        @Autowired
+        private UserProvider userProvider;
+
         public ResourceBean(ResourceModel resource) {
             RealmModel realm = authorizationProvider.getRealm();
             resourceServer = new ResourceServerBean(realm.getClientById(resource.getResourceServer().getId()));
             this.resource = resource;
-            owner = authorizationProvider.getSession().users().getUserById(resource.getOwner(), realm);
+            owner = userProvider.getUserById(resource.getOwner(), realm);
         }
 
         public String getId() {

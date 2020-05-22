@@ -20,7 +20,10 @@ package org.keycloak.utils;
 import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
 import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
-import org.keycloak.authentication.*;
+import org.keycloak.authentication.AuthenticatorFactory;
+import org.keycloak.authentication.ClientAuthenticatorFactory;
+import org.keycloak.authentication.ConfigurableAuthenticatorFactory;
+import org.keycloak.authentication.FormActionFactory;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.models.*;
 import org.keycloak.representations.idm.CredentialRepresentation;
@@ -40,21 +43,21 @@ public class CredentialHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(CredentialHelper.class);
 
-    public static void setRequiredCredential(KeycloakSession session, String type, RealmModel realm) {
+    public void setRequiredCredential(String type, RealmModel realm) {
         AuthenticationExecutionRequirement requirement = AuthenticationExecutionRequirement.REQUIRED;
-        setOrReplaceAuthenticationRequirement(session, realm, type, requirement, null);
+        setOrReplaceAuthenticationRequirement(realm, type, requirement, null);
     }
 
-    public static void setAlternativeCredential(KeycloakSession session, String type, RealmModel realm) {
+    public void setAlternativeCredential(String type, RealmModel realm) {
         AuthenticationExecutionRequirement requirement = AuthenticationExecutionRequirement.ALTERNATIVE;
-        setOrReplaceAuthenticationRequirement(session, realm, type, requirement, null);
+        setOrReplaceAuthenticationRequirement(realm, type, requirement, null);
     }
 
-    public static void setOrReplaceAuthenticationRequirement(KeycloakSession session, RealmModel realm, String type, AuthenticationExecutionRequirement requirement, AuthenticationExecutionRequirement currentRequirement) {
+    public void setOrReplaceAuthenticationRequirement(RealmModel realm, String type, AuthenticationExecutionRequirement requirement, AuthenticationExecutionRequirement currentRequirement) {
         for (AuthenticationFlowModel flow : realm.getAuthenticationFlows()) {
             for (AuthenticationExecutionModel execution : realm.getAuthenticationExecutions(flow.getId())) {
                 String providerId = execution.getAuthenticator();
-                ConfigurableAuthenticatorFactory factory = getConfigurableAuthenticatorFactory(session, providerId);
+                ConfigurableAuthenticatorFactory factory = getConfigurableAuthenticatorFactory(providerId);
                 if (factory == null) continue;
                 if (type.equals(factory.getReferenceCategory())) {
                     if (currentRequirement == null || currentRequirement.equals(execution.getRequirement())) {
@@ -69,13 +72,20 @@ public class CredentialHelper {
         }
     }
 
-    public static ConfigurableAuthenticatorFactory getConfigurableAuthenticatorFactory(KeycloakSession session, String providerId) {
-        ConfigurableAuthenticatorFactory factory = (AuthenticatorFactory) session.getSessionFactory().getProviderFactory(Authenticator.class, providerId);
+    @Autowired
+    private Map<String, ClientAuthenticatorFactory> clientAuthenticatorFactories;
+    @Autowired
+    private Map<String, FormActionFactory> formActionFactories;
+    @Autowired
+    private Map<String, AuthenticatorFactory> authenticatorFactories;
+
+    public ConfigurableAuthenticatorFactory getConfigurableAuthenticatorFactory(String providerId) {
+        ConfigurableAuthenticatorFactory factory = authenticatorFactories.get(providerId);
         if (factory == null) {
-            factory = (FormActionFactory) session.getSessionFactory().getProviderFactory(FormAction.class, providerId);
+            factory = formActionFactories.get(providerId);
         }
         if (factory == null) {
-            factory = (ClientAuthenticatorFactory) session.getSessionFactory().getProviderFactory(ClientAuthenticator.class, providerId);
+            factory = clientAuthenticatorFactories.get(providerId);
         }
         return factory;
     }
@@ -110,14 +120,14 @@ public class CredentialHelper {
         return userCredentialManager.isValid(realm, user, credential);
     }
 
-    public static void deleteOTPCredential(KeycloakSession session, RealmModel realm, UserModel user, String credentialId) {
-        CredentialProvider otpCredentialProvider = session.getProvider(CredentialProvider.class, "keycloak-otp");
+    public void deleteOTPCredential(RealmModel realm, UserModel user, String credentialId) {
+        CredentialProvider otpCredentialProvider = credentialProviders.get("keycloak-otp");
         boolean removed = otpCredentialProvider.deleteCredential(realm, user, credentialId);
 
         // This can usually happened when credential is stored in the userStorage. Propagate to "disable" credential in the userStorage
         if (!removed) {
             LOG.debug("Removing OTP credential from userStorage");
-            session.userCredentialManager().disableCredentialType(realm, user, OTPCredentialModel.TYPE);
+            userCredentialManager.disableCredentialType(realm, user, OTPCredentialModel.TYPE);
         }
     }
 

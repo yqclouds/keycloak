@@ -19,6 +19,7 @@ package org.keycloak.authentication.authenticators.browser;
 
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.models.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.List;
@@ -273,8 +274,11 @@ public class ConditionalOtpFormAuthenticator extends OTPFormAuthenticator {
         return false;
     }
 
-    private boolean isOTPRequired(KeycloakSession session, RealmModel realm, UserModel user) {
-        MultivaluedMap<String, String> requestHeaders = session.getContext().getRequestHeaders().getRequestHeaders();
+    @Autowired
+    private KeycloakContext keycloakContext;
+
+    private boolean isOTPRequired(RealmModel realm, UserModel user) {
+        MultivaluedMap<String, String> requestHeaders = keycloakContext.getRequestHeaders().getRequestHeaders();
         for (AuthenticatorConfigModel configModel : realm.getAuthenticatorConfigs()) {
 
             if (tryConcludeBasedOn(voteForUserOtpControlAttribute(user, configModel.getConfig()))) {
@@ -313,8 +317,8 @@ public class ConditionalOtpFormAuthenticator extends OTPFormAuthenticator {
     }
 
     @Override
-    public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
-        if (!isOTPRequired(session, realm, user)) {
+    public void setRequiredActions(RealmModel realm, UserModel user) {
+        if (!isOTPRequired(realm, user)) {
             user.removeRequiredAction(UserModel.RequiredAction.CONFIGURE_TOTP);
         } else if (!user.getRequiredActions().contains(UserModel.RequiredAction.CONFIGURE_TOTP.name())) {
             user.addRequiredAction(UserModel.RequiredAction.CONFIGURE_TOTP.name());

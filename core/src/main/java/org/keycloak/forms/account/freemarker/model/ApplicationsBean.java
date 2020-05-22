@@ -41,7 +41,7 @@ public class ApplicationsBean {
         Set<ClientModel> offlineClients = new UserSessionManager().findClientsWithOfflineToken(realm, user);
 
         for (ClientModel client : getApplications(session, realm, user)) {
-            if (isAdminClient(client) && !AdminPermissions.realms(session, realm, user).isAdmin()) {
+            if (isAdminClient(client) && !AdminPermissions.realms(realm, user).isAdmin()) {
                 continue;
             }
 

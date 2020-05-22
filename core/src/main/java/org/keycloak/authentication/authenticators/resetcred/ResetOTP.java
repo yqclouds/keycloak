@@ -22,11 +22,16 @@ import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.CredentialValidator;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.credential.OTPCredentialProvider;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.CredentialModel;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserCredentialManager;
 import org.keycloak.models.UserModel;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -37,6 +42,20 @@ import org.springframework.stereotype.Component;
 public class ResetOTP extends AbstractSetRequiredActionAuthenticator implements CredentialValidator<OTPCredentialProvider> {
 
     public static final String PROVIDER_ID = "reset-otp";
+    @Autowired
+    private UserCredentialManager userCredentialManager;
+    @Autowired
+    private Map<String, CredentialProvider> credentialProviders;
+
+    @Override
+    public String getType() {
+        return getCredentialProvider().getType();
+    }
+
+    @Override
+    public List<CredentialModel> getCredentials(RealmModel realm, UserModel user) {
+        return userCredentialManager.getStoredCredentialsByType(realm, user, getCredentialProvider().getType());
+    }
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
@@ -45,13 +64,13 @@ public class ResetOTP extends AbstractSetRequiredActionAuthenticator implements 
     }
 
     @Override
-    public OTPCredentialProvider getCredentialProvider(KeycloakSession session) {
-        return (OTPCredentialProvider) session.getProvider(CredentialProvider.class, "keycloak-otp");
+    public OTPCredentialProvider getCredentialProvider() {
+        return (OTPCredentialProvider) credentialProviders.get("keycloak-otp");
     }
 
     @Override
-    public boolean configuredFor(KeycloakSession session, RealmModel realm, UserModel user) {
-        return getCredentialProvider(session).isConfiguredFor(realm, user);
+    public boolean configuredFor(RealmModel realm, UserModel user) {
+        return getCredentialProvider().isConfiguredFor(realm, user);
     }
 
     @Override

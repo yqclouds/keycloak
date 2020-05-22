@@ -16,16 +16,16 @@
  */
 package org.keycloak.services.resources.account.resources;
 
-import org.jboss.resteasy.spi.HttpRequest;
 import com.hsbc.unified.iam.facade.model.authorization.PermissionTicketModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
-import org.keycloak.models.KeycloakSession;
+import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserProvider;
 import org.keycloak.services.managers.Auth;
 import org.keycloak.utils.MediaType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
@@ -39,9 +39,8 @@ public class ResourceService extends AbstractResourceService {
     private final ResourceModel resource;
     private final ResourceServerModel resourceServer;
 
-    ResourceService(ResourceModel resource, KeycloakSession session, UserModel user,
-                    Auth auth, HttpRequest request) {
-        super(session, user, auth, request);
+    ResourceService(ResourceModel resource, UserModel user, Auth auth, HttpRequest request) {
+        super(user, auth, request);
         this.resource = resource;
         this.resourceServer = resource.getResourceServer();
     }
@@ -191,12 +190,13 @@ public class ResourceService extends AbstractResourceService {
         return scope;
     }
 
-    private UserModel getUser(String requester) {
-        UserProvider users = authorizationProvider.getSession().users();
-        UserModel user = users.getUserByUsername(requester, authorizationProvider.getRealm());
+    @Autowired
+    private UserProvider userProvider;
 
+    private UserModel getUser(String requester) {
+        UserModel user = userProvider.getUserByUsername(requester, authorizationProvider.getRealm());
         if (user == null) {
-            user = users.getUserById(requester, authorizationProvider.getRealm());
+            user = userProvider.getUserById(requester, authorizationProvider.getRealm());
         }
 
         return user;

@@ -427,12 +427,12 @@ public class DefaultAuthenticationFlow implements AuthenticationFlow {
             if (authUser == null) {
                 throw new AuthenticationFlowException("authenticator: " + factory.getId(), AuthenticationFlowError.UNKNOWN_USER);
             }
-            if (!authenticator.configuredFor(processor.getSession(), processor.getRealm(), authUser)) {
-                if (factory.isUserSetupAllowed() && model.isRequired() && authenticator.areRequiredActionsEnabled(processor.getSession(), processor.getRealm())) {
+            if (!authenticator.configuredFor(processor.getRealm(), authUser)) {
+                if (factory.isUserSetupAllowed() && model.isRequired() && authenticator.areRequiredActionsEnabled(processor.getRealm())) {
                     //This means that having even though the user didn't validate the
                     LOG.debug("authenticator SETUP_REQUIRED: {}", factory.getId());
                     processor.getAuthenticationSession().setExecutionStatus(model.getId(), AuthenticationSessionModel.ExecutionStatus.SETUP_REQUIRED);
-                    authenticator.setRequiredActions(processor.getSession(), processor.getRealm(), processor.getAuthenticationSession().getAuthenticatedUser());
+                    authenticator.setRequiredActions(processor.getRealm(), processor.getAuthenticationSession().getAuthenticatedUser());
                     return null;
                 } else {
                     throw new AuthenticationFlowException("authenticator: " + factory.getId(), AuthenticationFlowError.CREDENTIAL_SETUP_REQUIRED);

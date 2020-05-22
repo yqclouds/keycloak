@@ -36,7 +36,6 @@ import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.models.CredentialModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.FormMessage;
@@ -53,6 +52,7 @@ import org.springframework.stereotype.Component;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -72,10 +72,12 @@ public class ResetCredentialEmail implements Authenticator, AuthenticatorFactory
 
     @Autowired
     private EmailTemplateProvider emailTemplateProvider;
+    @Autowired
+    private Map<String, CredentialProvider> credentialProviders;
 
-    public static Long getLastChangedTimestamp(KeycloakSession session, RealmModel realm, UserModel user) {
+    public Long getLastChangedTimestamp(RealmModel realm, UserModel user) {
         // TODO(hmlnarik): Make this more generic to support non-password credential types
-        PasswordCredentialProvider passwordProvider = (PasswordCredentialProvider) session.getProvider(CredentialProvider.class, PasswordCredentialProviderFactory.PROVIDER_ID);
+        PasswordCredentialProvider passwordProvider = (PasswordCredentialProvider) credentialProviders.get(PasswordCredentialProviderFactory.PROVIDER_ID);
         CredentialModel password = passwordProvider.getPassword(realm, user);
 
         return password == null ? null : password.getCreatedDate();
@@ -157,12 +159,12 @@ public class ResetCredentialEmail implements Authenticator, AuthenticatorFactory
     }
 
     @Override
-    public boolean configuredFor(KeycloakSession session, RealmModel realm, UserModel user) {
+    public boolean configuredFor(RealmModel realm, UserModel user) {
         return true;
     }
 
     @Override
-    public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
+    public void setRequiredActions(RealmModel realm, UserModel user) {
 
     }
 

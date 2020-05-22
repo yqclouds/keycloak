@@ -17,6 +17,7 @@
 package org.keycloak.services.resources.admin;
 
 import com.hsbc.unified.iam.core.ClientConnection;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.EventStoreProvider;
@@ -28,7 +29,6 @@ import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,13 +49,13 @@ public class AdminEventBuilder {
     private RealmModel realm;
     private AdminEventModel adminEvent;
 
-    public AdminEventBuilder(RealmModel realm, AdminAuth auth, KeycloakSession session, ClientConnection clientConnection) {
+    public AdminEventBuilder(RealmModel realm, AdminAuth auth, ClientConnection clientConnection) {
         this.realm = realm;
         adminEvent = new AdminEventModel();
 
         this.listeners = new HashMap<>();
-        updateStore(session);
-        addListeners(session);
+        updateStore();
+        addListeners();
 
         authRealm(auth.getRealm());
         authClient(auth.getClient());
@@ -83,24 +83,25 @@ public class AdminEventBuilder {
      * @return The same builder
      */
     public AdminEventBuilder refreshRealmEventsConfig(KeycloakSession session) {
-        return this.updateStore(session).addListeners(session);
+        return this.updateStore().addListeners();
     }
 
-    private AdminEventBuilder updateStore(KeycloakSession session) {
+    private AdminEventBuilder updateStore() {
         if (realm.isAdminEventsEnabled() && eventStoreProvider == null) {
-            if (eventStoreProvider == null) {
-                // ServicesLogger.LOGGER.noEventStoreProvider();
-            }
+            // ServicesLogger.LOGGER.noEventStoreProvider();
         }
         return this;
     }
 
-    private AdminEventBuilder addListeners(KeycloakSession session) {
+    @Autowired
+    private Map<String, EventListenerProvider> eventListenerProviders;
+
+    private AdminEventBuilder addListeners() {
         Set<String> extraListeners = realm.getEventsListeners();
         if (extraListeners != null && !extraListeners.isEmpty()) {
             for (String id : extraListeners) {
                 if (!listeners.containsKey(id)) {
-                    EventListenerProvider listener = session.getProvider(EventListenerProvider.class, id);
+                    EventListenerProvider listener = eventListenerProviders.get(id);
                     if (listener != null) {
                         listeners.put(id, listener);
                     } else {

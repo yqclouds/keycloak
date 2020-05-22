@@ -16,19 +16,20 @@
  */
 package org.keycloak.keys;
 
+import com.hsbc.unified.iam.core.crypto.Algorithm;
 import com.hsbc.unified.iam.core.util.Base64;
 import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
-import com.hsbc.unified.iam.core.crypto.Algorithm;
 import org.keycloak.crypto.KeyUse;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ConfigurationValidationHelper;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.security.KeyPair;
@@ -47,15 +48,18 @@ public class GeneratedEcdsaKeyProviderFactory extends AbstractEcdsaKeyProviderFa
             .property(ECDSA_ELLIPTIC_CURVE_PROPERTY)
             .build();
 
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     @Override
-    public KeyProvider create(KeycloakSession session, ComponentModel model) {
-        return new GeneratedEcdsaKeyProvider(session.getContext().getRealm(), model);
+    public KeyProvider create(ComponentModel model) {
+        return new GeneratedEcdsaKeyProvider(keycloakContext.getRealm(), model);
     }
 
     @Override
-    public boolean createFallbackKeys(KeycloakSession session, KeyUse keyUse, String algorithm) {
+    public boolean createFallbackKeys(KeyUse keyUse, String algorithm) {
         if (keyUse.equals(KeyUse.SIG) && (algorithm.equals(Algorithm.ES256) || algorithm.equals(Algorithm.ES384) || algorithm.equals(Algorithm.ES512))) {
-            RealmModel realm = session.getContext().getRealm();
+            RealmModel realm = keycloakContext.getRealm();
 
             ComponentModel generated = new ComponentModel();
             generated.setName("fallback-" + algorithm);
@@ -92,8 +96,8 @@ public class GeneratedEcdsaKeyProviderFactory extends AbstractEcdsaKeyProviderFa
     }
 
     @Override
-    public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel model) throws ComponentValidationException {
-        super.validateConfiguration(session, realm, model);
+    public void validateConfiguration(RealmModel realm, ComponentModel model) throws ComponentValidationException {
+        super.validateConfiguration(realm, model);
 
         ConfigurationValidationHelper.check(model).checkList(ECDSA_ELLIPTIC_CURVE_PROPERTY, false);
 

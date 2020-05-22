@@ -17,6 +17,7 @@
 package org.keycloak.services.resources.admin;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.hsbc.unified.iam.core.ClientConnection;
 import com.hsbc.unified.iam.core.constants.Constants;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
@@ -24,7 +25,6 @@ import org.keycloak.Config;
 import org.keycloak.KeyPairVerifier;
 import org.keycloak.authentication.CredentialRegistrator;
 import org.keycloak.authentication.RequiredActionProvider;
-import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.common.VerificationException;
 import org.keycloak.common.util.PemUtils;
 import org.keycloak.email.EmailTemplateProvider;
@@ -76,7 +76,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.keycloak.models.utils.StripSecretsUtils.stripForExport;
 import static com.hsbc.unified.iam.core.util.JsonSerialization.readValue;
 
 /**
@@ -99,6 +98,9 @@ public class RealmAdminResource {
     private TokenManager tokenManager;
     private AdminEventBuilder adminEvent;
 
+    @Autowired
+    private StripSecretsUtils stripSecretsUtils;
+
     public RealmAdminResource(AdminPermissionEvaluator auth, RealmModel realm, TokenManager tokenManager, AdminEventBuilder adminEvent) {
         this.auth = auth;
         this.realm = realm;
@@ -114,6 +116,9 @@ public class RealmAdminResource {
         ref.setScopePermissions(scopes);
         return ref;
     }
+
+    @Autowired
+    private List<ClientDescriptionConverterFactory> clientDescriptionConverterFactories;
 
     /**
      * Base path for importing clients under this realm.
@@ -131,9 +136,9 @@ public class RealmAdminResource {
             throw new NotFoundException("Realm not found.");
         }
 
-        for (ProviderFactory<ClientDescriptionConverter> factory : session.getSessionFactory().getProviderFactories(ClientDescriptionConverter.class)) {
+        for (ProviderFactory<ClientDescriptionConverter> factory : clientDescriptionConverterFactories) {
             if (((ClientDescriptionConverterFactory) factory).isSupported(description)) {
-                return factory.create(session).convertToInternal(description);
+                return factory.create().convertToInternal(description);
             }
         }
 
@@ -142,8 +147,6 @@ public class RealmAdminResource {
 
     /**
      * Base path for managing attack detection.
-     *
-     * @return
      */
     @Path("attack-detection")
     public AttackDetectionResource getAttackDetection() {
@@ -346,6 +349,8 @@ public class RealmAdminResource {
 
     @Autowired(required = false)
     private UserCache userCache;
+    @Autowired
+    private RepresentationToModel representationToModel;
 
     /**
      * Update the top-level information of the realm
@@ -390,7 +395,7 @@ public class RealmAdminResource {
             }
 
             boolean wasDuplicateEmailsAllowed = realm.isDuplicateEmailsAllowed();
-            RepresentationToModel.updateRealm(rep, realm);
+            representationToModel.updateRealm(rep, realm);
 
             // Refresh periodic sync tasks for configured federationProviders
             List<UserStorageProviderModel> federationProviders = realm.getUserStorageProviders();
@@ -423,7 +428,7 @@ public class RealmAdminResource {
     public void deleteRealm() {
         auth.realm().requireManageRealm();
 
-        if (!new RealmManager(session).removeRealm(realm)) {
+        if (!new RealmManager().removeRealm(realm)) {
             throw new NotFoundException("Realm doesn't exist");
         }
     }
@@ -448,7 +453,7 @@ public class RealmAdminResource {
     public ManagementPermissionReference getUserMgmtPermissions() {
         auth.realm().requireViewRealm();
 
-        AdminPermissionManagement permissions = AdminPermissions.management(session, realm);
+        AdminPermissionManagement permissions = AdminPermissions.management(realm);
         if (permissions.users().isPermissionsEnabled()) {
             return toUsersMgmtRef(permissions);
         } else {
@@ -465,7 +470,7 @@ public class RealmAdminResource {
     public ManagementPermissionReference setUsersManagementPermissionsEnabled(ManagementPermissionReference ref) {
         auth.realm().requireManageRealm();
 
-        AdminPermissionManagement permissions = AdminPermissions.management(session, realm);
+        AdminPermissionManagement permissions = AdminPermissions.management(realm);
         permissions.users().setPermissionsEnabled(ref.isEnabled());
         if (ref.isEnabled()) {
             return toUsersMgmtRef(permissions);
@@ -532,6 +537,13 @@ public class RealmAdminResource {
         return result;
     }
 
+    @Autowired
+    private UserSessionProvider userSessionProvider;
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     /**
      * Remove a specific user session. Any client that has an admin url will also be told to invalidate this
      * particular session.
@@ -543,10 +555,10 @@ public class RealmAdminResource {
     public void deleteSession(@PathParam("session") String sessionId) {
         auth.users().requireManage();
 
-        UserSessionModel userSession = session.sessions().getUserSession(realm, sessionId);
+        UserSessionModel userSession = userSessionProvider.getUserSession(realm, sessionId);
         if (userSession == null) throw new NotFoundException("Sesssion not found");
-        AuthenticationManager.backchannelLogout(session, realm, userSession, session.getContext().getUri(), connection, headers, true);
-        adminEvent.operation(OperationType.DELETE).resource(ResourceType.USER_SESSION).resourcePath(session.getContext().getUri()).success();
+        authenticationManager.backchannelLogout(realm, userSession, keycloakContext.getUri(), connection, headers, true);
+        adminEvent.operation(OperationType.DELETE).resource(ResourceType.USER_SESSION).resourcePath(keycloakContext.getUri()).success();
 
     }
 
@@ -643,7 +655,7 @@ public class RealmAdminResource {
         auth.realm().requireManageEvents();
 
         LOG.debug("updating realm events config: " + realm.getName());
-        new RealmManager(session).updateRealmEventsConfig(rep, realm);
+        new RealmManager().updateRealmEventsConfig(rep, realm);
         adminEvent.operation(OperationType.UPDATE).resource(ResourceType.REALM).realm(realm)
                 .resourcePath(session.getContext().getUri()).representation(rep)
                 // refresh the builder to consider old and new config
@@ -1091,8 +1103,8 @@ public class RealmAdminResource {
         // this means that if clients is true but groups/roles is false the service account is exported without roles
         // the other option is just include service accounts if clientsExported && groupsAndRolesExported
         ExportOptions options = new ExportOptions(false, clientsExported, groupsAndRolesExported, clientsExported);
-        RealmRepresentation rep = exportUtils.exportRealm(session, realm, options, false);
-        return stripForExport(session, rep);
+        RealmRepresentation rep = exportUtils.exportRealm(realm, options, false);
+        return stripSecretsUtils.stripForExport(rep);
     }
 
     @Autowired(required = false)

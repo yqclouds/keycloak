@@ -20,6 +20,7 @@ package org.keycloak.forms.account.freemarker.model;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.services.resources.account.AccountFormService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -36,13 +37,15 @@ public class AccountFederatedIdentityBean {
 
     private final List<FederatedIdentityEntry> identities = new ArrayList<>();
     private final boolean removeLinkPossible;
-    private final KeycloakSession session;
 
-    public AccountFederatedIdentityBean(KeycloakSession session, RealmModel realm, UserModel user, URI baseUri, String stateChecker) {
-        this.session = session;
+    @Autowired
+    private UserProvider userProvider;
+    @Autowired
+    private AccountFormService accountFormService;
 
+    public AccountFederatedIdentityBean(RealmModel realm, UserModel user, URI baseUri, String stateChecker) {
         List<IdentityProviderModel> identityProviders = realm.getIdentityProviders();
-        Set<FederatedIdentityModel> identities = session.users().getFederatedIdentities(user, realm);
+        Set<FederatedIdentityModel> identities = userProvider.getFederatedIdentities(user, realm);
 
         int availableIdentities = 0;
         if (identityProviders != null && !identityProviders.isEmpty()) {
@@ -58,7 +61,7 @@ public class AccountFederatedIdentityBean {
                     availableIdentities++;
                 }
 
-                String displayName = KeycloakModelUtils.getIdentityProviderDisplayName(session, provider);
+                String displayName = KeycloakModelUtils.getIdentityProviderDisplayName(provider);
                 FederatedIdentityEntry entry = new FederatedIdentityEntry(identity, displayName, provider.getAlias(), provider.getAlias(),
                         provider.getConfig() != null ? provider.getConfig().get("guiOrder") : null);
                 this.identities.add(entry);
@@ -68,7 +71,7 @@ public class AccountFederatedIdentityBean {
         this.identities.sort(IDP_COMPARATOR_INSTANCE);
 
         // Removing last social provider is not possible if you don't have other possibility to authenticate
-        this.removeLinkPossible = availableIdentities > 1 || user.getFederationLink() != null || AccountFormService.isPasswordSet(session, realm, user);
+        this.removeLinkPossible = availableIdentities > 1 || user.getFederationLink() != null || accountFormService.isPasswordSet(realm, user);
     }
 
     private FederatedIdentityModel getIdentity(Set<FederatedIdentityModel> identities, String providerId) {

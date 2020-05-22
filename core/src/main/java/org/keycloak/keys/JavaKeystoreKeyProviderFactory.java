@@ -19,13 +19,14 @@ package org.keycloak.keys;
 
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ConfigurationValidationHelper;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -55,15 +56,17 @@ public class JavaKeystoreKeyProviderFactory extends AbstractRsaKeyProviderFactor
             .property(KEY_ALIAS_PROPERTY)
             .property(KEY_PASSWORD_PROPERTY)
             .build();
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     @Override
-    public KeyProvider create(KeycloakSession session, ComponentModel model) {
-        return new JavaKeystoreKeyProvider(session.getContext().getRealm(), model);
+    public KeyProvider create(ComponentModel model) {
+        return new JavaKeystoreKeyProvider(keycloakContext.getRealm(), model);
     }
 
     @Override
-    public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel model) throws ComponentValidationException {
-        super.validateConfiguration(session, realm, model);
+    public void validateConfiguration(RealmModel realm, ComponentModel model) throws ComponentValidationException {
+        super.validateConfiguration(realm, model);
 
         ConfigurationValidationHelper.check(model)
                 .checkSingle(KEYSTORE_PROPERTY, true)
@@ -72,8 +75,8 @@ public class JavaKeystoreKeyProviderFactory extends AbstractRsaKeyProviderFactor
                 .checkSingle(KEY_PASSWORD_PROPERTY, true);
 
         try {
-            new JavaKeystoreKeyProvider(session.getContext().getRealm(), model)
-                    .loadKey(session.getContext().getRealm(), model);
+            new JavaKeystoreKeyProvider(keycloakContext.getRealm(), model)
+                    .loadKey(keycloakContext.getRealm(), model);
         } catch (Throwable t) {
             LOG.error("Failed to load keys.", t);
             throw new ComponentValidationException("Failed to load keys. " + t.getMessage(), t);

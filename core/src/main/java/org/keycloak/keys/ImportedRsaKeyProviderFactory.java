@@ -22,11 +22,12 @@ import org.keycloak.common.util.KeyUtils;
 import org.keycloak.common.util.PemUtils;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ConfigurationValidationHelper;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.security.KeyPair;
@@ -45,20 +46,21 @@ public class ImportedRsaKeyProviderFactory extends AbstractRsaKeyProviderFactory
     public static final String ID = "rsa";
 
     private static final String HELP_TEXT = "RSA key provider that can optionally generated a self-signed certificate";
-
+    @Autowired
+    private KeycloakContext keycloakContext;
     private static final List<ProviderConfigProperty> CONFIG_PROPERTIES = AbstractRsaKeyProviderFactory.configurationBuilder()
             .property(Attributes.PRIVATE_KEY_PROPERTY)
             .property(Attributes.CERTIFICATE_PROPERTY)
             .build();
 
     @Override
-    public KeyProvider create(KeycloakSession session, ComponentModel model) {
-        return new ImportedRsaKeyProvider(session.getContext().getRealm(), model);
+    public KeyProvider create(ComponentModel model) {
+        return new ImportedRsaKeyProvider(keycloakContext.getRealm(), model);
     }
 
     @Override
-    public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel model) throws ComponentValidationException {
-        super.validateConfiguration(session, realm, model);
+    public void validateConfiguration(RealmModel realm, ComponentModel model) throws ComponentValidationException {
+        super.validateConfiguration(realm, model);
 
         ConfigurationValidationHelper.check(model)
                 .checkSingle(Attributes.PRIVATE_KEY_PROPERTY, true)

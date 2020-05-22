@@ -40,7 +40,7 @@ import java.util.stream.Stream;
 public class ResourcesService extends AbstractResourceService {
 
     public ResourcesService(KeycloakSession session, UserModel user, Auth auth, HttpRequest request) {
-        super(session, user, auth, request);
+        super(user, auth, request);
     }
 
     /**
@@ -114,7 +114,7 @@ public class ResourcesService extends AbstractResourceService {
             throw new BadRequestException("invalid_resource");
         }
 
-        return new ResourceService(resource, authorizationProvider.getSession(), user, auth, request);
+        return new ResourceService(resource, user, auth, request);
     }
 
     private Collection<ResourcePermission> toPermissions(List<ResourceModel> resources, boolean withRequesters) {
