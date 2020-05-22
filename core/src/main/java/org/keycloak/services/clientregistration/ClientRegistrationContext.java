@@ -17,7 +17,6 @@
 
 package org.keycloak.services.clientregistration;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.services.validation.ValidationMessages;
 
@@ -27,8 +26,6 @@ import org.keycloak.services.validation.ValidationMessages;
 public interface ClientRegistrationContext {
 
     ClientRepresentation getClient();
-
-    KeycloakSession getSession();
 
     ClientRegistrationProvider getProvider();
 

@@ -17,12 +17,13 @@
 
 package org.keycloak.forms.account.freemarker.model;
 
-import org.keycloak.models.*;
 import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.HmacOTP;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.utils.TotpUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.UriBuilder;
 import java.util.Collections;
@@ -44,11 +45,14 @@ public class TotpBean {
     private final UriBuilder uriBuilder;
     private final List<CredentialModel> otpCredentials;
 
-    public TotpBean(KeycloakSession session, RealmModel realm, UserModel user, UriBuilder uriBuilder) {
+    @Autowired
+    private UserCredentialManager userCredentialManager;
+
+    public TotpBean(RealmModel realm, UserModel user, UriBuilder uriBuilder) {
         this.uriBuilder = uriBuilder;
-        this.enabled = session.userCredentialManager().isConfiguredFor(realm, user, OTPCredentialModel.TYPE);
+        this.enabled = userCredentialManager.isConfiguredFor(realm, user, OTPCredentialModel.TYPE);
         if (enabled) {
-            List<CredentialModel> otpCredentials = session.userCredentialManager().getStoredCredentialsByType(realm, user, OTPCredentialModel.TYPE);
+            List<CredentialModel> otpCredentials = userCredentialManager.getStoredCredentialsByType(realm, user, OTPCredentialModel.TYPE);
 
             if (otpCredentials.isEmpty()) {
                 // Credential is configured on userStorage side. Create the "fake" credential similar like we do for the new account console

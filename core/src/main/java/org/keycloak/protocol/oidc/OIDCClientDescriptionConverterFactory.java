@@ -19,7 +19,6 @@ package org.keycloak.protocol.oidc;
 
 import org.keycloak.exportimport.ClientDescriptionConverter;
 import org.keycloak.exportimport.ClientDescriptionConverterFactory;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 
@@ -39,8 +38,8 @@ public class OIDCClientDescriptionConverterFactory implements ClientDescriptionC
     }
 
     @Override
-    public ClientDescriptionConverter create(KeycloakSession session) {
-        return new OIDCClientDescriptionConverter(session);
+    public ClientDescriptionConverter create() {
+        return new OIDCClientDescriptionConverter();
     }
 
     @Override

@@ -20,7 +20,6 @@ package org.keycloak.authentication.authenticators.broker;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.authenticators.broker.util.SerializedBrokeredIdentityContext;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.sessions.AuthenticationSessionModel;
@@ -36,13 +35,12 @@ public class IdpAutoLinkAuthenticator extends AbstractIdpAuthenticator {
 
     @Override
     protected void authenticateImpl(AuthenticationFlowContext context, SerializedBrokeredIdentityContext serializedCtx, BrokeredIdentityContext brokerContext) {
-        KeycloakSession session = context.getSession();
         RealmModel realm = context.getRealm();
         AuthenticationSessionModel authSession = context.getAuthenticationSession();
 
-        UserModel existingUser = getExistingUser(session, realm, authSession);
+        UserModel existingUser = getExistingUser(realm, authSession);
 
-        LOG.debug("User '%s' is set to authentication context when link with identity provider '%s' . Identity provider username is '%s' ", existingUser.getUsername(),
+        LOG.debug("User '{}' is set to authentication context when link with identity provider '{}' . Identity provider username is '{}' ", existingUser.getUsername(),
                 brokerContext.getIdpConfig().getAlias(), brokerContext.getUsername());
 
         context.setUser(existingUser);

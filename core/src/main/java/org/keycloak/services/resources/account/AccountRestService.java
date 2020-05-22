@@ -53,7 +53,6 @@ import java.util.stream.Collectors;
  */
 public class AccountRestService {
 
-    private final KeycloakSession session;
     private final ClientModel client;
     private final EventBuilder event;
     private final RealmModel realm;
@@ -69,14 +68,16 @@ public class AccountRestService {
     private EventStoreProvider eventStore;
     private Auth auth;
 
-    public AccountRestService(KeycloakSession session, Auth auth, ClientModel client, EventBuilder event) {
-        this.session = session;
+    @Autowired
+    private KeycloakContext keycloakContext;
+
+    public AccountRestService( Auth auth, ClientModel client, EventBuilder event) {
         this.auth = auth;
         this.realm = auth.getRealm();
         this.user = auth.getUser();
         this.client = client;
         this.event = event;
-        this.locale = session.getContext().resolveLocale(user);
+        this.locale = keycloakContext.resolveLocale(user);
     }
 
     private static void checkAccountApiEnabled() {
@@ -122,6 +123,9 @@ public class AccountRestService {
         return Cors.add(request, Response.ok(rep)).auth().allowedOrigins(auth.getToken()).build();
     }
 
+    @Autowired
+    private UserProvider userProvider;
+
     @Path("/")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -133,12 +137,12 @@ public class AccountRestService {
         event.event(EventType.UPDATE_PROFILE).client(auth.getClient()).user(user);
 
         try {
-            RealmModel realm = session.getContext().getRealm();
+            RealmModel realm = keycloakContext.getRealm();
 
             boolean usernameChanged = userRep.getUsername() != null && !userRep.getUsername().equals(user.getUsername());
             if (realm.isEditUsernameAllowed()) {
                 if (usernameChanged) {
-                    UserModel existing = session.users().getUserByUsername(userRep.getUsername(), realm);
+                    UserModel existing = userProvider.getUserByUsername(userRep.getUsername(), realm);
                     if (existing != null) {
                         return ErrorResponse.exists(Messages.USERNAME_EXISTS);
                     }
@@ -151,14 +155,14 @@ public class AccountRestService {
 
             boolean emailChanged = userRep.getEmail() != null && !userRep.getEmail().equals(user.getEmail());
             if (emailChanged && !realm.isDuplicateEmailsAllowed()) {
-                UserModel existing = session.users().getUserByEmail(userRep.getEmail(), realm);
+                UserModel existing = userProvider.getUserByEmail(userRep.getEmail(), realm);
                 if (existing != null) {
                     return ErrorResponse.exists(Messages.EMAIL_EXISTS);
                 }
             }
 
             if (emailChanged && realm.isRegistrationEmailAsUsername() && !realm.isDuplicateEmailsAllowed()) {
-                UserModel existing = session.users().getUserByUsername(userRep.getEmail(), realm);
+                UserModel existing = userProvider.getUserByUsername(userRep.getEmail(), realm);
                 if (existing != null) {
                     return ErrorResponse.exists(Messages.USERNAME_EXISTS);
                 }
@@ -213,7 +217,7 @@ public class AccountRestService {
     @Path("/credentials")
     public AccountCredentialResource credentials() {
         checkAccountApiEnabled();
-        return new AccountCredentialResource(session, event, user, auth);
+        return new AccountCredentialResource(event, user, auth);
     }
 
     // TODO Federated identities
@@ -222,7 +226,7 @@ public class AccountRestService {
     public ResourcesService resources() {
         checkAccountApiEnabled();
         auth.requireOneOf(AccountRoles.MANAGE_ACCOUNT, AccountRoles.VIEW_PROFILE);
-        return new ResourcesService(session, user, auth, request);
+        return new ResourcesService(user, auth, request);
     }
 
     /**
@@ -243,16 +247,16 @@ public class AccountRestService {
         }
 
         List<String> inUseClients = new LinkedList<>();
-        if (!session.sessions().getUserSessions(realm, client).isEmpty()) {
+        if (!userSessionProvider.getUserSessions(realm, client).isEmpty()) {
             inUseClients.add(clientId);
         }
 
         List<String> offlineClients = new LinkedList<>();
-        if (session.sessions().getOfflineSessionsCount(realm, client) > 0) {
+        if (userSessionProvider.getOfflineSessionsCount(realm, client) > 0) {
             offlineClients.add(clientId);
         }
 
-        UserConsentModel consentModel = session.users().getConsentByClient(realm, user.getId(), client.getId());
+        UserConsentModel consentModel = userProvider.getConsentByClient(realm, user.getId(), client.getId());
         Map<String, UserConsentModel> consentModels = Collections.singletonMap(client.getClientId(), consentModel);
 
         return Cors.add(request, Response.ok(modelToRepresentation(client, inUseClients, offlineClients, consentModels))).build();
@@ -281,9 +285,12 @@ public class AccountRestService {
         return new ConsentRepresentation(grantedScopes, model.getCreatedDate(), model.getLastUpdatedDate());
     }
 
+    @Autowired
+    private ThemeManager themeManager;
+
     private Properties getProperties() {
         try {
-            return session.theme().getTheme(Theme.Type.ACCOUNT).getMessages(locale);
+            return themeManager.getTheme(Theme.Type.ACCOUNT).getMessages(locale);
         } catch (IOException e) {
             return null;
         }
@@ -307,7 +314,7 @@ public class AccountRestService {
             return Cors.add(request, Response.status(Response.Status.NOT_FOUND).entity("No client with clientId: " + clientId + " found.")).build();
         }
 
-        UserConsentModel consent = session.users().getConsentByClient(realm, user.getId(), client.getId());
+        UserConsentModel consent = userProvider.getConsentByClient(realm, user.getId(), client.getId());
         if (consent == null) {
             return Cors.add(request, Response.noContent()).build();
         }
@@ -336,7 +343,7 @@ public class AccountRestService {
             return Cors.add(request, Response.status(Response.Status.NOT_FOUND).entity(msg)).build();
         }
 
-        session.users().revokeConsentForClient(realm, user.getId(), client.getId());
+        userProvider.revokeConsentForClient(realm, user.getId(), client.getId());
         event.success();
 
         return Cors.add(request, Response.accepted()).build();
@@ -374,12 +381,15 @@ public class AccountRestService {
         return upsert(clientId, consent);
     }
 
+    @Autowired
+    private UserCredentialManager userCredentialManager;
+
     @Path("/totp/remove")
     @DELETE
     public Response removeTOTP() {
         auth.require(AccountRoles.MANAGE_ACCOUNT);
 
-        session.userCredentialManager().disableCredentialType(realm, user, CredentialModel.OTP);
+        userCredentialManager.disableCredentialType(realm, user, CredentialModel.OTP);
         event.event(EventType.REMOVE_TOTP).client(auth.getClient()).user(auth.getUser()).success();
 
         return Cors.add(request, Response.accepted()).build();
@@ -408,13 +418,13 @@ public class AccountRestService {
 
         try {
             UserConsentModel grantedConsent = createConsent(client, consent);
-            if (session.users().getConsentByClient(realm, user.getId(), client.getId()) == null) {
-                session.users().addConsent(realm, user.getId(), grantedConsent);
+            if (userProvider.getConsentByClient(realm, user.getId(), client.getId()) == null) {
+                userProvider.addConsent(realm, user.getId(), grantedConsent);
             } else {
-                session.users().updateConsent(realm, user.getId(), grantedConsent);
+                userProvider.updateConsent(realm, user.getId(), grantedConsent);
             }
             event.success();
-            grantedConsent = session.users().getConsentByClient(realm, user.getId(), client.getId());
+            grantedConsent = userProvider.getConsentByClient(realm, user.getId(), client.getId());
             return Cors.add(request, Response.ok(modelToRepresentation(grantedConsent))).build();
         } catch (IllegalArgumentException e) {
             return Cors.add(request, Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage())).build();
@@ -456,6 +466,9 @@ public class AccountRestService {
         return new LinkedAccountsResource(session, request, client, auth, event, user);
     }
 
+    @Autowired
+    private UserSessionProvider userSessionProvider;
+
     // TODO Logs
 
     @Path("/applications")
@@ -468,7 +481,7 @@ public class AccountRestService {
 
         Set<ClientModel> clients = new HashSet<ClientModel>();
         List<String> inUseClients = new LinkedList<String>();
-        List<UserSessionModel> sessions = session.sessions().getUserSessions(realm, user);
+        List<UserSessionModel> sessions = userSessionProvider.getUserSessions(realm, user);
         for (UserSessionModel s : sessions) {
             for (AuthenticatedClientSessionModel a : s.getAuthenticatedClientSessions().values()) {
                 ClientModel client = a.getClient();
@@ -478,7 +491,7 @@ public class AccountRestService {
         }
 
         List<String> offlineClients = new LinkedList<String>();
-        List<UserSessionModel> offlineSessions = session.sessions().getOfflineUserSessions(realm, user);
+        List<UserSessionModel> offlineSessions = userSessionProvider.getOfflineUserSessions(realm, user);
         for (UserSessionModel s : offlineSessions) {
             for (AuthenticatedClientSessionModel a : s.getAuthenticatedClientSessions().values()) {
                 ClientModel client = a.getClient();
@@ -488,7 +501,7 @@ public class AccountRestService {
         }
 
         Map<String, UserConsentModel> consentModels = new HashMap<String, UserConsentModel>();
-        List<UserConsentModel> consents = session.users().getConsents(realm, user.getId());
+        List<UserConsentModel> consents = userProvider.getConsents(realm, user.getId());
         for (UserConsentModel consent : consents) {
             ClientModel client = consent.getClient();
             clients.add(client);

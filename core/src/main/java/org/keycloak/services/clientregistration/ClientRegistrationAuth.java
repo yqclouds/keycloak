@@ -18,11 +18,11 @@
 package org.keycloak.services.clientregistration;
 
 import com.hsbc.unified.iam.core.constants.Constants;
+import com.hsbc.unified.iam.core.util.Time;
 import org.jboss.resteasy.spi.Failure;
 import org.keycloak.Config;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.authentication.AuthenticationProcessor;
-import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
@@ -34,6 +34,7 @@ import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicyE
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicyManager;
 import org.keycloak.services.clientregistration.policy.RegistrationAuth;
 import org.keycloak.util.TokenUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
@@ -45,7 +46,6 @@ import java.util.Map;
  */
 public class ClientRegistrationAuth {
 
-    private final KeycloakSession session;
     private final ClientRegistrationProvider provider;
     private final EventBuilder event;
 
@@ -56,17 +56,23 @@ public class ClientRegistrationAuth {
     private String token;
     private String endpoint;
 
-    public ClientRegistrationAuth(KeycloakSession session, ClientRegistrationProvider provider, EventBuilder event, String endpoint) {
-        this.session = session;
+    @Autowired
+    private KeycloakContext keycloakContext;
+    @Autowired
+    private RealmProvider realmProvider;
+    @Autowired
+    private ClientRegistrationTokenUtils clientRegistrationTokenUtils;
+
+    public ClientRegistrationAuth(ClientRegistrationProvider provider, EventBuilder event, String endpoint) {
         this.provider = provider;
         this.event = event;
         this.endpoint = endpoint;
     }
 
     private void init() {
-        realm = session.getContext().getRealm();
+        realm = keycloakContext.getRealm();
 
-        String authorizationHeader = session.getContext().getRequestHeaders().getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        String authorizationHeader = keycloakContext.getRequestHeaders().getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (authorizationHeader == null) {
             return;
         }
@@ -78,7 +84,7 @@ public class ClientRegistrationAuth {
 
         token = split[1];
 
-        ClientRegistrationTokenUtils.TokenVerification tokenVerification = ClientRegistrationTokenUtils.verifyToken(session, realm, token);
+        ClientRegistrationTokenUtils.TokenVerification tokenVerification = clientRegistrationTokenUtils.verifyToken(realm, token);
         if (tokenVerification.getError() != null) {
             throw unauthorized(tokenVerification.getError().getMessage());
         }
@@ -86,7 +92,7 @@ public class ClientRegistrationAuth {
         jwt = tokenVerification.getJwt();
 
         if (isInitialAccessToken()) {
-            initialAccessModel = session.realms().getClientInitialAccessModel(session.getContext().getRealm(), jwt.getId());
+            initialAccessModel = realmProvider.getClientInitialAccessModel(keycloakContext.getRealm(), jwt.getId());
             if (initialAccessModel == null) {
                 throw unauthorized("Initial Access Token not found");
             }
@@ -143,13 +149,16 @@ public class ClientRegistrationAuth {
         }
 
         try {
-            ClientRegistrationPolicyManager.triggerBeforeRegister(context, registrationAuth);
+            clientRegistrationPolicyManager.triggerBeforeRegister(context, registrationAuth);
         } catch (ClientRegistrationPolicyException crpe) {
             throw forbidden(crpe.getMessage());
         }
 
         return registrationAuth;
     }
+
+    @Autowired
+    private ClientRegistrationPolicyManager clientRegistrationPolicyManager;
 
     public void requireView(ClientModel client) {
         RegistrationAuth authType = null;
@@ -186,7 +195,7 @@ public class ClientRegistrationAuth {
 
         if (authenticated) {
             try {
-                ClientRegistrationPolicyManager.triggerBeforeView(session, provider, authType, client);
+                clientRegistrationPolicyManager.triggerBeforeView(provider, authType, client);
             } catch (ClientRegistrationPolicyException crpe) {
                 throw forbidden(crpe.getMessage());
             }
@@ -204,7 +213,7 @@ public class ClientRegistrationAuth {
         RegistrationAuth regAuth = requireUpdateAuth(client);
 
         try {
-            ClientRegistrationPolicyManager.triggerBeforeUpdate(context, regAuth, client);
+            clientRegistrationPolicyManager.triggerBeforeUpdate(context, regAuth, client);
         } catch (ClientRegistrationPolicyException crpe) {
             throw forbidden(crpe.getMessage());
         }
@@ -216,14 +225,14 @@ public class ClientRegistrationAuth {
         RegistrationAuth chainType = requireUpdateAuth(client);
 
         try {
-            ClientRegistrationPolicyManager.triggerBeforeRemove(session, provider, chainType, client);
+            clientRegistrationPolicyManager.triggerBeforeRemove(provider, chainType, client);
         } catch (ClientRegistrationPolicyException crpe) {
             throw forbidden(crpe.getMessage());
         }
     }
 
     private void checkClientProtocol() {
-        ClientModel client = session.getContext().getRealm().getClientByClientId(jwt.getIssuedFor());
+        ClientModel client = keycloakContext.getRealm().getClientByClientId(jwt.getIssuedFor());
 
         checkClientProtocol(client);
     }
@@ -278,9 +287,12 @@ public class ClientRegistrationAuth {
         }
     }
 
+    @Autowired
+    private UserProvider userProvider;
+
     private boolean hasRoleInModel(String[] roles) {
         ClientModel roleNamespace;
-        UserModel user = session.users().getUserById(jwt.getSubject(), realm);
+        UserModel user = userProvider.getUserById(jwt.getSubject(), realm);
         if (user == null) {
             return false;
         }
@@ -330,6 +342,9 @@ public class ClientRegistrationAuth {
         return false;
     }
 
+    @Autowired
+    private AuthorizeClientUtil authorizeClientUtil;
+
     private boolean authenticateClient(ClientModel client) {
         if (client == null) {
             return false;
@@ -339,7 +354,7 @@ public class ClientRegistrationAuth {
             return true;
         }
 
-        AuthenticationProcessor processor = AuthorizeClientUtil.getAuthenticationProcessor(session, event);
+        AuthenticationProcessor processor = authorizeClientUtil.getAuthenticationProcessor(event);
 
         Response response = processor.authenticateClient();
         if (response != null) {

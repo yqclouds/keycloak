@@ -31,7 +31,7 @@ import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.Urls;
@@ -56,14 +56,13 @@ import java.util.concurrent.TimeUnit;
 public class IdpEmailVerificationAuthenticator extends AbstractIdpAuthenticator {
 
     public static final String VERIFY_ACCOUNT_IDP_USERNAME = "VERIFY_ACCOUNT_IDP_USERNAME";
-    private static Logger LOG = LoggerFactory.getLogger(IdpEmailVerificationAuthenticator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IdpEmailVerificationAuthenticator.class);
 
     @Autowired
     private EmailTemplateProvider emailTemplateProvider;
 
     @Override
     protected void authenticateImpl(AuthenticationFlowContext context, SerializedBrokeredIdentityContext serializedCtx, BrokeredIdentityContext brokerContext) {
-        KeycloakSession session = context.getSession();
         RealmModel realm = context.getRealm();
         AuthenticationSessionModel authSession = context.getAuthenticationSession();
 
@@ -74,9 +73,9 @@ public class IdpEmailVerificationAuthenticator extends AbstractIdpAuthenticator 
         }
 
         if (Objects.equals(authSession.getAuthNote(VERIFY_ACCOUNT_IDP_USERNAME), brokerContext.getUsername())) {
-            UserModel existingUser = getExistingUser(session, realm, authSession);
+            UserModel existingUser = getExistingUser(realm, authSession);
 
-            LOG.debug("User '%s' confirmed that wants to link with identity provider '%s' . Identity provider username is '%s' ", existingUser.getUsername(),
+            LOG.debug("User '{}' confirmed that wants to link with identity provider '{}' . Identity provider username is '{}' ", existingUser.getUsername(),
                     brokerContext.getIdpConfig().getAlias(), brokerContext.getUsername());
 
             context.setUser(existingUser);
@@ -84,12 +83,12 @@ public class IdpEmailVerificationAuthenticator extends AbstractIdpAuthenticator 
             return;
         }
 
-        UserModel existingUser = getExistingUser(session, realm, authSession);
+        UserModel existingUser = getExistingUser(realm, authSession);
 
         // Do not allow resending e-mail by simple page refresh
         if (!Objects.equals(authSession.getAuthNote(Constants.VERIFY_EMAIL_KEY), existingUser.getEmail())) {
             authSession.setAuthNote(Constants.VERIFY_EMAIL_KEY, existingUser.getEmail());
-            sendVerifyEmail(session, context, existingUser, brokerContext);
+            sendVerifyEmail(context, existingUser, brokerContext);
         } else {
             showEmailSentPage(context, brokerContext);
         }
@@ -115,9 +114,12 @@ public class IdpEmailVerificationAuthenticator extends AbstractIdpAuthenticator 
         return false;
     }
 
-    private void sendVerifyEmail(KeycloakSession session, AuthenticationFlowContext context, UserModel existingUser, BrokeredIdentityContext brokerContext) throws UriBuilderException, IllegalArgumentException {
-        RealmModel realm = session.getContext().getRealm();
-        UriInfo uriInfo = session.getContext().getUri();
+    @Autowired
+    private KeycloakContext keycloakContext;
+
+    private void sendVerifyEmail(AuthenticationFlowContext context, UserModel existingUser, BrokeredIdentityContext brokerContext) throws UriBuilderException, IllegalArgumentException {
+        RealmModel realm = keycloakContext.getRealm();
+        UriInfo uriInfo = keycloakContext.getUri();
         AuthenticationSessionModel authSession = context.getAuthenticationSession();
 
         int validityInSecs = realm.getActionTokenGeneratedByUserLifespan(IdpVerifyAccountLinkActionToken.TOKEN_TYPE);

@@ -17,7 +17,6 @@
  */
 package org.keycloak.protocol.oidc;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 
@@ -31,8 +30,8 @@ public class RefreshTokenIntrospectionProviderFactory extends AccessTokenIntrosp
     private static final String REFRESH_TOKEN_TYPE = "refresh_token";
 
     @Override
-    public TokenIntrospectionProvider create(KeycloakSession session) {
-        return new RefreshTokenIntrospectionProvider(session);
+    public TokenIntrospectionProvider create() {
+        return new RefreshTokenIntrospectionProvider();
     }
 
     @Override

@@ -17,13 +17,12 @@
 
 package org.keycloak.authentication;
 
+import com.hsbc.unified.iam.core.ClientConnection;
 import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import org.jboss.resteasy.spi.HttpRequest;
-import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticatorConfigModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.FormMessage;
 import org.keycloak.services.managers.BruteForceProtector;
@@ -53,8 +52,6 @@ public interface AbstractAuthenticationFlowContext {
 
     /**
      * The current execution in the flow
-     *
-     * @return
      */
     AuthenticationExecutionModel getExecution();
 
@@ -78,13 +75,6 @@ public interface AbstractAuthenticationFlowContext {
      * @return
      */
     UriInfo getUriInfo();
-
-    /**
-     * Current session
-     *
-     * @return
-     */
-    KeycloakSession getSession();
 
     HttpRequest getHttpRequest();
 

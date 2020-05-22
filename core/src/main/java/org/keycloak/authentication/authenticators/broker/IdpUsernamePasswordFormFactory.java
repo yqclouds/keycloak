@@ -20,7 +20,6 @@ package org.keycloak.authentication.authenticators.broker;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.authenticators.browser.UsernamePasswordForm;
 import org.keycloak.authentication.authenticators.browser.UsernamePasswordFormFactory;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 

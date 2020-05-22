@@ -1,11 +1,12 @@
 package org.keycloak.storage.ldap.idm.store.ldap;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.LDAPConstants;
 import org.keycloak.storage.ldap.LDAPConfig;
 import org.keycloak.vault.VaultCharSecret;
+import org.keycloak.vault.VaultTranscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.naming.AuthenticationException;
 import javax.naming.Context;
@@ -27,7 +28,6 @@ public final class LDAPContextManager implements AutoCloseable {
 
     private static final Logger LOG = LoggerFactory.getLogger(LDAPContextManager.class);
 
-    private final KeycloakSession session;
     private final LDAPConfig ldapConfig;
     private StartTlsResponse tlsResponse;
 
@@ -50,13 +50,12 @@ public final class LDAPContextManager implements AutoCloseable {
 
     private LdapContext ldapContext;
 
-    public LDAPContextManager(KeycloakSession session, LDAPConfig connectionProperties) {
-        this.session = session;
+    public LDAPContextManager(LDAPConfig connectionProperties) {
         this.ldapConfig = connectionProperties;
     }
 
-    public static LDAPContextManager create(KeycloakSession session, LDAPConfig connectionProperties) {
-        return new LDAPContextManager(session, connectionProperties);
+    public static LDAPContextManager create(LDAPConfig connectionProperties) {
+        return new LDAPContextManager(connectionProperties);
     }
 
     public static StartTlsResponse startTLS(LdapContext ldapContext, String authType, String bindDN, char[] bindCredential) throws NamingException {
@@ -180,10 +179,13 @@ public final class LDAPContextManager implements AutoCloseable {
         return ldapContext;
     }
 
+    @Autowired
+    private VaultTranscriber vaultTranscriber;
+
     private VaultCharSecret getVaultSecret() {
         return LDAPConstants.AUTH_TYPE_NONE.equals(ldapConfig.getAuthType())
                 ? null
-                : session.vault().getCharSecret(ldapConfig.getBindCredential());
+                : vaultTranscriber.getCharSecret(ldapConfig.getBindCredential());
     }
 
     // Get connection properties of admin connection

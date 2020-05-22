@@ -30,7 +30,6 @@ import liquibase.sqlgenerator.SqlGeneratorFactory;
 import org.keycloak.connections.jpa.updater.liquibase.LiquibaseJpaUpdaterProvider;
 import org.keycloak.connections.jpa.updater.liquibase.lock.CustomInsertLockRecordGenerator;
 import org.keycloak.connections.jpa.updater.liquibase.lock.CustomLockDatabaseChangeLogGenerator;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

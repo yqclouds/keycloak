@@ -18,17 +18,18 @@
 package org.keycloak.authentication.authenticators.directgrant;
 
 import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
+import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.events.Errors;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
-import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
+import org.keycloak.models.UserCredentialManager;
 import org.keycloak.models.UserModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -46,10 +47,13 @@ public class ValidatePassword extends AbstractDirectGrantAuthenticator {
 
     public static final String PROVIDER_ID = "direct-grant-validate-password";
 
+    @Autowired
+    private UserCredentialManager userCredentialManager;
+
     @Override
     public void authenticate(AuthenticationFlowContext context) {
         String password = retrievePassword(context);
-        boolean valid = context.getSession().userCredentialManager().isValid(context.getRealm(), context.getUser(), UserCredentialModel.password(password));
+        boolean valid = userCredentialManager.isValid(context.getRealm(), context.getUser(), UserCredentialModel.password(password));
         if (!valid) {
             context.getEvent().user(context.getUser());
             context.getEvent().error(Errors.INVALID_USER_CREDENTIALS);

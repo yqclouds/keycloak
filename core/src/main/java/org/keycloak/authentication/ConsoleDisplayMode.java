@@ -1,7 +1,6 @@
 package org.keycloak.authentication;
 
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.KeycloakSession;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -55,10 +54,9 @@ public class ConsoleDisplayMode {
     /**
      * Browser is required to login.  This will abort client from doing a console login.
      *
-     * @param session
      * @return
      */
-    public Response browserRequired(KeycloakSession session) {
+    public Response browserRequired() {
         return Response.status(Response.Status.UNAUTHORIZED)
                 .header("WWW-Authenticate", "X-Text-Form-Challenge browserRequired")
                 .type(MediaType.TEXT_PLAIN)

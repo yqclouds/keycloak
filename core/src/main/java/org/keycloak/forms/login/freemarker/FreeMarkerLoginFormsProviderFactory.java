@@ -19,7 +19,6 @@ package org.keycloak.forms.login.freemarker;
 
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.forms.login.LoginFormsProviderFactory;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.theme.FreeMarkerUtil;
 import org.springframework.beans.factory.annotation.Autowired;

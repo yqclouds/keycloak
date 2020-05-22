@@ -17,7 +17,6 @@
  */
 package org.keycloak.protocol.oidc;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 
@@ -30,7 +29,7 @@ public class AccessTokenIntrospectionProviderFactory implements TokenIntrospecti
     public static final String ACCESS_TOKEN_TYPE = "access_token";
 
     @Override
-    public TokenIntrospectionProvider create(KeycloakSession session) {
+    public TokenIntrospectionProvider create() {
         return new AccessTokenIntrospectionProvider();
     }
 

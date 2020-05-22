@@ -17,8 +17,8 @@
 
 package org.keycloak.authentication.authenticators.client;
 
-import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import com.hsbc.unified.iam.core.constants.OAuth2Constants;
+import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.ClientAuthenticationFlowContext;
 import org.keycloak.authentication.ClientAuthenticator;
@@ -30,6 +30,7 @@ import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.util.BasicAuthHelper;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -48,6 +49,8 @@ import java.util.*;
 public class ClientIdAndSecretAuthenticator extends AbstractClientAuthenticator {
 
     public static final String PROVIDER_ID = "client-secret";
+
+    private HttpSession httpSession;
 
     @Override
     public void authenticateClient(ClientAuthenticationFlowContext context) {
@@ -88,7 +91,7 @@ public class ClientIdAndSecretAuthenticator extends AbstractClientAuthenticator 
         }
 
         if (client_id == null) {
-            client_id = context.getSession().getAttribute("client_id", String.class);
+            client_id = (String) httpSession.getAttribute("client_id");
         }
 
         if (client_id == null) {

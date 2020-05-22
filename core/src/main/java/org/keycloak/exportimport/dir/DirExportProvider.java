@@ -17,13 +17,13 @@
 
 package org.keycloak.exportimport.dir;
 
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.keycloak.exportimport.util.ExportUtils;
 import org.keycloak.exportimport.util.MultipleStepsExportProvider;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.representations.idm.RealmRepresentation;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -78,18 +78,21 @@ public class DirExportProvider extends MultipleStepsExportProvider {
         JsonSerialization.prettyMapper.writeValue(stream, rep);
     }
 
+    @Autowired
+    private ExportUtils exportUtils;
+
     @Override
-    protected void writeUsers(String fileName, KeycloakSession session, RealmModel realm, List<UserModel> users) throws IOException {
+    protected void writeUsers(String fileName, RealmModel realm, List<UserModel> users) throws IOException {
         File file = new File(this.rootDirectory, fileName);
         FileOutputStream os = new FileOutputStream(file);
-        ExportUtils.exportUsersToStream(session, realm, users, JsonSerialization.prettyMapper, os);
+        exportUtils.exportUsersToStream(realm, users, JsonSerialization.prettyMapper, os);
     }
 
     @Override
-    protected void writeFederatedUsers(String fileName, KeycloakSession session, RealmModel realm, List<String> users) throws IOException {
+    protected void writeFederatedUsers(String fileName, RealmModel realm, List<String> users) throws IOException {
         File file = new File(this.rootDirectory, fileName);
         FileOutputStream os = new FileOutputStream(file);
-        ExportUtils.exportFederatedUsersToStream(session, realm, users, JsonSerialization.prettyMapper, os);
+        exportUtils.exportFederatedUsersToStream(realm, users, JsonSerialization.prettyMapper, os);
     }
 
     @Override

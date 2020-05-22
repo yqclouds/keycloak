@@ -17,11 +17,10 @@
 
 package org.keycloak.authentication;
 
-import org.jboss.resteasy.spi.HttpRequest;
 import com.hsbc.unified.iam.core.ClientConnection;
+import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.sessions.AuthenticationSessionModel;

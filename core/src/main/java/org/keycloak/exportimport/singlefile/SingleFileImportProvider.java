@@ -17,18 +17,18 @@
 
 package org.keycloak.exportimport.singlefile;
 
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.keycloak.Config;
 import org.keycloak.exportimport.ImportProvider;
 import org.keycloak.exportimport.Strategy;
 import org.keycloak.exportimport.util.ExportImportSessionTask;
 import org.keycloak.exportimport.util.ImportUtils;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.representations.idm.RealmRepresentation;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,6 +49,9 @@ public class SingleFileImportProvider implements ImportProvider {
         this.file = file;
     }
 
+    @Autowired
+    private ImportUtils importUtils;
+
     @Override
     public void importModel(KeycloakSessionFactory factory, final Strategy strategy) throws IOException {
         LOG.info("Full importing from file %s", this.file.getAbsolutePath());
@@ -57,8 +60,8 @@ public class SingleFileImportProvider implements ImportProvider {
         KeycloakModelUtils.runJobInTransaction(factory, new ExportImportSessionTask() {
 
             @Override
-            protected void runExportImportTask(KeycloakSession session) throws IOException {
-                ImportUtils.importRealms(session, realmReps.values(), strategy);
+            protected void runExportImportTask() throws IOException {
+                importUtils.importRealms(realmReps.values(), strategy);
             }
 
         });

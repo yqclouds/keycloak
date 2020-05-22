@@ -1,6 +1,5 @@
 package org.keycloak.protocol.oidc.mappers;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperContainerModel;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.RealmModel;
@@ -53,7 +52,7 @@ public class SHA256PairwiseSubMapper extends AbstractPairwiseSubMapper {
     }
 
     @Override
-    public void validateAdditionalConfig(KeycloakSession session, RealmModel realm, ProtocolMapperContainerModel mapperContainer, ProtocolMapperModel mapperModel) throws ProtocolMapperConfigException {
+    public void validateAdditionalConfig(RealmModel realm, ProtocolMapperContainerModel mapperContainer, ProtocolMapperModel mapperModel) throws ProtocolMapperConfigException {
         // Generate random salt if needed
         String salt = PairwiseSubMapperHelper.getSalt(mapperModel);
         if (salt == null || salt.trim().isEmpty()) {

@@ -17,7 +17,6 @@
 
 package org.keycloak.services.clientregistration;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.services.validation.ClientValidator;
 import org.keycloak.services.validation.ValidationMessages;
@@ -27,12 +26,10 @@ import org.keycloak.services.validation.ValidationMessages;
  */
 public abstract class AbstractClientRegistrationContext implements ClientRegistrationContext {
 
-    protected final KeycloakSession session;
     protected final ClientRepresentation client;
     protected final ClientRegistrationProvider provider;
 
-    public AbstractClientRegistrationContext(KeycloakSession session, ClientRepresentation client, ClientRegistrationProvider provider) {
-        this.session = session;
+    public AbstractClientRegistrationContext(ClientRepresentation client, ClientRegistrationProvider provider) {
         this.client = client;
         this.provider = provider;
     }
@@ -40,11 +37,6 @@ public abstract class AbstractClientRegistrationContext implements ClientRegistr
     @Override
     public ClientRepresentation getClient() {
         return client;
-    }
-
-    @Override
-    public KeycloakSession getSession() {
-        return session;
     }
 
     @Override

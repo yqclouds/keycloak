@@ -1,11 +1,10 @@
 package org.keycloak.authorization.policy.provider.time;
 
+import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import org.keycloak.Config;
 import org.keycloak.authorization.AuthorizationProvider;
-import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.representations.idm.authorization.TimePolicyRepresentation;

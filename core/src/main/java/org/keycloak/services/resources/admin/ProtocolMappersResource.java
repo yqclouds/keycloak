@@ -230,7 +230,7 @@ public class ProtocolMappersResource {
         try {
             ProtocolMapper mapper = (ProtocolMapper) session.getSessionFactory().getProviderFactory(ProtocolMapper.class, model.getProtocolMapper());
             if (mapper != null) {
-                mapper.validateConfig(session, realm, client, model);
+                mapper.validateConfig(realm, client, model);
             } else {
                 throw new NotFoundException("ProtocolMapper provider not found");
             }

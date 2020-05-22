@@ -19,29 +19,31 @@ package org.keycloak.services.clientregistration.policy.impl;
 
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.services.clientregistration.ClientRegistrationContext;
 import org.keycloak.services.clientregistration.ClientRegistrationProvider;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicyException;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class MaxClientsClientRegistrationPolicy implements ClientRegistrationPolicy {
 
-    private final KeycloakSession session;
     private final ComponentModel componentModel;
 
-    public MaxClientsClientRegistrationPolicy(KeycloakSession session, ComponentModel componentModel) {
-        this.session = session;
+    @Autowired
+    private KeycloakContext keycloakContext;
+
+    public MaxClientsClientRegistrationPolicy(ComponentModel componentModel) {
         this.componentModel = componentModel;
     }
 
     @Override
     public void beforeRegister(ClientRegistrationContext context) throws ClientRegistrationPolicyException {
-        RealmModel realm = session.getContext().getRealm();
+        RealmModel realm = keycloakContext.getRealm();
         int currentCount = realm.getClients().size();
         int maxCount = componentModel.get(MaxClientsClientRegistrationPolicyFactory.MAX_CLIENTS, MaxClientsClientRegistrationPolicyFactory.DEFAULT_MAX_CLIENTS);
 

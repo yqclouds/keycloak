@@ -16,16 +16,17 @@
  */
 package org.keycloak.authentication.authenticators.client;
 
-import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import com.hsbc.unified.iam.core.constants.OAuth2Constants;
+import com.hsbc.unified.iam.core.util.Time;
+import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.ClientAuthenticationFlowContext;
 import org.keycloak.authentication.ClientAuthenticator;
-import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.SingleUseTokenStoreProvider;
+import org.keycloak.models.TokenManager;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.OIDCLoginProtocolService;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -59,6 +60,8 @@ public class JWTClientSecretAuthenticator extends AbstractClientAuthenticator {
 
     @Autowired
     private SingleUseTokenStoreProvider singleUseTokenStoreProvider;
+    @Autowired
+    private TokenManager tokenManager;
 
     @Override
     public void authenticateClient(ClientAuthenticationFlowContext context) {
@@ -118,7 +121,7 @@ public class JWTClientSecretAuthenticator extends AbstractClientAuthenticator {
 
             boolean signatureValid;
             try {
-                JsonWebToken jwt = context.getSession().tokens().decodeClientJWT(clientAssertion, client, JsonWebToken.class);
+                JsonWebToken jwt = tokenManager.decodeClientJWT(clientAssertion, client, JsonWebToken.class);
                 signatureValid = jwt != null;
             } catch (RuntimeException e) {
                 Throwable cause = e.getCause() != null ? e.getCause() : e;

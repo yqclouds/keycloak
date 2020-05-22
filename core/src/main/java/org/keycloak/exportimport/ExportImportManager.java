@@ -17,13 +17,13 @@
 
 package org.keycloak.exportimport;
 
-
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -36,16 +36,17 @@ public class ExportImportManager {
     private ExportProvider exportProvider;
     private ImportProvider importProvider;
 
-    public ExportImportManager(KeycloakSession session) {
-        this.sessionFactory = session.getSessionFactory();
+    @Autowired
+    private Map<String, ExportProvider> exportProviders;
 
+    public ExportImportManager() {
         realmName = ExportImportConfig.getRealmName();
 
         String providerId = ExportImportConfig.getProvider();
         String exportImportAction = ExportImportConfig.getAction();
 
         if (ExportImportConfig.ACTION_EXPORT.equals(exportImportAction)) {
-            exportProvider = session.getProvider(ExportProvider.class, providerId);
+            exportProvider = exportProviders.get(providerId);
             if (exportProvider == null) {
                 throw new RuntimeException("Export provider '" + providerId + "' not found");
             }

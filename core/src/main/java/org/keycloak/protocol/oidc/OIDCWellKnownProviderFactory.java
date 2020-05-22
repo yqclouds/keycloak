@@ -17,7 +17,6 @@
 
 package org.keycloak.protocol.oidc;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.wellknown.WellKnownProvider;
 import org.keycloak.wellknown.WellKnownProviderFactory;
@@ -33,8 +32,8 @@ public class OIDCWellKnownProviderFactory implements WellKnownProviderFactory {
     public static final String PROVIDER_ID = "openid-configuration";
 
     @Override
-    public WellKnownProvider create(KeycloakSession session) {
-        return new OIDCWellKnownProvider(session);
+    public WellKnownProvider create() {
+        return new OIDCWellKnownProvider();
     }
 
     @Override

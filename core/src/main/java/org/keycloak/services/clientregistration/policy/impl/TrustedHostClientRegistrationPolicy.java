@@ -19,7 +19,7 @@ package org.keycloak.services.clientregistration.policy.impl;
 
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.protocol.oidc.utils.PairwiseSubMapperUtils;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.services.clientregistration.ClientRegistrationContext;
@@ -28,6 +28,7 @@ import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -45,11 +46,9 @@ public class TrustedHostClientRegistrationPolicy implements ClientRegistrationPo
 
     private static final Logger LOG = LoggerFactory.getLogger(TrustedHostClientRegistrationPolicy.class);
 
-    private final KeycloakSession session;
     private final ComponentModel componentModel;
 
-    public TrustedHostClientRegistrationPolicy(KeycloakSession session, ComponentModel componentModel) {
-        this.session = session;
+    public TrustedHostClientRegistrationPolicy(ComponentModel componentModel) {
         this.componentModel = componentModel;
     }
 
@@ -100,13 +99,16 @@ public class TrustedHostClientRegistrationPolicy implements ClientRegistrationPo
         verifyHost();
     }
 
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     protected void verifyHost() throws ClientRegistrationPolicyException {
         boolean hostMustMatch = isHostMustMatch();
         if (!hostMustMatch) {
             return;
         }
 
-        String hostAddress = session.getContext().getConnection().getRemoteAddr();
+        String hostAddress = keycloakContext.getConnection().getRemoteAddr();
 
         LOG.debug("Verifying remote host : {}", hostAddress);
 

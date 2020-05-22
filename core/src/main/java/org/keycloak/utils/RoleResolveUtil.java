@@ -17,9 +17,14 @@
 
 package org.keycloak.utils;
 
-import org.keycloak.models.*;
+import org.keycloak.models.ClientModel;
+import org.keycloak.models.ClientSessionContext;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.RoleModel;
 import org.keycloak.representations.AccessToken;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.servlet.http.HttpSession;
 import java.util.Map;
 
 /**
@@ -32,19 +37,20 @@ public class RoleResolveUtil {
 
     private static final String RESOLVED_ROLES_ATTR = "RESOLVED_ROLES";
 
+    @Autowired
+    private HttpSession httpSession;
 
     /**
      * Object (possibly null) containing all the user's realm roles. Including user's groups roles. Composite roles are expanded.
      * Just the roles, which current client has role-scope-mapping for (or it's clientScopes) are included.
      * Current client means the client corresponding to specified clientSessionCtx.
      *
-     * @param session
      * @param clientSessionCtx
      * @param createIfMissing
      * @return can return null (just in case that createIfMissing is false)
      */
-    public static AccessToken.Access getResolvedRealmRoles(KeycloakSession session, ClientSessionContext clientSessionCtx, boolean createIfMissing) {
-        AccessToken rolesToken = getAndCacheResolvedRoles(session, clientSessionCtx);
+    public AccessToken.Access getResolvedRealmRoles(ClientSessionContext clientSessionCtx, boolean createIfMissing) {
+        AccessToken rolesToken = getAndCacheResolvedRoles(clientSessionCtx);
         AccessToken.Access access = rolesToken.getRealmAccess();
         if (access == null && createIfMissing) {
             access = new AccessToken.Access();
@@ -60,14 +66,13 @@ public class RoleResolveUtil {
      * Composite roles are expanded. Just the roles, which current client has role-scope-mapping for (or it's clientScopes) are included.
      * Current client means the client corresponding to specified clientSessionCtx.
      *
-     * @param session
      * @param clientSessionCtx
      * @param clientId
      * @param createIfMissing
      * @return can return null (just in case that createIfMissing is false)
      */
-    public static AccessToken.Access getResolvedClientRoles(KeycloakSession session, ClientSessionContext clientSessionCtx, String clientId, boolean createIfMissing) {
-        AccessToken rolesToken = getAndCacheResolvedRoles(session, clientSessionCtx);
+    public AccessToken.Access getResolvedClientRoles(ClientSessionContext clientSessionCtx, String clientId, boolean createIfMissing) {
+        AccessToken rolesToken = getAndCacheResolvedRoles(clientSessionCtx);
         AccessToken.Access access = rolesToken.getResourceAccess(clientId);
 
         if (access == null && createIfMissing) {
@@ -83,25 +88,24 @@ public class RoleResolveUtil {
      * Just the roles, which current client has role-scope-mapping for (or it's clientScopes) are included.
      * Current client means the client corresponding to specified clientSessionCtx.
      *
-     * @param session
      * @param clientSessionCtx
      * @return not-null object (can return empty map)
      */
-    public static Map<String, AccessToken.Access> getAllResolvedClientRoles(KeycloakSession session, ClientSessionContext clientSessionCtx) {
-        return getAndCacheResolvedRoles(session, clientSessionCtx).getResourceAccess();
+    public Map<String, AccessToken.Access> getAllResolvedClientRoles(ClientSessionContext clientSessionCtx) {
+        return getAndCacheResolvedRoles(clientSessionCtx).getResourceAccess();
     }
 
-    private static AccessToken getAndCacheResolvedRoles(KeycloakSession session, ClientSessionContext clientSessionCtx) {
+    private AccessToken getAndCacheResolvedRoles(ClientSessionContext clientSessionCtx) {
         ClientModel client = clientSessionCtx.getClientSession().getClient();
         String resolvedRolesAttrName = RESOLVED_ROLES_ATTR + ":" + clientSessionCtx.getClientSession().getUserSession().getId() + ":" + client.getId();
-        AccessToken token = session.getAttribute(resolvedRolesAttrName, AccessToken.class);
+        AccessToken token = (AccessToken) httpSession.getAttribute(resolvedRolesAttrName);
 
         if (token == null) {
             token = new AccessToken();
             for (RoleModel role : clientSessionCtx.getRoles()) {
                 addToToken(token, role);
             }
-            session.setAttribute(resolvedRolesAttrName, token);
+            httpSession.setAttribute(resolvedRolesAttrName, token);
         }
 
         return token;

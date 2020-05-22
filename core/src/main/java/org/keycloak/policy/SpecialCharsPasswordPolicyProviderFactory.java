@@ -17,8 +17,9 @@
 
 package org.keycloak.policy;
 
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -29,10 +30,12 @@ import org.springframework.stereotype.Component;
 public class SpecialCharsPasswordPolicyProviderFactory implements PasswordPolicyProviderFactory {
 
     public static final String ID = "specialChars";
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     @Override
-    public PasswordPolicyProvider create(KeycloakSession session) {
-        return new SpecialCharsPasswordPolicyProvider(session.getContext());
+    public PasswordPolicyProvider create() {
+        return new SpecialCharsPasswordPolicyProvider(keycloakContext);
     }
 
     @Override

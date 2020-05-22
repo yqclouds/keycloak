@@ -18,7 +18,6 @@
 package org.keycloak.protocol.oidc.mappers;
 
 import org.keycloak.models.ClientSessionContext;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.UserSessionModel;
 import org.keycloak.protocol.ProtocolMapper;
@@ -28,6 +27,7 @@ import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.IDToken;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.utils.RoleResolveUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -131,13 +131,16 @@ public class UserClientRoleMappingMapper extends AbstractUserRoleMappingMapper {
         return "Map a user client role to a token claim.";
     }
 
+    @Autowired
+    private RoleResolveUtil roleResolveUtil;
+
     @Override
-    protected void setClaim(IDToken token, ProtocolMapperModel mappingModel, UserSessionModel userSession, KeycloakSession session, ClientSessionContext clientSessionCtx) {
+    protected void setClaim(IDToken token, ProtocolMapperModel mappingModel, UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
         String clientId = mappingModel.getConfig().get(ProtocolMapperUtils.USER_MODEL_CLIENT_ROLE_MAPPING_CLIENT_ID);
         String rolePrefix = mappingModel.getConfig().get(ProtocolMapperUtils.USER_MODEL_CLIENT_ROLE_MAPPING_ROLE_PREFIX);
 
         if (clientId != null && !clientId.isEmpty()) {
-            AccessToken.Access access = RoleResolveUtil.getResolvedClientRoles(session, clientSessionCtx, clientId, false);
+            AccessToken.Access access = roleResolveUtil.getResolvedClientRoles(clientSessionCtx, clientId, false);
             if (access == null) {
                 return;
             }
@@ -145,7 +148,7 @@ public class UserClientRoleMappingMapper extends AbstractUserRoleMappingMapper {
             AbstractUserRoleMappingMapper.setClaim(token, mappingModel, access.getRoles(), clientId, rolePrefix);
         } else {
             // If clientId is not specified, we consider all clients
-            Map<String, AccessToken.Access> allAccess = RoleResolveUtil.getAllResolvedClientRoles(session, clientSessionCtx);
+            Map<String, AccessToken.Access> allAccess = roleResolveUtil.getAllResolvedClientRoles(clientSessionCtx);
 
             for (Map.Entry<String, AccessToken.Access> entry : allAccess.entrySet()) {
                 String currClientId = entry.getKey();

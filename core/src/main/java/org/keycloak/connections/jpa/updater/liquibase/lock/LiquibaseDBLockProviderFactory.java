@@ -20,7 +20,6 @@ package org.keycloak.connections.jpa.updater.liquibase.lock;
 import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.connections.jpa.JpaConnectionProviderFactory;
 import org.keycloak.connections.jpa.updater.liquibase.conn.LiquibaseConnectionProviderFactory;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.dblock.DBLockProvider;
 import org.keycloak.models.dblock.DBLockProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;

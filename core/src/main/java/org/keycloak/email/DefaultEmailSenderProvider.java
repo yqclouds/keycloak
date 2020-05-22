@@ -18,7 +18,6 @@
 package org.keycloak.email;
 
 import com.sun.mail.smtp.SMTPMessage;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserModel;
 import org.keycloak.truststore.HostnameVerificationPolicy;
 import org.keycloak.truststore.JSSETruststoreConfigurator;
@@ -49,6 +48,7 @@ public class DefaultEmailSenderProvider implements EmailSenderProvider {
 
     @Autowired
     private VaultTranscriber vaultTranscriber;
+
     @Override
     public void send(Map<String, String> config, UserModel user, String subject, String textBody, String htmlBody) throws EmailException {
         Transport transport = null;

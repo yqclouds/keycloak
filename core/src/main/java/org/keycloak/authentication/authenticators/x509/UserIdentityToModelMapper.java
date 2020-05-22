@@ -20,9 +20,9 @@ package org.keycloak.authentication.authenticators.x509;
 
 import com.hsbc.unified.iam.core.constants.Constants;
 import org.keycloak.authentication.AuthenticationFlowContext;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ModelDuplicateException;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.UserProvider;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -39,12 +39,14 @@ import java.util.stream.Collectors;
 public abstract class UserIdentityToModelMapper {
     @Autowired
     private KeycloakModelUtils keycloakModelUtils;
+    @Autowired
+    private UserProvider userProvider;
 
     public UserIdentityToModelMapper getUsernameOrEmailMapper() {
         return new UsernameOrEmailMapper();
     }
 
-    public static UserIdentityToModelMapper getUserIdentityToCustomAttributeMapper(String attributeName) {
+    public UserIdentityToModelMapper getUserIdentityToCustomAttributeMapper(String attributeName) {
         return new UserIdentityToCustomAttributeMapper(attributeName);
     }
 
@@ -57,7 +59,7 @@ public abstract class UserIdentityToModelMapper {
         }
     }
 
-    static class UserIdentityToCustomAttributeMapper extends UserIdentityToModelMapper {
+    public class UserIdentityToCustomAttributeMapper extends UserIdentityToModelMapper {
         private List<String> _customAttributes;
 
         UserIdentityToCustomAttributeMapper(String customAttributes) {
@@ -66,13 +68,12 @@ public abstract class UserIdentityToModelMapper {
 
         @Override
         public UserModel find(AuthenticationFlowContext context, Object userIdentity) throws Exception {
-            KeycloakSession session = context.getSession();
             List<String> userIdentityValues = Arrays.asList(Constants.CFG_DELIMITER_PATTERN.split(userIdentity.toString()));
 
             if (_customAttributes.isEmpty() || userIdentityValues.isEmpty() || (_customAttributes.size() != userIdentityValues.size())) {
                 return null;
             }
-            List<UserModel> users = session.users().searchForUserByUserAttribute(_customAttributes.get(0), userIdentityValues.get(0), context.getRealm());
+            List<UserModel> users = userProvider.searchForUserByUserAttribute(_customAttributes.get(0), userIdentityValues.get(0), context.getRealm());
 
             for (int i = 1; i < _customAttributes.size(); ++i) {
                 String customAttribute = _customAttributes.get(i);

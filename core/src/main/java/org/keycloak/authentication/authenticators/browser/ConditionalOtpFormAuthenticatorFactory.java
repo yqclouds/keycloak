@@ -18,10 +18,9 @@
 package org.keycloak.authentication.authenticators.browser;
 
 import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
+import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
-import org.keycloak.models.KeycloakSession;
-import com.hsbc.unified.iam.facade.model.credential.OTPCredentialModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;

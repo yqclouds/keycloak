@@ -17,7 +17,6 @@
 package org.keycloak.services.managers;
 
 import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.LDAPConstants;
 import org.keycloak.storage.ldap.LDAPConfig;
 import org.keycloak.storage.ldap.idm.store.ldap.LDAPContextManager;
@@ -33,7 +32,7 @@ public class LDAPConnectionTestManager {
     public static final String TEST_AUTHENTICATION = "testAuthentication";
     private static final Logger LOG = LoggerFactory.getLogger(LDAPConnectionTestManager.class);
 
-    public static boolean testLDAP(KeycloakSession session, String action, String connectionUrl, String bindDn,
+    public static boolean testLDAP(String action, String connectionUrl, String bindDn,
                                    String bindCredential, String useTruststoreSpi, String connectionTimeout, String tls) {
         if (!TEST_CONNECTION.equals(action) && !TEST_AUTHENTICATION.equals(action)) {
 //            ServicesLogger.LOGGER.unknownAction(action);
@@ -71,7 +70,7 @@ public class LDAPConnectionTestManager {
         }
 
         // Create ldapContextManager in try-with-resource so that ldapContext/tlsResponse/VaultSecret is closed/removed when it is not needed anymore
-        try (LDAPContextManager ldapContextManager = LDAPContextManager.create(session, new LDAPConfig(ldapConfig))) {
+        try (LDAPContextManager ldapContextManager = LDAPContextManager.create(new LDAPConfig(ldapConfig))) {
             ldapContextManager.getLdapContext();
 
             // Connection was successful, no exception was raised returning true

@@ -23,9 +23,9 @@ import org.keycloak.exportimport.ImportProvider;
 import org.keycloak.exportimport.Strategy;
 import org.keycloak.exportimport.util.ExportImportSessionTask;
 import org.keycloak.exportimport.util.ImportUtils;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.RealmProvider;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.RealmRepresentation;
@@ -49,6 +49,9 @@ public class DirImportProvider implements ImportProvider {
     private static final Logger LOG = LoggerFactory.getLogger(DirImportProvider.class);
 
     private final File rootDirectory;
+
+    @Autowired
+    private RealmProvider realmProvider;
 
     public DirImportProvider() {
         // Determine system tmp directory
@@ -144,8 +147,8 @@ public class DirImportProvider implements ImportProvider {
         KeycloakModelUtils.runJobInTransaction(factory, new ExportImportSessionTask() {
 
             @Override
-            public void runExportImportTask(KeycloakSession session) throws IOException {
-                boolean imported = ImportUtils.importRealm(session, realmRep, strategy, true);
+            public void runExportImportTask() throws IOException {
+                boolean imported = importUtils.importRealm(realmRep, strategy, true);
                 realmImported.set(imported);
             }
 
@@ -157,7 +160,7 @@ public class DirImportProvider implements ImportProvider {
                 final FileInputStream fis = new FileInputStream(userFile);
                 KeycloakModelUtils.runJobInTransaction(factory, new ExportImportSessionTask() {
                     @Override
-                    protected void runExportImportTask(KeycloakSession session) throws IOException {
+                    protected void runExportImportTask() throws IOException {
                         importUtils.importUsersFromStream(realmName, JsonSerialization.mapper, fis);
                         LOG.info("Imported users from {}", userFile.getAbsolutePath());
                     }
@@ -167,7 +170,7 @@ public class DirImportProvider implements ImportProvider {
                 final FileInputStream fis = new FileInputStream(userFile);
                 KeycloakModelUtils.runJobInTransaction(factory, new ExportImportSessionTask() {
                     @Override
-                    protected void runExportImportTask(KeycloakSession session) throws IOException {
+                    protected void runExportImportTask() throws IOException {
                         importUtils.importFederatedUsersFromStream(realmName, JsonSerialization.mapper, fis);
                         LOG.info("Imported federated users from {}", userFile.getAbsolutePath());
                     }
@@ -179,8 +182,8 @@ public class DirImportProvider implements ImportProvider {
         KeycloakModelUtils.runJobInTransaction(factory, new ExportImportSessionTask() {
 
             @Override
-            public void runExportImportTask(KeycloakSession session) throws IOException {
-                RealmModel realm = session.realms().getRealmByName(realmName);
+            public void runExportImportTask() throws IOException {
+                RealmModel realm = realmProvider.getRealmByName(realmName);
                 representationToModel.importRealmAuthorizationSettings(realmRep, realm);
             }
 

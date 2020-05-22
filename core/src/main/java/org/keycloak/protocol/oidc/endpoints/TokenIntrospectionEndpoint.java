@@ -16,19 +16,20 @@
  */
 package org.keycloak.protocol.oidc.endpoints;
 
+import com.hsbc.unified.iam.core.ClientConnection;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.HttpRequest;
-import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.oidc.AccessTokenIntrospectionProviderFactory;
 import org.keycloak.protocol.oidc.TokenIntrospectionProvider;
 import org.keycloak.protocol.oidc.utils.AuthorizeClientUtil;
 import org.keycloak.services.ErrorResponseException;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Context;
@@ -36,6 +37,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import java.util.Map;
 
 /**
  * A token introspection endpoint based on RFC-7662.
@@ -49,18 +51,23 @@ public class TokenIntrospectionEndpoint {
     private final RealmModel realm;
     private final EventBuilder event;
     @Context
-    private KeycloakSession session;
-    @Context
     private HttpRequest request;
     @Context
     private HttpHeaders headers;
     @Context
     private ClientConnection clientConnection;
+    @Autowired
+    private AuthorizeClientUtil authorizeClientUtil;
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     public TokenIntrospectionEndpoint(RealmModel realm, EventBuilder event) {
         this.realm = realm;
         this.event = event;
     }
+
+    @Autowired
+    private Map<String, TokenIntrospectionProvider> tokenIntrospectionProviders;
 
     @POST
     @NoCache
@@ -84,7 +91,7 @@ public class TokenIntrospectionEndpoint {
             throw throwErrorResponseException(Errors.INVALID_REQUEST, "Token not provided.", Status.BAD_REQUEST);
         }
 
-        TokenIntrospectionProvider provider = this.session.getProvider(TokenIntrospectionProvider.class, tokenTypeHint);
+        TokenIntrospectionProvider provider = tokenIntrospectionProviders.get(tokenTypeHint);
 
         if (provider == null) {
             throw throwErrorResponseException(Errors.INVALID_REQUEST, "Unsupported token type [" + tokenTypeHint + "].", Status.BAD_REQUEST);
@@ -106,7 +113,7 @@ public class TokenIntrospectionEndpoint {
 
     private void authorizeClient() {
         try {
-            ClientModel client = AuthorizeClientUtil.authorizeClient(session, event).getClient();
+            ClientModel client = authorizeClientUtil.authorizeClient(event).getClient();
 
             this.event.client(client);
 
@@ -122,7 +129,7 @@ public class TokenIntrospectionEndpoint {
     }
 
     private void checkSsl() {
-        if (!session.getContext().getUri().getBaseUri().getScheme().equals("https") && realm.getSslRequired().isRequired(clientConnection)) {
+        if (!keycloakContext.getUri().getBaseUri().getScheme().equals("https") && realm.getSslRequired().isRequired(clientConnection)) {
             throw new ErrorResponseException("invalid_request", "HTTPS required", Status.FORBIDDEN);
         }
     }

@@ -756,16 +756,19 @@ public class AuthenticationProcessor {
             return AuthenticationProcessor.this.newEvent();
         }
 
+        @Autowired
+        private Map<String, AuthenticatorFactory> authenticatorFactories;
+
         @Override
         public AuthenticationExecutionRequirement getCategoryRequirementFromCurrentFlow(String authenticatorCategory) {
             List<AuthenticationExecutionModel> executions = realm.getAuthenticationExecutions(execution.getParentFlow());
             for (AuthenticationExecutionModel exe : executions) {
-                AuthenticatorFactory factory = (AuthenticatorFactory) getSession().getSessionFactory().getProviderFactory(Authenticator.class, exe.getAuthenticator());
+                AuthenticatorFactory factory = authenticatorFactories.get(exe.getAuthenticator());
                 if (factory != null && factory.getReferenceCategory().equals(authenticatorCategory)) {
                     return exe.getRequirement();
                 }
-
             }
+
             return null;
         }
 
@@ -910,11 +913,6 @@ public class AuthenticationProcessor {
         }
 
         @Override
-        public KeycloakSession getSession() {
-            return AuthenticationProcessor.this.getSession();
-        }
-
-        @Override
         public HttpRequest getHttpRequest() {
             return AuthenticationProcessor.this.request;
         }
@@ -1040,10 +1038,13 @@ public class AuthenticationProcessor {
             return AuthenticationProcessor.this.getRefreshUrl(authSessionIdParam);
         }
 
+        @Autowired
+        private Map<String, LoginProtocol> loginProtocols;
+
         @Override
         public void cancelLogin() {
             getEvent().error(Errors.REJECTED_BY_USER);
-            LoginProtocol protocol = getSession().getProvider(LoginProtocol.class, getAuthenticationSession().getProtocol());
+            LoginProtocol protocol = loginProtocols.get(getAuthenticationSession().getProtocol());
             protocol.setRealm(getRealm())
                     .setHttpHeaders(getHttpRequest().getHttpHeaders())
                     .setUriInfo(getUriInfo())

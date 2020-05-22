@@ -26,6 +26,7 @@ import org.keycloak.credential.OTPCredentialProviderFactory;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.forms.login.LoginFormsProvider;
+import org.keycloak.models.CredentialModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserCredentialManager;
 import org.keycloak.models.UserModel;
@@ -50,6 +51,17 @@ public class OTPFormAuthenticator extends AbstractUsernameFormAuthenticator impl
     // Label to be shown in the UI for the "unnamed" OTP credential, which doesn't have userLabel
     public static final String UNNAMED = "unnamed";
 
+    @Autowired
+    private UserCredentialManager userCredentialManager;
+
+    public List<CredentialModel> getCredentials(RealmModel realm, UserModel user) {
+        return userCredentialManager.getStoredCredentialsByType(realm, user, getCredentialProvider().getType());
+    }
+
+    public String getType() {
+        return getCredentialProvider().getType();
+    }
+
 
     @Override
     public void action(AuthenticationFlowContext context) {
@@ -62,9 +74,6 @@ public class OTPFormAuthenticator extends AbstractUsernameFormAuthenticator impl
         Response challengeResponse = challenge(context, null);
         context.challenge(challengeResponse);
     }
-
-    @Autowired
-    private UserCredentialManager userCredentialManager;
 
     public void validateOTP(AuthenticationFlowContext context) {
         MultivaluedMap<String, String> inputData = context.getHttpRequest().getDecodedFormParameters();
@@ -93,7 +102,7 @@ public class OTPFormAuthenticator extends AbstractUsernameFormAuthenticator impl
             context.challenge(challengeResponse);
             return;
         }
-        boolean valid = context.getSession().userCredentialManager().isValid(context.getRealm(), context.getUser(),
+        boolean valid = userCredentialManager.isValid(context.getRealm(), context.getUser(),
                 new UserCredentialModel(credentialId, getCredentialProvider().getType(), otp));
         if (!valid) {
             context.getEvent().user(userModel)

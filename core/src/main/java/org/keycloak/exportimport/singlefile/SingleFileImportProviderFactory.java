@@ -20,7 +20,6 @@ package org.keycloak.exportimport.singlefile;
 import org.keycloak.exportimport.ExportImportConfig;
 import org.keycloak.exportimport.ImportProvider;
 import org.keycloak.exportimport.ImportProviderFactory;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 

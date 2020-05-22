@@ -22,7 +22,6 @@ import org.keycloak.broker.oidc.OIDCIdentityProvider;
 import org.keycloak.broker.provider.AbstractIdentityProviderMapper;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.models.IdentityProviderMapperModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.protocol.oidc.mappers.OIDCAttributeMapperHelper;
@@ -83,7 +82,7 @@ public abstract class AbstractJsonUserAttributeMapper extends AbstractIdentityPr
      * @param user     context to store profile data into
      * @param profile  to store into context
      * @param provider identification of social provider to be used in log dump
-     * @see #preprocessFederatedIdentity(KeycloakSession, RealmModel, IdentityProviderMapperModel, BrokeredIdentityContext)
+     * @see #preprocessFederatedIdentity(RealmModel, IdentityProviderMapperModel, BrokeredIdentityContext)
      * @see BrokeredIdentityContext#getContextData()
      */
     public static void storeUserProfileForMapper(BrokeredIdentityContext user, JsonNode profile, String provider) {

@@ -76,10 +76,8 @@ public class FreeMarkerAccountProvider implements AccountProvider {
     protected FreeMarkerUtil freeMarker;
     @Autowired
     private KeycloakSessionFactory sessionFactory;
-    protected KeycloakSession session;
 
     public FreeMarkerAccountProvider() {
-        this.session = this.sessionFactory.create();
     }
 
     public AccountProvider setUriInfo(UriInfo uriInfo) {
@@ -92,6 +90,9 @@ public class FreeMarkerAccountProvider implements AccountProvider {
         this.headers = httpHeaders;
         return this;
     }
+
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     @Override
     public Response createResponse(AccountPages page) {
@@ -109,7 +110,7 @@ public class FreeMarkerAccountProvider implements AccountProvider {
             return Response.serverError().build();
         }
 
-        Locale locale = session.getContext().resolveLocale(user);
+        Locale locale = keycloakContext.resolveLocale(user);
         Properties messagesBundle = handleThemeResources(theme, locale, attributes);
 
         URI baseUri = uriInfo.getBaseUri();
@@ -145,10 +146,10 @@ public class FreeMarkerAccountProvider implements AccountProvider {
 
         switch (page) {
             case TOTP:
-                attributes.put("totp", new TotpBean(session, realm, user, uriInfo.getRequestUriBuilder()));
+                attributes.put("totp", new TotpBean(realm, user, uriInfo.getRequestUriBuilder()));
                 break;
             case FEDERATED_IDENTITY:
-                attributes.put("federatedIdentity", new AccountFederatedIdentityBean(session, realm, user, uriInfo.getBaseUri(), stateChecker));
+                attributes.put("federatedIdentity", new AccountFederatedIdentityBean(realm, user, uriInfo.getBaseUri(), stateChecker));
                 break;
             case LOG:
                 attributes.put("log", new LogBean(events));

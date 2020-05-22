@@ -20,7 +20,6 @@ import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.common.Profile;
 import org.keycloak.models.AuthenticatorConfigModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.provider.ScriptProviderMetadata;
 
 import java.util.HashMap;

@@ -17,7 +17,6 @@
 
 package org.keycloak.protocol;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperContainerModel;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.RealmModel;
@@ -48,13 +47,12 @@ public interface ProtocolMapper extends Provider, ProviderFactory<ProtocolMapper
     /**
      * Called when instance of mapperModel is created/updated for this protocolMapper through admin endpoint
      *
-     * @param session
      * @param realm
      * @param client      client or clientTemplate
      * @param mapperModel
      * @throws ProtocolMapperConfigException if configuration provided in mapperModel is not valid
      */
-    default void validateConfig(KeycloakSession session, RealmModel realm, ProtocolMapperContainerModel client, ProtocolMapperModel mapperModel) throws ProtocolMapperConfigException {
+    default void validateConfig(RealmModel realm, ProtocolMapperContainerModel client, ProtocolMapperModel mapperModel) throws ProtocolMapperConfigException {
     }
 
     @Override

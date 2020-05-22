@@ -16,7 +16,6 @@
  */
 package org.keycloak.models.cache;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderEvent;
 
@@ -58,7 +57,5 @@ public interface CachedRealmModel extends RealmModel {
 
     interface RealmCachedEvent extends ProviderEvent {
         CachedRealmModel getRealm();
-
-        KeycloakSession getSession();
     }
 }

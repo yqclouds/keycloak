@@ -17,10 +17,9 @@
 
 package org.keycloak.exportimport;
 
-import org.keycloak.models.KeycloakSession;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;

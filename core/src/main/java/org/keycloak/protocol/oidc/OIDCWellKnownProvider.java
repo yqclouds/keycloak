@@ -18,15 +18,14 @@
 package org.keycloak.protocol.oidc;
 
 import com.hsbc.unified.iam.core.constants.OAuth2Constants;
-import org.keycloak.authentication.ClientAuthenticator;
 import org.keycloak.authentication.ClientAuthenticatorFactory;
-import org.keycloak.crypto.CekManagementProvider;
-import org.keycloak.crypto.ClientSignatureVerifierProvider;
-import org.keycloak.crypto.ContentEncryptionProvider;
-import org.keycloak.crypto.SignatureProvider;
+import org.keycloak.crypto.CekManagementProviderFactory;
+import org.keycloak.crypto.ClientSignatureVerifierProviderFactory;
+import org.keycloak.crypto.ContentEncryptionProviderFactory;
+import org.keycloak.crypto.SignatureProviderFactory;
 import org.keycloak.jose.jws.Algorithm;
 import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.oidc.endpoints.TokenEndpoint;
 import org.keycloak.protocol.oidc.representations.OIDCConfigurationRepresentation;
@@ -39,12 +38,14 @@ import org.keycloak.services.clientregistration.oidc.OIDCClientRegistrationProvi
 import org.keycloak.services.resources.RealmsResource;
 import org.keycloak.urls.UrlType;
 import org.keycloak.wellknown.WellKnownProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -69,11 +70,8 @@ public class OIDCWellKnownProvider implements WellKnownProvider {
     // KEYCLOAK-7451 OAuth Authorization Server Metadata for Proof Key for Code Exchange
     public static final List<String> DEFAULT_CODE_CHALLENGE_METHODS_SUPPORTED = list(OAuth2Constants.PKCE_METHOD_PLAIN, OAuth2Constants.PKCE_METHOD_S256);
 
-    private KeycloakSession session;
-
-    public OIDCWellKnownProvider(KeycloakSession session) {
-        this.session = session;
-    }
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     private static List<String> list(String... values) {
         return Arrays.asList(values);
@@ -81,10 +79,10 @@ public class OIDCWellKnownProvider implements WellKnownProvider {
 
     @Override
     public Object getConfig() {
-        UriInfo frontendUriInfo = session.getContext().getUri(UrlType.FRONTEND);
-        UriInfo backendUriInfo = session.getContext().getUri(UrlType.BACKEND);
+        UriInfo frontendUriInfo = keycloakContext.getUri(UrlType.FRONTEND);
+        UriInfo backendUriInfo = keycloakContext.getUri(UrlType.BACKEND);
 
-        RealmModel realm = session.getContext().getRealm();
+        RealmModel realm = keycloakContext.getRealm();
 
         UriBuilder frontendUriBuilder = RealmsResource.protocolUrl(frontendUriInfo);
         UriBuilder backendUriBuilder = RealmsResource.protocolUrl(backendUriInfo);
@@ -144,21 +142,25 @@ public class OIDCWellKnownProvider implements WellKnownProvider {
     public void close() {
     }
 
+    @Autowired
+    private Map<String, ClientAuthenticatorFactory> clientAuthenticatorFactories;
+
     private List<String> getClientAuthMethodsSupported() {
         List<String> result = new LinkedList<>();
 
-        List<ProviderFactory> providerFactories = session.getSessionFactory().getProviderFactories(ClientAuthenticator.class);
-        for (ProviderFactory factory : providerFactories) {
-            ClientAuthenticatorFactory clientAuthFactory = (ClientAuthenticatorFactory) factory;
+        for (ClientAuthenticatorFactory clientAuthFactory : clientAuthenticatorFactories.values()) {
             result.addAll(clientAuthFactory.getProtocolAuthenticatorMethods(OIDCLoginProtocol.LOGIN_PROTOCOL));
         }
 
         return result;
     }
 
+    @Autowired
+    private List<SignatureProviderFactory> signatureProviderFactories;
+
     private List<String> getSupportedSigningAlgorithms(boolean includeNone) {
         List<String> result = new LinkedList<>();
-        for (ProviderFactory s : session.getSessionFactory().getProviderFactories(SignatureProvider.class)) {
+        for (ProviderFactory s : signatureProviderFactories) {
             result.add(s.getId());
         }
         if (includeNone) {
@@ -166,10 +168,13 @@ public class OIDCWellKnownProvider implements WellKnownProvider {
         }
         return result;
     }
+
+    @Autowired
+    private List<ClientSignatureVerifierProviderFactory> clientSignatureVerifierProviderFactories;
 
     private List<String> getSupportedClientSigningAlgorithms(boolean includeNone) {
         List<String> result = new LinkedList<>();
-        for (ProviderFactory s : session.getSessionFactory().getProviderFactories(ClientSignatureVerifierProvider.class)) {
+        for (ProviderFactory s : clientSignatureVerifierProviderFactories) {
             result.add(s.getId());
         }
         if (includeNone) {
@@ -177,10 +182,13 @@ public class OIDCWellKnownProvider implements WellKnownProvider {
         }
         return result;
     }
+
+    @Autowired
+    private List<CekManagementProviderFactory> cekManagementProviderFactories;
 
     private List<String> getSupportedIdTokenEncryptionAlg(boolean includeNone) {
         List<String> result = new LinkedList<>();
-        for (ProviderFactory s : session.getSessionFactory().getProviderFactories(CekManagementProvider.class)) {
+        for (ProviderFactory s : cekManagementProviderFactories) {
             result.add(s.getId());
         }
         if (includeNone) {
@@ -189,9 +197,12 @@ public class OIDCWellKnownProvider implements WellKnownProvider {
         return result;
     }
 
+    @Autowired
+    private List<ContentEncryptionProviderFactory> contentEncryptionProviderFactories;
+
     private List<String> getSupportedIdTokenEncryptionEnc(boolean includeNone) {
         List<String> result = new LinkedList<>();
-        for (ProviderFactory s : session.getSessionFactory().getProviderFactories(ContentEncryptionProvider.class)) {
+        for (ProviderFactory s : contentEncryptionProviderFactories) {
             result.add(s.getId());
         }
         if (includeNone) {

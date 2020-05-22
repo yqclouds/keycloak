@@ -162,7 +162,6 @@ public class ScriptBasedAuthenticator implements Authenticator {
             bindings.put("script", script);
             bindings.put("realm", context.getRealm());
             bindings.put("user", context.getUser());
-            bindings.put("session", context.getSession());
             bindings.put("httpRequest", context.getHttpRequest());
             bindings.put("authenticationSession", context.getAuthenticationSession());
             bindings.put("LOG", LOG);

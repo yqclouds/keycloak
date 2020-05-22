@@ -17,14 +17,12 @@
  */
 package org.keycloak.protocol.oidc;
 
-import org.keycloak.models.KeycloakSession;
-
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
 public class RefreshTokenIntrospectionProvider extends AccessTokenIntrospectionProvider {
 
-    public RefreshTokenIntrospectionProvider(KeycloakSession session) {
+    public RefreshTokenIntrospectionProvider() {
         super();
     }
 }

@@ -29,6 +29,7 @@ import org.keycloak.keys.loader.PublicKeyStorageManager;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.SingleUseTokenStoreProvider;
+import org.keycloak.models.TokenManager;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.OIDCLoginProtocolService;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -67,6 +68,8 @@ public class JWTClientAuthenticator extends AbstractClientAuthenticator {
     private SingleUseTokenStoreProvider singleUseTokenStoreProvider;
     @Autowired
     private PublicKeyStorageManager publicKeyStorageManager;
+    @Autowired
+    private TokenManager tokenManager;
 
     @Override
     public void authenticateClient(ClientAuthenticationFlowContext context) {
@@ -127,7 +130,7 @@ public class JWTClientAuthenticator extends AbstractClientAuthenticator {
 
             boolean signatureValid;
             try {
-                JsonWebToken jwt = context.getSession().tokens().decodeClientJWT(clientAssertion, client, JsonWebToken.class);
+                JsonWebToken jwt = tokenManager.decodeClientJWT(clientAssertion, client, JsonWebToken.class);
                 signatureValid = jwt != null;
             } catch (RuntimeException e) {
                 Throwable cause = e.getCause() != null ? e.getCause() : e;

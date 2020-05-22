@@ -18,7 +18,6 @@
 package org.keycloak.protocol.oidc.mappers;
 
 import org.keycloak.models.ClientSessionContext;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.UserSessionModel;
 import org.keycloak.protocol.ProtocolMapper;
@@ -124,7 +123,7 @@ public class AudienceProtocolMapper extends AbstractOIDCProtocolMapper implement
     }
 
     @Override
-    protected void setClaim(IDToken token, ProtocolMapperModel mappingModel, UserSessionModel userSession, KeycloakSession keycloakSession, ClientSessionContext clientSessionCtx) {
+    protected void setClaim(IDToken token, ProtocolMapperModel mappingModel, UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
         String audienceValue = mappingModel.getConfig().get(INCLUDED_CLIENT_AUDIENCE);
 
         if (audienceValue == null) {

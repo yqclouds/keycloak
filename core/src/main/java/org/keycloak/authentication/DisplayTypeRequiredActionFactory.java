@@ -1,7 +1,5 @@
 package org.keycloak.authentication;
 
-import org.keycloak.models.KeycloakSession;
-
 /**
  * Implement this interface when declaring your required action factory
  * has support for multiple oidc display query parameter parameter types

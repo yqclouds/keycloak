@@ -17,12 +17,12 @@
 
 package org.keycloak.protocol.oidc;
 
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.keycloak.exportimport.ClientDescriptionConverter;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.oidc.OIDCClientRepresentation;
 import org.keycloak.services.clientregistration.oidc.DescriptionConverter;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 
@@ -31,18 +31,14 @@ import java.io.IOException;
  */
 public class OIDCClientDescriptionConverter implements ClientDescriptionConverter {
 
-    private final KeycloakSession session;
-
-    public OIDCClientDescriptionConverter(KeycloakSession session) {
-        this.session = session;
-    }
-
+    @Autowired
+    private DescriptionConverter descriptionConverter;
 
     @Override
     public ClientRepresentation convertToInternal(String description) {
         try {
             OIDCClientRepresentation clientOIDC = JsonSerialization.readValue(description, OIDCClientRepresentation.class);
-            return DescriptionConverter.toInternal(session, clientOIDC);
+            return descriptionConverter.toInternal(clientOIDC);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

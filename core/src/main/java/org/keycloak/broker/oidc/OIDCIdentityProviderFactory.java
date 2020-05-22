@@ -19,7 +19,6 @@ package org.keycloak.broker.oidc;
 import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.keycloak.broker.provider.AbstractIdentityProviderFactory;
 import org.keycloak.models.IdentityProviderModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.protocol.oidc.representations.OIDCConfigurationRepresentation;
 
 import java.io.IOException;
@@ -33,7 +32,7 @@ public class OIDCIdentityProviderFactory extends AbstractIdentityProviderFactory
 
     public static final String PROVIDER_ID = "oidc";
 
-    protected static Map<String, String> parseOIDCConfig(KeycloakSession session, InputStream inputStream) {
+    protected static Map<String, String> parseOIDCConfig(InputStream inputStream) {
         OIDCConfigurationRepresentation rep;
         try {
             rep = JsonSerialization.readValue(inputStream, OIDCConfigurationRepresentation.class);
@@ -75,8 +74,8 @@ public class OIDCIdentityProviderFactory extends AbstractIdentityProviderFactory
     }
 
     @Override
-    public Map<String, String> parseConfig(KeycloakSession session, InputStream inputStream) {
-        return parseOIDCConfig(session, inputStream);
+    public Map<String, String> parseConfig(InputStream inputStream) {
+        return parseOIDCConfig(inputStream);
     }
 
 }

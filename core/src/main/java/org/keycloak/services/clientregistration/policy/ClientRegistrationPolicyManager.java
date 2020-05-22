@@ -20,14 +20,16 @@ package org.keycloak.services.clientregistration.policy;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.events.Details;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.services.clientregistration.ClientRegistrationContext;
 import org.keycloak.services.clientregistration.ClientRegistrationProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -37,8 +39,8 @@ public class ClientRegistrationPolicyManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClientRegistrationPolicyManager.class);
 
-    public static void triggerBeforeRegister(ClientRegistrationContext context, RegistrationAuth authType) throws ClientRegistrationPolicyException {
-        triggerPolicies(context.getSession(), context.getProvider(), authType, "before register client", (ClientRegistrationPolicy policy) -> {
+    public void triggerBeforeRegister(ClientRegistrationContext context, RegistrationAuth authType) throws ClientRegistrationPolicyException {
+        triggerPolicies(context.getProvider(), authType, "before register client", (ClientRegistrationPolicy policy) -> {
 
             policy.beforeRegister(context);
 
@@ -46,9 +48,9 @@ public class ClientRegistrationPolicyManager {
     }
 
 
-    public static void triggerAfterRegister(ClientRegistrationContext context, RegistrationAuth authType, ClientModel client) {
+    public void triggerAfterRegister(ClientRegistrationContext context, RegistrationAuth authType, ClientModel client) {
         try {
-            triggerPolicies(context.getSession(), context.getProvider(), authType, "after register client " + client.getClientId(), (ClientRegistrationPolicy policy) -> {
+            triggerPolicies(context.getProvider(), authType, "after register client " + client.getClientId(), (ClientRegistrationPolicy policy) -> {
 
                 policy.afterRegister(context, client);
 
@@ -59,17 +61,17 @@ public class ClientRegistrationPolicyManager {
     }
 
 
-    public static void triggerBeforeUpdate(ClientRegistrationContext context, RegistrationAuth authType, ClientModel client) throws ClientRegistrationPolicyException {
-        triggerPolicies(context.getSession(), context.getProvider(), authType, "before update client " + client.getClientId(), (ClientRegistrationPolicy policy) -> {
+    public void triggerBeforeUpdate(ClientRegistrationContext context, RegistrationAuth authType, ClientModel client) throws ClientRegistrationPolicyException {
+        triggerPolicies(context.getProvider(), authType, "before update client " + client.getClientId(), (ClientRegistrationPolicy policy) -> {
 
             policy.beforeUpdate(context, client);
 
         });
     }
 
-    public static void triggerAfterUpdate(ClientRegistrationContext context, RegistrationAuth authType, ClientModel client) {
+    public void triggerAfterUpdate(ClientRegistrationContext context, RegistrationAuth authType, ClientModel client) {
         try {
-            triggerPolicies(context.getSession(), context.getProvider(), authType, "after update client " + client.getClientId(), (ClientRegistrationPolicy policy) -> {
+            triggerPolicies(context.getProvider(), authType, "after update client " + client.getClientId(), (ClientRegistrationPolicy policy) -> {
 
                 policy.afterUpdate(context, client);
 
@@ -79,25 +81,29 @@ public class ClientRegistrationPolicyManager {
         }
     }
 
-    public static void triggerBeforeView(KeycloakSession session, ClientRegistrationProvider provider, RegistrationAuth authType, ClientModel client) throws ClientRegistrationPolicyException {
-        triggerPolicies(session, provider, authType, "before view client " + client.getClientId(), (ClientRegistrationPolicy policy) -> {
+    public void triggerBeforeView(ClientRegistrationProvider provider, RegistrationAuth authType, ClientModel client) throws ClientRegistrationPolicyException {
+        triggerPolicies(provider, authType, "before view client " + client.getClientId(), (ClientRegistrationPolicy policy) -> {
 
             policy.beforeView(provider, client);
 
         });
     }
 
-    public static void triggerBeforeRemove(KeycloakSession session, ClientRegistrationProvider provider, RegistrationAuth authType, ClientModel client) throws ClientRegistrationPolicyException {
-        triggerPolicies(session, provider, authType, "before delete client " + client.getClientId(), (ClientRegistrationPolicy policy) -> {
+    public void triggerBeforeRemove(ClientRegistrationProvider provider, RegistrationAuth authType, ClientModel client) throws ClientRegistrationPolicyException {
+        triggerPolicies(provider, authType, "before delete client " + client.getClientId(), (ClientRegistrationPolicy policy) -> {
 
             policy.beforeDelete(provider, client);
 
         });
     }
 
+    @Autowired
+    private KeycloakContext keycloakContext;
+    @Autowired
+    private Map<ComponentModel, ClientRegistrationPolicy> clientRegistrationPolicies;
 
-    private static void triggerPolicies(KeycloakSession session, ClientRegistrationProvider provider, RegistrationAuth authType, String opDescription, ClientRegOperation op) throws ClientRegistrationPolicyException {
-        RealmModel realm = session.getContext().getRealm();
+    private void triggerPolicies(ClientRegistrationProvider provider, RegistrationAuth authType, String opDescription, ClientRegOperation op) throws ClientRegistrationPolicyException {
+        RealmModel realm = keycloakContext.getRealm();
 
         String policyTypeKey = getComponentTypeKey(authType);
         List<ComponentModel> policyModels = realm.getComponents(realm.getId(), ClientRegistrationPolicy.class.getName());
@@ -109,7 +115,7 @@ public class ClientRegistrationPolicyManager {
         }).collect(Collectors.toList());
 
         for (ComponentModel policyModel : policyModels) {
-            ClientRegistrationPolicy policy = session.getProvider(ClientRegistrationPolicy.class, policyModel);
+            ClientRegistrationPolicy policy = clientRegistrationPolicies.get(policyModel);
             if (policy == null) {
                 throw new ClientRegistrationPolicyException("PolicyModel of type '" + policyModel.getProviderId() + "' not found");
             }

@@ -18,7 +18,6 @@
 package org.keycloak.protocol.oidc.mappers;
 
 import org.keycloak.models.ClientSessionContext;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.UserSessionModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
@@ -29,6 +28,7 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.utils.RoleResolveUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -103,8 +103,11 @@ public class HardcodedRole extends AbstractOIDCProtocolMapper implements OIDCAcc
         return ProtocolMapperUtils.PRIORITY_HARDCODED_ROLE_MAPPER;
     }
 
+    @Autowired
+    private RoleResolveUtil roleResolveUtil;
+
     @Override
-    public AccessToken transformAccessToken(AccessToken token, ProtocolMapperModel mappingModel, KeycloakSession session,
+    public AccessToken transformAccessToken(AccessToken token, ProtocolMapperModel mappingModel,
                                             UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
 
         String role = mappingModel.getConfig().get(ROLE_CONFIG);
@@ -112,10 +115,10 @@ public class HardcodedRole extends AbstractOIDCProtocolMapper implements OIDCAcc
         String appName = scopedRole[0];
         String roleName = scopedRole[1];
         if (appName != null) {
-            AccessToken.Access access = RoleResolveUtil.getResolvedClientRoles(session, clientSessionCtx, appName, true);
+            AccessToken.Access access = roleResolveUtil.getResolvedClientRoles(clientSessionCtx, appName, true);
             access.addRole(roleName);
         } else {
-            AccessToken.Access access = RoleResolveUtil.getResolvedRealmRoles(session, clientSessionCtx, true);
+            AccessToken.Access access = roleResolveUtil.getResolvedRealmRoles(clientSessionCtx, true);
             access.addRole(role);
         }
 

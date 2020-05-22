@@ -27,6 +27,7 @@ import org.keycloak.events.Errors;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.ModelDuplicateException;
 import org.keycloak.models.PasswordPolicy;
+import org.keycloak.models.UserCredentialManager;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.representations.idm.CredentialRepresentation;
@@ -34,9 +35,11 @@ import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.messages.Messages;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -76,20 +79,23 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
         return challengeResponse;
     }
 
-    protected void runDefaultDummyHash(AuthenticationFlowContext context) {
-        PasswordHashProvider hash = context.getSession().getProvider(PasswordHashProvider.class, PasswordPolicy.HASH_ALGORITHM_DEFAULT);
+    @Autowired
+    private Map<String, PasswordHashProvider> passwordHashProviders;
+
+    protected void runDefaultDummyHash() {
+        PasswordHashProvider hash = passwordHashProviders.get(PasswordPolicy.HASH_ALGORITHM_DEFAULT);
         hash.encode("dummypassword", PasswordPolicy.HASH_ITERATIONS_DEFAULT);
     }
 
     protected void dummyHash(AuthenticationFlowContext context) {
         PasswordPolicy policy = context.getRealm().getPasswordPolicy();
         if (policy == null) {
-            runDefaultDummyHash(context);
+            runDefaultDummyHash();
             return;
         } else {
-            PasswordHashProvider hash = context.getSession().getProvider(PasswordHashProvider.class, policy.getHashAlgorithm());
+            PasswordHashProvider hash = passwordHashProviders.get(policy.getHashAlgorithm());
             if (hash == null) {
-                runDefaultDummyHash(context);
+                runDefaultDummyHash();
                 return;
 
             } else {
@@ -189,6 +195,9 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
         return validatePassword(context, user, inputData, true);
     }
 
+    @Autowired
+    private UserCredentialManager userCredentialManager;
+
     public boolean validatePassword(AuthenticationFlowContext context, UserModel user, MultivaluedMap<String, String> inputData, boolean clearUser) {
         String password = inputData.getFirst(CredentialRepresentation.PASSWORD);
         if (password == null || password.isEmpty()) {
@@ -197,7 +206,7 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
 
         if (isTemporarilyDisabledByBruteForce(context, user)) return false;
 
-        if (password != null && !password.isEmpty() && context.getSession().userCredentialManager().isValid(context.getRealm(), user, UserCredentialModel.password(password))) {
+        if (userCredentialManager.isValid(context.getRealm(), user, UserCredentialModel.password(password))) {
             return true;
         } else {
             return badPasswordHandler(context, user, clearUser, false);

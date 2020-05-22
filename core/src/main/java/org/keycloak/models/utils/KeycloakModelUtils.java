@@ -200,27 +200,7 @@ public final class KeycloakModelUtils {
      * @param task
      */
     public static void runJobInTransaction(KeycloakSessionFactory factory, KeycloakSessionTask task) {
-        KeycloakSession session = factory.create();
-        KeycloakTransaction tx = session.getTransactionManager();
-        try {
-            tx.begin();
-            task.run(session);
-
-            if (tx.isActive()) {
-                if (tx.getRollbackOnly()) {
-                    tx.rollback();
-                } else {
-                    tx.commit();
-                }
-            }
-        } catch (RuntimeException re) {
-            if (tx.isActive()) {
-                tx.rollback();
-            }
-            throw re;
-        } finally {
-            session.close();
-        }
+        task.run();
     }
 
 

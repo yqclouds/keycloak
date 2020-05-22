@@ -6,9 +6,11 @@ import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ConditionalUserConfiguredAuthenticator implements ConditionalAuthenticator {
     public static final ConditionalUserConfiguredAuthenticator SINGLETON = new ConditionalUserConfiguredAuthenticator();
@@ -17,6 +19,9 @@ public class ConditionalUserConfiguredAuthenticator implements ConditionalAuthen
     public boolean matchCondition(AuthenticationFlowContext context) {
         return matchConditionInFlow(context, context.getExecution().getParentFlow());
     }
+
+    @Autowired
+    private Map<String, AuthenticatorFactory> authenticatorFactories;
 
     private boolean matchConditionInFlow(AuthenticationFlowContext context, String flowId) {
         List<AuthenticationExecutionModel> executions = context.getRealm().getAuthenticationExecutions(flowId);
@@ -29,7 +34,7 @@ public class ConditionalUserConfiguredAuthenticator implements ConditionalAuthen
             //Check if the execution's authenticator is a conditional authenticator, as they must not be evaluated here.
             boolean isConditionalAuthenticator = false;
             try {
-                AuthenticatorFactory factory = (AuthenticatorFactory) context.getSession().getSessionFactory().getProviderFactory(Authenticator.class, e.getAuthenticator());
+                AuthenticatorFactory factory = (AuthenticatorFactory) authenticatorFactories.get(e.getAuthenticator());
                 if (factory != null) {
                     Authenticator auth = factory.create();
                     if (auth instanceof ConditionalAuthenticator) {
@@ -59,7 +64,7 @@ public class ConditionalUserConfiguredAuthenticator implements ConditionalAuthen
         if (model.isAuthenticatorFlow()) {
             return matchConditionInFlow(context, model.getId());
         }
-        AuthenticatorFactory factory = (AuthenticatorFactory) context.getSession().getSessionFactory().getProviderFactory(Authenticator.class, model.getAuthenticator());
+        AuthenticatorFactory factory = authenticatorFactories.get(model.getAuthenticator());
         Authenticator authenticator = factory.create();
         return authenticator.configuredFor(context.getRealm(), context.getUser());
     }

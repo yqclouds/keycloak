@@ -32,6 +32,8 @@ import org.keycloak.common.util.PathMatcher;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.*;
+import org.keycloak.models.utils.ModelToRepresentation;
+import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.representations.idm.authorization.ResourceOwnerRepresentation;
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
@@ -49,9 +51,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.keycloak.models.utils.ModelToRepresentation.toRepresentation;
-import static org.keycloak.models.utils.RepresentationToModel.toModel;
-
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
@@ -60,7 +59,13 @@ public class ResourceSetService {
     private final AuthorizationProvider authorization;
     private final AdminPermissionEvaluator auth;
     private final AdminEventBuilder adminEvent;
-    private ResourceServerModel resourceServer;
+    private final ResourceServerModel resourceServer;
+
+    @Autowired
+    private RepresentationToModel representationToModel;
+
+    @Autowired
+    private ModelToRepresentation modelToRepresentation;
 
     public ResourceSetService(ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.resourceServer = resourceServer;
@@ -108,7 +113,7 @@ public class ResourceSetService {
             throw new ErrorResponseException(OAuthErrorException.INVALID_REQUEST, "ResourceModel with name [" + resource.getName() + "] already exists.", Status.CONFLICT);
         }
 
-        return toRepresentation(toModel(resource, this.resourceServer, authorization), resourceServer, authorization);
+        return modelToRepresentation.toRepresentation(representationToModel.toModel(resource, this.resourceServer, authorization), resourceServer, authorization);
     }
 
     @Path("{id}")
@@ -126,7 +131,7 @@ public class ResourceSetService {
             return Response.status(Status.NOT_FOUND).build();
         }
 
-        toModel(resource, resourceServer, authorization);
+        representationToModel.toModel(resource, resourceServer, authorization);
 
         audit(resource, OperationType.UPDATE);
 
@@ -146,7 +151,7 @@ public class ResourceSetService {
 
         storeFactory.getResourceStore().delete(id);
 
-        audit(toRepresentation(resource, resourceServer, authorization), OperationType.DELETE);
+        audit(modelToRepresentation.toRepresentation(resource, resourceServer, authorization), OperationType.DELETE);
 
         return Response.noContent().build();
     }
@@ -156,7 +161,7 @@ public class ResourceSetService {
     @NoCache
     @Produces("application/json")
     public Response findById(@PathParam("id") String id) {
-        return findById(id, resource -> toRepresentation(resource, resourceServer, authorization, true));
+        return findById(id, resource -> modelToRepresentation.toRepresentation(resource, resourceServer, authorization, true));
     }
 
     public Response findById(String id, Function<ResourceModel, ? extends ResourceRepresentation> toRepresentation) {
@@ -229,9 +234,8 @@ public class ResourceSetService {
         }
 
         PolicyStore policyStore = authorization.getStoreFactory().getPolicyStore();
-        Set<PolicyModel> policies = new HashSet<>();
 
-        policies.addAll(policyStore.findByResource(model.getId(), resourceServer.getId()));
+        Set<PolicyModel> policies = new HashSet<>(policyStore.findByResource(model.getId(), resourceServer.getId()));
 
         if (model.getType() != null) {
             policies.addAll(policyStore.findByResourceType(model.getType(), resourceServer.getId()));
@@ -302,7 +306,7 @@ public class ResourceSetService {
             return Response.status(Status.OK).build();
         }
 
-        return Response.ok(toRepresentation(model, this.resourceServer, authorization)).build();
+        return Response.ok(modelToRepresentation.toRepresentation(model, this.resourceServer, authorization)).build();
     }
 
     @GET
@@ -319,7 +323,7 @@ public class ResourceSetService {
                          @QueryParam("deep") Boolean deep,
                          @QueryParam("first") Integer firstResult,
                          @QueryParam("max") Integer maxResult) {
-        return find(id, name, uri, owner, type, scope, matchingUri, exactName, deep, firstResult, maxResult, (BiFunction<ResourceModel, Boolean, ResourceRepresentation>) (resource, deep1) -> toRepresentation(resource, resourceServer, authorization, deep1));
+        return find(id, name, uri, owner, type, scope, matchingUri, exactName, deep, firstResult, maxResult, (BiFunction<ResourceModel, Boolean, ResourceRepresentation>) (resource, deep1) -> modelToRepresentation.toRepresentation(resource, resourceServer, authorization, deep1));
     }
 
     @Autowired

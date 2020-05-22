@@ -3,7 +3,6 @@ package org.keycloak.crypto;
 import org.keycloak.common.VerificationException;
 import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
 
 public class ECDSAClientSignatureVerifierProvider implements ClientSignatureVerifierProvider {
     private final String algorithm;

@@ -24,12 +24,13 @@ import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.models.AuthenticatorConfigModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.UserProvider;
 import org.keycloak.services.messages.Messages;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -47,10 +48,11 @@ public class IdpCreateUserIfUniqueAuthenticator extends AbstractIdpAuthenticator
     protected void actionImpl(AuthenticationFlowContext context, SerializedBrokeredIdentityContext serializedCtx, BrokeredIdentityContext brokerContext) {
     }
 
+    @Autowired
+    private UserProvider userProvider;
+
     @Override
     protected void authenticateImpl(AuthenticationFlowContext context, SerializedBrokeredIdentityContext serializedCtx, BrokeredIdentityContext brokerContext) {
-
-        KeycloakSession session = context.getSession();
         RealmModel realm = context.getRealm();
 
         if (context.getAuthenticationSession().getAuthNote(EXISTING_USER_INFO) != null) {
@@ -72,7 +74,7 @@ public class IdpCreateUserIfUniqueAuthenticator extends AbstractIdpAuthenticator
             LOG.debug("No duplication detected. Creating account for user '{}' and linking with identity provider '{}' .",
                     username, brokerContext.getIdpConfig().getAlias());
 
-            UserModel federatedUser = session.users().addUser(realm, username);
+            UserModel federatedUser = userProvider.addUser(realm, username);
             federatedUser.setEnabled(true);
             federatedUser.setEmail(brokerContext.getEmail());
             federatedUser.setFirstName(brokerContext.getFirstName());
@@ -119,15 +121,14 @@ public class IdpCreateUserIfUniqueAuthenticator extends AbstractIdpAuthenticator
 
     // Could be overriden to detect duplication based on other criterias (firstName, lastName, ...)
     protected ExistingUserInfo checkExistingUser(AuthenticationFlowContext context, String username, SerializedBrokeredIdentityContext serializedCtx, BrokeredIdentityContext brokerContext) {
-
         if (brokerContext.getEmail() != null && !context.getRealm().isDuplicateEmailsAllowed()) {
-            UserModel existingUser = context.getSession().users().getUserByEmail(brokerContext.getEmail(), context.getRealm());
+            UserModel existingUser = userProvider.getUserByEmail(brokerContext.getEmail(), context.getRealm());
             if (existingUser != null) {
                 return new ExistingUserInfo(existingUser.getId(), UserModel.EMAIL, existingUser.getEmail());
             }
         }
 
-        UserModel existingUser = context.getSession().users().getUserByUsername(username, context.getRealm());
+        UserModel existingUser = userProvider.getUserByUsername(username, context.getRealm());
         if (existingUser != null) {
             return new ExistingUserInfo(existingUser.getId(), UserModel.USERNAME, existingUser.getUsername());
         }

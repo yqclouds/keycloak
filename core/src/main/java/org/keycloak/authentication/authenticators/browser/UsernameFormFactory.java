@@ -24,7 +24,6 @@ import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.authentication.DisplayTypeAuthenticatorFactory;
 import org.keycloak.authentication.authenticators.console.ConsoleUsernameAuthenticator;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.PasswordCredentialModel;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -49,7 +48,7 @@ public class UsernameFormFactory implements AuthenticatorFactory, DisplayTypeAut
     }
 
     @Override
-    public Authenticator createDisplay(KeycloakSession session, String displayType) {
+    public Authenticator createDisplay(String displayType) {
         if (displayType == null) return SINGLETON;
         if (!OAuth2Constants.DISPLAY_CONSOLE.equalsIgnoreCase(displayType)) return null;
         return ConsoleUsernameAuthenticator.SINGLETON;

@@ -17,16 +17,16 @@
 
 package org.keycloak.keys;
 
-import org.keycloak.component.ComponentModel;
 import com.hsbc.unified.iam.core.crypto.Algorithm;
+import org.keycloak.component.ComponentModel;
 import org.keycloak.crypto.KeyUse;
 import org.keycloak.crypto.KeyWrapper;
 import org.keycloak.models.KeyManager;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.crypto.SecretKey;
 import java.security.PrivateKey;
@@ -41,12 +41,7 @@ public class DefaultKeyManager implements KeyManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultKeyManager.class);
 
-    private final KeycloakSession session;
     private final Map<String, List<KeyProvider>> providersMap = new HashMap<>();
-
-    public DefaultKeyManager(KeycloakSession session) {
-        this.session = session;
-    }
 
     @Override
     public KeyWrapper getActiveKey(RealmModel realm, KeyUse use, String algorithm) {
@@ -57,9 +52,9 @@ public class DefaultKeyManager implements KeyManager {
 
         LOG.debug("Failed to find active key for realm, trying fallback: realm={} algorithm={} use={}", realm.getName(), algorithm, use.name());
 
-        for (ProviderFactory f : session.getSessionFactory().getProviderFactories(KeyProvider.class)) {
+        for (ProviderFactory f : keyProviderFactories.values()) {
             KeyProviderFactory kf = (KeyProviderFactory) f;
-            if (kf.createFallbackKeys(session, use, algorithm)) {
+            if (kf.createFallbackKeys(use, algorithm)) {
                 providersMap.remove(realm.getId());
                 List<KeyProvider> providers = getProviders(realm);
                 activeKey = getActiveKey(providers, realm, use, algorithm);
@@ -240,6 +235,9 @@ public class DefaultKeyManager implements KeyManager {
         return use.equals(key.getUse()) && key.getAlgorithm().equals(algorithm);
     }
 
+    @Autowired
+    private Map<String, KeyProviderFactory> keyProviderFactories;
+
     private List<KeyProvider> getProviders(RealmModel realm) {
         List<KeyProvider> providers = providersMap.get(realm.getId());
         if (providers == null) {
@@ -250,10 +248,10 @@ public class DefaultKeyManager implements KeyManager {
 
             for (ComponentModel c : components) {
                 try {
-                    ProviderFactory<KeyProvider> f = session.getSessionFactory().getProviderFactory(KeyProvider.class, c.getProviderId());
+                    ProviderFactory<KeyProvider> f = keyProviderFactories.get(c.getProviderId());
                     KeyProviderFactory factory = (KeyProviderFactory) f;
-                    KeyProvider provider = factory.create(session, c);
-                    session.enlistForClose(provider);
+                    KeyProvider provider = factory.create(c);
+                    // session.enlistForClose(provider);
                     providers.add(provider);
                 } catch (Throwable t) {
                     LOG.error("Failed to load provider {}", c.getId());

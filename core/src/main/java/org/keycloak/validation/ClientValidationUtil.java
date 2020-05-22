@@ -39,7 +39,6 @@ public class ClientValidationUtil {
     public interface ErrorHandler {
 
         void onError(ClientValidationContext context);
-
     }
 
     private static class DefaultClientValidationContext implements ClientValidationContext {

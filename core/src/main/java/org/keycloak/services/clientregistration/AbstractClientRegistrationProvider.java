@@ -40,7 +40,6 @@ import javax.ws.rs.core.Response;
  */
 public abstract class AbstractClientRegistrationProvider implements ClientRegistrationProvider {
 
-    protected KeycloakSession session;
     protected EventBuilder event;
     protected ClientRegistrationAuth auth;
 
@@ -50,10 +49,14 @@ public abstract class AbstractClientRegistrationProvider implements ClientRegist
     private ModelToRepresentation modelToRepresentation;
     @Autowired
     private ClientValidationUtil clientValidationUtil;
-
-    public AbstractClientRegistrationProvider(KeycloakSession session) {
-        this.session = session;
-    }
+    @Autowired
+    private ClientRegistrationPolicyManager clientRegistrationPolicyManager;
+    @Autowired
+    private ClientRegistrationTokenUtils clientRegistrationTokenUtils;
+    @Autowired
+    private KeycloakContext keycloakContext;
+    @Autowired
+    private RealmProvider realmProvider;
 
     public ClientRepresentation create(ClientRegistrationContext context) {
         ClientRepresentation client = context.getClient();
@@ -73,34 +76,33 @@ public abstract class AbstractClientRegistrationProvider implements ClientRegist
         }
 
         try {
-            RealmModel realm = session.getContext().getRealm();
-            ClientModel clientModel = new ClientManager(new RealmManager(session)).createClient(session, realm, client, true);
+            RealmModel realm = keycloakContext.getRealm();
+            ClientModel clientModel = new ClientManager(new RealmManager()).createClient(realm, client, true);
 
             if (clientModel.isServiceAccountsEnabled()) {
-                new ClientManager(new RealmManager(session)).enableServiceAccount(clientModel);
+                new ClientManager(new RealmManager()).enableServiceAccount(clientModel);
             }
 
             if (Boolean.TRUE.equals(client.getAuthorizationServicesEnabled())) {
-                representationToModel.createResourceServer(clientModel, session, true);
+                representationToModel.createResourceServer(clientModel, true);
             }
 
-            ClientRegistrationPolicyManager.triggerAfterRegister(context, registrationAuth, clientModel);
+            clientRegistrationPolicyManager.triggerAfterRegister(context, registrationAuth, clientModel);
 
             client = modelToRepresentation.toRepresentation(clientModel);
 
             client.setSecret(clientModel.getSecret());
 
-            clientValidationUtil.validate(session, clientModel, true, c -> {
-                session.getTransactionManager().setRollbackOnly();
-                throw new ErrorResponseException(ErrorCodes.INVALID_CLIENT_METADATA, c.getError(), Response.Status.BAD_REQUEST);
+            clientValidationUtil.validate(clientModel, true, c -> {
+                throw new ErrorResponseException(ErrorCodes.INVALID_CLIENT_METADATA, "", Response.Status.BAD_REQUEST);
             });
 
-            String registrationAccessToken = ClientRegistrationTokenUtils.updateRegistrationAccessToken(session, clientModel, registrationAuth);
+            String registrationAccessToken = clientRegistrationTokenUtils.updateRegistrationAccessToken(clientModel, registrationAuth);
             client.setRegistrationAccessToken(registrationAccessToken);
 
             if (auth.isInitialAccessToken()) {
                 ClientInitialAccessModel initialAccessModel = auth.getInitialAccessModel();
-                session.realms().decreaseRemainingCount(realm, initialAccessModel);
+                realmProvider.decreaseRemainingCount(realm, initialAccessModel);
             }
 
             event.client(client.getClientId()).success();
@@ -121,7 +123,7 @@ public abstract class AbstractClientRegistrationProvider implements ClientRegist
         }
 
         if (auth.isRegistrationAccessToken()) {
-            String registrationAccessToken = ClientRegistrationTokenUtils.updateTokenSignature(session, auth);
+            String registrationAccessToken = clientRegistrationTokenUtils.updateTokenSignature(auth);
             rep.setRegistrationAccessToken(registrationAccessToken);
         }
 
@@ -134,7 +136,7 @@ public abstract class AbstractClientRegistrationProvider implements ClientRegist
 
         event.event(EventType.CLIENT_UPDATE).client(clientId);
 
-        ClientModel client = session.getContext().getRealm().getClientByClientId(clientId);
+        ClientModel client = keycloakContext.getRealm().getClientByClientId(clientId);
         RegistrationAuth registrationAuth = auth.requireUpdate(context, client);
 
         if (!client.getClientId().equals(rep.getClientId())) {
@@ -154,32 +156,30 @@ public abstract class AbstractClientRegistrationProvider implements ClientRegist
         RepresentationToModel.updateClient(rep, client);
         RepresentationToModel.updateClientProtocolMappers(rep, client);
 
-        clientValidationUtil.validate(session, client, false, c -> {
-            session.getTransactionManager().setRollbackOnly();
+        clientValidationUtil.validate(client, false, c -> {
             throw new ErrorResponseException(ErrorCodes.INVALID_CLIENT_METADATA, c.getError(), Response.Status.BAD_REQUEST);
         });
 
         rep = modelToRepresentation.toRepresentation(client);
 
         if (auth.isRegistrationAccessToken()) {
-            String registrationAccessToken = ClientRegistrationTokenUtils.updateRegistrationAccessToken(session, client, auth.getRegistrationAuth());
+            String registrationAccessToken = clientRegistrationTokenUtils.updateRegistrationAccessToken(client, auth.getRegistrationAuth());
             rep.setRegistrationAccessToken(registrationAccessToken);
         }
 
-        ClientRegistrationPolicyManager.triggerAfterUpdate(context, registrationAuth, client);
+        clientRegistrationPolicyManager.triggerAfterUpdate(context, registrationAuth, client);
 
         event.client(client.getClientId()).success();
         return rep;
     }
 
-
     public void delete(String clientId) {
         event.event(EventType.CLIENT_DELETE).client(clientId);
 
-        ClientModel client = session.getContext().getRealm().getClientByClientId(clientId);
+        ClientModel client = keycloakContext.getRealm().getClientByClientId(clientId);
         auth.requireDelete(client);
 
-        if (new ClientManager(new RealmManager(session)).removeClient(session.getContext().getRealm(), client)) {
+        if (new ClientManager(new RealmManager()).removeClient(keycloakContext.getRealm(), client)) {
             event.client(client.getClientId()).success();
         } else {
             throw new ForbiddenException();

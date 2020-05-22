@@ -32,11 +32,13 @@ import org.keycloak.events.EventBuilder;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.UserProvider;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.stereotype.ProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -57,11 +59,16 @@ public class ResetCredentialChooseUser implements Authenticator, AuthenticatorFa
     };
     private static final Logger LOG = LoggerFactory.getLogger(ResetCredentialChooseUser.class);
 
+    @Autowired
+    private AbstractIdpAuthenticator abstractIdpAuthenticator;
+    @Autowired
+    private UserProvider userProvider;
+
     @Override
     public void authenticate(AuthenticationFlowContext context) {
         String existingUserId = context.getAuthenticationSession().getAuthNote(AbstractIdpAuthenticator.EXISTING_USER_INFO);
         if (existingUserId != null) {
-            UserModel existingUser = AbstractIdpAuthenticator.getExistingUser(context.getSession(), context.getRealm(), context.getAuthenticationSession());
+            UserModel existingUser = abstractIdpAuthenticator.getExistingUser(context.getRealm(), context.getAuthenticationSession());
 
             LOG.debug("Forget-password triggered when reauthenticating user after first broker login. Prefilling reset-credential-choose-user screen with user '{}' ", existingUser.getUsername());
             context.setUser(existingUser);
@@ -72,7 +79,7 @@ public class ResetCredentialChooseUser implements Authenticator, AuthenticatorFa
 
         String actionTokenUserId = context.getAuthenticationSession().getAuthNote(DefaultActionTokenKey.ACTION_TOKEN_USER_ID);
         if (actionTokenUserId != null) {
-            UserModel existingUser = context.getSession().users().getUserById(actionTokenUserId, context.getRealm());
+            UserModel existingUser = userProvider.getUserById(actionTokenUserId, context.getRealm());
 
             // Action token logics handles checks for user ID validity and user being enabled
 
@@ -103,9 +110,9 @@ public class ResetCredentialChooseUser implements Authenticator, AuthenticatorFa
         username = username.trim();
 
         RealmModel realm = context.getRealm();
-        UserModel user = context.getSession().users().getUserByUsername(username, realm);
+        UserModel user = userProvider.getUserByUsername(username, realm);
         if (user == null && realm.isLoginWithEmailAllowed() && username.contains("@")) {
-            user = context.getSession().users().getUserByEmail(username, realm);
+            user = userProvider.getUserByEmail(username, realm);
         }
 
         context.getAuthenticationSession().setAuthNote(AbstractUsernameFormAuthenticator.ATTEMPTED_USERNAME, username);

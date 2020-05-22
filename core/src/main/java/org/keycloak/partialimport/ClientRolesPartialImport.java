@@ -17,7 +17,6 @@
 package org.keycloak.partialimport;
 
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleModel;
 import org.keycloak.representations.idm.ClientRepresentation;
@@ -60,7 +59,7 @@ public class ClientRolesPartialImport {
         return clientId + "-->" + getName(roleRep);
     }
 
-    public boolean exists(RealmModel realm, KeycloakSession session, String clientId, RoleRepresentation roleRep) {
+    public boolean exists(RealmModel realm, String clientId, RoleRepresentation roleRep) {
         ClientModel client = realm.getClientByClientId(clientId);
         if (client == null) return false;
 
@@ -107,7 +106,7 @@ public class ClientRolesPartialImport {
         client.removeRole(role);
     }
 
-    public void prepare(PartialImportRepresentation partialImportRep, RealmModel realm, KeycloakSession session) throws ErrorResponseException {
+    public void prepare(PartialImportRepresentation partialImportRep, RealmModel realm) throws ErrorResponseException {
         Map<String, List<RoleRepresentation>> repList = getRepList(partialImportRep);
         if (repList == null || repList.isEmpty()) return;
 
@@ -119,7 +118,7 @@ public class ClientRolesPartialImport {
             toOverwrite.put(clientId, new HashSet<>());
             toSkip.put(clientId, new HashSet<>());
             for (RoleRepresentation roleRep : repList.get(clientId)) {
-                if (exists(realm, session, clientId, roleRep)) {
+                if (exists(realm, clientId, roleRep)) {
                     switch (partialImportRep.getPolicy()) {
                         case SKIP:
                             toSkip.get(clientId).add(roleRep);

@@ -6,9 +6,10 @@ import org.jboss.resteasy.spi.HttpResponse;
 import org.keycloak.Config;
 import org.keycloak.common.util.Resteasy;
 import org.keycloak.forms.login.freemarker.model.UrlBean;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.KeycloakTransaction;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.ThemeManager;
 import org.keycloak.representations.idm.OAuth2ErrorRepresentation;
 import org.keycloak.services.managers.RealmManager;
 import org.keycloak.services.messages.Messages;
@@ -22,6 +23,7 @@ import org.keycloak.utils.MediaType;
 import org.keycloak.utils.MediaTypeMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
@@ -43,14 +45,17 @@ public class KeycloakErrorHandler implements ExceptionMapper<Throwable> {
     public static final String UNCAUGHT_SERVER_ERROR_TEXT = "Uncaught server error";
     private static final Logger LOG = LoggerFactory.getLogger(KeycloakErrorHandler.class);
     private static final Pattern realmNamePattern = Pattern.compile(".*/realms/([^/]+).*");
-    @Context
-    private KeycloakSession session;
 
     @Context
     private HttpHeaders headers;
 
     @Context
     private HttpResponse response;
+
+    @Autowired
+    private ThemeManager themeManager;
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     @Override
     public Response toResponse(Throwable throwable) {
@@ -77,9 +82,9 @@ public class KeycloakErrorHandler implements ExceptionMapper<Throwable> {
         try {
             RealmModel realm = resolveRealm();
 
-            Theme theme = session.theme().getTheme(Theme.Type.LOGIN);
+            Theme theme = themeManager.getTheme(Theme.Type.LOGIN);
 
-            Locale locale = session.getContext().resolveLocale(null);
+            Locale locale = keycloakContext.resolveLocale(null);
 
             FreeMarkerUtil freeMarker = new FreeMarkerUtil();
             Map<String, Object> attributes = initAttributes(realm, theme, locale, statusCode);
@@ -119,7 +124,7 @@ public class KeycloakErrorHandler implements ExceptionMapper<Throwable> {
     }
 
     private RealmModel resolveRealm() {
-        String path = session.getContext().getUri().getPath();
+        String path = keycloakContext.getUri().getPath();
         Matcher m = realmNamePattern.matcher(path);
         String realmName;
         if (m.matches()) {
@@ -128,13 +133,13 @@ public class KeycloakErrorHandler implements ExceptionMapper<Throwable> {
             realmName = Config.getAdminRealm();
         }
 
-        RealmManager realmManager = new RealmManager(session);
+        RealmManager realmManager = new RealmManager();
         RealmModel realm = realmManager.getRealmByName(realmName);
         if (realm == null) {
             realm = realmManager.getRealmByName(Config.getAdminRealm());
         }
 
-        session.getContext().setRealm(realm);
+        keycloakContext.setRealm(realm);
 
         return realm;
     }
@@ -146,8 +151,8 @@ public class KeycloakErrorHandler implements ExceptionMapper<Throwable> {
         attributes.put("statusCode", statusCode);
 
         attributes.put("realm", realm);
-        attributes.put("url", new UrlBean(realm, theme, session.getContext().getUri().getBaseUri(), null));
-        attributes.put("locale", new LocaleBean(realm, locale, session.getContext().getUri().getBaseUriBuilder(), messagesBundle));
+        attributes.put("url", new UrlBean(realm, theme, keycloakContext.getUri().getBaseUri(), null));
+        attributes.put("locale", new LocaleBean(realm, locale, keycloakContext.getUri().getBaseUriBuilder(), messagesBundle));
 
 
         String errorKey = statusCode == 404 ? Messages.PAGE_NOT_FOUND : Messages.INTERNAL_SERVER_ERROR;

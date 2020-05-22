@@ -17,7 +17,6 @@
 
 package org.keycloak.exportimport.util;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionTask;
 
 import java.io.IOException;
@@ -30,13 +29,13 @@ import java.io.IOException;
 public abstract class ExportImportSessionTask implements KeycloakSessionTask {
 
     @Override
-    public void run(KeycloakSession session) {
+    public void run() {
         try {
-            runExportImportTask(session);
+            runExportImportTask();
         } catch (IOException ioe) {
             throw new RuntimeException("Error during export/import: " + ioe.getMessage(), ioe);
         }
     }
 
-    protected abstract void runExportImportTask(KeycloakSession session) throws IOException;
+    protected abstract void runExportImportTask() throws IOException;
 }

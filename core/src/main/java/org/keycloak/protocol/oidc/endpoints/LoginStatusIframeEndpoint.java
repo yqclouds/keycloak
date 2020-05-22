@@ -20,19 +20,20 @@ package org.keycloak.protocol.oidc.endpoints;
 import org.keycloak.common.Version;
 import org.keycloak.common.util.UriUtils;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.RealmProvider;
 import org.keycloak.protocol.oidc.utils.WebOriginsUtils;
 import org.keycloak.services.util.CacheControlUtil;
 import org.keycloak.services.util.P3PHelper;
 import org.keycloak.utils.MediaType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.CacheControl;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.InputStream;
@@ -42,9 +43,10 @@ import java.util.Set;
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class LoginStatusIframeEndpoint {
-
-    @Context
-    private KeycloakSession session;
+    @Autowired
+    private KeycloakContext keycloakContext;
+    @Autowired
+    private RealmProvider realmProvider;
 
     @GET
     @Produces(MediaType.TEXT_HTML_UTF_8)
@@ -68,15 +70,18 @@ public class LoginStatusIframeEndpoint {
         }
     }
 
+    @Autowired
+    private WebOriginsUtils webOriginsUtils;
+
     @GET
     @Path("init")
     public Response preCheck(@QueryParam("client_id") String clientId, @QueryParam("origin") String origin) {
         try {
-            UriInfo uriInfo = session.getContext().getUri();
-            RealmModel realm = session.getContext().getRealm();
-            ClientModel client = session.realms().getClientByClientId(clientId, realm);
+            UriInfo uriInfo = keycloakContext.getUri();
+            RealmModel realm = keycloakContext.getRealm();
+            ClientModel client = realmProvider.getClientByClientId(clientId, realm);
             if (client != null && client.isEnabled()) {
-                Set<String> validWebOrigins = WebOriginsUtils.resolveValidWebOrigins(session, client);
+                Set<String> validWebOrigins = webOriginsUtils.resolveValidWebOrigins(client);
                 validWebOrigins.add(UriUtils.getOrigin(uriInfo.getRequestUri()));
                 if (validWebOrigins.contains("*") || validWebOrigins.contains(origin)) {
                     return Response.noContent().build();

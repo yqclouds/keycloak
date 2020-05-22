@@ -22,7 +22,7 @@ import org.hibernate.jpa.boot.internal.PersistenceXmlParser;
 import org.hibernate.jpa.boot.spi.Bootstrap;
 import org.keycloak.connections.jpa.entityprovider.JpaEntityProvider;
 import org.keycloak.connections.jpa.entityprovider.ProxyClassLoader;
-import org.keycloak.models.KeycloakSession;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -44,12 +44,12 @@ public class JpaUtils {
         return (schema == null) ? tableName : schema + "." + tableName;
     }
 
-    public static EntityManagerFactory createEntityManagerFactory(KeycloakSession session, String unitName, Map<String, Object> properties, boolean jta) {
+    public EntityManagerFactory createEntityManagerFactory(String unitName, Map<String, Object> properties, boolean jta) {
         PersistenceUnitTransactionType txType = jta ? PersistenceUnitTransactionType.JTA : PersistenceUnitTransactionType.RESOURCE_LOCAL;
         List<ParsedPersistenceXmlDescriptor> persistenceUnits = PersistenceXmlParser.locatePersistenceUnits(properties);
         for (ParsedPersistenceXmlDescriptor persistenceUnit : persistenceUnits) {
             if (persistenceUnit.getName().equals(unitName)) {
-                List<Class<?>> providedEntities = getProvidedEntities(session);
+                List<Class<?>> providedEntities = getProvidedEntities();
                 for (Class<?> entityClass : providedEntities) {
                     // Add all extra entity classes to the persistence unit.
                     persistenceUnit.addClasses(entityClass.getName());
@@ -64,16 +64,17 @@ public class JpaUtils {
         throw new RuntimeException("Persistence unit '" + unitName + "' not found");
     }
 
+    @Autowired
+    private Set<JpaEntityProvider> entityProviders;
+
     /**
      * Get a list of all provided entities by looping over all configured entity providers.
      *
-     * @param session the keycloak session
      * @return a list of all provided entities (can be an empty list)
      */
-    public static List<Class<?>> getProvidedEntities(KeycloakSession session) {
+    public List<Class<?>> getProvidedEntities() {
         List<Class<?>> providedEntityClasses = new ArrayList<>();
         // Get all configured entity providers.
-        Set<JpaEntityProvider> entityProviders = session.getAllProviders(JpaEntityProvider.class);
         // For every provider, add all entity classes to the list.
         for (JpaEntityProvider entityProvider : entityProviders) {
             providedEntityClasses.addAll(entityProvider.getEntities());

@@ -18,14 +18,15 @@
 package org.keycloak.services.clientregistration;
 
 import org.keycloak.events.EventBuilder;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.services.ErrorResponseException;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -34,8 +35,10 @@ public class ClientRegistrationService {
 
     private EventBuilder event;
 
-    @Context
-    private KeycloakSession session;
+    @Autowired
+    private Map<String, ClientRegistrationProvider> clientRegistrationProviders;
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     public ClientRegistrationService(EventBuilder event) {
         this.event = event;
@@ -45,20 +48,20 @@ public class ClientRegistrationService {
     public Object provider(@PathParam("provider") String providerId) {
         checkSsl();
 
-        ClientRegistrationProvider provider = session.getProvider(ClientRegistrationProvider.class, providerId);
+        ClientRegistrationProvider provider = clientRegistrationProviders.get(providerId);
 
         if (provider == null) {
             throw new NotFoundException("Client registration provider not found");
         }
 
         provider.setEvent(event);
-        provider.setAuth(new ClientRegistrationAuth(session, provider, event, providerId));
+        provider.setAuth(new ClientRegistrationAuth(provider, event, providerId));
         return provider;
     }
 
     private void checkSsl() {
-        if (!session.getContext().getUri().getBaseUri().getScheme().equals("https")) {
-            if (session.getContext().getRealm().getSslRequired().isRequired(session.getContext().getConnection())) {
+        if (!keycloakContext.getUri().getBaseUri().getScheme().equals("https")) {
+            if (keycloakContext.getRealm().getSslRequired().isRequired(keycloakContext.getConnection())) {
                 throw new ErrorResponseException("invalid_request", "HTTPS required", Response.Status.FORBIDDEN);
             }
         }

@@ -19,13 +19,11 @@ package org.keycloak.services.managers;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.hsbc.unified.iam.core.util.Time;
-import org.keycloak.authentication.ClientAuthenticator;
 import org.keycloak.authentication.ClientAuthenticatorFactory;
 import org.keycloak.common.constants.ServiceAccountConstants;
 import org.keycloak.models.*;
 import org.keycloak.models.session.UserSessionPersisterProvider;
 import org.keycloak.models.utils.RepresentationToModel;
-import org.keycloak.protocol.LoginProtocol;
 import org.keycloak.protocol.LoginProtocolFactory;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.mappers.UserSessionNoteMapper;
@@ -56,20 +54,22 @@ public class ClientManager {
     public ClientManager() {
     }
 
+    @Autowired
+    private Map<String, LoginProtocolFactory> loginProtocolFactories;
+
     /**
      * Should not be called from an import.  This really expects that the client is created from the admin console.
      *
-     * @param session
      * @param realm
      * @param rep
      * @param addDefaultRoles
      * @return
      */
-    public static ClientModel createClient(KeycloakSession session, RealmModel realm, ClientRepresentation rep, boolean addDefaultRoles) {
-        ClientModel client = RepresentationToModel.createClient(session, realm, rep, addDefaultRoles);
+    public ClientModel createClient(RealmModel realm, ClientRepresentation rep, boolean addDefaultRoles) {
+        ClientModel client = RepresentationToModel.createClient(realm, rep, addDefaultRoles);
 
         if (rep.getProtocol() != null) {
-            LoginProtocolFactory providerFactory = (LoginProtocolFactory) session.getSessionFactory().getProviderFactory(LoginProtocol.class, rep.getProtocol());
+            LoginProtocolFactory providerFactory = loginProtocolFactories.get(rep.getProtocol());
             providerFactory.setupClientDefaults(rep, client);
         }
 

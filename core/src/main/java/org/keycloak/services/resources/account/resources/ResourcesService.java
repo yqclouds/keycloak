@@ -16,12 +16,11 @@
  */
 package org.keycloak.services.resources.account.resources;
 
-import org.jboss.resteasy.spi.HttpRequest;
 import com.hsbc.unified.iam.facade.model.authorization.PermissionTicketModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
+import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authorization.store.PermissionTicketStore;
 import org.keycloak.common.util.KeycloakUriBuilder;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.managers.Auth;
 import org.keycloak.utils.MediaType;
@@ -39,7 +38,7 @@ import java.util.stream.Stream;
  */
 public class ResourcesService extends AbstractResourceService {
 
-    public ResourcesService(KeycloakSession session, UserModel user, Auth auth, HttpRequest request) {
+    public ResourcesService(UserModel user, Auth auth, HttpRequest request) {
         super(user, auth, request);
     }
 

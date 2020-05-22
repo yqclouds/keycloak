@@ -23,7 +23,10 @@ import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.exportimport.util.ExportUtils;
-import org.keycloak.models.*;
+import org.keycloak.models.ClientModel;
+import org.keycloak.models.KeycloakContext;
+import org.keycloak.models.UserModel;
+import org.keycloak.models.UserProvider;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.authorization.*;
@@ -129,7 +132,7 @@ public class ResourceServerService {
 
         rep.setClientId(client.getId());
 
-        RepresentationToModel.toModel(rep, authorizationProvider);
+        representationToModel.toModel(rep, authorizationProvider);
 
         audit(OperationType.UPDATE, keycloakContext.getUri(), false);
 

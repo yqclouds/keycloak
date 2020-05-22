@@ -17,7 +17,6 @@
 package org.keycloak.services;
 
 import org.keycloak.Config;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.*;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
@@ -29,6 +28,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEvent;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -76,7 +76,7 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, In
     }
 
     @Override
-    public void publish(ProviderEvent event) {
+    public void publish(ApplicationEvent event) {
         for (ProviderEventListener listener : listeners) {
             listener.onEvent(event);
         }

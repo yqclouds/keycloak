@@ -17,10 +17,11 @@
 
 package org.keycloak.protocol.oidc;
 
+import com.hsbc.unified.iam.core.ClientConnection;
+import com.hsbc.unified.iam.core.constants.Constants;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.crypto.KeyType;
 import org.keycloak.crypto.KeyUse;
 import org.keycloak.crypto.KeyWrapper;
@@ -29,8 +30,8 @@ import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.jose.jwk.JSONWebKeySet;
 import org.keycloak.jose.jwk.JWK;
 import org.keycloak.jose.jwk.JWKBuilder;
-import com.hsbc.unified.iam.core.constants.Constants;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeyManager;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.oidc.endpoints.*;
 import org.keycloak.protocol.oidc.ext.OIDCExtProvider;
@@ -57,9 +58,6 @@ public class OIDCLoginProtocolService {
     private RealmModel realm;
     private TokenManager tokenManager;
     private EventBuilder event;
-
-    @Context
-    private KeycloakSession session;
 
     @Context
     private HttpHeaders headers;
@@ -181,13 +179,16 @@ public class OIDCLoginProtocolService {
         return Cors.add(request, Response.ok()).allowedMethods("GET").preflight().auth().build();
     }
 
+    @Autowired
+    private KeyManager keyManager;
+
     @GET
     @Path("certs")
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public Response certs() {
         List<JWK> keys = new LinkedList<>();
-        for (KeyWrapper k : session.keys().getKeys(realm)) {
+        for (KeyWrapper k : keyManager.getKeys(realm)) {
             if (k.getStatus().isEnabled() && k.getUse().equals(KeyUse.SIG) && k.getPublicKey() != null) {
                 JWKBuilder b = JWKBuilder.create().kid(k.getKid()).algorithm(k.getAlgorithm());
                 if (k.getType().equals(KeyType.RSA)) {
@@ -235,6 +236,9 @@ public class OIDCLoginProtocolService {
         }
     }
 
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     /**
      * For KeycloakInstalled and kcinit login where command line login is delegated to a browser.
      * This clears login cookies and outputs login success or failure messages.
@@ -245,8 +249,8 @@ public class OIDCLoginProtocolService {
     @GET
     @Path("delegated")
     public Response kcinitBrowserLoginComplete(@QueryParam("error") boolean error) {
-        AuthenticationManager.expireIdentityCookie(realm, session.getContext().getUri(), clientConnection);
-        AuthenticationManager.expireRememberMeCookie(realm, session.getContext().getUri(), clientConnection);
+        AuthenticationManager.expireIdentityCookie(realm, keycloakContext.getUri(), clientConnection);
+        AuthenticationManager.expireRememberMeCookie(realm, keycloakContext.getUri(), clientConnection);
         if (error) {
             return loginFormsProvider
                     .setAttribute("messageHeader", loginFormsProvider.getMessage(Messages.DELEGATION_FAILED_HEADER))

@@ -17,19 +17,18 @@
 
 package org.keycloak.authorization.policy.provider.group;
 
+import com.hsbc.unified.iam.core.util.JsonSerialization;
+import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import org.keycloak.Config;
 import org.keycloak.authorization.AuthorizationProvider;
-import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.models.GroupModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.authorization.GroupPolicyRepresentation;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;

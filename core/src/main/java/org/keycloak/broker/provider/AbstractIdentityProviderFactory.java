@@ -16,8 +16,6 @@
  */
 package org.keycloak.broker.provider;
 
-import org.keycloak.models.KeycloakSession;
-
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +30,7 @@ public abstract class AbstractIdentityProviderFactory<T extends IdentityProvider
     }
 
     @Override
-    public Map<String, String> parseConfig(KeycloakSession session, InputStream inputStream) {
+    public Map<String, String> parseConfig(InputStream inputStream) {
         return new HashMap<>();
     }
 }

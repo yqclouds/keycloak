@@ -20,14 +20,15 @@ package org.keycloak.services.clientregistration.policy.impl;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.RealmProvider;
 import org.keycloak.services.clientregistration.ClientRegistrationContext;
 import org.keycloak.services.clientregistration.ClientRegistrationProvider;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -40,14 +41,15 @@ public class ClientScopesClientRegistrationPolicy implements ClientRegistrationP
 
     private static final Logger LOG = LoggerFactory.getLogger(ClientScopesClientRegistrationPolicy.class);
 
-    private final KeycloakSession session;
     private final RealmModel realm;
     private final ComponentModel componentModel;
 
-    public ClientScopesClientRegistrationPolicy(KeycloakSession session, ComponentModel componentModel) {
-        this.session = session;
+    @Autowired
+    private RealmProvider realmProvider;
+
+    public ClientScopesClientRegistrationPolicy(ComponentModel componentModel) {
         this.componentModel = componentModel;
-        this.realm = session.realms().getRealm(componentModel.getParentId());
+        this.realm = realmProvider.getRealm(componentModel.getParentId());
     }
 
     @Override

@@ -47,13 +47,12 @@ public abstract class AbstractPairwiseSubMapper extends AbstractOIDCProtocolMapp
     /**
      * Override to add additional configuration validation. Called when instance of mapperModel is created/updated for this protocolMapper through admin endpoint.
      *
-     * @param session
      * @param realm
      * @param mapperContainer client or clientScope
      * @param mapperModel
      * @throws ProtocolMapperConfigException if configuration provided in mapperModel is not valid
      */
-    public void validateAdditionalConfig(KeycloakSession session, RealmModel realm, ProtocolMapperContainerModel mapperContainer, ProtocolMapperModel mapperModel) throws ProtocolMapperConfigException {
+    public void validateAdditionalConfig(RealmModel realm, ProtocolMapperContainerModel mapperContainer, ProtocolMapperModel mapperModel) throws ProtocolMapperConfigException {
     }
 
     @Override
@@ -62,19 +61,19 @@ public abstract class AbstractPairwiseSubMapper extends AbstractOIDCProtocolMapp
     }
 
     @Override
-    public IDToken transformIDToken(IDToken token, ProtocolMapperModel mappingModel, KeycloakSession session, UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
+    public IDToken transformIDToken(IDToken token, ProtocolMapperModel mappingModel, UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
         setIDTokenSubject(token, generateSub(mappingModel, getSectorIdentifier(clientSessionCtx.getClientSession().getClient(), mappingModel), userSession.getUser().getId()));
         return token;
     }
 
     @Override
-    public AccessToken transformAccessToken(AccessToken token, ProtocolMapperModel mappingModel, KeycloakSession session, UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
+    public AccessToken transformAccessToken(AccessToken token, ProtocolMapperModel mappingModel, UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
         setAccessTokenSubject(token, generateSub(mappingModel, getSectorIdentifier(clientSessionCtx.getClientSession().getClient(), mappingModel), userSession.getUser().getId()));
         return token;
     }
 
     @Override
-    public AccessToken transformUserInfoToken(AccessToken token, ProtocolMapperModel mappingModel, KeycloakSession session, UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
+    public AccessToken transformUserInfoToken(AccessToken token, ProtocolMapperModel mappingModel, UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
         setUserInfoTokenSubject(token, generateSub(mappingModel, getSectorIdentifier(clientSessionCtx.getClientSession().getClient(), mappingModel), userSession.getUser().getId()));
         return token;
     }
@@ -108,13 +107,13 @@ public abstract class AbstractPairwiseSubMapper extends AbstractOIDCProtocolMapp
     }
 
     @Override
-    public final void validateConfig(KeycloakSession session, RealmModel realm, ProtocolMapperContainerModel mapperContainer, ProtocolMapperModel mapperModel) throws ProtocolMapperConfigException {
+    public final void validateConfig(RealmModel realm, ProtocolMapperContainerModel mapperContainer, ProtocolMapperModel mapperModel) throws ProtocolMapperConfigException {
         ClientModel client = null;
         if (mapperContainer instanceof ClientModel) {
             client = (ClientModel) mapperContainer;
-            pairwiseSubMapperValidator.validate(session, client, mapperModel);
+            pairwiseSubMapperValidator.validate(client, mapperModel);
         }
-        validateAdditionalConfig(session, realm, mapperContainer, mapperModel);
+        validateAdditionalConfig(realm, mapperContainer, mapperModel);
     }
 
     @Override

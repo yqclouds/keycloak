@@ -15,6 +15,7 @@ import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.managers.Auth;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.utils.MediaType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
@@ -32,18 +33,18 @@ public class AccountCredentialResource {
     public static final String USER_CREDENTIALS = "user-credentials";
 
 
-    private final KeycloakSession session;
+    @Autowired
+    private KeycloakContext keycloakContext;
     private final EventBuilder event;
     private final UserModel user;
     private final RealmModel realm;
     private Auth auth;
 
-    public AccountCredentialResource(KeycloakSession session, EventBuilder event, UserModel user, Auth auth) {
-        this.session = session;
+    public AccountCredentialResource(EventBuilder event, UserModel user, Auth auth) {
         this.event = event;
         this.user = user;
         this.auth = auth;
-        realm = session.getContext().getRealm();
+        realm = keycloakContext.getRealm();
     }
 
     /**
@@ -94,7 +95,7 @@ public class AccountCredentialResource {
 
             CredentialTypeMetadataContext ctx = CredentialTypeMetadataContext.builder()
                     .user(user)
-                    .build(session);
+                    .build();
             CredentialTypeMetadata metadata = credentialProvider.getCredentialTypeMetadata(ctx);
 
             List<CredentialRepresentation> userCredentialModels = null;

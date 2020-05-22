@@ -21,12 +21,10 @@ package org.keycloak.authentication.authenticators.browser;
 import com.hsbc.unified.iam.facade.model.credential.WebAuthnCredentialModel;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.RequiredActionFactory;
-import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.authentication.requiredactions.WebAuthnPasswordlessRegisterFactory;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.credential.WebAuthnPasswordlessCredentialProvider;
 import org.keycloak.credential.WebAuthnPasswordlessCredentialProviderFactory;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.WebAuthnPolicy;
@@ -64,9 +62,12 @@ public class WebAuthnPasswordlessAuthenticator extends WebAuthnAuthenticator {
         }
     }
 
+    @Autowired
+    private Map<String, WebAuthnPasswordlessRegisterFactory> webAuthnPasswordlessRegisterFactories;
+
     @Override
-    public List<RequiredActionFactory> getRequiredActions(KeycloakSession session) {
-        return Collections.singletonList((WebAuthnPasswordlessRegisterFactory) session.getSessionFactory().getProviderFactory(RequiredActionProvider.class, WebAuthnPasswordlessRegisterFactory.PROVIDER_ID));
+    public List<RequiredActionFactory> getRequiredActions() {
+        return Collections.singletonList(webAuthnPasswordlessRegisterFactories.get(WebAuthnPasswordlessRegisterFactory.PROVIDER_ID));
     }
 
     @Autowired

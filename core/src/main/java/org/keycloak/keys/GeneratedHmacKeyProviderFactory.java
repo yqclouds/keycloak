@@ -17,16 +17,17 @@
 
 package org.keycloak.keys;
 
+import com.hsbc.unified.iam.core.crypto.Algorithm;
 import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentModel;
-import com.hsbc.unified.iam.core.crypto.Algorithm;
 import org.keycloak.crypto.KeyUse;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -48,14 +49,17 @@ public class GeneratedHmacKeyProviderFactory extends AbstractGeneratedSecretKeyP
             .build();
 
     @Override
-    public GeneratedHmacKeyProvider create(KeycloakSession session, ComponentModel model) {
+    public GeneratedHmacKeyProvider create(ComponentModel model) {
         return new GeneratedHmacKeyProvider(model);
     }
 
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     @Override
-    public boolean createFallbackKeys(KeycloakSession session, KeyUse keyUse, String algorithm) {
+    public boolean createFallbackKeys(KeyUse keyUse, String algorithm) {
         if (keyUse.equals(KeyUse.SIG) && (algorithm.equals(Algorithm.HS256) || algorithm.equals(Algorithm.HS384) || algorithm.equals(Algorithm.HS512))) {
-            RealmModel realm = session.getContext().getRealm();
+            RealmModel realm = keycloakContext.getRealm();
 
             ComponentModel generated = new ComponentModel();
             generated.setName("fallback-" + algorithm);

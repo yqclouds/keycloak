@@ -18,9 +18,8 @@
 
 package org.keycloak.authentication.authenticators.browser;
 
-import org.keycloak.authentication.Authenticator;
-import org.keycloak.models.KeycloakSession;
 import com.hsbc.unified.iam.facade.model.credential.WebAuthnCredentialModel;
+import org.keycloak.authentication.Authenticator;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 

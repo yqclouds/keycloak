@@ -3,7 +3,6 @@ package org.keycloak.crypto;
 import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.x9.X9IntegerConverter;
 import org.keycloak.common.VerificationException;
-import org.keycloak.models.KeycloakSession;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

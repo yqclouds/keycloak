@@ -25,11 +25,12 @@ import org.keycloak.authentication.authenticators.broker.util.ExistingUserInfo;
 import org.keycloak.authentication.authenticators.broker.util.SerializedBrokeredIdentityContext;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.events.Errors;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.UserProvider;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.sessions.AuthenticationSessionModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.Response;
 
@@ -59,7 +60,10 @@ public abstract class AbstractIdpAuthenticator implements Authenticator {
     // Set if nested firstBrokerLogin is detected, allowing to report a detailed error
     public static final String NESTED_FIRST_BROKER_CONTEXT = "NESTED_FIRST_BROKER_CONTEXT";
 
-    public static UserModel getExistingUser(KeycloakSession session, RealmModel realm, AuthenticationSessionModel authSession) {
+    @Autowired
+    private UserProvider userProvider;
+
+    public UserModel getExistingUser(RealmModel realm, AuthenticationSessionModel authSession) {
         String existingUserId = authSession.getAuthNote(EXISTING_USER_INFO);
         if (existingUserId == null) {
             throw new AuthenticationFlowException("Unexpected state. There is no existing duplicated user identified in ClientSession",
@@ -68,7 +72,7 @@ public abstract class AbstractIdpAuthenticator implements Authenticator {
 
         ExistingUserInfo duplication = ExistingUserInfo.deserialize(existingUserId);
 
-        UserModel existingUser = session.users().getUserById(duplication.getExistingUserId(), realm);
+        UserModel existingUser = userProvider.getUserById(duplication.getExistingUserId(), realm);
         if (existingUser == null) {
             throw new AuthenticationFlowException("User with ID '" + existingUserId + "' not found.", AuthenticationFlowError.INVALID_USER);
         }

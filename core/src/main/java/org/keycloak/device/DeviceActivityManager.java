@@ -18,13 +18,13 @@
 package org.keycloak.device;
 
 import com.hsbc.unified.iam.core.util.Base64;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.keycloak.models.KeycloakContext;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserSessionModel;
 import org.keycloak.representations.account.DeviceRepresentation;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import ua_parser.Client;
 import ua_parser.Parser;
 
@@ -74,10 +74,9 @@ public class DeviceActivityManager {
      * request, if available.
      *
      * @param userSession the user session
-     * @param session     the keycloak session
      */
-    public static void attachDevice(UserSessionModel userSession, KeycloakSession session) {
-        DeviceRepresentation current = getDeviceFromUserAgent(session);
+    public void attachDevice(UserSessionModel userSession) {
+        DeviceRepresentation current = getDeviceFromUserAgent();
 
         if (current != null) {
             try {
@@ -88,8 +87,10 @@ public class DeviceActivityManager {
         }
     }
 
-    private static DeviceRepresentation getDeviceFromUserAgent(KeycloakSession session) {
-        KeycloakContext context = session.getContext();
+    @Autowired
+    private KeycloakContext context;
+
+    private DeviceRepresentation getDeviceFromUserAgent() {
         String userAgent = context.getRequestHeaders().getHeaderString(HttpHeaders.USER_AGENT);
 
         if (userAgent == null) {

@@ -18,7 +18,6 @@
 package org.keycloak.services.clientregistration.oidc;
 
 import com.hsbc.unified.iam.core.constants.OAuth2Constants;
-import org.keycloak.authentication.ClientAuthenticator;
 import org.keycloak.authentication.ClientAuthenticatorFactory;
 import org.keycloak.authentication.authenticators.client.ClientIdAndSecretAuthenticator;
 import org.keycloak.authentication.authenticators.client.JWTClientAuthenticator;
@@ -26,7 +25,6 @@ import org.keycloak.jose.jwk.JSONWebKeySet;
 import org.keycloak.jose.jwk.JWK;
 import org.keycloak.jose.jwk.JWKParser;
 import org.keycloak.jose.jws.Algorithm;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.protocol.oidc.OIDCAdvancedConfigWrapper;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
@@ -42,20 +40,21 @@ import org.keycloak.representations.oidc.OIDCClientRepresentation;
 import org.keycloak.services.clientregistration.ClientRegistrationException;
 import org.keycloak.services.util.CertificateInfoHelper;
 import org.keycloak.util.JWKSUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.URI;
 import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class DescriptionConverter {
 
-    public static ClientRepresentation toInternal(KeycloakSession session, OIDCClientRepresentation clientOIDC) throws ClientRegistrationException {
+    @Autowired
+    private Map<String, ClientAuthenticatorFactory> clientAuthenticatorFactories;
+
+    public ClientRepresentation toInternal(OIDCClientRepresentation clientOIDC) throws ClientRegistrationException {
         ClientRepresentation client = new ClientRepresentation();
 
         client.setClientId(clientOIDC.getClientId());
@@ -87,9 +86,9 @@ public class DescriptionConverter {
         String authMethod = clientOIDC.getTokenEndpointAuthMethod();
         ClientAuthenticatorFactory clientAuthFactory;
         if (authMethod == null) {
-            clientAuthFactory = (ClientAuthenticatorFactory) session.getSessionFactory().getProviderFactory(ClientAuthenticator.class, KeycloakModelUtils.getDefaultClientAuthenticatorType());
+            clientAuthFactory = clientAuthenticatorFactories.get(KeycloakModelUtils.getDefaultClientAuthenticatorType());
         } else {
-            clientAuthFactory = AuthorizeClientUtil.findClientAuthenticatorForOIDCAuthMethod(session, authMethod);
+            clientAuthFactory = AuthorizeClientUtil.findClientAuthenticatorForOIDCAuthMethod(authMethod);
         }
 
         if (clientAuthFactory == null) {
@@ -172,12 +171,11 @@ public class DescriptionConverter {
         }
     }
 
-
-    public static OIDCClientRepresentation toExternalResponse(KeycloakSession session, ClientRepresentation client, URI uri) {
+    public OIDCClientRepresentation toExternalResponse(ClientRepresentation client, URI uri) {
         OIDCClientRepresentation response = new OIDCClientRepresentation();
         response.setClientId(client.getClientId());
 
-        ClientAuthenticatorFactory clientAuth = (ClientAuthenticatorFactory) session.getSessionFactory().getProviderFactory(ClientAuthenticator.class, client.getClientAuthenticatorType());
+        ClientAuthenticatorFactory clientAuth = clientAuthenticatorFactories.get(client.getClientAuthenticatorType());
         Set<String> oidcClientAuthMethods = clientAuth.getProtocolAuthenticatorMethods(OIDCLoginProtocol.LOGIN_PROTOCOL);
         if (oidcClientAuthMethods != null && !oidcClientAuthMethods.isEmpty()) {
             response.setTokenEndpointAuthMethod(oidcClientAuthMethods.iterator().next());

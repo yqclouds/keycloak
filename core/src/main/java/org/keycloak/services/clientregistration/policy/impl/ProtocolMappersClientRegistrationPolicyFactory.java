@@ -18,7 +18,6 @@
 package org.keycloak.services.clientregistration.policy.impl;
 
 import org.keycloak.component.ComponentModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderFactory;
@@ -41,8 +40,8 @@ public class ProtocolMappersClientRegistrationPolicyFactory extends AbstractClie
     private List<ProviderConfigProperty> configProperties = new LinkedList<>();
 
     @Override
-    public ClientRegistrationPolicy create(KeycloakSession session, ComponentModel model) {
-        return new ProtocolMappersClientRegistrationPolicy(session, model);
+    public ClientRegistrationPolicy create(ComponentModel model) {
+        return new ProtocolMappersClientRegistrationPolicy(model);
     }
 
     @PostConstruct

@@ -16,7 +16,6 @@
  */
 package org.keycloak.scripting;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +33,7 @@ public class DefaultScriptingProviderFactory implements ScriptingProviderFactory
     private ScriptEngineManager scriptEngineManager;
 
     @Override
-    public ScriptingProvider create(KeycloakSession session) {
+    public ScriptingProvider create() {
         lazyInit();
 
         return new DefaultScriptingProvider(scriptEngineManager);

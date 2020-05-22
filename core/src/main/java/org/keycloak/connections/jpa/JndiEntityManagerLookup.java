@@ -16,8 +16,6 @@
  */
 package org.keycloak.connections.jpa;
 
-import org.keycloak.models.KeycloakSession;
-
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.persistence.EntityManager;
@@ -28,15 +26,15 @@ import javax.persistence.EntityManagerFactory;
  * @version $Revision: 1 $
  */
 public class JndiEntityManagerLookup {
-    public static EntityManager getSessionEntityManager(KeycloakSession session, String entityManagerFactoryJndiName) {
-        EntityManagerFactory factory = null;
+    public static EntityManager getSessionEntityManager(String entityManagerFactoryJndiName) {
+        EntityManagerFactory factory;
         try {
             factory = (EntityManagerFactory) new InitialContext().lookup(entityManagerFactoryJndiName);
         } catch (NamingException e) {
             throw new RuntimeException(e);
         }
         EntityManager em = factory.createEntityManager();
-        session.getTransactionManager().enlist(new JpaKeycloakTransaction(em));
+        // session.getTransactionManager().enlist(new JpaKeycloakTransaction(em));
         return em;
     }
 }

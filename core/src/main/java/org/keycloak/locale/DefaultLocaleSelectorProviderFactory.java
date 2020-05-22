@@ -16,7 +16,6 @@
  */
 package org.keycloak.locale;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 

@@ -17,7 +17,6 @@
 
 package org.keycloak.services.clientregistration;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 
@@ -29,8 +28,8 @@ import org.springframework.stereotype.Component;
 public class DefaultClientRegistrationProviderFactory implements ClientRegistrationProviderFactory {
 
     @Override
-    public ClientRegistrationProvider create(KeycloakSession session) {
-        return new DefaultClientRegistrationProvider(session);
+    public ClientRegistrationProvider create() {
+        return new DefaultClientRegistrationProvider();
     }
 
     @Override

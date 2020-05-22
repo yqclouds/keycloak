@@ -19,7 +19,6 @@ package org.keycloak.services.clientregistration.policy.impl;
 
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ConfigurationValidationHelper;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -55,8 +54,8 @@ public class TrustedHostClientRegistrationPolicyFactory extends AbstractClientRe
 
 
     @Override
-    public ClientRegistrationPolicy create(KeycloakSession session, ComponentModel model) {
-        return new TrustedHostClientRegistrationPolicy(session, model);
+    public ClientRegistrationPolicy create(ComponentModel model) {
+        return new TrustedHostClientRegistrationPolicy(model);
     }
 
     @Override
@@ -75,12 +74,12 @@ public class TrustedHostClientRegistrationPolicyFactory extends AbstractClientRe
     }
 
     @Override
-    public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel config) throws ComponentValidationException {
+    public void validateConfiguration(RealmModel realm, ComponentModel config) throws ComponentValidationException {
         ConfigurationValidationHelper.check(config)
                 .checkBoolean(HOST_SENDING_REGISTRATION_REQUEST_MUST_MATCH_PROPERTY, true)
                 .checkBoolean(CLIENT_URIS_MUST_MATCH_PROPERTY, true);
 
-        TrustedHostClientRegistrationPolicy policy = new TrustedHostClientRegistrationPolicy(session, config);
+        TrustedHostClientRegistrationPolicy policy = new TrustedHostClientRegistrationPolicy(config);
         if (!policy.isHostMustMatch() && !policy.isClientUrisMustMatch()) {
             throw new ComponentValidationException("At least one of hosts verification or client URIs validation must be enabled");
         }

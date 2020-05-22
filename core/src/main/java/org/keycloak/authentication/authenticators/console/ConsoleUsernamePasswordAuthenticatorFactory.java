@@ -20,7 +20,6 @@ package org.keycloak.authentication.authenticators.console;
 import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.PasswordCredentialModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;

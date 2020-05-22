@@ -19,9 +19,6 @@ package org.keycloak.services.filters;
 
 import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.common.util.Resteasy;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.KeycloakTransaction;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -43,9 +40,6 @@ public class KeycloakSessionServletFilter implements Filter {
 
         final HttpServletRequest request = (HttpServletRequest) servletRequest;
 
-        KeycloakSessionFactory sessionFactory = (KeycloakSessionFactory) servletRequest.getServletContext().getAttribute(KeycloakSessionFactory.class.getName());
-        KeycloakSession session = sessionFactory.create();
-        Resteasy.pushContext(KeycloakSession.class, session);
         ClientConnection connection = new ClientConnection() {
             @Override
             public String getRemoteAddr() {
@@ -72,56 +66,9 @@ public class KeycloakSessionServletFilter implements Filter {
                 return request.getLocalPort();
             }
         };
-        session.getContext().setConnection(connection);
         Resteasy.pushContext(ClientConnection.class, connection);
 
-        KeycloakTransaction tx = session.getTransactionManager();
-        Resteasy.pushContext(KeycloakTransaction.class, tx);
-        tx.begin();
-
-        try {
-            filterChain.doFilter(servletRequest, servletResponse);
-        } finally {
-            if (servletRequest.isAsyncStarted()) {
-                servletRequest.getAsyncContext().addListener(createAsyncLifeCycleListener(session));
-            } else {
-                closeSession(session);
-            }
-        }
-    }
-
-    private AsyncListener createAsyncLifeCycleListener(final KeycloakSession session) {
-        return new AsyncListener() {
-            @Override
-            public void onComplete(AsyncEvent event) {
-                closeSession(session);
-            }
-
-            @Override
-            public void onTimeout(AsyncEvent event) {
-                closeSession(session);
-            }
-
-            @Override
-            public void onError(AsyncEvent event) {
-                closeSession(session);
-            }
-
-            @Override
-            public void onStartAsync(AsyncEvent event) {
-            }
-        };
-    }
-
-    private void closeSession(KeycloakSession session) {
-        // KeycloakTransactionCommitter is responsible for committing the transaction, but if an exception is thrown it's not invoked and transaction
-        // should be rolled back
-        if (session.getTransactionManager() != null && session.getTransactionManager().isActive()) {
-            session.getTransactionManager().rollback();
-        }
-
-        session.close();
-        Resteasy.clearContextData();
+        filterChain.doFilter(servletRequest, servletResponse);
     }
 
     @Override

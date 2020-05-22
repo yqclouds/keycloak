@@ -17,7 +17,6 @@
 package org.keycloak.crypto;
 
 import org.keycloak.common.VerificationException;
-import org.keycloak.models.KeycloakSession;
 
 public class AsymmetricSignatureProvider implements SignatureProvider {
 

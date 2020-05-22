@@ -17,7 +17,6 @@
 
 package org.keycloak.models.dblock;
 
-import org.keycloak.models.KeycloakSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,14 +26,8 @@ import org.slf4j.LoggerFactory;
 public class DBLockManager {
     private static final Logger LOG = LoggerFactory.getLogger(DBLockManager.class);
 
-    private final KeycloakSession session;
-
     private boolean forceUnlock;
     private DBLockProviderFactory dbLockProviderFactory;
-
-    public DBLockManager(KeycloakSession session) {
-        this.session = session;
-    }
 
     public void checkForcedUnlock() {
         if (forceUnlock) {

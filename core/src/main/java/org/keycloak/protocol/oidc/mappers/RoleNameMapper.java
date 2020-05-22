@@ -18,7 +18,6 @@
 package org.keycloak.protocol.oidc.mappers;
 
 import org.keycloak.models.ClientSessionContext;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.UserSessionModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
@@ -29,6 +28,7 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.utils.RoleResolveUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -112,8 +112,11 @@ public class RoleNameMapper extends AbstractOIDCProtocolMapper implements OIDCAc
         return ProtocolMapperUtils.PRIORITY_ROLE_NAMES_MAPPER;
     }
 
+    @Autowired
+    private RoleResolveUtil roleResolveUtil;
+
     @Override
-    public AccessToken transformAccessToken(AccessToken token, ProtocolMapperModel mappingModel, KeycloakSession session,
+    public AccessToken transformAccessToken(AccessToken token, ProtocolMapperModel mappingModel,
                                             UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
         String role = mappingModel.getConfig().get(ROLE_CONFIG);
         String newName = mappingModel.getConfig().get(NEW_ROLE_NAME);
@@ -123,23 +126,23 @@ public class RoleNameMapper extends AbstractOIDCProtocolMapper implements OIDCAc
         String appName = scopedRole[0];
         String roleName = scopedRole[1];
         if (appName != null) {
-            AccessToken.Access access = RoleResolveUtil.getResolvedClientRoles(session, clientSessionCtx, appName, false);
+            AccessToken.Access access = roleResolveUtil.getResolvedClientRoles(clientSessionCtx, appName, false);
             if (access == null) return token;
             if (!access.getRoles().contains(roleName)) return token;
             access.getRoles().remove(roleName);
         } else {
-            AccessToken.Access access = RoleResolveUtil.getResolvedRealmRoles(session, clientSessionCtx, false);
+            AccessToken.Access access = roleResolveUtil.getResolvedRealmRoles(clientSessionCtx, false);
             if (access == null || !access.getRoles().contains(roleName)) return token;
             access.getRoles().remove(roleName);
         }
 
         String newAppName = newScopedRole[0];
         String newRoleName = newScopedRole[1];
-        AccessToken.Access access = null;
+        AccessToken.Access access;
         if (newAppName == null) {
-            access = RoleResolveUtil.getResolvedRealmRoles(session, clientSessionCtx, true);
+            access = roleResolveUtil.getResolvedRealmRoles(clientSessionCtx, true);
         } else {
-            access = RoleResolveUtil.getResolvedClientRoles(session, clientSessionCtx, newAppName, true);
+            access = roleResolveUtil.getResolvedClientRoles(clientSessionCtx, newAppName, true);
         }
 
         access.addRole(newRoleName);

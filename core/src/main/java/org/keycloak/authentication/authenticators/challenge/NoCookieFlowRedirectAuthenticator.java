@@ -19,11 +19,12 @@ package org.keycloak.authentication.authenticators.challenge;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.Authenticator;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.KeycloakUriInfo;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.resources.LoginActionsService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.HttpHeaders;
@@ -40,13 +41,16 @@ public class NoCookieFlowRedirectAuthenticator implements Authenticator {
         return false;
     }
 
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     @Override
     public void authenticate(AuthenticationFlowContext context) {
         HttpRequest httpRequest = context.getHttpRequest();
 
         // only do redirects for GET requests
         if (HttpMethod.GET.equalsIgnoreCase(httpRequest.getHttpMethod())) {
-            KeycloakUriInfo uriInfo = context.getSession().getContext().getUri();
+            KeycloakUriInfo uriInfo = keycloakContext.getUri();
             if (!uriInfo.getQueryParameters().containsKey(LoginActionsService.AUTH_SESSION_ID)) {
                 Response response = Response.status(302).header(HttpHeaders.LOCATION, context.getRefreshUrl(true)).build();
                 context.challenge(response);

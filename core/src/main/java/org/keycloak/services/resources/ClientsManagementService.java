@@ -16,24 +16,25 @@
  */
 package org.keycloak.services.resources;
 
+import com.hsbc.unified.iam.core.ClientConnection;
+import com.hsbc.unified.iam.core.util.Time;
 import org.jboss.resteasy.spi.BadRequestException;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.OAuthErrorException;
-import com.hsbc.unified.iam.core.ClientConnection;
-import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.constants.AdapterConstants;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.oidc.utils.AuthorizeClientUtil;
 import org.keycloak.representations.idm.OAuth2ErrorRepresentation;
 import org.keycloak.services.ForbiddenException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
@@ -49,8 +50,6 @@ public class ClientsManagementService {
     protected HttpHeaders headers;
     @Context
     protected Providers providers;
-    @Context
-    protected KeycloakSession session;
     private RealmModel realm;
     private EventBuilder event;
     @Context
@@ -153,8 +152,11 @@ public class ClientsManagementService {
         return Response.noContent().build();
     }
 
+    @Autowired
+    private AuthorizeClientUtil authorizeClientUtil;
+
     protected ClientModel authorizeClient() {
-        ClientModel client = AuthorizeClientUtil.authorizeClient(session, event).getClient();
+        ClientModel client = authorizeClientUtil.authorizeClient(event).getClient();
 
         if (client.isPublicClient()) {
             OAuth2ErrorRepresentation errorRep = new OAuth2ErrorRepresentation(OAuthErrorException.INVALID_CLIENT, "Public clients not allowed");
@@ -176,9 +178,11 @@ public class ClientsManagementService {
         return clientClusterHost;
     }
 
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     private boolean checkSsl() {
-        if (session.getContext().getUri().getBaseUri().getScheme().equals("https")) {
+        if (keycloakContext.getUri().getBaseUri().getScheme().equals("https")) {
             return true;
         } else {
             return !realm.getSslRequired().isRequired(clientConnection);

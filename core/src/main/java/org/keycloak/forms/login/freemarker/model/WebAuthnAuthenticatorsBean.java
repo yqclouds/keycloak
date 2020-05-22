@@ -15,22 +15,26 @@
  */
 package org.keycloak.forms.login.freemarker.model;
 
+import com.hsbc.unified.iam.facade.model.credential.WebAuthnCredentialModel;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.models.CredentialModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserCredentialManager;
 import org.keycloak.models.UserModel;
-import com.hsbc.unified.iam.facade.model.credential.WebAuthnCredentialModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.LinkedList;
 import java.util.List;
 
 public class WebAuthnAuthenticatorsBean {
-    private List<WebAuthnAuthenticatorBean> authenticators = new LinkedList<WebAuthnAuthenticatorBean>();
+    private List<WebAuthnAuthenticatorBean> authenticators = new LinkedList<>();
 
-    public WebAuthnAuthenticatorsBean(KeycloakSession session, RealmModel realm, UserModel user, String credentialType) {
+    @Autowired
+    private UserCredentialManager userCredentialManager;
+
+    public WebAuthnAuthenticatorsBean(RealmModel realm, UserModel user, String credentialType) {
         // should consider multiple credentials in the future, but only single credential supported now.
-        for (CredentialModel credential : session.userCredentialManager().getStoredCredentialsByType(realm, user, credentialType)) {
+        for (CredentialModel credential : userCredentialManager.getStoredCredentialsByType(realm, user, credentialType)) {
             WebAuthnCredentialModel webAuthnCredential = WebAuthnCredentialModel.createFromCredentialModel(credential);
 
             String credentialId = Base64Url.encodeBase64ToBase64Url(webAuthnCredential.getWebAuthnCredentialData().getCredentialId());

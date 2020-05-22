@@ -1,6 +1,5 @@
 package org.keycloak.credential.hash;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 

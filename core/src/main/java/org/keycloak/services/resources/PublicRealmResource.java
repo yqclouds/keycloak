@@ -20,13 +20,15 @@ import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.HttpResponse;
 import org.keycloak.common.util.PemUtils;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeyManager;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.oidc.OIDCLoginProtocolService;
 import org.keycloak.representations.idm.PublishedRealmRepresentation;
 import org.keycloak.services.resources.account.AccountFormService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.OPTIONS;
@@ -52,21 +54,23 @@ public class PublicRealmResource {
     @Context
     protected HttpResponse response;
 
-    @Context
-    protected KeycloakSession session;
-
     protected RealmModel realm;
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     public PublicRealmResource(RealmModel realm) {
         this.realm = realm;
     }
 
-    public static PublishedRealmRepresentation realmRep(KeycloakSession session, RealmModel realm, UriInfo uriInfo) {
+    @Autowired
+    private KeyManager keyManager;
+
+    public PublishedRealmRepresentation realmRep(RealmModel realm, UriInfo uriInfo) {
         PublishedRealmRepresentation rep = new PublishedRealmRepresentation();
         rep.setRealm(realm.getName());
         rep.setTokenServiceUrl(OIDCLoginProtocolService.tokenServiceBaseUrl(uriInfo).build(realm.getName()).toString());
         rep.setAccountServiceUrl(AccountFormService.accountServiceBaseUrl(uriInfo).build(realm.getName()).toString());
-        rep.setPublicKeyPem(PemUtils.encodeKey(session.keys().getActiveRsaKey(realm).getPublicKey()));
+        rep.setPublicKeyPem(PemUtils.encodeKey(keyManager.getActiveRsaKey(realm).getPublicKey()));
         rep.setNotBefore(realm.getNotBefore());
         return rep;
     }
@@ -92,7 +96,7 @@ public class PublicRealmResource {
     @Produces(MediaType.APPLICATION_JSON)
     public PublishedRealmRepresentation getRealm() {
         Cors.add(request).allowedOrigins(Cors.ACCESS_CONTROL_ALLOW_ORIGIN_WILDCARD).auth().build(response);
-        return realmRep(session, realm, session.getContext().getUri());
+        return realmRep(realm, keycloakContext.getUri());
     }
 
 

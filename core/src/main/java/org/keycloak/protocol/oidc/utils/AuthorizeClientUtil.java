@@ -19,23 +19,21 @@ package org.keycloak.protocol.oidc.utils;
 
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authentication.AuthenticationProcessor;
-import org.keycloak.authentication.ClientAuthenticator;
 import org.keycloak.authentication.ClientAuthenticatorFactory;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
-import org.keycloak.provider.ProviderFactory;
 import org.keycloak.services.ErrorResponseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -45,8 +43,8 @@ public class AuthorizeClientUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(AuthorizeClientUtil.class);
 
-    public static ClientAuthResult authorizeClient(KeycloakSession session, EventBuilder event) {
-        AuthenticationProcessor processor = getAuthenticationProcessor(session, event);
+    public ClientAuthResult authorizeClient(EventBuilder event) {
+        AuthenticationProcessor processor = getAuthenticationProcessor(event);
 
         Response response = processor.authenticateClient();
         if (response != null) {
@@ -60,7 +58,7 @@ public class AuthorizeClientUtil {
 
         String protocol = client.getProtocol();
         if (protocol == null) {
-            LOG.warn("Client '%s' doesn't have protocol set. Fallback to openid-connect. Please fix client configuration", client.getClientId());
+            LOG.warn("Client '{}' doesn't have protocol set. Fallback to openid-connect. Please fix client configuration", client.getClientId());
             protocol = OIDCLoginProtocol.LOGIN_PROTOCOL;
         }
 
@@ -69,33 +67,36 @@ public class AuthorizeClientUtil {
             throw new ErrorResponseException(Errors.INVALID_CLIENT, "Wrong client protocol.", Response.Status.BAD_REQUEST);
         }
 
-        session.getContext().setClient(client);
+        keycloakContext.setClient(client);
 
         return new ClientAuthResult(client, processor.getClientAuthAttributes());
     }
 
-    public static AuthenticationProcessor getAuthenticationProcessor(KeycloakSession session, EventBuilder event) {
-        RealmModel realm = session.getContext().getRealm();
+    @Autowired
+    private KeycloakContext keycloakContext;
+
+    public AuthenticationProcessor getAuthenticationProcessor(EventBuilder event) {
+        RealmModel realm = keycloakContext.getRealm();
 
         AuthenticationFlowModel clientAuthFlow = realm.getClientAuthenticationFlow();
         String flowId = clientAuthFlow.getId();
 
         AuthenticationProcessor processor = new AuthenticationProcessor();
         processor.setFlowId(flowId)
-                .setConnection(session.getContext().getConnection())
+                .setConnection(keycloakContext.getConnection())
                 .setEventBuilder(event)
                 .setRealm(realm)
-                .setSession(session)
-                .setUriInfo(session.getContext().getUri())
-                .setRequest(session.getContext().getContextObject(HttpRequest.class));
+                .setUriInfo(keycloakContext.getUri())
+                .setRequest(keycloakContext.getContextObject(HttpRequest.class));
 
         return processor;
     }
 
-    public static ClientAuthenticatorFactory findClientAuthenticatorForOIDCAuthMethod(KeycloakSession session, String oidcAuthMethod) {
-        List<ProviderFactory> providerFactories = session.getSessionFactory().getProviderFactories(ClientAuthenticator.class);
-        for (ProviderFactory factory : providerFactories) {
-            ClientAuthenticatorFactory clientAuthFactory = (ClientAuthenticatorFactory) factory;
+    @Autowired
+    private Map<String, ClientAuthenticatorFactory> clientAuthenticatorFactories;
+
+    public ClientAuthenticatorFactory findClientAuthenticatorForOIDCAuthMethod(String oidcAuthMethod) {
+        for (ClientAuthenticatorFactory clientAuthFactory : clientAuthenticatorFactories.values()) {
             if (clientAuthFactory.getProtocolAuthenticatorMethods(OIDCLoginProtocol.LOGIN_PROTOCOL).contains(oidcAuthMethod)) {
                 return clientAuthFactory;
             }

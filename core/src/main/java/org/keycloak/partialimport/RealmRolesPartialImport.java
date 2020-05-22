@@ -16,7 +16,6 @@
  */
 package org.keycloak.partialimport;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleModel;
 import org.keycloak.representations.idm.PartialImportRepresentation;
@@ -55,7 +54,7 @@ public class RealmRolesPartialImport extends AbstractPartialImport<RoleRepresent
     }
 
     @Override
-    public String getModelId(RealmModel realm, KeycloakSession session, RoleRepresentation roleRep) {
+    public String getModelId(RealmModel realm, RoleRepresentation roleRep) {
         for (RoleModel role : realm.getRoles()) {
             if (getName(roleRep).equals(role.getName())) return role.getId();
         }
@@ -64,7 +63,7 @@ public class RealmRolesPartialImport extends AbstractPartialImport<RoleRepresent
     }
 
     @Override
-    public boolean exists(RealmModel realm, KeycloakSession session, RoleRepresentation roleRep) {
+    public boolean exists(RealmModel realm, RoleRepresentation roleRep) {
         for (RoleModel role : realm.getRoles()) {
             if (getName(roleRep).equals(role.getName())) return true;
         }
@@ -83,14 +82,14 @@ public class RealmRolesPartialImport extends AbstractPartialImport<RoleRepresent
     }
 
     @Override
-    public void remove(RealmModel realm, KeycloakSession session, RoleRepresentation roleRep) {
+    public void remove(RealmModel realm, RoleRepresentation roleRep) {
         RoleModel role = realm.getRole(getName(roleRep));
         RoleHelper helper = new RoleHelper(realm);
         helper.deleteRole(role);
     }
 
     @Override
-    public void create(RealmModel realm, KeycloakSession session, RoleRepresentation roleRep) {
+    public void create(RealmModel realm, RoleRepresentation roleRep) {
         realm.addRole(getName(roleRep));
     }
 

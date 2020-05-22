@@ -164,7 +164,7 @@ class AuthenticationSelectionResolver {
             nonCredentialExecutions.add(execution);
         } else {
             CredentialValidator<?> cv = (CredentialValidator<?>) localAuthenticator;
-            typeAuthExecMap.put(cv.getType(processor.getSession()), execution);
+            typeAuthExecMap.put(cv.getType(), execution);
         }
     }
 

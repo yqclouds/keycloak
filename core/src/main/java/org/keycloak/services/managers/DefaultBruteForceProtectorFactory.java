@@ -17,7 +17,6 @@
 
 package org.keycloak.services.managers;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -33,7 +32,7 @@ public class DefaultBruteForceProtectorFactory implements BruteForceProtectorFac
     private DefaultBruteForceProtector protector;
 
     @Override
-    public BruteForceProtector create(KeycloakSession session) {
+    public BruteForceProtector create() {
         return protector;
     }
 

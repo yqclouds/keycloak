@@ -16,17 +16,16 @@
  */
 package org.keycloak.services.resources;
 
+import com.hsbc.unified.iam.core.ClientConnection;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.AuthorizationService;
-import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.common.util.KeycloakUriBuilder;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
-import org.keycloak.protocol.LoginProtocol;
 import org.keycloak.protocol.LoginProtocolFactory;
 import org.keycloak.services.clientregistration.ClientRegistrationService;
 import org.keycloak.services.managers.RealmManager;
@@ -43,6 +42,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import java.net.URI;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -51,12 +51,11 @@ import java.net.URI;
 @Path("/realms")
 public class RealmsResource {
     protected static final Logger LOG = LoggerFactory.getLogger(RealmsResource.class);
-
-    @Context
-    protected KeycloakSession session;
-
     @Context
     protected ClientConnection clientConnection;
+
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     @Context
     private HttpRequest request;
@@ -94,24 +93,30 @@ public class RealmsResource {
         return builder.path(RealmsResource.class).path(RealmsResource.class, "getWellKnown");
     }
 
+    @Autowired
+    private Map<String, LoginProtocolFactory> loginProtocolFactories;
+
     @Path("{realm}/protocol/{protocol}")
     public Object getProtocol(final @PathParam("realm") String name,
                               final @PathParam("protocol") String protocol) {
         RealmModel realm = init(name);
 
-        LoginProtocolFactory factory = (LoginProtocolFactory) session.getSessionFactory().getProviderFactory(LoginProtocol.class, protocol);
+        LoginProtocolFactory factory = loginProtocolFactories.get(protocol);
         if (factory == null) {
-            LOG.debug("protocol %s not found", protocol);
+            LOG.debug("protocol {} not found", protocol);
             throw new NotFoundException("Protocol not found");
         }
 
-        EventBuilder event = new EventBuilder(realm, session, clientConnection);
+        EventBuilder event = new EventBuilder(realm, clientConnection);
 
         Object endpoint = factory.createProtocolEndpoint(realm, event);
 
         ResteasyProviderFactory.getInstance().injectProperties(endpoint);
         return endpoint;
     }
+
+    @Autowired
+    private ResolveRelative resolveRelative;
 
     /**
      * Returns a temporary redirect to the client url configured for the given {@code clientId} in the given {@code realmName}.
@@ -150,7 +155,7 @@ public class RealmsResource {
         if (client.getRootUrl() != null && (client.getBaseUrl() == null || client.getBaseUrl().isEmpty())) {
             targetUri = KeycloakUriBuilder.fromUri(client.getRootUrl()).build();
         } else {
-            targetUri = KeycloakUriBuilder.fromUri(ResolveRelative.resolveRelativeUri(session, client.getRootUrl(), client.getBaseUrl())).build();
+            targetUri = KeycloakUriBuilder.fromUri(resolveRelative.resolveRelativeUri(client.getRootUrl(), client.getBaseUrl())).build();
         }
 
         return Response.seeOther(targetUri).build();
@@ -159,7 +164,7 @@ public class RealmsResource {
     @Path("{realm}/login-actions")
     public LoginActionsService getLoginActionsService(final @PathParam("realm") String name) {
         RealmModel realm = init(name);
-        EventBuilder event = new EventBuilder(realm, session, clientConnection);
+        EventBuilder event = new EventBuilder(realm, clientConnection);
         LoginActionsService service = new LoginActionsService(realm, event);
         ResteasyProviderFactory.getInstance().injectProperties(service);
         return service;
@@ -168,7 +173,7 @@ public class RealmsResource {
     @Path("{realm}/clients-registrations")
     public ClientRegistrationService getClientsService(final @PathParam("realm") String name) {
         RealmModel realm = init(name);
-        EventBuilder event = new EventBuilder(realm, session, clientConnection);
+        EventBuilder event = new EventBuilder(realm, clientConnection);
         ClientRegistrationService service = new ClientRegistrationService(event);
         ResteasyProviderFactory.getInstance().injectProperties(service);
         return service;
@@ -177,27 +182,27 @@ public class RealmsResource {
     @Path("{realm}/clients-managements")
     public ClientsManagementService getClientsManagementService(final @PathParam("realm") String name) {
         RealmModel realm = init(name);
-        EventBuilder event = new EventBuilder(realm, session, clientConnection);
+        EventBuilder event = new EventBuilder(realm, clientConnection);
         ClientsManagementService service = new ClientsManagementService(realm, event);
         ResteasyProviderFactory.getInstance().injectProperties(service);
         return service;
     }
 
     private RealmModel init(String realmName) {
-        RealmManager realmManager = new RealmManager(session);
+        RealmManager realmManager = new RealmManager();
         RealmModel realm = realmManager.getRealmByName(realmName);
         if (realm == null) {
             throw new NotFoundException("Realm does not exist");
         }
-        session.getContext().setRealm(realm);
+        keycloakContext.setRealm(realm);
         return realm;
     }
 
     @Path("{realm}/account")
     public Object getAccountService(final @PathParam("realm") String name) {
         RealmModel realm = init(name);
-        EventBuilder event = new EventBuilder(realm, session, clientConnection);
-        return new AccountLoader().getAccountService(session, event);
+        EventBuilder event = new EventBuilder(realm, clientConnection);
+        return new AccountLoader().getAccountService(event);
     }
 
     @Path("{realm}")
@@ -228,6 +233,9 @@ public class RealmsResource {
         return Cors.add(request, Response.ok()).allowedMethods("GET").preflight().auth().build();
     }
 
+    @Autowired
+    private Map<String, WellKnownProvider> wellKnownProviders;
+
     @GET
     @Path("{realm}/.well-known/{provider}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -235,7 +243,7 @@ public class RealmsResource {
                                  final @PathParam("provider") String providerName) {
         init(name);
 
-        WellKnownProvider wellKnown = session.getProvider(WellKnownProvider.class, providerName);
+        WellKnownProvider wellKnown = wellKnownProviders.get(providerName);
 
         if (wellKnown != null) {
             ResponseBuilder responseBuilder = Response.ok(wellKnown.getConfig()).cacheControl(CacheControlUtil.noCache());
@@ -258,6 +266,9 @@ public class RealmsResource {
         return service;
     }
 
+    @Autowired
+    private Map<String, RealmResourceProvider> realmResourceProviders;
+
     /**
      * A JAX-RS sub-resource locator that uses the {@link org.keycloak.services.resource.RealmResourceSPI} to resolve sub-resources instances given an <code>unknownPath</code>.
      *
@@ -266,7 +277,7 @@ public class RealmsResource {
      */
     @Path("{realm}/{extension}")
     public Object resolveRealmExtension(@PathParam("realm") String realmName, @PathParam("extension") String extension) {
-        RealmResourceProvider provider = session.getProvider(RealmResourceProvider.class, extension);
+        RealmResourceProvider provider = realmResourceProviders.get(extension);
         if (provider != null) {
             init(realmName);
             Object resource = provider.getResource();

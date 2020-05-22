@@ -19,7 +19,7 @@ package org.keycloak.services.clientregistration.oidc;
 import com.hsbc.unified.iam.core.constants.OAuth2Constants;
 import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
@@ -34,8 +34,7 @@ import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.clientregistration.AbstractClientRegistrationProvider;
 import org.keycloak.services.clientregistration.ClientRegistrationException;
 import org.keycloak.services.clientregistration.ErrorCodes;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -49,12 +48,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class OIDCClientRegistrationProvider extends AbstractClientRegistrationProvider {
-
-    private static final Logger LOG = LoggerFactory.getLogger(OIDCClientRegistrationProvider.class);
-
-    public OIDCClientRegistrationProvider(KeycloakSession session) {
-        super(session);
-    }
+    @Autowired
+    private DescriptionConverter descriptionConverter;
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -65,22 +62,22 @@ public class OIDCClientRegistrationProvider extends AbstractClientRegistrationPr
         }
 
         try {
-            ClientRepresentation client = DescriptionConverter.toInternal(session, clientOIDC);
+            ClientRepresentation client = descriptionConverter.toInternal(clientOIDC);
             List<String> grantTypes = clientOIDC.getGrantTypes();
 
             if (grantTypes != null && grantTypes.contains(OAuth2Constants.UMA_GRANT_TYPE)) {
                 client.setAuthorizationServicesEnabled(true);
             }
 
-            OIDCClientRegistrationContext oidcContext = new OIDCClientRegistrationContext(session, client, this, clientOIDC);
+            OIDCClientRegistrationContext oidcContext = new OIDCClientRegistrationContext(client, this, clientOIDC);
             client = create(oidcContext);
 
-            ClientModel clientModel = session.getContext().getRealm().getClientByClientId(client.getClientId());
+            ClientModel clientModel = keycloakContext.getRealm().getClientByClientId(client.getClientId());
             updatePairwiseSubMappers(clientModel, SubjectType.parse(clientOIDC.getSubjectType()), clientOIDC.getSectorIdentifierUri());
             updateClientRepWithProtocolMappers(clientModel, client);
 
-            URI uri = session.getContext().getUri().getAbsolutePathBuilder().path(client.getClientId()).build();
-            clientOIDC = DescriptionConverter.toExternalResponse(session, client, uri);
+            URI uri = keycloakContext.getUri().getAbsolutePathBuilder().path(client.getClientId()).build();
+            clientOIDC = descriptionConverter.toExternalResponse(client, uri);
             clientOIDC.setClientIdIssuedAt(Time.currentTime());
             return Response.created(uri).entity(clientOIDC).build();
         } catch (ClientRegistrationException cre) {
@@ -93,11 +90,11 @@ public class OIDCClientRegistrationProvider extends AbstractClientRegistrationPr
     @Path("{clientId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getOIDC(@PathParam("clientId") String clientId) {
-        ClientModel client = session.getContext().getRealm().getClientByClientId(clientId);
+        ClientModel client = keycloakContext.getRealm().getClientByClientId(clientId);
 
         ClientRepresentation clientRepresentation = get(client);
 
-        OIDCClientRepresentation clientOIDC = DescriptionConverter.toExternalResponse(session, clientRepresentation, session.getContext().getUri().getRequestUri());
+        OIDCClientRepresentation clientOIDC = descriptionConverter.toExternalResponse(clientRepresentation, keycloakContext.getUri().getRequestUri());
         return Response.ok(clientOIDC).build();
     }
 
@@ -107,16 +104,16 @@ public class OIDCClientRegistrationProvider extends AbstractClientRegistrationPr
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateOIDC(@PathParam("clientId") String clientId, OIDCClientRepresentation clientOIDC) {
         try {
-            ClientRepresentation client = DescriptionConverter.toInternal(session, clientOIDC);
-            OIDCClientRegistrationContext oidcContext = new OIDCClientRegistrationContext(session, client, this, clientOIDC);
+            ClientRepresentation client = descriptionConverter.toInternal(clientOIDC);
+            OIDCClientRegistrationContext oidcContext = new OIDCClientRegistrationContext(client, this, clientOIDC);
             client = update(clientId, oidcContext);
 
-            ClientModel clientModel = session.getContext().getRealm().getClientByClientId(client.getClientId());
+            ClientModel clientModel = keycloakContext.getRealm().getClientByClientId(client.getClientId());
             updatePairwiseSubMappers(clientModel, SubjectType.parse(clientOIDC.getSubjectType()), clientOIDC.getSectorIdentifierUri());
             updateClientRepWithProtocolMappers(clientModel, client);
 
-            URI uri = session.getContext().getUri().getAbsolutePathBuilder().path(client.getClientId()).build();
-            clientOIDC = DescriptionConverter.toExternalResponse(session, client, uri);
+            URI uri = keycloakContext.getUri().getAbsolutePathBuilder().path(client.getClientId()).build();
+            clientOIDC = descriptionConverter.toExternalResponse(client, uri);
             return Response.ok(clientOIDC).build();
         } catch (ClientRegistrationException cre) {
 //            ServicesLogger.LOGGER.clientRegistrationException(cre.getMessage());

@@ -17,23 +17,23 @@
 
 package org.keycloak.services.clientregistration;
 
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.TokenCategory;
 import org.keycloak.TokenVerifier;
 import org.keycloak.common.VerificationException;
-import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.crypto.SignatureProvider;
 import org.keycloak.crypto.SignatureSignerContext;
 import org.keycloak.crypto.SignatureVerifierContext;
 import org.keycloak.jose.jws.JWSBuilder;
-import org.keycloak.models.ClientInitialAccessModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.representations.JsonWebToken;
 import org.keycloak.services.Urls;
 import org.keycloak.services.clientregistration.policy.RegistrationAuth;
 import org.keycloak.util.TokenUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Map;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -43,9 +43,14 @@ public class ClientRegistrationTokenUtils {
     public static final String TYPE_INITIAL_ACCESS_TOKEN = "InitialAccessToken";
     public static final String TYPE_REGISTRATION_ACCESS_TOKEN = "RegistrationAccessToken";
 
-    public static String updateTokenSignature(KeycloakSession session, ClientRegistrationAuth auth) {
-        String algorithm = session.tokens().signatureAlgorithm(TokenCategory.INTERNAL);
-        SignatureSignerContext signer = session.getProvider(SignatureProvider.class, algorithm).signer();
+    @Autowired
+    private KeycloakContext keycloakContext;
+    @Autowired
+    private TokenManager tokenManager;
+
+    public String updateTokenSignature(ClientRegistrationAuth auth) {
+        String algorithm = tokenManager.signatureAlgorithm(TokenCategory.INTERNAL);
+        SignatureSignerContext signer = signatureProviders.get(algorithm).signer();
 
         if (signer.getKid().equals(auth.getKid())) {
             return auth.getToken();
@@ -65,26 +70,29 @@ public class ClientRegistrationTokenUtils {
         }
     }
 
-    public static String updateRegistrationAccessToken(KeycloakSession session, ClientModel client, RegistrationAuth registrationAuth) {
-        return updateRegistrationAccessToken(session, session.getContext().getRealm(), client, registrationAuth);
+    public String updateRegistrationAccessToken(ClientModel client, RegistrationAuth registrationAuth) {
+        return updateRegistrationAccessToken(keycloakContext.getRealm(), client, registrationAuth);
     }
 
-    public static String updateRegistrationAccessToken(KeycloakSession session, RealmModel realm, ClientModel client, RegistrationAuth registrationAuth) {
+    public String updateRegistrationAccessToken(RealmModel realm, ClientModel client, RegistrationAuth registrationAuth) {
         String id = KeycloakModelUtils.generateId();
         client.setRegistrationToken(id);
 
         RegistrationAccessToken regToken = new RegistrationAccessToken();
         regToken.setRegistrationAuth(registrationAuth.toString().toLowerCase());
 
-        return setupToken(regToken, session, realm, id, TYPE_REGISTRATION_ACCESS_TOKEN, 0);
+        return setupToken(regToken, realm, id, TYPE_REGISTRATION_ACCESS_TOKEN, 0);
     }
 
-    public static String createInitialAccessToken(KeycloakSession session, RealmModel realm, ClientInitialAccessModel model) {
+    public String createInitialAccessToken(RealmModel realm, ClientInitialAccessModel model) {
         InitialAccessToken initialToken = new InitialAccessToken();
-        return setupToken(initialToken, session, realm, model.getId(), TYPE_INITIAL_ACCESS_TOKEN, model.getExpiration() > 0 ? model.getTimestamp() + model.getExpiration() : 0);
+        return setupToken(initialToken, realm, model.getId(), TYPE_INITIAL_ACCESS_TOKEN, model.getExpiration() > 0 ? model.getTimestamp() + model.getExpiration() : 0);
     }
 
-    public static TokenVerification verifyToken(KeycloakSession session, RealmModel realm, String token) {
+    @Autowired
+    private Map<String, SignatureProvider> signatureProviders;
+
+    public TokenVerification verifyToken(RealmModel realm, String token) {
         if (token == null) {
             return TokenVerification.error(new RuntimeException("Missing token"));
         }
@@ -93,9 +101,10 @@ public class ClientRegistrationTokenUtils {
         JsonWebToken jwt;
         try {
             TokenVerifier<JsonWebToken> verifier = TokenVerifier.create(token, JsonWebToken.class)
-                    .withChecks(new TokenVerifier.RealmUrlCheck(getIssuer(session, realm)), TokenVerifier.IS_ACTIVE);
+                    .withChecks(new TokenVerifier.RealmUrlCheck(getIssuer(realm)), TokenVerifier.IS_ACTIVE);
 
-            SignatureVerifierContext verifierContext = session.getProvider(SignatureProvider.class, verifier.getHeader().getAlgorithm().name()).verifier(verifier.getHeader().getKeyId());
+            SignatureVerifierContext verifierContext = signatureProviders.get(verifier.getHeader().getAlgorithm().name())
+                    .verifier(verifier.getHeader().getKeyId());
             verifier.verifierContext(verifierContext);
 
             kid = verifierContext.getKid();
@@ -116,8 +125,8 @@ public class ClientRegistrationTokenUtils {
         return TokenVerification.success(kid, jwt);
     }
 
-    private static String setupToken(JsonWebToken jwt, KeycloakSession session, RealmModel realm, String id, String type, int expiration) {
-        String issuer = getIssuer(session, realm);
+    private String setupToken(JsonWebToken jwt, RealmModel realm, String id, String type, int expiration) {
+        String issuer = getIssuer(realm);
 
         jwt.type(type);
         jwt.id(id);
@@ -126,11 +135,11 @@ public class ClientRegistrationTokenUtils {
         jwt.issuer(issuer);
         jwt.audience(issuer);
 
-        return session.tokens().encode(jwt);
+        return tokenManager.encode(jwt);
     }
 
-    private static String getIssuer(KeycloakSession session, RealmModel realm) {
-        return Urls.realmIssuer(session.getContext().getUri().getBaseUri(), realm.getName());
+    private String getIssuer(RealmModel realm) {
+        return Urls.realmIssuer(keycloakContext.getUri().getBaseUri(), realm.getName());
     }
 
     protected static class TokenVerification {

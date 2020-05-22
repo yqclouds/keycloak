@@ -17,11 +17,10 @@
 
 package org.keycloak.protocol.oidc.utils;
 
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.keycloak.common.util.StreamUtil;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.jose.jwk.JSONWebKeySet;
-import org.keycloak.models.KeycloakSession;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;

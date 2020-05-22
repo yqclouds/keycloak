@@ -17,19 +17,16 @@
 
 package org.keycloak.protocol.oidc.endpoints;
 
+import com.hsbc.unified.iam.core.ClientConnection;
+import com.hsbc.unified.iam.core.constants.OAuth2Constants;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.HttpRequest;
-import com.hsbc.unified.iam.core.constants.OAuth2Constants;
 import org.keycloak.OAuthErrorException;
-import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.TokenManager;
 import org.keycloak.protocol.oidc.utils.AuthorizeClientUtil;
@@ -84,6 +81,14 @@ public class LogoutEndpoint {
 
     @Autowired
     private ErrorPage errorPage;
+    @Autowired
+    private RedirectUtils redirectUtils;
+    @Autowired
+    private UserSessionProvider userSessionProvider;
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     /**
      * Logout user session.  User must be logged in via a session cookie.
@@ -105,7 +110,7 @@ public class LogoutEndpoint {
         String redirect = postLogoutRedirectUri != null ? postLogoutRedirectUri : redirectUri;
 
         if (redirect != null) {
-            String validatedUri = RedirectUtils.verifyRealmRedirectUri(redirect);
+            String validatedUri = redirectUtils.verifyRealmRedirectUri(redirect);
             if (validatedUri == null) {
                 event.event(EventType.LOGOUT);
                 event.detail(Details.REDIRECT_URI, redirect);
@@ -119,8 +124,8 @@ public class LogoutEndpoint {
         IDToken idToken = null;
         if (encodedIdToken != null) {
             try {
-                idToken = tokenManager.verifyIDTokenSignature(session, encodedIdToken);
-                userSession = session.sessions().getUserSession(realm, idToken.getSessionState());
+                idToken = tokenManager.verifyIDTokenSignature(encodedIdToken);
+                userSession = userSessionProvider.getUserSession(realm, idToken.getSessionState());
 
                 if (userSession != null) {
                     checkTokenIssuedAt(idToken, userSession);
@@ -133,18 +138,18 @@ public class LogoutEndpoint {
         }
 
         // authenticate identity cookie, but ignore an access token timeout as we're logging out anyways.
-        AuthenticationManager.AuthResult authResult = AuthenticationManager.authenticateIdentityCookie(session, realm, false);
+        AuthenticationManager.AuthResult authResult = authenticationManager.authenticateIdentityCookie(realm, false);
         if (authResult != null) {
             userSession = userSession != null ? userSession : authResult.getSession();
             return initiateBrowserLogout(userSession, redirect, state, initiatingIdp);
         } else if (userSession != null) {
             // identity cookie is missing but there's valid id_token_hint which matches session cookie => continue with browser logout
-            if (idToken != null && idToken.getSessionState().equals(AuthenticationManager.getSessionIdFromSessionCookie())) {
+            if (idToken.getSessionState().equals(authenticationManager.getSessionIdFromSessionCookie())) {
                 return initiateBrowserLogout(userSession, redirect, state, initiatingIdp);
             }
             // non browser logout
             event.event(EventType.LOGOUT);
-            AuthenticationManager.backchannelLogout(session, realm, userSession, session.getContext().getUri(), clientConnection, headers, true);
+            authenticationManager.backchannelLogout(realm, userSession, keycloakContext.getUri(), clientConnection, headers, true);
             event.user(userSession.getUser()).session(userSession).success();
         }
 
@@ -189,13 +194,13 @@ public class LogoutEndpoint {
         RefreshToken token = null;
         try {
             // KEYCLOAK-6771 Certificate Bound Token
-            token = tokenManager.verifyRefreshToken(session, realm, client, request, refreshToken, false);
+            token = tokenManager.verifyRefreshToken(realm, client, request, refreshToken, false);
 
             boolean offline = TokenUtil.TOKEN_TYPE_OFFLINE.equals(token.getType());
 
             UserSessionModel userSessionModel;
             if (offline) {
-                UserSessionManager sessionManager = new UserSessionManager(session);
+                UserSessionManager sessionManager = new UserSessionManager();
                 userSessionModel = sessionManager.findOfflineUserSession(realm, token.getSessionState());
             } else {
                 userSessionModel = session.sessions().getUserSession(realm, token.getSessionState());
@@ -216,16 +221,19 @@ public class LogoutEndpoint {
             }
         }
 
-        return Cors.add(request, Response.noContent()).auth().allowedOrigins(session, client).allowedMethods("POST").exposedHeaders(Cors.ACCESS_CONTROL_ALLOW_METHODS).build();
+        return Cors.add(request, Response.noContent()).auth().allowedOrigins(client).allowedMethods("POST").exposedHeaders(Cors.ACCESS_CONTROL_ALLOW_METHODS).build();
     }
 
     private void logout(UserSessionModel userSession, boolean offline) {
-        AuthenticationManager.backchannelLogout(session, realm, userSession, session.getContext().getUri(), clientConnection, headers, true, offline);
+        authenticationManager.backchannelLogout(realm, userSession, session.getContext().getUri(), clientConnection, headers, true, offline);
         event.user(userSession.getUser()).session(userSession).success();
     }
 
+    @Autowired
+    private AuthorizeClientUtil authorizeClientUtil;
+
     private ClientModel authorizeClient() {
-        ClientModel client = AuthorizeClientUtil.authorizeClient(session, event).getClient();
+        ClientModel client = authorizeClientUtil.authorizeClient(event).getClient();
 
         if (client.isBearerOnly()) {
             throw new ErrorResponseException(Errors.INVALID_CLIENT, "Bearer-only not allowed", Response.Status.BAD_REQUEST);
@@ -251,7 +259,7 @@ public class LogoutEndpoint {
         if (state != null) userSession.setNote(OIDCLoginProtocol.LOGOUT_STATE_PARAM, state);
         userSession.setNote(AuthenticationManager.KEYCLOAK_LOGOUT_PROTOCOL, OIDCLoginProtocol.LOGIN_PROTOCOL);
         LOG.debug("Initiating OIDC browser logout");
-        Response response = AuthenticationManager.browserLogout(session, realm, userSession, session.getContext().getUri(), clientConnection, headers, initiatingIdp);
+        Response response = authenticationManager.browserLogout(realm, userSession, session.getContext().getUri(), clientConnection, headers, initiatingIdp);
         LOG.debug("finishing OIDC browser logout");
         return response;
     }

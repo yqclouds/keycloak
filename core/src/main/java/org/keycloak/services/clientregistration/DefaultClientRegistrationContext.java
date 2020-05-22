@@ -17,7 +17,6 @@
 
 package org.keycloak.services.clientregistration;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.services.validation.PairwiseClientValidator;
 import org.keycloak.services.validation.ValidationMessages;
@@ -31,12 +30,12 @@ public class DefaultClientRegistrationContext extends AbstractClientRegistration
     @Autowired
     private PairwiseClientValidator pairwiseClientValidator;
 
-    public DefaultClientRegistrationContext(KeycloakSession session, ClientRepresentation client, ClientRegistrationProvider provider) {
-        super(session, client, provider);
+    public DefaultClientRegistrationContext(ClientRepresentation client, ClientRegistrationProvider provider) {
+        super(client, provider);
     }
 
     @Override
     public boolean validateClient(ValidationMessages validationMessages) {
-        return super.validateClient(validationMessages) && pairwiseClientValidator.validate(session, client, validationMessages);
+        return super.validateClient(validationMessages) && pairwiseClientValidator.validate(client, validationMessages);
     }
 }

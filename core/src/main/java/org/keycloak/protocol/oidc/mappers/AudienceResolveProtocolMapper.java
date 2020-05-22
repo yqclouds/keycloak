@@ -18,7 +18,6 @@
 package org.keycloak.protocol.oidc.mappers;
 
 import org.keycloak.models.ClientSessionContext;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.UserSessionModel;
 import org.keycloak.protocol.ProtocolMapper;
@@ -28,6 +27,7 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.utils.RoleResolveUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -87,12 +87,15 @@ public class AudienceResolveProtocolMapper extends AbstractOIDCProtocolMapper im
         return ProtocolMapperUtils.PRIORITY_AUDIENCE_RESOLVE_MAPPER;
     }
 
+    @Autowired
+    private RoleResolveUtil roleResolveUtil;
+
     @Override
-    public AccessToken transformAccessToken(AccessToken token, ProtocolMapperModel mappingModel, KeycloakSession session,
+    public AccessToken transformAccessToken(AccessToken token, ProtocolMapperModel mappingModel,
                                             UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
         String clientId = clientSessionCtx.getClientSession().getClient().getClientId();
 
-        for (Map.Entry<String, AccessToken.Access> entry : RoleResolveUtil.getAllResolvedClientRoles(session, clientSessionCtx).entrySet()) {
+        for (Map.Entry<String, AccessToken.Access> entry : roleResolveUtil.getAllResolvedClientRoles(clientSessionCtx).entrySet()) {
             // Don't add client itself to the audience
             if (entry.getKey().equals(clientId)) {
                 continue;

@@ -312,7 +312,7 @@ public class ExportUtils {
 
         List<ResourceRepresentation> resources = storeFactory.getResourceStore().findByResourceServer(settingsModel.getId())
                 .stream().map(resource -> {
-                    ResourceRepresentation rep = toRepresentation(resource, settingsModel, authorizationProvider);
+                    ResourceRepresentation rep = modelToRepresentation.toRepresentation(resource, settingsModel, authorizationProvider);
 
                     if (rep.getOwner().getId().equals(settingsModel.getId())) {
                         rep.setOwner((ResourceOwnerRepresentation) null);
@@ -355,9 +355,9 @@ public class ExportUtils {
         return representation;
     }
 
-    private static PolicyRepresentation createPolicyRepresentation(AuthorizationProvider authorizationProvider, PolicyModel policy) {
+    private PolicyRepresentation createPolicyRepresentation(AuthorizationProvider authorizationProvider, PolicyModel policy) {
         try {
-            PolicyRepresentation rep = toRepresentation(policy, authorizationProvider, true, true);
+            PolicyRepresentation rep = modelToRepresentation.toRepresentation(policy, authorizationProvider, true, true);
 
             Map<String, String> config = new HashMap<>(rep.getConfig());
 

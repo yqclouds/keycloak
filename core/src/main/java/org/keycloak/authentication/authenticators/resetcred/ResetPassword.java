@@ -20,8 +20,10 @@ package org.keycloak.authentication.authenticators.resetcred;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.models.PasswordCredentialModel;
+import org.keycloak.models.UserCredentialManager;
 import org.keycloak.models.UserModel;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -44,8 +46,11 @@ public class ResetPassword extends AbstractSetRequiredActionAuthenticator {
         context.success();
     }
 
+    @Autowired
+    private UserCredentialManager userCredentialManager;
+
     protected boolean configuredFor(AuthenticationFlowContext context) {
-        return context.getSession().userCredentialManager().isConfiguredFor(context.getRealm(), context.getUser(), PasswordCredentialModel.TYPE);
+        return userCredentialManager.isConfiguredFor(context.getRealm(), context.getUser(), PasswordCredentialModel.TYPE);
     }
 
     @Override

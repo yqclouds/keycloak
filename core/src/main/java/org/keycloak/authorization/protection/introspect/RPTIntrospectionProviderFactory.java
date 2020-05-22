@@ -17,7 +17,6 @@
  */
 package org.keycloak.authorization.protection.introspect;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.protocol.oidc.TokenIntrospectionProvider;
 import org.keycloak.protocol.oidc.TokenIntrospectionProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;

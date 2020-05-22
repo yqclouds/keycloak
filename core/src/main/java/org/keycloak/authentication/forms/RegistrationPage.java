@@ -22,7 +22,6 @@ import org.keycloak.authentication.FormAuthenticator;
 import org.keycloak.authentication.FormAuthenticatorFactory;
 import org.keycloak.authentication.FormContext;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;

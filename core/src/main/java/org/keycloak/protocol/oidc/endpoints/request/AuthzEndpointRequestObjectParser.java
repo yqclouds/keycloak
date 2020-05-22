@@ -17,13 +17,14 @@
 package org.keycloak.protocol.oidc.endpoints.request;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.keycloak.jose.jws.Algorithm;
 import org.keycloak.jose.jws.JWSHeader;
 import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.TokenManager;
 import org.keycloak.protocol.oidc.OIDCAdvancedConfigWrapper;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,7 +39,10 @@ class AuthzEndpointRequestObjectParser extends AuthzEndpointRequestParser {
 
     private final JsonNode requestParams;
 
-    public AuthzEndpointRequestObjectParser(KeycloakSession session, String requestObject, ClientModel client) throws Exception {
+    @Autowired
+    private TokenManager tokenManager;
+
+    public AuthzEndpointRequestObjectParser(String requestObject, ClientModel client) throws Exception {
         JWSInput input = new JWSInput(requestObject);
         JWSHeader header = input.getHeader();
         Algorithm headerAlgorithm = header.getAlgorithm();
@@ -55,7 +59,7 @@ class AuthzEndpointRequestObjectParser extends AuthzEndpointRequestParser {
         if (header.getAlgorithm() == Algorithm.none) {
             this.requestParams = JsonSerialization.readValue(input.getContent(), JsonNode.class);
         } else {
-            this.requestParams = session.tokens().decodeClientJWT(requestObject, client, JsonNode.class);
+            this.requestParams = tokenManager.decodeClientJWT(requestObject, client, JsonNode.class);
             if (this.requestParams == null) {
                 throw new RuntimeException("Failed to verify signature on 'request' object");
             }

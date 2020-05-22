@@ -4,21 +4,25 @@ import org.keycloak.credential.CredentialProvider;
 import org.keycloak.credential.CredentialTypeMetadata;
 import org.keycloak.credential.CredentialTypeMetadataContext;
 import org.keycloak.models.AuthenticationExecutionModel;
-import org.keycloak.models.KeycloakSession;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Map;
 
 public class AuthenticationSelectionOption {
 
     private final AuthenticationExecutionModel authExec;
     private final CredentialTypeMetadata credentialTypeMetadata;
 
-    public AuthenticationSelectionOption(KeycloakSession session, AuthenticationExecutionModel authExec) {
-        this.authExec = authExec;
-        Authenticator authenticator = session.getProvider(Authenticator.class, authExec.getAuthenticator());
-        if (authenticator instanceof CredentialValidator) {
-            CredentialProvider credentialProvider = ((CredentialValidator) authenticator).getCredentialProvider(session);
+    @Autowired
+    private Map<String, Authenticator> authenticators;
 
-            CredentialTypeMetadataContext ctx = CredentialTypeMetadataContext.builder()
-                    .build(session);
+    public AuthenticationSelectionOption(AuthenticationExecutionModel authExec) {
+        this.authExec = authExec;
+        Authenticator authenticator = authenticators.get(authExec.getAuthenticator());
+        if (authenticator instanceof CredentialValidator) {
+            CredentialProvider credentialProvider = ((CredentialValidator) authenticator).getCredentialProvider();
+
+            CredentialTypeMetadataContext ctx = CredentialTypeMetadataContext.builder().build();
             credentialTypeMetadata = credentialProvider.getCredentialTypeMetadata(ctx);
         } else {
             credentialTypeMetadata = null;

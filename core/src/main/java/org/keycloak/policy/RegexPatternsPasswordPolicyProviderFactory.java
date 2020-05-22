@@ -17,8 +17,9 @@
 
 package org.keycloak.policy;
 
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -29,6 +30,8 @@ import org.springframework.stereotype.Component;
 public class RegexPatternsPasswordPolicyProviderFactory implements PasswordPolicyProviderFactory {
 
     public static final String ID = "regexPattern";
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     @Override
     public String getId() {
@@ -36,8 +39,8 @@ public class RegexPatternsPasswordPolicyProviderFactory implements PasswordPolic
     }
 
     @Override
-    public PasswordPolicyProvider create(KeycloakSession session) {
-        return new RegexPatternsPasswordPolicyProvider(session.getContext());
+    public PasswordPolicyProvider create() {
+        return new RegexPatternsPasswordPolicyProvider(keycloakContext);
     }
 
     @Override

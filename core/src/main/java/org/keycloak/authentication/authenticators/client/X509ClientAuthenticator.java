@@ -1,7 +1,7 @@
 package org.keycloak.authentication.authenticators.client;
 
-import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import com.hsbc.unified.iam.core.constants.OAuth2Constants;
+import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.ClientAuthenticationFlowContext;
 import org.keycloak.authentication.ClientAuthenticator;
@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -34,6 +35,8 @@ public class X509ClientAuthenticator extends AbstractClientAuthenticator {
     public static final String ATTR_SUBJECT_DN = ATTR_PREFIX + ".subjectdn";
 
 //    protected static ServicesLogger LOG = ServicesLogger.LOGGER;
+
+    private HttpSession httpSession;
 
     @Autowired(required = false)
     private X509ClientCertificateLookup x509ClientCertificateLookup;
@@ -66,7 +69,7 @@ public class X509ClientAuthenticator extends AbstractClientAuthenticator {
             }
 
             if (client_id == null) {
-                client_id = context.getSession().getAttribute("client_id", String.class);
+                client_id = (String) httpSession.getAttribute("client_id");
             }
 
             if (client_id == null) {

@@ -16,11 +16,10 @@
  */
 package org.keycloak.authorization.policy.provider.permission;
 
-import org.keycloak.authorization.AuthorizationProvider;
 import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
+import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.idm.authorization.ResourcePermissionRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;

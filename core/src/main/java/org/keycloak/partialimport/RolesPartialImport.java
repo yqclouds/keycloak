@@ -16,7 +16,6 @@
  */
 package org.keycloak.partialimport;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.RepresentationToModel;
@@ -53,40 +52,40 @@ public class RolesPartialImport implements PartialImport<RolesRepresentation> {
     private Map<String, Set<RoleRepresentation>> clientRolesToSkip;
 
     @Override
-    public void prepare(PartialImportRepresentation rep, RealmModel realm, KeycloakSession session) throws ErrorResponseException {
-        prepareRealmRoles(rep, realm, session);
-        prepareClientRoles(rep, realm, session);
+    public void prepare(PartialImportRepresentation rep, RealmModel realm) throws ErrorResponseException {
+        prepareRealmRoles(rep, realm);
+        prepareClientRoles(rep, realm);
     }
 
-    private void prepareRealmRoles(PartialImportRepresentation rep, RealmModel realm, KeycloakSession session) throws ErrorResponseException {
+    private void prepareRealmRoles(PartialImportRepresentation rep, RealmModel realm) throws ErrorResponseException {
         if (!rep.hasRealmRoles()) return;
 
-        realmRolesPI.prepare(rep, realm, session);
+        realmRolesPI.prepare(rep, realm);
         this.realmRolesToOverwrite = realmRolesPI.getToOverwrite();
         this.realmRolesToSkip = realmRolesPI.getToSkip();
     }
 
-    private void prepareClientRoles(PartialImportRepresentation rep, RealmModel realm, KeycloakSession session) throws ErrorResponseException {
+    private void prepareClientRoles(PartialImportRepresentation rep, RealmModel realm) throws ErrorResponseException {
         if (!rep.hasClientRoles()) return;
 
-        clientRolesPI.prepare(rep, realm, session);
+        clientRolesPI.prepare(rep, realm);
         this.clientRolesToOverwrite = clientRolesPI.getToOverwrite();
         this.clientRolesToSkip = clientRolesPI.getToSkip();
     }
 
     @Override
-    public void removeOverwrites(RealmModel realm, KeycloakSession session) {
+    public void removeOverwrites(RealmModel realm) {
         deleteClientRoleOverwrites(realm);
-        deleteRealmRoleOverwrites(realm, session);
+        deleteRealmRoleOverwrites(realm);
     }
 
     @Override
-    public PartialImportResults doImport(PartialImportRepresentation rep, RealmModel realm, KeycloakSession session) throws ErrorResponseException {
+    public PartialImportResults doImport(PartialImportRepresentation rep, RealmModel realm) throws ErrorResponseException {
         PartialImportResults results = new PartialImportResults();
         if (!rep.hasRealmRoles() && !rep.hasClientRoles()) return results;
 
         // finalize preparation and add results for skips
-        removeRealmRoleSkips(results, rep, realm, session);
+        removeRealmRoleSkips(results, rep, realm);
         removeClientRoleSkips(results, rep, realm);
         if (rep.hasRealmRoles()) setUniqueIds(rep.getRoles().getRealm());
         if (rep.hasClientRoles()) setUniqueIds(rep.getRoles().getClient());
@@ -99,11 +98,11 @@ public class RolesPartialImport implements PartialImport<RolesRepresentation> {
         }
 
         // add "add" results for new roles created
-        realmRoleAdds(results, rep, realm, session);
+        realmRoleAdds(results, rep, realm);
         clientRoleAdds(results, rep, realm);
 
         // add "overwritten" results for roles overwritten
-        addResultsForOverwrittenRealmRoles(results, realm, session);
+        addResultsForOverwrittenRealmRoles(results, realm);
         addResultsForOverwrittenClientRoles(results, realm);
 
         return results;
@@ -125,13 +124,12 @@ public class RolesPartialImport implements PartialImport<RolesRepresentation> {
 
     private void removeRealmRoleSkips(PartialImportResults results,
                                       PartialImportRepresentation rep,
-                                      RealmModel realm,
-                                      KeycloakSession session) {
+                                      RealmModel realm) {
         if (isEmpty(realmRolesToSkip)) return;
 
         for (RoleRepresentation roleRep : realmRolesToSkip) {
             rep.getRoles().getRealm().remove(roleRep);
-            String modelId = realmRolesPI.getModelId(realm, session, roleRep);
+            String modelId = realmRolesPI.getModelId(realm, roleRep);
             results.addResult(realmRolesPI.skipped(modelId, roleRep));
         }
     }
@@ -150,19 +148,19 @@ public class RolesPartialImport implements PartialImport<RolesRepresentation> {
         }
     }
 
-    private void deleteRealmRoleOverwrites(RealmModel realm, KeycloakSession session) {
+    private void deleteRealmRoleOverwrites(RealmModel realm) {
         if (isEmpty(realmRolesToOverwrite)) return;
 
         for (RoleRepresentation roleRep : realmRolesToOverwrite) {
-            realmRolesPI.remove(realm, session, roleRep);
+            realmRolesPI.remove(realm, roleRep);
         }
     }
 
-    private void addResultsForOverwrittenRealmRoles(PartialImportResults results, RealmModel realm, KeycloakSession session) {
+    private void addResultsForOverwrittenRealmRoles(PartialImportResults results, RealmModel realm) {
         if (isEmpty(realmRolesToOverwrite)) return;
 
         for (RoleRepresentation roleRep : realmRolesToOverwrite) {
-            String modelId = realmRolesPI.getModelId(realm, session, roleRep);
+            String modelId = realmRolesPI.getModelId(realm, roleRep);
             results.addResult(realmRolesPI.overwritten(modelId, roleRep));
         }
     }
@@ -198,15 +196,14 @@ public class RolesPartialImport implements PartialImport<RolesRepresentation> {
 
     private void realmRoleAdds(PartialImportResults results,
                                PartialImportRepresentation rep,
-                               RealmModel realm,
-                               KeycloakSession session) {
+                               RealmModel realm) {
         if (!rep.hasRealmRoles()) return;
 
         for (RoleRepresentation roleRep : rep.getRoles().getRealm()) {
             if (realmRolesToOverwrite.contains(roleRep)) continue;
             if (realmRolesToSkip.contains(roleRep)) continue;
 
-            String modelId = realmRolesPI.getModelId(realm, session, roleRep);
+            String modelId = realmRolesPI.getModelId(realm, roleRep);
             results.addResult(realmRolesPI.added(modelId, roleRep));
         }
     }

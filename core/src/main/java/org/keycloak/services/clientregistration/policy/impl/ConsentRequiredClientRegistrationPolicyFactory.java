@@ -18,7 +18,6 @@
 package org.keycloak.services.clientregistration.policy.impl;
 
 import org.keycloak.component.ComponentModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.services.clientregistration.policy.AbstractClientRegistrationPolicyFactory;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy;
@@ -38,7 +37,7 @@ public class ConsentRequiredClientRegistrationPolicyFactory extends AbstractClie
     public static final String PROVIDER_ID = "consent-required";
 
     @Override
-    public ClientRegistrationPolicy create(KeycloakSession session, ComponentModel model) {
+    public ClientRegistrationPolicy create(ComponentModel model) {
         return new ConsentRequiredClientRegistrationPolicy();
     }
 

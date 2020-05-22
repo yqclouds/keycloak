@@ -19,8 +19,8 @@ package org.keycloak.services.managers;
 import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.common.util.ObjectUtil;
 import org.keycloak.models.KeycloakContext;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.core.HttpHeaders;
@@ -37,14 +37,17 @@ public class AppAuthManager extends AuthenticationManager {
 
     private static final Pattern WHITESPACES = Pattern.compile("\\s+");
 
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     @Override
-    public AuthResult authenticateIdentityCookie(KeycloakSession session, RealmModel realm) {
-        AuthResult authResult = super.authenticateIdentityCookie(session, realm);
+    public AuthResult authenticateIdentityCookie(RealmModel realm) {
+        AuthResult authResult = super.authenticateIdentityCookie(realm);
         if (authResult == null) return null;
         // refresh the cookies!
-        createLoginCookie(session, realm, authResult.getUser(), authResult.getSession(), session.getContext().getUri(), session.getContext().getConnection());
+        createLoginCookie(realm, authResult.getUser(), authResult.getSession(), keycloakContext.getUri(), keycloakContext.getConnection());
         if (authResult.getSession().isRememberMe())
-            createRememberMeCookie(realm, authResult.getUser().getUsername(), session.getContext().getUri(), session.getContext().getConnection());
+            createRememberMeCookie(realm, authResult.getUser().getUsername(), keycloakContext.getUri(), keycloakContext.getConnection());
         return authResult;
     }
 

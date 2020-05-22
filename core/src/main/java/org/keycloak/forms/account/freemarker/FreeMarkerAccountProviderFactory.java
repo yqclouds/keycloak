@@ -19,7 +19,6 @@ package org.keycloak.forms.account.freemarker;
 
 import org.keycloak.forms.account.AccountProvider;
 import org.keycloak.forms.account.AccountProviderFactory;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 

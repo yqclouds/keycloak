@@ -17,6 +17,7 @@
 
 package org.keycloak.authentication.forms;
 
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -33,7 +34,6 @@ import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.AuthenticatorConfigModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.FormMessage;
@@ -42,7 +42,6 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.validation.Validation;
 import org.keycloak.stereotype.ProviderFactory;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -211,12 +210,12 @@ public class RegistrationRecaptcha implements FormAction, FormActionFactory, Con
     }
 
     @Override
-    public boolean configuredFor(KeycloakSession session, RealmModel realm, UserModel user) {
+    public boolean configuredFor(RealmModel realm, UserModel user) {
         return true;
     }
 
     @Override
-    public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
+    public void setRequiredActions(RealmModel realm, UserModel user) {
 
     }
 

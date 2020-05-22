@@ -16,19 +16,21 @@
  */
 package org.keycloak.services.resources.account;
 
+import com.hsbc.unified.iam.core.constants.Constants;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.ClientModel;
-import com.hsbc.unified.iam.core.constants.Constants;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.ThemeManager;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.Auth;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.theme.Theme;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.InternalServerErrorException;
@@ -46,8 +48,11 @@ public class AccountLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(AccountLoader.class);
 
-    public Object getAccountService(KeycloakSession session, EventBuilder event) {
-        RealmModel realm = session.getContext().getRealm();
+    @Autowired
+    private KeycloakContext keycloakContext;
+
+    public Object getAccountService(EventBuilder event) {
+        RealmModel realm = keycloakContext.getRealm();
 
         ClientModel client = realm.getClientByClientId(Constants.ACCOUNT_MANAGEMENT_CLIENT_ID);
         if (client == null || !client.isEnabled()) {
@@ -55,12 +60,12 @@ public class AccountLoader {
             throw new NotFoundException("account management not enabled");
         }
 
-        HttpRequest request = session.getContext().getContextObject(HttpRequest.class);
-        HttpHeaders headers = session.getContext().getRequestHeaders();
+        HttpRequest request = keycloakContext.getContextObject(HttpRequest.class);
+        HttpHeaders headers = keycloakContext.getRequestHeaders();
         MediaType content = headers.getMediaType();
         List<MediaType> accepts = headers.getAcceptableMediaTypes();
 
-        Theme theme = getTheme(session);
+        Theme theme = getTheme();
         boolean deprecatedAccount = isDeprecatedFormsAccountConsole(theme);
 
         if (request.getHttpMethod().equals(HttpMethod.OPTIONS)) {
@@ -75,8 +80,8 @@ public class AccountLoader {
                 throw new NotAuthorizedException("Service accounts are not allowed to access this service");
             }
 
-            Auth auth = new Auth(session.getContext().getRealm(), authResult.getToken(), authResult.getUser(), client, authResult.getSession(), false);
-            AccountRestService accountRestService = new AccountRestService(session, auth, client, event);
+            Auth auth = new Auth(keycloakContext.getRealm(), authResult.getToken(), authResult.getUser(), client, authResult.getSession(), false);
+            AccountRestService accountRestService = new AccountRestService(auth, client, event);
             ResteasyProviderFactory.getInstance().injectProperties(accountRestService);
             return accountRestService;
         } else {
@@ -94,9 +99,12 @@ public class AccountLoader {
         }
     }
 
-    private Theme getTheme(KeycloakSession session) {
+    @Autowired
+    private ThemeManager themeManager;
+
+    private Theme getTheme() {
         try {
-            return session.theme().getTheme(Theme.Type.ACCOUNT);
+            return themeManager.getTheme(Theme.Type.ACCOUNT);
         } catch (IOException e) {
             throw new InternalServerErrorException(e);
         }

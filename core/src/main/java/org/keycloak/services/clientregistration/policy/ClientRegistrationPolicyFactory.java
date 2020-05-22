@@ -18,7 +18,6 @@
 package org.keycloak.services.clientregistration.policy;
 
 import org.keycloak.component.ComponentFactory;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
 
 import java.util.List;
@@ -30,9 +29,6 @@ public interface ClientRegistrationPolicyFactory extends ComponentFactory<Client
 
     /**
      * Get config properties filled for particular session. It assumes the session.getContext() has set realm
-     *
-     * @param session
-     * @return
      */
-    List<ProviderConfigProperty> getConfigProperties(KeycloakSession session);
+    List<ProviderConfigProperty> getConfigProperties();
 }

@@ -18,15 +18,15 @@
 package org.keycloak.exportimport.singlefile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.keycloak.exportimport.ExportProvider;
 import org.keycloak.exportimport.util.ExportImportSessionTask;
 import org.keycloak.exportimport.util.ExportUtils;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.RealmProvider;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.representations.idm.RealmRepresentation;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,11 +63,11 @@ public class SingleFileExportProvider implements ExportProvider {
         KeycloakModelUtils.runJobInTransaction(factory, new ExportImportSessionTask() {
 
             @Override
-            protected void runExportImportTask(KeycloakSession session) throws IOException {
-                List<RealmModel> realms = session.realms().getRealms();
+            protected void runExportImportTask() throws IOException {
+                List<RealmModel> realms = realmProvider.getRealms();
                 List<RealmRepresentation> reps = new ArrayList<>();
                 for (RealmModel realm : realms) {
-                    reps.add(exportUtils.exportRealm(session, realm, true, true));
+                    reps.add(exportUtils.exportRealm(realm, true, true));
                 }
 
                 writeToFile(reps);
@@ -77,15 +77,18 @@ public class SingleFileExportProvider implements ExportProvider {
 
     }
 
+    @Autowired
+    private RealmProvider realmProvider;
+
     @Override
     public void exportRealm(KeycloakSessionFactory factory, final String realmName) throws IOException {
         LOG.info("Exporting realm '%s' into file %s", realmName, this.file.getAbsolutePath());
         KeycloakModelUtils.runJobInTransaction(factory, new ExportImportSessionTask() {
 
             @Override
-            protected void runExportImportTask(KeycloakSession session) throws IOException {
-                RealmModel realm = session.realms().getRealmByName(realmName);
-                RealmRepresentation realmRep = exportUtils.exportRealm(session, realm, true, true);
+            protected void runExportImportTask() throws IOException {
+                RealmModel realm = realmProvider.getRealmByName(realmName);
+                RealmRepresentation realmRep = exportUtils.exportRealm(realm, true, true);
                 writeToFile(realmRep);
             }
 

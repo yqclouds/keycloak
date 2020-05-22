@@ -30,7 +30,6 @@ import org.keycloak.crypto.JavaAlgorithm;
 import org.keycloak.events.Details;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.jose.jws.crypto.HashUtils;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.x509.X509ClientCertificateLookup;
@@ -97,7 +96,7 @@ public abstract class AbstractX509ClientCertificateAuthenticator implements Auth
 
     // The method is purely for purposes of facilitating the unit testing
     public CertificateValidator.CertificateValidatorBuilder certificateValidationParameters(X509AuthenticatorConfigModel config) throws Exception {
-        return CertificateValidatorConfigBuilder.fromConfig( config);
+        return CertificateValidatorConfigBuilder.fromConfig(config);
     }
 
     @Override
@@ -301,13 +300,13 @@ public abstract class AbstractX509ClientCertificateAuthenticator implements Auth
             UserIdentityToModelMapper mapper = null;
             switch (mapperType) {
                 case USER_ATTRIBUTE:
-                    mapper = UserIdentityToModelMapper.getUserIdentityToCustomAttributeMapper(attributeName);
+                    mapper = userIdentityToModelMapper.getUserIdentityToCustomAttributeMapper(attributeName);
                     break;
                 case USERNAME_EMAIL:
                     mapper = userIdentityToModelMapper.getUsernameOrEmailMapper();
                     break;
                 default:
-                    LOG.warn("[UserIdentityToModelMapperBuilder:fromConfig] Unknown or unsupported user identity mapper: \"%s\"", mapperType.getName());
+                    LOG.warn("[UserIdentityToModelMapperBuilder:fromConfig] Unknown or unsupported user identity mapper: \"{}\"", mapperType.getName());
             }
             return mapper;
         }

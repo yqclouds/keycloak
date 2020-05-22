@@ -25,7 +25,6 @@ import org.keycloak.Config;
 import org.keycloak.common.constants.ServiceAccountConstants;
 import org.keycloak.exportimport.ExportImportConfig;
 import org.keycloak.exportimport.Strategy;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RealmProvider;
 import org.keycloak.models.utils.RepresentationToModel;
@@ -47,13 +46,13 @@ public class ImportUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(ImportUtils.class);
 
-    public static void importRealms(KeycloakSession session, Collection<RealmRepresentation> realms, Strategy strategy) {
+    public void importRealms(Collection<RealmRepresentation> realms, Strategy strategy) {
         boolean masterImported = false;
 
         // Import admin realm first
         for (RealmRepresentation realm : realms) {
             if (Config.getAdminRealm().equals(realm.getRealm())) {
-                if (importRealm(session, realm, strategy, false)) {
+                if (importRealm(realm, strategy, false)) {
                     masterImported = true;
                 }
             }
@@ -61,13 +60,13 @@ public class ImportUtils {
 
         for (RealmRepresentation realm : realms) {
             if (!Config.getAdminRealm().equals(realm.getRealm())) {
-                importRealm(session, realm, strategy, false);
+                importRealm(realm, strategy, false);
             }
         }
 
         // If master was imported, we may need to re-create realm management clients
         if (masterImported) {
-            for (RealmModel realm : session.realms().getRealms()) {
+            for (RealmModel realm : realmProvider.getRealms()) {
                 if (realm.getMasterAdminClient() == null) {
                     LOG.info("Re-created management client in master realm for realm '{}'", realm.getName());
                     new RealmManager().setupMasterAdminManagement(realm);
@@ -76,19 +75,20 @@ public class ImportUtils {
         }
     }
 
+    @Autowired
+    private RealmProvider realmProvider;
+
     /**
      * Fully import realm from representation, save it to model and return model of newly created realm
      *
-     * @param session
      * @param rep
      * @param strategy          specifies whether to overwrite or ignore existing realm or user entries
      * @param skipUserDependent If true, then import of any models, which needs users already imported in DB, will be skipped. For example authorization
      * @return newly imported realm (or existing realm if ignoreExisting is true and realm of this name already exists)
      */
-    public static boolean importRealm(KeycloakSession session, RealmRepresentation rep, Strategy strategy, boolean skipUserDependent) {
+    public boolean importRealm(RealmRepresentation rep, Strategy strategy, boolean skipUserDependent) {
         String realmName = rep.getRealm();
-        RealmProvider model = session.realms();
-        RealmModel realm = model.getRealmByName(realmName);
+        RealmModel realm = realmProvider.getRealmByName(realmName);
 
         if (realm != null) {
             if (strategy == Strategy.IGNORE_EXISTING) {
@@ -98,12 +98,12 @@ public class ImportUtils {
                 LOG.info("Realm '{}' already exists. Removing it before import", realmName);
                 if (Config.getAdminRealm().equals(realm.getId())) {
                     // Delete all masterAdmin apps due to foreign key constraints
-                    for (RealmModel currRealm : model.getRealms()) {
+                    for (RealmModel currRealm : realmProvider.getRealms()) {
                         currRealm.setMasterAdminClient(null);
                     }
                 }
                 // TODO: For migration between versions, it should be possible to delete just realm but keep it's users
-                model.removeRealm(realm.getId());
+                realmProvider.removeRealm(realm.getId());
             }
         }
 
@@ -120,15 +120,14 @@ public class ImportUtils {
     /**
      * Fully import realm (or more realms from particular stream)
      *
-     * @param session
      * @param mapper
      * @param is
      * @param strategy
      * @throws IOException
      */
-    public static void importFromStream(KeycloakSession session, ObjectMapper mapper, InputStream is, Strategy strategy) throws IOException {
+    public void importFromStream(ObjectMapper mapper, InputStream is, Strategy strategy) throws IOException {
         Map<String, RealmRepresentation> realmReps = getRealmsFromStream(mapper, is);
-        importRealms(session, realmReps.values(), strategy);
+        importRealms(realmReps.values(), strategy);
     }
 
     public static Map<String, RealmRepresentation> getRealmsFromStream(ObjectMapper mapper, InputStream is) throws IOException {
@@ -212,9 +211,6 @@ public class ImportUtils {
             parser.close();
         }
     }
-
-    @Autowired
-    private RealmProvider realmProvider;
 
     // Assuming that it's invoked inside transaction
     public void importFederatedUsersFromStream(String realmName, ObjectMapper mapper, InputStream is) throws IOException {

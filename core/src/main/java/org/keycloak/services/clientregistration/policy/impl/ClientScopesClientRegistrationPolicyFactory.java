@@ -19,12 +19,13 @@ package org.keycloak.services.clientregistration.policy.impl;
 
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.services.clientregistration.policy.AbstractClientRegistrationPolicyFactory;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -46,8 +47,8 @@ public class ClientScopesClientRegistrationPolicyFactory extends AbstractClientR
     private List<ProviderConfigProperty> configProperties;
 
     @Override
-    public ClientRegistrationPolicy create(KeycloakSession session, ComponentModel model) {
-        return new ClientScopesClientRegistrationPolicy(session, model);
+    public ClientRegistrationPolicy create(ComponentModel model) {
+        return new ClientScopesClientRegistrationPolicy(model);
     }
 
     @Override
@@ -56,7 +57,7 @@ public class ClientScopesClientRegistrationPolicyFactory extends AbstractClientR
     }
 
     @Override
-    public List<ProviderConfigProperty> getConfigProperties(KeycloakSession session) {
+    public List<ProviderConfigProperty> getConfigProperties() {
         List<ProviderConfigProperty> configProps = new LinkedList<>();
 
         ProviderConfigProperty property;
@@ -66,9 +67,7 @@ public class ClientScopesClientRegistrationPolicyFactory extends AbstractClientR
         property.setHelpText("allowed-client-scopes.tooltip");
         property.setType(ProviderConfigProperty.MULTIVALUED_LIST_TYPE);
 
-        if (session != null) {
-            property.setOptions(getClientScopes(session));
-        }
+        property.setOptions(getClientScopes());
         configProps.add(property);
 
         property = new ProviderConfigProperty();
@@ -83,8 +82,11 @@ public class ClientScopesClientRegistrationPolicyFactory extends AbstractClientR
         return configProperties;
     }
 
-    private List<String> getClientScopes(KeycloakSession session) {
-        RealmModel realm = session.getContext().getRealm();
+    @Autowired
+    private KeycloakContext keycloakContext;
+
+    private List<String> getClientScopes() {
+        RealmModel realm = keycloakContext.getRealm();
         if (realm == null) {
             return Collections.emptyList();
         } else {
@@ -96,11 +98,6 @@ public class ClientScopesClientRegistrationPolicyFactory extends AbstractClientR
 
             }).collect(Collectors.toList());
         }
-    }
-
-    @Override
-    public List<ProviderConfigProperty> getConfigProperties() {
-        return getConfigProperties(null);
     }
 
     @Override

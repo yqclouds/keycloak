@@ -27,6 +27,7 @@ import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.messages.Messages;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -85,9 +86,12 @@ public class IdpUsernamePasswordForm extends UsernamePasswordForm {
         return form;
     }
 
+    @Autowired
+    private AbstractIdpAuthenticator abstractIdpAuthenticator;
+
     private Optional<UserModel> getExistingUser(AuthenticationFlowContext context) {
         try {
-            return Optional.of(AbstractIdpAuthenticator.getExistingUser(context.getSession(), context.getRealm(), context.getAuthenticationSession()));
+            return Optional.of(abstractIdpAuthenticator.getExistingUser(context.getRealm(), context.getAuthenticationSession()));
         } catch (AuthenticationFlowException ex) {
             LOG.debug("No existing user in authSession", ex);
             return Optional.empty();

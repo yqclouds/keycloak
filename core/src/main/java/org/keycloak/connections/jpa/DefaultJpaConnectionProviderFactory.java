@@ -19,7 +19,6 @@ package org.keycloak.connections.jpa;
 
 import org.keycloak.ServerStartupError;
 import org.keycloak.connections.jpa.updater.JpaUpdaterProvider;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.KeycloakSessionTask;
 import org.keycloak.models.dblock.DBLockManager;
@@ -145,20 +144,20 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
         timerProvider.scheduleTask(new HibernateStatsReporter(entityManagerFactory), globalStatsIntervalSecs * 1000, "ReportHibernateGlobalStats");
     }
 
-    void migration(MigrationStrategy strategy, boolean initializeEmpty, String schema, File databaseUpdateFile, Connection connection, KeycloakSession session) {
+    void migration(MigrationStrategy strategy, boolean initializeEmpty, String schema, File databaseUpdateFile, Connection connection) {
         JpaUpdaterProvider.Status status = jpaUpdaterProvider.validate(connection, schema);
         if (status == JpaUpdaterProvider.Status.VALID) {
             LOG.debug("Database is up-to-date");
         } else if (status == JpaUpdaterProvider.Status.EMPTY) {
             if (initializeEmpty) {
-                update(connection, schema, session, jpaUpdaterProvider);
+                update(connection, schema, jpaUpdaterProvider);
             } else {
                 switch (strategy) {
                     case UPDATE:
-                        update(connection, schema, session, jpaUpdaterProvider);
+                        update(connection, schema, jpaUpdaterProvider);
                         break;
                     case MANUAL:
-                        export(connection, schema, databaseUpdateFile, session, jpaUpdaterProvider);
+                        export(connection, schema, databaseUpdateFile, jpaUpdaterProvider);
                         throw new ServerStartupError("Database not initialized, please initialize database with " + databaseUpdateFile.getAbsolutePath(), false);
                     case VALIDATE:
                         throw new ServerStartupError("Database not initialized, please enable database initialization", false);
@@ -167,10 +166,10 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
         } else {
             switch (strategy) {
                 case UPDATE:
-                    update(connection, schema, session, jpaUpdaterProvider);
+                    update(connection, schema, jpaUpdaterProvider);
                     break;
                 case MANUAL:
-                    export(connection, schema, databaseUpdateFile, session, jpaUpdaterProvider);
+                    export(connection, schema, databaseUpdateFile, jpaUpdaterProvider);
                     throw new ServerStartupError("Database not up-to-date, please migrate database with " + databaseUpdateFile.getAbsolutePath(), false);
                 case VALIDATE:
                     throw new ServerStartupError("Database not up-to-date, please enable database migration", false);
@@ -178,34 +177,28 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
         }
     }
 
-    protected void update(Connection connection, String schema, KeycloakSession session, JpaUpdaterProvider updater) {
-        KeycloakModelUtils.runJobInTransaction(session.getSessionFactory(), new KeycloakSessionTask() {
-            @Override
-            public void run(KeycloakSession lockSession) {
-                DBLockManager dbLockManager = new DBLockManager(lockSession);
-                DBLockProvider dbLock2 = dbLockManager.getDBLock();
-                dbLock2.waitForLock(DBLockProvider.Namespace.DATABASE);
-                try {
-                    updater.update(connection, schema);
-                } finally {
-                    dbLock2.releaseLock();
-                }
+    protected void update(Connection connection, String schema, JpaUpdaterProvider updater) {
+        KeycloakModelUtils.runJobInTransaction(sessionFactory, (KeycloakSessionTask) () -> {
+            DBLockManager dbLockManager = new DBLockManager();
+            DBLockProvider dbLock2 = dbLockManager.getDBLock();
+            dbLock2.waitForLock(DBLockProvider.Namespace.DATABASE);
+            try {
+                updater.update(connection, schema);
+            } finally {
+                dbLock2.releaseLock();
             }
         });
     }
 
-    protected void export(Connection connection, String schema, File databaseUpdateFile, KeycloakSession session, JpaUpdaterProvider updater) {
-        KeycloakModelUtils.runJobInTransaction(session.getSessionFactory(), new KeycloakSessionTask() {
-            @Override
-            public void run(KeycloakSession lockSession) {
-                DBLockManager dbLockManager = new DBLockManager(lockSession);
-                DBLockProvider dbLock2 = dbLockManager.getDBLock();
-                dbLock2.waitForLock(DBLockProvider.Namespace.DATABASE);
-                try {
-                    updater.export(connection, schema, databaseUpdateFile);
-                } finally {
-                    dbLock2.releaseLock();
-                }
+    protected void export(Connection connection, String schema, File databaseUpdateFile, JpaUpdaterProvider updater) {
+        KeycloakModelUtils.runJobInTransaction(sessionFactory, () -> {
+            DBLockManager dbLockManager = new DBLockManager();
+            DBLockProvider dbLock2 = dbLockManager.getDBLock();
+            dbLock2.waitForLock(DBLockProvider.Namespace.DATABASE);
+            try {
+                updater.export(connection, schema, databaseUpdateFile);
+            } finally {
+                dbLock2.releaseLock();
             }
         });
     }

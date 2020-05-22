@@ -22,7 +22,6 @@ import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.protocol.oidc.OIDCAdvancedConfigWrapper;
 import org.keycloak.protocol.oidc.OIDCConfigAttributes;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
@@ -42,7 +41,7 @@ public class AuthorizationEndpointRequestParserProcessor {
     @Autowired
     private HttpClientProvider httpClientProvider;
 
-    public AuthorizationEndpointRequest parseRequest(EventBuilder event, KeycloakSession session, ClientModel client, MultivaluedMap<String, String> requestParams) {
+    public AuthorizationEndpointRequest parseRequest(EventBuilder event, ClientModel client, MultivaluedMap<String, String> requestParams) {
         try {
             AuthorizationEndpointRequest request = new AuthorizationEndpointRequest();
 
@@ -75,12 +74,12 @@ public class AuthorizationEndpointRequestParserProcessor {
             }
 
             if (requestParam != null) {
-                new AuthzEndpointRequestObjectParser(session, requestParam, client).parseRequest(request);
+                new AuthzEndpointRequestObjectParser(requestParam, client).parseRequest(request);
             } else if (requestUriParam != null) {
                 try (InputStream is = httpClientProvider.get(requestUriParam)) {
                     String retrievedRequest = StreamUtil.readString(is);
 
-                    new AuthzEndpointRequestObjectParser(session, retrievedRequest, client).parseRequest(request);
+                    new AuthzEndpointRequestObjectParser(retrievedRequest, client).parseRequest(request);
                 }
             }
 
@@ -89,17 +88,17 @@ public class AuthorizationEndpointRequestParserProcessor {
         } catch (Exception e) {
 //            ServicesLogger.LOGGER.invalidRequest(e);
             event.error(Errors.INVALID_REQUEST);
-            throw new ErrorPageException(session, Response.Status.BAD_REQUEST, Messages.INVALID_REQUEST);
+            throw new ErrorPageException(Response.Status.BAD_REQUEST, Messages.INVALID_REQUEST);
         }
     }
 
-    public static String getClientId(EventBuilder event, KeycloakSession session, MultivaluedMap<String, String> requestParams) {
+    public static String getClientId(EventBuilder event, MultivaluedMap<String, String> requestParams) {
         List<String> clientParam = requestParams.get(OIDCLoginProtocol.CLIENT_ID_PARAM);
         if (clientParam != null && clientParam.size() == 1) {
             return clientParam.get(0);
         } else {
             event.error(Errors.INVALID_REQUEST);
-            throw new ErrorPageException(session, Response.Status.BAD_REQUEST, Messages.INVALID_REQUEST);
+            throw new ErrorPageException(Response.Status.BAD_REQUEST, Messages.INVALID_REQUEST);
         }
     }
 

@@ -20,9 +20,10 @@ package org.keycloak.services.clientregistration;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.services.managers.ClientManager;
 import org.keycloak.services.managers.RealmManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -36,13 +37,11 @@ import javax.ws.rs.core.Response;
  */
 public class AdapterInstallationClientRegistrationProvider implements ClientRegistrationProvider {
 
-    private KeycloakSession session;
     private EventBuilder event;
     private ClientRegistrationAuth auth;
 
-    public AdapterInstallationClientRegistrationProvider(KeycloakSession session) {
-        this.session = session;
-    }
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     @GET
     @Path("{clientId}")
@@ -50,11 +49,11 @@ public class AdapterInstallationClientRegistrationProvider implements ClientRegi
     public Response get(@PathParam("clientId") String clientId) {
         event.event(EventType.CLIENT_INFO);
 
-        ClientModel client = session.getContext().getRealm().getClientByClientId(clientId);
+        ClientModel client = keycloakContext.getRealm().getClientByClientId(clientId);
         auth.requireView(client);
 
-        ClientManager clientManager = new ClientManager(new RealmManager(session));
-        Object rep = clientManager.toInstallationRepresentation(session.getContext().getRealm(), client, session.getContext().getUri().getBaseUri());
+        ClientManager clientManager = new ClientManager(new RealmManager());
+        Object rep = clientManager.toInstallationRepresentation(keycloakContext.getRealm(), client, keycloakContext.getUri().getBaseUri());
 
         event.client(client.getClientId()).success();
         return Response.ok(rep).build();

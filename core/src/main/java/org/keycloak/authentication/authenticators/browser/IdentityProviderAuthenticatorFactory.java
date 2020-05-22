@@ -17,14 +17,13 @@
 
 package org.keycloak.authentication.authenticators.browser;
 
+import com.hsbc.unified.iam.core.constants.OAuth2Constants;
 import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import org.keycloak.Config;
-import com.hsbc.unified.iam.core.constants.OAuth2Constants;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.authentication.DisplayTypeAuthenticatorFactory;
 import org.keycloak.authentication.authenticators.AttemptedAuthenticator;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderConfigProperty;
 
@@ -86,7 +85,7 @@ public class IdentityProviderAuthenticatorFactory implements AuthenticatorFactor
     }
 
     @Override
-    public Authenticator createDisplay(KeycloakSession session, String displayType) {
+    public Authenticator createDisplay(String displayType) {
         if (displayType == null) return new IdentityProviderAuthenticator();
         if (!OAuth2Constants.DISPLAY_CONSOLE.equalsIgnoreCase(displayType)) return null;
         return AttemptedAuthenticator.SINGLETON;  // ignore this authenticator

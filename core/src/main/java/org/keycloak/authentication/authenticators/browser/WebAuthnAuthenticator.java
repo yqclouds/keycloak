@@ -93,7 +93,7 @@ public class WebAuthnAuthenticator implements Authenticator, CredentialValidator
         boolean isUserIdentified = false;
         if (user != null) {
             // in 2 Factor Scenario where the user has already been identified
-            WebAuthnAuthenticatorsBean authenticators = new WebAuthnAuthenticatorsBean(context.getSession(), context.getRealm(), user, getCredentialType());
+            WebAuthnAuthenticatorsBean authenticators = new WebAuthnAuthenticatorsBean(context.getRealm(), user, getCredentialType());
             if (authenticators.getAuthenticators().isEmpty()) {
                 // require the user to register webauthn authenticator
                 return;
@@ -312,7 +312,7 @@ public class WebAuthnAuthenticator implements Authenticator, CredentialValidator
         LoginFormsProvider provider = context.form().setError(errorCase);
         UserModel user = context.getUser();
         if (user != null) {
-            WebAuthnAuthenticatorsBean authenticators = new WebAuthnAuthenticatorsBean(context.getSession(), context.getRealm(), user, getCredentialType());
+            WebAuthnAuthenticatorsBean authenticators = new WebAuthnAuthenticatorsBean(context.getRealm(), user, getCredentialType());
             if (authenticators.getAuthenticators() != null) {
                 provider.setAttribute(WebAuthnConstants.ALLOWED_AUTHENTICATORS, authenticators);
             }

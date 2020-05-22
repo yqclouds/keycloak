@@ -19,7 +19,6 @@ package org.keycloak.broker.oidc;
 import org.keycloak.broker.provider.AbstractIdentityProviderFactory;
 import org.keycloak.broker.provider.IdentityProvider;
 import org.keycloak.models.IdentityProviderModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 
@@ -51,8 +50,8 @@ public class KeycloakOIDCIdentityProviderFactory extends AbstractIdentityProvide
     }
 
     @Override
-    public Map<String, String> parseConfig(KeycloakSession session, InputStream inputStream) {
-        return OIDCIdentityProviderFactory.parseOIDCConfig(session, inputStream);
+    public Map<String, String> parseConfig(InputStream inputStream) {
+        return OIDCIdentityProviderFactory.parseOIDCConfig(inputStream);
     }
 
     @Override

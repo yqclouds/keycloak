@@ -18,7 +18,6 @@
 package org.keycloak.services.clientregistration;
 
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.idm.ClientRepresentation;
 
 import javax.ws.rs.*;
@@ -30,16 +29,11 @@ import java.net.URI;
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class DefaultClientRegistrationProvider extends AbstractClientRegistrationProvider {
-
-    public DefaultClientRegistrationProvider(KeycloakSession session) {
-        super(session);
-    }
-
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createDefault(ClientRepresentation client) {
-        DefaultClientRegistrationContext context = new DefaultClientRegistrationContext(session, client, this);
+        DefaultClientRegistrationContext context = new DefaultClientRegistrationContext(client, this);
         client = create(context);
         URI uri = session.getContext().getUri().getAbsolutePathBuilder().path(client.getClientId()).build();
         return Response.created(uri).entity(client).build();
@@ -59,7 +53,7 @@ public class DefaultClientRegistrationProvider extends AbstractClientRegistratio
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateDefault(@PathParam("clientId") String clientId, ClientRepresentation client) {
-        DefaultClientRegistrationContext context = new DefaultClientRegistrationContext(session, client, this);
+        DefaultClientRegistrationContext context = new DefaultClientRegistrationContext(client, this);
         client = update(clientId, context);
         return Response.ok(client).build();
     }

@@ -17,13 +17,11 @@
 
 package org.keycloak.timer;
 
-import org.keycloak.models.KeycloakSession;
-
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public interface ScheduledTask {
 
-    void run(KeycloakSession session);
+    void run();
 
 }

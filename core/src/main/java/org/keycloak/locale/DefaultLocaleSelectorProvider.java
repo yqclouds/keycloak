@@ -17,12 +17,9 @@
 package org.keycloak.locale;
 
 import org.keycloak.models.KeycloakContext;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.sessions.AuthenticationSessionModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.Cookie;
@@ -34,6 +31,7 @@ import java.util.Set;
 public class DefaultLocaleSelectorProvider implements LocaleSelectorProvider {
     @Autowired
     private KeycloakContext keycloakContext;
+
     @Override
     public Locale resolveLocale(RealmModel realm, UserModel user) {
         HttpHeaders requestHeaders = keycloakContext.getRequestHeaders();

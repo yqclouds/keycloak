@@ -17,13 +17,15 @@
  */
 package org.keycloak.authorization.admin;
 
-import org.jboss.resteasy.annotations.cache.NoCache;
-import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import org.keycloak.authorization.AuthorizationProvider;
+import com.hsbc.unified.iam.core.constants.Constants;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
+import org.jboss.resteasy.annotations.cache.NoCache;
+import org.jboss.resteasy.spi.ResteasyProviderFactory;
+import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderAdminService;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.PolicyStore;
@@ -32,8 +34,7 @@ import org.keycloak.authorization.store.ScopeStore;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import com.hsbc.unified.iam.core.constants.Constants;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
 import org.keycloak.representations.idm.authorization.PolicyProviderRepresentation;
@@ -41,10 +42,9 @@ import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -97,7 +97,7 @@ public class PolicyService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
-    public Response create(String payload, @Context KeycloakSession session) {
+    public Response create(String payload) {
         if (auth != null) {
             this.auth.realm().requireManageAuthorization();
         }
@@ -107,7 +107,7 @@ public class PolicyService {
 
         representation.setId(policy.getId());
 
-        audit(representation, representation.getId(), OperationType.CREATE, session);
+        audit(representation, representation.getId(), OperationType.CREATE);
 
         return Response.status(Status.CREATED).entity(representation).build();
     }
@@ -251,8 +251,11 @@ public class PolicyService {
                 .build();
     }
 
+    @Autowired
+    private ModelToRepresentation modelToRepresentation;
+
     protected AbstractPolicyRepresentation toRepresentation(PolicyModel model, String fields, AuthorizationProvider authorization) {
-        return ModelToRepresentation.toRepresentation(model, authorization, true, false, fields != null && fields.equals("*"));
+        return modelToRepresentation.toRepresentation(model, authorization, true, false, fields != null && fields.equals("*"));
     }
 
     protected List<Object> doSearch(Integer firstResult, Integer maxResult, String fields, Map<String, String[]> filters) {
@@ -308,11 +311,14 @@ public class PolicyService {
         return authorization.getProviderFactory(policyType);
     }
 
-    private void audit(AbstractPolicyRepresentation resource, String id, OperationType operation, KeycloakSession session) {
+    @Autowired
+    private KeycloakContext keycloakContext;
+
+    private void audit(AbstractPolicyRepresentation resource, String id, OperationType operation) {
         if (id != null) {
-            adminEvent.operation(operation).resourcePath(session.getContext().getUri(), id).representation(resource).success();
+            adminEvent.operation(operation).resourcePath(keycloakContext.getUri(), id).representation(resource).success();
         } else {
-            adminEvent.operation(operation).resourcePath(session.getContext().getUri()).representation(resource).success();
+            adminEvent.operation(operation).resourcePath(keycloakContext.getUri()).representation(resource).success();
         }
     }
 }

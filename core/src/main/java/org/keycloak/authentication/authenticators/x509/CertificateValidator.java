@@ -21,7 +21,6 @@ package org.keycloak.authentication.authenticators.x509;
 import com.hsbc.unified.iam.core.constants.Constants;
 import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.common.util.OCSPUtils;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.truststore.TruststoreProvider;
 import org.keycloak.utils.CRLUtils;
 import org.slf4j.Logger;
@@ -53,7 +52,6 @@ import java.util.stream.Collectors;
 public class CertificateValidator {
     private static final Logger LOG = LoggerFactory.getLogger(CertificateValidator.class);
 
-    KeycloakSession session;
     X509Certificate[] _certChain;
     int _keyUsageBits;
     List<String> _extendedKeyUsage;
@@ -73,8 +71,7 @@ public class CertificateValidator {
                                    boolean cRLDPCheckingEnabled,
                                    CRLLoaderImpl crlLoader,
                                    boolean oCSPCheckingEnabled,
-                                   OCSPChecker ocspChecker,
-                                   KeycloakSession session) {
+                                   OCSPChecker ocspChecker) {
         _certChain = certChain;
         _keyUsageBits = keyUsageBits;
         _extendedKeyUsage = extendedKeyUsage;
@@ -159,11 +156,11 @@ public class CertificateValidator {
     @Autowired
     private CRLUtils crlUtils;
 
-    private void checkRevocationStatusUsingCRL(X509Certificate[] certs, CRLLoaderImpl crLoader, KeycloakSession session) throws GeneralSecurityException {
+    private void checkRevocationStatusUsingCRL(X509Certificate[] certs, CRLLoaderImpl crLoader) throws GeneralSecurityException {
         Collection<X509CRL> crlColl = crLoader.getX509CRLs();
         if (crlColl != null && crlColl.size() > 0) {
             for (X509CRL it : crlColl) {
-                crlUtils.check(certs, it, session);
+                crlUtils.check(certs, it);
             }
         }
     }
@@ -177,7 +174,7 @@ public class CertificateValidator {
         return new ArrayList<>();
     }
 
-    private void checkRevocationStatusUsingCRLDistributionPoints(X509Certificate[] certs, KeycloakSession session) throws GeneralSecurityException {
+    private void checkRevocationStatusUsingCRLDistributionPoints(X509Certificate[] certs) throws GeneralSecurityException {
         List<String> distributionPoints = getCRLDistributionPoints(certs[0]);
         if (distributionPoints == null || distributionPoints.size() == 0) {
             throw new GeneralSecurityException("Could not find any CRL distribution points in the certificate, unable to check the certificate revocation status using CRL/DP.");
