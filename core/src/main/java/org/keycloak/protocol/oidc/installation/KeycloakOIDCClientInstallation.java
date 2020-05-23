@@ -18,7 +18,7 @@
 package org.keycloak.protocol.oidc.installation;
 
 import com.hsbc.unified.iam.core.constants.Constants;
-import org.keycloak.authentication.ClientAuthenticator;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.keycloak.authentication.ClientAuthenticatorFactory;
 import org.keycloak.authorization.admin.AuthorizationService;
 import org.keycloak.models.*;
@@ -28,7 +28,7 @@ import org.keycloak.protocol.oidc.mappers.AudienceProtocolMapper;
 import org.keycloak.representations.adapters.config.PolicyEnforcerConfig;
 import org.keycloak.services.managers.ClientManager;
 import org.keycloak.stereotype.ProviderFactory;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MediaType;
@@ -46,9 +46,12 @@ import java.util.Set;
 @ProviderFactory(id = "keycloak-oidc-keycloak-json", providerClasses = ClientInstallationProvider.class)
 public class KeycloakOIDCClientInstallation implements ClientInstallationProvider {
 
-    public static Map<String, Object> getClientCredentialsAdapterConfig(ClientModel client) {
+    @Autowired
+    private Map<String, ClientAuthenticatorFactory> clientAuthenticatorFactories;
+
+    public Map<String, Object> getClientCredentialsAdapterConfig(ClientModel client) {
         String clientAuthenticator = client.getClientAuthenticatorType();
-        ClientAuthenticatorFactory authenticator = (ClientAuthenticatorFactory) session.getSessionFactory().getProviderFactory(ClientAuthenticator.class, clientAuthenticator);
+        ClientAuthenticatorFactory authenticator = clientAuthenticatorFactories.get(clientAuthenticator);
         return authenticator.getAdapterConfiguration(client);
     }
 

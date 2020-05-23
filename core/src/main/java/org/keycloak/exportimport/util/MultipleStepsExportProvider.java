@@ -44,27 +44,19 @@ public abstract class MultipleStepsExportProvider implements ExportProvider {
     private UserFederatedStorageProvider userFederatedStorageProvider;
 
     @Override
-    public void exportModel(KeycloakSessionFactory factory) throws IOException {
+    public void exportModel() throws IOException {
         final RealmsHolder holder = new RealmsHolder();
-
-        KeycloakModelUtils.runJobInTransaction(factory, new KeycloakSessionTask() {
-
-            @Override
-            public void run() {
-                List<RealmModel> realms = realmProvider.getRealms();
-                holder.realms = realms;
-            }
-
-        });
+        List<RealmModel> realms = realmProvider.getRealms();
+        holder.realms = realms;
 
         for (RealmModel realm : holder.realms) {
-            exportRealmImpl(factory, realm.getName());
+            exportRealmImpl(realm.getName());
         }
     }
 
     @Override
-    public void exportRealm(KeycloakSessionFactory factory, String realmName) throws IOException {
-        exportRealmImpl(factory, realmName);
+    public void exportRealm(String realmName) throws IOException {
+        exportRealmImpl(realmName);
     }
 
     @Autowired
@@ -73,30 +65,23 @@ public abstract class MultipleStepsExportProvider implements ExportProvider {
     @Autowired
     private UserProvider userProvider;
 
-    protected void exportRealmImpl(KeycloakSessionFactory factory, final String realmName) throws IOException {
+    protected void exportRealmImpl(final String realmName) throws IOException {
         final UsersExportStrategy usersExportStrategy = ExportImportConfig.getUsersExportStrategy();
         final int usersPerFile = ExportImportConfig.getUsersPerFile();
         final UsersHolder usersHolder = new UsersHolder();
         final boolean exportUsersIntoRealmFile = usersExportStrategy == UsersExportStrategy.REALM_FILE;
         FederatedUsersHolder federatedUsersHolder = new FederatedUsersHolder();
 
-        KeycloakModelUtils.runJobInTransaction(factory, new ExportImportSessionTask() {
+        RealmModel realm = realmProvider.getRealmByName(realmName);
+        RealmRepresentation rep = exportUtils.exportRealm(realm, exportUsersIntoRealmFile, true);
+        writeRealm(realmName + "-realm.json", rep);
+        LOG.info("Realm '" + realmName + "' - data exported");
 
-            @Override
-            protected void runExportImportTask() throws IOException {
-                RealmModel realm = realmProvider.getRealmByName(realmName);
-                RealmRepresentation rep = exportUtils.exportRealm(realm, exportUsersIntoRealmFile, true);
-                writeRealm(realmName + "-realm.json", rep);
-                LOG.info("Realm '" + realmName + "' - data exported");
-
-                // Count total number of users
-                if (!exportUsersIntoRealmFile) {
-                    usersHolder.totalCount = userProvider.getUsersCount(realm, true);
-                    federatedUsersHolder.totalCount = userFederatedStorageProvider.getStoredUsersCount(realm);
-                }
-            }
-
-        });
+        // Count total number of users
+        if (!exportUsersIntoRealmFile) {
+            usersHolder.totalCount = userProvider.getUsersCount(realm, true);
+            federatedUsersHolder.totalCount = userFederatedStorageProvider.getStoredUsersCount(realm);
+        }
 
         if (usersExportStrategy != UsersExportStrategy.SKIP && !exportUsersIntoRealmFile) {
             // We need to export users now
@@ -112,20 +97,11 @@ public abstract class MultipleStepsExportProvider implements ExportProvider {
                     usersHolder.currentPageEnd = usersHolder.totalCount;
                 }
 
-                KeycloakModelUtils.runJobInTransaction(factory, new ExportImportSessionTask() {
+                usersHolder.users = userProvider.getUsers(realm, usersHolder.currentPageStart, usersHolder.currentPageEnd - usersHolder.currentPageStart, true);
 
-                    @Override
-                    protected void runExportImportTask() throws IOException {
-                        RealmModel realm = realmProvider.getRealmByName(realmName);
-                        usersHolder.users = userProvider.getUsers(realm, usersHolder.currentPageStart, usersHolder.currentPageEnd - usersHolder.currentPageStart, true);
+                writeUsers(realmName + "-users-" + (usersHolder.currentPageStart / countPerPage) + ".json", realm, usersHolder.users);
 
-                        writeUsers(realmName + "-users-" + (usersHolder.currentPageStart / countPerPage) + ".json", realm, usersHolder.users);
-
-                        LOG.info("Users " + usersHolder.currentPageStart + "-" + (usersHolder.currentPageEnd - 1) + " exported");
-                    }
-
-                });
-
+                LOG.info("Users " + usersHolder.currentPageStart + "-" + (usersHolder.currentPageEnd - 1) + " exported");
                 usersHolder.currentPageStart = usersHolder.currentPageEnd;
             }
         }
@@ -143,18 +119,12 @@ public abstract class MultipleStepsExportProvider implements ExportProvider {
                     federatedUsersHolder.currentPageEnd = federatedUsersHolder.totalCount;
                 }
 
-                KeycloakModelUtils.runJobInTransaction(factory, new ExportImportSessionTask() {
-                    @Override
-                    protected void runExportImportTask() throws IOException {
-                        RealmModel realm = realmProvider.getRealmByName(realmName);
-                        federatedUsersHolder.users = userFederatedStorageProvider.getStoredUsers(realm, federatedUsersHolder.currentPageStart, federatedUsersHolder.currentPageEnd - federatedUsersHolder.currentPageStart);
+                federatedUsersHolder.users = userFederatedStorageProvider.getStoredUsers(realm, federatedUsersHolder.currentPageStart, federatedUsersHolder.currentPageEnd - federatedUsersHolder.currentPageStart);
 
-                        writeFederatedUsers(realmName + "-federated-users-" + (federatedUsersHolder.currentPageStart / countPerPage) + ".json", realm, federatedUsersHolder.users);
+                writeFederatedUsers(realmName + "-federated-users-" + (federatedUsersHolder.currentPageStart / countPerPage) + ".json", realm, federatedUsersHolder.users);
 
-                        LOG.info("Users " + federatedUsersHolder.currentPageStart + "-" + (federatedUsersHolder.currentPageEnd - 1) + " exported");
-                    }
+                LOG.info("Users " + federatedUsersHolder.currentPageStart + "-" + (federatedUsersHolder.currentPageEnd - 1) + " exported");
 
-                });
 
                 federatedUsersHolder.currentPageStart = federatedUsersHolder.currentPageEnd;
             }

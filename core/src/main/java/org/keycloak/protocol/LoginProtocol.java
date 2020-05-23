@@ -32,8 +32,6 @@ import javax.ws.rs.core.UriInfo;
  */
 public interface LoginProtocol extends Provider {
 
-    LoginProtocol setSession();
-
     LoginProtocol setRealm(RealmModel realm);
 
     LoginProtocol setUriInfo(UriInfo uriInfo);

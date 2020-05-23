@@ -1,10 +1,13 @@
 package org.keycloak.services.resources.account;
 
+import com.hsbc.unified.iam.core.constants.Constants;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.common.Version;
 import org.keycloak.events.EventStoreProvider;
-import com.hsbc.unified.iam.core.constants.Constants;
-import org.keycloak.models.*;
+import org.keycloak.models.ClientModel;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.protocol.oidc.utils.RedirectUtils;
 import org.keycloak.services.Urls;
 import org.keycloak.services.managers.AppAuthManager;
@@ -165,6 +168,11 @@ public class AccountConsole {
         return propertyValue;
     }
 
+    @Autowired
+    private RedirectUtils redirectUtils;
+    @Autowired
+    private ResolveRelative resolveRelative;
+
     @GET
     @Path("index.html")
     public Response getIndexHtmlRedirect() {
@@ -183,9 +191,9 @@ public class AccountConsole {
         ClientModel referrerClient = realm.getClientByClientId(referrer);
         if (referrerClient != null) {
             if (referrerUri != null) {
-                referrerUri = RedirectUtils.verifyRedirectUri(referrerUri, referrerClient);
+                referrerUri = redirectUtils.verifyRedirectUri(referrerUri, referrerClient);
             } else {
-                referrerUri = ResolveRelative.resolveRelativeUri(client.getRootUrl(), referrerClient.getBaseUrl());
+                referrerUri = resolveRelative.resolveRelativeUri(client.getRootUrl(), referrerClient.getBaseUrl());
             }
 
             if (referrerUri != null) {
@@ -198,7 +206,7 @@ public class AccountConsole {
         } else if (referrerUri != null) {
             referrerClient = realm.getClientByClientId(referrer);
             if (client != null) {
-                referrerUri = RedirectUtils.verifyRedirectUri(referrerUri, referrerClient);
+                referrerUri = redirectUtils.verifyRedirectUri(referrerUri, referrerClient);
 
                 if (referrerUri != null) {
                     return new String[]{referrer, referrer, referrerUri};

@@ -146,7 +146,7 @@ public class ScriptBasedOIDCProtocolMapper extends AbstractOIDCProtocolMapper im
     private ScriptingProvider scriptingProvider;
 
     @Override
-    protected void setClaim(IDToken token, ProtocolMapperModel mappingModel, UserSessionModel userSession, KeycloakSession keycloakSession, ClientSessionContext clientSessionCtx) {
+    protected void setClaim(IDToken token, ProtocolMapperModel mappingModel, UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
         UserModel user = userSession.getUser();
         String scriptSource = getScriptCode(mappingModel);
         RealmModel realm = userSession.getRealm();
@@ -162,7 +162,6 @@ public class ScriptBasedOIDCProtocolMapper extends AbstractOIDCProtocolMapper im
                 bindings.put("realm", realm);
                 bindings.put("token", token);
                 bindings.put("userSession", userSession);
-                bindings.put("keycloakSession", keycloakSession);
             });
         } catch (Exception ex) {
             LOGGER.error("Error during execution of ProtocolMapper script", ex);

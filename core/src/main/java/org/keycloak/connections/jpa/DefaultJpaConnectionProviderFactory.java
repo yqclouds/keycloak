@@ -20,10 +20,8 @@ package org.keycloak.connections.jpa;
 import org.keycloak.ServerStartupError;
 import org.keycloak.connections.jpa.updater.JpaUpdaterProvider;
 import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.KeycloakSessionTask;
 import org.keycloak.models.dblock.DBLockManager;
 import org.keycloak.models.dblock.DBLockProvider;
-import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ServerInfoAwareProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.timer.TimerProvider;
@@ -178,29 +176,25 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
     }
 
     protected void update(Connection connection, String schema, JpaUpdaterProvider updater) {
-        KeycloakModelUtils.runJobInTransaction(sessionFactory, (KeycloakSessionTask) () -> {
-            DBLockManager dbLockManager = new DBLockManager();
-            DBLockProvider dbLock2 = dbLockManager.getDBLock();
-            dbLock2.waitForLock(DBLockProvider.Namespace.DATABASE);
-            try {
-                updater.update(connection, schema);
-            } finally {
-                dbLock2.releaseLock();
-            }
-        });
+        DBLockManager dbLockManager = new DBLockManager();
+        DBLockProvider dbLock2 = dbLockManager.getDBLock();
+        dbLock2.waitForLock(DBLockProvider.Namespace.DATABASE);
+        try {
+            updater.update(connection, schema);
+        } finally {
+            dbLock2.releaseLock();
+        }
     }
 
     protected void export(Connection connection, String schema, File databaseUpdateFile, JpaUpdaterProvider updater) {
-        KeycloakModelUtils.runJobInTransaction(sessionFactory, () -> {
-            DBLockManager dbLockManager = new DBLockManager();
-            DBLockProvider dbLock2 = dbLockManager.getDBLock();
-            dbLock2.waitForLock(DBLockProvider.Namespace.DATABASE);
-            try {
-                updater.export(connection, schema, databaseUpdateFile);
-            } finally {
-                dbLock2.releaseLock();
-            }
-        });
+        DBLockManager dbLockManager = new DBLockManager();
+        DBLockProvider dbLock2 = dbLockManager.getDBLock();
+        dbLock2.waitForLock(DBLockProvider.Namespace.DATABASE);
+        try {
+            updater.export(connection, schema, databaseUpdateFile);
+        } finally {
+            dbLock2.releaseLock();
+        }
     }
 
     @Override

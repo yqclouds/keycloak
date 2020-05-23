@@ -29,6 +29,7 @@ import org.keycloak.events.EventType;
 import org.keycloak.locale.LocaleSelectorProvider;
 import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.ClientModel;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.AuthorizationEndpointBase;
 import org.keycloak.protocol.oidc.OIDCAdvancedConfigWrapper;
@@ -95,10 +96,13 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
         return process(httpRequest.getDecodedFormParameters());
     }
 
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     @GET
     public Response buildGet() {
         LOG.trace("Processing @GET request");
-        return process(session.getContext().getUri().getQueryParameters());
+        return process(keycloakContext.getUri().getQueryParameters());
     }
 
     @Autowired
@@ -212,7 +216,7 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
             throw new ErrorPageException(authenticationSession, Response.Status.BAD_REQUEST, "Wrong client protocol.");
         }
 
-        session.getContext().setClient(client);
+        keycloakContext.setClient(client);
     }
 
     private Response checkResponseType() {
@@ -424,7 +428,7 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
         authenticationSession.setAction(AuthenticationSessionModel.Action.AUTHENTICATE.name());
         authenticationSession.setClientNote(OIDCLoginProtocol.RESPONSE_TYPE_PARAM, request.getResponseType());
         authenticationSession.setClientNote(OIDCLoginProtocol.REDIRECT_URI_PARAM, request.getRedirectUriParam());
-        authenticationSession.setClientNote(OIDCLoginProtocol.ISSUER, Urls.realmIssuer(session.getContext().getUri().getBaseUri(), realm.getName()));
+        authenticationSession.setClientNote(OIDCLoginProtocol.ISSUER, Urls.realmIssuer(keycloakContext.getUri().getBaseUri(), realm.getName()));
 
         if (request.getState() != null)
             authenticationSession.setClientNote(OIDCLoginProtocol.STATE_PARAM, request.getState());
@@ -469,11 +473,11 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
         this.event.event(EventType.LOGIN);
         authenticationSession.setAuthNote(Details.AUTH_TYPE, CODE_AUTH_TYPE);
 
-        return handleBrowserAuthenticationRequest(authenticationSession, new OIDCLoginProtocol(realm, session.getContext().getUri(), headers, event), TokenUtil.hasPrompt(request.getPrompt(), OIDCLoginProtocol.PROMPT_VALUE_NONE), false);
+        return handleBrowserAuthenticationRequest(authenticationSession, new OIDCLoginProtocol(realm, keycloakContext.getUri(), headers, event), TokenUtil.hasPrompt(request.getPrompt(), OIDCLoginProtocol.PROMPT_VALUE_NONE), false);
     }
 
     private Response buildRegister() {
-        authManager.expireIdentityCookie(realm, session.getContext().getUri(), clientConnection);
+        authManager.expireIdentityCookie(realm, keycloakContext.getUri(), clientConnection);
 
         AuthenticationFlowModel flow = realm.getRegistrationFlow();
         String flowId = flow.getId();
@@ -485,7 +489,7 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
     }
 
     private Response buildForgotCredential() {
-        authManager.expireIdentityCookie(realm, session.getContext().getUri(), clientConnection);
+        authManager.expireIdentityCookie(realm, keycloakContext.getUri(), clientConnection);
 
         AuthenticationFlowModel flow = realm.getResetCredentialsFlow();
         String flowId = flow.getId();

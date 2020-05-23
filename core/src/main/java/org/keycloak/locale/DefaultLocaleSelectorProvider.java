@@ -57,7 +57,7 @@ public class DefaultLocaleSelectorProvider implements LocaleSelectorProvider {
     private Locale getUserLocale(RealmModel realm, AuthenticationSessionModel session, UserModel user, HttpHeaders requestHeaders) {
         Locale locale;
 
-        locale = getUserSelectedLocale(realm;
+        locale = getUserSelectedLocale(realm, session);
         if (locale != null) {
             return locale;
         }
@@ -67,7 +67,7 @@ public class DefaultLocaleSelectorProvider implements LocaleSelectorProvider {
             return locale;
         }
 
-        locale = getClientSelectedLocale(realm;
+        locale = getClientSelectedLocale(realm, session);
         if (locale != null) {
             return locale;
         }

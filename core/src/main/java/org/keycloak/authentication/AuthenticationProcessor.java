@@ -477,7 +477,6 @@ public class AuthenticationProcessor {
                         .setEventBuilder(event)
                         .setRealm(realm)
                         .setBrowserFlow(isBrowserFlow())
-                        .setSession(session)
                         .setUriInfo(uriInfo)
                         .setRequest(request);
                 CacheControlUtil.noBackButtonCacheControlHeader();

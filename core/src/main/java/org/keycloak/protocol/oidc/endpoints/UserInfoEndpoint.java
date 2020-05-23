@@ -122,7 +122,7 @@ public class UserInfoEndpoint {
     private MtlsHoKTokenUtil mtlsHoKTokenUtil;
 
     private Response issueUserInfo(String tokenString) {
-        EventBuilder event = new EventBuilder(realm, session, clientConnection)
+        EventBuilder event = new EventBuilder(realm, clientConnection)
                 .event(EventType.USER_INFO_REQUEST)
                 .detail(Details.AUTH_METHOD, Details.VALIDATE_ACCESS_TOKEN);
 
@@ -184,7 +184,7 @@ public class UserInfoEndpoint {
         // KEYCLOAK-6771 Certificate Bound Token
         // https://tools.ietf.org/html/draft-ietf-oauth-mtls-08#section-3
         if (OIDCAdvancedConfigWrapper.fromClientModel(clientModel).isUseMtlsHokToken()) {
-            if (!mtlsHoKTokenUtil.verifyTokenBindingWithClientCertificate(token, request) {
+            if (!mtlsHoKTokenUtil.verifyTokenBindingWithClientCertificate(token, request)) {
                 event.error(Errors.NOT_ALLOWED);
                 throw newUnauthorizedErrorResponseException(OAuthErrorException.UNAUTHORIZED_CLIENT, "Client certificate missing, or its thumbprint and one in the refresh token did NOT match");
             }
@@ -194,7 +194,7 @@ public class UserInfoEndpoint {
         AuthenticatedClientSessionModel clientSession = userSession.getAuthenticatedClientSessionByClient(clientModel.getId());
 
         // Retrieve by latest scope parameter
-        ClientSessionContext clientSessionCtx = DefaultClientSessionContext.fromClientSessionScopeParameter(clientSession;
+        ClientSessionContext clientSessionCtx = DefaultClientSessionContext.fromClientSessionScopeParameter(clientSession);
 
         AccessToken userInfo = new AccessToken();
         tokenManager.transformUserInfoAccessToken(userInfo, userSession, clientSessionCtx);
@@ -236,14 +236,14 @@ public class UserInfoEndpoint {
 
 
     private UserSessionModel findValidSession(AccessToken token, EventBuilder event, ClientModel client) {
-        UserSessionModel userSession = new UserSessionCrossDCManager(session).getUserSessionWithClient(realm, token.getSessionState(), false, client.getId());
+        UserSessionModel userSession = new UserSessionCrossDCManager().getUserSessionWithClient(realm, token.getSessionState(), false, client.getId());
         UserSessionModel offlineUserSession = null;
         if (AuthenticationManager.isSessionValid(realm, userSession)) {
             checkTokenIssuedAt(token, userSession, event);
             event.session(userSession);
             return userSession;
         } else {
-            offlineUserSession = new UserSessionCrossDCManager(session).getUserSessionWithClient(realm, token.getSessionState(), true, client.getId());
+            offlineUserSession = new UserSessionCrossDCManager().getUserSessionWithClient(realm, token.getSessionState(), true, client.getId());
             if (AuthenticationManager.isOfflineSessionValid(realm, offlineUserSession)) {
                 checkTokenIssuedAt(token, offlineUserSession, event);
                 event.session(offlineUserSession);

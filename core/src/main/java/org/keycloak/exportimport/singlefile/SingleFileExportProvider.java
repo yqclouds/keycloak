@@ -58,22 +58,15 @@ public class SingleFileExportProvider implements ExportProvider {
     private ExportUtils exportUtils;
 
     @Override
-    public void exportModel(KeycloakSessionFactory factory) throws IOException {
-        LOG.info("Exporting model into file %s", this.file.getAbsolutePath());
-        KeycloakModelUtils.runJobInTransaction(factory, new ExportImportSessionTask() {
+    public void exportModel() throws IOException {
+        LOG.info("Exporting model into file {}", this.file.getAbsolutePath());
+        List<RealmModel> realms = realmProvider.getRealms();
+        List<RealmRepresentation> reps = new ArrayList<>();
+        for (RealmModel realm : realms) {
+            reps.add(exportUtils.exportRealm(realm, true, true));
+        }
 
-            @Override
-            protected void runExportImportTask() throws IOException {
-                List<RealmModel> realms = realmProvider.getRealms();
-                List<RealmRepresentation> reps = new ArrayList<>();
-                for (RealmModel realm : realms) {
-                    reps.add(exportUtils.exportRealm(realm, true, true));
-                }
-
-                writeToFile(reps);
-            }
-
-        });
+        writeToFile(reps);
 
     }
 
@@ -81,18 +74,11 @@ public class SingleFileExportProvider implements ExportProvider {
     private RealmProvider realmProvider;
 
     @Override
-    public void exportRealm(KeycloakSessionFactory factory, final String realmName) throws IOException {
-        LOG.info("Exporting realm '%s' into file %s", realmName, this.file.getAbsolutePath());
-        KeycloakModelUtils.runJobInTransaction(factory, new ExportImportSessionTask() {
-
-            @Override
-            protected void runExportImportTask() throws IOException {
-                RealmModel realm = realmProvider.getRealmByName(realmName);
-                RealmRepresentation realmRep = exportUtils.exportRealm(realm, true, true);
-                writeToFile(realmRep);
-            }
-
-        });
+    public void exportRealm(final String realmName) throws IOException {
+        LOG.info("Exporting realm '{}' into file {}", realmName, this.file.getAbsolutePath());
+        RealmModel realm = realmProvider.getRealmByName(realmName);
+        RealmRepresentation realmRep = exportUtils.exportRealm(realm, true, true);
+        writeToFile(realmRep);
     }
 
     @Override

@@ -53,18 +53,11 @@ public class SingleFileImportProvider implements ImportProvider {
     private ImportUtils importUtils;
 
     @Override
-    public void importModel(KeycloakSessionFactory factory, final Strategy strategy) throws IOException {
-        LOG.info("Full importing from file %s", this.file.getAbsolutePath());
+    public void importModel(final Strategy strategy) throws IOException {
+        LOG.info("Full importing from file {}", this.file.getAbsolutePath());
         checkRealmReps();
 
-        KeycloakModelUtils.runJobInTransaction(factory, new ExportImportSessionTask() {
-
-            @Override
-            protected void runExportImportTask() throws IOException {
-                importUtils.importRealms(realmReps.values(), strategy);
-            }
-
-        });
+        importUtils.importRealms(realmReps.values(), strategy);
     }
 
     @Override
@@ -81,9 +74,9 @@ public class SingleFileImportProvider implements ImportProvider {
     }
 
     @Override
-    public void importRealm(KeycloakSessionFactory factory, String realmName, Strategy strategy) throws IOException {
+    public void importRealm(String realmName, Strategy strategy) throws IOException {
         // TODO: import just that single realm in case that file contains many realms?
-        importModel(factory, strategy);
+        importModel(strategy);
     }
 
     @Override

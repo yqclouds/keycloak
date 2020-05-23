@@ -69,8 +69,8 @@ public class DefaultKeycloakSession implements KeycloakSession {
 
     public DefaultKeycloakSession(DefaultKeycloakSessionFactory factory) {
         this.factory = factory;
-        this.transactionManager = new DefaultKeycloakTransactionManager(this);
-        context = new DefaultKeycloakContext(this);
+        this.transactionManager = new DefaultKeycloakTransactionManager();
+        context = new DefaultKeycloakContext();
     }
 
     @Override
@@ -89,7 +89,7 @@ public class DefaultKeycloakSession implements KeycloakSession {
         if (cache != null) {
             return cache;
         } else {
-            return realmProviderFactory.create(this);
+            return realmProviderFactory.create();
         }
     }
 
@@ -166,14 +166,14 @@ public class DefaultKeycloakSession implements KeycloakSession {
 
     @Override
     public ClientProvider clientStorageManager() {
-        if (clientStorageManager == null) clientStorageManager = new ClientStorageManager(this);
+        if (clientStorageManager == null) clientStorageManager = new ClientStorageManager();
         return clientStorageManager;
     }
 
 
     @Override
     public UserProvider userStorageManager() {
-        if (userStorageManager == null) userStorageManager = new UserStorageManager(this);
+        if (userStorageManager == null) userStorageManager = new UserStorageManager();
         return userStorageManager;
     }
 
@@ -189,7 +189,7 @@ public class DefaultKeycloakSession implements KeycloakSession {
 
     @Override
     public UserCredentialManager userCredentialManager() {
-        if (userCredentialStorageManager == null) userCredentialStorageManager = new UserCredentialStoreManager(this);
+        if (userCredentialStorageManager == null) userCredentialStorageManager = new UserCredentialStoreManager();
         return userCredentialStorageManager;
     }
 
@@ -203,7 +203,7 @@ public class DefaultKeycloakSession implements KeycloakSession {
         if (provider == null) {
             ProviderFactory<T> providerFactory = factory.getProviderFactory(clazz);
             if (providerFactory != null) {
-                provider = providerFactory.create(DefaultKeycloakSession.this);
+                provider = providerFactory.create();
                 providers.put(hash, provider);
             }
         }
@@ -220,7 +220,7 @@ public class DefaultKeycloakSession implements KeycloakSession {
         if (provider == null) {
             ProviderFactory<T> providerFactory = factory.getProviderFactory(clazz, id);
             if (providerFactory != null) {
-                provider = providerFactory.create(DefaultKeycloakSession.this);
+                provider = providerFactory.create();
                 providers.put(hash, provider);
             }
         }
@@ -243,7 +243,7 @@ public class DefaultKeycloakSession implements KeycloakSession {
 
         @SuppressWarnings("unchecked")
         ComponentFactory<T, T> componentFactory = (ComponentFactory<T, T>) providerFactory;
-        T provider = componentFactory.create(this, componentModel);
+        T provider = componentFactory.create(componentModel);
         enlistForClose(provider);
         setAttribute(modelId, provider);
 
@@ -287,7 +287,7 @@ public class DefaultKeycloakSession implements KeycloakSession {
     @Override
     public KeyManager keys() {
         if (keyManager == null) {
-            keyManager = new DefaultKeyManager(this);
+            keyManager = new DefaultKeyManager();
         }
         return keyManager;
     }
@@ -295,7 +295,7 @@ public class DefaultKeycloakSession implements KeycloakSession {
     @Override
     public ThemeManager theme() {
         if (themeManager == null) {
-            themeManager = factory.getThemeManagerFactory().create(this);
+            themeManager = factory.getThemeManagerFactory().create();
         }
         return themeManager;
     }
@@ -303,7 +303,7 @@ public class DefaultKeycloakSession implements KeycloakSession {
     @Override
     public TokenManager tokens() {
         if (tokenManager == null) {
-            tokenManager = new DefaultTokenManager(this);
+            tokenManager = new DefaultTokenManager();
         }
         return tokenManager;
     }

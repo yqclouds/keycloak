@@ -64,7 +64,7 @@ public class ApplicationsBean {
 
             List<ClientScopeModel> orderedScopes = new LinkedList<>();
             if (client.isConsentRequired()) {
-                UserConsentModel consent = session.users().getConsentByClient(realm, user.getId(), client.getId());
+                UserConsentModel consent = userProvider.getConsentByClient(realm, user.getId(), client.getId());
 
                 if (consent != null) {
                     orderedScopes.addAll(consent.getGrantedClientScopes());
@@ -84,6 +84,9 @@ public class ApplicationsBean {
         }
     }
 
+    @Autowired
+    private UserProvider userProvider;
+
     public static boolean isAdminClient(ClientModel client) {
         return client.getClientId().equals(Constants.ADMIN_CLI_CLIENT_ID)
                 || client.getClientId().equals(Constants.ADMIN_CONSOLE_CLIENT_ID);
@@ -101,7 +104,7 @@ public class ApplicationsBean {
             clients.add(client);
         }
 
-        List<UserConsentModel> consents = session.users().getConsents(realm, user.getId());
+        List<UserConsentModel> consents = userProvider.getConsents(realm, user.getId());
 
         for (UserConsentModel consent : consents) {
             ClientModel client = consent.getClient();

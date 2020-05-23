@@ -17,12 +17,12 @@
 package org.keycloak.services.resources.admin;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hsbc.unified.iam.core.ClientConnection;
 import com.hsbc.unified.iam.core.constants.Constants;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.HttpResponse;
 import org.keycloak.Config;
-import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.common.Version;
 import org.keycloak.models.*;
 import org.keycloak.protocol.oidc.OIDCLoginProtocolService;
@@ -39,6 +39,7 @@ import org.keycloak.urls.UrlType;
 import org.keycloak.utils.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -95,7 +96,7 @@ public class AdminConsole {
         if (consoleApp == null) {
             throw new NotFoundException("Could not find admin console client");
         }
-        return new ClientManager(new RealmManager(session)).toInstallationRepresentation(realm, consoleApp, session.getContext().getUri().getBaseUri());
+        return new ClientManager(new RealmManager()).toInstallationRepresentation(realm, consoleApp, session.getContext().getUri().getBaseUri());
     }
 
     /**
@@ -109,7 +110,7 @@ public class AdminConsole {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public Response whoAmI(final @Context HttpHeaders headers) {
-        RealmManager realmManager = new RealmManager(session);
+        RealmManager realmManager = new RealmManager();
         AuthenticationManager.AuthResult authResult = authManager.authenticateBearerToken(realm, session.getContext().getUri(), clientConnection, headers);
         if (authResult == null) {
             return Response.status(401).build();
@@ -143,7 +144,7 @@ public class AdminConsole {
     }
 
     private void addRealmAccess(RealmModel realm, UserModel user, Map<String, Set<String>> realmAdminAccess) {
-        RealmManager realmManager = new RealmManager(session);
+        RealmManager realmManager = new RealmManager();
         ClientModel realmAdminApp = realm.getClientByClientId(realmManager.getRealmAdminClientId(realm));
         Set<RoleModel> roles = realmAdminApp.getRoles();
         for (RoleModel role : roles) {
@@ -191,6 +192,9 @@ public class AdminConsole {
         return realmManager.getKeycloakAdministrationRealm();
     }
 
+    @Autowired
+    private AdminRoot adminRoot;
+
     /**
      * Main page of this realm's admin console
      *
@@ -203,7 +207,7 @@ public class AdminConsole {
         if (!session.getContext().getUri(UrlType.ADMIN).getRequestUri().getPath().endsWith("/")) {
             return Response.status(302).location(session.getContext().getUri(UrlType.ADMIN).getRequestUriBuilder().path("/").build()).build();
         } else {
-            Theme theme = AdminRoot.getTheme(realm);
+            Theme theme = adminRoot.getTheme(realm);
 
             Map<String, Object> map = new HashMap<>();
 
@@ -255,7 +259,7 @@ public class AdminConsole {
     @Path("messages.json")
     @Produces(MediaType.APPLICATION_JSON)
     public Properties getMessages(@QueryParam("lang") String lang) {
-        return AdminRoot.getMessages(realm, lang, "admin-messages");
+        return adminRoot.getMessages(realm, lang, "admin-messages");
     }
 
     public static class WhoAmI {

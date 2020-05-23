@@ -101,7 +101,7 @@ public class LoginActionsService {
     @Context
     protected Providers providers;
     @Context
-    protected KeycloakSession session;
+    protected KeycloakContext keycloakContext;
     private RealmModel realm;
     @Context
     private HttpRequest request;
@@ -167,7 +167,7 @@ public class LoginActionsService {
     }
 
     private boolean checkSsl() {
-        if (session.getContext().getUri().getBaseUri().getScheme().equals("https")) {
+        if (keycloakContext.getUri().getBaseUri().getScheme().equals("https")) {
             return true;
         } else {
             return !realm.getSslRequired().isRequired(clientConnection);
@@ -184,7 +184,7 @@ public class LoginActionsService {
     }
 
     protected URI getLastExecutionUrl(String flowPath, String executionId, String clientId, String tabId) {
-        return new AuthenticationFlowURLHelper(realm, session.getContext().getUri())
+        return new AuthenticationFlowURLHelper(realm, keycloakContext.getUri())
                 .getLastExecutionUrl(flowPath, executionId, clientId, tabId);
     }
 
@@ -251,7 +251,7 @@ public class LoginActionsService {
 
     protected void processLocaleParam(AuthenticationSessionModel authSession) {
         if (authSession != null && realm.isInternationalizationEnabled()) {
-            String locale = session.getContext().getUri().getQueryParameters().getFirst(LocaleSelectorProvider.KC_LOCALE_PARAM);
+            String locale = keycloakContext.getUri().getQueryParameters().getFirst(LocaleSelectorProvider.KC_LOCALE_PARAM);
             if (locale != null) {
                 authSession.setAuthNote(LocaleSelectorProvider.USER_REQUEST_LOCALE, locale);
 
@@ -272,8 +272,7 @@ public class LoginActionsService {
                 .setConnection(clientConnection)
                 .setEventBuilder(event)
                 .setRealm(realm)
-                .setSession(session)
-                .setUriInfo(session.getContext().getUri())
+                .setUriInfo(keycloakContext.getUri())
                 .setRequest(request);
         if (errorMessage != null) {
             processor.setForwardedErrorMessage(new FormMessage(null, errorMessage));
@@ -389,11 +388,11 @@ public class LoginActionsService {
         authSession.setAction(AuthenticationSessionModel.Action.AUTHENTICATE.name());
         //authSession.setNote(AuthenticationManager.END_AFTER_REQUIRED_ACTIONS, "true");
         authSession.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
-        String redirectUri = Urls.accountBase(session.getContext().getUri().getBaseUri()).path("/").build(realm.getName()).toString();
+        String redirectUri = Urls.accountBase(keycloakContext.getUri().getBaseUri()).path("/").build(realm.getName()).toString();
         authSession.setRedirectUri(redirectUri);
         authSession.setClientNote(OIDCLoginProtocol.RESPONSE_TYPE_PARAM, OAuth2Constants.CODE);
         authSession.setClientNote(OIDCLoginProtocol.REDIRECT_URI_PARAM, redirectUri);
-        authSession.setClientNote(OIDCLoginProtocol.ISSUER, Urls.realmIssuer(session.getContext().getUri().getBaseUri(), realm.getName()));
+        authSession.setClientNote(OIDCLoginProtocol.ISSUER, Urls.realmIssuer(keycloakContext.getUri().getBaseUri(), realm.getName()));
 
         return authSession;
     }
@@ -437,6 +436,9 @@ public class LoginActionsService {
         return handleActionToken(key, execution, clientId, tabId);
     }
 
+    @Autowired
+    private Map<String, SignatureProvider> signatureProviders;
+
     protected <T extends JsonWebToken & ActionTokenKeyModel> Response handleActionToken(String tokenString, String execution, String clientId, String tabId) {
         T token;
         ActionTokenHandler<T> handler;
@@ -453,7 +455,7 @@ public class LoginActionsService {
         }
         AuthenticationSessionManager authenticationSessionManager = new AuthenticationSessionManager();
         if (client != null) {
-            session.getContext().setClient(client);
+            keycloakContext.setClient(client);
             authSession = authenticationSessionManager.getCurrentAuthenticationSession(realm, client, tabId);
         }
 
@@ -488,14 +490,14 @@ public class LoginActionsService {
                     .withChecks(
                             // Token introspection checks
                             TokenVerifier.IS_ACTIVE,
-                            new TokenVerifier.RealmUrlCheck(Urls.realmIssuer(session.getContext().getUri().getBaseUri(), realm.getName())),
+                            new TokenVerifier.RealmUrlCheck(Urls.realmIssuer(keycloakContext.getUri().getBaseUri(), realm.getName())),
                             ACTION_TOKEN_BASIC_CHECKS
                     );
 
             String kid = verifier.getHeader().getKeyId();
             String algorithm = verifier.getHeader().getAlgorithm().name();
 
-            SignatureVerifierContext signatureVerifier = session.getProvider(SignatureProvider.class, algorithm).verifier(kid);
+            SignatureVerifierContext signatureVerifier = signatureProviders.get(algorithm).verifier(kid);
             verifier.verifierContext(signatureVerifier);
 
             verifier.verify();
@@ -556,7 +558,7 @@ public class LoginActionsService {
             loginActionsServiceChecks.checkIsUserValid(token, tokenContext);
             LoginActionsServiceChecks.checkIsClientValid(token, tokenContext);
 
-            session.getContext().setClient(authSession.getClient());
+            keycloakContext.setClient(authSession.getClient());
 
             TokenVerifier.createWithoutSignature(token)
                     .withChecks(handler.getVerifiers(tokenContext))
@@ -600,11 +602,14 @@ public class LoginActionsService {
         }
     }
 
+    @Autowired
+    private Map<String, ActionTokenHandler> actionTokenHandlers;
+
     private <T extends JsonWebToken> ActionTokenHandler<T> resolveActionTokenHandler(String actionId) throws VerificationException {
         if (actionId == null) {
             throw new VerificationException("Action token operation not set");
         }
-        ActionTokenHandler<T> handler = session.getProvider(ActionTokenHandler.class, actionId);
+        ActionTokenHandler<T> handler = actionTokenHandlers.get(actionId);
 
         if (handler == null) {
             throw new VerificationException("Invalid action token operation");
@@ -681,7 +686,7 @@ public class LoginActionsService {
 
         processLocaleParam(authSession);
 
-        AuthenticationManager.expireIdentityCookie(realm, session.getContext().getUri(), clientConnection);
+        AuthenticationManager.expireIdentityCookie(realm, keycloakContext.getUri(), clientConnection);
 
         return processRegistration(checks.isActionRequest(), execution, authSession, null);
     }
@@ -776,7 +781,7 @@ public class LoginActionsService {
                         LoginProtocol protocol = session.getProvider(LoginProtocol.class, authSession.getProtocol());
                         protocol.setRealm(realm)
                                 .setHttpHeaders(headers)
-                                .setUriInfo(session.getContext().getUri())
+                                .setUriInfo(keycloakContext.getUri())
                                 .setEventBuilder(event);
                         return protocol.sendError(authSession, Error.PASSIVE_INTERACTION_REQUIRED);
                     }
@@ -802,8 +807,13 @@ public class LoginActionsService {
     }
 
     private Response redirectToAfterBrokerLoginEndpoint(AuthenticationSessionModel authSession, boolean firstBrokerLogin) {
-        return redirectToAfterBrokerLoginEndpoint(realm, session.getContext().getUri(), authSession, firstBrokerLogin);
+        return redirectToAfterBrokerLoginEndpoint(realm, keycloakContext.getUri(), authSession, firstBrokerLogin);
     }
+
+    @Autowired
+    private Map<String, LoginProtocol> loginProtocols;
+    @Autowired
+    private UserProvider userProvider;
 
     /**
      * OAuth grant page.  You should not invoked this directly!
@@ -817,8 +827,8 @@ public class LoginActionsService {
     public Response processConsent(final MultivaluedMap<String, String> formData) {
         event.event(EventType.LOGIN);
         String code = formData.getFirst(SESSION_CODE);
-        String clientId = session.getContext().getUri().getQueryParameters().getFirst(Constants.CLIENT_ID);
-        String tabId = session.getContext().getUri().getQueryParameters().getFirst(Constants.TAB_ID);
+        String clientId = keycloakContext.getUri().getQueryParameters().getFirst(Constants.CLIENT_ID);
+        String tabId = keycloakContext.getUri().getQueryParameters().getFirst(Constants.TAB_ID);
         SessionCodeChecks checks = checksForCode(null, code, null, clientId, tabId, REQUIRED_ACTION);
         if (!checks.verifyRequiredAction(AuthenticationSessionModel.Action.OAUTH_GRANT.name())) {
             return checks.getResponse();
@@ -833,20 +843,20 @@ public class LoginActionsService {
 
 
         if (formData.containsKey("cancel")) {
-            LoginProtocol protocol = session.getProvider(LoginProtocol.class, authSession.getProtocol());
+            LoginProtocol protocol = loginProtocols.get(authSession.getProtocol());
             protocol.setRealm(realm)
                     .setHttpHeaders(headers)
-                    .setUriInfo(session.getContext().getUri())
+                    .setUriInfo(keycloakContext.getUri())
                     .setEventBuilder(event);
             Response response = protocol.sendError(authSession, Error.CONSENT_DENIED);
             event.error(Errors.REJECTED_BY_USER);
             return response;
         }
 
-        UserConsentModel grantedConsent = session.users().getConsentByClient(realm, user.getId(), client.getId());
+        UserConsentModel grantedConsent = userProvider.getConsentByClient(realm, user.getId(), client.getId());
         if (grantedConsent == null) {
             grantedConsent = new UserConsentModel(client);
-            session.users().addConsent(realm, user.getId(), grantedConsent);
+            userProvider.addConsent(realm, user.getId(), grantedConsent);
         }
 
         // Update may not be required if all clientScopes were already granted (May happen for example with prompt=consent)
@@ -860,19 +870,19 @@ public class LoginActionsService {
                     updateConsentRequired = true;
                 }
             } else {
-                LOG.warn("Client scope or client with ID '%s' not found", clientScopeId);
+                LOG.warn("Client scope or client with ID '{}' not found", clientScopeId);
             }
         }
 
         if (updateConsentRequired) {
-            session.users().updateConsent(realm, user.getId(), grantedConsent);
+            userProvider.updateConsent(realm, user.getId(), grantedConsent);
         }
 
         event.detail(Details.CONSENT, Details.CONSENT_VALUE_CONSENT_GRANTED);
         event.success();
 
         ClientSessionContext clientSessionCtx = authenticationProcessor.attachSession(authSession, null, realm, clientConnection, event);
-        return authenticationManager.redirectAfterSuccessfulFlow(realm, clientSessionCtx.getClientSession().getUserSession(), clientSessionCtx, request, session.getContext().getUri(), clientConnection, event, authSession);
+        return authenticationManager.redirectAfterSuccessfulFlow(realm, clientSessionCtx.getClientSession().getUserSession(), clientSessionCtx, request, keycloakContext.getUri(), clientConnection, event, authSession);
     }
 
     @Autowired
@@ -938,6 +948,9 @@ public class LoginActionsService {
         return processRequireAction(authSessionId, code, action, clientId, tabId);
     }
 
+    @Autowired
+    private Map<String, RequiredActionFactory> requiredActionFactories;
+
     private Response processRequireAction(final String authSessionId, final String code, String action, String clientId, String tabId) {
         event.event(EventType.CUSTOM_REQUIRED_ACTION);
 
@@ -953,14 +966,14 @@ public class LoginActionsService {
         if (!checks.isActionRequest()) {
             initLoginEvent(authSession);
             event.event(EventType.CUSTOM_REQUIRED_ACTION);
-            return authenticationManager.nextActionAfterAuthentication(authSession, clientConnection, request, session.getContext().getUri(), event);
+            return authenticationManager.nextActionAfterAuthentication(authSession, clientConnection, request, keycloakContext.getUri(), event);
         }
 
         initLoginEvent(authSession);
         event.event(EventType.CUSTOM_REQUIRED_ACTION);
         event.detail(Details.CUSTOM_REQUIRED_ACTION, action);
 
-        RequiredActionFactory factory = (RequiredActionFactory) session.getSessionFactory().getProviderFactory(RequiredActionProvider.class, action);
+        RequiredActionFactory factory = requiredActionFactories.get(action);
         if (factory == null) {
 //            ServicesLogger.LOGGER.actionProviderNull();
             event.error(Errors.INVALID_CODE);
@@ -1006,7 +1019,7 @@ public class LoginActionsService {
             authSession.removeAuthNote(AuthenticationProcessor.CURRENT_AUTHENTICATION_EXECUTION);
             authenticationManager.setKcActionStatus(factory.getId(), RequiredActionContext.KcActionStatus.SUCCESS, authSession);
 
-            response = authenticationManager.nextActionAfterAuthentication(authSession, clientConnection, request, session.getContext().getUri(), event);
+            response = authenticationManager.nextActionAfterAuthentication(authSession, clientConnection, request, keycloakContext.getUri(), event);
         } else if (context.getStatus() == RequiredActionContext.Status.CHALLENGE) {
             response = context.getChallenge();
         } else if (context.getStatus() == RequiredActionContext.Status.FAILURE) {
@@ -1017,9 +1030,6 @@ public class LoginActionsService {
 
         return BrowserHistoryHelper.getInstance().saveResponseAndRedirect(authSession, response, true, request);
     }
-
-    @Autowired
-    private Map<String, LoginProtocol> loginProtocols;
 
     private Response interruptionResponse(RequiredActionContextResult context, AuthenticationSessionModel authSession, String action, Error error) {
         LoginProtocol protocol = loginProtocols.get(authSession.getProtocol());
@@ -1037,8 +1047,7 @@ public class LoginActionsService {
     private boolean isCancelAppInitiatedAction(String providerId, AuthenticationSessionModel authSession, RequiredActionContextResult context) {
         if (providerId.equals(authSession.getClientNote(Constants.KC_ACTION_EXECUTING))) {
             MultivaluedMap<String, String> formData = context.getHttpRequest().getDecodedFormParameters();
-            boolean userRequestedCancelAIA = formData.getFirst(CANCEL_AIA) != null;
-            return userRequestedCancelAIA;
+            return formData.getFirst(CANCEL_AIA) != null;
         }
         return false;
     }

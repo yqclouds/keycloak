@@ -42,16 +42,13 @@ public class ClientScopeEvaluateScopeMappingsResource {
     private final AdminPermissionEvaluator auth;
     private final ClientModel client;
     private final String scopeParam;
-    private final KeycloakSession session;
-
 
     public ClientScopeEvaluateScopeMappingsResource(RoleContainerModel roleContainer, AdminPermissionEvaluator auth, ClientModel client,
-                                                    String scopeParam, KeycloakSession session) {
+                                                    String scopeParam) {
         this.roleContainer = roleContainer;
         this.auth = auth;
         this.client = client;
         this.scopeParam = scopeParam;
-        this.session = session;
     }
 
 

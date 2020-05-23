@@ -43,15 +43,9 @@ public class DefaultKeycloakContext implements KeycloakContext {
 
     private ClientConnection connection;
 
-    private KeycloakSession session;
-
     private Map<UrlType, KeycloakUriInfo> uriInfo;
 
     private AuthenticationSessionModel authenticationSession;
-
-    public DefaultKeycloakContext() {
-        this.session = session;
-    }
 
     @Override
     public URI getAuthServerUrl() {

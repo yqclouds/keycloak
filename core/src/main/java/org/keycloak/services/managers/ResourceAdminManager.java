@@ -16,11 +16,11 @@
  */
 package org.keycloak.services.managers;
 
-import org.keycloak.TokenIdGenerator;
-import org.keycloak.common.util.KeycloakUriBuilder;
 import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
 import com.hsbc.unified.iam.core.util.StringPropertyReplacer;
 import com.hsbc.unified.iam.core.util.Time;
+import org.keycloak.TokenIdGenerator;
+import org.keycloak.common.util.KeycloakUriBuilder;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.constants.AdapterConstants;
 import org.keycloak.models.*;
@@ -53,19 +53,22 @@ public class ResourceAdminManager {
         this.session = session;
     }
 
-    public static String resolveUri(String rootUrl, String uri) {
-        String absoluteURI = ResolveRelative.resolveRelativeUri(rootUrl, uri);
+    public String resolveUri(String rootUrl, String uri) {
+        String absoluteURI = resolveRelative.resolveRelativeUri(rootUrl, uri);
         return StringPropertyReplacer.replaceProperties(absoluteURI);
 
     }
 
-    public static String getManagementUrl(ClientModel client) {
+    @Autowired
+    private ResolveRelative resolveRelative;
+
+    public String getManagementUrl(ClientModel client) {
         String mgmtUrl = client.getManagementUrl();
         if (mgmtUrl == null || mgmtUrl.equals("")) {
             return null;
         }
 
-        String absoluteURI = ResolveRelative.resolveRelativeUri(client.getRootUrl(), mgmtUrl);
+        String absoluteURI = resolveRelative.resolveRelativeUri(client.getRootUrl(), mgmtUrl);
 
         // this is for resolving URI like "http://${jboss.host.name}:8080/..." in order to send request to same machine and avoid request to LB in cluster environment
         return StringPropertyReplacer.replaceProperties(absoluteURI);

@@ -33,6 +33,7 @@ import org.keycloak.services.resources.LoginActionsService;
 import org.keycloak.services.resources.LoginActionsServiceChecks.IsActionRequired;
 import org.keycloak.sessions.CommonClientSessionModel.Action;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -86,13 +87,16 @@ public class ResetCredentialsActionTokenHandler extends AbstractActionTokenHandl
         return false;
     }
 
+    @Autowired
+    private AbstractIdpAuthenticator abstractIdpAuthenticator;
+
     public static class ResetCredsAuthenticationProcessor extends AuthenticationProcessor {
         @Override
         protected Response authenticationComplete() {
             boolean firstBrokerLoginInProgress = (authenticationSession.getAuthNote(AbstractIdpAuthenticator.BROKERED_CONTEXT_NOTE) != null);
             if (firstBrokerLoginInProgress) {
 
-                UserModel linkingUser = AbstractIdpAuthenticator.getExistingUser(realm, authenticationSession);
+                UserModel linkingUser = abstractIdpAuthenticator.getExistingUser(realm, authenticationSession);
                 SerializedBrokeredIdentityContext serializedCtx = SerializedBrokeredIdentityContext.readFromAuthenticationSession(authenticationSession, AbstractIdpAuthenticator.BROKERED_CONTEXT_NOTE);
                 authenticationSession.setAuthNote(AbstractIdpAuthenticator.FIRST_BROKER_LOGIN_SUCCESS, serializedCtx.getIdentityProviderId());
 

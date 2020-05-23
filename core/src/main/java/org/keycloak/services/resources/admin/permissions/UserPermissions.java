@@ -16,15 +16,15 @@
  */
 package org.keycloak.services.resources.admin.permissions;
 
+import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
+import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.common.ClientModelIdentity;
 import org.keycloak.authorization.common.DefaultEvaluationContext;
 import org.keycloak.authorization.common.UserModelIdentity;
 import org.keycloak.authorization.identity.Identity;
-import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
-import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
-import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
-import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
 import org.keycloak.authorization.permission.ResourcePermission;
 import org.keycloak.authorization.policy.evaluation.EvaluationContext;
 import org.keycloak.authorization.store.PolicyStore;
@@ -56,7 +56,6 @@ class UserPermissions implements UserPermissionEvaluator, UserPermissionManageme
     private static final String VIEW_PERMISSION_USERS = "view.permission.users";
     private static final String USERS_RESOURCE = "Users";
 
-    private final KeycloakSession session;
     private final AuthorizationProvider authz;
     private final MgmtPermissions root;
     private final PolicyStore policyStore;
@@ -64,7 +63,6 @@ class UserPermissions implements UserPermissionEvaluator, UserPermissionManageme
     private boolean grantIfNoPermission = false;
 
     UserPermissions(AuthorizationProvider authz, MgmtPermissions root) {
-        this.session = session;
         this.authz = authz;
         this.root = root;
         policyStore = authz.getStoreFactory().getPolicyStore();
@@ -321,7 +319,7 @@ class UserPermissions implements UserPermissionEvaluator, UserPermissionManageme
     @Override
     public boolean canClientImpersonate(ClientModel client, UserModel user) {
         ClientModelIdentity identity = new ClientModelIdentity(client);
-        EvaluationContext context = new DefaultEvaluationContext(identity {
+        EvaluationContext context = new DefaultEvaluationContext(identity) {
             @Override
             public Map<String, Collection<String>> getBaseAttributes() {
                 Map<String, Collection<String>> attributes = super.getBaseAttributes();
@@ -369,7 +367,7 @@ class UserPermissions implements UserPermissionEvaluator, UserPermissionManageme
             return true;
         }
 
-        return hasPermission(new DefaultEvaluationContext(new UserModelIdentity(root.realm, user), USER_IMPERSONATED_SCOPE);
+        return hasPermission(new DefaultEvaluationContext(new UserModelIdentity(root.realm, user)), USER_IMPERSONATED_SCOPE);
     }
 
     @Override
@@ -382,7 +380,7 @@ class UserPermissions implements UserPermissionEvaluator, UserPermissionManageme
             return false;
         }
 
-        return canImpersonate(new DefaultEvaluationContext(identity);
+        return canImpersonate(new DefaultEvaluationContext(identity));
     }
 
     @Override

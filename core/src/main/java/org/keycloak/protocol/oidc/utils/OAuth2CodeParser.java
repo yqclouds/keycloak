@@ -45,7 +45,6 @@ public class OAuth2CodeParser {
     /**
      * Will persist the code to the cache and return the object with the codeData and code correctly set
      *
-     * @param session
      * @param clientSession
      * @param codeData
      * @return code parameter to be used in OAuth2 handshake
@@ -61,12 +60,14 @@ public class OAuth2CodeParser {
         return key.toString() + "." + clientSession.getUserSession().getId() + "." + clientSession.getClient().getId();
     }
 
+    @Autowired
+    private UserSessionProvider userSessionProvider;
+
     /**
      * Will parse the code and retrieve the corresponding OAuth2Code and AuthenticatedClientSessionModel. Will also check if code wasn't already
      * used and if it wasn't expired. If it was already used (or other error happened during parsing), then returned parser will have "isIllegalHash"
      * set to true. If it was expired, the parser will have "isExpired" set to true
      *
-     * @param session
      * @param code
      * @param realm
      * @param event
@@ -97,10 +98,10 @@ public class OAuth2CodeParser {
         }
 
         // Retrieve UserSession
-        UserSessionModel userSession = new UserSessionCrossDCManager(session).getUserSessionWithClient(realm, userSessionId, clientUUID);
+        UserSessionModel userSession = new UserSessionCrossDCManager().getUserSessionWithClient(realm, userSessionId, clientUUID);
         if (userSession == null) {
             // Needed to track if code is invalid or was already used.
-            userSession = session.sessions().getUserSession(realm, userSessionId);
+            userSession = userSessionProvider.getUserSession(realm, userSessionId);
             if (userSession == null) {
                 return result.illegalCode();
             }

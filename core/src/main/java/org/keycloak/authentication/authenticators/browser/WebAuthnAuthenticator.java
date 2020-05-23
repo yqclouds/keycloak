@@ -245,8 +245,11 @@ public class WebAuthnAuthenticator implements Authenticator, CredentialValidator
         }
     }
 
+    @Autowired
+    private Map<String, RequiredActionFactory> requiredActionFactories;
+
     public List<RequiredActionFactory> getRequiredActions() {
-        return Collections.singletonList((WebAuthnRegisterFactory) session.getSessionFactory().getProviderFactory(RequiredActionProvider.class, WebAuthnRegisterFactory.PROVIDER_ID));
+        return Collections.singletonList(requiredActionFactories.get(WebAuthnRegisterFactory.PROVIDER_ID));
     }
 
     public void close() {

@@ -74,7 +74,7 @@ public class FormAuthenticationFlow implements AuthenticationFlow {
             }
             boolean configuredFor = false;
             if (action.requiresUser() && authUser != null) {
-                configuredFor = action.configuredFor(processor.getSession(), processor.getRealm(), authUser);
+                configuredFor = action.configuredFor(processor.getRealm(), authUser);
                 if (!configuredFor) {
                     if (formActionExecution.isRequired()) {
                         if (factory.isUserSetupAllowed()) {
@@ -137,7 +137,7 @@ public class FormAuthenticationFlow implements AuthenticationFlow {
             processor.getAuthenticationSession().setExecutionStatus(entry.getKey(), entry.getValue());
         }
         for (FormAction action : requiredActions) {
-            action.setRequiredActions(processor.getSession(), processor.getRealm(), processor.getAuthenticationSession().getAuthenticatedUser());
+            action.setRequiredActions(processor.getRealm(), processor.getAuthenticationSession().getAuthenticatedUser());
 
         }
         processor.getAuthenticationSession().setExecutionStatus(actionExecution, AuthenticationSessionModel.ExecutionStatus.SUCCESS);

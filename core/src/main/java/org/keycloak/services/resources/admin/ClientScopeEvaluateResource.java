@@ -54,7 +54,6 @@ public class ClientScopeEvaluateResource {
     private final AdminPermissionEvaluator auth;
 
     private final UriInfo uriInfo;
-    private final KeycloakSession session;
     private final ClientConnection clientConnection;
 
     @Autowired
@@ -66,7 +65,6 @@ public class ClientScopeEvaluateResource {
         this.realm = realm;
         this.client = client;
         this.auth = auth;
-        this.session = session;
         this.clientConnection = clientConnection;
     }
 
@@ -89,7 +87,7 @@ public class ClientScopeEvaluateResource {
             throw new NotFoundException("Role Container not found");
         }
 
-        return new ClientScopeEvaluateScopeMappingsResource(roleContainer, auth, client, scopeParam;
+        return new ClientScopeEvaluateScopeMappingsResource(roleContainer, auth, client, scopeParam);
     }
 
 
@@ -139,6 +137,8 @@ public class ClientScopeEvaluateResource {
         return protocolMappers;
     }
 
+    @Autowired
+    private UserProvider userProvider;
 
     /**
      * Create JSON with payload of example access token
@@ -156,7 +156,7 @@ public class ClientScopeEvaluateResource {
             throw new NotFoundException("No userId provided");
         }
 
-        UserModel user = session.users().getUserById(userId, realm);
+        UserModel user = userProvider.getUserById(userId, realm);
         if (user == null) {
             throw new NotFoundException("No user found");
         }
@@ -169,6 +169,8 @@ public class ClientScopeEvaluateResource {
 
     @Autowired
     private TokenManager tokenManager;
+    @Autowired
+    private UserSessionProvider userSessionProvider;
 
     private AccessToken generateToken(UserModel user, String scopeParam) {
         AuthenticationSessionModel authSession = null;
@@ -184,7 +186,7 @@ public class ClientScopeEvaluateResource {
             authSession.setClientNote(OIDCLoginProtocol.ISSUER, Urls.realmIssuer(uriInfo.getBaseUri(), realm.getName()));
             authSession.setClientNote(OIDCLoginProtocol.SCOPE_PARAM, scopeParam);
 
-            userSession = session.sessions().createUserSession(authSession.getParentSession().getId(), realm, user, user.getUsername(),
+            userSession = userSessionProvider.createUserSession(authSession.getParentSession().getId(), realm, user, user.getUsername(),
                     clientConnection.getRemoteAddr(), "example-auth", false, null, null);
 
             AuthenticationManager.setClientScopesInSession(authSession);
@@ -199,7 +201,7 @@ public class ClientScopeEvaluateResource {
                 authSessionManager.removeAuthenticationSession(realm, authSession, false);
             }
             if (userSession != null) {
-                session.sessions().removeUserSession(realm, userSession);
+                userSessionProvider.removeUserSession(realm, userSession);
             }
         }
     }

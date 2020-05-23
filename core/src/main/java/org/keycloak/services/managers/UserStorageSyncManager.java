@@ -24,7 +24,6 @@ import org.keycloak.cluster.ExecutionResult;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RealmProvider;
-import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.UserStorageProviderFactory;
 import org.keycloak.storage.UserStorageProviderModel;
@@ -37,7 +36,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -59,20 +57,18 @@ public class UserStorageSyncManager {
      * @param timer
      */
     public void bootstrapPeriodic(final TimerProvider timer) {
-        KeycloakModelUtils.runJobInTransaction(sessionFactory, () -> {
-            List<RealmModel> realms = realmProvider.getRealmsWithProviderType(UserStorageProvider.class);
-            for (final RealmModel realm : realms) {
-                List<UserStorageProviderModel> providers = realm.getUserStorageProviders();
-                for (final UserStorageProviderModel provider : providers) {
-                    UserStorageProviderFactory factory = userStorageProviderFactories.get(provider.getProviderId());
-                    if (factory instanceof ImportSynchronization && provider.isImportEnabled()) {
-                        refreshPeriodicSyncForProvider(timer, provider, realm.getId());
-                    }
+        List<RealmModel> realms = realmProvider.getRealmsWithProviderType(UserStorageProvider.class);
+        for (final RealmModel realm : realms) {
+            List<UserStorageProviderModel> providers = realm.getUserStorageProviders();
+            for (final UserStorageProviderModel provider : providers) {
+                UserStorageProviderFactory factory = userStorageProviderFactories.get(provider.getProviderId());
+                if (factory instanceof ImportSynchronization && provider.isImportEnabled()) {
+                    refreshPeriodicSyncForProvider(timer, provider, realm.getId());
                 }
             }
+        }
 
-            clusterProvider.registerListener(USER_STORAGE_TASK_KEY, new UserStorageClusterListener(sessionFactory));
-        });
+        clusterProvider.registerListener(USER_STORAGE_TASK_KEY, new UserStorageClusterListener(sessionFactory));
     }
 
     @Autowired
@@ -88,21 +84,14 @@ public class UserStorageSyncManager {
         final Holder holder = new Holder();
 
         // Ensure not executed concurrently on this or any other cluster node
-        KeycloakModelUtils.runJobInTransaction(sessionFactory, () -> {
-            // shared key for "full" and "changed" . Improve if needed
-            String taskKey = provider.getId() + "::sync";
+        // shared key for "full" and "changed" . Improve if needed
+        String taskKey = provider.getId() + "::sync";
 
-            // 30 seconds minimal timeout for now
-            int timeout = Math.max(30, provider.getFullSyncPeriod());
-            holder.result = clusterProvider.executeIfNotExecuted(taskKey, timeout, new Callable<SynchronizationResult>() {
-
-                @Override
-                public SynchronizationResult call() throws Exception {
-                    updateLastSyncInterval(provider, realmId);
-                    return ((ImportSynchronization) factory).sync(sessionFactory, realmId, provider);
-                }
-
-            });
+        // 30 seconds minimal timeout for now
+        int timeout = Math.max(30, provider.getFullSyncPeriod());
+        holder.result = clusterProvider.executeIfNotExecuted(taskKey, timeout, () -> {
+            updateLastSyncInterval(provider, realmId);
+            return ((ImportSynchronization) factory).sync(sessionFactory, realmId, provider);
         });
 
         if (holder.result == null || !holder.result.isExecuted()) {
@@ -122,18 +111,16 @@ public class UserStorageSyncManager {
         final Holder holder = new Holder();
 
         // Ensure not executed concurrently on this or any other cluster node
-        KeycloakModelUtils.runJobInTransaction(sessionFactory, () -> {
-            // shared key for "full" and "changed" . Improve if needed
-            String taskKey = provider.getId() + "::sync";
+        // shared key for "full" and "changed" . Improve if needed
+        String taskKey = provider.getId() + "::sync";
 
-            // 30 seconds minimal timeout for now
-            int timeout = Math.max(30, provider.getChangedSyncPeriod());
-            holder.result = clusterProvider.executeIfNotExecuted(taskKey, timeout, () -> {
-                // See when we did last sync.
-                int oldLastSync = provider.getLastSync();
-                updateLastSyncInterval(provider, realmId);
-                return ((ImportSynchronization) factory).syncSince(Time.toDate(oldLastSync), sessionFactory, realmId, provider);
-            });
+        // 30 seconds minimal timeout for now
+        int timeout = Math.max(30, provider.getChangedSyncPeriod());
+        holder.result = clusterProvider.executeIfNotExecuted(taskKey, timeout, () -> {
+            // See when we did last sync.
+            int oldLastSync = provider.getLastSync();
+            updateLastSyncInterval(provider, realmId);
+            return ((ImportSynchronization) factory).syncSince(Time.toDate(oldLastSync), sessionFactory, realmId, provider);
         });
 
         if (holder.result == null || !holder.result.isExecuted()) {
@@ -232,21 +219,19 @@ public class UserStorageSyncManager {
 
     // Update interval of last sync for given UserFederationProviderModel. Do it in separate transaction
     private void updateLastSyncInterval(UserStorageProviderModel provider, final String realmId) {
-        KeycloakModelUtils.runJobInTransaction(sessionFactory, () -> {
-            RealmModel persistentRealm = realmProvider.getRealm(realmId);
-            List<UserStorageProviderModel> persistentFedProviders = persistentRealm.getUserStorageProviders();
-            for (UserStorageProviderModel persistentFedProvider : persistentFedProviders) {
-                if (provider.getId().equals(persistentFedProvider.getId())) {
-                    // Update persistent provider in DB
-                    int lastSync = Time.currentTime();
-                    persistentFedProvider.setLastSync(lastSync);
-                    persistentRealm.updateComponent(persistentFedProvider);
+        RealmModel persistentRealm = realmProvider.getRealm(realmId);
+        List<UserStorageProviderModel> persistentFedProviders = persistentRealm.getUserStorageProviders();
+        for (UserStorageProviderModel persistentFedProvider : persistentFedProviders) {
+            if (provider.getId().equals(persistentFedProvider.getId())) {
+                // Update persistent provider in DB
+                int lastSync = Time.currentTime();
+                persistentFedProvider.setLastSync(lastSync);
+                persistentRealm.updateComponent(persistentFedProvider);
 
-                    // Update "cached" reference
-                    provider.setLastSync(lastSync);
-                }
+                // Update "cached" reference
+                provider.setLastSync(lastSync);
             }
-        });
+        }
     }
 
     // Send to cluster during each update or remove of federationProvider, so all nodes can update sync periods
@@ -307,13 +292,11 @@ public class UserStorageSyncManager {
         @Override
         public void eventReceived(ClusterEvent event) {
             final UserStorageProviderClusterEvent fedEvent = (UserStorageProviderClusterEvent) event;
-            KeycloakModelUtils.runJobInTransaction(sessionFactory, () -> {
-                if (fedEvent.isRemoved()) {
-                    removePeriodicSyncForProvider(timerProvider, fedEvent.getStorageProvider());
-                } else {
-                    refreshPeriodicSyncForProvider(timerProvider, fedEvent.getStorageProvider(), fedEvent.getRealmId());
-                }
-            });
+            if (fedEvent.isRemoved()) {
+                removePeriodicSyncForProvider(timerProvider, fedEvent.getStorageProvider());
+            } else {
+                refreshPeriodicSyncForProvider(timerProvider, fedEvent.getStorageProvider(), fedEvent.getRealmId());
+            }
         }
     }
 

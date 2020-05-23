@@ -25,11 +25,9 @@ import org.keycloak.storage.client.ClientStorageProviderFactory;
 import org.keycloak.storage.client.ClientStorageProviderModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -55,11 +53,14 @@ public class ClientStorageManager implements ClientProvider {
         return new ClientStorageProviderModel(model);
     }
 
-    public static ClientStorageProvider getStorageProvider(RealmModel realm, String componentId) {
+    @Autowired
+    private Map<String, ClientStorageProviderFactory> clientStorageProviderFactories;
+
+    public ClientStorageProvider getStorageProvider(RealmModel realm, String componentId) {
         ComponentModel model = realm.getComponent(componentId);
         if (model == null) return null;
         ClientStorageProviderModel storageModel = new ClientStorageProviderModel(model);
-        ClientStorageProviderFactory factory = (ClientStorageProviderFactory) session.getSessionFactory().getProviderFactory(ClientStorageProvider.class, model.getProviderId());
+        ClientStorageProviderFactory factory = clientStorageProviderFactories.get(model.getProviderId());
         if (factory == null) {
             throw new ModelException("Could not find ClientStorageProviderFactory for: " + model.getProviderId());
         }
@@ -70,8 +71,11 @@ public class ClientStorageManager implements ClientProvider {
         return realm.getClientStorageProviders();
     }
 
-    public static ClientStorageProvider getStorageProviderInstance(ClientStorageProviderModel model, ClientStorageProviderFactory factory) {
-        ClientStorageProvider instance = (ClientStorageProvider) session.getAttribute(model.getId());
+    @Autowired
+    private Map<String, ClientStorageProvider> clientStorageProviders;
+
+    public ClientStorageProvider getStorageProviderInstance(ClientStorageProviderModel model, ClientStorageProviderFactory factory) {
+        ClientStorageProvider instance = clientStorageProviders.get(model.getId());
         if (instance != null) return instance;
         instance = factory.create(model);
         if (instance == null) {
@@ -82,10 +86,10 @@ public class ClientStorageManager implements ClientProvider {
         return instance;
     }
 
-    public static <T> List<T> getStorageProviders(RealmModel realm, Class<T> type) {
+    public <T> List<T> getStorageProviders(RealmModel realm, Class<T> type) {
         List<T> list = new LinkedList<>();
         for (ClientStorageProviderModel model : getStorageProviders(realm)) {
-            ClientStorageProviderFactory factory = (ClientStorageProviderFactory) session.getSessionFactory().getProviderFactory(ClientStorageProvider.class, model.getProviderId());
+            ClientStorageProviderFactory factory = clientStorageProviderFactories.get(model.getProviderId());
             if (factory == null) {
                 LOG.warn("Configured ClientStorageProvider {} of provider id {} does not exist in realm {}", model.getName(), model.getProviderId(), realm.getName());
                 continue;
@@ -99,11 +103,11 @@ public class ClientStorageManager implements ClientProvider {
         return list;
     }
 
-    public static <T> List<T> getEnabledStorageProviders(RealmModel realm, Class<T> type) {
+    public <T> List<T> getEnabledStorageProviders(RealmModel realm, Class<T> type) {
         List<T> list = new LinkedList<>();
         for (ClientStorageProviderModel model : getStorageProviders(realm)) {
             if (!model.isEnabled()) continue;
-            ClientStorageProviderFactory factory = (ClientStorageProviderFactory) session.getSessionFactory().getProviderFactory(ClientStorageProvider.class, model.getProviderId());
+            ClientStorageProviderFactory factory = clientStorageProviderFactories.get(model.getProviderId());
             if (factory == null) {
                 LOG.warn("Configured ClientStorageProvider {} of provider id {} does not exist in realm {}", model.getName(), model.getProviderId(), realm.getName());
                 continue;

@@ -33,6 +33,7 @@ import org.keycloak.utils.CredentialHelper;
 import org.keycloak.utils.ReservedCharValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -50,13 +51,11 @@ public class AuthenticationManagementResource {
 
     protected static final Logger LOG = LoggerFactory.getLogger(AuthenticationManagementResource.class);
     private final RealmModel realm;
-    private final KeycloakSession session;
     private AdminPermissionEvaluator auth;
     private AdminEventBuilder adminEvent;
 
     public AuthenticationManagementResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.realm = realm;
-        this.session = session;
         this.auth = auth;
         this.adminEvent = adminEvent.resource(ResourceType.AUTH_FLOW);
     }
@@ -117,9 +116,11 @@ public class AuthenticationManagementResource {
     public List<Map<String, Object>> getFormProviders() {
         auth.realm().requireViewRealm();
 
-        List<ProviderFactory> factories = session.getSessionFactory().getProviderFactories(FormAuthenticator.class);
-        return buildProviderMetadata(factories);
+        return buildProviderMetadata(formAuthenticatorFactories);
     }
+
+    @Autowired
+    private List<FormAuthenticatorFactory> formAuthenticatorFactories;
 
     /**
      * Get authenticator providers
@@ -133,9 +134,11 @@ public class AuthenticationManagementResource {
     public List<Map<String, Object>> getAuthenticatorProviders() {
         auth.realm().requireViewRealm();
 
-        List<ProviderFactory> factories = session.getSessionFactory().getProviderFactories(Authenticator.class);
-        return buildProviderMetadata(factories);
+        return buildProviderMetadata(authenticatorFactories);
     }
+
+    @Autowired
+    private List<AuthenticatorFactory> authenticatorFactories;
 
     /**
      * Get client authenticator providers
@@ -149,11 +152,13 @@ public class AuthenticationManagementResource {
     public List<Map<String, Object>> getClientAuthenticatorProviders() {
         auth.realm().requireViewClientAuthenticatorProviders();
 
-        List<ProviderFactory> factories = session.getSessionFactory().getProviderFactories(ClientAuthenticator.class);
-        return buildProviderMetadata(factories);
+        return buildProviderMetadata(clientAuthenticatorFactories);
     }
 
-    public List<Map<String, Object>> buildProviderMetadata(List<ProviderFactory> factories) {
+    @Autowired
+    private List<ClientAuthenticatorFactory> clientAuthenticatorFactories;
+
+    public List<Map<String, Object>> buildProviderMetadata(List<? extends ProviderFactory> factories) {
         List<Map<String, Object>> providers = new LinkedList<>();
         for (ProviderFactory factory : factories) {
             Map<String, Object> data = new HashMap<>();
@@ -179,9 +184,11 @@ public class AuthenticationManagementResource {
     public List<Map<String, Object>> getFormActionProviders() {
         auth.realm().requireViewRealm();
 
-        List<ProviderFactory> factories = session.getSessionFactory().getProviderFactories(FormAction.class);
-        return buildProviderMetadata(factories);
+        return buildProviderMetadata(formActionFactories);
     }
+
+    @Autowired
+    private List<FormActionFactory> formActionFactories;
 
     /**
      * Get authentication flows
@@ -205,11 +212,13 @@ public class AuthenticationManagementResource {
         return flows;
     }
 
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     /**
      * Create a new authentication flow
      *
      * @param flow Authentication flow representation
-     * @return
      */
     @Path("/flows")
     @POST
@@ -231,15 +240,14 @@ public class AuthenticationManagementResource {
         AuthenticationFlowModel createdModel = realm.addAuthenticationFlow(RepresentationToModel.toModel(flow));
 
         flow.setId(createdModel.getId());
-        adminEvent.operation(OperationType.CREATE).resourcePath(session.getContext().getUri(), createdModel.getId()).representation(flow).success();
-        return Response.created(session.getContext().getUri().getAbsolutePathBuilder().path(flow.getId()).build()).build();
+        adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri(), createdModel.getId()).representation(flow).success();
+        return Response.created(keycloakContext.getUri().getAbsolutePathBuilder().path(flow.getId()).build()).build();
     }
 
     /**
      * Get authentication flow for id
      *
      * @param id Flow id
-     * @return
      */
     @Path("/flows/{id}")
     @GET
@@ -276,7 +284,7 @@ public class AuthenticationManagementResource {
 
         flow.setId(existingFlow.getId());
         realm.updateAuthenticationFlow(RepresentationToModel.toModel(flow));
-        adminEvent.operation(OperationType.UPDATE).resourcePath(session.getContext().getUri()).representation(flow).success();
+        adminEvent.operation(OperationType.UPDATE).resourcePath(keycloakContext.getUri()).representation(flow).success();
 
         return Response.accepted(flow).build();
     }
@@ -314,7 +322,7 @@ public class AuthenticationManagementResource {
 
         // Use just one event for top-level flow. Using separate events won't work properly for flows of depth 2 or bigger
         if (isTopMostLevel)
-            adminEvent.operation(OperationType.DELETE).resourcePath(session.getContext().getUri()).success();
+            adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -345,7 +353,7 @@ public class AuthenticationManagementResource {
         AuthenticationFlowModel copy = copyFlow(realm, flow, newName);
 
         data.put("id", copy.getId());
-        adminEvent.operation(OperationType.CREATE).resourcePath(session.getContext().getUri()).representation(data).success();
+        adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri()).representation(data).success();
 
         return Response.status(Response.Status.CREATED).build();
 
@@ -393,16 +401,19 @@ public class AuthenticationManagementResource {
         execution = realm.addAuthenticatorExecution(execution);
 
         data.put("id", execution.getId());
-        adminEvent.operation(OperationType.CREATE).resource(ResourceType.AUTH_EXECUTION_FLOW).resourcePath(session.getContext().getUri()).representation(data).success();
+        adminEvent.operation(OperationType.CREATE).resource(ResourceType.AUTH_EXECUTION_FLOW).resourcePath(keycloakContext.getUri()).representation(data).success();
 
         String addExecutionPathSegment = UriBuilder.fromMethod(AuthenticationManagementResource.class, "addExecutionFlow").build(parentFlow.getAlias()).getPath();
-        return Response.created(session.getContext().getUri().getBaseUriBuilder().path(session.getContext().getUri().getPath().replace(addExecutionPathSegment, "")).path("flows").path(newFlow.getId()).build()).build();
+        return Response.created(keycloakContext.getUri().getBaseUriBuilder().path(keycloakContext.getUri().getPath().replace(addExecutionPathSegment, "")).path("flows").path(newFlow.getId()).build()).build();
     }
 
     private int getNextPriority(AuthenticationFlowModel parentFlow) {
         List<AuthenticationExecutionModel> executions = getSortedExecutions(parentFlow);
         return executions.isEmpty() ? 0 : executions.get(executions.size() - 1).getPriority() + 1;
     }
+
+    @Autowired
+    private KeycloakSessionFactory sessionFactory;
 
     /**
      * Add new authentication execution to a flow
@@ -429,11 +440,11 @@ public class AuthenticationManagementResource {
         // make sure provider is one of the registered providers
         ProviderFactory f;
         if (parentFlow.getProviderId().equals(AuthenticationFlow.CLIENT_FLOW)) {
-            f = session.getSessionFactory().getProviderFactory(ClientAuthenticator.class, provider);
+            f = sessionFactory.getProviderFactory(ClientAuthenticator.class, provider);
         } else if (parentFlow.getProviderId().equals(AuthenticationFlow.FORM_FLOW)) {
-            f = session.getSessionFactory().getProviderFactory(FormAction.class, provider);
+            f = sessionFactory.getProviderFactory(FormAction.class, provider);
         } else {
-            f = session.getSessionFactory().getProviderFactory(Authenticator.class, provider);
+            f = sessionFactory.getProviderFactory(Authenticator.class, provider);
         }
         if (f == null) {
             throw new BadRequestException("No authentication provider found for id: " + provider);
@@ -455,10 +466,10 @@ public class AuthenticationManagementResource {
         execution = realm.addAuthenticatorExecution(execution);
 
         data.put("id", execution.getId());
-        adminEvent.operation(OperationType.CREATE).resource(ResourceType.AUTH_EXECUTION).resourcePath(session.getContext().getUri()).representation(data).success();
+        adminEvent.operation(OperationType.CREATE).resource(ResourceType.AUTH_EXECUTION).resourcePath(keycloakContext.getUri()).representation(data).success();
 
         String addExecutionPathSegment = UriBuilder.fromMethod(AuthenticationManagementResource.class, "addExecutionToFlow").build(parentFlow.getAlias()).getPath();
-        return Response.created(session.getContext().getUri().getBaseUriBuilder().path(session.getContext().getUri().getPath().replace(addExecutionPathSegment, "")).path("executions").path(execution.getId()).build()).build();
+        return Response.created(keycloakContext.getUri().getBaseUriBuilder().path(keycloakContext.getUri().getPath().replace(addExecutionPathSegment, "")).path("executions").path(execution.getId()).build()).build();
     }
 
     /**
@@ -522,7 +533,7 @@ public class AuthenticationManagementResource {
                 recurseExecutions(subFlow, result, level + 1);
             } else {
                 String providerId = execution.getAuthenticator();
-                ConfigurableAuthenticatorFactory factory = CredentialHelper.getConfigurableAuthenticatorFactory(providerId);
+                ConfigurableAuthenticatorFactory factory = credentialHelper.getConfigurableAuthenticatorFactory(providerId);
                 rep.setDisplayName(factory.getDisplayType());
                 rep.setConfigurable(factory.isConfigurable());
                 for (AuthenticationExecutionRequirement choice : factory.getRequirementChoices()) {
@@ -570,14 +581,13 @@ public class AuthenticationManagementResource {
 
         AuthenticationExecutionModel model = realm.getAuthenticationExecutionById(rep.getId());
         if (model == null) {
-            session.getTransactionManager().setRollbackOnly();
             throw new NotFoundException("Illegal execution");
 
         }
         if (!model.getRequirement().name().equals(rep.getRequirement())) {
             model.setRequirement(AuthenticationExecutionRequirement.valueOf(rep.getRequirement()));
             realm.updateAuthenticatorExecution(model);
-            adminEvent.operation(OperationType.UPDATE).resource(ResourceType.AUTH_EXECUTION).resourcePath(session.getContext().getUri()).representation(rep).success();
+            adminEvent.operation(OperationType.UPDATE).resource(ResourceType.AUTH_EXECUTION).resourcePath(keycloakContext.getUri()).representation(rep).success();
         }
     }
 
@@ -621,8 +631,8 @@ public class AuthenticationManagementResource {
         model.setPriority(getNextPriority(parentFlow));
         model = realm.addAuthenticatorExecution(model);
 
-        adminEvent.operation(OperationType.CREATE).resource(ResourceType.AUTH_EXECUTION).resourcePath(session.getContext().getUri(), model.getId()).representation(execution).success();
-        return Response.created(session.getContext().getUri().getAbsolutePathBuilder().path(model.getId()).build()).build();
+        adminEvent.operation(OperationType.CREATE).resource(ResourceType.AUTH_EXECUTION).resourcePath(keycloakContext.getUri(), model.getId()).representation(execution).success();
+        return Response.created(keycloakContext.getUri().getAbsolutePathBuilder().path(model.getId()).build()).build();
     }
 
     public AuthenticationFlowModel getParentFlow(AuthenticationExecutionModel model) {
@@ -650,7 +660,6 @@ public class AuthenticationManagementResource {
 
         AuthenticationExecutionModel model = realm.getAuthenticationExecutionById(execution);
         if (model == null) {
-            session.getTransactionManager().setRollbackOnly();
             throw new NotFoundException("Illegal execution");
 
         }
@@ -674,7 +683,7 @@ public class AuthenticationManagementResource {
         model.setPriority(tmp);
         realm.updateAuthenticatorExecution(model);
 
-        adminEvent.operation(OperationType.UPDATE).resource(ResourceType.AUTH_EXECUTION).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.UPDATE).resource(ResourceType.AUTH_EXECUTION).resourcePath(keycloakContext.getUri()).success();
     }
 
     public List<AuthenticationExecutionModel> getSortedExecutions(AuthenticationFlowModel parentFlow) {
@@ -696,7 +705,6 @@ public class AuthenticationManagementResource {
 
         AuthenticationExecutionModel model = realm.getAuthenticationExecutionById(execution);
         if (model == null) {
-            session.getTransactionManager().setRollbackOnly();
             throw new NotFoundException("Illegal execution");
 
         }
@@ -719,7 +727,7 @@ public class AuthenticationManagementResource {
         next.setPriority(tmp);
         realm.updateAuthenticatorExecution(next);
 
-        adminEvent.operation(OperationType.UPDATE).resource(ResourceType.AUTH_EXECUTION).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.UPDATE).resource(ResourceType.AUTH_EXECUTION).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -735,7 +743,6 @@ public class AuthenticationManagementResource {
 
         AuthenticationExecutionModel model = realm.getAuthenticationExecutionById(execution);
         if (model == null) {
-            session.getTransactionManager().setRollbackOnly();
             throw new NotFoundException("Illegal execution");
 
         }
@@ -751,7 +758,7 @@ public class AuthenticationManagementResource {
 
         realm.removeAuthenticatorExecution(model);
 
-        adminEvent.operation(OperationType.DELETE).resource(ResourceType.AUTH_EXECUTION).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.DELETE).resource(ResourceType.AUTH_EXECUTION).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -772,7 +779,6 @@ public class AuthenticationManagementResource {
 
         AuthenticationExecutionModel model = realm.getAuthenticationExecutionById(execution);
         if (model == null) {
-            session.getTransactionManager().setRollbackOnly();
             throw new NotFoundException("Illegal execution");
 
         }
@@ -785,8 +791,8 @@ public class AuthenticationManagementResource {
         realm.updateAuthenticatorExecution(model);
 
         json.setId(config.getId());
-        adminEvent.operation(OperationType.CREATE).resource(ResourceType.AUTH_EXECUTION).resourcePath(session.getContext().getUri()).representation(json).success();
-        return Response.created(session.getContext().getUri().getAbsolutePathBuilder().path(config.getId()).build()).build();
+        adminEvent.operation(OperationType.CREATE).resource(ResourceType.AUTH_EXECUTION).resourcePath(keycloakContext.getUri()).representation(json).success();
+        return Response.created(keycloakContext.getUri().getAbsolutePathBuilder().path(config.getId()).build()).build();
     }
 
     /**
@@ -823,7 +829,7 @@ public class AuthenticationManagementResource {
     public List<Map<String, String>> getUnregisteredRequiredActions() {
         auth.realm().requireViewRealm();
 
-        List<ProviderFactory> factories = session.getSessionFactory().getProviderFactories(RequiredActionProvider.class);
+        List<ProviderFactory> factories = sessionFactory.getProviderFactories(RequiredActionProvider.class);
         List<Map<String, String>> unregisteredList = new LinkedList<>();
         for (ProviderFactory factory : factories) {
             RequiredActionFactory requiredActionFactory = (RequiredActionFactory) factory;
@@ -869,7 +875,7 @@ public class AuthenticationManagementResource {
         requiredAction = realm.addRequiredActionProvider(requiredAction);
 
         data.put("id", requiredAction.getId());
-        adminEvent.operation(OperationType.CREATE).resource(ResourceType.REQUIRED_ACTION).resourcePath(session.getContext().getUri()).representation(data).success();
+        adminEvent.operation(OperationType.CREATE).resource(ResourceType.REQUIRED_ACTION).resourcePath(keycloakContext.getUri()).representation(data).success();
     }
 
     private int getNextRequiredActionPriority() {
@@ -944,7 +950,7 @@ public class AuthenticationManagementResource {
         update.setConfig(rep.getConfig());
         realm.updateRequiredActionProvider(update);
 
-        adminEvent.operation(OperationType.UPDATE).resource(ResourceType.REQUIRED_ACTION).resourcePath(session.getContext().getUri()).representation(rep).success();
+        adminEvent.operation(OperationType.UPDATE).resource(ResourceType.REQUIRED_ACTION).resourcePath(keycloakContext.getUri()).representation(rep).success();
     }
 
     /**
@@ -963,7 +969,7 @@ public class AuthenticationManagementResource {
         }
         realm.removeRequiredActionProvider(model);
 
-        adminEvent.operation(OperationType.DELETE).resource(ResourceType.REQUIRED_ACTION).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.DELETE).resource(ResourceType.REQUIRED_ACTION).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -997,7 +1003,7 @@ public class AuthenticationManagementResource {
         model.setPriority(tmp);
         realm.updateRequiredActionProvider(model);
 
-        adminEvent.operation(OperationType.UPDATE).resource(ResourceType.REQUIRED_ACTION).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.UPDATE).resource(ResourceType.REQUIRED_ACTION).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -1031,8 +1037,11 @@ public class AuthenticationManagementResource {
         next.setPriority(tmp);
         realm.updateRequiredActionProvider(next);
 
-        adminEvent.operation(OperationType.UPDATE).resource(ResourceType.REQUIRED_ACTION).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.UPDATE).resource(ResourceType.REQUIRED_ACTION).resourcePath(keycloakContext.getUri()).success();
     }
+
+    @Autowired
+    private CredentialHelper credentialHelper;
 
     /**
      * Get authenticator provider's configuration description
@@ -1044,7 +1053,7 @@ public class AuthenticationManagementResource {
     public AuthenticatorConfigInfoRepresentation getAuthenticatorConfigDescription(@PathParam("providerId") String providerId) {
         auth.realm().requireViewRealm();
 
-        ConfigurableAuthenticatorFactory factory = CredentialHelper.getConfigurableAuthenticatorFactory(providerId);
+        ConfigurableAuthenticatorFactory factory = credentialHelper.getConfigurableAuthenticatorFactory(providerId);
         if (factory == null) {
             throw new NotFoundException("Could not find authenticator provider");
         }
@@ -1075,12 +1084,12 @@ public class AuthenticationManagementResource {
     public Map<String, List<ConfigPropertyRepresentation>> getPerClientConfigDescription() {
         auth.realm().requireViewClientAuthenticatorProviders();
 
-        List<ProviderFactory> factories = session.getSessionFactory().getProviderFactories(ClientAuthenticator.class);
+        List<ProviderFactory> factories = sessionFactory.getProviderFactories(ClientAuthenticator.class);
 
         Map<String, List<ConfigPropertyRepresentation>> toReturn = new HashMap<>();
         for (ProviderFactory clientAuthenticatorFactory : factories) {
             String providerId = clientAuthenticatorFactory.getId();
-            ConfigurableAuthenticatorFactory factory = CredentialHelper.getConfigurableAuthenticatorFactory(providerId);
+            ConfigurableAuthenticatorFactory factory = credentialHelper.getConfigurableAuthenticatorFactory(providerId);
             ClientAuthenticatorFactory clientAuthFactory = (ClientAuthenticatorFactory) factory;
             List<ProviderConfigProperty> perClientConfigProps = clientAuthFactory.getConfigPropertiesPerClient();
             List<ConfigPropertyRepresentation> result = new LinkedList<>();
@@ -1111,8 +1120,8 @@ public class AuthenticationManagementResource {
         ReservedCharValidator.validate(rep.getAlias());
 
         AuthenticatorConfigModel config = realm.addAuthenticatorConfig(RepresentationToModel.toModel(rep));
-        adminEvent.operation(OperationType.CREATE).resource(ResourceType.AUTHENTICATOR_CONFIG).resourcePath(session.getContext().getUri(), config.getId()).representation(rep).success();
-        return Response.created(session.getContext().getUri().getAbsolutePathBuilder().path(config.getId()).build()).build();
+        adminEvent.operation(OperationType.CREATE).resource(ResourceType.AUTHENTICATOR_CONFIG).resourcePath(keycloakContext.getUri(), config.getId()).representation(rep).success();
+        return Response.created(keycloakContext.getUri().getAbsolutePathBuilder().path(config.getId()).build()).build();
     }
 
     /**
@@ -1162,7 +1171,7 @@ public class AuthenticationManagementResource {
 
         realm.removeAuthenticatorConfig(config);
 
-        adminEvent.operation(OperationType.DELETE).resource(ResourceType.AUTHENTICATOR_CONFIG).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.DELETE).resource(ResourceType.AUTHENTICATOR_CONFIG).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -1187,6 +1196,6 @@ public class AuthenticationManagementResource {
         exists.setAlias(rep.getAlias());
         exists.setConfig(RepresentationToModel.removeEmptyString(rep.getConfig()));
         realm.updateAuthenticatorConfig(exists);
-        adminEvent.operation(OperationType.UPDATE).resource(ResourceType.AUTHENTICATOR_CONFIG).resourcePath(session.getContext().getUri()).representation(rep).success();
+        adminEvent.operation(OperationType.UPDATE).resource(ResourceType.AUTHENTICATOR_CONFIG).resourcePath(keycloakContext.getUri()).representation(rep).success();
     }
 }

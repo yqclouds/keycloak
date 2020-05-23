@@ -151,6 +151,10 @@ public class ClientsResource {
     private ClientValidationUtil clientValidationUtil;
     @Autowired
     private PairwiseClientValidator pairwiseClientValidator;
+    @Autowired
+    private AdminRoot adminRoot;
+    @Autowired
+    private ClientManager clientManager;
 
     /**
      * Create a new client
@@ -167,7 +171,7 @@ public class ClientsResource {
 
         ValidationMessages validationMessages = new ValidationMessages();
         if (!ClientValidator.validate(rep, validationMessages) || !pairwiseClientValidator.validate(rep, validationMessages)) {
-            Properties messages = AdminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
+            Properties messages = adminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
             throw new ErrorResponseException(
                     validationMessages.getStringMessages(),
                     validationMessages.getStringMessages(messages),
@@ -176,13 +180,13 @@ public class ClientsResource {
         }
 
         try {
-            ClientModel clientModel = ClientManager.createClient(realm, rep, true);
+            ClientModel clientModel = clientManager.createClient(realm, rep, true);
 
             if (TRUE.equals(rep.isServiceAccountsEnabled())) {
                 UserModel serviceAccount = session.users().getServiceAccount(clientModel);
 
                 if (serviceAccount == null) {
-                    new ClientManager(new RealmManager(session)).enableServiceAccount(clientModel);
+                    new ClientManager(new RealmManager()).enableServiceAccount(clientModel);
                 }
             }
 
@@ -229,7 +233,7 @@ public class ClientsResource {
 
         session.getContext().setClient(clientModel);
 
-        ClientResource clientResource = new ClientResource(realm, auth, clientModel, session, adminEvent);
+        ClientResource clientResource = new ClientResource(realm, auth, clientModel, adminEvent);
         ResteasyProviderFactory.getInstance().injectProperties(clientResource);
         return clientResource;
     }

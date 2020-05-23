@@ -18,7 +18,9 @@
 package org.keycloak.services.clientregistration;
 
 import org.keycloak.models.ClientModel;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.representations.idm.ClientRepresentation;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -29,13 +31,16 @@ import java.net.URI;
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class DefaultClientRegistrationProvider extends AbstractClientRegistrationProvider {
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createDefault(ClientRepresentation client) {
         DefaultClientRegistrationContext context = new DefaultClientRegistrationContext(client, this);
         client = create(context);
-        URI uri = session.getContext().getUri().getAbsolutePathBuilder().path(client.getClientId()).build();
+        URI uri = keycloakContext.getUri().getAbsolutePathBuilder().path(client.getClientId()).build();
         return Response.created(uri).entity(client).build();
     }
 
@@ -43,7 +48,7 @@ public class DefaultClientRegistrationProvider extends AbstractClientRegistratio
     @Path("{clientId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDefault(@PathParam("clientId") String clientId) {
-        ClientModel client = session.getContext().getRealm().getClientByClientId(clientId);
+        ClientModel client = keycloakContext.getRealm().getClientByClientId(clientId);
         ClientRepresentation clientRepresentation = get(client);
         return Response.ok(clientRepresentation).build();
     }

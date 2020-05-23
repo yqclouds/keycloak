@@ -77,11 +77,11 @@ public class DirImportProvider implements ImportProvider {
     }
 
     @Override
-    public void importModel(KeycloakSessionFactory factory, Strategy strategy) throws IOException {
+    public void importModel(Strategy strategy) throws IOException {
         List<String> realmNames = getRealmsToImport();
 
         for (String realmName : realmNames) {
-            importRealm(factory, realmName, strategy);
+            importRealm(realmName, strategy);
         }
     }
 
@@ -122,7 +122,7 @@ public class DirImportProvider implements ImportProvider {
     private ImportUtils importUtils;
 
     @Override
-    public void importRealm(KeycloakSessionFactory factory, final String realmName, final Strategy strategy) throws IOException {
+    public void importRealm(final String realmName, final Strategy strategy) throws IOException {
         File realmFile = new File(this.rootDirectory + File.separator + realmName + "-realm.json");
         File[] userFiles = this.rootDirectory.listFiles(new FilenameFilter() {
 
@@ -144,50 +144,26 @@ public class DirImportProvider implements ImportProvider {
         final RealmRepresentation realmRep = JsonSerialization.readValue(is, RealmRepresentation.class);
         final AtomicBoolean realmImported = new AtomicBoolean();
 
-        KeycloakModelUtils.runJobInTransaction(factory, new ExportImportSessionTask() {
-
-            @Override
-            public void runExportImportTask() throws IOException {
-                boolean imported = importUtils.importRealm(realmRep, strategy, true);
-                realmImported.set(imported);
-            }
-
-        });
+        boolean imported = importUtils.importRealm(realmRep, strategy, true);
+        realmImported.set(imported);
 
         if (realmImported.get()) {
             // Import users
             for (final File userFile : userFiles) {
                 final FileInputStream fis = new FileInputStream(userFile);
-                KeycloakModelUtils.runJobInTransaction(factory, new ExportImportSessionTask() {
-                    @Override
-                    protected void runExportImportTask() throws IOException {
-                        importUtils.importUsersFromStream(realmName, JsonSerialization.mapper, fis);
-                        LOG.info("Imported users from {}", userFile.getAbsolutePath());
-                    }
-                });
+                importUtils.importUsersFromStream(realmName, JsonSerialization.mapper, fis);
+                LOG.info("Imported users from {}", userFile.getAbsolutePath());
             }
             for (final File userFile : federatedUserFiles) {
                 final FileInputStream fis = new FileInputStream(userFile);
-                KeycloakModelUtils.runJobInTransaction(factory, new ExportImportSessionTask() {
-                    @Override
-                    protected void runExportImportTask() throws IOException {
-                        importUtils.importFederatedUsersFromStream(realmName, JsonSerialization.mapper, fis);
-                        LOG.info("Imported federated users from {}", userFile.getAbsolutePath());
-                    }
-                });
+                importUtils.importFederatedUsersFromStream(realmName, JsonSerialization.mapper, fis);
+                LOG.info("Imported federated users from {}", userFile.getAbsolutePath());
             }
         }
 
         // Import authorization last, as authzPolicies can require users already in DB
-        KeycloakModelUtils.runJobInTransaction(factory, new ExportImportSessionTask() {
-
-            @Override
-            public void runExportImportTask() throws IOException {
-                RealmModel realm = realmProvider.getRealmByName(realmName);
-                representationToModel.importRealmAuthorizationSettings(realmRep, realm);
-            }
-
-        });
+        RealmModel realm = realmProvider.getRealmByName(realmName);
+        representationToModel.importRealmAuthorizationSettings(realmRep, realm);
     }
 
     @Override

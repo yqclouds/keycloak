@@ -53,6 +53,8 @@ public class DescriptionConverter {
 
     @Autowired
     private Map<String, ClientAuthenticatorFactory> clientAuthenticatorFactories;
+    @Autowired
+    private AuthorizeClientUtil authorizeClientUtil;
 
     public ClientRepresentation toInternal(OIDCClientRepresentation clientOIDC) throws ClientRegistrationException {
         ClientRepresentation client = new ClientRepresentation();
@@ -88,7 +90,7 @@ public class DescriptionConverter {
         if (authMethod == null) {
             clientAuthFactory = clientAuthenticatorFactories.get(KeycloakModelUtils.getDefaultClientAuthenticatorType());
         } else {
-            clientAuthFactory = AuthorizeClientUtil.findClientAuthenticatorForOIDCAuthMethod(authMethod);
+            clientAuthFactory = authorizeClientUtil.findClientAuthenticatorForOIDCAuthMethod(authMethod);
         }
 
         if (clientAuthFactory == null) {

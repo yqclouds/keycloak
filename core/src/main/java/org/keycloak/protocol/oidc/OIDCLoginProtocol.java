@@ -18,9 +18,9 @@ package org.keycloak.protocol.oidc;
 
 import com.hsbc.unified.iam.core.constants.Constants;
 import com.hsbc.unified.iam.core.constants.OAuth2Constants;
+import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.TokenIdGenerator;
-import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.constants.AdapterConstants;
 import org.keycloak.events.Details;
@@ -108,8 +108,6 @@ public class OIDCLoginProtocol implements LoginProtocol {
 
     private static final Logger LOG = LoggerFactory.getLogger(OIDCLoginProtocol.class);
 
-    protected KeycloakSession session;
-
     protected RealmModel realm;
 
     protected UriInfo uriInfo;
@@ -122,7 +120,6 @@ public class OIDCLoginProtocol implements LoginProtocol {
     protected OIDCResponseMode responseMode;
 
     public OIDCLoginProtocol(RealmModel realm, UriInfo uriInfo, HttpHeaders headers, EventBuilder event) {
-        this.session = session;
         this.realm = realm;
         this.uriInfo = uriInfo;
         this.headers = headers;
@@ -138,12 +135,6 @@ public class OIDCLoginProtocol implements LoginProtocol {
         this.responseMode = OIDCResponseMode.parse(responseMode, this.responseType);
         this.event.detail(Details.RESPONSE_TYPE, responseType);
         this.event.detail(Details.RESPONSE_MODE, this.responseMode.toString().toLowerCase());
-    }
-
-    @Override
-    public OIDCLoginProtocol setSession() {
-        this.session = session;
-        return this;
     }
 
     @Override
@@ -219,7 +210,7 @@ public class OIDCLoginProtocol implements LoginProtocol {
         // Implicit or hybrid flow
         if (responseType.isImplicitOrHybridFlow()) {
             org.keycloak.protocol.oidc.TokenManager tokenManager = new org.keycloak.protocol.oidc.TokenManager();
-            org.keycloak.protocol.oidc.TokenManager.AccessTokenResponseBuilder responseBuilder = tokenManager.responseBuilder(realm, clientSession.getClient(), event, session, userSession, clientSessionCtx)
+            org.keycloak.protocol.oidc.TokenManager.AccessTokenResponseBuilder responseBuilder = tokenManager.responseBuilder(realm, clientSession.getClient(), event, userSession, clientSessionCtx)
                     .generateAccessToken();
 
             if (responseType.hasResponseType(OIDCResponseType.ID_TOKEN)) {
@@ -279,7 +270,7 @@ public class OIDCLoginProtocol implements LoginProtocol {
             redirectUri.addParam(OAuth2Constants.STATE, state);
         }
 
-        new AuthenticationSessionManager(session).removeAuthenticationSession(realm, authSession, true);
+        new AuthenticationSessionManager().removeAuthenticationSession(realm, authSession, true);
         return redirectUri.build();
     }
 
@@ -303,7 +294,7 @@ public class OIDCLoginProtocol implements LoginProtocol {
     @Override
     public void backchannelLogout(UserSessionModel userSession, AuthenticatedClientSessionModel clientSession) {
         ClientModel client = clientSession.getClient();
-        new ResourceAdminManager(session).logoutClientSession(realm, client, clientSession);
+        new ResourceAdminManager().logoutClientSession(realm, client, clientSession);
     }
 
     @Override
@@ -375,11 +366,13 @@ public class OIDCLoginProtocol implements LoginProtocol {
 
     @Autowired
     private HttpClientProvider httpClientProvider;
+    @Autowired
+    private org.keycloak.models.TokenManager tokenManager;
 
     @Override
     public boolean sendPushRevocationPolicyRequest(RealmModel realm, ClientModel resource, int notBefore, String managementUrl) {
         PushNotBeforeAction adminAction = new PushNotBeforeAction(TokenIdGenerator.generateId(), Time.currentTime() + 30, resource.getClientId(), notBefore);
-        String token = session.tokens().encode(adminAction);
+        String token = tokenManager.encode(adminAction);
         LOG.debug("pushRevocation resource: {} url: {}", resource.getClientId(), managementUrl);
         URI target = UriBuilder.fromUri(managementUrl).path(AdapterConstants.K_PUSH_NOT_BEFORE).build();
         try {

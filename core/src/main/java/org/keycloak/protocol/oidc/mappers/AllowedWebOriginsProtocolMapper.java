@@ -17,13 +17,17 @@
 
 package org.keycloak.protocol.oidc.mappers;
 
-import org.keycloak.models.*;
+import org.keycloak.models.ClientModel;
+import org.keycloak.models.ClientSessionContext;
+import org.keycloak.models.ProtocolMapperModel;
+import org.keycloak.models.UserSessionModel;
 import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.utils.WebOriginsUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.stereotype.ProviderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -76,14 +80,17 @@ public class AllowedWebOriginsProtocolMapper extends AbstractOIDCProtocolMapper 
         return "Adds all allowed web origins to the 'allowed-origins' claim in the token";
     }
 
+    @Autowired
+    private WebOriginsUtils webOriginsUtils;
+
     @Override
-    public AccessToken transformAccessToken(AccessToken token, ProtocolMapperModel mappingModel, KeycloakSession session,
+    public AccessToken transformAccessToken(AccessToken token, ProtocolMapperModel mappingModel,
                                             UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
         ClientModel client = clientSessionCtx.getClientSession().getClient();
 
         Set<String> allowedOrigins = client.getWebOrigins();
         if (allowedOrigins != null && !allowedOrigins.isEmpty()) {
-            token.setAllowedOrigins(WebOriginsUtils.resolveValidWebOrigins(client));
+            token.setAllowedOrigins(webOriginsUtils.resolveValidWebOrigins(client));
         }
 
         return token;

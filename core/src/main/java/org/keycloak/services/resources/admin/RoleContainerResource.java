@@ -32,6 +32,7 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluato
 import org.keycloak.services.resources.admin.permissions.AdminPermissionManagement;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import org.keycloak.utils.ReservedCharValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -402,11 +403,14 @@ public class RoleContainerResource extends RoleResource {
         List<UserModel> userModels = session.users().getRoleMembers(realm, role, firstResult, maxResults);
 
         for (UserModel user : userModels) {
-            results.add(ModelToRepresentation.toRepresentation(realm, user));
+            results.add(modelToRepresentation.toRepresentation(realm, user));
         }
         return results;
 
     }
+
+    @Autowired
+    private ModelToRepresentation modelToRepresentation;
 
     /**
      * Return List of Groups that have the specified role name

@@ -86,13 +86,13 @@ class AuthenticationSelectionResolver {
                 authenticationSelectionList = credentials.stream()
                         .map(CredentialModel::getType)
                         .distinct()
-                        .map(credentialType -> new AuthenticationSelectionOption(processor.getSession(), typeAuthExecMap.get(credentialType)))
+                        .map(credentialType -> new AuthenticationSelectionOption(typeAuthExecMap.get(credentialType)))
                         .collect(Collectors.toList());
             }
 
             //add all other authenticators
             for (AuthenticationExecutionModel exec : nonCredentialExecutions) {
-                authenticationSelectionList.add(new AuthenticationSelectionOption(processor.getSession(), exec));
+                authenticationSelectionList.add(new AuthenticationSelectionOption(exec));
             }
         }
 

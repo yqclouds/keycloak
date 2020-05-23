@@ -75,7 +75,7 @@ public class DefaultAuthenticationFlow implements AuthenticationFlow {
         if (display == null) return factory.create();
 
         if (factory instanceof DisplayTypeAuthenticatorFactory) {
-            Authenticator authenticator = ((DisplayTypeAuthenticatorFactory) factory).createDisplay(processor.getSession(), display);
+            Authenticator authenticator = ((DisplayTypeAuthenticatorFactory) factory).createDisplay(display);
             if (authenticator != null) return authenticator;
         }
         // todo create a provider for handling lack of display support
