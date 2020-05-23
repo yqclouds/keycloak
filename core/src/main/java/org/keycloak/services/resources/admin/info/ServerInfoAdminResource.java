@@ -25,8 +25,9 @@ import org.keycloak.component.ComponentFactory;
 import org.keycloak.events.EventType;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.ProtocolMapperModel;
+import org.keycloak.models.ThemeManager;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.policy.PasswordPolicyProvider;
 import org.keycloak.policy.PasswordPolicyProviderFactory;
@@ -41,11 +42,11 @@ import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import org.keycloak.representations.idm.ProtocolMapperTypeRepresentation;
 import org.keycloak.representations.info.*;
 import org.keycloak.theme.Theme;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.*;
@@ -56,9 +57,6 @@ import java.util.*;
 public class ServerInfoAdminResource {
 
     private static final Map<String, List<String>> ENUMS = createEnumsMap(EventType.class, OperationType.class, ResourceType.class);
-
-    @Context
-    private KeycloakSession session;
 
     private static Map<String, List<String>> createEnumsMap(Class... enums) {
         Map<String, List<String>> m = new HashMap<>();
@@ -77,17 +75,18 @@ public class ServerInfoAdminResource {
         return m;
     }
 
+    @Autowired
+    private KeycloakSessionFactory sessionFactory;
+
     /**
      * Get themes, social providers, auth providers, and event listeners available on this server
-     *
-     * @return
      */
     @GET
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public ServerInfoRepresentation getInfo() {
         ServerInfoRepresentation info = new ServerInfoRepresentation();
-        info.setSystemInfo(SystemInfoRepresentation.create(session.getSessionFactory().getServerStartupTimestamp()));
+        info.setSystemInfo(SystemInfoRepresentation.create(sessionFactory.getServerStartupTimestamp()));
         info.setMemoryInfo(MemoryInfoRepresentation.create());
         info.setProfileInfo(ProfileInfoRepresentation.create());
 
@@ -102,25 +101,25 @@ public class ServerInfoAdminResource {
         return info;
     }
 
+    @Autowired
+    private List<String> providerIds;
+
     private void setProviders(ServerInfoRepresentation info) {
         info.setComponentTypes(new HashMap<>());
         LinkedHashMap<String, SpiInfoRepresentation> spiReps = new LinkedHashMap<>();
 
-        List<Spi> spis = new LinkedList<>(session.getSessionFactory().getSpis());
+        List<Spi> spis = new LinkedList<>(sessionFactory.getSpis());
         Collections.sort(spis, Comparator.comparing(Spi::getName));
 
         for (Spi spi : spis) {
             SpiInfoRepresentation spiRep = new SpiInfoRepresentation();
             spiRep.setInternal(spi.isInternal());
 
-            List<String> providerIds = new LinkedList<>(session.listProviderIds(spi.getProviderClass()));
-            Collections.sort(providerIds);
-
             Map<String, ProviderRepresentation> providers = new HashMap<>();
 
             for (String name : providerIds) {
                 ProviderRepresentation provider = new ProviderRepresentation();
-                ProviderFactory<?> pi = session.getSessionFactory().getProviderFactory(spi.getProviderClass(), name);
+                ProviderFactory<?> pi = sessionFactory.getProviderFactory(spi.getProviderClass(), name);
                 provider.setOrder(pi.order());
                 if (ServerInfoAwareProviderFactory.class.isAssignableFrom(pi.getClass())) {
                     provider.setOperationalInfo(((ServerInfoAwareProviderFactory) pi).getOperationalInfo());
@@ -148,11 +147,14 @@ public class ServerInfoAdminResource {
         info.setProviders(spiReps);
     }
 
+    @Autowired
+    private ThemeManager themeManager;
+
     private void setThemes(ServerInfoRepresentation info) {
         info.setThemes(new HashMap<>());
 
         for (Theme.Type type : Theme.Type.values()) {
-            List<String> themeNames = new LinkedList<>(session.theme().nameSet(type));
+            List<String> themeNames = new LinkedList<>(themeManager.nameSet(type));
             Collections.sort(themeNames);
 
             if (!Profile.isFeatureEnabled(Profile.Feature.ACCOUNT2)) {
@@ -165,7 +167,7 @@ public class ServerInfoAdminResource {
 
             for (String name : themeNames) {
                 try {
-                    Theme theme = session.theme().getTheme(name, type);
+                    Theme theme = themeManager.getTheme(name, type);
                     ThemeInfoRepresentation ti = new ThemeInfoRepresentation();
                     ti.setName(name);
 
@@ -184,7 +186,7 @@ public class ServerInfoAdminResource {
 
     private void setIdentityProviders(ServerInfoRepresentation info) {
         info.setIdentityProviders(new LinkedList<>());
-        List<ProviderFactory> providerFactories = session.getSessionFactory().getProviderFactories(IdentityProvider.class);
+        List<ProviderFactory> providerFactories = sessionFactory.getProviderFactories(IdentityProvider.class);
         setIdentityProviders(providerFactories, info.getIdentityProviders(), "User-defined");
     }
 
@@ -202,7 +204,7 @@ public class ServerInfoAdminResource {
 
     private void setClientInstallations(ServerInfoRepresentation info) {
         info.setClientInstallations(new HashMap<>());
-        for (ProviderFactory p : session.getSessionFactory().getProviderFactories(ClientInstallationProvider.class)) {
+        for (ProviderFactory p : sessionFactory.getProviderFactories(ClientInstallationProvider.class)) {
             ClientInstallationProvider provider = (ClientInstallationProvider) p;
             List<ClientInstallationRepresentation> types = info.getClientInstallations().get(provider.getProtocol());
             if (types == null) {
@@ -223,7 +225,7 @@ public class ServerInfoAdminResource {
 
     private void setProtocolMapperTypes(ServerInfoRepresentation info) {
         info.setProtocolMapperTypes(new HashMap<>());
-        for (ProviderFactory p : session.getSessionFactory().getProviderFactories(ProtocolMapper.class)) {
+        for (ProviderFactory p : sessionFactory.getProviderFactories(ProtocolMapper.class)) {
             ProtocolMapper mapper = (ProtocolMapper) p;
             List<ProtocolMapperTypeRepresentation> types = info.getProtocolMapperTypes().get(mapper.getProtocol());
             if (types == null) {
@@ -245,7 +247,7 @@ public class ServerInfoAdminResource {
 
     private void setBuiltinProtocolMappers(ServerInfoRepresentation info) {
         info.setBuiltinProtocolMappers(new HashMap<>());
-        for (ProviderFactory p : session.getSessionFactory().getProviderFactories(LoginProtocol.class)) {
+        for (ProviderFactory p : sessionFactory.getProviderFactories(LoginProtocol.class)) {
             LoginProtocolFactory factory = (LoginProtocolFactory) p;
             List<ProtocolMapperRepresentation> mappers = new LinkedList<>();
             for (ProtocolMapperModel mapper : factory.getBuiltinMappers().values()) {
@@ -257,7 +259,7 @@ public class ServerInfoAdminResource {
 
     private void setPasswordPolicies(ServerInfoRepresentation info) {
         info.setPasswordPolicies(new LinkedList<>());
-        for (ProviderFactory f : session.getSessionFactory().getProviderFactories(PasswordPolicyProvider.class)) {
+        for (ProviderFactory f : sessionFactory.getProviderFactories(PasswordPolicyProvider.class)) {
             PasswordPolicyProviderFactory factory = (PasswordPolicyProviderFactory) f;
             PasswordPolicyTypeRepresentation rep = new PasswordPolicyTypeRepresentation();
             rep.setId(factory.getId());

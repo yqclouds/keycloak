@@ -18,9 +18,10 @@
 package org.keycloak.vault;
 
 import org.keycloak.Config;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
@@ -36,7 +37,7 @@ import java.util.List;
  * It implements the {@link #init(Config.Scope)} method, where is looks for the {@code keyResolvers} property. The value is
  * a comma-separated list of key resolver names. It then verifies if the resolver names match one of the available key resolver
  * implementations and then creates a list of {@link VaultKeyResolver} instances that subclasses can pass to {@link VaultProvider}
- * instances on {@link #create(KeycloakSession)}.
+ * instances on {@link #create()}.
  * <p/>
  * The list of currently available resolvers follows:
  * <ul>
@@ -73,6 +74,8 @@ public abstract class AbstractVaultProviderFactory implements VaultProviderFacto
 
     @Value("${keyResolvers}")
     private String resolverNames;
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     @PostConstruct
     public void afterPropertiesSet() throws Exception {
@@ -105,14 +108,8 @@ public abstract class AbstractVaultProviderFactory implements VaultProviderFacto
         throw new UnsupportedOperationException("getFactoryResolver not implemented by factory " + getClass().getName());
     }
 
-    /**
-     * Obtains the name of realm from the {@link KeycloakSession}.
-     *
-     * @param session a reference to the {@link KeycloakSession}.
-     * @return the name of the realm.
-     */
-    protected String getRealmName(KeycloakSession session) {
-        return session.getContext().getRealm().getName();
+    protected String getRealmName() {
+        return keycloakContext.getRealm().getName();
     }
 
     /**

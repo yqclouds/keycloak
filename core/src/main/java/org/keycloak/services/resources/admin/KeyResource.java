@@ -20,10 +20,11 @@ package org.keycloak.services.resources.admin;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.common.util.PemUtils;
 import org.keycloak.crypto.KeyWrapper;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeyManager;
 import org.keycloak.models.RealmModel;
 import org.keycloak.representations.idm.KeysMetadataRepresentation;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
@@ -38,12 +39,12 @@ import java.util.LinkedList;
 public class KeyResource {
 
     private RealmModel realm;
-    private KeycloakSession session;
+    @Autowired
+    private KeyManager keyManager;
     private AdminPermissionEvaluator auth;
 
-    public KeyResource(RealmModel realm, KeycloakSession session, AdminPermissionEvaluator auth) {
+    public KeyResource(RealmModel realm, AdminPermissionEvaluator auth) {
         this.realm = realm;
-        this.session = session;
         this.auth = auth;
     }
 
@@ -57,7 +58,7 @@ public class KeyResource {
         keys.setKeys(new LinkedList<>());
         keys.setActive(new HashMap<>());
 
-        for (KeyWrapper key : session.keys().getKeys(realm)) {
+        for (KeyWrapper key : keyManager.getKeys(realm)) {
             KeysMetadataRepresentation.KeyMetadataRepresentation r = new KeysMetadataRepresentation.KeyMetadataRepresentation();
             r.setProviderId(key.getProviderId());
             r.setProviderPriority(key.getProviderPriority());

@@ -17,7 +17,6 @@
 
 package org.keycloak.truststore;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +56,7 @@ public class FileTruststoreProviderFactory implements TruststoreProviderFactory 
     private String policy;
 
     @Override
-    public TruststoreProvider create(KeycloakSession session) {
+    public TruststoreProvider create() {
         return provider;
     }
 

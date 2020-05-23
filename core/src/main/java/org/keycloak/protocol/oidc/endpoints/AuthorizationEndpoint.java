@@ -17,6 +17,7 @@
 
 package org.keycloak.protocol.oidc.endpoints;
 
+import com.hsbc.unified.iam.core.constants.Constants;
 import com.hsbc.unified.iam.core.constants.OAuth2Constants;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.authentication.AuthenticationProcessor;
@@ -28,7 +29,6 @@ import org.keycloak.events.EventType;
 import org.keycloak.locale.LocaleSelectorProvider;
 import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.ClientModel;
-import com.hsbc.unified.iam.core.constants.Constants;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.AuthorizationEndpointBase;
 import org.keycloak.protocol.oidc.OIDCAdvancedConfigWrapper;
@@ -105,13 +105,13 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
     private AuthorizationEndpointRequestParserProcessor authorizationEndpointRequestParserProcessor;
 
     private Response process(MultivaluedMap<String, String> params) {
-        String clientId = AuthorizationEndpointRequestParserProcessor.getClientId(event, session, params);
+        String clientId = AuthorizationEndpointRequestParserProcessor.getClientId(event, params);
 
         checkSsl();
         checkRealm();
         checkClient(clientId);
 
-        request = authorizationEndpointRequestParserProcessor.parseRequest(event, session, client, params);
+        request = authorizationEndpointRequestParserProcessor.parseRequest(event, client, params);
 
         checkRedirectUri();
         Response errorResponse = checkResponseType();
@@ -401,6 +401,9 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
         return errorResponseBuilder.build();
     }
 
+    @Autowired
+    private RedirectUtils redirectUtils;
+
     private void checkRedirectUri() {
         String redirectUriParam = request.getRedirectUriParam();
         boolean isOIDCRequest = TokenUtil.isOIDCRequest(request.getScope());
@@ -408,7 +411,7 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
         event.detail(Details.REDIRECT_URI, redirectUriParam);
 
         // redirect_uri parameter is required per OpenID Connect, but optional per OAuth2
-        redirectUri = RedirectUtils.verifyRedirectUri(session, redirectUriParam, client, isOIDCRequest);
+        redirectUri = redirectUtils.verifyRedirectUri(redirectUriParam, client, isOIDCRequest);
         if (redirectUri == null) {
             event.error(Errors.INVALID_REDIRECT_URI);
             throw new ErrorPageException(authenticationSession, Response.Status.BAD_REQUEST, Messages.INVALID_PARAMETER, OIDCLoginProtocol.REDIRECT_URI_PARAM);
@@ -466,7 +469,7 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
         this.event.event(EventType.LOGIN);
         authenticationSession.setAuthNote(Details.AUTH_TYPE, CODE_AUTH_TYPE);
 
-        return handleBrowserAuthenticationRequest(authenticationSession, new OIDCLoginProtocol(session, realm, session.getContext().getUri(), headers, event), TokenUtil.hasPrompt(request.getPrompt(), OIDCLoginProtocol.PROMPT_VALUE_NONE), false);
+        return handleBrowserAuthenticationRequest(authenticationSession, new OIDCLoginProtocol(realm, session.getContext().getUri(), headers, event), TokenUtil.hasPrompt(request.getPrompt(), OIDCLoginProtocol.PROMPT_VALUE_NONE), false);
     }
 
     private Response buildRegister() {

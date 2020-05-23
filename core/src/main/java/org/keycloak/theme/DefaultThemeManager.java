@@ -17,11 +17,10 @@
 
 package org.keycloak.theme;
 
-import org.keycloak.Config;
-import org.keycloak.common.Version;
 import com.hsbc.unified.iam.core.util.StringPropertyReplacer;
 import com.hsbc.unified.iam.core.util.SystemEnvProperties;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.Config;
+import org.keycloak.common.Version;
 import org.keycloak.models.ThemeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,13 +40,11 @@ public class DefaultThemeManager implements ThemeManager {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultThemeManager.class);
 
     private final DefaultThemeManagerFactory factory;
-    private final KeycloakSession session;
     private List<ThemeProvider> providers;
     private String defaultTheme;
 
-    public DefaultThemeManager(DefaultThemeManagerFactory factory, KeycloakSession session) {
+    public DefaultThemeManager(DefaultThemeManagerFactory factory) {
         this.factory = factory;
-        this.session = session;
         this.defaultTheme = Config.scope("theme").get("default", Version.NAME.toLowerCase());
     }
 
@@ -112,6 +109,9 @@ public class DefaultThemeManager implements ThemeManager {
         factory.clearCache();
     }
 
+    @Autowired
+    private Set<ThemeResourceProvider> themeResourceProviders;
+
     private Theme loadTheme(String name, Theme.Type type) {
         Theme theme = findTheme(name, type);
         List<Theme> themes = new LinkedList<>();
@@ -134,7 +134,7 @@ public class DefaultThemeManager implements ThemeManager {
             }
         }
 
-        return new ExtendingTheme(themes, session.getAllProviders(ThemeResourceProvider.class));
+        return new ExtendingTheme(themes, themeResourceProviders);
     }
 
     private Theme findTheme(String name, Theme.Type type) {
@@ -150,9 +150,12 @@ public class DefaultThemeManager implements ThemeManager {
         return null;
     }
 
+    @Autowired
+    private List<ThemeProvider> themeProviders;
+
     private List<ThemeProvider> getProviders() {
         if (providers == null) {
-            providers = new LinkedList(session.getAllProviders(ThemeProvider.class));
+            providers = new LinkedList(themeProviders);
             Collections.sort(providers, (o1, o2) -> o2.getProviderPriority() - o1.getProviderPriority());
         }
 

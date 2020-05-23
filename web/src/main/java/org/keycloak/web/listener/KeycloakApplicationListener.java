@@ -1,6 +1,7 @@
 package org.keycloak.web.listener;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.keycloak.Config;
 import org.keycloak.common.util.Resteasy;
 import org.keycloak.exportimport.ExportImportManager;
@@ -17,7 +18,6 @@ import org.keycloak.services.resources.KeycloakApplication;
 import org.keycloak.services.scheduled.*;
 import org.keycloak.timer.TimerProvider;
 import org.keycloak.transaction.JtaTransactionManagerLookup;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,7 +62,7 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
     @PostConstruct
     protected void startup() {
         ExportImportManager[] exportImportManager = new ExportImportManager[1];
-        KeycloakModelUtils.runJobInTransaction(sessionFactory, lockSession -> {
+        KeycloakModelUtils.runJobInTransaction(() -> {
             exportImportManager[0] = migrateAndBootstrap();
         });
 
@@ -70,12 +70,12 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
             exportImportManager[0].runExport();
         }
 
-        KeycloakModelUtils.runJobInTransaction(sessionFactory, session -> {
-            boolean shouldBootstrapAdmin = new ApplianceBootstrap(session).isNoMasterUser();
+        KeycloakModelUtils.runJobInTransaction(() -> {
+            boolean shouldBootstrapAdmin = new ApplianceBootstrap().isNoMasterUser();
             KeycloakApplication.BOOTSTRAP_ADMIN_USER.set(shouldBootstrapAdmin);
         });
 
-        sessionFactory.publish(new PostMigrationEvent());
+        sessionFactory.publish(new PostMigrationEvent(this));
 
         setupScheduledTasks(sessionFactory);
     }
@@ -85,9 +85,7 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
         ExportImportManager exportImportManager;
 
         LOG.debug("bootstrap");
-        KeycloakSession session = sessionFactory.create();
         try {
-            session.getTransactionManager().begin();
             JtaTransactionManagerLookup lookup = (JtaTransactionManagerLookup) sessionFactory.getProviderFactory(JtaTransactionManagerLookup.class);
             if (lookup != null) {
                 if (lookup.getTransactionManager() != null) {
@@ -103,8 +101,8 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
                 }
             }
 
-            ApplianceBootstrap applianceBootstrap = new ApplianceBootstrap(session);
-            exportImportManager = new ExportImportManager(session);
+            ApplianceBootstrap applianceBootstrap = new ApplianceBootstrap();
+            exportImportManager = new ExportImportManager();
 
             boolean createMasterRealm = applianceBootstrap.isNewInstall();
             if (exportImportManager.isRunImport() && exportImportManager.isImportMasterIncluded()) {
@@ -114,14 +112,8 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
             if (createMasterRealm) {
                 applianceBootstrap.createMasterRealm();
             }
-            session.getTransactionManager().commit();
         } catch (RuntimeException re) {
-            if (session.getTransactionManager().isActive()) {
-                session.getTransactionManager().rollback();
-            }
             throw re;
-        } finally {
-            session.close();
         }
 
         if (exportImportManager.isRunImport()) {
@@ -148,15 +140,10 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
     public void setupScheduledTasks(final KeycloakSessionFactory sessionFactory) {
         long interval = Config.scope("scheduled").getLong("interval", 60L) * 1000;
 
-        KeycloakSession session = sessionFactory.create();
-        try {
-            timerProvider.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new ClearExpiredEvents(), interval), interval, "ClearExpiredEvents");
-            timerProvider.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new ClearExpiredClientInitialAccessTokens(), interval), interval, "ClearExpiredClientInitialAccessTokens");
-            timerProvider.schedule(new ScheduledTaskRunner(sessionFactory, new ClearExpiredUserSessions()), interval, ClearExpiredUserSessions.TASK_NAME);
-            new UserStorageSyncManager().bootstrapPeriodic(sessionFactory, timerProvider);
-        } finally {
-            session.close();
-        }
+        timerProvider.schedule(new ClusterAwareScheduledTaskRunner(new ClearExpiredEvents(), interval), interval, "ClearExpiredEvents");
+        timerProvider.schedule(new ClusterAwareScheduledTaskRunner(new ClearExpiredClientInitialAccessTokens(), interval), interval, "ClearExpiredClientInitialAccessTokens");
+        timerProvider.schedule(new ScheduledTaskRunner(new ClearExpiredUserSessions()), interval, ClearExpiredUserSessions.TASK_NAME);
+        new UserStorageSyncManager().bootstrapPeriodic(timerProvider);
     }
 
     public void importRealms() {
@@ -177,38 +164,36 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
     }
 
     public void importRealm(RealmRepresentation rep, String from) {
-        KeycloakSession session = sessionFactory.create();
         boolean exists = false;
         try {
-            session.getTransactionManager().begin();
+            RealmManager manager = new RealmManager();
 
-            try {
-                RealmManager manager = new RealmManager(session);
-
-                if (rep.getId() != null && manager.getRealm(rep.getId()) != null) {
+            if (rep.getId() != null && manager.getRealm(rep.getId()) != null) {
 //                    ServicesLogger.LOGGER.realmExists(rep.getRealm(), from);
-                    exists = true;
-                }
-
-                if (manager.getRealmByName(rep.getRealm()) != null) {
-//                    ServicesLogger.LOGGER.realmExists(rep.getRealm(), from);
-                    exists = true;
-                }
-                if (!exists) {
-                    RealmModel realm = manager.importRealm(rep);
-//                    ServicesLogger.LOGGER.importedRealm(realm.getName(), from);
-                }
-                session.getTransactionManager().commit();
-            } catch (Throwable t) {
-                session.getTransactionManager().rollback();
-                if (!exists) {
-//                    ServicesLogger.LOGGER.unableToImportRealm(t, rep.getRealm(), from);
-                }
+                exists = true;
             }
-        } finally {
-            session.close();
+
+            if (manager.getRealmByName(rep.getRealm()) != null) {
+//                    ServicesLogger.LOGGER.realmExists(rep.getRealm(), from);
+                exists = true;
+            }
+            if (!exists) {
+                RealmModel realm = manager.importRealm(rep);
+//                    ServicesLogger.LOGGER.importedRealm(realm.getName(), from);
+            }
+        } catch (Throwable t) {
+            if (!exists) {
+//                    ServicesLogger.LOGGER.unableToImportRealm(t, rep.getRealm(), from);
+            }
         }
     }
+
+    @Autowired
+    private RepresentationToModel representationToModel;
+    @Autowired
+    private RealmProvider realmProvider;
+    @Autowired
+    private UserProvider userProvider;
 
     public void importAddUser() {
         String configDir = System.getProperty("jboss.server.config.dir");
@@ -228,37 +213,26 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
 
                 for (RealmRepresentation realmRep : realms) {
                     for (UserRepresentation userRep : realmRep.getUsers()) {
-                        KeycloakSession session = sessionFactory.create();
-
                         try {
-                            session.getTransactionManager().begin();
-                            RealmModel realm = session.realms().getRealmByName(realmRep.getRealm());
+                            RealmModel realm = realmProvider.getRealmByName(realmRep.getRealm());
 
                             if (realm == null) {
 //                                ServicesLogger.LOGGER.addUserFailedRealmNotFound(userRep.getUsername(), realmRep.getRealm());
                             }
 
-                            UserProvider users = session.users();
-
-                            if (users.getUserByUsername(userRep.getUsername(), realm) != null) {
+                            if (userProvider.getUserByUsername(userRep.getUsername(), realm) != null) {
 //                                ServicesLogger.LOGGER.notCreatingExistingUser(userRep.getUsername());
                             } else {
-                                UserModel user = users.addUser(realm, userRep.getUsername());
+                                UserModel user = userProvider.addUser(realm, userRep.getUsername());
                                 user.setEnabled(userRep.isEnabled());
-                                RepresentationToModel.createCredentials(userRep, session, realm, user, false);
+                                representationToModel.createCredentials(userRep, realm, user, false);
                                 RepresentationToModel.createRoleMappings(userRep, user, realm);
 //                                ServicesLogger.LOGGER.addUserSuccess(userRep.getUsername(), realmRep.getRealm());
                             }
-
-                            session.getTransactionManager().commit();
                         } catch (ModelDuplicateException e) {
-                            session.getTransactionManager().rollback();
 //                            ServicesLogger.LOGGER.addUserFailedUserExists(userRep.getUsername(), realmRep.getRealm());
                         } catch (Throwable t) {
-                            session.getTransactionManager().rollback();
 //                            ServicesLogger.LOGGER.addUserFailed(t, userRep.getUsername(), realmRep.getRealm());
-                        } finally {
-                            session.close();
                         }
                     }
                 }

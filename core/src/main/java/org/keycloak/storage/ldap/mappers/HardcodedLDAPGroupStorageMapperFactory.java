@@ -20,7 +20,6 @@ package org.keycloak.storage.ldap.mappers;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
 import org.keycloak.models.GroupModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -61,7 +60,7 @@ public class HardcodedLDAPGroupStorageMapperFactory extends AbstractLDAPStorageM
     }
 
     @Override
-    public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel config) throws ComponentValidationException {
+    public void validateConfiguration(RealmModel realm, ComponentModel config) throws ComponentValidationException {
         String groupName = config.getConfig().getFirst(HardcodedLDAPGroupStorageMapper.GROUP);
         if (groupName == null) {
             throw new ComponentValidationException("Group can't be null");

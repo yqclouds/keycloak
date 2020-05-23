@@ -1,26 +1,25 @@
 package org.keycloak.services.resources.account;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.PasswordCredentialModel;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserCredentialManager;
 import org.keycloak.models.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class PasswordUtil {
-
-    private KeycloakSession session;
     private UserModel user;
 
-    public PasswordUtil(KeycloakSession session, UserModel user) {
-        this.session = session;
+    @Autowired
+    private UserCredentialManager userCredentialManager;
+
+    public PasswordUtil(UserModel user) {
         this.user = user;
     }
 
-    public boolean isConfigured(KeycloakSession session, RealmModel realm, UserModel user) {
-        return session.userCredentialManager().isConfiguredFor(realm, user, PasswordCredentialModel.TYPE);
+    public boolean isConfigured(RealmModel realm, UserModel user) {
+        return userCredentialManager.isConfiguredFor(realm, user, PasswordCredentialModel.TYPE);
     }
 
     public void update() {
-
     }
-
 }

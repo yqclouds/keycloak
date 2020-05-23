@@ -986,7 +986,7 @@ public class LoginActionsService {
         Response response;
 
         if (isCancelAppInitiatedAction(factory.getId(), authSession, context)) {
-            provider.initiatedActionCanceled(session, authSession);
+            provider.initiatedActionCanceled(authSession);
             authenticationManager.setKcActionStatus(factory.getId(), RequiredActionContext.KcActionStatus.CANCELLED, authSession);
             context.success();
         } else {

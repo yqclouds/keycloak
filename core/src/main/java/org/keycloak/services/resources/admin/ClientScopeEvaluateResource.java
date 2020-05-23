@@ -60,7 +60,7 @@ public class ClientScopeEvaluateResource {
     @Autowired
     private ProtocolMapperUtils protocolMapperUtils;
 
-    public ClientScopeEvaluateResource(KeycloakSession session, UriInfo uriInfo, RealmModel realm, AdminPermissionEvaluator auth,
+    public ClientScopeEvaluateResource(UriInfo uriInfo, RealmModel realm, AdminPermissionEvaluator auth,
                                        ClientModel client, ClientConnection clientConnection) {
         this.uriInfo = uriInfo;
         this.realm = realm;
@@ -89,7 +89,7 @@ public class ClientScopeEvaluateResource {
             throw new NotFoundException("Role Container not found");
         }
 
-        return new ClientScopeEvaluateScopeMappingsResource(roleContainer, auth, client, scopeParam, session);
+        return new ClientScopeEvaluateScopeMappingsResource(roleContainer, auth, client, scopeParam;
     }
 
 

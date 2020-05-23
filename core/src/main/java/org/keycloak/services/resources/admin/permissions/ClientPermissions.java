@@ -16,15 +16,18 @@
  */
 package org.keycloak.services.resources.admin.permissions;
 
-import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.common.ClientModelIdentity;
-import org.keycloak.authorization.common.DefaultEvaluationContext;
 import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
+import org.keycloak.authorization.AuthorizationProvider;
+import org.keycloak.authorization.common.ClientModelIdentity;
+import org.keycloak.authorization.common.DefaultEvaluationContext;
 import org.keycloak.authorization.policy.evaluation.EvaluationContext;
-import org.keycloak.models.*;
+import org.keycloak.models.AdminRoles;
+import org.keycloak.models.ClientModel;
+import org.keycloak.models.ClientScopeModel;
+import org.keycloak.models.RealmModel;
 import org.keycloak.services.ForbiddenException;
 import org.keycloak.storage.StorageId;
 import org.slf4j.Logger;
@@ -42,13 +45,11 @@ import static org.keycloak.services.resources.admin.permissions.AdminPermissionM
  */
 class ClientPermissions implements ClientPermissionEvaluator, ClientPermissionManagement {
     private static final Logger LOG = LoggerFactory.getLogger(ClientPermissions.class);
-    protected final KeycloakSession session;
     protected final RealmModel realm;
     protected final AuthorizationProvider authz;
     protected final MgmtPermissions root;
 
-    public ClientPermissions(KeycloakSession session, RealmModel realm, AuthorizationProvider authz, MgmtPermissions root) {
-        this.session = session;
+    public ClientPermissions(RealmModel realm, AuthorizationProvider authz, MgmtPermissions root) {
         this.realm = realm;
         this.authz = authz;
         this.root = root;
@@ -336,8 +337,8 @@ class ClientPermissions implements ClientPermissionEvaluator, ClientPermissionMa
                 LOG.debug(TOKEN_EXCHANGE + " not initialized");
                 return false;
             }
-            ClientModelIdentity identity = new ClientModelIdentity(session, authorizedClient);
-            EvaluationContext context = new DefaultEvaluationContext(identity, session) {
+            ClientModelIdentity identity = new ClientModelIdentity(authorizedClient);
+            EvaluationContext context = new DefaultEvaluationContext(identity) {
                 @Override
                 public Map<String, Collection<String>> getBaseAttributes() {
                     Map<String, Collection<String>> attributes = super.getBaseAttributes();

@@ -46,7 +46,7 @@ import java.util.Set;
 @ProviderFactory(id = "keycloak-oidc-keycloak-json", providerClasses = ClientInstallationProvider.class)
 public class KeycloakOIDCClientInstallation implements ClientInstallationProvider {
 
-    public static Map<String, Object> getClientCredentialsAdapterConfig(KeycloakSession session, ClientModel client) {
+    public static Map<String, Object> getClientCredentialsAdapterConfig(ClientModel client) {
         String clientAuthenticator = client.getClientAuthenticatorType();
         ClientAuthenticatorFactory authenticator = (ClientAuthenticatorFactory) session.getSessionFactory().getProviderFactory(ClientAuthenticator.class, clientAuthenticator);
         return authenticator.getAdapterConfiguration(client);
@@ -81,7 +81,7 @@ public class KeycloakOIDCClientInstallation implements ClientInstallationProvide
     }
 
     @Override
-    public Response generateInstallation(KeycloakSession session, RealmModel realm, ClientModel client, URI baseUri) {
+    public Response generateInstallation(RealmModel realm, ClientModel client, URI baseUri) {
         ClientManager.InstallationAdapterConfig rep = new ClientManager.InstallationAdapterConfig();
         rep.setAuthServerUrl(baseUri.toString());
         rep.setRealm(realm.getName());
@@ -94,7 +94,7 @@ public class KeycloakOIDCClientInstallation implements ClientInstallationProvide
         rep.setResource(client.getClientId());
 
         if (showClientCredentialsAdapterConfig(client)) {
-            Map<String, Object> adapterConfig = getClientCredentialsAdapterConfig(session, client);
+            Map<String, Object> adapterConfig = getClientCredentialsAdapterConfig(client);
             rep.setCredentials(adapterConfig);
         }
 
@@ -102,7 +102,7 @@ public class KeycloakOIDCClientInstallation implements ClientInstallationProvide
             rep.setVerifyTokenAudience(true);
         }
 
-        configureAuthorizationSettings(session, client, rep);
+        configureAuthorizationSettings(client, rep);
 
         String json = null;
         try {
@@ -129,7 +129,7 @@ public class KeycloakOIDCClientInstallation implements ClientInstallationProvide
     }
 
     @Override
-    public ClientInstallationProvider create(KeycloakSession session) {
+    public ClientInstallationProvider create() {
         return this;
     }
 
@@ -153,7 +153,7 @@ public class KeycloakOIDCClientInstallation implements ClientInstallationProvide
         return MediaType.APPLICATION_JSON;
     }
 
-    private void configureAuthorizationSettings(KeycloakSession session, ClientModel client, ClientManager.InstallationAdapterConfig rep) {
+    private void configureAuthorizationSettings(ClientModel client, ClientManager.InstallationAdapterConfig rep) {
         if (new AuthorizationService(client, null, null).isEnabled()) {
             PolicyEnforcerConfig enforcerConfig = new PolicyEnforcerConfig();
 

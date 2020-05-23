@@ -1,6 +1,5 @@
 package org.keycloak.url;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.urls.HostnameProvider;
 import org.keycloak.urls.HostnameProviderFactory;
@@ -29,8 +28,8 @@ public class DefaultHostnameProviderFactory implements HostnameProviderFactory {
     private URI adminUri;
 
     @Override
-    public HostnameProvider create(KeycloakSession session) {
-        return new DefaultHostnameProvider(session, frontendUri, adminUri, forceBackendUrlToFrontendUrl);
+    public HostnameProvider create() {
+        return new DefaultHostnameProvider(frontendUri, adminUri, forceBackendUrlToFrontendUrl);
     }
 
     @PostConstruct

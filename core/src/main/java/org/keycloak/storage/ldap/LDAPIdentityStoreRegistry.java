@@ -19,12 +19,13 @@ package org.keycloak.storage.ldap;
 
 import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.RealmProvider;
 import org.keycloak.storage.ldap.idm.store.ldap.LDAPIdentityStore;
 import org.keycloak.storage.ldap.mappers.LDAPConfigDecorator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Map;
@@ -41,7 +42,7 @@ public class LDAPIdentityStoreRegistry {
     /**
      * Create LDAPIdentityStore to be cached in the local registry
      */
-    public static LDAPIdentityStore createLdapIdentityStore(KeycloakSession session, LDAPConfig cfg) {
+    public static LDAPIdentityStore createLdapIdentityStore(LDAPConfig cfg) {
         checkSystemProperty("com.sun.jndi.ldap.connect.pool.authentication", cfg.getConnectionPoolingAuthentication(), "none simple");
         checkSystemProperty("com.sun.jndi.ldap.connect.pool.initsize", cfg.getConnectionPoolingInitSize(), "1");
         checkSystemProperty("com.sun.jndi.ldap.connect.pool.maxsize", cfg.getConnectionPoolingMaxSize(), "1000");
@@ -50,7 +51,7 @@ public class LDAPIdentityStoreRegistry {
         checkSystemProperty("com.sun.jndi.ldap.connect.pool.protocol", cfg.getConnectionPoolingProtocol(), "plain");
         checkSystemProperty("com.sun.jndi.ldap.connect.pool.debug", cfg.getConnectionPoolingDebug(), "off");
 
-        return new LDAPIdentityStore(session, cfg);
+        return new LDAPIdentityStore(cfg);
     }
 
     private static void checkSystemProperty(String name, String cfgValue, String defaultValue) {
@@ -64,7 +65,7 @@ public class LDAPIdentityStoreRegistry {
         System.setProperty(name, value);
     }
 
-    public LDAPIdentityStore getLdapStore(KeycloakSession session, ComponentModel ldapModel, Map<ComponentModel, LDAPConfigDecorator> configDecorators) {
+    public LDAPIdentityStore getLdapStore(ComponentModel ldapModel, Map<ComponentModel, LDAPConfigDecorator> configDecorators) {
         LDAPIdentityStoreContext context = ldapStores.get(ldapModel.getId());
 
         // Ldap config might have changed for the realm. In this case, we must re-initialize
@@ -78,21 +79,24 @@ public class LDAPIdentityStoreRegistry {
         }
 
         if (context == null || !ldapConfig.equals(context.config)) {
-            logLDAPConfig(session, ldapModel, ldapConfig);
+            logLDAPConfig(ldapModel, ldapConfig);
 
-            LDAPIdentityStore store = createLdapIdentityStore(session, ldapConfig);
+            LDAPIdentityStore store = createLdapIdentityStore(ldapConfig);
             context = new LDAPIdentityStoreContext(ldapConfig, store);
             ldapStores.put(ldapModel.getId(), context);
         }
         return context.store;
     }
 
+    @Autowired
+    private RealmProvider realmProvider;
+
     // Don't log LDAP password
-    private void logLDAPConfig(KeycloakSession session, ComponentModel ldapModel, LDAPConfig ldapConfig) {
+    private void logLDAPConfig(ComponentModel ldapModel, LDAPConfig ldapConfig) {
         LOG.info("Creating new LDAP Store for the LDAP storage provider: '{}', LDAP Configuration: {}", ldapModel.getName(), ldapConfig.toString());
 
         if (LOG.isDebugEnabled()) {
-            RealmModel realm = session.realms().getRealm(ldapModel.getParentId());
+            RealmModel realm = realmProvider.getRealm(ldapModel.getParentId());
             List<ComponentModel> mappers = realm.getComponents(ldapModel.getId());
             mappers.stream().forEach((ComponentModel c) -> LOG.debug("Mapper for provider: {}, Mapper name: {}, Provider: {}, Mapper configuration: {}", ldapModel.getName(), c.getName(), c.getProviderId(), c.getConfig().toString()));
         }

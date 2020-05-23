@@ -320,7 +320,7 @@ public class UsersResource {
             }
             UserRepresentation userRep = briefRepresentationB
                     ? ModelToRepresentation.toBriefRepresentation(user)
-                    : ModelToRepresentation.toRepresentation(session, realm, user);
+                    : ModelToRepresentation.toRepresentation(realm, user);
             userRep.setAccess(usersEvaluator.getAccess(user));
             results.add(userRep);
         }

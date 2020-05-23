@@ -1,14 +1,13 @@
 package org.keycloak.services.resources.account;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.credential.*;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.models.*;
-import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.services.ErrorResponse;
@@ -40,6 +39,11 @@ public class AccountCredentialResource {
     private final RealmModel realm;
     private Auth auth;
 
+    @Autowired
+    private UserCredentialManager userCredentialManager;
+    @Autowired
+    private UserCredentialStoreManager userCredentialStoreManager;
+
     public AccountCredentialResource(EventBuilder event, UserModel user, Auth auth) {
         this.event = event;
         this.user = user;
@@ -66,10 +70,10 @@ public class AccountCredentialResource {
         boolean includeUserCredentials = userCredentials == null || userCredentials;
 
         List<CredentialContainer> credentialTypes = new LinkedList<>();
-        List<CredentialProvider> credentialProviders = UserCredentialStoreManager.getCredentialProviders(session, realm, CredentialProvider.class);
+        List<CredentialProvider> credentialProviders = userCredentialStoreManager.getCredentialProviders(realm, CredentialProvider.class);
         Set<String> enabledCredentialTypes = getEnabledCredentialTypes(credentialProviders);
 
-        List<CredentialModel> models = includeUserCredentials ? session.userCredentialManager().getStoredCredentials(realm, user) : null;
+        List<CredentialModel> models = includeUserCredentials ? userCredentialManager.getStoredCredentials(realm, user) : null;
 
         // Don't return secrets from REST endpoint
         if (models != null) {
@@ -105,8 +109,7 @@ public class AccountCredentialResource {
                         .map(ModelToRepresentation::toRepresentation)
                         .collect(Collectors.toList());
 
-                if (userCredentialModels.isEmpty() &&
-                        session.userCredentialManager().isConfiguredFor(realm, user, credentialProviderType)) {
+                if (userCredentialModels.isEmpty() && userCredentialManager.isConfiguredFor(realm, user, credentialProviderType)) {
                     // In case user is federated in the userStorage, he may have credential configured on the userStorage side. We're
                     // creating "dummy" credential representing the credential provided by userStorage
                     CredentialRepresentation credential = createUserStorageCredentialRepresentation(credentialProviderType);
@@ -130,6 +133,9 @@ public class AccountCredentialResource {
         return credentialTypes;
     }
 
+    @Autowired
+    private Map<String, AuthenticatorFactory> authenticatorFactories;
+
     // Going through all authentication flows and their authentication executions to see if there is any authenticator of the corresponding
     // credential type.
     private Set<String> getEnabledCredentialTypes(List<CredentialProvider> credentialProviders) {
@@ -141,7 +147,7 @@ public class AccountCredentialResource {
 
             for (AuthenticationExecutionModel execution : realm.getAuthenticationExecutions(flow.getId())) {
                 if (execution.getAuthenticator() != null && DISABLED != execution.getRequirement()) {
-                    AuthenticatorFactory authenticatorFactory = (AuthenticatorFactory) session.getSessionFactory().getProviderFactory(Authenticator.class, execution.getAuthenticator());
+                    AuthenticatorFactory authenticatorFactory = authenticatorFactories.get(execution.getAuthenticator());
                     if (authenticatorFactory != null && authenticatorFactory.getReferenceCategory() != null) {
                         enabledCredentialTypes.add(authenticatorFactory.getReferenceCategory());
                     }
@@ -184,7 +190,7 @@ public class AccountCredentialResource {
     @NoCache
     public void removeCredential(final @PathParam("credentialId") String credentialId) {
         auth.require(AccountRoles.MANAGE_ACCOUNT);
-        session.userCredentialManager().removeStoredCredential(realm, user, credentialId);
+        userCredentialManager.removeStoredCredential(realm, user, credentialId);
     }
 
     /**
@@ -198,8 +204,11 @@ public class AccountCredentialResource {
     @Path("{credentialId}/label")
     public void setLabel(final @PathParam("credentialId") String credentialId, String userLabel) {
         auth.require(AccountRoles.MANAGE_ACCOUNT);
-        session.userCredentialManager().updateCredentialLabel(realm, user, credentialId, userLabel);
+        userCredentialManager.updateCredentialLabel(realm, user, credentialId, userLabel);
     }
+
+    @Autowired
+    private Map<String, CredentialProviderFactory> credentialProviderFactories;
 
     @GET
     @Path("password")
@@ -207,8 +216,8 @@ public class AccountCredentialResource {
     public PasswordDetails passwordDetails() throws IOException {
         auth.requireOneOf(AccountRoles.MANAGE_ACCOUNT, AccountRoles.VIEW_PROFILE);
 
-        PasswordCredentialProvider passwordProvider = (PasswordCredentialProvider) session.getProvider(CredentialProvider.class, PasswordCredentialProviderFactory.PROVIDER_ID);
-        CredentialModel password = passwordProvider.getPassword(realm, user);
+        PasswordCredentialProvider passwordCredentialProvider = (PasswordCredentialProvider) credentialProviderFactories.get(PasswordCredentialProviderFactory.PROVIDER_ID);
+        CredentialModel password = passwordCredentialProvider.getPassword(realm, user);
 
         PasswordDetails details = new PasswordDetails();
         if (password != null) {
@@ -224,29 +233,6 @@ public class AccountCredentialResource {
         return details;
     }
 
-    // TODO: This is kept here for now and commented.
-//    /**
-//     * Move a credential to a position behind another credential
-//     * @param credentialId The credential to move
-//     */
-//    @Path("{credentialId}/moveToFirst")
-//    @POST
-//    public void moveToFirst(final @PathParam("credentialId") String credentialId){
-//        moveCredentialAfter(credentialId, null);
-//    }
-//
-//    /**
-//     * Move a credential to a position behind another credential
-//     * @param credentialId The credential to move
-//     * @param newPreviousCredentialId The credential that will be the previous element in the list. If set to null, the moved credential will be the first element in the list.
-//     */
-//    @Path("{credentialId}/moveAfter/{newPreviousCredentialId}")
-//    @POST
-//    public void moveCredentialAfter(final @PathParam("credentialId") String credentialId, final @PathParam("newPreviousCredentialId") String newPreviousCredentialId){
-//        auth.require(AccountRoles.MANAGE_ACCOUNT);
-//        session.userCredentialManager().moveCredentialTo(realm, user, credentialId, newPreviousCredentialId);
-//    }
-
     @POST
     @Path("password")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -256,7 +242,7 @@ public class AccountCredentialResource {
         event.event(EventType.UPDATE_PASSWORD);
 
         UserCredentialModel cred = UserCredentialModel.password(update.getCurrentPassword());
-        if (!session.userCredentialManager().isValid(realm, user, cred)) {
+        if (!userCredentialManager.isValid(realm, user, cred)) {
             event.error(org.keycloak.events.Errors.INVALID_USER_CREDENTIALS);
             return ErrorResponse.error(Messages.INVALID_PASSWORD_EXISTING, Response.Status.BAD_REQUEST);
         }
@@ -271,7 +257,7 @@ public class AccountCredentialResource {
         }
 
         try {
-            session.userCredentialManager().updateCredential(realm, user, UserCredentialModel.password(update.getNewPassword(), false));
+            userCredentialManager.updateCredential(realm, user, UserCredentialModel.password(update.getNewPassword(), false));
         } catch (ModelException e) {
             return ErrorResponse.error(e.getMessage(), e.getParameters(), Response.Status.BAD_REQUEST);
         }

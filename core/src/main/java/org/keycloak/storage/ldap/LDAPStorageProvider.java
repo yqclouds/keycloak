@@ -88,7 +88,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
     //protected Map<String, UserModel> noImportSessionCache = new HashMap<>();
     protected LDAPStorageUserManager userManager;
 
-    public LDAPStorageProvider(LDAPStorageProviderFactory factory, KeycloakSession session, ComponentModel model, LDAPIdentityStore ldapIdentityStore) {
+    public LDAPStorageProvider(LDAPStorageProviderFactory factory, ComponentModel model, LDAPIdentityStore ldapIdentityStore) {
         this.factory = factory;
         this.session = session;
         this.model = new UserStorageProviderModel(model);
@@ -224,7 +224,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
             for (LDAPObject ldapUser : ldapObjects) {
                 String ldapUsername = LDAPUtils.getUsername(ldapUser, this.ldapIdentityStore.getConfig());
                 if (session.userLocalStorage().getUserByUsername(ldapUsername, realm) == null) {
-                    UserModel imported = importUserFromLDAP(session, realm, ldapUser);
+                    UserModel imported = importUserFromLDAP(realm, ldapUser);
                     searchResults.add(imported);
                 }
             }
@@ -247,7 +247,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
             user = session.userLocalStorage().addUser(realm, username);
             user.setFederationLink(model.getId());
         } else {
-            user = new InMemoryUserAdapter(session, realm, new StorageId(model.getId(), username).getId());
+            user = new InMemoryUserAdapter(realm, new StorageId(model.getId(), username).getId());
             user.setUsername(username);
         }
         LDAPObject ldapUser = LDAPUtils.addUserToLDAP(this, realm, user);
@@ -358,7 +358,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
             if (counter++ < firstResult) continue;
             String ldapUsername = LDAPUtils.getUsername(ldapUser, this.ldapIdentityStore.getConfig());
             if (session.userLocalStorage().getUserByUsername(ldapUsername, realm) == null) {
-                UserModel imported = importUserFromLDAP(session, realm, ldapUser);
+                UserModel imported = importUserFromLDAP(realm, ldapUser);
                 searchResults.add(imported);
             }
         }
@@ -482,10 +482,10 @@ public class LDAPStorageProvider implements UserStorageProvider,
             return null;
         }
 
-        return importUserFromLDAP(session, realm, ldapUser);
+        return importUserFromLDAP(realm, ldapUser);
     }
 
-    protected UserModel importUserFromLDAP(KeycloakSession session, RealmModel realm, LDAPObject ldapUser) {
+    protected UserModel importUserFromLDAP(RealmModel realm, LDAPObject ldapUser) {
         String ldapUsername = LDAPUtils.getUsername(ldapUser, ldapIdentityStore.getConfig());
         LDAPUtils.checkUuid(ldapUser, ldapIdentityStore.getConfig());
 
@@ -493,7 +493,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
         if (model.isImportEnabled()) {
             imported = session.userLocalStorage().addUser(realm, ldapUsername);
         } else {
-            InMemoryUserAdapter adapter = new InMemoryUserAdapter(session, realm, new StorageId(model.getId(), ldapUsername).getId());
+            InMemoryUserAdapter adapter = new InMemoryUserAdapter(realm, new StorageId(model.getId(), ldapUsername).getId());
             adapter.addDefaults();
             imported = adapter;
         }
@@ -552,7 +552,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
             throw new ModelDuplicateException("User with username '" + ldapUsername + "' already exists in Keycloak. It conflicts with LDAP user with email '" + email + "'");
         }
 
-        return importUserFromLDAP(session, realm, ldapUser);
+        return importUserFromLDAP(realm, ldapUser);
     }
 
     @Override

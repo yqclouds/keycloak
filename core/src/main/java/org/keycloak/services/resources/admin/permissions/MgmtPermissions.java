@@ -186,34 +186,34 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
 
     @Override
     public RolePermissions roles() {
-        return new RolePermissions(session, realm, authz, this);
+        return new RolePermissions(realm, authz, this);
     }
 
     @Override
     public UserPermissions users() {
         if (users != null) return users;
-        users = new UserPermissions(session, authz, this);
+        users = new UserPermissions(authz, this);
         return users;
     }
 
     @Override
     public RealmPermissions realm() {
         if (realmPermissions != null) return realmPermissions;
-        realmPermissions = new RealmPermissions(session, realm, authz, this);
+        realmPermissions = new RealmPermissions(realm, authz, this);
         return realmPermissions;
     }
 
     @Override
     public ClientPermissions clients() {
         if (clientPermissions != null) return clientPermissions;
-        clientPermissions = new ClientPermissions(session, realm, authz, this);
+        clientPermissions = new ClientPermissions(realm, authz, this);
         return clientPermissions;
     }
 
     @Override
     public IdentityProviderPermissions idps() {
         if (idpPermissions != null) return idpPermissions;
-        idpPermissions = new IdentityProviderPermissions(session, realm, authz, this);
+        idpPermissions = new IdentityProviderPermissions(realm, authz, this);
         return idpPermissions;
     }
 
@@ -305,7 +305,7 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
     }
 
     public Collection<Permission> evaluatePermission(ResourcePermission permission, ResourceServerModel resourceServer) {
-        return evaluatePermission(permission, resourceServer, new DefaultEvaluationContext(identity, session));
+        return evaluatePermission(permission, resourceServer, new DefaultEvaluationContext(identity);
     }
 
     public Collection<Permission> evaluatePermission(ResourcePermission permission, ResourceServerModel resourceServer, EvaluationContext context) {
@@ -313,7 +313,7 @@ class MgmtPermissions implements AdminPermissionEvaluator, AdminPermissionManage
     }
 
     public boolean evaluatePermission(ResourceModel resource, ResourceServerModel resourceServer, Identity identity, ScopeModel... scope) {
-        EvaluationContext context = new DefaultEvaluationContext(identity, session);
+        EvaluationContext context = new DefaultEvaluationContext(identity;
         return evaluatePermission(resource, resourceServer, context, scope);
     }
 

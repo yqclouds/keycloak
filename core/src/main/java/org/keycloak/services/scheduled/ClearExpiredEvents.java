@@ -18,8 +18,8 @@
 package org.keycloak.services.scheduled;
 
 import org.keycloak.events.EventStoreProvider;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.RealmProvider;
 import org.keycloak.timer.ScheduledTask;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -30,11 +30,13 @@ public class ClearExpiredEvents implements ScheduledTask {
 
     @Autowired(required = false)
     private EventStoreProvider eventStoreProvider;
+    @Autowired
+    private RealmProvider realmProvider;
 
     @Override
-    public void run(KeycloakSession session) {
+    public void run() {
         if (eventStoreProvider != null) {
-            for (RealmModel realm : session.realms().getRealms()) {
+            for (RealmModel realm : realmProvider.getRealms()) {
                 if (realm.isEventsEnabled() && realm.getEventsExpiration() > 0) {
                     long olderThan = System.currentTimeMillis() - realm.getEventsExpiration() * 1000;
                     eventStoreProvider.clear(realm.getId(), olderThan);

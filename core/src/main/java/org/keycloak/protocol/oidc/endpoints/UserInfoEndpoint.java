@@ -184,7 +184,7 @@ public class UserInfoEndpoint {
         // KEYCLOAK-6771 Certificate Bound Token
         // https://tools.ietf.org/html/draft-ietf-oauth-mtls-08#section-3
         if (OIDCAdvancedConfigWrapper.fromClientModel(clientModel).isUseMtlsHokToken()) {
-            if (!mtlsHoKTokenUtil.verifyTokenBindingWithClientCertificate(token, request, session)) {
+            if (!mtlsHoKTokenUtil.verifyTokenBindingWithClientCertificate(token, request) {
                 event.error(Errors.NOT_ALLOWED);
                 throw newUnauthorizedErrorResponseException(OAuthErrorException.UNAUTHORIZED_CLIENT, "Client certificate missing, or its thumbprint and one in the refresh token did NOT match");
             }
@@ -194,10 +194,10 @@ public class UserInfoEndpoint {
         AuthenticatedClientSessionModel clientSession = userSession.getAuthenticatedClientSessionByClient(clientModel.getId());
 
         // Retrieve by latest scope parameter
-        ClientSessionContext clientSessionCtx = DefaultClientSessionContext.fromClientSessionScopeParameter(clientSession, session);
+        ClientSessionContext clientSessionCtx = DefaultClientSessionContext.fromClientSessionScopeParameter(clientSession;
 
         AccessToken userInfo = new AccessToken();
-        tokenManager.transformUserInfoAccessToken(session, userInfo, userSession, clientSessionCtx);
+        tokenManager.transformUserInfoAccessToken(userInfo, userSession, clientSessionCtx);
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", userModel.getId());
@@ -231,7 +231,7 @@ public class UserInfoEndpoint {
 
         event.success();
 
-        return Cors.add(request, responseBuilder).auth().allowedOrigins(session, clientModel).build();
+        return Cors.add(request, responseBuilder).auth().allowedOrigins(clientModel).build();
     }
 
 

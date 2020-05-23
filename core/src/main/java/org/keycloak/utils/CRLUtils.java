@@ -22,7 +22,6 @@ import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.*;
 import org.keycloak.common.util.BouncyIntegration;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.truststore.TruststoreProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,7 +123,7 @@ public final class CRLUtils {
         // Try to find the CRL issuer certificate in the truststore
         if (crlSignatureCertificate == null) {
             LOG.trace("Not found CRL issuer '{}' in the CA chain of the certificate. Fallback to lookup CRL issuer in the truststore", crlIssuerPrincipal);
-            crlSignatureCertificate = findCRLSignatureCertificateInTruststore(session, certs, crlIssuerPrincipal);
+            crlSignatureCertificate = findCRLSignatureCertificateInTruststore(certs, crlIssuerPrincipal);
         }
 
         // Verify signature on CRL
@@ -142,7 +141,7 @@ public final class CRLUtils {
     @Autowired(required = false)
     private TruststoreProvider truststoreProvider;
 
-    private X509Certificate findCRLSignatureCertificateInTruststore(KeycloakSession session, X509Certificate[] certs, X500Principal crlIssuerPrincipal) throws GeneralSecurityException {
+    private X509Certificate findCRLSignatureCertificateInTruststore(X509Certificate[] certs, X500Principal crlIssuerPrincipal) throws GeneralSecurityException {
         if (truststoreProvider == null || truststoreProvider.getTruststore() == null) {
             throw new GeneralSecurityException("Truststore not available");
         }

@@ -30,6 +30,7 @@ import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionManagement;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -44,14 +45,14 @@ import java.util.*;
 public class GroupResource {
 
     private final RealmModel realm;
-    private final KeycloakSession session;
     private final AdminPermissionEvaluator auth;
     private final AdminEventBuilder adminEvent;
     private final GroupModel group;
 
-    public GroupResource(RealmModel realm, GroupModel group, KeycloakSession session, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    private KeycloakContext keycloakContext;
+
+    public GroupResource(RealmModel realm, GroupModel group, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.realm = realm;
-        this.session = session;
         this.auth = auth;
         this.adminEvent = adminEvent.resource(ResourceType.GROUP);
         this.group = group;
@@ -115,7 +116,7 @@ public class GroupResource {
         }
 
         updateGroup(rep, group);
-        adminEvent.operation(OperationType.UPDATE).resourcePath(session.getContext().getUri()).representation(rep).success();
+        adminEvent.operation(OperationType.UPDATE).resourcePath(keycloakContext.getUri()).representation(rep).success();
 
         return Response.noContent().build();
     }
@@ -133,7 +134,7 @@ public class GroupResource {
         this.auth.groups().requireManage(group);
 
         realm.removeGroup(group);
-        adminEvent.operation(OperationType.DELETE).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -167,15 +168,15 @@ public class GroupResource {
         } else {
             child = realm.createGroup(rep.getName(), group);
             updateGroup(rep, child);
-            URI uri = session.getContext().getUri().getBaseUriBuilder()
-                    .path(session.getContext().getUri().getMatchedURIs().get(2))
+            URI uri = keycloakContext.getUri().getBaseUriBuilder()
+                    .path(keycloakContext.getUri().getMatchedURIs().get(2))
                     .path(child.getId()).build();
             builder.status(201).location(uri);
             rep.setId(child.getId());
             adminEvent.operation(OperationType.CREATE);
 
         }
-        adminEvent.resourcePath(session.getContext().getUri()).representation(rep).success();
+        adminEvent.resourcePath(keycloakContext.getUri()).representation(rep).success();
 
         GroupRepresentation childRep = ModelToRepresentation.toGroupHierarchy(child, true);
         return builder.type(MediaType.APPLICATION_JSON_TYPE).entity(childRep).build();
@@ -190,6 +191,11 @@ public class GroupResource {
         return resource;
 
     }
+
+    @Autowired
+    private ModelToRepresentation modelToRepresentation;
+    @Autowired
+    private UserProvider userProvider;
 
     /**
      * Get users
@@ -216,13 +222,13 @@ public class GroupResource {
         maxResults = maxResults != null ? maxResults : Constants.DEFAULT_MAX_RESULTS;
         boolean briefRepresentationB = briefRepresentation != null && briefRepresentation;
 
-        List<UserRepresentation> results = new ArrayList<UserRepresentation>();
-        List<UserModel> userModels = session.users().getGroupMembers(realm, group, firstResult, maxResults);
+        List<UserRepresentation> results = new ArrayList<>();
+        List<UserModel> userModels = userProvider.getGroupMembers(realm, group, firstResult, maxResults);
 
         for (UserModel user : userModels) {
             UserRepresentation userRep = briefRepresentationB
                     ? ModelToRepresentation.toBriefRepresentation(user)
-                    : ModelToRepresentation.toRepresentation(session, realm, user);
+                    : modelToRepresentation.toRepresentation(realm, user);
 
             results.add(userRep);
         }
@@ -241,7 +247,7 @@ public class GroupResource {
     public ManagementPermissionReference getManagementPermissions() {
         auth.groups().requireView(group);
 
-        AdminPermissionManagement permissions = AdminPermissions.management(session, realm);
+        AdminPermissionManagement permissions = AdminPermissions.management(realm);
         if (!permissions.groups().isPermissionsEnabled(group)) {
             return new ManagementPermissionReference();
         }
@@ -260,7 +266,7 @@ public class GroupResource {
     @NoCache
     public ManagementPermissionReference setManagementPermissionsEnabled(ManagementPermissionReference ref) {
         auth.groups().requireManage(group);
-        AdminPermissionManagement permissions = AdminPermissions.management(session, realm);
+        AdminPermissionManagement permissions = AdminPermissions.management(realm);
         permissions.groups().setPermissionsEnabled(group, ref.isEnabled());
         if (ref.isEnabled()) {
             return toMgmtRef(group, permissions);

@@ -17,7 +17,6 @@
 
 package org.keycloak.exportimport;
 
-import org.keycloak.models.KeycloakSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +31,9 @@ public class ExportImportManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(ExportImportManager.class);
     private final String realmName;
-    private KeycloakSessionFactory sessionFactory;
+    @Autowired
     private ExportProvider exportProvider;
+    @Autowired
     private ImportProvider importProvider;
 
     @Autowired
@@ -46,12 +46,10 @@ public class ExportImportManager {
         String exportImportAction = ExportImportConfig.getAction();
 
         if (ExportImportConfig.ACTION_EXPORT.equals(exportImportAction)) {
-            exportProvider = exportProviders.get(providerId);
             if (exportProvider == null) {
                 throw new RuntimeException("Export provider '" + providerId + "' not found");
             }
         } else if (ExportImportConfig.ACTION_IMPORT.equals(exportImportAction)) {
-            importProvider = session.getProvider(ImportProvider.class, providerId);
             if (importProvider == null) {
                 throw new RuntimeException("Import provider '" + providerId + "' not found");
             }
@@ -82,10 +80,10 @@ public class ExportImportManager {
             Strategy strategy = ExportImportConfig.getStrategy();
             if (realmName == null) {
 //                ServicesLogger.LOGGER.fullModelImport(strategy.toString());
-                importProvider.importModel(sessionFactory, strategy);
+                importProvider.importModel(strategy);
             } else {
 //                ServicesLogger.LOGGER.realmImportRequested(realmName, strategy.toString());
-                importProvider.importRealm(sessionFactory, realmName, strategy);
+                importProvider.importRealm(realmName, strategy);
             }
 //            ServicesLogger.LOGGER.importSuccess();
         } catch (IOException e) {
@@ -97,10 +95,10 @@ public class ExportImportManager {
         try {
             if (realmName == null) {
 //                ServicesLogger.LOGGER.fullModelExportRequested();
-                exportProvider.exportModel(sessionFactory);
+                exportProvider.exportModel();
             } else {
 //                ServicesLogger.LOGGER.realmExportRequested(realmName);
-                exportProvider.exportRealm(sessionFactory, realmName);
+                exportProvider.exportRealm(realmName);
             }
 //            ServicesLogger.LOGGER.exportSuccess();
         } catch (IOException e) {

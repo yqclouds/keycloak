@@ -21,13 +21,14 @@ import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.GroupModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.ModelDuplicateException;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -45,16 +46,15 @@ import java.util.Objects;
 public class GroupsResource {
 
     private final RealmModel realm;
-    private final KeycloakSession session;
+    @Autowired
+    private KeycloakContext keycloakContext;
     private final AdminPermissionEvaluator auth;
     private final AdminEventBuilder adminEvent;
 
-    public GroupsResource(RealmModel realm, KeycloakSession session, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public GroupsResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.realm = realm;
-        this.session = session;
         this.auth = auth;
         this.adminEvent = adminEvent.resource(ResourceType.GROUP);
-
     }
 
     /**
@@ -96,7 +96,7 @@ public class GroupsResource {
         if (group == null) {
             throw new NotFoundException("Could not find group by id");
         }
-        GroupResource resource = new GroupResource(realm, group, session, this.auth, adminEvent);
+        GroupResource resource = new GroupResource(realm, group, this.auth, adminEvent);
         ResteasyProviderFactory.getInstance().injectProperties(resource);
         return resource;
     }
@@ -142,16 +142,16 @@ public class GroupsResource {
                 if (child == null) {
                     throw new NotFoundException("Could not find child by id");
                 }
-                adminEvent.operation(OperationType.UPDATE).resourcePath(session.getContext().getUri());
+                adminEvent.operation(OperationType.UPDATE).resourcePath(keycloakContext.getUri());
             } else {
                 child = realm.createGroup(rep.getName());
                 GroupResource.updateGroup(rep, child);
-                URI uri = session.getContext().getUri().getAbsolutePathBuilder()
+                URI uri = keycloakContext.getUri().getAbsolutePathBuilder()
                         .path(child.getId()).build();
                 builder.status(201).location(uri);
 
                 rep.setId(child.getId());
-                adminEvent.operation(OperationType.CREATE).resourcePath(session.getContext().getUri(), child.getId());
+                adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri(), child.getId());
             }
         } catch (ModelDuplicateException mde) {
             return ErrorResponse.exists("Top level group named '" + rep.getName() + "' already exists.");

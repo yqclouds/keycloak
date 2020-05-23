@@ -16,10 +16,11 @@
  */
 package org.keycloak.authorization.common;
 
+import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
 import org.keycloak.authorization.attribute.Attributes;
 import org.keycloak.authorization.identity.Identity;
-import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
 import org.keycloak.models.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -30,10 +31,13 @@ public class ClientModelIdentity implements Identity {
     protected ClientModel client;
     protected UserModel serviceAccount;
 
-    public ClientModelIdentity(KeycloakSession session, ClientModel client) {
+    @Autowired
+    private UserProvider userProvider;
+
+    public ClientModelIdentity(ClientModel client) {
         this.realm = client.getRealm();
         this.client = client;
-        this.serviceAccount = session.users().getServiceAccount(client);
+        this.serviceAccount = userProvider.getServiceAccount(client);
     }
 
     @Override

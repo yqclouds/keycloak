@@ -1301,7 +1301,7 @@ public class RepresentationToModel {
 
     // CLIENT SCOPES
 
-    private static Map<String, ClientScopeModel> createClientScopes(List<ClientScopeRepresentation> clientScopes, RealmModel realm) {
+    private Map<String, ClientScopeModel> createClientScopes(List<ClientScopeRepresentation> clientScopes, RealmModel realm) {
         Map<String, ClientScopeModel> appMap = new HashMap<>();
         for (ClientScopeRepresentation resourceRep : clientScopes) {
             ClientScopeModel app = createClientScope(realm, resourceRep);
@@ -1310,7 +1310,7 @@ public class RepresentationToModel {
         return appMap;
     }
 
-    public static ClientScopeModel createClientScope(RealmModel realm, ClientScopeRepresentation resourceRep) {
+    public ClientScopeModel createClientScope(RealmModel realm, ClientScopeRepresentation resourceRep) {
         LOG.debug("Create client scope: {}" + resourceRep.getName());
 
         ClientScopeModel clientScope = resourceRep.getId() != null ? realm.addClientScope(resourceRep.getId(), resourceRep.getName()) : realm.addClientScope(resourceRep.getName());
@@ -1795,7 +1795,7 @@ public class RepresentationToModel {
         return model;
     }
 
-    public static ComponentModel toModel(KeycloakSession session, ComponentRepresentation rep) {
+    public static ComponentModel toModel(ComponentRepresentation rep) {
         ComponentModel model = new ComponentModel();
         model.setId(rep.getId());
         model.setParentId(rep.getParentId());

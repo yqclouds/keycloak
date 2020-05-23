@@ -126,12 +126,11 @@ public interface UserCredentialManager extends UserCredentialStore {
      * Given a CredentialInput, authenticate the user.  This is used in the case where the credential must be processed
      * to determine and find the user.
      *
-     * @param session
      * @param realm
      * @param input
      * @return
      */
-    CredentialValidationOutput authenticate(KeycloakSession session, RealmModel realm, CredentialInput input);
+    CredentialValidationOutput authenticate(RealmModel realm, CredentialInput input);
 
     /**
      * Return credential types, which are provided by the user storage where user is stored. Returned values can contain for example "password", "otp" etc.

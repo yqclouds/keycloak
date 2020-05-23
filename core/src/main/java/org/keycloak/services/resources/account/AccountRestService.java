@@ -211,7 +211,7 @@ public class AccountRestService {
     public SessionResource sessions() {
         checkAccountApiEnabled();
         auth.requireOneOf(AccountRoles.MANAGE_ACCOUNT, AccountRoles.VIEW_PROFILE);
-        return new SessionResource(session, auth, request);
+        return new SessionResource(auth, request);
     }
 
     @Path("/credentials")
@@ -463,7 +463,7 @@ public class AccountRestService {
 
     @Path("/linked-accounts")
     public LinkedAccountsResource linkedAccounts() {
-        return new LinkedAccountsResource(session, request, client, auth, event, user);
+        return new LinkedAccountsResource(request, client, auth, event, user);
     }
 
     @Autowired

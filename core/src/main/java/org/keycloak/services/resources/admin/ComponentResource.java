@@ -16,22 +16,21 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.resteasy.annotations.cache.NoCache;
 import com.hsbc.unified.iam.core.ClientConnection;
+import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
 import org.keycloak.component.SubComponentFactory;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.models.utils.StripSecretsUtils;
 import org.keycloak.provider.Provider;
 import org.keycloak.provider.ProviderConfigProperty;
-import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.idm.ComponentRepresentation;
 import org.keycloak.representations.idm.ComponentTypeRepresentation;
 import org.keycloak.representations.idm.ConfigPropertyRepresentation;
@@ -39,6 +38,7 @@ import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -59,12 +59,17 @@ public class ComponentResource {
     protected RealmModel realm;
     @Context
     protected ClientConnection clientConnection;
-    @Context
-    protected KeycloakSession session;
+    @Autowired
+    private KeycloakContext keycloakContext;
     @Context
     protected HttpHeaders headers;
     private AdminPermissionEvaluator auth;
     private AdminEventBuilder adminEvent;
+
+    @Autowired
+    private ModelToRepresentation modelToRepresentation;
+    @Autowired
+    private RepresentationToModel representationToModel;
 
     public ComponentResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.auth = auth;
@@ -95,7 +100,7 @@ public class ComponentResource {
             if (name != null && !name.equals(component.getName())) continue;
             ComponentRepresentation rep = null;
             try {
-                rep = ModelToRepresentation.toRepresentation(component, false);
+                rep = modelToRepresentation.toRepresentation(component, false);
             } catch (Exception e) {
                 LOG.error("Failed to get component list for component model" + component.getName() + "of realm " + realm.getName());
                 rep = ModelToRepresentation.toRepresentationWithoutConfig(component);
@@ -110,13 +115,13 @@ public class ComponentResource {
     public Response create(ComponentRepresentation rep) {
         auth.realm().requireManageRealm();
         try {
-            ComponentModel model = RepresentationToModel.toModel(session, rep);
+            ComponentModel model = representationToModel.toModel(rep);
             if (model.getParentId() == null) model.setParentId(realm.getId());
 
             model = realm.addComponentModel(model);
 
-            adminEvent.operation(OperationType.CREATE).resourcePath(session.getContext().getUri(), model.getId()).representation(StripSecretsUtils.strip(rep)).success();
-            return Response.created(session.getContext().getUri().getAbsolutePathBuilder().path(model.getId()).build()).build();
+            adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri(), model.getId()).representation(stripSecretsUtils.strip(rep)).success();
+            return Response.created(keycloakContext.getUri().getAbsolutePathBuilder().path(model.getId()).build()).build();
         } catch (ComponentValidationException e) {
             return localizedErrorResponse(e);
         } catch (IllegalArgumentException e) {
@@ -134,9 +139,11 @@ public class ComponentResource {
         if (model == null) {
             throw new NotFoundException("Could not find component");
         }
-        ComponentRepresentation rep = ModelToRepresentation.toRepresentation(model, false);
-        return rep;
+        return modelToRepresentation.toRepresentation(model, false);
     }
+
+    @Autowired
+    private StripSecretsUtils stripSecretsUtils;
 
     @PUT
     @Path("{id}")
@@ -148,8 +155,8 @@ public class ComponentResource {
             if (model == null) {
                 throw new NotFoundException("Could not find component");
             }
-            RepresentationToModel.updateComponent(rep, model, false);
-            adminEvent.operation(OperationType.UPDATE).resourcePath(session.getContext().getUri()).representation(StripSecretsUtils.strip(rep)).success();
+            representationToModel.updateComponent(rep, model, false);
+            adminEvent.operation(OperationType.UPDATE).resourcePath(keycloakContext.getUri()).representation(stripSecretsUtils.strip(rep)).success();
             realm.updateComponent(model);
             return Response.noContent().build();
         } catch (ComponentValidationException e) {
@@ -167,13 +174,16 @@ public class ComponentResource {
         if (model == null) {
             throw new NotFoundException("Could not find component");
         }
-        adminEvent.operation(OperationType.DELETE).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
         realm.removeComponent(model);
 
     }
 
+    @Autowired
+    private AdminRoot adminRoot;
+
     private Response localizedErrorResponse(ComponentValidationException cve) {
-        Properties messages = AdminRoot.getMessages(session, realm, auth.adminAuth().getToken().getLocale(), "admin-messages", "messages");
+        Properties messages = adminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale(), "admin-messages", "messages");
 
         Object[] localizedParameters = cve.getParameters() == null ? null : Arrays.asList(cve.getParameters()).stream().map((Object parameter) -> {
 
@@ -189,6 +199,9 @@ public class ComponentResource {
         String message = MessageFormat.format(messages.getProperty(cve.getMessage(), cve.getMessage()), localizedParameters);
         return ErrorResponse.error(message, Response.Status.BAD_REQUEST);
     }
+
+    @Autowired
+    private List<ComponentFactory> componentFactories;
 
     /**
      * List of subcomponent types that are available to configure for a particular parent component.
@@ -217,20 +230,16 @@ public class ComponentResource {
             throw new RuntimeException(e);
         }
         List<ComponentTypeRepresentation> subcomponents = new LinkedList<>();
-        for (ProviderFactory factory : session.getSessionFactory().getProviderFactories(providerClass)) {
+        for (ComponentFactory componentFactory : componentFactories) {
             ComponentTypeRepresentation rep = new ComponentTypeRepresentation();
-            rep.setId(factory.getId());
-            if (!(factory instanceof ComponentFactory)) {
-                continue;
-            }
-            ComponentFactory componentFactory = (ComponentFactory) factory;
+            rep.setId(componentFactory.getId());
 
             rep.setHelpText(componentFactory.getHelpText());
             List<ProviderConfigProperty> props = null;
             Map<String, Object> metadata = null;
-            if (factory instanceof SubComponentFactory) {
-                props = ((SubComponentFactory) factory).getConfigProperties(realm, parent);
-                metadata = ((SubComponentFactory) factory).getTypeMetadata(realm, parent);
+            if (componentFactory instanceof SubComponentFactory) {
+                props = ((SubComponentFactory) componentFactory).getConfigProperties(realm, parent);
+                metadata = ((SubComponentFactory) componentFactory).getTypeMetadata(realm, parent);
 
             } else {
                 props = componentFactory.getConfigProperties();

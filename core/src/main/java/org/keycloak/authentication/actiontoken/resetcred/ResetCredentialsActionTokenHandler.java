@@ -92,7 +92,7 @@ public class ResetCredentialsActionTokenHandler extends AbstractActionTokenHandl
             boolean firstBrokerLoginInProgress = (authenticationSession.getAuthNote(AbstractIdpAuthenticator.BROKERED_CONTEXT_NOTE) != null);
             if (firstBrokerLoginInProgress) {
 
-                UserModel linkingUser = AbstractIdpAuthenticator.getExistingUser(session, realm, authenticationSession);
+                UserModel linkingUser = AbstractIdpAuthenticator.getExistingUser(realm, authenticationSession);
                 SerializedBrokeredIdentityContext serializedCtx = SerializedBrokeredIdentityContext.readFromAuthenticationSession(authenticationSession, AbstractIdpAuthenticator.BROKERED_CONTEXT_NOTE);
                 authenticationSession.setAuthNote(AbstractIdpAuthenticator.FIRST_BROKER_LOGIN_SUCCESS, serializedCtx.getIdentityProviderId());
 

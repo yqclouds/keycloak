@@ -20,7 +20,6 @@ import org.keycloak.Config;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
 import org.keycloak.component.SubComponentFactory;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -36,17 +35,11 @@ import java.util.List;
 public interface LDAPStorageMapperFactory<T extends LDAPStorageMapper> extends SubComponentFactory<T, LDAPStorageMapper> {
     /**
      * called per Keycloak transaction.
-     *
-     * @param session
-     * @param model
-     * @return
      */
-    T create(KeycloakSession session, ComponentModel model);
+    T create(ComponentModel model);
 
     /**
      * This is the name of the provider and will be showed in the admin console as an option.
-     *
-     * @return
      */
     @Override
     String getId();
@@ -88,13 +81,8 @@ public interface LDAPStorageMapperFactory<T extends LDAPStorageMapper> extends S
     /**
      * Called when UserStorageProviderModel is created.  This allows you to do initialization of any additional configuration
      * you need to add.  For example, you may be introspecting a database or ldap schema to automatically create mappings.
-     *
-     * @param session
-     * @param realm
-     * @param model
      */
     @Override
     default void onCreate(RealmModel realm, ComponentModel model) {
-
     }
 }

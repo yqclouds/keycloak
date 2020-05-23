@@ -33,6 +33,7 @@ import org.keycloak.services.resources.Cors;
 import org.keycloak.services.validation.Validation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -53,7 +54,6 @@ import static com.hsbc.unified.iam.core.constants.Constants.ACCOUNT_CONSOLE_CLIE
 public class LinkedAccountsResource {
     private static final Logger LOG = LoggerFactory.getLogger(LinkedAccountsResource.class);
 
-    private final KeycloakSession session;
     private final HttpRequest request;
     private final ClientModel client;
     private final EventBuilder event;
@@ -61,19 +61,21 @@ public class LinkedAccountsResource {
     private final RealmModel realm;
     private final Auth auth;
 
-    public LinkedAccountsResource(KeycloakSession session,
-                                  HttpRequest request,
-                                  ClientModel client,
-                                  Auth auth,
-                                  EventBuilder event,
-                                  UserModel user) {
-        this.session = session;
+    @Autowired
+    private KeycloakContext keycloakContext;
+
+    public LinkedAccountsResource(
+            HttpRequest request,
+            ClientModel client,
+            Auth auth,
+            EventBuilder event,
+            UserModel user) {
         this.request = request;
         this.client = client;
         this.auth = auth;
         this.event = event;
         this.user = user;
-        realm = session.getContext().getRealm();
+        realm = keycloakContext.getRealm();
     }
 
     @GET
@@ -81,17 +83,20 @@ public class LinkedAccountsResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response linkedAccounts() {
         auth.requireOneOf(AccountRoles.MANAGE_ACCOUNT, AccountRoles.VIEW_PROFILE);
-        SortedSet<LinkedAccountRepresentation> linkedAccounts = getLinkedAccounts(this.session, this.realm, this.user);
+        SortedSet<LinkedAccountRepresentation> linkedAccounts = getLinkedAccounts(this.realm, this.user);
         return Cors.add(request, Response.ok(linkedAccounts)).auth().allowedOrigins(auth.getToken()).build();
     }
 
-    public SortedSet<LinkedAccountRepresentation> getLinkedAccounts(KeycloakSession session, RealmModel realm, UserModel user) {
+    @Autowired
+    private UserProvider userProvider;
+
+    public SortedSet<LinkedAccountRepresentation> getLinkedAccounts(RealmModel realm, UserModel user) {
         List<IdentityProviderModel> identityProviders = realm.getIdentityProviders();
         SortedSet<LinkedAccountRepresentation> linkedAccounts = new TreeSet<>();
 
         if (identityProviders == null || identityProviders.isEmpty()) return linkedAccounts;
 
-        Set<FederatedIdentityModel> identities = session.users().getFederatedIdentities(user, realm);
+        Set<FederatedIdentityModel> identities = userProvider.getFederatedIdentities(user, realm);
         for (IdentityProviderModel provider : identityProviders) {
             if (!provider.isEnabled()) {
                 continue;
@@ -100,7 +105,7 @@ public class LinkedAccountsResource {
 
             FederatedIdentityModel identity = getIdentity(identities, providerId);
 
-            String displayName = KeycloakModelUtils.getIdentityProviderDisplayName(session, provider);
+            String displayName = KeycloakModelUtils.getIdentityProviderDisplayName(provider);
             String guiOrder = provider.getConfig() != null ? provider.getConfig().get("guiOrder") : null;
 
             LinkedAccountRepresentation rep = new LinkedAccountRepresentation();
@@ -151,7 +156,7 @@ public class LinkedAccountsResource {
             String input = nonce + auth.getSession().getId() + ACCOUNT_CONSOLE_CLIENT_ID + providerId;
             byte[] check = md.digest(input.getBytes(StandardCharsets.UTF_8));
             String hash = Base64Url.encode(check);
-            URI linkUri = Urls.identityProviderLinkRequest(this.session.getContext().getUri().getBaseUri(), providerId, realm.getName());
+            URI linkUri = Urls.identityProviderLinkRequest(keycloakContext.getUri().getBaseUri(), providerId, realm.getName());
             linkUri = UriBuilder.fromUri(linkUri)
                     .queryParam("nonce", nonce)
                     .queryParam("hash", hash)
@@ -184,17 +189,17 @@ public class LinkedAccountsResource {
             return ErrorResponse.error(errorMessage, Response.Status.BAD_REQUEST);
         }
 
-        FederatedIdentityModel link = session.users().getFederatedIdentity(user, providerId, realm);
+        FederatedIdentityModel link = userProvider.getFederatedIdentity(user, providerId, realm);
         if (link == null) {
             return ErrorResponse.error(Messages.FEDERATED_IDENTITY_NOT_ACTIVE, Response.Status.BAD_REQUEST);
         }
 
         // Removing last social provider is not possible if you don't have other possibility to authenticate
-        if (!(session.users().getFederatedIdentities(user, realm).size() > 1 || user.getFederationLink() != null || isPasswordSet())) {
+        if (!(userProvider.getFederatedIdentities(user, realm).size() > 1 || user.getFederationLink() != null || isPasswordSet())) {
             return ErrorResponse.error(Messages.FEDERATED_IDENTITY_REMOVING_LAST_PROVIDER, Response.Status.BAD_REQUEST);
         }
 
-        session.users().removeFederatedIdentity(realm, user, providerId);
+        userProvider.removeFederatedIdentity(realm, user, providerId);
 
         LOG.debug("Social provider {} removed successfully from user {}", providerId, user.getUsername());
 
@@ -225,8 +230,11 @@ public class LinkedAccountsResource {
         return null;
     }
 
+    @Autowired
+    private UserCredentialManager userCredentialManager;
+
     private boolean isPasswordSet() {
-        return session.userCredentialManager().isConfiguredFor(realm, user, PasswordCredentialModel.TYPE);
+        return userCredentialManager.isConfiguredFor(realm, user, PasswordCredentialModel.TYPE);
     }
 
     private boolean isValidProvider(String providerId) {

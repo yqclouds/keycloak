@@ -634,7 +634,7 @@ public class AuthorizationTokenService {
     @Autowired
     private KeycloakContext keycloakContext;
 
-    public class KeycloakAuthorizationRequest extends AuthorizationRequest {
+    public static class KeycloakAuthorizationRequest extends AuthorizationRequest {
 
         private final AuthorizationProvider authorization;
         private final TokenManager tokenManager;

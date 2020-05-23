@@ -16,15 +16,12 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.resteasy.annotations.cache.NoCache;
 import com.hsbc.unified.iam.core.ClientConnection;
 import com.hsbc.unified.iam.core.util.Time;
+import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserLoginFailureModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.services.managers.BruteForceProtector;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.slf4j.Logger;
@@ -50,7 +47,11 @@ public class AttackDetectionResource {
     protected AdminPermissionEvaluator auth;
     protected RealmModel realm;
     @Context
-    protected KeycloakSession session;
+    protected KeycloakContext keycloakContext;
+    @Autowired
+    private UserSessionProvider userSessionProvider;
+    @Autowired
+    private UserProvider userProvider;
     @Context
     protected ClientConnection connection;
     @Context
@@ -66,18 +67,16 @@ public class AttackDetectionResource {
     @Autowired
     private BruteForceProtector bruteForceProtector;
 
+
     /**
      * Get status of a username in brute force detection
-     *
-     * @param userId
-     * @return
      */
     @GET
     @Path("brute-force/users/{userId}")
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, Object> bruteForceUserStatus(@PathParam("userId") String userId) {
-        UserModel user = session.users().getUserById(userId, realm);
+        UserModel user = userProvider.getUserById(userId, realm);
         if (user == null) {
             auth.users().requireView();
         } else {
@@ -92,14 +91,14 @@ public class AttackDetectionResource {
         if (!realm.isBruteForceProtected()) return data;
 
 
-        UserLoginFailureModel model = session.sessions().getUserLoginFailure(realm, userId);
+        UserLoginFailureModel model = userSessionProvider.getUserLoginFailure(realm, userId);
         if (model == null) return data;
 
         boolean disabled;
         if (user == null) {
             disabled = Time.currentTime() < model.getFailedLoginNotBefore();
         } else {
-            disabled = bruteForceProtector.isTemporarilyDisabled(session, realm, user);
+            disabled = bruteForceProtector.isTemporarilyDisabled(realm, user);
         }
         if (disabled) {
             data.put("disabled", true);
@@ -115,22 +114,20 @@ public class AttackDetectionResource {
      * Clear any user login failures for the user
      * <p>
      * This can release temporary disabled user
-     *
-     * @param userId
      */
     @Path("brute-force/users/{userId}")
     @DELETE
     public void clearBruteForceForUser(@PathParam("userId") String userId) {
-        UserModel user = session.users().getUserById(userId, realm);
+        UserModel user = userProvider.getUserById(userId, realm);
         if (user == null) {
             auth.users().requireManage();
         } else {
             auth.users().requireManage(user);
         }
-        UserLoginFailureModel model = session.sessions().getUserLoginFailure(realm, userId);
+        UserLoginFailureModel model = userSessionProvider.getUserLoginFailure(realm, userId);
         if (model != null) {
-            session.sessions().removeUserLoginFailure(realm, userId);
-            adminEvent.operation(OperationType.DELETE).resourcePath(session.getContext().getUri()).success();
+            userSessionProvider.removeUserLoginFailure(realm, userId);
+            adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
         }
     }
 
@@ -144,9 +141,7 @@ public class AttackDetectionResource {
     public void clearAllBruteForce() {
         auth.users().requireManage();
 
-        session.sessions().removeAllUserLoginFailures(realm);
-        adminEvent.operation(OperationType.DELETE).resourcePath(session.getContext().getUri()).success();
+        userSessionProvider.removeAllUserLoginFailures(realm);
+        adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
     }
-
-
 }

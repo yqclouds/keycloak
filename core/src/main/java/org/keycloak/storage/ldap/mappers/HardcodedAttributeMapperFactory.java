@@ -19,7 +19,6 @@ package org.keycloak.storage.ldap.mappers;
 
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ConfigurationValidationHelper;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -64,7 +63,7 @@ public class HardcodedAttributeMapperFactory extends AbstractLDAPStorageMapperFa
     }
 
     @Override
-    public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel config) throws ComponentValidationException {
+    public void validateConfiguration(RealmModel realm, ComponentModel config) throws ComponentValidationException {
         ConfigurationValidationHelper.check(config)
                 .checkRequired(HardcodedAttributeMapper.USER_MODEL_ATTRIBUTE, "Attribute Name")
                 .checkRequired(HardcodedAttributeMapper.ATTRIBUTE_VALUE, "Attribute Value");

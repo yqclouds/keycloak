@@ -63,7 +63,7 @@ public class AccountConsole {
     }
 
     public void init() {
-        AuthenticationManager.AuthResult authResult = authManager.authenticateIdentityCookie(session, realm);
+        AuthenticationManager.AuthResult authResult = authManager.authenticateIdentityCookie(realm);
         if (authResult != null) {
             auth = new Auth(realm, authResult.getToken(), authResult.getUser(), client, authResult.getSession(), true);
         }
@@ -183,9 +183,9 @@ public class AccountConsole {
         ClientModel referrerClient = realm.getClientByClientId(referrer);
         if (referrerClient != null) {
             if (referrerUri != null) {
-                referrerUri = RedirectUtils.verifyRedirectUri(session, referrerUri, referrerClient);
+                referrerUri = RedirectUtils.verifyRedirectUri(referrerUri, referrerClient);
             } else {
-                referrerUri = ResolveRelative.resolveRelativeUri(session, client.getRootUrl(), referrerClient.getBaseUrl());
+                referrerUri = ResolveRelative.resolveRelativeUri(client.getRootUrl(), referrerClient.getBaseUrl());
             }
 
             if (referrerUri != null) {
@@ -198,7 +198,7 @@ public class AccountConsole {
         } else if (referrerUri != null) {
             referrerClient = realm.getClientByClientId(referrer);
             if (client != null) {
-                referrerUri = RedirectUtils.verifyRedirectUri(session, referrerUri, referrerClient);
+                referrerUri = RedirectUtils.verifyRedirectUri(referrerUri, referrerClient);
 
                 if (referrerUri != null) {
                     return new String[]{referrer, referrer, referrerUri};

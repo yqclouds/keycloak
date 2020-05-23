@@ -26,13 +26,9 @@ import org.keycloak.component.ComponentModel;
 import org.keycloak.models.*;
 import org.keycloak.representations.idm.CertificateRepresentation;
 import org.keycloak.storage.UserStorageProviderModel;
-import org.keycloak.transaction.JtaTransactionManagerLookup;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.crypto.spec.SecretKeySpec;
-import javax.transaction.InvalidTransactionException;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
 import java.security.*;
 import java.security.cert.X509Certificate;
 import java.util.*;
@@ -196,52 +192,11 @@ public final class KeycloakModelUtils {
     /**
      * Wrap given runnable job into KeycloakTransaction.
      *
-     * @param factory
      * @param task
      */
-    public static void runJobInTransaction(KeycloakSessionFactory factory, KeycloakSessionTask task) {
+    public static void runJobInTransaction(KeycloakSessionTask task) {
         task.run();
     }
-
-
-    /**
-     * Wrap given runnable job into KeycloakTransaction. Set custom timeout for the JTA transaction (in case we're in the environment with JTA enabled)
-     *
-     * @param factory
-     * @param task
-     * @param timeoutInSeconds
-     */
-    public static void runJobInTransactionWithTimeout(KeycloakSessionFactory factory, KeycloakSessionTask task, int timeoutInSeconds) {
-        JtaTransactionManagerLookup lookup = (JtaTransactionManagerLookup) factory.getProviderFactory(JtaTransactionManagerLookup.class);
-        try {
-            if (lookup != null) {
-                if (lookup.getTransactionManager() != null) {
-                    try {
-                        lookup.getTransactionManager().setTransactionTimeout(timeoutInSeconds);
-                    } catch (SystemException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-
-            runJobInTransaction(factory, task);
-
-        } finally {
-            if (lookup != null) {
-                if (lookup.getTransactionManager() != null) {
-                    try {
-                        // Reset to default transaction timeout
-                        lookup.getTransactionManager().setTransactionTimeout(0);
-                    } catch (SystemException e) {
-                        // Shouldn't happen for Wildfly transaction manager
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-        }
-
-    }
-
 
     public static String getMasterRealmAdminApplicationClientId(String realmName) {
         return realmName + "-realm";
@@ -625,33 +580,6 @@ public final class KeycloakModelUtils {
                 realm.addDefaultRole(roleName);
             }
         }
-    }
-
-    public static void suspendJtaTransaction(KeycloakSessionFactory factory, Runnable runnable) {
-        JtaTransactionManagerLookup lookup = (JtaTransactionManagerLookup) factory.getProviderFactory(JtaTransactionManagerLookup.class);
-        Transaction suspended = null;
-        try {
-            if (lookup != null) {
-                if (lookup.getTransactionManager() != null) {
-                    try {
-                        suspended = lookup.getTransactionManager().suspend();
-                    } catch (SystemException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-            runnable.run();
-        } finally {
-            if (suspended != null) {
-                try {
-                    lookup.getTransactionManager().resume(suspended);
-                } catch (InvalidTransactionException | SystemException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-        }
-
     }
 
     public static String getIdentityProviderDisplayName(IdentityProviderModel provider) {

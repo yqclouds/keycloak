@@ -238,7 +238,7 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
     }
 
     @Override
-    public LoginProtocol create(KeycloakSession session) {
+    public LoginProtocol create() {
         return new OIDCLoginProtocol().setSession(session);
     }
 

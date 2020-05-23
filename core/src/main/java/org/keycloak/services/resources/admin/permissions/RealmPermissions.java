@@ -18,11 +18,8 @@ package org.keycloak.services.resources.admin.permissions;
 
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.models.AdminRoles;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.services.ForbiddenException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Manages default policies for all users.
@@ -31,23 +28,18 @@ import org.slf4j.LoggerFactory;
  * @version $Revision: 1 $
  */
 class RealmPermissions implements RealmPermissionEvaluator {
-    private static final Logger LOG = LoggerFactory.getLogger(RealmPermissions.class);
-    protected final KeycloakSession session;
     protected final RealmModel realm;
     protected final AuthorizationProvider authz;
     protected final MgmtPermissions root;
 
-    public RealmPermissions(KeycloakSession session, RealmModel realm, AuthorizationProvider authz, MgmtPermissions root) {
-        this.session = session;
+    public RealmPermissions(RealmModel realm, AuthorizationProvider authz, MgmtPermissions root) {
         this.realm = realm;
         this.authz = authz;
         this.root = root;
     }
 
-
     public boolean canManageRealmDefault() {
         return root.hasOneAdminRole(AdminRoles.MANAGE_REALM);
-
     }
 
     public boolean canViewRealmDefault() {

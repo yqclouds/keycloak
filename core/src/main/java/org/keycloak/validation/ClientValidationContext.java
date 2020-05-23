@@ -17,7 +17,6 @@
 package org.keycloak.validation;
 
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
 
 public interface ClientValidationContext {
 

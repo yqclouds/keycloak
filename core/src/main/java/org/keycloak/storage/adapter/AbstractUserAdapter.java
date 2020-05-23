@@ -46,7 +46,7 @@ public abstract class AbstractUserAdapter implements UserModel {
     protected StorageId storageId;
     protected long created = System.currentTimeMillis();
 
-    public AbstractUserAdapter(KeycloakSession session, RealmModel realm, ComponentModel storageProviderModel) {
+    public AbstractUserAdapter(RealmModel realm, ComponentModel storageProviderModel) {
         this.session = session;
         this.realm = realm;
         this.storageProviderModel = storageProviderModel;

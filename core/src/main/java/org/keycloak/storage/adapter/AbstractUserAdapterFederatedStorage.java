@@ -49,7 +49,7 @@ public abstract class AbstractUserAdapterFederatedStorage implements UserModel {
     protected ComponentModel storageProviderModel;
     protected StorageId storageId;
 
-    public AbstractUserAdapterFederatedStorage(KeycloakSession session, RealmModel realm, ComponentModel storageProviderModel) {
+    public AbstractUserAdapterFederatedStorage(RealmModel realm, ComponentModel storageProviderModel) {
         this.session = session;
         this.realm = realm;
         this.storageProviderModel = storageProviderModel;

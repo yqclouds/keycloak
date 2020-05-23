@@ -18,7 +18,6 @@
 package org.keycloak.storage.ldap.idm.store.ldap;
 
 import com.hsbc.unified.iam.core.util.Time;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.LDAPConstants;
 import org.keycloak.models.ModelException;
 import org.keycloak.storage.ldap.LDAPConfig;
@@ -46,11 +45,9 @@ public class LDAPOperationManager {
 
     private static final Logger perfLogger = LoggerFactory.getLogger(LDAPOperationManager.class);
 
-    private final KeycloakSession session;
     private final LDAPConfig config;
 
-    public LDAPOperationManager(KeycloakSession session, LDAPConfig config) {
-        this.session = session;
+    public LDAPOperationManager(LDAPConfig config) {
         this.config = config;
     }
 
@@ -652,7 +649,7 @@ public class LDAPOperationManager {
     }
 
     private <R> R execute(LdapOperation<R> operation, LDAPOperationDecorator decorator) throws NamingException {
-        try (LDAPContextManager ldapContextManager = LDAPContextManager.create(session, config)) {
+        try (LDAPContextManager ldapContextManager = LDAPContextManager.create(config)) {
             return execute(operation, ldapContextManager.getLdapContext(), decorator);
         }
     }

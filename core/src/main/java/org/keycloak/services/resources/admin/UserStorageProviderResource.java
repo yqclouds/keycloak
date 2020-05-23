@@ -16,21 +16,22 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.resteasy.annotations.cache.NoCache;
 import com.hsbc.unified.iam.core.ClientConnection;
+import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.events.admin.OperationType;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserProvider;
 import org.keycloak.services.managers.UserStorageSyncManager;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.UserStorageProviderModel;
-import org.keycloak.storage.ldap.LDAPStorageProvider;
 import org.keycloak.storage.ldap.mappers.LDAPStorageMapper;
 import org.keycloak.storage.user.SynchronizationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -56,8 +57,8 @@ public class UserStorageProviderResource {
     @Context
     protected ClientConnection clientConnection;
 
-    @Context
-    protected KeycloakSession session;
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     @Context
     protected HttpHeaders headers;
@@ -72,9 +73,6 @@ public class UserStorageProviderResource {
      * Need this for admin console to display simple name of provider when displaying user detail
      * <p>
      * KEYCLOAK-4328
-     *
-     * @param id
-     * @return
      */
     @GET
     @Path("{id}/name")
@@ -102,10 +100,6 @@ public class UserStorageProviderResource {
      * Trigger sync of users
      * <p>
      * Action can be "triggerFullSync" or "triggerChangedUsersSync"
-     *
-     * @param id
-     * @param action
-     * @return
      */
     @POST
     @Path("{id}/sync")
@@ -131,10 +125,10 @@ public class UserStorageProviderResource {
         UserStorageSyncManager syncManager = new UserStorageSyncManager();
         SynchronizationResult syncResult;
         if ("triggerFullSync".equals(action)) {
-            syncResult = syncManager.syncAllUsers(session.getSessionFactory(), realm.getId(), providerModel);
+            syncResult = syncManager.syncAllUsers(realm.getId(), providerModel);
         } else if ("triggerChangedUsersSync".equals(action)) {
-            syncResult = syncManager.syncChangedUsers(session.getSessionFactory(), realm.getId(), providerModel);
-        } else if (action == null || action == "") {
+            syncResult = syncManager.syncChangedUsers(realm.getId(), providerModel);
+        } else if (action == null || action.equals("")) {
             LOG.debug("Missing action");
             throw new BadRequestException("Missing action");
         } else {
@@ -145,16 +139,13 @@ public class UserStorageProviderResource {
         Map<String, Object> eventRep = new HashMap<>();
         eventRep.put("action", action);
         eventRep.put("result", syncResult);
-        adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).representation(eventRep).success();
+        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).representation(eventRep).success();
 
         return syncResult;
     }
 
     /**
      * Remove imported users
-     *
-     * @param id
-     * @return
      */
     @POST
     @Path("{id}/remove-imported-users")
@@ -170,14 +161,11 @@ public class UserStorageProviderResource {
             throw new NotFoundException("found, but not a UserStorageProvider");
         }
 
-        session.users().removeImportedUsers(realm, id);
+        userProvider.removeImportedUsers(realm, id);
     }
 
     /**
      * Unlink imported users from a storage provider
-     *
-     * @param id
-     * @return
      */
     @POST
     @Path("{id}/unlink-users")
@@ -193,15 +181,19 @@ public class UserStorageProviderResource {
             throw new NotFoundException("found, but not a UserStorageProvider");
         }
 
-        session.users().unlinkUsers(realm, id);
+        userProvider.unlinkUsers(realm, id);
     }
+
+    @Autowired
+    private UserProvider userProvider;
+
+    @Autowired
+    private Map<ComponentModel, LDAPStorageMapper> ldapStorageMappers;
 
     /**
      * Trigger sync of mapper data related to ldap mapper (roles, groups, ...)
      * <p>
      * direction is "fedToKeycloak" or "keycloakToFed"
-     *
-     * @return
      */
     @POST
     @Path("{parentId}/mappers/{id}/sync")
@@ -215,10 +207,7 @@ public class UserStorageProviderResource {
         ComponentModel mapperModel = realm.getComponent(mapperId);
         if (mapperModel == null) throw new NotFoundException("Mapper model not found");
 
-        LDAPStorageProvider ldapProvider = (LDAPStorageProvider) session.getProvider(UserStorageProvider.class, parentModel);
-        LDAPStorageMapper mapper = session.getProvider(LDAPStorageMapper.class, mapperModel);
-
-//        ServicesLogger.LOGGER.syncingDataForMapper(mapperModel.getName(), mapperModel.getProviderId(), direction);
+        LDAPStorageMapper mapper = ldapStorageMappers.get(mapperModel);
 
         SynchronizationResult syncResult;
         if ("fedToKeycloak".equals(direction)) {
@@ -232,9 +221,7 @@ public class UserStorageProviderResource {
         Map<String, Object> eventRep = new HashMap<>();
         eventRep.put("action", direction);
         eventRep.put("result", syncResult);
-        adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).representation(eventRep).success();
+        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).representation(eventRep).success();
         return syncResult;
     }
-
-
 }

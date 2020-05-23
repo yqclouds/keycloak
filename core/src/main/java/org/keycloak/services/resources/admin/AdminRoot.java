@@ -16,15 +16,16 @@
  */
 package org.keycloak.services.resources.admin;
 
+import com.hsbc.unified.iam.core.ClientConnection;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.HttpResponse;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.jose.jws.JWSInputException;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.ThemeManager;
 import org.keycloak.protocol.oidc.TokenManager;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.services.ForbiddenException;
@@ -38,6 +39,7 @@ import org.keycloak.theme.Theme;
 import org.keycloak.urls.UrlType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
@@ -68,7 +70,7 @@ public class AdminRoot {
     protected TokenManager tokenManager;
 
     @Context
-    protected KeycloakSession session;
+    protected KeycloakContext keycloakContext;
 
     public AdminRoot() {
         this.tokenManager = new TokenManager();
@@ -99,13 +101,16 @@ public class AdminRoot {
         return adminBaseUrl(base).path(AdminRoot.class, "getRealmsAdmin");
     }
 
-    public static Theme getTheme(KeycloakSession session, RealmModel realm) throws IOException {
-        return session.theme().getTheme(Theme.Type.ADMIN);
+    @Autowired
+    private ThemeManager themeManager;
+
+    public Theme getTheme(RealmModel realm) throws IOException {
+        return themeManager.getTheme(Theme.Type.ADMIN);
     }
 
-    public static Properties getMessages(KeycloakSession session, RealmModel realm, String lang) {
+    public Properties getMessages(RealmModel realm, String lang) {
         try {
-            Theme theme = getTheme(session, realm);
+            Theme theme = getTheme(realm);
             Locale locale = lang != null ? Locale.forLanguageTag(lang) : Locale.ENGLISH;
             return theme.getMessages(locale);
         } catch (IOException e) {
@@ -114,18 +119,18 @@ public class AdminRoot {
         }
     }
 
-    public static Properties getMessages(KeycloakSession session, RealmModel realm, String lang, String... bundles) {
+    public Properties getMessages(RealmModel realm, String lang, String... bundles) {
         Properties compound = new Properties();
         for (String bundle : bundles) {
-            Properties current = getMessages(session, realm, lang, bundle);
+            Properties current = getMessages(realm, lang, bundle);
             compound.putAll(current);
         }
         return compound;
     }
 
-    private static Properties getMessages(KeycloakSession session, RealmModel realm, String lang, String bundle) {
+    private Properties getMessages(RealmModel realm, String lang, String bundle) {
         try {
-            Theme theme = getTheme(session, realm);
+            Theme theme = getTheme(realm);
             Locale locale = lang != null ? Locale.forLanguageTag(lang) : Locale.ENGLISH;
             return theme.getMessages(bundle, locale);
         } catch (IOException e) {
@@ -136,23 +141,17 @@ public class AdminRoot {
 
     /**
      * Convenience path to master realm admin console
-     *
-     * @return
-     * @exclude
      */
     @GET
     public Response masterRealmAdminConsoleRedirect() {
-        RealmModel master = new RealmManager(session).getKeycloakAdministrationRealm();
+        RealmModel master = new RealmManager().getKeycloakAdministrationRealm();
         return Response.status(302).location(
-                session.getContext().getUri(UrlType.ADMIN).getBaseUriBuilder().path(AdminRoot.class).path(AdminRoot.class, "getAdminConsole").path("/").build(master.getName())
+                keycloakContext.getUri(UrlType.ADMIN).getBaseUriBuilder().path(AdminRoot.class).path(AdminRoot.class, "getAdminConsole").path("/").build(master.getName())
         ).build();
     }
 
     /**
      * Convenience path to master realm admin console
-     *
-     * @return
-     * @exclude
      */
     @Path("index.{html:html}") // expression is actually "index.html" but this is a hack to get around jax-doclet bug
     @GET
@@ -165,7 +164,7 @@ public class AdminRoot {
         if (realm == null) {
             throw new NotFoundException("Realm not found.  Did you type in a bad URL?");
         }
-        session.getContext().setRealm(realm);
+        keycloakContext.setRealm(realm);
         return realm;
     }
 
@@ -173,12 +172,10 @@ public class AdminRoot {
      * path to realm admin console ui
      *
      * @param name Realm name (not id!)
-     * @return
-     * @exclude
      */
     @Path("{realm}/console")
     public AdminConsole getAdminConsole(final @PathParam("realm") String name) {
-        RealmManager realmManager = new RealmManager(session);
+        RealmManager realmManager = new RealmManager();
         RealmModel realm = locateRealm(name, realmManager);
         AdminConsole service = new AdminConsole(realm);
         ResteasyProviderFactory.getInstance().injectProperties(service);
@@ -196,13 +193,13 @@ public class AdminRoot {
             throw new NotAuthorizedException("Bearer token format error");
         }
         String realmName = token.getIssuer().substring(token.getIssuer().lastIndexOf('/') + 1);
-        RealmManager realmManager = new RealmManager(session);
+        RealmManager realmManager = new RealmManager();
         RealmModel realm = realmManager.getRealmByName(realmName);
         if (realm == null) {
             throw new NotAuthorizedException("Unknown realm in token");
         }
-        session.getContext().setRealm(realm);
-        AuthenticationManager.AuthResult authResult = authManager.authenticateBearerToken(session, realm, session.getContext().getUri(), clientConnection, headers);
+        keycloakContext.setRealm(realm);
+        AuthenticationManager.AuthResult authResult = authManager.authenticateBearerToken(realm, keycloakContext.getUri(), clientConnection, headers);
         if (authResult == null) {
             LOG.debug("Token not valid");
             throw new NotAuthorizedException("Bearer");
@@ -219,9 +216,6 @@ public class AdminRoot {
 
     /**
      * Base Path to realm admin REST interface
-     *
-     * @param headers
-     * @return
      */
     @Path("realms")
     public Object getRealmsAdmin(@Context final HttpHeaders headers) {
@@ -243,9 +237,6 @@ public class AdminRoot {
 
     /**
      * General information about the server
-     *
-     * @param headers
-     * @return
      */
     @Path("serverinfo")
     public Object getServerInfo(@Context final HttpHeaders headers) {

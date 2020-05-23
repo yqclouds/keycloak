@@ -19,13 +19,12 @@ package org.keycloak.services.resources.admin;
 
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.ClientInitialAccessModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
+import org.keycloak.models.*;
 import org.keycloak.representations.idm.ClientInitialAccessCreatePresentation;
 import org.keycloak.representations.idm.ClientInitialAccessPresentation;
 import org.keycloak.services.clientregistration.ClientRegistrationTokenUtils;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
@@ -47,7 +46,15 @@ public class ClientInitialAccessResource {
     private final AdminEventBuilder adminEvent;
 
     @Context
-    protected KeycloakSession session;
+    protected KeycloakContext keycloakContext;
+    @Autowired
+    private UserSessionProvider userSessionProvider;
+    @Autowired
+    private UserProvider userProvider;
+    @Autowired
+    private RealmProvider realmProvider;
+    @Autowired
+    private ClientRegistrationTokenUtils clientRegistrationTokenUtils;
 
     public ClientInitialAccessResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.auth = auth;
@@ -71,17 +78,17 @@ public class ClientInitialAccessResource {
         int expiration = config.getExpiration() != null ? config.getExpiration() : 0;
         int count = config.getCount() != null ? config.getCount() : 1;
 
-        ClientInitialAccessModel clientInitialAccessModel = session.realms().createClientInitialAccessModel(realm, expiration, count);
+        ClientInitialAccessModel clientInitialAccessModel = realmProvider.createClientInitialAccessModel(realm, expiration, count);
 
-        adminEvent.operation(OperationType.CREATE).resourcePath(session.getContext().getUri(), clientInitialAccessModel.getId()).representation(config).success();
+        adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri(), clientInitialAccessModel.getId()).representation(config).success();
 
         ClientInitialAccessPresentation rep = wrap(clientInitialAccessModel);
 
-        String token = ClientRegistrationTokenUtils.createInitialAccessToken(session, realm, clientInitialAccessModel);
+        String token = clientRegistrationTokenUtils.createInitialAccessToken(realm, clientInitialAccessModel);
         rep.setToken(token);
 
         response.setStatus(Response.Status.CREATED.getStatusCode());
-        response.setHeader(HttpHeaders.LOCATION, session.getContext().getUri().getAbsolutePathBuilder().path(clientInitialAccessModel.getId()).build().toString());
+        response.setHeader(HttpHeaders.LOCATION, keycloakContext.getUri().getAbsolutePathBuilder().path(clientInitialAccessModel.getId()).build().toString());
 
         return rep;
     }
@@ -91,7 +98,7 @@ public class ClientInitialAccessResource {
     public List<ClientInitialAccessPresentation> list() {
         auth.clients().requireView();
 
-        List<ClientInitialAccessModel> models = session.realms().listClientInitialAccess(realm);
+        List<ClientInitialAccessModel> models = realmProvider.listClientInitialAccess(realm);
         List<ClientInitialAccessPresentation> reps = new LinkedList<>();
         for (ClientInitialAccessModel m : models) {
             ClientInitialAccessPresentation r = wrap(m);
@@ -105,8 +112,8 @@ public class ClientInitialAccessResource {
     public void delete(final @PathParam("id") String id) {
         auth.clients().requireManage();
 
-        session.realms().removeClientInitialAccessModel(realm, id);
-        adminEvent.operation(OperationType.DELETE).resourcePath(session.getContext().getUri()).success();
+        realmProvider.removeClientInitialAccessModel(realm, id);
+        adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
     }
 
     private ClientInitialAccessPresentation wrap(ClientInitialAccessModel model) {

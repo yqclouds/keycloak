@@ -46,7 +46,7 @@ public class KeycloakUriInfo implements UriInfo {
     @Autowired
     private HostnameProvider hostnameProvider;
 
-    public KeycloakUriInfo(KeycloakSession session, UrlType type, UriInfo delegate) {
+    public KeycloakUriInfo(UrlType type, UriInfo delegate) {
         this.delegate = delegate;
         this.type = type;
     }

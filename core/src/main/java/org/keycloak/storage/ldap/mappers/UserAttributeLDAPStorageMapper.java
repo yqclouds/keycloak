@@ -127,7 +127,7 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
     }
 
     // throw ModelDuplicateException if there is different user in model with same email
-    protected void checkDuplicateEmail(String userModelAttrName, String email, RealmModel realm, KeycloakSession session, UserModel user) {
+    protected void checkDuplicateEmail(String userModelAttrName, String email, RealmModel realm, UserModel user) {
         if (email == null || realm.isDuplicateEmailsAllowed()) return;
         if (UserModel.EMAIL.equalsIgnoreCase(userModelAttrName)) {
             // lowercase before search
@@ -142,7 +142,7 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
         }
     }
 
-    protected void checkDuplicateUsername(String userModelAttrName, String username, RealmModel realm, KeycloakSession session, UserModel user) {
+    protected void checkDuplicateUsername(String userModelAttrName, String username, RealmModel realm, UserModel user) {
         // only if working in USERNAME attribute
         if (UserModel.USERNAME.equalsIgnoreCase(userModelAttrName)) {
             if (username == null || username.isEmpty()) {

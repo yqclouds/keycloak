@@ -17,16 +17,19 @@
 
 package org.keycloak.services.scheduled;
 
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmProvider;
 import org.keycloak.timer.ScheduledTask;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class ClearExpiredClientInitialAccessTokens implements ScheduledTask {
+    @Autowired
+    private RealmProvider realmProvider;
 
     @Override
-    public void run(KeycloakSession session) {
-        session.realms().removeExpiredClientInitialAccess();
+    public void run() {
+        realmProvider.removeExpiredClientInitialAccess();
     }
 }

@@ -16,17 +16,18 @@
  */
 package org.keycloak.authorization.admin;
 
-import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import org.keycloak.authorization.AuthorizationProvider;
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
+import org.jboss.resteasy.spi.ResteasyProviderFactory;
+import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderAdminService;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
 import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.Path;
 import java.io.IOException;
@@ -85,9 +86,13 @@ public class PolicyTypeService extends PolicyService {
         return representation;
     }
 
+    @Autowired
+    private ModelToRepresentation modelToRepresentation;
+
+
     @Override
     protected AbstractPolicyRepresentation toRepresentation(PolicyModel policy, String fields, AuthorizationProvider authorization) {
-        return ModelToRepresentation.toRepresentation(policy, authorization, false, false);
+        return modelToRepresentation.toRepresentation(policy, authorization, false, false);
     }
 
     @Override

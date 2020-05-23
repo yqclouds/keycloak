@@ -1,11 +1,12 @@
 package org.keycloak.url;
 
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.urls.HostnameProvider;
 import org.keycloak.urls.UrlType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
@@ -15,16 +16,16 @@ public class DefaultHostnameProvider implements HostnameProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultHostnameProvider.class);
 
-    private final KeycloakSession session;
-
     private final URI frontendUri;
     private final boolean forceBackendUrlToFrontendUrl;
     private String currentRealm;
     private URI realmUri;
     private URI adminUri;
 
-    public DefaultHostnameProvider(KeycloakSession session, URI frontendUri, URI adminUri, boolean forceBackendUrlToFrontendUrl) {
-        this.session = session;
+    @Autowired
+    private KeycloakContext keycloakContext;
+
+    public DefaultHostnameProvider(URI frontendUri, URI adminUri, boolean forceBackendUrlToFrontendUrl) {
         this.frontendUri = frontendUri;
         this.adminUri = adminUri;
         this.forceBackendUrlToFrontendUrl = forceBackendUrlToFrontendUrl;
@@ -81,7 +82,7 @@ public class DefaultHostnameProvider implements HostnameProvider {
     }
 
     private URI getRealmUri() {
-        RealmModel realm = session.getContext().getRealm();
+        RealmModel realm = keycloakContext.getRealm();
         if (realm == null) {
             currentRealm = null;
             realmUri = null;
@@ -93,7 +94,7 @@ public class DefaultHostnameProvider implements HostnameProvider {
             currentRealm = realm.getId();
             realmUri = null;
 
-            String realmFrontendUrl = session.getContext().getRealm().getAttribute("frontendUrl");
+            String realmFrontendUrl = keycloakContext.getRealm().getAttribute("frontendUrl");
             if (realmFrontendUrl != null && !realmFrontendUrl.isEmpty()) {
                 try {
                     realmUri = new URI(realmFrontendUrl);

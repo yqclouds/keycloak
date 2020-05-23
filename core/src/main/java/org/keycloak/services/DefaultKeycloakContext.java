@@ -49,7 +49,7 @@ public class DefaultKeycloakContext implements KeycloakContext {
 
     private AuthenticationSessionModel authenticationSession;
 
-    public DefaultKeycloakContext(KeycloakSession session) {
+    public DefaultKeycloakContext() {
         this.session = session;
     }
 
@@ -71,7 +71,7 @@ public class DefaultKeycloakContext implements KeycloakContext {
             }
 
             UriInfo originalUriInfo = getContextObject(UriInfo.class);
-            uriInfo.put(type, new KeycloakUriInfo(session, type, originalUriInfo));
+            uriInfo.put(type, new KeycloakUriInfo(type, originalUriInfo));
         }
         return uriInfo.get(type);
     }

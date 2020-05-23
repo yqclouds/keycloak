@@ -132,8 +132,11 @@ public class PolicyResourceService {
         return toRepresentation(policy, null, authorization);
     }
 
+    @Autowired
+    private ModelToRepresentation modelToRepresentation;
+
     protected AbstractPolicyRepresentation toRepresentation(PolicyModel policy, String fields, AuthorizationProvider authorization) {
-        return ModelToRepresentation.toRepresentation(policy, authorization, true, false, fields != null && fields.equals("*"));
+        return modelToRepresentation.toRepresentation(policy, authorization, true, false, fields != null && fields.equals("*"));
     }
 
     @Path("/dependentPolicies")

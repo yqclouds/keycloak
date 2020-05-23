@@ -158,7 +158,7 @@ public class FreeMarkerAccountProvider implements AccountProvider {
                 attributes.put("sessions", new SessionsBean(realm, sessions));
                 break;
             case APPLICATIONS:
-                attributes.put("applications", new ApplicationsBean(session, realm, user));
+                attributes.put("applications", new ApplicationsBean(realm, user));
                 attributes.put("advancedMsg", new AdvancedMessageFormatterMethod(locale, messagesBundle));
                 break;
             case PASSWORD:
@@ -179,6 +179,9 @@ public class FreeMarkerAccountProvider implements AccountProvider {
         return processTemplate(theme, page, attributes, locale);
     }
 
+    @Autowired
+    private ThemeManager themeManager;
+
     /**
      * Get Theme used for page rendering.
      *
@@ -186,7 +189,7 @@ public class FreeMarkerAccountProvider implements AccountProvider {
      * @throws IOException in case of Theme loading problem
      */
     protected Theme getTheme() throws IOException {
-        return session.theme().getTheme(Theme.Type.ACCOUNT);
+        return themeManager.getTheme(Theme.Type.ACCOUNT);
     }
 
     /**

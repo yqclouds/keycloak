@@ -37,10 +37,10 @@ public class ApplicationsBean {
 
     private List<ApplicationEntry> applications = new LinkedList<>();
 
-    public ApplicationsBean(KeycloakSession session, RealmModel realm, UserModel user) {
+    public ApplicationsBean(RealmModel realm, UserModel user) {
         Set<ClientModel> offlineClients = new UserSessionManager().findClientsWithOfflineToken(realm, user);
 
-        for (ClientModel client : getApplications(session, realm, user)) {
+        for (ClientModel client : getApplications(realm, user)) {
             if (isAdminClient(client) && !AdminPermissions.realms(realm, user).isAdmin()) {
                 continue;
             }
@@ -89,7 +89,7 @@ public class ApplicationsBean {
                 || client.getClientId().equals(Constants.ADMIN_CONSOLE_CLIENT_ID);
     }
 
-    private Set<ClientModel> getApplications(KeycloakSession session, RealmModel realm, UserModel user) {
+    private Set<ClientModel> getApplications(RealmModel realm, UserModel user) {
         Set<ClientModel> clients = new HashSet<>();
 
         for (ClientModel client : realm.getClients()) {

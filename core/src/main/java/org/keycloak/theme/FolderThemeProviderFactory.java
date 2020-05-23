@@ -17,7 +17,6 @@
 
 package org.keycloak.theme;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -38,7 +37,7 @@ public class FolderThemeProviderFactory implements ThemeProviderFactory {
     private String dir;
 
     @Override
-    public ThemeProvider create(KeycloakSession sessions) {
+    public ThemeProvider create() {
         return themeProvider;
     }
 

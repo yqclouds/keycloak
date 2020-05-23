@@ -166,8 +166,8 @@ public class ClientsResource {
         auth.clients().requireManage();
 
         ValidationMessages validationMessages = new ValidationMessages();
-        if (!ClientValidator.validate(rep, validationMessages) || !pairwiseClientValidator.validate(session, rep, validationMessages)) {
-            Properties messages = AdminRoot.getMessages(session, realm, auth.adminAuth().getToken().getLocale());
+        if (!ClientValidator.validate(rep, validationMessages) || !pairwiseClientValidator.validate(rep, validationMessages)) {
+            Properties messages = AdminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
             throw new ErrorResponseException(
                     validationMessages.getStringMessages(),
                     validationMessages.getStringMessages(messages),
@@ -176,7 +176,7 @@ public class ClientsResource {
         }
 
         try {
-            ClientModel clientModel = ClientManager.createClient(session, realm, rep, true);
+            ClientModel clientModel = ClientManager.createClient(realm, rep, true);
 
             if (TRUE.equals(rep.isServiceAccountsEnabled())) {
                 UserModel serviceAccount = session.users().getServiceAccount(clientModel);
@@ -200,7 +200,7 @@ public class ClientsResource {
                 }
             }
 
-            clientValidationUtil.validate(session, clientModel, true, c -> {
+            clientValidationUtil.validate(clientModel, true, c -> {
                 session.getTransactionManager().setRollbackOnly();
                 throw new ErrorResponseException(Errors.INVALID_INPUT, c.getError(), Response.Status.BAD_REQUEST);
             });

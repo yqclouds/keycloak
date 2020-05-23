@@ -19,7 +19,6 @@ package org.keycloak.storage.ldap.mappers.membership.role;
 
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.LDAPConstants;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -197,7 +196,7 @@ public class RoleLDAPStorageMapperFactory extends AbstractLDAPStorageMapperFacto
     }
 
     @Override
-    public void onCreate(KeycloakSession session, RealmModel realm, ComponentModel model) {
+    public void onCreate(RealmModel realm, ComponentModel model) {
         ComponentModel parentModel = realm.getComponent(model.getParentId());
         UserStorageProviderModel parent = new UserStorageProviderModel(parentModel);
         onParentUpdate(realm, parent, parent, model);
@@ -205,7 +204,7 @@ public class RoleLDAPStorageMapperFactory extends AbstractLDAPStorageMapperFacto
     }
 
     @Override
-    public void onUpdate(KeycloakSession session, RealmModel realm, ComponentModel oldModel, ComponentModel newModel) {
+    public void onUpdate(RealmModel realm, ComponentModel oldModel, ComponentModel newModel) {
         ComponentModel parentModel = realm.getComponent(newModel.getParentId());
         UserStorageProviderModel parent = new UserStorageProviderModel(parentModel);
         onParentUpdate(realm, parent, parent, newModel);
@@ -244,7 +243,7 @@ public class RoleLDAPStorageMapperFactory extends AbstractLDAPStorageMapperFacto
 
 
     @Override
-    public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel config) throws ComponentValidationException {
+    public void validateConfiguration(RealmModel realm, ComponentModel config) throws ComponentValidationException {
         checkMandatoryConfigAttribute(RoleMapperConfig.ROLES_DN, "LDAP Roles DN", config);
         checkMandatoryConfigAttribute(RoleMapperConfig.MODE, "Mode", config);
 

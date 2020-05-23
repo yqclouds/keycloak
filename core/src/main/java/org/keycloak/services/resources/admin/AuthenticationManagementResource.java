@@ -54,7 +54,7 @@ public class AuthenticationManagementResource {
     private AdminPermissionEvaluator auth;
     private AdminEventBuilder adminEvent;
 
-    public AuthenticationManagementResource(RealmModel realm, KeycloakSession session, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public AuthenticationManagementResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.realm = realm;
         this.session = session;
         this.auth = auth;
@@ -522,7 +522,7 @@ public class AuthenticationManagementResource {
                 recurseExecutions(subFlow, result, level + 1);
             } else {
                 String providerId = execution.getAuthenticator();
-                ConfigurableAuthenticatorFactory factory = CredentialHelper.getConfigurableAuthenticatorFactory(session, providerId);
+                ConfigurableAuthenticatorFactory factory = CredentialHelper.getConfigurableAuthenticatorFactory(providerId);
                 rep.setDisplayName(factory.getDisplayType());
                 rep.setConfigurable(factory.isConfigurable());
                 for (AuthenticationExecutionRequirement choice : factory.getRequirementChoices()) {
@@ -1044,7 +1044,7 @@ public class AuthenticationManagementResource {
     public AuthenticatorConfigInfoRepresentation getAuthenticatorConfigDescription(@PathParam("providerId") String providerId) {
         auth.realm().requireViewRealm();
 
-        ConfigurableAuthenticatorFactory factory = CredentialHelper.getConfigurableAuthenticatorFactory(session, providerId);
+        ConfigurableAuthenticatorFactory factory = CredentialHelper.getConfigurableAuthenticatorFactory(providerId);
         if (factory == null) {
             throw new NotFoundException("Could not find authenticator provider");
         }
@@ -1080,7 +1080,7 @@ public class AuthenticationManagementResource {
         Map<String, List<ConfigPropertyRepresentation>> toReturn = new HashMap<>();
         for (ProviderFactory clientAuthenticatorFactory : factories) {
             String providerId = clientAuthenticatorFactory.getId();
-            ConfigurableAuthenticatorFactory factory = CredentialHelper.getConfigurableAuthenticatorFactory(session, providerId);
+            ConfigurableAuthenticatorFactory factory = CredentialHelper.getConfigurableAuthenticatorFactory(providerId);
             ClientAuthenticatorFactory clientAuthFactory = (ClientAuthenticatorFactory) factory;
             List<ProviderConfigProperty> perClientConfigProps = clientAuthFactory.getConfigPropertiesPerClient();
             List<ConfigPropertyRepresentation> result = new LinkedList<>();

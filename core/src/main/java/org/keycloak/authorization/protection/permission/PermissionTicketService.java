@@ -62,6 +62,8 @@ public class PermissionTicketService {
 
     @Autowired
     private UserStorageManager userStorageManager;
+    @Autowired
+    private ModelToRepresentation modelToRepresentation;
 
     @POST
     @Consumes("application/json")
@@ -125,7 +127,7 @@ public class PermissionTicketService {
         PermissionTicketModel ticket = ticketStore.create(resource.getId(), scope.getId(), user.getId(), resourceServer);
         if (representation.isGranted())
             ticket.setGrantedTimestamp(java.lang.System.currentTimeMillis());
-        representation = ModelToRepresentation.toRepresentation(ticket, authorization);
+        representation = modelToRepresentation.toRepresentation(ticket, authorization);
         return Response.ok(representation).build();
     }
 
@@ -219,7 +221,7 @@ public class PermissionTicketService {
 
         return Response.ok().entity(permissionTicketStore.find(filters, resourceServer.getId(), firstResult != null ? firstResult : -1, maxResult != null ? maxResult : Constants.DEFAULT_MAX_RESULTS)
                 .stream()
-                .map(permissionTicket -> ModelToRepresentation.toRepresentation(permissionTicket, authorization, returnNames == null ? false : returnNames))
+                .map(permissionTicket -> modelToRepresentation.toRepresentation(permissionTicket, authorization, returnNames == null ? false : returnNames))
                 .collect(Collectors.toList()))
                 .build();
     }

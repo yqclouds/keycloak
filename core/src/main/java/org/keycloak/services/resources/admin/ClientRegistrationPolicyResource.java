@@ -19,8 +19,7 @@ package org.keycloak.services.resources.admin;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderFactory;
@@ -28,6 +27,7 @@ import org.keycloak.representations.idm.ComponentTypeRepresentation;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicyFactory;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -48,15 +48,16 @@ public class ClientRegistrationPolicyResource {
     private final AdminEventBuilder adminEvent;
 
     @Context
-    protected KeycloakSession session;
+    protected KeycloakContext keycloakContext;
+
+    @Autowired
+    private List<ClientRegistrationPolicyFactory> clientRegistrationPolicyFactories;
 
     public ClientRegistrationPolicyResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.auth = auth;
         this.realm = realm;
         this.adminEvent = adminEvent.resource(ResourceType.CLIENT_INITIAL_ACCESS_MODEL);
-
     }
-
 
     /**
      * Base path for retrieve providers with the configProperties properly filled
@@ -68,12 +69,10 @@ public class ClientRegistrationPolicyResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public List<ComponentTypeRepresentation> getProviders() {
-        List<ProviderFactory> providerFactories = session.getSessionFactory().getProviderFactories(ClientRegistrationPolicy.class);
-
-        return providerFactories.stream().map((ProviderFactory factory) -> {
+        return clientRegistrationPolicyFactories.stream().map((ProviderFactory factory) -> {
 
             ClientRegistrationPolicyFactory clientRegFactory = (ClientRegistrationPolicyFactory) factory;
-            List<ProviderConfigProperty> configProps = clientRegFactory.getConfigProperties(session);
+            List<ProviderConfigProperty> configProps = clientRegFactory.getConfigProperties();
 
             ComponentTypeRepresentation rep = new ComponentTypeRepresentation();
             rep.setId(clientRegFactory.getId());

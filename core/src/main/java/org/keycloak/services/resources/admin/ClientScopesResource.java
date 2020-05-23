@@ -21,7 +21,7 @@ import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.ModelDuplicateException;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.ModelToRepresentation;
@@ -31,9 +31,9 @@ import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
@@ -49,8 +49,6 @@ import java.util.List;
 public class ClientScopesResource {
     protected static final Logger LOG = LoggerFactory.getLogger(ClientScopesResource.class);
     protected RealmModel realm;
-    @Context
-    protected KeycloakSession session;
     private AdminPermissionEvaluator auth;
     private AdminEventBuilder adminEvent;
 
@@ -59,6 +57,14 @@ public class ClientScopesResource {
         this.auth = auth;
         this.adminEvent = adminEvent.resource(ResourceType.CLIENT_SCOPE);
     }
+
+    @Autowired
+    private KeycloakContext keycloakContext;
+    @Autowired
+    private ModelToRepresentation modelToRepresentation;
+
+    @Autowired
+    private RepresentationToModel representationToModel;
 
     /**
      * Get client scopes belonging to the realm
@@ -76,7 +82,7 @@ public class ClientScopesResource {
 
         boolean viewable = auth.clients().canViewClientScopes();
         for (ClientScopeModel clientModel : clientModels) {
-            if (viewable) rep.add(ModelToRepresentation.toRepresentation(clientModel));
+            if (viewable) rep.add(modelToRepresentation.toRepresentation(clientModel));
             else {
                 ClientScopeRepresentation tempRep = new ClientScopeRepresentation();
                 tempRep.setName(clientModel.getName());
@@ -102,11 +108,11 @@ public class ClientScopesResource {
         auth.clients().requireManageClientScopes();
 
         try {
-            ClientScopeModel clientModel = RepresentationToModel.createClientScope(session, realm, rep);
+            ClientScopeModel clientModel = representationToModel.createClientScope(realm, rep);
 
-            adminEvent.operation(OperationType.CREATE).resourcePath(session.getContext().getUri(), clientModel.getId()).representation(rep).success();
+            adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri(), clientModel.getId()).representation(rep).success();
 
-            return Response.created(session.getContext().getUri().getAbsolutePathBuilder().path(clientModel.getId()).build()).build();
+            return Response.created(keycloakContext.getUri().getAbsolutePathBuilder().path(clientModel.getId()).build()).build();
         } catch (ModelDuplicateException e) {
             return ErrorResponse.exists("Client ScopeModel " + rep.getName() + " already exists");
         }
@@ -114,9 +120,6 @@ public class ClientScopesResource {
 
     /**
      * Base path for managing a specific client scope.
-     *
-     * @param id id of client scope (not name)
-     * @return
      */
     @Path("{id}")
     @NoCache
@@ -126,7 +129,7 @@ public class ClientScopesResource {
         if (clientModel == null) {
             throw new NotFoundException("Could not find client scope");
         }
-        ClientScopeResource clientResource = new ClientScopeResource(realm, auth, clientModel, session, adminEvent);
+        ClientScopeResource clientResource = new ClientScopeResource(realm, auth, clientModel, adminEvent);
         ResteasyProviderFactory.getInstance().injectProperties(clientResource);
         return clientResource;
     }

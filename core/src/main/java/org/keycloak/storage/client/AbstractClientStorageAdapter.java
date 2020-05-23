@@ -17,7 +17,6 @@
 package org.keycloak.storage.client;
 
 import com.hsbc.unified.iam.entity.events.ClientUpdatedEvent;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.storage.StorageId;
 import org.springframework.context.ApplicationEventPublisher;
@@ -36,15 +35,13 @@ import java.util.Map;
  */
 public abstract class AbstractClientStorageAdapter extends UnsupportedOperationsClientStorageAdapter
         implements ApplicationEventPublisherAware {
-    protected KeycloakSession session;
     protected RealmModel realm;
     protected ClientStorageProviderModel component;
     private StorageId storageId;
 
     private ApplicationEventPublisher applicationEventPublisher;
 
-    public AbstractClientStorageAdapter(KeycloakSession session, RealmModel realm, ClientStorageProviderModel component) {
-        this.session = session;
+    public AbstractClientStorageAdapter(RealmModel realm, ClientStorageProviderModel component) {
         this.realm = realm;
         this.component = component;
     }

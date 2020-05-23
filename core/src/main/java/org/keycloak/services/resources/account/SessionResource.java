@@ -26,6 +26,7 @@ import org.keycloak.representations.account.SessionRepresentation;
 import org.keycloak.services.managers.Auth;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.resources.Cors;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -41,19 +42,20 @@ import java.util.stream.Collectors;
  */
 public class SessionResource {
 
-    private final KeycloakSession session;
     private final Auth auth;
     private final RealmModel realm;
     private final UserModel user;
     private HttpRequest request;
 
-    public SessionResource(KeycloakSession session, Auth auth, HttpRequest request) {
-        this.session = session;
+    public SessionResource(Auth auth, HttpRequest request) {
         this.auth = auth;
         this.realm = auth.getRealm();
         this.user = auth.getUser();
         this.request = request;
     }
+
+    @Autowired
+    private UserSessionProvider userSessionProvider;
 
     /**
      * Get session information.
@@ -64,7 +66,7 @@ public class SessionResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public Response toRepresentation() {
-        return Cors.add(request, Response.ok(session.sessions().getUserSessions(realm, user).stream()
+        return Cors.add(request, Response.ok(userSessionProvider.getUserSessions(realm, user).stream()
                 .map(this::toRepresentation).collect(Collectors.toList()))).auth().allowedOrigins(auth.getToken()).build();
     }
 
@@ -79,7 +81,7 @@ public class SessionResource {
     @NoCache
     public Response devices() {
         Map<String, DeviceRepresentation> reps = new HashMap<>();
-        List<UserSessionModel> sessions = session.sessions().getUserSessions(realm, user);
+        List<UserSessionModel> sessions = userSessionProvider.getUserSessions(realm, user);
 
         for (UserSessionModel s : sessions) {
             DeviceRepresentation device = getAttachedDevice(s);
@@ -121,16 +123,19 @@ public class SessionResource {
     @NoCache
     public Response logout(@QueryParam("current") boolean removeCurrent) {
         auth.require(AccountRoles.MANAGE_ACCOUNT);
-        List<UserSessionModel> userSessions = session.sessions().getUserSessions(realm, user);
+        List<UserSessionModel> userSessions = userSessionProvider.getUserSessions(realm, user);
 
         for (UserSessionModel s : userSessions) {
             if (removeCurrent || !isCurrentSession(s)) {
-                AuthenticationManager.backchannelLogout(session, s, true);
+                authenticationManager.backchannelLogout(s, true);
             }
         }
 
         return Cors.add(request, Response.noContent()).auth().allowedOrigins(auth.getToken()).build();
     }
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     /**
      * Remove a specific session
@@ -144,9 +149,9 @@ public class SessionResource {
     @NoCache
     public Response logout(@PathParam("id") String id) {
         auth.require(AccountRoles.MANAGE_ACCOUNT);
-        UserSessionModel userSession = session.sessions().getUserSession(realm, id);
+        UserSessionModel userSession = userSessionProvider.getUserSession(realm, id);
         if (userSession != null && userSession.getUser().equals(user)) {
-            AuthenticationManager.backchannelLogout(session, userSession, true);
+            authenticationManager.backchannelLogout(userSession, true);
         }
         return Cors.add(request, Response.noContent()).auth().allowedOrigins(auth.getToken()).build();
     }

@@ -121,7 +121,7 @@ public class UMAPolicyProviderFactory implements PolicyProviderFactory<UmaPermis
         Set<PolicyModel> associatedPolicies = policy.getAssociatedPolicies();
 
         for (PolicyModel associatedPolicy : associatedPolicies) {
-            AbstractPolicyRepresentation associatedRep = ModelToRepresentation.toRepresentation(associatedPolicy, authorization, false, false);
+            AbstractPolicyRepresentation associatedRep = modelToRepresentation.toRepresentation(associatedPolicy, authorization, false, false);
 
             if ("role".equals(associatedRep.getType())) {
                 RolePolicyRepresentation rep = RolePolicyRepresentation.class.cast(associatedRep);
@@ -302,6 +302,8 @@ public class UMAPolicyProviderFactory implements PolicyProviderFactory<UmaPermis
 
     @Autowired
     private UserProvider userProvider;
+    @Autowired
+    private ModelToRepresentation modelToRepresentation;
 
     @Override
     public UmaPermissionRepresentation toRepresentation(PolicyModel policy, AuthorizationProvider authorization) {
@@ -311,7 +313,7 @@ public class UMAPolicyProviderFactory implements PolicyProviderFactory<UmaPermis
         representation.setOwner(policy.getOwner());
 
         for (PolicyModel associatedPolicy : policy.getAssociatedPolicies()) {
-            AbstractPolicyRepresentation associatedRep = ModelToRepresentation.toRepresentation(associatedPolicy, authorization, false, false);
+            AbstractPolicyRepresentation associatedRep = modelToRepresentation.toRepresentation(associatedPolicy, authorization, false, false);
             RealmModel realm = authorization.getRealm();
 
             if ("role".equals(associatedRep.getType())) {

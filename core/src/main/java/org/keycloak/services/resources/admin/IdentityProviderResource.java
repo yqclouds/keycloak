@@ -17,7 +17,6 @@
 package org.keycloak.services.resources.admin;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.keycloak.broker.provider.IdentityProvider;
 import org.keycloak.broker.provider.IdentityProviderFactory;
 import org.keycloak.broker.provider.IdentityProviderMapper;
 import org.keycloak.events.admin.OperationType;
@@ -27,7 +26,6 @@ import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.models.utils.StripSecretsUtils;
 import org.keycloak.provider.ProviderConfigProperty;
-import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.idm.*;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
@@ -35,6 +33,7 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissionManageme
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -53,13 +52,14 @@ public class IdentityProviderResource {
 
     private final AdminPermissionEvaluator auth;
     private final RealmModel realm;
-    private final KeycloakSession session;
     private final IdentityProviderModel identityProviderModel;
     private final AdminEventBuilder adminEvent;
 
-    public IdentityProviderResource(AdminPermissionEvaluator auth, RealmModel realm, KeycloakSession session, IdentityProviderModel identityProviderModel, AdminEventBuilder adminEvent) {
+    @Autowired
+    private KeycloakContext keycloakContext;
+
+    public IdentityProviderResource(AdminPermissionEvaluator auth, RealmModel realm, IdentityProviderModel identityProviderModel, AdminEventBuilder adminEvent) {
         this.realm = realm;
-        this.session = session;
         this.identityProviderModel = identityProviderModel;
         this.auth = auth;
         this.adminEvent = adminEvent.resource(ResourceType.IDENTITY_PROVIDER);
@@ -89,17 +89,17 @@ public class IdentityProviderResource {
         throw new javax.ws.rs.NotFoundException();
     }
 
-    private static void updateUsersAfterProviderAliasChange(List<UserModel> users, String oldProviderId, String newProviderId, RealmModel realm, KeycloakSession session) {
+    private void updateUsersAfterProviderAliasChange(List<UserModel> users, String oldProviderId, String newProviderId, RealmModel realm) {
         for (UserModel user : users) {
-            FederatedIdentityModel federatedIdentity = session.users().getFederatedIdentity(user, oldProviderId, realm);
+            FederatedIdentityModel federatedIdentity = userProvider.getFederatedIdentity(user, oldProviderId, realm);
             if (federatedIdentity != null) {
                 // Remove old link first
-                session.users().removeFederatedIdentity(realm, user, oldProviderId);
+                userProvider.removeFederatedIdentity(realm, user, oldProviderId);
 
                 // And create new
                 FederatedIdentityModel newFederatedIdentity = new FederatedIdentityModel(newProviderId, federatedIdentity.getUserId(), federatedIdentity.getUserName(),
                         federatedIdentity.getToken());
-                session.users().addFederatedIdentity(realm, user, newFederatedIdentity);
+                userProvider.addFederatedIdentity(realm, user, newFederatedIdentity);
             }
         }
     }
@@ -153,7 +153,7 @@ public class IdentityProviderResource {
             this.realm.removeIdentityProviderMapper(mapper);
         }
 
-        adminEvent.operation(OperationType.DELETE).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
 
         return Response.noContent().build();
     }
@@ -175,9 +175,9 @@ public class IdentityProviderResource {
         }
 
         try {
-            updateIdpFromRep(providerRep, realm, session);
+            updateIdpFromRep(providerRep, realm);
 
-            adminEvent.operation(OperationType.UPDATE).resourcePath(session.getContext().getUri()).representation(providerRep).success();
+            adminEvent.operation(OperationType.UPDATE).resourcePath(keycloakContext.getUri()).representation(providerRep).success();
 
             return Response.noContent().build();
         } catch (IllegalArgumentException e) {
@@ -187,7 +187,12 @@ public class IdentityProviderResource {
         }
     }
 
-    private void updateIdpFromRep(IdentityProviderRepresentation providerRep, RealmModel realm, KeycloakSession session) {
+    @Autowired
+    private UserProvider userProvider;
+    @Autowired
+    private RepresentationToModel representationToModel;
+
+    private void updateIdpFromRep(IdentityProviderRepresentation providerRep, RealmModel realm) {
         String internalId = providerRep.getInternalId();
         String newProviderId = providerRep.getAlias();
         String oldProviderId = getProviderIdByInternalId(realm, internalId);
@@ -196,7 +201,7 @@ public class IdentityProviderResource {
             lookUpProviderIdByAlias(realm, providerRep);
         }
 
-        IdentityProviderModel updated = RepresentationToModel.toModel(realm, providerRep, session);
+        IdentityProviderModel updated = representationToModel.toModel(realm, providerRep);
 
         if (updated.getConfig() != null && ComponentRepresentation.SECRET_VALUE.equals(updated.getConfig().get("clientSecret"))) {
             updated.getConfig().put("clientSecret", identityProviderModel.getConfig() != null ? identityProviderModel.getConfig().get("clientSecret") : null);
@@ -209,21 +214,15 @@ public class IdentityProviderResource {
             // Admin changed the ID (alias) of identity provider. We must update all clients and users
             LOG.debug("Changing providerId in all clients and linked users. oldProviderId=" + oldProviderId + ", newProviderId=" + newProviderId);
 
-            updateUsersAfterProviderAliasChange(session.users().getUsers(realm, false), oldProviderId, newProviderId, realm, session);
+            updateUsersAfterProviderAliasChange(userProvider.getUsers(realm, false), oldProviderId, newProviderId, realm);
         }
     }
 
+    @Autowired
+    private Map<String, IdentityProviderFactory> identityProviderFactories;
+
     private IdentityProviderFactory getIdentityProviderFactory() {
-        List<ProviderFactory> allProviders = new ArrayList<ProviderFactory>();
-
-        allProviders.addAll(this.session.getSessionFactory().getProviderFactories(IdentityProvider.class));
-
-        for (ProviderFactory providerFactory : allProviders) {
-            if (providerFactory.getId().equals(identityProviderModel.getProviderId()))
-                return (IdentityProviderFactory) providerFactory;
-        }
-
-        return null;
+        return identityProviderFactories.get(identityProviderModel.getProviderId());
     }
 
     /**
@@ -244,11 +243,14 @@ public class IdentityProviderResource {
 
         try {
             IdentityProviderFactory factory = getIdentityProviderFactory();
-            return factory.create(session, identityProviderModel).export(session.getContext().getUri(), realm, format);
+            return factory.create(identityProviderModel).export(keycloakContext.getUri(), realm, format);
         } catch (Exception e) {
             return ErrorResponse.error("Could not export public broker configuration for identity provider [" + identityProviderModel.getProviderId() + "].", Response.Status.NOT_FOUND);
         }
     }
+
+    @Autowired
+    private List<IdentityProviderMapper> identityProviderMappers;
 
     /**
      * Get mapper types for identity provider
@@ -263,11 +265,8 @@ public class IdentityProviderResource {
             throw new javax.ws.rs.NotFoundException();
         }
 
-        KeycloakSessionFactory sessionFactory = session.getSessionFactory();
         Map<String, IdentityProviderMapperTypeRepresentation> types = new HashMap<>();
-        List<ProviderFactory> factories = sessionFactory.getProviderFactories(IdentityProviderMapper.class);
-        for (ProviderFactory factory : factories) {
-            IdentityProviderMapper mapper = (IdentityProviderMapper) factory;
+        for (IdentityProviderMapper mapper : identityProviderMappers) {
             for (String type : mapper.getCompatibleProviders()) {
                 if (IdentityProviderMapper.ANY_PROVIDER.equals(type) || type.equals(identityProviderModel.getProviderId())) {
                     IdentityProviderMapperTypeRepresentation rep = new IdentityProviderMapperTypeRepresentation();
@@ -332,10 +331,10 @@ public class IdentityProviderResource {
             return ErrorResponse.error("Failed to add mapper '" + model.getName() + "' to identity provider [" + identityProviderModel.getProviderId() + "].", Response.Status.BAD_REQUEST);
         }
 
-        adminEvent.operation(OperationType.CREATE).resource(ResourceType.IDENTITY_PROVIDER_MAPPER).resourcePath(session.getContext().getUri(), model.getId())
+        adminEvent.operation(OperationType.CREATE).resource(ResourceType.IDENTITY_PROVIDER_MAPPER).resourcePath(keycloakContext.getUri(), model.getId())
                 .representation(mapper).success();
 
-        return Response.created(session.getContext().getUri().getAbsolutePathBuilder().path(model.getId()).build()).build();
+        return Response.created(keycloakContext.getUri().getAbsolutePathBuilder().path(model.getId()).build()).build();
 
     }
 
@@ -382,7 +381,7 @@ public class IdentityProviderResource {
         if (model == null) throw new NotFoundException("Model not found");
         model = RepresentationToModel.toModel(rep);
         realm.updateIdentityProviderMapper(model);
-        adminEvent.operation(OperationType.UPDATE).resource(ResourceType.IDENTITY_PROVIDER_MAPPER).resourcePath(session.getContext().getUri()).representation(rep).success();
+        adminEvent.operation(OperationType.UPDATE).resource(ResourceType.IDENTITY_PROVIDER_MAPPER).resourcePath(keycloakContext.getUri()).representation(rep).success();
 
     }
 
@@ -404,7 +403,7 @@ public class IdentityProviderResource {
         IdentityProviderMapperModel model = realm.getIdentityProviderMapperById(id);
         if (model == null) throw new NotFoundException("Model not found");
         realm.removeIdentityProviderMapper(model);
-        adminEvent.operation(OperationType.DELETE).resource(ResourceType.IDENTITY_PROVIDER_MAPPER).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.DELETE).resource(ResourceType.IDENTITY_PROVIDER_MAPPER).resourcePath(keycloakContext.getUri()).success();
 
     }
 
@@ -420,7 +419,7 @@ public class IdentityProviderResource {
     public ManagementPermissionReference getManagementPermissions() {
         this.auth.realm().requireViewIdentityProviders();
 
-        AdminPermissionManagement permissions = AdminPermissions.management(session, realm);
+        AdminPermissionManagement permissions = AdminPermissions.management(realm);
         if (!permissions.idps().isPermissionsEnabled(identityProviderModel)) {
             return new ManagementPermissionReference();
         }
@@ -439,7 +438,7 @@ public class IdentityProviderResource {
     @NoCache
     public ManagementPermissionReference setManagementPermissionsEnabled(ManagementPermissionReference ref) {
         this.auth.realm().requireManageIdentityProviders();
-        AdminPermissionManagement permissions = AdminPermissions.management(session, realm);
+        AdminPermissionManagement permissions = AdminPermissions.management(realm);
         permissions.idps().setPermissionsEnabled(identityProviderModel, ref.isEnabled());
         if (ref.isEnabled()) {
             return toMgmtRef(identityProviderModel, permissions);

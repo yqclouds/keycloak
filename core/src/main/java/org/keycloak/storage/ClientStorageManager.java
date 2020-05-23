@@ -40,7 +40,7 @@ public class ClientStorageManager implements ClientProvider {
 
     protected KeycloakSession session;
 
-    public ClientStorageManager(KeycloakSession session) {
+    public ClientStorageManager() {
         this.session = session;
     }
 
@@ -55,7 +55,7 @@ public class ClientStorageManager implements ClientProvider {
         return new ClientStorageProviderModel(model);
     }
 
-    public static ClientStorageProvider getStorageProvider(KeycloakSession session, RealmModel realm, String componentId) {
+    public static ClientStorageProvider getStorageProvider(RealmModel realm, String componentId) {
         ComponentModel model = realm.getComponent(componentId);
         if (model == null) return null;
         ClientStorageProviderModel storageModel = new ClientStorageProviderModel(model);
@@ -63,17 +63,17 @@ public class ClientStorageManager implements ClientProvider {
         if (factory == null) {
             throw new ModelException("Could not find ClientStorageProviderFactory for: " + model.getProviderId());
         }
-        return getStorageProviderInstance(session, storageModel, factory);
+        return getStorageProviderInstance(storageModel, factory);
     }
 
     public static List<ClientStorageProviderModel> getStorageProviders(RealmModel realm) {
         return realm.getClientStorageProviders();
     }
 
-    public static ClientStorageProvider getStorageProviderInstance(KeycloakSession session, ClientStorageProviderModel model, ClientStorageProviderFactory factory) {
+    public static ClientStorageProvider getStorageProviderInstance(ClientStorageProviderModel model, ClientStorageProviderFactory factory) {
         ClientStorageProvider instance = (ClientStorageProvider) session.getAttribute(model.getId());
         if (instance != null) return instance;
-        instance = factory.create(session, model);
+        instance = factory.create(model);
         if (instance == null) {
             throw new IllegalStateException("ClientStorageProvideFactory (of type " + factory.getClass().getName() + ") produced a null instance");
         }
@@ -82,7 +82,7 @@ public class ClientStorageManager implements ClientProvider {
         return instance;
     }
 
-    public static <T> List<T> getStorageProviders(KeycloakSession session, RealmModel realm, Class<T> type) {
+    public static <T> List<T> getStorageProviders(RealmModel realm, Class<T> type) {
         List<T> list = new LinkedList<>();
         for (ClientStorageProviderModel model : getStorageProviders(realm)) {
             ClientStorageProviderFactory factory = (ClientStorageProviderFactory) session.getSessionFactory().getProviderFactory(ClientStorageProvider.class, model.getProviderId());
@@ -91,7 +91,7 @@ public class ClientStorageManager implements ClientProvider {
                 continue;
             }
             if (Types.supports(type, factory, ClientStorageProviderFactory.class)) {
-                list.add(type.cast(getStorageProviderInstance(session, model, factory)));
+                list.add(type.cast(getStorageProviderInstance(model, factory)));
             }
 
 
@@ -99,7 +99,7 @@ public class ClientStorageManager implements ClientProvider {
         return list;
     }
 
-    public static <T> List<T> getEnabledStorageProviders(KeycloakSession session, RealmModel realm, Class<T> type) {
+    public static <T> List<T> getEnabledStorageProviders(RealmModel realm, Class<T> type) {
         List<T> list = new LinkedList<>();
         for (ClientStorageProviderModel model : getStorageProviders(realm)) {
             if (!model.isEnabled()) continue;
@@ -109,7 +109,7 @@ public class ClientStorageManager implements ClientProvider {
                 continue;
             }
             if (Types.supports(type, factory, ClientStorageProviderFactory.class)) {
-                list.add(type.cast(getStorageProviderInstance(session, model, factory)));
+                list.add(type.cast(getStorageProviderInstance(model, factory)));
             }
 
 
@@ -123,7 +123,7 @@ public class ClientStorageManager implements ClientProvider {
         if (storageId.getProviderId() == null) {
             return session.clientLocalStorage().getClientById(id, realm);
         }
-        ClientLookupProvider provider = (ClientLookupProvider) getStorageProvider(session, realm, storageId.getProviderId());
+        ClientLookupProvider provider = (ClientLookupProvider) getStorageProvider(realm, storageId.getProviderId());
         if (provider == null) return null;
         if (!isStorageProviderEnabled(realm, storageId.getProviderId())) return null;
         return provider.getClientById(id, realm);
@@ -135,7 +135,7 @@ public class ClientStorageManager implements ClientProvider {
         if (client != null) {
             return client;
         }
-        for (ClientLookupProvider provider : getEnabledStorageProviders(session, realm, ClientLookupProvider.class)) {
+        for (ClientLookupProvider provider : getEnabledStorageProviders(realm, ClientLookupProvider.class)) {
             client = provider.getClientByClientId(clientId, realm);
             if (client != null) return client;
         }
@@ -148,7 +148,7 @@ public class ClientStorageManager implements ClientProvider {
         if (clients != null) {
             return clients;
         }
-        for (ClientLookupProvider provider : getEnabledStorageProviders(session, realm, ClientLookupProvider.class)) {
+        for (ClientLookupProvider provider : getEnabledStorageProviders(realm, ClientLookupProvider.class)) {
             clients = provider.searchClientsByClientId(clientId, firstResult, maxResults, realm);
             if (clients != null) return clients;
         }

@@ -18,16 +18,16 @@ package org.keycloak.services.resources;
 
 import org.keycloak.common.Version;
 import org.keycloak.common.util.MimeTypeUtil;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.ThemeManager;
 import org.keycloak.services.util.CacheControlUtil;
 import org.keycloak.theme.Theme;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
 
@@ -38,19 +38,13 @@ import java.io.InputStream;
  */
 @Path("/resources")
 public class ThemeResource {
-
     protected static final Logger LOG = LoggerFactory.getLogger(ThemeResource.class);
 
-    @Context
-    private KeycloakSession session;
+    @Autowired
+    private ThemeManager themeManager;
 
     /**
      * Get theme content
-     *
-     * @param themType
-     * @param themeName
-     * @param path
-     * @return
      */
     @GET
     @Path("/{version}/{themeType}/{themeName}/{path:.*}")
@@ -60,7 +54,7 @@ public class ThemeResource {
         }
 
         try {
-            Theme theme = session.theme().getTheme(themeName, Theme.Type.valueOf(themType.toUpperCase()));
+            Theme theme = themeManager.getTheme(themeName, Theme.Type.valueOf(themType.toUpperCase()));
             InputStream resource = theme.getResourceAsStream(path);
             if (resource != null) {
                 return Response.ok(resource).type(MimeTypeUtil.getContentType(path)).cacheControl(CacheControlUtil.getDefaultCacheControl()).build();

@@ -253,7 +253,7 @@ public class AuthenticationProcessor {
         return session;
     }
 
-    public AuthenticationProcessor setSession(KeycloakSession session) {
+    public AuthenticationProcessor setSession() {
         this.session = session;
         return this;
     }

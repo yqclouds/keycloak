@@ -110,7 +110,7 @@ public class AdminConsole {
     @NoCache
     public Response whoAmI(final @Context HttpHeaders headers) {
         RealmManager realmManager = new RealmManager(session);
-        AuthenticationManager.AuthResult authResult = authManager.authenticateBearerToken(session, realm, session.getContext().getUri(), clientConnection, headers);
+        AuthenticationManager.AuthResult authResult = authManager.authenticateBearerToken(realm, session.getContext().getUri(), clientConnection, headers);
         if (authResult == null) {
             return Response.status(401).build();
         }
@@ -203,7 +203,7 @@ public class AdminConsole {
         if (!session.getContext().getUri(UrlType.ADMIN).getRequestUri().getPath().endsWith("/")) {
             return Response.status(302).location(session.getContext().getUri(UrlType.ADMIN).getRequestUriBuilder().path("/").build()).build();
         } else {
-            Theme theme = AdminRoot.getTheme(session, realm);
+            Theme theme = AdminRoot.getTheme(realm);
 
             Map<String, Object> map = new HashMap<>();
 
@@ -255,7 +255,7 @@ public class AdminConsole {
     @Path("messages.json")
     @Produces(MediaType.APPLICATION_JSON)
     public Properties getMessages(@QueryParam("lang") String lang) {
-        return AdminRoot.getMessages(session, realm, lang, "admin-messages");
+        return AdminRoot.getMessages(realm, lang, "admin-messages");
     }
 
     public static class WhoAmI {

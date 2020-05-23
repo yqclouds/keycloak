@@ -3,21 +3,17 @@ package org.keycloak.services.x509;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.common.util.PemException;
 import org.keycloak.common.util.PemUtils;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.truststore.TruststoreProvider;
 import org.keycloak.truststore.TruststoreProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.UnsupportedEncodingException;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The NGINX Provider extract end user X.509 certificate send during TLS mutual authentication,
@@ -58,11 +54,10 @@ public class NginxProxySslClientCertificateLookup extends AbstractClientCertific
 
     public NginxProxySslClientCertificateLookup(String sslCientCertHttpHeader,
                                                 String sslCertChainHttpHeaderPrefix,
-                                                int certificateChainLength,
-                                                KeycloakSession kcsession) {
+                                                int certificateChainLength) {
         super(sslCientCertHttpHeader, sslCertChainHttpHeaderPrefix, certificateChainLength);
 
-        if (!loadKeycloakTrustStore(kcsession)) {
+        if (!loadKeycloakTrustStore()) {
             LOG.warn("Keycloak Truststore is null or empty, but it's required for NGINX x509cert-lookup provider");
             LOG.warn("   see Keycloak documentation here : https://www.keycloak.org/docs/latest/server_installation/index.html#_truststore");
         }
@@ -220,20 +215,18 @@ public class NginxProxySslClientCertificateLookup extends AbstractClientCertific
 
     }
 
+    @Autowired
+    private Map<String, TruststoreProviderFactory> truststoreProviderFactories;
+
     /**
      * Loading truststore @ first login
-     *
-     * @param kcsession
-     * @return
      */
-    public boolean loadKeycloakTrustStore(KeycloakSession kcsession) {
-
+    public boolean loadKeycloakTrustStore() {
         if (!isTruststoreLoaded) {
             LOG.debug(" Loading Keycloak truststore ...");
-            KeycloakSessionFactory factory = kcsession.getSessionFactory();
-            TruststoreProviderFactory truststoreFactory = (TruststoreProviderFactory) factory.getProviderFactory(TruststoreProvider.class, "file");
+            TruststoreProviderFactory truststoreFactory = truststoreProviderFactories.get("file");
 
-            TruststoreProvider provider = truststoreFactory.create(kcsession);
+            TruststoreProvider provider = truststoreFactory.create();
 
             if (provider != null && provider.getTruststore() != null) {
                 truststore = provider.getTruststore();

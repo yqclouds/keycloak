@@ -17,7 +17,6 @@
 
 package org.keycloak.theme;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 
@@ -37,7 +36,7 @@ public class JarThemeProviderFactory extends ClasspathThemeProviderFactory {
     }
 
     @Override
-    public ThemeProvider create(KeycloakSession session) {
+    public ThemeProvider create() {
         return new ClasspathThemeProvider(themes);
     }
 

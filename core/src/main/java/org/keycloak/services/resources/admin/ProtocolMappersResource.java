@@ -236,7 +236,7 @@ public class ProtocolMappersResource {
             }
         } catch (ProtocolMapperConfigException ex) {
             LOG.error(ex.getMessage());
-            Properties messages = AdminRoot.getMessages(session, realm, auth.adminAuth().getToken().getLocale());
+            Properties messages = AdminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
             throw new ErrorResponseException(ex.getMessage(), MessageFormat.format(messages.getProperty(ex.getMessageKey(), ex.getMessage()), ex.getParameters()),
                     Response.Status.BAD_REQUEST);
         }

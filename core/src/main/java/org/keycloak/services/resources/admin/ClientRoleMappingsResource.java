@@ -54,7 +54,7 @@ public class ClientRoleMappingsResource {
     private UriInfo uriInfo;
 
 
-    public ClientRoleMappingsResource(UriInfo uriInfo, KeycloakSession session, RealmModel realm, AdminPermissionEvaluator auth,
+    public ClientRoleMappingsResource(UriInfo uriInfo, RealmModel realm, AdminPermissionEvaluator auth,
                                       RoleMapperModel user, ClientModel client, AdminEventBuilder adminEvent,
                                       AdminPermissionEvaluator.RequirePermissionCheck manageCheck, AdminPermissionEvaluator.RequirePermissionCheck viewCheck) {
         this.uriInfo = uriInfo;
@@ -200,7 +200,7 @@ public class ClientRoleMappingsResource {
                 try {
                     user.deleteRoleMapping(roleModel);
                 } catch (ModelException me) {
-                    Properties messages = AdminRoot.getMessages(session, realm, auth.adminAuth().getToken().getLocale());
+                    Properties messages = AdminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
                     throw new ErrorResponseException(me.getMessage(), MessageFormat.format(messages.getProperty(me.getMessage(), me.getMessage()), me.getParameters()),
                             Response.Status.BAD_REQUEST);
                 }

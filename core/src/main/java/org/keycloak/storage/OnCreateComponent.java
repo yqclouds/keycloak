@@ -17,7 +17,6 @@
 package org.keycloak.storage;
 
 import org.keycloak.component.ComponentModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 
 /**

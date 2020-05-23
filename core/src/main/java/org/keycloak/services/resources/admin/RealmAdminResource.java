@@ -315,7 +315,7 @@ public class RealmAdminResource {
      */
     @Path("roles")
     public RoleContainerResource getRoleContainerResource() {
-        return new RoleContainerResource(session, session.getContext().getUri(), realm, auth, realm, adminEvent);
+        return new RoleContainerResource(session.getContext().getUri(), realm, auth, realm, adminEvent);
     }
 
     /**
@@ -659,7 +659,7 @@ public class RealmAdminResource {
         adminEvent.operation(OperationType.UPDATE).resource(ResourceType.REALM).realm(realm)
                 .resourcePath(session.getContext().getUri()).representation(rep)
                 // refresh the builder to consider old and new config
-                .refreshRealmEventsConfig(session)
+                .refreshRealmEventsConfig()
                 .success();
     }
 
@@ -910,7 +910,7 @@ public class RealmAdminResource {
             bindCredential = realm.getComponent(componentId).getConfig().getFirst(LDAPConstants.BIND_CREDENTIAL);
         }
 
-        boolean result = LDAPConnectionTestManager.testLDAP(session, action, connectionUrl, bindDn, bindCredential, useTruststoreSpi, connectionTimeout, startTls);
+        boolean result = LDAPConnectionTestManager.testLDAP(action, connectionUrl, bindDn, bindCredential, useTruststoreSpi, connectionTimeout, startTls);
         return result ? Response.noContent().build() : ErrorResponse.error("LDAP test error", Response.Status.BAD_REQUEST);
     }
 

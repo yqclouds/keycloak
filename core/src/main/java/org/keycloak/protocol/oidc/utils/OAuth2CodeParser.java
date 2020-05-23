@@ -50,7 +50,7 @@ public class OAuth2CodeParser {
      * @param codeData
      * @return code parameter to be used in OAuth2 handshake
      */
-    public String persistCode(KeycloakSession session, AuthenticatedClientSessionModel clientSession, OAuth2Code codeData) {
+    public String persistCode(AuthenticatedClientSessionModel clientSession, OAuth2Code codeData) {
         UUID key = codeData.getId();
         if (key == null) {
             throw new IllegalStateException("ID not present in the data");
@@ -72,7 +72,7 @@ public class OAuth2CodeParser {
      * @param event
      * @return
      */
-    public ParseResult parseCode(KeycloakSession session, String code, RealmModel realm, EventBuilder event) {
+    public ParseResult parseCode(String code, RealmModel realm, EventBuilder event) {
         ParseResult result = new ParseResult(code);
 
         String[] parsed = DOT.split(code, 3);

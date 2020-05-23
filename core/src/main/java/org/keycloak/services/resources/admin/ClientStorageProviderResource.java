@@ -16,10 +16,9 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.resteasy.annotations.cache.NoCache;
 import com.hsbc.unified.iam.core.ClientConnection;
+import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.storage.client.ClientStorageProvider;
@@ -49,9 +48,6 @@ public class ClientStorageProviderResource {
 
     @Context
     protected ClientConnection clientConnection;
-
-    @Context
-    protected KeycloakSession session;
 
     @Context
     protected HttpHeaders headers;

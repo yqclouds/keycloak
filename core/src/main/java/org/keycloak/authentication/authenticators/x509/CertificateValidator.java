@@ -80,7 +80,6 @@ public class CertificateValidator {
         _crlLoader = crlLoader;
         _ocspEnabled = oCSPCheckingEnabled;
         this.ocspChecker = ocspChecker;
-        this.session = session;
 
         if (ocspChecker == null)
             throw new IllegalArgumentException("ocspChecker");
@@ -181,7 +180,7 @@ public class CertificateValidator {
         }
         for (String dp : distributionPoints) {
             LOG.trace("CRL Distribution point: \"{}\"", dp);
-            checkRevocationStatusUsingCRL(certs, new CRLFileLoader(dp), session);
+            checkRevocationStatusUsingCRL(certs, new CRLFileLoader(dp));
         }
     }
 
@@ -289,9 +288,9 @@ public class CertificateValidator {
         }
         if (_crlCheckingEnabled) {
             if (!_crldpEnabled) {
-                checkRevocationStatusUsingCRL(_certChain, _crlLoader, session);
+                checkRevocationStatusUsingCRL(_certChain, _crlLoader);
             } else {
-                checkRevocationStatusUsingCRLDistributionPoints(_certChain, session);
+                checkRevocationStatusUsingCRLDistributionPoints(_certChain);
             }
         }
         if (_ocspEnabled) {
@@ -601,7 +600,6 @@ public class CertificateValidator {
         // instances of CertificateValidator type. The design is an adaption of
         // the approach described in http://programmers.stackexchange.com/questions/252067/learning-to-write-dsls-utilities-for-unit-tests-and-am-worried-about-extensablit
 
-        KeycloakSession session;
         int _keyUsageBits;
         List<String> _extendedKeyUsage;
         boolean _crlCheckingEnabled;
@@ -634,7 +632,7 @@ public class CertificateValidator {
             }
             return new CertificateValidator(certs, _keyUsageBits, _extendedKeyUsage,
                     _crlCheckingEnabled, _crldpEnabled, _crlLoader, _ocspEnabled,
-                    new BouncyCastleOCSPChecker(_responderUri, _responderCert), session);
+                    new BouncyCastleOCSPChecker(_responderUri, _responderCert));
         }
 
         public class KeyUsageValidationBuilder {

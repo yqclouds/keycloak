@@ -20,7 +20,8 @@ import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.common.Version;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.common.util.MimeTypeUtil;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
+import org.keycloak.models.ThemeManager;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.services.ForbiddenException;
 import org.keycloak.services.managers.ApplianceBootstrap;
@@ -33,6 +34,7 @@ import org.keycloak.urls.UrlType;
 import org.keycloak.utils.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
@@ -61,23 +63,17 @@ public class WelcomeResource {
     protected HttpHeaders headers;
 
     @Context
-    private KeycloakSession session;
-
-    public WelcomeResource() {
-    }
+    private KeycloakContext keycloakContext;
 
     /**
      * Welcome page of Keycloak
-     *
-     * @return
-     * @throws URISyntaxException
      */
     @GET
     @Produces(MediaType.TEXT_HTML_UTF_8)
     public Response getWelcomePage() throws URISyntaxException {
         checkBootstrap();
 
-        String requestUri = session.getContext().getUri().getRequestUri().toString();
+        String requestUri = keycloakContext.getUri().getRequestUri().toString();
         if (!requestUri.endsWith("/")) {
             return Response.seeOther(new URI(requestUri + "/")).build();
         } else {
@@ -95,7 +91,7 @@ public class WelcomeResource {
             return createWelcomePage(null, null);
         } else {
             if (!isLocal()) {
-//                ServicesLogger.LOGGER.rejectedNonLocalAttemptToCreateInitialUser(session.getContext().getConnection().getRemoteAddr());
+//                ServicesLogger.LOGGER.rejectedNonLocalAttemptToCreateInitialUser(keycloakContext.getConnection().getRemoteAddr());
                 throw new WebApplicationException(Response.Status.BAD_REQUEST);
             }
 
@@ -123,7 +119,7 @@ public class WelcomeResource {
 
             expireCsrfCookie();
 
-            ApplianceBootstrap applianceBootstrap = new ApplianceBootstrap(session);
+            ApplianceBootstrap applianceBootstrap = new ApplianceBootstrap();
             if (applianceBootstrap.isNoMasterUser()) {
                 setBootstrap(false);
                 applianceBootstrap.createMasterRealmUser(username, password);
@@ -171,7 +167,7 @@ public class WelcomeResource {
             map.put("productNameFull", Version.NAME_FULL);
 
             map.put("properties", theme.getProperties());
-            map.put("adminUrl", session.getContext().getUri(UrlType.ADMIN).getBaseUriBuilder().path("/admin/").build());
+            map.put("adminUrl", keycloakContext.getUri(UrlType.ADMIN).getBaseUriBuilder().path("/admin/").build());
 
             map.put("resourcesPath", "resources/" + Version.RESOURCES_VERSION + "/" + theme.getType().toString().toLowerCase() + "/" + theme.getName());
 
@@ -205,9 +201,12 @@ public class WelcomeResource {
         }
     }
 
+    @Autowired
+    private ThemeManager themeManager;
+
     private Theme getTheme() {
         try {
-            return session.theme().getTheme(Theme.Type.WELCOME);
+            return themeManager.getTheme(Theme.Type.WELCOME);
         } catch (IOException e) {
             throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
         }
@@ -215,7 +214,7 @@ public class WelcomeResource {
 
     private void checkBootstrap() {
         if (shouldBootstrap())
-            KeycloakApplication.BOOTSTRAP_ADMIN_USER.compareAndSet(true, new ApplianceBootstrap(session).isNoMasterUser());
+            KeycloakApplication.BOOTSTRAP_ADMIN_USER.compareAndSet(true, new ApplianceBootstrap().isNoMasterUser());
     }
 
     private boolean shouldBootstrap() {
@@ -228,7 +227,7 @@ public class WelcomeResource {
 
     private boolean isLocal() {
         try {
-            ClientConnection clientConnection = session.getContext().getConnection();
+            ClientConnection clientConnection = keycloakContext.getConnection();
             InetAddress remoteInetAddress = InetAddress.getByName(clientConnection.getRemoteAddr());
             InetAddress localInetAddress = InetAddress.getByName(clientConnection.getLocalAddr());
             String xForwardedFor = headers.getHeaderString("X-Forwarded-For");
@@ -248,15 +247,15 @@ public class WelcomeResource {
 
     private String setCsrfCookie() {
         String stateChecker = Base64Url.encode(KeycloakModelUtils.generateSecret());
-        String cookiePath = session.getContext().getUri().getPath();
-        boolean secureOnly = session.getContext().getUri().getRequestUri().getScheme().equalsIgnoreCase("https");
+        String cookiePath = keycloakContext.getUri().getPath();
+        boolean secureOnly = keycloakContext.getUri().getRequestUri().getScheme().equalsIgnoreCase("https");
         CookieHelper.addCookie(KEYCLOAK_STATE_CHECKER, stateChecker, cookiePath, null, null, 300, secureOnly, true);
         return stateChecker;
     }
 
     private void expireCsrfCookie() {
-        String cookiePath = session.getContext().getUri().getPath();
-        boolean secureOnly = session.getContext().getUri().getRequestUri().getScheme().equalsIgnoreCase("https");
+        String cookiePath = keycloakContext.getUri().getPath();
+        boolean secureOnly = keycloakContext.getUri().getRequestUri().getScheme().equalsIgnoreCase("https");
         CookieHelper.addCookie(KEYCLOAK_STATE_CHECKER, "", cookiePath, null, null, 0, secureOnly, true);
     }
 

@@ -121,7 +121,7 @@ public class OIDCLoginProtocol implements LoginProtocol {
     protected OIDCResponseType responseType;
     protected OIDCResponseMode responseMode;
 
-    public OIDCLoginProtocol(KeycloakSession session, RealmModel realm, UriInfo uriInfo, HttpHeaders headers, EventBuilder event) {
+    public OIDCLoginProtocol(RealmModel realm, UriInfo uriInfo, HttpHeaders headers, EventBuilder event) {
         this.session = session;
         this.realm = realm;
         this.uriInfo = uriInfo;
@@ -141,7 +141,7 @@ public class OIDCLoginProtocol implements LoginProtocol {
     }
 
     @Override
-    public OIDCLoginProtocol setSession(KeycloakSession session) {
+    public OIDCLoginProtocol setSession() {
         this.session = session;
         return this;
     }
@@ -212,7 +212,7 @@ public class OIDCLoginProtocol implements LoginProtocol {
                     authSession.getClientNote(OIDCLoginProtocol.CODE_CHALLENGE_PARAM),
                     authSession.getClientNote(OIDCLoginProtocol.CODE_CHALLENGE_METHOD_PARAM));
 
-            code = oAuth2CodeParser.persistCode(session, clientSession, codeData);
+            code = oAuth2CodeParser.persistCode(clientSession, codeData);
             redirectUri.addParam(OAuth2Constants.CODE, code);
         }
 

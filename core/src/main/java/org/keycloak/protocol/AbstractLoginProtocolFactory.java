@@ -17,6 +17,7 @@
 
 package org.keycloak.protocol;
 
+import com.hsbc.unified.iam.entity.events.ClientCreationEvent;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.KeycloakSessionFactory;
@@ -36,8 +37,8 @@ public abstract class AbstractLoginProtocolFactory implements LoginProtocolFacto
     @PostConstruct
     public void afterPropertiesSet() throws Exception {
         sessionFactory.register(event -> {
-            if (event instanceof RealmModel.ClientCreationEvent) {
-                ClientModel client = ((RealmModel.ClientCreationEvent) event).getCreatedClient();
+            if (event instanceof ClientCreationEvent) {
+                ClientModel client = (ClientModel) event.getSource();
                 addDefaultClientScopes(client.getRealm(), client);
                 addDefaults(client);
             }

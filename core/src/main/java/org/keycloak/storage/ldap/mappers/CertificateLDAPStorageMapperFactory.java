@@ -2,7 +2,6 @@ package org.keycloak.storage.ldap.mappers;
 
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
@@ -51,8 +50,8 @@ public class CertificateLDAPStorageMapperFactory extends UserAttributeLDAPStorag
     }
 
     @Override
-    public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel config) throws ComponentValidationException {
-        super.validateConfiguration(session, realm, config);
+    public void validateConfiguration(RealmModel realm, ComponentModel config) throws ComponentValidationException {
+        super.validateConfiguration(realm, config);
 
         boolean isBinaryAttribute = config.get(UserAttributeLDAPStorageMapper.IS_BINARY_ATTRIBUTE, false);
         boolean isDerFormatted = config.get(CertificateLDAPStorageMapper.IS_DER_FORMATTED, false);

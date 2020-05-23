@@ -20,10 +20,10 @@ package org.keycloak.storage.ldap.mappers;
 import org.keycloak.Config;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.storage.ldap.LDAPStorageProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
 import java.util.List;
@@ -48,13 +48,16 @@ public abstract class AbstractLDAPStorageMapperFactory implements LDAPStorageMap
     public void init(Config.Scope config) {
     }
 
+    @Autowired
+    private Map<String, LDAPStorageProvider> ldapStorageProviders;
+
     @Override
-    public LDAPStorageMapper create(KeycloakSession session, ComponentModel model) {
+    public LDAPStorageMapper create(ComponentModel model) {
         // LDAPStorageProvider is in the session already as mappers are always called from it
         String ldapProviderModelId = model.getParentId();
-        LDAPStorageProvider ldapProvider = (LDAPStorageProvider) session.getAttribute(ldapProviderModelId);
+        LDAPStorageProvider ldapStorageProvider = ldapStorageProviders.get(ldapProviderModelId);
 
-        return createMapper(model, ldapProvider);
+        return createMapper(model, ldapStorageProvider);
     }
 
     // Used just by LDAPFederationMapperBridge.

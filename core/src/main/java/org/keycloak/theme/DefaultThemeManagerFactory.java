@@ -17,7 +17,6 @@
 
 package org.keycloak.theme;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ThemeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,8 +47,8 @@ public class DefaultThemeManagerFactory {
         }
     }
 
-    public ThemeManager create(KeycloakSession session) {
-        return new DefaultThemeManager(this, session);
+    public ThemeManager create() {
+        return new DefaultThemeManager(this);
     }
 
     public Theme getCachedTheme(String name, Theme.Type type) {

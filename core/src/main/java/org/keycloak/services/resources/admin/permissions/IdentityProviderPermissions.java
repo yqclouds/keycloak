@@ -26,10 +26,11 @@ import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
 import org.keycloak.authorization.policy.evaluation.EvaluationContext;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.IdentityProviderModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 
@@ -43,13 +44,14 @@ import static org.keycloak.services.resources.admin.permissions.AdminPermissionM
  */
 class IdentityProviderPermissions implements IdentityProviderPermissionManagement {
     private static final Logger LOG = LoggerFactory.getLogger(IdentityProviderPermissions.class);
-    protected final KeycloakSession session;
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     protected final RealmModel realm;
     protected final AuthorizationProvider authz;
     protected final MgmtPermissions root;
 
-    public IdentityProviderPermissions(KeycloakSession session, RealmModel realm, AuthorizationProvider authz, MgmtPermissions root) {
-        this.session = session;
+    public IdentityProviderPermissions(RealmModel realm, AuthorizationProvider authz, MgmtPermissions root) {
         this.realm = realm;
         this.authz = authz;
         this.root = root;
@@ -174,8 +176,8 @@ class IdentityProviderPermissions implements IdentityProviderPermissionManagemen
                 LOG.debug(TOKEN_EXCHANGE + " not initialized");
                 return false;
             }
-            ClientModelIdentity identity = new ClientModelIdentity(session, authorizedClient);
-            EvaluationContext context = new DefaultEvaluationContext(identity, session) {
+            ClientModelIdentity identity = new ClientModelIdentity(authorizedClient);
+            EvaluationContext context = new DefaultEvaluationContext(identity) {
                 @Override
                 public Map<String, Collection<String>> getBaseAttributes() {
                     Map<String, Collection<String>> attributes = super.getBaseAttributes();

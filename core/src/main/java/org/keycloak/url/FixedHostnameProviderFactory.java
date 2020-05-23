@@ -1,7 +1,6 @@
 package org.keycloak.url;
 
 import org.keycloak.Config;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.urls.HostnameProvider;
 import org.keycloak.urls.HostnameProviderFactory;
@@ -24,13 +23,13 @@ public class FixedHostnameProviderFactory implements HostnameProviderFactory {
     private boolean alwaysHttps;
 
     @Override
-    public HostnameProvider create(KeycloakSession session) {
+    public HostnameProvider create() {
         if (!loggedDeprecatedWarning) {
             loggedDeprecatedWarning = true;
             LOGGER.warn("fixed hostname provider is deprecated, please switch to the default hostname provider");
         }
 
-        return new FixedHostnameProvider(session, alwaysHttps, hostname, httpPort, httpsPort);
+        return new FixedHostnameProvider(alwaysHttps, hostname, httpPort, httpsPort);
     }
 
     @Override

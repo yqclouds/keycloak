@@ -17,10 +17,9 @@
 
 package org.keycloak.theme;
 
-import org.keycloak.Config;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import com.hsbc.unified.iam.core.util.JsonSerialization;
+import org.keycloak.Config;
+import org.keycloak.models.KeycloakSessionFactory;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -46,7 +45,7 @@ public class ClasspathThemeProviderFactory implements ThemeProviderFactory {
     }
 
     @Override
-    public ThemeProvider create(KeycloakSession session) {
+    public ThemeProvider create() {
         return new ClasspathThemeProvider(themes);
     }
 

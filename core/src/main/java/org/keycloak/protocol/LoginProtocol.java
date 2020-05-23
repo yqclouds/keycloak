@@ -32,7 +32,7 @@ import javax.ws.rs.core.UriInfo;
  */
 public interface LoginProtocol extends Provider {
 
-    LoginProtocol setSession(KeycloakSession session);
+    LoginProtocol setSession();
 
     LoginProtocol setRealm(RealmModel realm);
 

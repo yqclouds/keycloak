@@ -45,7 +45,7 @@ class RolePermissions implements RolePermissionEvaluator, RolePermissionManageme
     protected final AuthorizationProvider authz;
     protected final MgmtPermissions root;
 
-    public RolePermissions(KeycloakSession session, RealmModel realm, AuthorizationProvider authz, MgmtPermissions root) {
+    public RolePermissions(RealmModel realm, AuthorizationProvider authz, MgmtPermissions root) {
         this.session = session;
         this.realm = realm;
         this.authz = authz;

@@ -20,7 +20,7 @@ import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleModel;
 import org.keycloak.representations.idm.ManagementPermissionReference;
@@ -30,9 +30,9 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissionManageme
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Set;
@@ -50,8 +50,8 @@ public class RoleByIdResource extends RoleResource {
     private AdminPermissionEvaluator auth;
     private AdminEventBuilder adminEvent;
 
-    @Context
-    private KeycloakSession session;
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     public RoleByIdResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         super(realm);
@@ -113,7 +113,7 @@ public class RoleByIdResource extends RoleResource {
             adminEvent.resource(ResourceType.REALM_ROLE);
         }
 
-        adminEvent.operation(OperationType.DELETE).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -136,7 +136,7 @@ public class RoleByIdResource extends RoleResource {
             adminEvent.resource(ResourceType.REALM_ROLE);
         }
 
-        adminEvent.operation(OperationType.UPDATE).resourcePath(session.getContext().getUri()).representation(rep).success();
+        adminEvent.operation(OperationType.UPDATE).resourcePath(keycloakContext.getUri()).representation(rep).success();
     }
 
     /**
@@ -151,7 +151,7 @@ public class RoleByIdResource extends RoleResource {
     public void addComposites(final @PathParam("role-id") String id, List<RoleRepresentation> roles) {
         RoleModel role = getRoleModel(id);
         auth.roles().requireManage(role);
-        addComposites(auth, adminEvent, session.getContext().getUri(), roles, role);
+        addComposites(auth, adminEvent, keycloakContext.getUri(), roles, role);
     }
 
     /**
@@ -226,7 +226,7 @@ public class RoleByIdResource extends RoleResource {
     public void deleteComposites(final @PathParam("role-id") String id, List<RoleRepresentation> roles) {
         RoleModel role = getRoleModel(id);
         auth.roles().requireManage(role);
-        deleteComposites(adminEvent, session.getContext().getUri(), roles, role);
+        deleteComposites(adminEvent, keycloakContext.getUri(), roles, role);
     }
 
     /**
@@ -243,7 +243,7 @@ public class RoleByIdResource extends RoleResource {
         RoleModel role = getRoleModel(id);
         auth.roles().requireView(role);
 
-        AdminPermissionManagement permissions = AdminPermissions.management(session, realm);
+        AdminPermissionManagement permissions = AdminPermissions.management(realm);
         if (!permissions.roles().isPermissionsEnabled(role)) {
             return new ManagementPermissionReference();
         }
@@ -265,7 +265,7 @@ public class RoleByIdResource extends RoleResource {
         RoleModel role = getRoleModel(id);
         auth.roles().requireManage(role);
 
-        AdminPermissionManagement permissions = AdminPermissions.management(session, realm);
+        AdminPermissionManagement permissions = AdminPermissions.management(realm);
         permissions.roles().setPermissionsEnabled(role, ref.isEnabled());
         if (ref.isEnabled()) {
             return toMgmtRef(role, permissions);

@@ -21,13 +21,12 @@ import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import org.keycloak.broker.provider.IdentityProvider;
 import org.keycloak.broker.provider.IdentityProviderFactory;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.IdentityProviderModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.ModelDuplicateException;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.ModelToRepresentation;
@@ -58,22 +57,19 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 public class IdentityProvidersResource {
 
     private final RealmModel realm;
-    private final KeycloakSession session;
+    @Autowired
+    private KeycloakContext keycloakContext;
     private AdminPermissionEvaluator auth;
     private AdminEventBuilder adminEvent;
 
-    public IdentityProvidersResource(RealmModel realm, KeycloakSession session, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public IdentityProvidersResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.realm = realm;
-        this.session = session;
         this.auth = auth;
         this.adminEvent = adminEvent.resource(ResourceType.IDENTITY_PROVIDER);
     }
 
     /**
      * Get identity providers
-     *
-     * @param providerId Provider id
-     * @return
      */
     @Path("/providers/{provider_id}")
     @GET
@@ -109,7 +105,7 @@ public class IdentityProvidersResource {
         InputPart file = formDataMap.get("file").get(0);
         InputStream inputStream = file.getBody(InputStream.class, null);
         IdentityProviderFactory providerFactory = getProviderFactorytById(providerId);
-        return (Map<String, String>) providerFactory.parseConfig(session, inputStream);
+        return (Map<String, String>) providerFactory.parseConfig(inputStream);
     }
 
     @Autowired
@@ -140,7 +136,7 @@ public class IdentityProvidersResource {
         try {
             IdentityProviderFactory providerFactory = getProviderFactorytById(providerId);
             Map<String, String> config;
-            config = providerFactory.parseConfig(session, inputStream);
+            config = providerFactory.parseConfig(inputStream);
             return config;
         } finally {
             try {
@@ -170,6 +166,9 @@ public class IdentityProvidersResource {
         return representations;
     }
 
+    @Autowired
+    private RepresentationToModel representationToModel;
+
     /**
      * Create a new identity provider
      *
@@ -185,14 +184,14 @@ public class IdentityProvidersResource {
         ReservedCharValidator.validate(representation.getAlias());
 
         try {
-            IdentityProviderModel identityProvider = RepresentationToModel.toModel(realm, representation, session);
+            IdentityProviderModel identityProvider = representationToModel.toModel(realm, representation);
             this.realm.addIdentityProvider(identityProvider);
 
             representation.setInternalId(identityProvider.getInternalId());
-            adminEvent.operation(OperationType.CREATE).resourcePath(session.getContext().getUri(), identityProvider.getAlias())
+            adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri(), identityProvider.getAlias())
                     .representation(StripSecretsUtils.strip(representation)).success();
 
-            return Response.created(session.getContext().getUri().getAbsolutePathBuilder().path(representation.getAlias()).build()).build();
+            return Response.created(keycloakContext.getUri().getAbsolutePathBuilder().path(representation.getAlias()).build()).build();
         } catch (IllegalArgumentException e) {
             return ErrorResponse.error("Invalid request", BAD_REQUEST);
         } catch (ModelDuplicateException e) {
@@ -212,15 +211,14 @@ public class IdentityProvidersResource {
             }
         }
 
-        IdentityProviderResource identityProviderResource = new IdentityProviderResource(this.auth, realm, session, identityProviderModel, adminEvent);
+        IdentityProviderResource identityProviderResource = new IdentityProviderResource(this.auth, realm, identityProviderModel, adminEvent);
         ResteasyProviderFactory.getInstance().injectProperties(identityProviderResource);
 
         return identityProviderResource;
     }
 
     private IdentityProviderFactory getProviderFactorytById(String providerId) {
-        List<ProviderFactory> allProviders = getProviderFactories();
-
+        List<IdentityProviderFactory> allProviders = getProviderFactories();
         for (ProviderFactory providerFactory : allProviders) {
             if (providerFactory.getId().equals(providerId)) {
                 return (IdentityProviderFactory) providerFactory;
@@ -230,11 +228,10 @@ public class IdentityProvidersResource {
         return null;
     }
 
-    private List<ProviderFactory> getProviderFactories() {
-        List<ProviderFactory> allProviders = new ArrayList<ProviderFactory>();
+    @Autowired
+    private List<IdentityProviderFactory> identityProviderFactories;
 
-        allProviders.addAll(this.session.getSessionFactory().getProviderFactories(IdentityProvider.class));
-
-        return allProviders;
+    private List<IdentityProviderFactory> getProviderFactories() {
+        return identityProviderFactories;
     }
 }

@@ -82,7 +82,7 @@ public class ClientResource {
     private AdminPermissionEvaluator auth;
     private AdminEventBuilder adminEvent;
 
-    public ClientResource(RealmModel realm, AdminPermissionEvaluator auth, ClientModel clientModel, KeycloakSession session, AdminEventBuilder adminEvent) {
+    public ClientResource(RealmModel realm, AdminPermissionEvaluator auth, ClientModel clientModel, AdminEventBuilder adminEvent) {
         this.realm = realm;
         this.auth = auth;
         this.client = clientModel;
@@ -128,8 +128,8 @@ public class ClientResource {
         auth.clients().requireConfigure(client);
 
         ValidationMessages validationMessages = new ValidationMessages();
-        if (!ClientValidator.validate(rep, validationMessages) || !pairwiseClientValidator.validate(session, rep, validationMessages)) {
-            Properties messages = AdminRoot.getMessages(session, realm, auth.adminAuth().getToken().getLocale());
+        if (!ClientValidator.validate(rep, validationMessages) || !pairwiseClientValidator.validate(rep, validationMessages)) {
+            Properties messages = AdminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
             throw new ErrorResponseException(
                     validationMessages.getStringMessages(),
                     validationMessages.getStringMessages(messages),
@@ -138,9 +138,9 @@ public class ClientResource {
         }
 
         try {
-            updateClientFromRep(rep, client, session);
+            updateClientFromRep(rep, client;
 
-            clientValidationUtil.validate(session, client, false, c -> {
+            clientValidationUtil.validate(client, false, c -> {
                 session.getTransactionManager().setRollbackOnly();
                 throw new ErrorResponseException(Errors.INVALID_INPUT, c.getError(), Response.Status.BAD_REQUEST);
             });
@@ -192,7 +192,7 @@ public class ClientResource {
 
         ClientInstallationProvider provider = session.getProvider(ClientInstallationProvider.class, providerId);
         if (provider == null) throw new NotFoundException("Unknown Provider");
-        return provider.generateInstallation(session, realm, client, session.getContext().getUri().getBaseUri());
+        return provider.generateInstallation(realm, client, session.getContext().getUri().getBaseUri());
     }
 
     /**
@@ -242,7 +242,7 @@ public class ClientResource {
     public ClientRepresentation regenerateRegistrationAccessToken() {
         auth.clients().requireManage(client);
 
-        String token = ClientRegistrationTokenUtils.updateRegistrationAccessToken(session, realm, client, RegistrationAuth.AUTHENTICATED);
+        String token = ClientRegistrationTokenUtils.updateRegistrationAccessToken(realm, client, RegistrationAuth.AUTHENTICATED);
 
         ClientRepresentation rep = modelToRepresentation.toRepresentation(client);
         rep.setRegistrationAccessToken(token);
@@ -283,7 +283,7 @@ public class ClientResource {
 
     @Path("roles")
     public RoleContainerResource getRoleContainerResource() {
-        return new RoleContainerResource(session, session.getContext().getUri(), realm, auth, client, adminEvent);
+        return new RoleContainerResource(session.getContext().getUri(), realm, auth, client, adminEvent);
     }
 
     /**
@@ -375,7 +375,7 @@ public class ClientResource {
 
     @Path("evaluate-scopes")
     public ClientScopeEvaluateResource clientScopeEvaluateResource() {
-        return new ClientScopeEvaluateResource(session, session.getContext().getUri(), realm, auth, client, clientConnection);
+        return new ClientScopeEvaluateResource(session.getContext().getUri(), realm, auth, client, clientConnection);
     }
 
     /**
@@ -400,7 +400,7 @@ public class ClientResource {
             }
         }
 
-        return ModelToRepresentation.toRepresentation(session, realm, user);
+        return ModelToRepresentation.toRepresentation(realm, user);
     }
 
     /**
@@ -618,7 +618,7 @@ public class ClientResource {
     public ManagementPermissionReference getManagementPermissions() {
         auth.roles().requireView(client);
 
-        AdminPermissionManagement permissions = AdminPermissions.management(session, realm);
+        AdminPermissionManagement permissions = AdminPermissions.management(realm);
         if (!permissions.clients().isPermissionsEnabled(client)) {
             return new ManagementPermissionReference();
         }
@@ -637,7 +637,7 @@ public class ClientResource {
     @NoCache
     public ManagementPermissionReference setManagementPermissionsEnabled(ManagementPermissionReference ref) {
         auth.clients().requireManage(client);
-        AdminPermissionManagement permissions = AdminPermissions.management(session, realm);
+        AdminPermissionManagement permissions = AdminPermissions.management(realm);
         permissions.clients().setPermissionsEnabled(client, ref.isEnabled());
         if (ref.isEnabled()) {
             return toMgmtRef(client, permissions);

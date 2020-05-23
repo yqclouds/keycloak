@@ -1,22 +1,23 @@
 package org.keycloak.url;
 
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.urls.HostnameProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.UriInfo;
 
 @Deprecated
 public class FixedHostnameProvider implements HostnameProvider {
 
-    private final KeycloakSession session;
     private final String globalHostname;
     private final boolean alwaysHttps;
     private final int httpPort;
     private final int httpsPort;
+    @Autowired
+    private KeycloakContext keycloakContext;
 
-    public FixedHostnameProvider(KeycloakSession session, boolean alwaysHttps, String globalHostname, int httpPort, int httpsPort) {
-        this.session = session;
+    public FixedHostnameProvider(boolean alwaysHttps, String globalHostname, int httpPort, int httpsPort) {
         this.alwaysHttps = alwaysHttps;
         this.globalHostname = globalHostname;
         this.httpPort = httpPort;
@@ -30,9 +31,9 @@ public class FixedHostnameProvider implements HostnameProvider {
 
     @Override
     public String getHostname(UriInfo originalUriInfo) {
-        RealmModel realm = session.getContext().getRealm();
+        RealmModel realm = keycloakContext.getRealm();
         if (realm != null) {
-            String realmHostname = session.getContext().getRealm().getAttribute("hostname");
+            String realmHostname = keycloakContext.getRealm().getAttribute("hostname");
             if (realmHostname != null && !realmHostname.isEmpty()) {
                 return realmHostname;
             }

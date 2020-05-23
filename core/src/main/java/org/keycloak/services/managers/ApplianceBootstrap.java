@@ -17,28 +17,31 @@
 package org.keycloak.services.managers;
 
 import com.hsbc.unified.iam.core.constants.Constants;
+import com.hsbc.unified.iam.entity.SslRequired;
+import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.Config;
 import org.keycloak.common.Version;
-import com.hsbc.unified.iam.entity.SslRequired;
 import org.keycloak.models.*;
-import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.models.utils.DefaultKeyProviders;
 import org.keycloak.representations.idm.CredentialRepresentation;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public class ApplianceBootstrap {
-
-    private final KeycloakSession session;
-
-    public ApplianceBootstrap(KeycloakSession session) {
-        this.session = session;
-    }
+    @Autowired
+    private RealmProvider realmProvider;
+    @Autowired
+    private KeycloakContext keycloakContext;
+    @Autowired
+    private UserProvider userProvider;
+    @Autowired
+    private UserCredentialManager userCredentialManager;
 
     public boolean isNewInstall() {
-        if (session.realms().getRealm(Config.getAdminRealm()) != null) {
+        if (realmProvider.getRealm(Config.getAdminRealm()) != null) {
             return false;
         } else {
             return true;
@@ -46,8 +49,8 @@ public class ApplianceBootstrap {
     }
 
     public boolean isNoMasterUser() {
-        RealmModel realm = session.realms().getRealm(Config.getAdminRealm());
-        return session.users().getUsersCount(realm) == 0;
+        RealmModel realm = realmProvider.getRealm(Config.getAdminRealm());
+        return userProvider.getUsersCount(realm) == 0;
     }
 
     public boolean createMasterRealm() {
@@ -58,7 +61,7 @@ public class ApplianceBootstrap {
         String adminRealmName = Config.getAdminRealm();
 //        ServicesLogger.LOGGER.initializingAdminRealm(adminRealmName);
 
-        RealmManager manager = new RealmManager(session);
+        RealmManager manager = new RealmManager();
         RealmModel realm = manager.createRealm(adminRealmName, adminRealmName);
         realm.setName(adminRealmName);
         realm.setDisplayName(Version.NAME);
@@ -80,25 +83,25 @@ public class ApplianceBootstrap {
         realm.setRegistrationAllowed(false);
         realm.setRegistrationEmailAsUsername(false);
 
-        session.getContext().setRealm(realm);
+        keycloakContext.setRealm(realm);
         DefaultKeyProviders.createProviders(realm);
 
         return true;
     }
 
     public void createMasterRealmUser(String username, String password) {
-        RealmModel realm = session.realms().getRealm(Config.getAdminRealm());
-        session.getContext().setRealm(realm);
+        RealmModel realm = realmProvider.getRealm(Config.getAdminRealm());
+        keycloakContext.setRealm(realm);
 
-        if (session.users().getUsersCount(realm) > 0) {
+        if (userProvider.getUsersCount(realm) > 0) {
             throw new IllegalStateException("Can't create initial user as users already exists");
         }
 
-        UserModel adminUser = session.users().addUser(realm, username);
+        UserModel adminUser = userProvider.addUser(realm, username);
         adminUser.setEnabled(true);
 
         UserCredentialModel usrCredModel = UserCredentialModel.password(password);
-        session.userCredentialManager().updateCredential(realm, adminUser, usrCredModel);
+        userCredentialManager.updateCredential(realm, adminUser, usrCredModel);
 
         RoleModel adminRole = realm.getRole(AdminRoles.ADMIN);
         adminUser.grantRole(adminRole);

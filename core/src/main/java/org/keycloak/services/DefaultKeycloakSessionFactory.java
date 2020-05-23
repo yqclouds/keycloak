@@ -146,10 +146,6 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, In
         return factoryMap;
     }
 
-    public KeycloakSession create() {
-        return new DefaultKeycloakSession(this);
-    }
-
     @Override
     public Set<Spi> getSpis() {
         return spis;

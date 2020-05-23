@@ -32,24 +32,22 @@ import org.keycloak.storage.federated.UserFederatedStorageProvider;
 import org.keycloak.storage.user.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.servlet.http.HttpSession;
 import java.util.*;
-
-import static org.keycloak.models.utils.KeycloakModelUtils.runJobInTransaction;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public class UserStorageManager implements UserProvider, OnUserCache, OnCreateComponent, OnUpdateComponent {
-
     private static final Logger LOG = LoggerFactory.getLogger(UserStorageManager.class);
 
-    protected KeycloakSession session;
+    private HttpSession httpSession;
 
-    public UserStorageManager(KeycloakSession session) {
-        this.session = session;
-    }
+    @Autowired
+    private Map<String, UserStorageProviderFactory> userStorageProviderFactories;
 
     public static boolean isStorageProviderEnabled(RealmModel realm, String providerId) {
         UserStorageProviderModel model = getStorageProviderModel(realm, providerId);
@@ -60,28 +58,28 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
         return realm.getUserStorageProviders();
     }
 
-    public static UserStorageProvider getStorageProviderInstance(KeycloakSession session, UserStorageProviderModel model, UserStorageProviderFactory factory) {
-        UserStorageProvider instance = (UserStorageProvider) session.getAttribute(model.getId());
+    public UserStorageProvider getStorageProviderInstance(UserStorageProviderModel model, UserStorageProviderFactory factory) {
+        UserStorageProvider instance = (UserStorageProvider) httpSession.getAttribute(model.getId());
         if (instance != null) return instance;
-        instance = factory.create(session, model);
+        instance = (UserStorageProvider) factory.create(model);
         if (instance == null) {
             throw new IllegalStateException("UserStorageProvideFactory (of type " + factory.getClass().getName() + ") produced a null instance");
         }
-        session.enlistForClose(instance);
-        session.setAttribute(model.getId(), instance);
+        // session.enlistForClose(instance);
+        httpSession.setAttribute(model.getId(), instance);
         return instance;
     }
 
-    public static <T> List<T> getStorageProviders(KeycloakSession session, RealmModel realm, Class<T> type) {
+    public <T> List<T> getStorageProviders(RealmModel realm, Class<T> type) {
         List<T> list = new LinkedList<>();
         for (UserStorageProviderModel model : getStorageProviders(realm)) {
-            UserStorageProviderFactory factory = (UserStorageProviderFactory) session.getSessionFactory().getProviderFactory(UserStorageProvider.class, model.getProviderId());
+            UserStorageProviderFactory factory = userStorageProviderFactories.get(model.getProviderId());
             if (factory == null) {
                 LOG.warn("Configured UserStorageProvider {} of provider id {} does not exist in realm {}", model.getName(), model.getProviderId(), realm.getName());
                 continue;
             }
             if (Types.supports(type, factory, UserStorageProviderFactory.class)) {
-                list.add(type.cast(getStorageProviderInstance(session, model, factory)));
+                list.add(type.cast(getStorageProviderInstance(model, factory)));
             }
 
 
@@ -89,17 +87,17 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
         return list;
     }
 
-    public static <T> List<T> getEnabledStorageProviders(KeycloakSession session, RealmModel realm, Class<T> type) {
+    public <T> List<T> getEnabledStorageProviders(RealmModel realm, Class<T> type) {
         List<T> list = new LinkedList<>();
         for (UserStorageProviderModel model : getStorageProviders(realm)) {
             if (!model.isEnabled()) continue;
-            UserStorageProviderFactory factory = (UserStorageProviderFactory) session.getSessionFactory().getProviderFactory(UserStorageProvider.class, model.getProviderId());
+            UserStorageProviderFactory factory = userStorageProviderFactories.get(model.getProviderId());
             if (factory == null) {
                 LOG.warn("Configured UserStorageProvider {} of provider id {} does not exist in realm {}", model.getName(), model.getProviderId(), realm.getName());
                 continue;
             }
             if (Types.supports(type, factory, UserStorageProviderFactory.class)) {
-                list.add(type.cast(getStorageProviderInstance(session, model, factory)));
+                list.add(type.cast(getStorageProviderInstance(model, factory)));
             }
 
 
@@ -113,19 +111,22 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
         return new UserStorageProviderModel(model);
     }
 
-    public static UserStorageProvider getStorageProvider(KeycloakSession session, RealmModel realm, String componentId) {
+    public UserStorageProvider getStorageProvider(RealmModel realm, String componentId) {
         ComponentModel model = realm.getComponent(componentId);
         if (model == null) return null;
         UserStorageProviderModel storageModel = new UserStorageProviderModel(model);
-        UserStorageProviderFactory factory = (UserStorageProviderFactory) session.getSessionFactory().getProviderFactory(UserStorageProvider.class, model.getProviderId());
+        UserStorageProviderFactory factory = userStorageProviderFactories.get(model.getProviderId());
         if (factory == null) {
             throw new ModelException("Could not find UserStorageProviderFactory for: " + model.getProviderId());
         }
-        return getStorageProviderInstance(session, storageModel, factory);
+        return getStorageProviderInstance(storageModel, factory);
     }
 
+    @Autowired
+    private UserProvider userProvider;
+
     protected UserProvider localStorage() {
-        return session.userLocalStorage();
+        return userProvider;
     }
 
     @Override
@@ -135,7 +136,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
 
     @Override
     public UserModel addUser(RealmModel realm, String username) {
-        for (UserRegistrationProvider provider : getEnabledStorageProviders(session, realm, UserRegistrationProvider.class)) {
+        for (UserRegistrationProvider provider : getEnabledStorageProviders(realm, UserRegistrationProvider.class)) {
             UserModel user = provider.addUser(realm, username);
             if (user != null) return user;
         }
@@ -151,7 +152,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
             boolean linkRemoved = true;
             if (user.getFederationLink() != null) {
                 if (isStorageProviderEnabled(realm, user.getFederationLink())) {
-                    UserStorageProvider provider = getStorageProvider(session, realm, user.getFederationLink());
+                    UserStorageProvider provider = getStorageProvider(realm, user.getFederationLink());
                     if (provider != null && provider instanceof UserRegistrationProvider) {
                         ((UserRegistrationProvider) provider).removeUser(realm, user);
                     }
@@ -161,7 +162,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
             }
             return localStorage().removeUser(realm, user) && linkRemoved;
         }
-        UserRegistrationProvider registry = (UserRegistrationProvider) getStorageProvider(session, realm, storageId.getProviderId());
+        UserRegistrationProvider registry = (UserRegistrationProvider) getStorageProvider(realm, storageId.getProviderId());
         if (registry == null) {
             throw new ModelException("Could not resolve StorageProvider: " + storageId.getProviderId());
         }
@@ -169,8 +170,11 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
 
     }
 
+    @Autowired
+    private UserFederatedStorageProvider userFederatedStorageProvider;
+
     public UserFederatedStorageProvider getFederatedStorage() {
-        return session.userFederatedStorage();
+        return userFederatedStorageProvider;
     }
 
     @Override
@@ -276,7 +280,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
      */
     protected UserModel importValidation(RealmModel realm, UserModel user) {
         if (user == null || user.getFederationLink() == null) return user;
-        UserStorageProvider provider = getStorageProvider(session, realm, user.getFederationLink());
+        UserStorageProvider provider = getStorageProvider(realm, user.getFederationLink());
         if (provider != null && provider instanceof ImportedUserValidation) {
             if (!isStorageProviderEnabled(realm, user.getFederationLink())) {
                 return new ReadOnlyUserModelDelegate(user) {
@@ -305,27 +309,25 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
 
     }
 
+    @Autowired
+    private UserCache userCache;
+    @Autowired
+    private RealmProvider realmProvider;
+
     protected void deleteInvalidUser(final RealmModel realm, final UserModel user) {
         String userId = user.getId();
         String userName = user.getUsername();
-        UserCache userCache = session.userCache();
         if (userCache != null) {
             userCache.evict(realm, user);
         }
-        runJobInTransaction(session.getSessionFactory(), new KeycloakSessionTask() {
 
-            @Override
-            public void run(KeycloakSession session) {
-                RealmModel realmModel = session.realms().getRealm(realm.getId());
-                if (realmModel == null) return;
-                UserModel deletedUser = session.userLocalStorage().getUserById(userId, realmModel);
-                if (deletedUser != null) {
-                    new UserManager(session).removeUser(realmModel, deletedUser, session.userLocalStorage());
-                    LOG.debug("Removed invalid user '{}'", userName);
-                }
-            }
-
-        });
+        RealmModel realmModel = realmProvider.getRealm(realm.getId());
+        if (realmModel == null) return;
+        UserModel deletedUser = userProvider.getUserById(userId, realmModel);
+        if (deletedUser != null) {
+            new UserManager().removeUser(realmModel, deletedUser);
+            LOG.debug("Removed invalid user '{}'", userName);
+        }
     }
 
 
@@ -346,7 +348,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
             UserModel user = localStorage().getUserById(id, realm);
             return importValidation(realm, user);
         }
-        UserLookupProvider provider = (UserLookupProvider) getStorageProvider(session, realm, storageId.getProviderId());
+        UserLookupProvider provider = (UserLookupProvider) getStorageProvider(realm, storageId.getProviderId());
         if (provider == null) return null;
         if (!isStorageProviderEnabled(realm, storageId.getProviderId())) return null;
         return provider.getUserById(id, realm);
@@ -368,7 +370,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
         if (user != null) {
             return importValidation(realm, user);
         }
-        for (UserLookupProvider provider : getEnabledStorageProviders(session, realm, UserLookupProvider.class)) {
+        for (UserLookupProvider provider : getEnabledStorageProviders(realm, UserLookupProvider.class)) {
             user = provider.getUserByUsername(username, realm);
             if (user != null) return user;
         }
@@ -381,7 +383,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
         if (user != null) {
             return importValidation(realm, user);
         }
-        for (UserLookupProvider provider : getEnabledStorageProviders(session, realm, UserLookupProvider.class)) {
+        for (UserLookupProvider provider : getEnabledStorageProviders(realm, UserLookupProvider.class)) {
             user = provider.getUserByEmail(email, realm);
             if (user != null) {
                 return user;
@@ -426,7 +428,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
     @Override
     public int getUsersCount(RealmModel realm, boolean includeServiceAccount) {
         int size = localStorage().getUsersCount(realm, includeServiceAccount);
-        for (UserQueryProvider provider : getEnabledStorageProviders(session, realm, UserQueryProvider.class)) {
+        for (UserQueryProvider provider : getEnabledStorageProviders(realm, UserQueryProvider.class)) {
             size += provider.getUsersCount(realm);
         }
         return size;
@@ -467,7 +469,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
         if (firstResult < 0) firstResult = 0;
         if (maxResults < 0) maxResults = Integer.MAX_VALUE - 1;
 
-        List<UserQueryProvider> storageProviders = getEnabledStorageProviders(session, realm, UserQueryProvider.class);
+        List<UserQueryProvider> storageProviders = getEnabledStorageProviders(realm, UserQueryProvider.class);
         // we can skip rest of method if there are no storage providers
         if (storageProviders.isEmpty()) {
             return pagedQuery.query(localStorage(), firstResult, maxResults);
@@ -607,7 +609,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
 
     @Override
     public void grantToAllUsers(RealmModel realm, RoleModel role) {
-        List<UserBulkUpdateProvider> storageProviders = getEnabledStorageProviders(session, realm, UserBulkUpdateProvider.class);
+        List<UserBulkUpdateProvider> storageProviders = getEnabledStorageProviders(realm, UserBulkUpdateProvider.class);
         LinkedList<UserBulkUpdateProvider> providers = new LinkedList<>();
         providers.add(localStorage());
         providers.addAll(storageProviders);
@@ -653,7 +655,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
         localStorage().preRemove(realm);
         if (getFederatedStorage() != null) {
             getFederatedStorage().preRemove(realm);
-            for (UserStorageProvider provider : getEnabledStorageProviders(session, realm, UserStorageProvider.class)) {
+            for (UserStorageProvider provider : getEnabledStorageProviders(realm, UserStorageProvider.class)) {
                 provider.preRemove(realm);
             }
         }
@@ -664,7 +666,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
         localStorage().preRemove(realm, group);
         if (getFederatedStorage() != null) {
             getFederatedStorage().preRemove(realm, group);
-            for (UserStorageProvider provider : getEnabledStorageProviders(session, realm, UserStorageProvider.class)) {
+            for (UserStorageProvider provider : getEnabledStorageProviders(realm, UserStorageProvider.class)) {
                 provider.preRemove(realm, group);
             }
         }
@@ -675,7 +677,7 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
         localStorage().preRemove(realm, role);
         if (getFederatedStorage() != null) {
             getFederatedStorage().preRemove(realm, role);
-            for (UserStorageProvider provider : getEnabledStorageProviders(session, realm, UserStorageProvider.class)) {
+            for (UserStorageProvider provider : getEnabledStorageProviders(realm, UserStorageProvider.class)) {
                 provider.preRemove(realm, role);
             }
         }
@@ -727,12 +729,12 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
     @Override
     public void onCache(RealmModel realm, CachedUserModel user, UserModel delegate) {
         if (StorageId.isLocalStorage(user)) {
-            if (session.userLocalStorage() instanceof OnUserCache) {
-                ((OnUserCache) session.userLocalStorage()).onCache(realm, user, delegate);
+            if (userProvider instanceof OnUserCache) {
+                ((OnUserCache) userProvider).onCache(realm, user, delegate);
             }
         } else {
-            Object provider = getStorageProvider(session, realm, StorageId.resolveProviderId(user));
-            if (provider != null && provider instanceof OnUserCache) {
+            Object provider = getStorageProvider(realm, StorageId.resolveProviderId(user));
+            if (provider instanceof OnUserCache) {
                 ((OnUserCache) provider).onCache(realm, user, delegate);
             }
         }
@@ -743,16 +745,19 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
     }
 
     @Override
-    public void onCreate(KeycloakSession session, RealmModel realm, ComponentModel model) {
-        ComponentFactory factory = ComponentUtil.getComponentFactory(session, model);
+    public void onCreate(RealmModel realm, ComponentModel model) {
+        ComponentFactory factory = componentUtil.getComponentFactory(model);
         if (!(factory instanceof UserStorageProviderFactory)) return;
         new UserStorageSyncManager().notifyToRefreshPeriodicSync(realm, new UserStorageProviderModel(model), false);
 
     }
 
+    @Autowired
+    private ComponentUtil componentUtil;
+
     @Override
-    public void onUpdate(KeycloakSession session, RealmModel realm, ComponentModel oldModel, ComponentModel newModel) {
-        ComponentFactory factory = ComponentUtil.getComponentFactory(session, newModel);
+    public void onUpdate(RealmModel realm, ComponentModel oldModel, ComponentModel newModel) {
+        ComponentFactory factory = componentUtil.getComponentFactory(newModel);
         if (!(factory instanceof UserStorageProviderFactory)) return;
         UserStorageProviderModel old = new UserStorageProviderModel(oldModel);
         UserStorageProviderModel newP = new UserStorageProviderModel(newModel);
@@ -767,6 +772,4 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
     interface PaginatedQuery {
         List<UserModel> query(Object provider, int first, int max);
     }
-
-
 }

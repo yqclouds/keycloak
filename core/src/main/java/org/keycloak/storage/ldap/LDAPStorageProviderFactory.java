@@ -185,16 +185,16 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
     }
 
     @Override
-    public LDAPStorageProvider create(KeycloakSession session, ComponentModel model) {
-        Map<ComponentModel, LDAPConfigDecorator> configDecorators = getLDAPConfigDecorators(session, model);
+    public LDAPStorageProvider create(ComponentModel model) {
+        Map<ComponentModel, LDAPConfigDecorator> configDecorators = getLDAPConfigDecorators(model);
 
-        LDAPIdentityStore ldapIdentityStore = this.ldapStoreRegistry.getLdapStore(session, model, configDecorators);
+        LDAPIdentityStore ldapIdentityStore = this.ldapStoreRegistry.getLdapStore(model, configDecorators);
         return new LDAPStorageProvider(this, session, model, ldapIdentityStore);
     }
 
 
     // Check if it's some performance overhead to create this map in every request. But probably not...
-    protected Map<ComponentModel, LDAPConfigDecorator> getLDAPConfigDecorators(KeycloakSession session, ComponentModel ldapModel) {
+    protected Map<ComponentModel, LDAPConfigDecorator> getLDAPConfigDecorators(ComponentModel ldapModel) {
         RealmModel realm = session.realms().getRealm(ldapModel.getParentId());
         List<ComponentModel> mapperComponents = realm.getComponents(ldapModel.getId(), LDAPStorageMapper.class.getName());
 
@@ -421,7 +421,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
         KeycloakModelUtils.runJobInTransaction(sessionFactory, new KeycloakSessionTask() {
 
             @Override
-            public void run(KeycloakSession session) {
+            public void run() {
                 RealmModel realm = session.realms().getRealm(realmId);
                 session.getContext().setRealm(realm);
                 session.getProvider(UserStorageProvider.class, model);
@@ -514,7 +514,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
 
                         // Add new user to Keycloak
                         exists.value = false;
-                        ldapFedProvider.importUserFromLDAP(session, currentRealm, ldapUser);
+                        ldapFedProvider.importUserFromLDAP(currentRealm, ldapUser);
                         syncResult.increaseAdded();
 
                     } else {

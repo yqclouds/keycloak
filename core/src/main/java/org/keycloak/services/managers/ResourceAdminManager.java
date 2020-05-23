@@ -49,23 +49,23 @@ public class ResourceAdminManager {
 
     private KeycloakSession session;
 
-    public ResourceAdminManager(KeycloakSession session) {
+    public ResourceAdminManager() {
         this.session = session;
     }
 
-    public static String resolveUri(KeycloakSession session, String rootUrl, String uri) {
-        String absoluteURI = ResolveRelative.resolveRelativeUri(session, rootUrl, uri);
+    public static String resolveUri(String rootUrl, String uri) {
+        String absoluteURI = ResolveRelative.resolveRelativeUri(rootUrl, uri);
         return StringPropertyReplacer.replaceProperties(absoluteURI);
 
     }
 
-    public static String getManagementUrl(KeycloakSession session, ClientModel client) {
+    public static String getManagementUrl(ClientModel client) {
         String mgmtUrl = client.getManagementUrl();
         if (mgmtUrl == null || mgmtUrl.equals("")) {
             return null;
         }
 
-        String absoluteURI = ResolveRelative.resolveRelativeUri(session, client.getRootUrl(), mgmtUrl);
+        String absoluteURI = ResolveRelative.resolveRelativeUri(client.getRootUrl(), mgmtUrl);
 
         // this is for resolving URI like "http://${jboss.host.name}:8080/..." in order to send request to same machine and avoid request to LB in cluster environment
         return StringPropertyReplacer.replaceProperties(absoluteURI);
@@ -74,7 +74,7 @@ public class ResourceAdminManager {
     // For non-cluster setup, return just single configured managementUrls
     // For cluster setup, return the management Urls corresponding to all registered cluster nodes
     private List<String> getAllManagementUrls(ClientModel client) {
-        String baseMgmtUrl = getManagementUrl(session, client);
+        String baseMgmtUrl = getManagementUrl(client);
         if (baseMgmtUrl == null) {
             return Collections.emptyList();
         }
@@ -133,7 +133,7 @@ public class ResourceAdminManager {
     }
 
     protected boolean logoutClientSessions(RealmModel realm, ClientModel resource, List<AuthenticatedClientSessionModel> clientSessions) {
-        String managementUrl = getManagementUrl(session, resource);
+        String managementUrl = getManagementUrl(resource);
         if (managementUrl != null) {
 
             // Key is host, value is list of http sessions for this host

@@ -240,7 +240,7 @@ public class RoleMapperResource {
                 try {
                     roleMapper.deleteRoleMapping(roleModel);
                 } catch (ModelException me) {
-                    Properties messages = AdminRoot.getMessages(session, realm, auth.adminAuth().getToken().getLocale());
+                    Properties messages = AdminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
                     throw new ErrorResponseException(me.getMessage(), MessageFormat.format(messages.getProperty(me.getMessage(), me.getMessage()), me.getParameters()),
                             Response.Status.BAD_REQUEST);
                 }

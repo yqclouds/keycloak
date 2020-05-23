@@ -54,7 +54,7 @@ public class RoleContainerResource extends RoleResource {
     private UriInfo uriInfo;
     private KeycloakSession session;
 
-    public RoleContainerResource(KeycloakSession session, UriInfo uriInfo, RealmModel realm,
+    public RoleContainerResource(UriInfo uriInfo, RealmModel realm,
                                  AdminPermissionEvaluator auth, RoleContainerModel roleContainer, AdminEventBuilder adminEvent) {
         super(realm);
         this.uriInfo = uriInfo;
@@ -338,7 +338,7 @@ public class RoleContainerResource extends RoleResource {
             throw new NotFoundException("Could not find role");
         }
 
-        AdminPermissionManagement permissions = AdminPermissions.management(session, realm);
+        AdminPermissionManagement permissions = AdminPermissions.management(realm);
         if (!permissions.roles().isPermissionsEnabled(role)) {
             return new ManagementPermissionReference();
         }
@@ -363,7 +363,7 @@ public class RoleContainerResource extends RoleResource {
             throw new NotFoundException("Could not find role");
         }
 
-        AdminPermissionManagement permissions = AdminPermissions.management(session, realm);
+        AdminPermissionManagement permissions = AdminPermissions.management(realm);
         permissions.roles().setPermissionsEnabled(role, ref.isEnabled());
         if (ref.isEnabled()) {
             return RoleByIdResource.toMgmtRef(role, permissions);
@@ -402,7 +402,7 @@ public class RoleContainerResource extends RoleResource {
         List<UserModel> userModels = session.users().getRoleMembers(realm, role, firstResult, maxResults);
 
         for (UserModel user : userModels) {
-            results.add(ModelToRepresentation.toRepresentation(session, realm, user));
+            results.add(ModelToRepresentation.toRepresentation(realm, user));
         }
         return results;
 

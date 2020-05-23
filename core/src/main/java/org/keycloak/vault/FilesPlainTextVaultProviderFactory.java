@@ -1,6 +1,5 @@
 package org.keycloak.vault;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,12 +28,12 @@ public class FilesPlainTextVaultProviderFactory extends AbstractVaultProviderFac
     private Path vaultPath;
 
     @Override
-    public VaultProvider create(KeycloakSession session) {
+    public VaultProvider create() {
         if (vaultDirectory == null) {
             LOG.debug("Can not create a vault since it's not initialized correctly");
             return null;
         }
-        return new FilesPlainTextVaultProvider(vaultPath, getRealmName(session), super.keyResolvers);
+        return new FilesPlainTextVaultProvider(vaultPath, getRealmName(), super.keyResolvers);
     }
 
     @PostConstruct

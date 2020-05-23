@@ -18,7 +18,6 @@
 
 package org.keycloak.services.x509;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.stereotype.Component;
 
@@ -40,7 +39,7 @@ public class DefaultClientCertificateLookupFactory implements X509ClientCertific
             new DefaultClientCertificateLookup();
 
     @Override
-    public X509ClientCertificateLookup create(KeycloakSession session) {
+    public X509ClientCertificateLookup create() {
         return SINGLETON;
     }
 

@@ -3,17 +3,14 @@ package org.keycloak.theme;
 import org.keycloak.Config;
 import org.keycloak.common.Version;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakContext;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class DefaultThemeSelectorProvider implements ThemeSelectorProvider {
-
     public static final String LOGIN_THEME_KEY = "login_theme";
 
-    private final KeycloakSession session;
-
-    public DefaultThemeSelectorProvider(KeycloakSession session) {
-        this.session = session;
-    }
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     @Override
     public String getThemeName(Theme.Type type) {
@@ -24,24 +21,24 @@ public class DefaultThemeSelectorProvider implements ThemeSelectorProvider {
                 name = Config.scope("theme").get("welcomeTheme");
                 break;
             case LOGIN:
-                ClientModel client = session.getContext().getClient();
+                ClientModel client = keycloakContext.getClient();
                 if (client != null) {
                     name = client.getAttribute(LOGIN_THEME_KEY);
                 }
 
                 if (name == null || name.isEmpty()) {
-                    name = session.getContext().getRealm().getLoginTheme();
+                    name = keycloakContext.getRealm().getLoginTheme();
                 }
 
                 break;
             case ACCOUNT:
-                name = session.getContext().getRealm().getAccountTheme();
+                name = keycloakContext.getRealm().getAccountTheme();
                 break;
             case EMAIL:
-                name = session.getContext().getRealm().getEmailTheme();
+                name = keycloakContext.getRealm().getEmailTheme();
                 break;
             case ADMIN:
-                name = session.getContext().getRealm().getAdminTheme();
+                name = keycloakContext.getRealm().getAdminTheme();
                 break;
         }
 

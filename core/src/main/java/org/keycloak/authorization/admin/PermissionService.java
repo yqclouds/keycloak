@@ -23,6 +23,7 @@ import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
 import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Map;
@@ -59,8 +60,11 @@ public class PermissionService extends PolicyService {
         return super.doSearch(firstResult, maxResult, fields, filters);
     }
 
+    @Autowired
+    private ModelToRepresentation modelToRepresentation;
+
     @Override
     protected AbstractPolicyRepresentation toRepresentation(PolicyModel policy, String fields, AuthorizationProvider authorization) {
-        return ModelToRepresentation.toRepresentation(policy, authorization, false, false, fields != null && fields.equals("*"));
+        return modelToRepresentation.toRepresentation(policy, authorization, false, false, fields != null && fields.equals("*"));
     }
 }

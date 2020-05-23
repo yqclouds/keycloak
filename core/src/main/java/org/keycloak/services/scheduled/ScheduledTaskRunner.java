@@ -17,7 +17,6 @@
 
 package org.keycloak.services.scheduled;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.timer.ScheduledTask;
 import org.slf4j.Logger;
@@ -30,37 +29,19 @@ public class ScheduledTaskRunner implements Runnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(ScheduledTaskRunner.class);
 
-    protected final KeycloakSessionFactory sessionFactory;
+    protected KeycloakSessionFactory sessionFactory;
     protected final ScheduledTask task;
 
-    public ScheduledTaskRunner(KeycloakSessionFactory sessionFactory, ScheduledTask task) {
-        this.sessionFactory = sessionFactory;
+    public ScheduledTaskRunner(ScheduledTask task) {
         this.task = task;
     }
 
     @Override
     public void run() {
-        KeycloakSession session = sessionFactory.create();
-        try {
-            runTask(session);
-        } catch (Throwable t) {
-//            ServicesLogger.LOGGER.failedToRunScheduledTask(t, task.getClass().getSimpleName());
-
-            session.getTransactionManager().rollback();
-        } finally {
-            try {
-                session.close();
-            } catch (Throwable t) {
-//                ServicesLogger.LOGGER.failedToCloseProviderSession(t);
-            }
-        }
+        runTask();
     }
 
-    protected void runTask(KeycloakSession session) {
-        session.getTransactionManager().begin();
-        task.run(session);
-        session.getTransactionManager().commit();
-
+    protected void runTask() {
         LOG.debug("Executed scheduled task " + task.getClass().getSimpleName());
     }
 

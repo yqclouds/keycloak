@@ -17,12 +17,21 @@
 
 package org.keycloak.models.utils;
 
-import org.keycloak.provider.ProviderEvent;
+import org.springframework.context.ApplicationEvent;
 
 /**
  * Executed at startup after model migration is finished
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-public class PostMigrationEvent implements ProviderEvent {
+public class PostMigrationEvent extends ApplicationEvent {
+    /**
+     * Create a new {@code ApplicationEvent}.
+     *
+     * @param source the object on which the event initially occurred or with
+     *               which the event is associated (never {@code null})
+     */
+    public PostMigrationEvent(Object source) {
+        super(source);
+    }
 }

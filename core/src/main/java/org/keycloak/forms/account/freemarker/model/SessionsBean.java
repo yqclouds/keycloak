@@ -35,7 +35,7 @@ public class SessionsBean {
     public SessionsBean(RealmModel realm, List<UserSessionModel> sessions) {
         this.events = new LinkedList<>();
         for (UserSessionModel session : sessions) {
-            this.events.add(new UserSessionBean(realm, session));
+            this.events.add(new UserSessionBean(realm);
         }
     }
 

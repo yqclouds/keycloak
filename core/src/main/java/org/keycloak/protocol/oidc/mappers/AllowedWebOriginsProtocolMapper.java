@@ -83,7 +83,7 @@ public class AllowedWebOriginsProtocolMapper extends AbstractOIDCProtocolMapper 
 
         Set<String> allowedOrigins = client.getWebOrigins();
         if (allowedOrigins != null && !allowedOrigins.isEmpty()) {
-            token.setAllowedOrigins(WebOriginsUtils.resolveValidWebOrigins(session, client));
+            token.setAllowedOrigins(WebOriginsUtils.resolveValidWebOrigins(client));
         }
 
         return token;

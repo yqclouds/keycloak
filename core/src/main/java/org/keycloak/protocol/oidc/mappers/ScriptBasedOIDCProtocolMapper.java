@@ -173,7 +173,7 @@ public class ScriptBasedOIDCProtocolMapper extends AbstractOIDCProtocolMapper im
     }
 
     @Override
-    public void validateConfig(KeycloakSession session, RealmModel realm, ProtocolMapperContainerModel client, ProtocolMapperModel mapperModel) throws ProtocolMapperConfigException {
+    public void validateConfig(RealmModel realm, ProtocolMapperContainerModel client, ProtocolMapperModel mapperModel) throws ProtocolMapperConfigException {
 
         String scriptCode = getScriptCode(mapperModel);
         if (scriptCode == null) {

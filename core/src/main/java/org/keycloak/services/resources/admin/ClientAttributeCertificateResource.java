@@ -17,6 +17,7 @@
 
 package org.keycloak.services.resources.admin;
 
+import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
@@ -27,10 +28,7 @@ import org.keycloak.events.admin.ResourceType;
 import org.keycloak.jose.jwk.JSONWebKeySet;
 import org.keycloak.jose.jwk.JWK;
 import org.keycloak.jose.jwk.JWKParser;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeyManager;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.representations.KeyStoreConfig;
 import org.keycloak.representations.idm.CertificateRepresentation;
@@ -38,9 +36,10 @@ import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.util.CertificateInfoHelper;
 import org.keycloak.util.JWKSUtils;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
@@ -67,24 +66,26 @@ public class ClientAttributeCertificateResource {
 
     protected RealmModel realm;
     protected ClientModel client;
-    protected KeycloakSession session;
+    @Context
+    protected KeycloakContext keycloakContext;
+    @Autowired
+    private UserSessionProvider userSessionProvider;
+    @Autowired
+    private UserProvider userProvider;
     protected AdminEventBuilder adminEvent;
     protected String attributePrefix;
     private AdminPermissionEvaluator auth;
 
-    public ClientAttributeCertificateResource(RealmModel realm, AdminPermissionEvaluator auth, ClientModel client, KeycloakSession session, String attributePrefix, AdminEventBuilder adminEvent) {
+    public ClientAttributeCertificateResource(RealmModel realm, AdminPermissionEvaluator auth, ClientModel client, String attributePrefix, AdminEventBuilder adminEvent) {
         this.realm = realm;
         this.auth = auth;
         this.client = client;
-        this.session = session;
         this.attributePrefix = attributePrefix;
         this.adminEvent = adminEvent.resource(ResourceType.CLIENT);
     }
 
     /**
      * Get key info
-     *
-     * @return
      */
     @GET
     @NoCache
@@ -92,8 +93,7 @@ public class ClientAttributeCertificateResource {
     public CertificateRepresentation getKeyInfo() {
         auth.clients().requireView(client);
 
-        CertificateRepresentation info = CertificateInfoHelper.getCertificateFromClient(client, attributePrefix);
-        return info;
+        return CertificateInfoHelper.getCertificateFromClient(client, attributePrefix);
     }
 
     /**
@@ -112,17 +112,13 @@ public class ClientAttributeCertificateResource {
 
         CertificateInfoHelper.updateClientModelCertificateInfo(client, info, attributePrefix);
 
-        adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).representation(info).success();
+        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).representation(info).success();
 
         return info;
     }
 
     /**
      * Upload certificate and eventually private key
-     *
-     * @param input
-     * @return
-     * @throws IOException
      */
     @POST
     @Path("upload")
@@ -135,7 +131,7 @@ public class ClientAttributeCertificateResource {
             CertificateRepresentation info = getCertFromRequest(input);
             CertificateInfoHelper.updateClientModelCertificateInfo(client, info, attributePrefix);
 
-            adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).representation(info).success();
+            adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).representation(info).success();
             return info;
         } catch (IllegalStateException ise) {
             throw new ErrorResponseException("certificate-not-found", "Certificate or key with given alias not found in the keystore", Response.Status.BAD_REQUEST);
@@ -144,10 +140,6 @@ public class ClientAttributeCertificateResource {
 
     /**
      * Upload only certificate, not private key
-     *
-     * @param input
-     * @return information extracted from uploaded certificate - not necessarily the new state of certificate on the server
-     * @throws IOException
      */
     @POST
     @Path("upload-certificate")
@@ -161,7 +153,7 @@ public class ClientAttributeCertificateResource {
             info.setPrivateKey(null);
             CertificateInfoHelper.updateClientModelCertificateInfo(client, info, attributePrefix);
 
-            adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).representation(info).success();
+            adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).representation(info).success();
             return info;
         } catch (IllegalStateException ise) {
             throw new ErrorResponseException("certificate-not-found", "Certificate or key with given alias not found in the keystore", Response.Status.BAD_REQUEST);
@@ -316,9 +308,12 @@ public class ClientAttributeCertificateResource {
 
         CertificateInfoHelper.updateClientModelCertificateInfo(client, info, attributePrefix);
 
-        adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).representation(info).success();
+        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).representation(info).success();
         return rtn;
     }
+
+    @Autowired
+    private KeyManager keyManager;
 
     private byte[] getKeystore(KeyStoreConfig config, String privatePem, String certPem) {
         try {
@@ -343,10 +338,9 @@ public class ClientAttributeCertificateResource {
             }
 
 
-            if (config.isRealmCertificate() == null || config.isRealmCertificate().booleanValue()) {
-                KeyManager keys = session.keys();
-                String kid = keys.getActiveRsaKey(realm).getKid();
-                Certificate certificate = keys.getRsaCertificate(realm, kid);
+            if (config.isRealmCertificate() == null || config.isRealmCertificate()) {
+                String kid = keyManager.getActiveRsaKey(realm).getKid();
+                Certificate certificate = keyManager.getRsaCertificate(realm, kid);
                 String certificateAlias = config.getRealmAlias();
                 if (certificateAlias == null) certificateAlias = realm.getName();
                 keyStore.setCertificateEntry(certificateAlias, certificate);

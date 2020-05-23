@@ -18,7 +18,6 @@
 package org.keycloak.storage.ldap.idm.store.ldap;
 
 import com.hsbc.unified.iam.core.util.Base64;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.LDAPConstants;
 import org.keycloak.models.ModelException;
 import org.keycloak.storage.ldap.LDAPConfig;
@@ -57,9 +56,9 @@ public class LDAPIdentityStore implements IdentityStore {
     private final LDAPConfig config;
     private final LDAPOperationManager operationManager;
 
-    public LDAPIdentityStore(KeycloakSession session, LDAPConfig config) {
+    public LDAPIdentityStore(LDAPConfig config) {
         this.config = config;
-        this.operationManager = new LDAPOperationManager(session, config);
+        this.operationManager = new LDAPOperationManager(config);
     }
 
     @Override

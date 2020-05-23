@@ -31,8 +31,6 @@ import java.util.Set;
  * @version $Revision: 1 $
  */
 public interface KeycloakSessionFactory extends ProviderEventManager {
-    KeycloakSession create();
-
     Set<Spi> getSpis();
 
     <T extends Provider> ProviderFactory<T> getProviderFactory(Class<T> clazz);

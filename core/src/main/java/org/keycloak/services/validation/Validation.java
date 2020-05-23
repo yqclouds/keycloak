@@ -18,7 +18,6 @@
 package org.keycloak.services.validation;
 
 import org.keycloak.authentication.requiredactions.util.UpdateProfileContext;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.PasswordPolicy;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.FormMessage;
@@ -48,7 +47,7 @@ public class Validation {
     @Autowired
     private PasswordPolicyManagerProvider passwordPolicyManagerProvider;
 
-    public List<FormMessage> validateRegistrationForm(KeycloakSession session, RealmModel realm, MultivaluedMap<String, String> formData, List<String> requiredCredentialTypes, PasswordPolicy policy) {
+    public List<FormMessage> validateRegistrationForm(RealmModel realm, MultivaluedMap<String, String> formData, List<String> requiredCredentialTypes, PasswordPolicy policy) {
         List<FormMessage> errors = new ArrayList<>();
 
         if (!realm.isRegistrationEmailAsUsername() && isBlank(formData.getFirst(FIELD_USERNAME))) {

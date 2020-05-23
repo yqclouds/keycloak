@@ -63,7 +63,7 @@ class UserPermissions implements UserPermissionEvaluator, UserPermissionManageme
     private final ResourceStore resourceStore;
     private boolean grantIfNoPermission = false;
 
-    UserPermissions(KeycloakSession session, AuthorizationProvider authz, MgmtPermissions root) {
+    UserPermissions(AuthorizationProvider authz, MgmtPermissions root) {
         this.session = session;
         this.authz = authz;
         this.root = root;
@@ -320,8 +320,8 @@ class UserPermissions implements UserPermissionEvaluator, UserPermissionManageme
 
     @Override
     public boolean canClientImpersonate(ClientModel client, UserModel user) {
-        ClientModelIdentity identity = new ClientModelIdentity(session, client);
-        EvaluationContext context = new DefaultEvaluationContext(identity, session) {
+        ClientModelIdentity identity = new ClientModelIdentity(client);
+        EvaluationContext context = new DefaultEvaluationContext(identity {
             @Override
             public Map<String, Collection<String>> getBaseAttributes() {
                 Map<String, Collection<String>> attributes = super.getBaseAttributes();
@@ -369,7 +369,7 @@ class UserPermissions implements UserPermissionEvaluator, UserPermissionManageme
             return true;
         }
 
-        return hasPermission(new DefaultEvaluationContext(new UserModelIdentity(root.realm, user), session), USER_IMPERSONATED_SCOPE);
+        return hasPermission(new DefaultEvaluationContext(new UserModelIdentity(root.realm, user), USER_IMPERSONATED_SCOPE);
     }
 
     @Override
@@ -382,7 +382,7 @@ class UserPermissions implements UserPermissionEvaluator, UserPermissionManageme
             return false;
         }
 
-        return canImpersonate(new DefaultEvaluationContext(identity, session));
+        return canImpersonate(new DefaultEvaluationContext(identity);
     }
 
     @Override

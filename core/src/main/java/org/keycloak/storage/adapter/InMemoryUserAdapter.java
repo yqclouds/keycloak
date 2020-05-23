@@ -53,7 +53,7 @@ public class InMemoryUserAdapter implements UserModel {
     private String id;
     private boolean readonly;
 
-    public InMemoryUserAdapter(KeycloakSession session, RealmModel realm, String id) {
+    public InMemoryUserAdapter(RealmModel realm, String id) {
         this.session = session;
         this.realm = realm;
         this.id = id;

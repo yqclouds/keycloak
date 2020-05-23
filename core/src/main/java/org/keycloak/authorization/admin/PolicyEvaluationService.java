@@ -76,6 +76,9 @@ public class PolicyEvaluationService {
         this.auth = auth;
     }
 
+    @Autowired
+    private PolicyEvaluationResponseBuilder policyEvaluationResponseBuilder;
+
     @POST
     @Consumes("application/json")
     @Produces("application/json")
@@ -100,7 +103,7 @@ public class PolicyEvaluationService {
 
             request.setClaims(claims);
 
-            return Response.ok(PolicyEvaluationResponseBuilder.build(evaluate(evaluationRequest, createEvaluationContext(evaluationRequest, identity), request), resourceServer, authorization, identity)).build();
+            return Response.ok(policyEvaluationResponseBuilder.build(evaluate(evaluationRequest, createEvaluationContext(evaluationRequest, identity), request), resourceServer, authorization, identity)).build();
         } catch (Exception e) {
             LOG.error("Error while evaluating permissions", e);
             throw new ErrorResponseException(OAuthErrorException.SERVER_ERROR, "Error while evaluating permissions.", Status.INTERNAL_SERVER_ERROR);

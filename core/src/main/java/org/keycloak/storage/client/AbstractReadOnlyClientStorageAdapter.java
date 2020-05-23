@@ -26,8 +26,8 @@ import java.util.Set;
  * @version $Revision: 1 $
  */
 public abstract class AbstractReadOnlyClientStorageAdapter extends AbstractClientStorageAdapter {
-    public AbstractReadOnlyClientStorageAdapter(KeycloakSession session, RealmModel realm, ClientStorageProviderModel component) {
-        super(session, realm, component);
+    public AbstractReadOnlyClientStorageAdapter(RealmModel realm, ClientStorageProviderModel component) {
+        super(realm, component);
     }
 
     @Override

@@ -27,6 +27,7 @@ import org.keycloak.representations.idm.ClientMappingsRepresentation;
 import org.keycloak.representations.idm.MappingsRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -46,17 +47,18 @@ public class ScopeMappedResource {
     protected AdminPermissionEvaluator.RequirePermissionCheck viewPermission;
 
     protected ScopeContainerModel scopeContainer;
-    protected KeycloakSession session;
     protected AdminEventBuilder adminEvent;
 
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     public ScopeMappedResource(RealmModel realm, AdminPermissionEvaluator auth, ScopeContainerModel scopeContainer,
-                               KeycloakSession session, AdminEventBuilder adminEvent,
+                               AdminEventBuilder adminEvent,
                                AdminPermissionEvaluator.RequirePermissionCheck managePermission,
                                AdminPermissionEvaluator.RequirePermissionCheck viewPermission) {
         this.realm = realm;
         this.auth = auth;
         this.scopeContainer = scopeContainer;
-        this.session = session;
         this.adminEvent = adminEvent.resource(ResourceType.REALM_SCOPE_MAPPING);
         this.managePermission = managePermission;
         this.viewPermission = viewPermission;
@@ -218,7 +220,7 @@ public class ScopeMappedResource {
             scopeContainer.addScopeMapping(roleModel);
         }
 
-        adminEvent.operation(OperationType.CREATE).resourcePath(session.getContext().getUri()).representation(roles).success();
+        adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri()).representation(roles).success();
     }
 
     /**
@@ -255,7 +257,7 @@ public class ScopeMappedResource {
             }
         }
 
-        adminEvent.operation(OperationType.DELETE).resourcePath(session.getContext().getUri()).representation(roles).success();
+        adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).representation(roles).success();
 
     }
 
@@ -265,6 +267,6 @@ public class ScopeMappedResource {
         if (clientModel == null) {
             throw new NotFoundException("Could not find client");
         }
-        return new ScopeMappedClientResource(realm, auth, this.scopeContainer, session, clientModel, adminEvent, managePermission, viewPermission);
+        return new ScopeMappedClientResource(realm, auth, this.scopeContainer, clientModel, adminEvent, managePermission, viewPermission);
     }
 }

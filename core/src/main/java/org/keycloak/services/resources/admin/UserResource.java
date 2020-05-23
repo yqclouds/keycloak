@@ -95,7 +95,7 @@ public class UserResource {
         this.adminEvent = adminEvent.resource(ResourceType.USER);
     }
 
-    public static void updateUserFromRep(UserModel user, UserRepresentation rep, Set<String> attrsToRemove, RealmModel realm, KeycloakSession session, boolean removeMissingRequiredActions) {
+    public static void updateUserFromRep(UserModel user, UserRepresentation rep, Set<String> attrsToRemove, RealmModel realm, boolean removeMissingRequiredActions) {
         if (rep.getUsername() != null && realm.isEditUsernameAllowed() && !realm.isRegistrationEmailAsUsername()) {
             user.setUsername(rep.getUsername());
         }
@@ -216,14 +216,14 @@ public class UserResource {
     public UserRepresentation getUser() {
         auth.users().requireView(user);
 
-        UserRepresentation rep = ModelToRepresentation.toRepresentation(session, realm, user);
+        UserRepresentation rep = ModelToRepresentation.toRepresentation(realm, user);
 
         if (realm.isIdentityFederationEnabled()) {
             List<FederatedIdentityRepresentation> reps = getFederatedIdentities(user);
             rep.setFederatedIdentities(reps);
         }
 
-        if (bruteForceProtector.isTemporarilyDisabled(session, realm, user)) {
+        if (bruteForceProtector.isTemporarilyDisabled(realm, user)) {
             rep.setEnabled(false);
         }
         rep.setAccess(auth.users().getAccess(user));
@@ -252,7 +252,7 @@ public class UserResource {
             UserSessionModel userSession = session.sessions().getUserSession(authenticatedRealm, auth.adminAuth().getToken().getSessionState());
             AuthenticationManager.expireIdentityCookie(realm, session.getContext().getUri(), clientConnection);
             AuthenticationManager.expireRememberMeCookie(realm, session.getContext().getUri(), clientConnection);
-            AuthenticationManager.backchannelLogout(session, authenticatedRealm, userSession, session.getContext().getUri(), clientConnection, headers, true);
+            AuthenticationManager.backchannelLogout(authenticatedRealm, userSession, session.getContext().getUri(), clientConnection, headers, true);
         }
         EventBuilder event = new EventBuilder(realm, session, clientConnection);
 
@@ -264,7 +264,7 @@ public class UserResource {
         userSession.setNote(IMPERSONATOR_ID.toString(), impersonatorId);
         userSession.setNote(IMPERSONATOR_USERNAME.toString(), impersonator);
 
-        AuthenticationManager.createLoginCookie(session, realm, userSession.getUser(), userSession, session.getContext().getUri(), clientConnection);
+        AuthenticationManager.createLoginCookie(realm, userSession.getUser(), userSession, session.getContext().getUri(), clientConnection);
         URI redirect = AccountFormService.accountServiceApplicationPage(session.getContext().getUri()).build(realm.getName());
         Map<String, Object> result = new HashMap<>();
         result.put("sameRealm", sameRealm);
@@ -470,7 +470,7 @@ public class UserResource {
 
         if (revokedConsent) {
             // Logout clientSessions for this user and client
-            AuthenticationManager.backchannelLogoutUserFromClient(session, realm, user, client, session.getContext().getUri(), headers);
+            AuthenticationManager.backchannelLogoutUserFromClient(realm, user, client, session.getContext().getUri(), headers);
         }
 
         if (!revokedConsent && !revokedOfflineToken) {
@@ -493,7 +493,7 @@ public class UserResource {
 
         List<UserSessionModel> userSessions = session.sessions().getUserSessions(realm, user);
         for (UserSessionModel userSession : userSessions) {
-            AuthenticationManager.backchannelLogout(session, realm, userSession, session.getContext().getUri(), clientConnection, headers, true);
+            AuthenticationManager.backchannelLogout(realm, userSession, session.getContext().getUri(), clientConnection, headers, true);
         }
         adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).success();
     }
@@ -566,7 +566,7 @@ public class UserResource {
         } catch (ReadOnlyException mre) {
             throw new BadRequestException("Can't reset password as account is read only");
         } catch (ModelException e) {
-            Properties messages = AdminRoot.getMessages(session, realm, auth.adminAuth().getToken().getLocale());
+            Properties messages = AdminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
             throw new ErrorResponseException(e.getMessage(), MessageFormat.format(messages.getProperty(e.getMessage(), e.getMessage()), e.getParameters()),
                     Status.BAD_REQUEST);
         }
@@ -747,7 +747,7 @@ public class UserResource {
 
         String redirect;
         if (redirectUri != null) {
-            redirect = RedirectUtils.verifyRedirectUri(session, redirectUri, client);
+            redirect = RedirectUtils.verifyRedirectUri(redirectUri, client);
             if (redirect == null) {
                 throw new WebApplicationException(
                         ErrorResponse.error("Invalid redirect uri.", Status.BAD_REQUEST));
@@ -762,7 +762,7 @@ public class UserResource {
 
         try {
             UriBuilder builder = LoginActionsService.actionTokenProcessor(session.getContext().getUri());
-            builder.queryParam("key", token.serialize(session, realm, session.getContext().getUri()));
+            builder.queryParam("key", token.serialize(realm, session.getContext().getUri()));
 
             String link = builder.build(realm.getName()).toString();
 
@@ -860,7 +860,7 @@ public class UserResource {
                 adminEvent.operation(OperationType.DELETE).resource(ResourceType.GROUP_MEMBERSHIP).representation(ModelToRepresentation.toRepresentation(group, true)).resourcePath(session.getContext().getUri()).success();
             }
         } catch (ModelException me) {
-            Properties messages = AdminRoot.getMessages(session, realm, auth.adminAuth().getToken().getLocale());
+            Properties messages = AdminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
             throw new ErrorResponseException(me.getMessage(), MessageFormat.format(messages.getProperty(me.getMessage(), me.getMessage()), me.getParameters()),
                     Status.BAD_REQUEST);
         }

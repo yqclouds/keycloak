@@ -16,7 +16,6 @@
  */
 package org.keycloak.validation;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.stereotype.ProviderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -28,7 +27,7 @@ public class DefaultClientValidationProviderFactory implements ClientValidationP
     private DefaultClientValidationProvider provider;
 
     @Override
-    public ClientValidationProvider create(KeycloakSession session) {
+    public ClientValidationProvider create() {
         return provider;
     }
 

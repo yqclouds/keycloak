@@ -26,7 +26,6 @@ import org.keycloak.events.admin.AuthDetails;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.slf4j.Logger;
@@ -79,10 +78,9 @@ public class AdminEventBuilder {
      * modified the events configuration. Now the store and the listeners are
      * updated to have previous and new setup.
      *
-     * @param session The session
      * @return The same builder
      */
-    public AdminEventBuilder refreshRealmEventsConfig(KeycloakSession session) {
+    public AdminEventBuilder refreshRealmEventsConfig() {
         return this.updateStore().addListeners();
     }
 

@@ -44,7 +44,7 @@ public class DefaultTokenManager implements TokenManager {
 
     private final KeycloakSession session;
 
-    public DefaultTokenManager(KeycloakSession session) {
+    public DefaultTokenManager() {
         this.session = session;
     }
 

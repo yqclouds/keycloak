@@ -28,6 +28,7 @@ import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -45,17 +46,14 @@ public class ClientScopeResource {
     protected static final Logger LOG = LoggerFactory.getLogger(ClientScopeResource.class);
     protected RealmModel realm;
     protected ClientScopeModel clientScope;
-    protected KeycloakSession session;
     private AdminPermissionEvaluator auth;
     private AdminEventBuilder adminEvent;
 
-    public ClientScopeResource(RealmModel realm, AdminPermissionEvaluator auth, ClientScopeModel clientScope, KeycloakSession session, AdminEventBuilder adminEvent) {
+    public ClientScopeResource(RealmModel realm, AdminPermissionEvaluator auth, ClientScopeModel clientScope, AdminEventBuilder adminEvent) {
         this.realm = realm;
         this.auth = auth;
         this.clientScope = clientScope;
-        this.session = session;
         this.adminEvent = adminEvent.resource(ResourceType.CLIENT_SCOPE);
-
     }
 
     @Path("protocol-mappers")
@@ -69,21 +67,19 @@ public class ClientScopeResource {
 
     /**
      * Base path for managing the role scope mappings for the client scope
-     *
-     * @return
      */
     @Path("scope-mappings")
     public ScopeMappedResource getScopeMappedResource() {
         AdminPermissionEvaluator.RequirePermissionCheck manageCheck = () -> auth.clients().requireManage(clientScope);
         AdminPermissionEvaluator.RequirePermissionCheck viewCheck = () -> auth.clients().requireView(clientScope);
-        return new ScopeMappedResource(realm, auth, clientScope, session, adminEvent, manageCheck, viewCheck);
+        return new ScopeMappedResource(realm, auth, clientScope, adminEvent, manageCheck, viewCheck);
     }
+
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     /**
      * Update the client scope
-     *
-     * @param rep
-     * @return
      */
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
@@ -92,21 +88,19 @@ public class ClientScopeResource {
 
         try {
             RepresentationToModel.updateClientScope(rep, clientScope);
-            if (session.getTransactionManager().isActive()) {
-                session.getTransactionManager().commit();
-            }
-            adminEvent.operation(OperationType.UPDATE).resourcePath(session.getContext().getUri()).representation(rep).success();
+            adminEvent.operation(OperationType.UPDATE).resourcePath(keycloakContext.getUri()).representation(rep).success();
             return Response.noContent().build();
         } catch (ModelDuplicateException e) {
             return ErrorResponse.exists("Client ScopeModel " + rep.getName() + " already exists");
         }
     }
 
+    @Autowired
+    private ModelToRepresentation modelToRepresentation;
+
 
     /**
      * Get representation of the client scope
-     *
-     * @return
      */
     @GET
     @NoCache
@@ -115,7 +109,7 @@ public class ClientScopeResource {
         auth.clients().requireView(clientScope);
 
 
-        return ModelToRepresentation.toRepresentation(clientScope);
+        return modelToRepresentation.toRepresentation(clientScope);
     }
 
     /**
@@ -128,7 +122,7 @@ public class ClientScopeResource {
 
         try {
             realm.removeClientScope(clientScope.getId());
-            adminEvent.operation(OperationType.DELETE).resourcePath(session.getContext().getUri()).success();
+            adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
             return Response.noContent().build();
         } catch (ModelException me) {
             return ErrorResponse.error(me.getMessage(), Response.Status.BAD_REQUEST);

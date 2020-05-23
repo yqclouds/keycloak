@@ -17,7 +17,6 @@
 
 package org.keycloak.timer.basic;
 
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.services.scheduled.ScheduledTaskRunner;
 import org.keycloak.timer.ScheduledTask;
 import org.keycloak.timer.TimerProvider;
@@ -34,12 +33,10 @@ public class BasicTimerProvider implements TimerProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(BasicTimerProvider.class);
 
-    private final KeycloakSession session;
     private final Timer timer;
     private final BasicTimerProviderFactory factory;
 
-    public BasicTimerProvider(KeycloakSession session, Timer timer, BasicTimerProviderFactory factory) {
-        this.session = session;
+    public BasicTimerProvider(Timer timer, BasicTimerProviderFactory factory) {
         this.timer = timer;
         this.factory = factory;
     }
@@ -66,7 +63,7 @@ public class BasicTimerProvider implements TimerProvider {
 
     @Override
     public void scheduleTask(ScheduledTask scheduledTask, long intervalMillis, String taskName) {
-        ScheduledTaskRunner scheduledTaskRunner = new ScheduledTaskRunner(session.getSessionFactory(), scheduledTask);
+        ScheduledTaskRunner scheduledTaskRunner = new ScheduledTaskRunner(scheduledTask);
         this.schedule(scheduledTaskRunner, intervalMillis, taskName);
     }
 

@@ -19,7 +19,6 @@ package org.keycloak.services.scheduled;
 
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.cluster.ExecutionResult;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.timer.ScheduledTask;
 import org.slf4j.Logger;
@@ -39,8 +38,8 @@ public class ClusterAwareScheduledTaskRunner extends ScheduledTaskRunner {
 
     private final int intervalSecs;
 
-    public ClusterAwareScheduledTaskRunner(KeycloakSessionFactory sessionFactory, ScheduledTask task, long intervalMillis) {
-        super(sessionFactory, task);
+    public ClusterAwareScheduledTaskRunner(ScheduledTask task, long intervalMillis) {
+        super(task);
         this.intervalSecs = (int) (intervalMillis / 1000);
     }
 
@@ -48,25 +47,8 @@ public class ClusterAwareScheduledTaskRunner extends ScheduledTaskRunner {
     private ClusterProvider clusterProvider;
 
     @Override
-    protected void runTask(final KeycloakSession session) {
-        session.getTransactionManager().begin();
-
+    protected void runTask() {
         String taskKey = task.getClass().getSimpleName();
-        ExecutionResult<Void> result = clusterProvider.executeIfNotExecuted(taskKey, intervalSecs, new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                task.run(session);
-                return null;
-            }
-        });
-
-        session.getTransactionManager().commit();
-
-        if (result.isExecuted()) {
-            LOG.debug("Executed scheduled task {}", taskKey);
-        } else {
-            LOG.debug("Skipped execution of task {} as other cluster node is executing it", taskKey);
-        }
     }
 
 

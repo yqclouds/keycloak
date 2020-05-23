@@ -67,20 +67,20 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
         this.shutdown();
     }
 
-    public void failure(KeycloakSession session, LoginEvent event) {
+    public void failure(LoginEvent event) {
         LOG.debug("failure");
-        RealmModel realm = getRealmModel(session, event);
+        RealmModel realm = getRealmModel(event);
         logFailure(event);
 
         String userId = event.userId;
-        UserModel user = session.users().getUserById(userId, realm);
+        UserModel user = userProvider.getUserById(userId, realm);
         if (user == null) {
             return;
         }
 
-        UserLoginFailureModel userLoginFailure = getUserModel(session, event);
+        UserLoginFailureModel userLoginFailure = getUserModel(event);
         if (userLoginFailure == null) {
-            userLoginFailure = session.sessions().addUserLoginFailure(realm, userId);
+            userLoginFailure = userSessionProvider.addUserLoginFailure(realm, userId);
         }
         userLoginFailure.setLastIPFailure(event.ip);
         long currentTime = Time.currentTimeMillis();
@@ -138,16 +138,19 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
         }
     }
 
-    protected UserLoginFailureModel getUserModel(KeycloakSession session, LoginEvent event) {
-        RealmModel realm = getRealmModel(session, event);
+    protected UserLoginFailureModel getUserModel(LoginEvent event) {
+        RealmModel realm = getRealmModel(event);
         if (realm == null) return null;
-        UserLoginFailureModel user = session.sessions().getUserLoginFailure(realm, event.userId);
+        UserLoginFailureModel user = userSessionProvider.getUserLoginFailure(realm, event.userId);
         if (user == null) return null;
         return user;
     }
 
-    protected RealmModel getRealmModel(KeycloakSession session, LoginEvent event) {
-        RealmModel realm = session.realms().getRealm(event.realmId);
+    @Autowired
+    private RealmProvider realmProvider;
+
+    protected RealmModel getRealmModel(LoginEvent event) {
+        RealmModel realm = realmProvider.getRealm(event.realmId);
         if (realm == null) return null;
         return realm;
     }
@@ -179,21 +182,17 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
                         events.add(take);
                         queue.drainTo(events, TRANSACTION_SIZE);
                         Collections.sort(events); // we sort to avoid deadlock due to ordered updates.  Maybe I'm overthinking this.
-                        KeycloakSession session = factory.create();
-                        session.getTransactionManager().begin();
                         try {
                             for (LoginEvent event : events) {
                                 if (event instanceof FailedLogin) {
-                                    failure(session, event);
+                                    failure(event);
                                 } else if (event instanceof SuccessfulLogin) {
-                                    success(session, event);
+                                    success(event);
                                 } else if (event instanceof ShutdownEvent) {
                                     run = false;
                                 }
                             }
-                            session.getTransactionManager().commit();
                         } catch (Exception e) {
-                            session.getTransactionManager().rollback();
                             throw e;
                         } finally {
                             for (LoginEvent event : events) {
@@ -204,7 +203,6 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
                                 }
                             }
                             events.clear();
-                            session.close();
                         }
                     } catch (Exception e) {
 //                        ServicesLogger.LOGGER.failedProcessingType(e);
@@ -218,11 +216,14 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
         }
     }
 
-    private void success(KeycloakSession session, LoginEvent event) {
-        String userId = event.userId;
-        UserModel model = session.users().getUserById(userId, getRealmModel(session, event));
+    @Autowired
+    private UserProvider userProvider;
 
-        UserLoginFailureModel user = getUserModel(session, event);
+    private void success(LoginEvent event) {
+        String userId = event.userId;
+        UserModel model = userProvider.getUserById(userId, getRealmModel(event));
+
+        UserLoginFailureModel user = getUserModel(event);
         if (user == null) return;
 
         LOG.debug("user {} successfully logged in, clearing all failures", model.getUsername());
@@ -270,9 +271,12 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
         LOG.trace("sent success event");
     }
 
+    @Autowired
+    private UserSessionProvider userSessionProvider;
+
     @Override
-    public boolean isTemporarilyDisabled(KeycloakSession session, RealmModel realm, UserModel user) {
-        UserLoginFailureModel failure = session.sessions().getUserLoginFailure(realm, user.getId());
+    public boolean isTemporarilyDisabled(RealmModel realm, UserModel user) {
+        UserLoginFailureModel failure = userSessionProvider.getUserLoginFailure(realm, user.getId());
 
         if (failure != null) {
             int currTime = (int) (Time.currentTimeMillis() / 1000);

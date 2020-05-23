@@ -19,7 +19,6 @@ package org.keycloak.storage.ldap.mappers.membership.group;
 
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.LDAPConstants;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -237,7 +236,7 @@ public class GroupLDAPStorageMapperFactory extends AbstractLDAPStorageMapperFact
     }
 
     @Override
-    public void onCreate(KeycloakSession session, RealmModel realm, ComponentModel model) {
+    public void onCreate(RealmModel realm, ComponentModel model) {
         ComponentModel parentModel = realm.getComponent(model.getParentId());
         UserStorageProviderModel parent = new UserStorageProviderModel(parentModel);
         onParentUpdate(realm, parent, parent, model);
@@ -257,7 +256,7 @@ public class GroupLDAPStorageMapperFactory extends AbstractLDAPStorageMapperFact
     }
 
     @Override
-    public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel config) throws ComponentValidationException {
+    public void validateConfiguration(RealmModel realm, ComponentModel config) throws ComponentValidationException {
         checkMandatoryConfigAttribute(GroupMapperConfig.GROUPS_DN, "LDAP Groups DN", config);
         checkMandatoryConfigAttribute(GroupMapperConfig.MODE, "Mode", config);
 
