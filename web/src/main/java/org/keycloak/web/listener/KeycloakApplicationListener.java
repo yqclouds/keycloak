@@ -17,7 +17,6 @@ import org.keycloak.services.managers.UserStorageSyncManager;
 import org.keycloak.services.resources.KeycloakApplication;
 import org.keycloak.services.scheduled.*;
 import org.keycloak.timer.TimerProvider;
-import org.keycloak.transaction.JtaTransactionManagerLookup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +28,6 @@ import org.springframework.web.context.WebApplicationContext;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.servlet.ServletContext;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
 import java.io.*;
 import java.util.List;
 import java.util.Objects;
@@ -86,21 +83,6 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
 
         LOG.debug("bootstrap");
         try {
-            JtaTransactionManagerLookup lookup = (JtaTransactionManagerLookup) sessionFactory.getProviderFactory(JtaTransactionManagerLookup.class);
-            if (lookup != null) {
-                if (lookup.getTransactionManager() != null) {
-                    try {
-                        Transaction transaction = lookup.getTransactionManager().getTransaction();
-                        LOG.debug("bootstrap current transaction? {}", transaction != null);
-                        if (transaction != null) {
-                            LOG.debug("bootstrap current transaction status? {}", transaction.getStatus());
-                        }
-                    } catch (SystemException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-
             ApplianceBootstrap applianceBootstrap = new ApplianceBootstrap();
             exportImportManager = new ExportImportManager();
 

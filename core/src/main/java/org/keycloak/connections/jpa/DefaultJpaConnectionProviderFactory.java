@@ -24,7 +24,6 @@ import org.keycloak.models.dblock.DBLockProvider;
 import org.keycloak.provider.ServerInfoAwareProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
 import org.keycloak.timer.TimerProvider;
-import org.keycloak.transaction.JtaTransactionManagerLookup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +50,6 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
 
     private Map<String, String> operationalInfo;
     private boolean jtaEnabled;
-    private JtaTransactionManagerLookup jtaLookup;
 
     private int globalStatsInterval = -1;
     private String migrationExport = "keycloak-database-update.sql";
