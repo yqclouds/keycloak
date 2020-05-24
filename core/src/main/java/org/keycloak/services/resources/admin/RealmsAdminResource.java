@@ -32,6 +32,7 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluato
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
@@ -57,11 +58,13 @@ public class RealmsAdminResource {
     protected AdminAuth auth;
     protected TokenManager tokenManager;
     @Context
-    protected KeycloakSession session;
-    @Context
     protected KeycloakApplication keycloak;
     @Context
     protected ClientConnection clientConnection;
+    @Autowired
+    private RealmProvider realmProvider;
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     public RealmsAdminResource(AdminAuth auth, TokenManager tokenManager) {
         this.auth = auth;
@@ -72,15 +75,13 @@ public class RealmsAdminResource {
      * Get accessible realms
      * <p>
      * Returns a list of accessible realms. The list is filtered based on what realms the caller is allowed to view.
-     *
-     * @return
      */
     @GET
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public List<RealmRepresentation> getRealms() {
         List<RealmRepresentation> reps = new ArrayList<>();
-        List<RealmModel> realms = session.realms().getRealms();
+        List<RealmModel> realms = realmProvider.getRealms();
         for (RealmModel realm : realms) {
             addRealmRep(reps, realm);
         }
@@ -108,7 +109,6 @@ public class RealmsAdminResource {
      * Imports a realm from a full representation of that realm.  Realm name must be unique.
      *
      * @param rep JSON representation of the realm
-     * @return
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -122,7 +122,7 @@ public class RealmsAdminResource {
             RealmModel realm = realmManager.importRealm(rep);
             grantPermissionsToRealmCreator(realm);
 
-            URI location = AdminRoot.realmsUrl(session.getContext().getUri()).path(realm.getName()).build();
+            URI location = AdminRoot.realmsUrl(keycloakContext.getUri()).path(realm.getName()).build();
             LOG.debug("imported realm success, sending back: {}", location.toString());
 
             return Response.created(location).build();
@@ -131,7 +131,6 @@ public class RealmsAdminResource {
             return ErrorResponse.exists("Conflict detected. See logs for details");
         } catch (PasswordPolicyNotMetException e) {
             LOG.error("Password policy not met for user " + e.getUsername(), e);
-            if (session.getTransactionManager().isActive()) session.getTransactionManager().setRollbackOnly();
             return ErrorResponse.error("Password policy not met. See logs for details", Response.Status.BAD_REQUEST);
         }
     }
@@ -141,7 +140,6 @@ public class RealmsAdminResource {
             return;
         }
 
-        RealmModel adminRealm = new RealmManager().getKeycloakAdministrationRealm();
         ClientModel realmAdminApp = realm.getMasterAdminClient();
         for (String r : AdminRoles.ALL_REALM_ROLES) {
             RoleModel role = realmAdminApp.getRole(r);
@@ -151,10 +149,6 @@ public class RealmsAdminResource {
 
     /**
      * Base path for the admin REST API for one particular realm.
-     *
-     * @param headers
-     * @param name    realm name (not id!)
-     * @return
      */
     @Path("{realm}")
     public RealmAdminResource getRealmAdmin(@Context final HttpHeaders headers,
@@ -170,12 +164,11 @@ public class RealmsAdminResource {
         AdminPermissionEvaluator realmAuth = AdminPermissions.evaluator(realm, auth);
 
         AdminEventBuilder adminEvent = new AdminEventBuilder(realm, auth, clientConnection);
-        session.getContext().setRealm(realm);
+        keycloakContext.setRealm(realm);
 
         RealmAdminResource adminResource = new RealmAdminResource(realmAuth, realm, tokenManager, adminEvent);
         ResteasyProviderFactory.getInstance().injectProperties(adminResource);
         //resourceContext.initResource(adminResource);
         return adminResource;
     }
-
 }

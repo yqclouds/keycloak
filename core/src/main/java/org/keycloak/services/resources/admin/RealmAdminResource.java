@@ -388,7 +388,6 @@ public class RealmAdminResource {
                 }
             }
 
-            boolean wasDuplicateEmailsAllowed = realm.isDuplicateEmailsAllowed();
             representationToModel.updateRealm(rep, realm);
 
             // Refresh periodic sync tasks for configured federationProviders
@@ -483,7 +482,6 @@ public class RealmAdminResource {
         ResteasyProviderFactory.getInstance().injectProperties(resource);
         //resourceContext.initResource(resource);
         return resource;
-
     }
 
     /**
