@@ -17,11 +17,7 @@
 
 package org.keycloak.services.scheduled;
 
-import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.timer.ScheduledTask;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Ensures that there are not concurrent executions of same task (either on this host or any other cluster host)
@@ -29,9 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class ClusterAwareScheduledTaskRunner extends ScheduledTaskRunner {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ClusterAwareScheduledTaskRunner.class);
-
     private final int intervalSecs;
 
     public ClusterAwareScheduledTaskRunner(ScheduledTask task, long intervalMillis) {
@@ -39,13 +32,8 @@ public class ClusterAwareScheduledTaskRunner extends ScheduledTaskRunner {
         this.intervalSecs = (int) (intervalMillis / 1000);
     }
 
-    @Autowired
-    private ClusterProvider clusterProvider;
-
     @Override
     protected void runTask() {
         String taskKey = task.getClass().getSimpleName();
     }
-
-
 }

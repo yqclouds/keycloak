@@ -24,7 +24,6 @@ import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.TokenCategory;
 import org.keycloak.TokenVerifier;
-import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.common.VerificationException;
 import org.keycloak.crypto.HashProvider;
 import org.keycloak.crypto.SignatureProvider;
@@ -424,26 +423,12 @@ public class TokenManager {
     }
 
     @Autowired
-    private ClusterProvider clusterProvider;
-
-    @Autowired
     private MtlsHoKTokenUtil mtlsHoKTokenUtil;
 
     private void validateTokenReuse(RealmModel realm, RefreshToken refreshToken,
                                     TokenValidation validation) throws OAuthErrorException {
         if (realm.isRevokeRefreshToken()) {
             AuthenticatedClientSessionModel clientSession = validation.clientSessionCtx.getClientSession();
-
-            int clusterStartupTime = clusterProvider.getClusterStartupTime();
-
-            if (clientSession.getCurrentRefreshToken() != null &&
-                    !refreshToken.getId().equals(clientSession.getCurrentRefreshToken()) &&
-                    refreshToken.getIssuedAt() < clientSession.getTimestamp() &&
-                    clusterStartupTime <= clientSession.getTimestamp()) {
-                throw new OAuthErrorException(OAuthErrorException.INVALID_GRANT, "Stale token");
-            }
-
-
             if (!refreshToken.getId().equals(clientSession.getCurrentRefreshToken())) {
                 clientSession.setCurrentRefreshToken(refreshToken.getId());
                 clientSession.setCurrentRefreshTokenUseCount(0);
@@ -647,7 +632,7 @@ public class TokenManager {
         return expiration;
     }
 
-    public AccessTokenResponseBuilder responseBuilder(RealmModel realm, ClientModel client, EventBuilder event, 
+    public AccessTokenResponseBuilder responseBuilder(RealmModel realm, ClientModel client, EventBuilder event,
                                                       UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
         return new AccessTokenResponseBuilder(realm, client, event, userSession, clientSessionCtx);
     }

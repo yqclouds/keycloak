@@ -17,10 +17,6 @@
 package org.keycloak.services.managers;
 
 import com.hsbc.unified.iam.core.util.Time;
-import org.keycloak.cluster.ClusterEvent;
-import org.keycloak.cluster.ClusterListener;
-import org.keycloak.cluster.ClusterProvider;
-import org.keycloak.cluster.ExecutionResult;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RealmProvider;
 import org.keycloak.storage.UserStorageProvider;
@@ -66,69 +62,26 @@ public class UserStorageSyncManager {
                 }
             }
         }
-
-        clusterProvider.registerListener(USER_STORAGE_TASK_KEY, new UserStorageClusterListener());
     }
 
     public SynchronizationResult syncAllUsers(final String realmId, final UserStorageProviderModel provider) {
         UserStorageProviderFactory factory = userStorageProviderFactories.get(provider.getProviderId());
         if (!(factory instanceof ImportSynchronization) || !provider.isImportEnabled() || !provider.isEnabled()) {
             return SynchronizationResult.ignored();
-
         }
 
-        final Holder holder = new Holder();
-
-        // Ensure not executed concurrently on this or any other cluster node
-        // shared key for "full" and "changed" . Improve if needed
-        String taskKey = provider.getId() + "::sync";
-
-        // 30 seconds minimal timeout for now
-        int timeout = Math.max(30, provider.getFullSyncPeriod());
-        holder.result = clusterProvider.executeIfNotExecuted(taskKey, timeout, () -> {
-            updateLastSyncInterval(provider, realmId);
-            return ((ImportSynchronization) factory).sync(realmId, provider);
-        });
-
-        if (holder.result == null || !holder.result.isExecuted()) {
-            LOG.debug("syncAllUsers for federation provider {} was ignored as it's already in progress", provider.getName());
-            return SynchronizationResult.ignored();
-        } else {
-            return holder.result.getResult();
-        }
+        return SynchronizationResult.ignored();
     }
 
     public SynchronizationResult syncChangedUsers(final String realmId, final UserStorageProviderModel provider) {
         UserStorageProviderFactory factory = userStorageProviderFactories.get(provider.getProviderId());
         if (!(factory instanceof ImportSynchronization) || !provider.isImportEnabled() || !provider.isEnabled()) {
             return SynchronizationResult.ignored();
-
         }
-        final Holder holder = new Holder();
 
-        // Ensure not executed concurrently on this or any other cluster node
-        // shared key for "full" and "changed" . Improve if needed
-        String taskKey = provider.getId() + "::sync";
-
-        // 30 seconds minimal timeout for now
-        int timeout = Math.max(30, provider.getChangedSyncPeriod());
-        holder.result = clusterProvider.executeIfNotExecuted(taskKey, timeout, () -> {
-            // See when we did last sync.
-            int oldLastSync = provider.getLastSync();
-            updateLastSyncInterval(provider, realmId);
-            return ((ImportSynchronization) factory).syncSince(Time.toDate(oldLastSync), realmId, provider);
-        });
-
-        if (holder.result == null || !holder.result.isExecuted()) {
-            LOG.debug("syncChangedUsers for federation provider {} was ignored as it's already in progress", provider.getName());
-            return SynchronizationResult.ignored();
-        } else {
-            return holder.result.getResult();
-        }
+        return SynchronizationResult.ignored();
     }
 
-    @Autowired
-    private ClusterProvider clusterProvider;
     @Autowired
     private UserStorageProviderFactory userStorageProviderFactory;
 
@@ -137,8 +90,6 @@ public class UserStorageSyncManager {
         if (!(userStorageProviderFactory instanceof ImportSynchronization) || !provider.isImportEnabled()) {
             return;
         }
-        UserStorageProviderClusterEvent event = UserStorageProviderClusterEvent.createEvent(removed, realm.getId(), provider);
-        clusterProvider.notify(USER_STORAGE_TASK_KEY, event, false, ClusterProvider.DCNotify.ALL_DCS);
     }
 
     // Executed once it receives notification that some UserFederationProvider was created or updated
@@ -229,64 +180,4 @@ public class UserStorageSyncManager {
             }
         }
     }
-
-    // Send to cluster during each update or remove of federationProvider, so all nodes can update sync periods
-    public static class UserStorageProviderClusterEvent implements ClusterEvent {
-
-        private boolean removed;
-        private String realmId;
-        private UserStorageProviderModel storageProvider;
-
-        public static UserStorageProviderClusterEvent createEvent(boolean removed, String realmId, UserStorageProviderModel provider) {
-            UserStorageProviderClusterEvent notification = new UserStorageProviderClusterEvent();
-            notification.setRemoved(removed);
-            notification.setRealmId(realmId);
-            notification.setStorageProvider(provider);
-            return notification;
-        }
-
-        public boolean isRemoved() {
-            return removed;
-        }
-
-        public void setRemoved(boolean removed) {
-            this.removed = removed;
-        }
-
-        public String getRealmId() {
-            return realmId;
-        }
-
-        public void setRealmId(String realmId) {
-            this.realmId = realmId;
-        }
-
-        public UserStorageProviderModel getStorageProvider() {
-            return storageProvider;
-        }
-
-        public void setStorageProvider(UserStorageProviderModel federationProvider) {
-            this.storageProvider = federationProvider;
-        }
-    }
-
-    private class Holder {
-        ExecutionResult<SynchronizationResult> result;
-    }
-
-    @Autowired
-    private TimerProvider timerProvider;
-
-    private class UserStorageClusterListener implements ClusterListener {
-        @Override
-        public void eventReceived(ClusterEvent event) {
-            final UserStorageProviderClusterEvent fedEvent = (UserStorageProviderClusterEvent) event;
-            if (fedEvent.isRemoved()) {
-                removePeriodicSyncForProvider(timerProvider, fedEvent.getStorageProvider());
-            } else {
-                refreshPeriodicSyncForProvider(timerProvider, fedEvent.getStorageProvider(), fedEvent.getRealmId());
-            }
-        }
-    }
-
 }
