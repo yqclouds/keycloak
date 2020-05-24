@@ -16,8 +16,8 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.resteasy.annotations.cache.NoCache;
 import com.hsbc.unified.iam.core.ClientConnection;
+import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.*;
@@ -29,6 +29,7 @@ import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -240,7 +241,7 @@ public class RoleMapperResource {
                 try {
                     roleMapper.deleteRoleMapping(roleModel);
                 } catch (ModelException me) {
-                    Properties messages = AdminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
+                    Properties messages = adminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
                     throw new ErrorResponseException(me.getMessage(), MessageFormat.format(messages.getProperty(me.getMessage(), me.getMessage()), me.getParameters()),
                             Response.Status.BAD_REQUEST);
                 }
@@ -262,10 +263,14 @@ public class RoleMapperResource {
         if (clientModel == null) {
             throw new NotFoundException("Client not found");
         }
-        ClientRoleMappingsResource resource = new ClientRoleMappingsResource(session.getContext().getUri(), session, realm, auth, roleMapper,
+        return new ClientRoleMappingsResource(keycloakContext.getUri(), realm, auth, roleMapper,
                 clientModel, adminEvent,
                 managePermission, viewPermission);
-        return resource;
 
     }
+
+    @Autowired
+    private KeycloakContext keycloakContext;
+    @Autowired
+    private AdminRoot adminRoot;
 }

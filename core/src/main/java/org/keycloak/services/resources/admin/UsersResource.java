@@ -16,10 +16,10 @@
  */
 package org.keycloak.services.resources.admin;
 
+import com.hsbc.unified.iam.core.ClientConnection;
 import com.hsbc.unified.iam.core.constants.Constants;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.common.util.ObjectUtil;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
@@ -34,7 +34,9 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluato
 import org.keycloak.services.resources.admin.permissions.UserPermissionEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
@@ -58,17 +60,26 @@ public class UsersResource {
     @Context
     protected ClientConnection clientConnection;
     @Context
-    protected KeycloakSession session;
-    @Context
     protected HttpHeaders headers;
     private AdminPermissionEvaluator auth;
     private AdminEventBuilder adminEvent;
+    @Autowired
+    private ModelToRepresentation modelToRepresentation;
 
     public UsersResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.auth = auth;
         this.realm = realm;
         this.adminEvent = adminEvent.resource(ResourceType.USER);
     }
+
+    @Autowired
+    private UserResource userResource;
+    @Autowired
+    private RepresentationToModel representationToModel;
+    @Autowired
+    private UserProvider userProvider;
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     /**
      * Create a new user
@@ -92,43 +103,30 @@ public class UsersResource {
         }
 
         // Double-check duplicated username and email here due to federation
-        if (session.users().getUserByUsername(username, realm) != null) {
+        if (userProvider.getUserByUsername(username, realm) != null) {
             return ErrorResponse.exists("User exists with same username");
         }
-        if (rep.getEmail() != null && !realm.isDuplicateEmailsAllowed() && session.users().getUserByEmail(rep.getEmail(), realm) != null) {
+        if (rep.getEmail() != null && !realm.isDuplicateEmailsAllowed() && userProvider.getUserByEmail(rep.getEmail(), realm) != null) {
             return ErrorResponse.exists("User exists with same email");
         }
 
         try {
-            UserModel user = session.users().addUser(realm, username);
+            UserModel user = userProvider.addUser(realm, username);
             Set<String> emptySet = Collections.emptySet();
 
-            UserResource.updateUserFromRep(user, rep, emptySet, realm, session, false);
-            RepresentationToModel.createFederatedIdentities(rep, session, realm, user);
+            userResource.updateUserFromRep(user, rep, emptySet, realm, false);
+            representationToModel.createFederatedIdentities(rep, realm, user);
             RepresentationToModel.createGroups(rep, realm, user);
 
-            RepresentationToModel.createCredentials(rep, session, realm, user, true);
-            adminEvent.operation(OperationType.CREATE).resourcePath(session.getContext().getUri(), user.getId()).representation(rep).success();
+            representationToModel.createCredentials(rep, realm, user, true);
+            adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri(), user.getId()).representation(rep).success();
 
-            if (session.getTransactionManager().isActive()) {
-                session.getTransactionManager().commit();
-            }
-
-            return Response.created(session.getContext().getUri().getAbsolutePathBuilder().path(user.getId()).build()).build();
+            return Response.created(keycloakContext.getUri().getAbsolutePathBuilder().path(user.getId()).build()).build();
         } catch (ModelDuplicateException e) {
-            if (session.getTransactionManager().isActive()) {
-                session.getTransactionManager().setRollbackOnly();
-            }
             return ErrorResponse.exists("User exists with same username or email");
         } catch (PasswordPolicyNotMetException e) {
-            if (session.getTransactionManager().isActive()) {
-                session.getTransactionManager().setRollbackOnly();
-            }
             return ErrorResponse.error("Password policy not met", Response.Status.BAD_REQUEST);
         } catch (ModelException me) {
-            if (session.getTransactionManager().isActive()) {
-                session.getTransactionManager().setRollbackOnly();
-            }
             LOG.warn("Could not create user", me);
             return ErrorResponse.error("Could not create user", Response.Status.BAD_REQUEST);
         }
@@ -142,7 +140,7 @@ public class UsersResource {
      */
     @Path("{id}")
     public UserResource user(final @PathParam("id") String id) {
-        UserModel user = session.users().getUserById(id, realm);
+        UserModel user = userProvider.getUserById(id, realm);
         if (user == null) {
             // we do this to make sure somebody can't phish ids
             if (auth.users().canQuery()) throw new NotFoundException("User not found");
@@ -189,7 +187,7 @@ public class UsersResource {
         List<UserModel> userModels = Collections.emptyList();
         if (search != null) {
             if (search.startsWith(SEARCH_ID_PARAMETER)) {
-                UserModel userModel = session.users().getUserById(search.substring(SEARCH_ID_PARAMETER.length()).trim(), realm);
+                UserModel userModel = userProvider.getUserById(search.substring(SEARCH_ID_PARAMETER.length()).trim(), realm);
                 if (userModel != null) {
                     userModels = Arrays.asList(userModel);
                 }
@@ -256,12 +254,12 @@ public class UsersResource {
 
         if (search != null) {
             if (search.startsWith(SEARCH_ID_PARAMETER)) {
-                UserModel userModel = session.users().getUserById(search.substring(SEARCH_ID_PARAMETER.length()).trim(), realm);
+                UserModel userModel = userProvider.getUserById(search.substring(SEARCH_ID_PARAMETER.length()).trim(), realm);
                 return userModel != null && userPermissionEvaluator.canView(userModel) ? 1 : 0;
             } else if (userPermissionEvaluator.canView()) {
-                return session.users().getUsersCount(search.trim(), realm);
+                return userProvider.getUsersCount(search.trim(), realm);
             } else {
-                return session.users().getUsersCount(search.trim(), realm, auth.groups().getGroupsWithViewPermission());
+                return userProvider.getUsersCount(search.trim(), realm, auth.groups().getGroupsWithViewPermission());
             }
         } else if (last != null || first != null || email != null || username != null) {
             Map<String, String> parameters = new HashMap<>();
@@ -278,29 +276,31 @@ public class UsersResource {
                 parameters.put(UserModel.USERNAME, username);
             }
             if (userPermissionEvaluator.canView()) {
-                return session.users().getUsersCount(parameters, realm);
+                return userProvider.getUsersCount(parameters, realm);
             } else {
-                return session.users().getUsersCount(parameters, realm, auth.groups().getGroupsWithViewPermission());
+                return userProvider.getUsersCount(parameters, realm, auth.groups().getGroupsWithViewPermission());
             }
         } else if (userPermissionEvaluator.canView()) {
-            return session.users().getUsersCount(realm);
+            return userProvider.getUsersCount(realm);
         } else {
-            return session.users().getUsersCount(realm, auth.groups().getGroupsWithViewPermission());
+            return userProvider.getUsersCount(realm, auth.groups().getGroupsWithViewPermission());
         }
     }
 
+    private HttpSession httpSession;
+
     private List<UserRepresentation> searchForUser(Map<String, String> attributes, RealmModel realm, UserPermissionEvaluator usersEvaluator, Boolean briefRepresentation, Integer firstResult, Integer maxResults, Boolean includeServiceAccounts) {
-        session.setAttribute(UserModel.INCLUDE_SERVICE_ACCOUNT, includeServiceAccounts);
+        httpSession.setAttribute(UserModel.INCLUDE_SERVICE_ACCOUNT, includeServiceAccounts);
 
         if (!auth.users().canView()) {
             Set<String> groupModels = auth.groups().getGroupsWithViewPermission();
 
             if (!groupModels.isEmpty()) {
-                session.setAttribute(UserModel.GROUPS, groupModels);
+                httpSession.setAttribute(UserModel.GROUPS, groupModels);
             }
         }
 
-        List<UserModel> userModels = session.users().searchForUser(attributes, realm, firstResult, maxResults);
+        List<UserModel> userModels = userProvider.searchForUser(attributes, realm, firstResult, maxResults);
 
         return toRepresentation(realm, usersEvaluator, briefRepresentation, userModels);
     }
@@ -310,7 +310,7 @@ public class UsersResource {
         List<UserRepresentation> results = new ArrayList<>();
         boolean canViewGlobal = usersEvaluator.canView();
 
-        usersEvaluator.grantIfNoPermission(session.getAttribute(UserModel.GROUPS) != null);
+        usersEvaluator.grantIfNoPermission(httpSession.getAttribute(UserModel.GROUPS) != null);
 
         for (UserModel user : userModels) {
             if (!canViewGlobal) {
@@ -320,7 +320,7 @@ public class UsersResource {
             }
             UserRepresentation userRep = briefRepresentationB
                     ? ModelToRepresentation.toBriefRepresentation(user)
-                    : ModelToRepresentation.toRepresentation(realm, user);
+                    : modelToRepresentation.toRepresentation(realm, user);
             userRep.setAccess(usersEvaluator.getAccess(user));
             results.add(userRep);
         }

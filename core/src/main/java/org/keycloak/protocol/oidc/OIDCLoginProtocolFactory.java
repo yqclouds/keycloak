@@ -239,7 +239,7 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
 
     @Override
     public LoginProtocol create() {
-        return new OIDCLoginProtocol().setSession();
+        return new OIDCLoginProtocol();
     }
 
     @Override

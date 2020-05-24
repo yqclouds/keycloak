@@ -90,7 +90,7 @@ public class ResetCredentialsActionTokenHandler extends AbstractActionTokenHandl
     @Autowired
     private AbstractIdpAuthenticator abstractIdpAuthenticator;
 
-    public static class ResetCredsAuthenticationProcessor extends AuthenticationProcessor {
+    public class ResetCredsAuthenticationProcessor extends AuthenticationProcessor {
         @Override
         protected Response authenticationComplete() {
             boolean firstBrokerLoginInProgress = (authenticationSession.getAuthNote(AbstractIdpAuthenticator.BROKERED_CONTEXT_NOTE) != null);

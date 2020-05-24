@@ -16,9 +16,9 @@
  */
 package org.keycloak.services.resources.admin;
 
+import com.hsbc.unified.iam.core.ClientConnection;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.policy.PasswordPolicyNotMetException;
@@ -113,7 +113,7 @@ public class RealmsAdminResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response importRealm(final RealmRepresentation rep) {
-        RealmManager realmManager = new RealmManager(session);
+        RealmManager realmManager = new RealmManager();
         AdminPermissions.realms(auth).requireCreateRealm();
 
         LOG.debug("importRealm: {}", rep.getRealm());
@@ -141,7 +141,7 @@ public class RealmsAdminResource {
             return;
         }
 
-        RealmModel adminRealm = new RealmManager(session).getKeycloakAdministrationRealm();
+        RealmModel adminRealm = new RealmManager().getKeycloakAdministrationRealm();
         ClientModel realmAdminApp = realm.getMasterAdminClient();
         for (String r : AdminRoles.ALL_REALM_ROLES) {
             RoleModel role = realmAdminApp.getRole(r);
@@ -159,7 +159,7 @@ public class RealmsAdminResource {
     @Path("{realm}")
     public RealmAdminResource getRealmAdmin(@Context final HttpHeaders headers,
                                             @PathParam("realm") final String name) {
-        RealmManager realmManager = new RealmManager(session);
+        RealmManager realmManager = new RealmManager();
         RealmModel realm = realmManager.getRealmByName(name);
         if (realm == null) throw new NotFoundException("Realm not found.");
 
@@ -169,7 +169,7 @@ public class RealmsAdminResource {
         }
         AdminPermissionEvaluator realmAuth = AdminPermissions.evaluator(realm, auth);
 
-        AdminEventBuilder adminEvent = new AdminEventBuilder(realm, auth, session, clientConnection);
+        AdminEventBuilder adminEvent = new AdminEventBuilder(realm, auth, clientConnection);
         session.getContext().setRealm(realm);
 
         RealmAdminResource adminResource = new RealmAdminResource(realmAuth, realm, tokenManager, adminEvent);

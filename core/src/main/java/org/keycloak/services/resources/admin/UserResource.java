@@ -19,9 +19,10 @@ package org.keycloak.services.resources.admin;
 import com.hsbc.unified.iam.core.ClientConnection;
 import com.hsbc.unified.iam.core.constants.Constants;
 import com.hsbc.unified.iam.core.util.Time;
+import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import org.keycloak.authentication.RequiredActionProvider;
+import org.keycloak.authentication.RequiredActionFactory;
 import org.keycloak.authentication.actiontoken.execactions.ExecuteActionsActionToken;
 import org.keycloak.common.Profile;
 import org.keycloak.email.EmailException;
@@ -32,12 +33,10 @@ import org.keycloak.events.EventType;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.*;
-import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.utils.RedirectUtils;
-import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.idm.*;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.ErrorResponseException;
@@ -88,6 +87,9 @@ public class UserResource {
     private AdminEventBuilder adminEvent;
     private UserModel user;
 
+    @Autowired
+    private Map<String, RequiredActionFactory> requiredActionFactories;
+
     public UserResource(RealmModel realm, UserModel user, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.auth = auth;
         this.realm = realm;
@@ -95,7 +97,7 @@ public class UserResource {
         this.adminEvent = adminEvent.resource(ResourceType.USER);
     }
 
-    public static void updateUserFromRep(UserModel user, UserRepresentation rep, Set<String> attrsToRemove, RealmModel realm, boolean removeMissingRequiredActions) {
+    public void updateUserFromRep(UserModel user, UserRepresentation rep, Set<String> attrsToRemove, RealmModel realm, boolean removeMissingRequiredActions) {
         if (rep.getUsername() != null && realm.isEditUsernameAllowed() && !realm.isRegistrationEmailAsUsername()) {
             user.setUsername(rep.getUsername());
         }
@@ -119,7 +121,7 @@ public class UserResource {
 
         if (reqActions != null) {
             Set<String> allActions = new HashSet<>();
-            for (ProviderFactory factory : session.getSessionFactory().getProviderFactories(RequiredActionProvider.class)) {
+            for (RequiredActionFactory factory : requiredActionFactories.values()) {
                 allActions.add(factory.getId());
             }
             for (String action : allActions) {
@@ -179,9 +181,9 @@ public class UserResource {
                 }
             }
 
-            updateUserFromRep(user, rep, attrsToRemove, realm, session, true);
-            RepresentationToModel.createCredentials(rep, session, realm, user, true);
-            adminEvent.operation(OperationType.UPDATE).resourcePath(session.getContext().getUri()).representation(rep).success();
+            updateUserFromRep(user, rep, attrsToRemove, realm, true);
+            representationToModel.createCredentials(rep, realm, user, true);
+            adminEvent.operation(OperationType.UPDATE).resourcePath(keycloakContext.getUri()).representation(rep).success();
 
             if (session.getTransactionManager().isActive()) {
                 session.getTransactionManager().commit();
@@ -204,6 +206,10 @@ public class UserResource {
 
     @Autowired
     private BruteForceProtector bruteForceProtector;
+    @Autowired
+    private RepresentationToModel representationToModel;
+    @Autowired
+    private ModelToRepresentation modelToRepresentation;
 
     /**
      * Get representation of the user
@@ -216,7 +222,7 @@ public class UserResource {
     public UserRepresentation getUser() {
         auth.users().requireView(user);
 
-        UserRepresentation rep = ModelToRepresentation.toRepresentation(realm, user);
+        UserRepresentation rep = modelToRepresentation.toRepresentation(realm, user);
 
         if (realm.isIdentityFederationEnabled()) {
             List<FederatedIdentityRepresentation> reps = getFederatedIdentities(user);
@@ -230,6 +236,11 @@ public class UserResource {
 
         return rep;
     }
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     /**
      * Impersonate the user
@@ -250,11 +261,11 @@ public class UserResource {
         if (authenticatedRealm.getId().equals(realm.getId())) {
             sameRealm = true;
             UserSessionModel userSession = session.sessions().getUserSession(authenticatedRealm, auth.adminAuth().getToken().getSessionState());
-            AuthenticationManager.expireIdentityCookie(realm, session.getContext().getUri(), clientConnection);
-            AuthenticationManager.expireRememberMeCookie(realm, session.getContext().getUri(), clientConnection);
-            AuthenticationManager.backchannelLogout(authenticatedRealm, userSession, session.getContext().getUri(), clientConnection, headers, true);
+            AuthenticationManager.expireIdentityCookie(realm, keycloakContext.getUri(), clientConnection);
+            AuthenticationManager.expireRememberMeCookie(realm, keycloakContext.getUri(), clientConnection);
+            authenticationManager.backchannelLogout(authenticatedRealm, userSession, keycloakContext.getUri(), clientConnection, headers, true);
         }
-        EventBuilder event = new EventBuilder(realm, session, clientConnection);
+        EventBuilder event = new EventBuilder(realm, clientConnection);
 
         UserSessionModel userSession = session.sessions().createUserSession(realm, user, user.getUsername(), clientConnection.getRemoteAddr(), "impersonate", false, null, null);
 
@@ -264,8 +275,8 @@ public class UserResource {
         userSession.setNote(IMPERSONATOR_ID.toString(), impersonatorId);
         userSession.setNote(IMPERSONATOR_USERNAME.toString(), impersonator);
 
-        AuthenticationManager.createLoginCookie(realm, userSession.getUser(), userSession, session.getContext().getUri(), clientConnection);
-        URI redirect = AccountFormService.accountServiceApplicationPage(session.getContext().getUri()).build(realm.getName());
+        authenticationManager.createLoginCookie(realm, userSession.getUser(), userSession, keycloakContext.getUri(), clientConnection);
+        URI redirect = AccountFormService.accountServiceApplicationPage(keycloakContext.getUri()).build(realm.getName());
         Map<String, Object> result = new HashMap<>();
         result.put("sameRealm", sameRealm);
         result.put("redirect", redirect.toString());
@@ -314,7 +325,7 @@ public class UserResource {
         if (client == null) {
             throw new NotFoundException("Client not found");
         }
-        List<UserSessionModel> sessions = new UserSessionManager(session).findOfflineSessions(realm, user);
+        List<UserSessionModel> sessions = new UserSessionManager().findOfflineSessions(realm, user);
         List<UserSessionRepresentation> reps = new ArrayList<UserSessionRepresentation>();
         for (UserSessionModel session : sessions) {
             UserSessionRepresentation rep = ModelToRepresentation.toRepresentation(session);
@@ -382,7 +393,7 @@ public class UserResource {
 
         FederatedIdentityModel socialLink = new FederatedIdentityModel(provider, rep.getUserId(), rep.getUserName());
         session.users().addFederatedIdentity(realm, user, socialLink);
-        adminEvent.operation(OperationType.CREATE).resourcePath(session.getContext().getUri()).representation(rep).success();
+        adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri()).representation(rep).success();
         return Response.noContent().build();
     }
 
@@ -399,7 +410,7 @@ public class UserResource {
         if (!session.users().removeFederatedIdentity(realm, user, provider)) {
             throw new NotFoundException("Link not found");
         }
-        adminEvent.operation(OperationType.DELETE).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -415,7 +426,7 @@ public class UserResource {
         auth.users().requireView(user);
         List<Map<String, Object>> result = new LinkedList<>();
 
-        Set<ClientModel> offlineClients = new UserSessionManager(session).findClientsWithOfflineToken(realm, user);
+        Set<ClientModel> offlineClients = new UserSessionManager().findClientsWithOfflineToken(realm, user);
 
         for (ClientModel client : realm.getClients()) {
             UserConsentModel consent = session.users().getConsentByClient(realm, user.getId(), client.getId());
@@ -466,17 +477,17 @@ public class UserResource {
             throw new NotFoundException("Client not found");
         }
         boolean revokedConsent = session.users().revokeConsentForClient(realm, user.getId(), client.getId());
-        boolean revokedOfflineToken = new UserSessionManager(session).revokeOfflineToken(user, client);
+        boolean revokedOfflineToken = new UserSessionManager().revokeOfflineToken(user, client);
 
         if (revokedConsent) {
             // Logout clientSessions for this user and client
-            AuthenticationManager.backchannelLogoutUserFromClient(realm, user, client, session.getContext().getUri(), headers);
+            authenticationManager.backchannelLogoutUserFromClient(realm, user, client, keycloakContext.getUri(), headers);
         }
 
         if (!revokedConsent && !revokedOfflineToken) {
             throw new NotFoundException("Consent nor offline token not found");
         }
-        adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -493,9 +504,9 @@ public class UserResource {
 
         List<UserSessionModel> userSessions = session.sessions().getUserSessions(realm, user);
         for (UserSessionModel userSession : userSessions) {
-            AuthenticationManager.backchannelLogout(realm, userSession, session.getContext().getUri(), clientConnection, headers, true);
+            authenticationManager.backchannelLogout(realm, userSession, keycloakContext.getUri(), clientConnection, headers, true);
         }
-        adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -506,9 +517,9 @@ public class UserResource {
     public Response deleteUser() {
         auth.users().requireManage(user);
 
-        boolean removed = new UserManager(session).removeUser(realm, user);
+        boolean removed = new UserManager().removeUser(realm, user);
         if (removed) {
-            adminEvent.operation(OperationType.DELETE).resourcePath(session.getContext().getUri()).success();
+            adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
             return Response.noContent().build();
         } else {
             return ErrorResponse.error("User couldn't be deleted", Status.BAD_REQUEST);
@@ -542,6 +553,9 @@ public class UserResource {
         }
     }
 
+    @Autowired
+    private AdminRoot adminRoot;
+
     /**
      * Set up a new password for the user.
      *
@@ -566,14 +580,14 @@ public class UserResource {
         } catch (ReadOnlyException mre) {
             throw new BadRequestException("Can't reset password as account is read only");
         } catch (ModelException e) {
-            Properties messages = AdminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
+            Properties messages = adminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
             throw new ErrorResponseException(e.getMessage(), MessageFormat.format(messages.getProperty(e.getMessage(), e.getMessage()), e.getParameters()),
                     Status.BAD_REQUEST);
         }
         if (cred.isTemporary() != null && cred.isTemporary())
             user.addRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD);
 
-        adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).success();
     }
 
 
@@ -616,7 +630,7 @@ public class UserResource {
     public void removeCredential(final @PathParam("credentialId") String credentialId) {
         auth.users().requireManage(user);
         session.userCredentialManager().removeStoredCredential(realm, user, credentialId);
-        adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -691,6 +705,8 @@ public class UserResource {
 
     @Autowired
     private EmailTemplateProvider emailTemplateProvider;
+    @Autowired
+    private RedirectUtils redirectUtils;
 
     /**
      * Send a update account email to the user
@@ -747,7 +763,7 @@ public class UserResource {
 
         String redirect;
         if (redirectUri != null) {
-            redirect = RedirectUtils.verifyRedirectUri(redirectUri, client);
+            redirect = redirectUtils.verifyRedirectUri(redirectUri, client);
             if (redirect == null) {
                 throw new WebApplicationException(
                         ErrorResponse.error("Invalid redirect uri.", Status.BAD_REQUEST));
@@ -761,8 +777,8 @@ public class UserResource {
         ExecuteActionsActionToken token = new ExecuteActionsActionToken(user.getId(), expiration, actions, redirectUri, clientId);
 
         try {
-            UriBuilder builder = LoginActionsService.actionTokenProcessor(session.getContext().getUri());
-            builder.queryParam("key", token.serialize(realm, session.getContext().getUri()));
+            UriBuilder builder = LoginActionsService.actionTokenProcessor(keycloakContext.getUri());
+            builder.queryParam("key", token.serialize(realm, keycloakContext.getUri()));
 
             String link = builder.build(realm.getName()).toString();
 
@@ -773,7 +789,7 @@ public class UserResource {
 
             //audit.user(user).detail(Details.EMAIL, user.getEmail()).detail(Details.CODE_ID, accessCode.getCodeId()).success();
 
-            adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).success();
+            adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).success();
 
             return Response.ok().build();
         } catch (EmailException e) {
@@ -857,10 +873,10 @@ public class UserResource {
         try {
             if (user.isMemberOf(group)) {
                 user.leaveGroup(group);
-                adminEvent.operation(OperationType.DELETE).resource(ResourceType.GROUP_MEMBERSHIP).representation(ModelToRepresentation.toRepresentation(group, true)).resourcePath(session.getContext().getUri()).success();
+                adminEvent.operation(OperationType.DELETE).resource(ResourceType.GROUP_MEMBERSHIP).representation(ModelToRepresentation.toRepresentation(group, true)).resourcePath(keycloakContext.getUri()).success();
             }
         } catch (ModelException me) {
-            Properties messages = AdminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
+            Properties messages = adminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
             throw new ErrorResponseException(me.getMessage(), MessageFormat.format(messages.getProperty(me.getMessage(), me.getMessage()), me.getParameters()),
                     Status.BAD_REQUEST);
         }
@@ -878,7 +894,7 @@ public class UserResource {
         auth.groups().requireManageMembership(group);
         if (!user.isMemberOf(group)) {
             user.joinGroup(group);
-            adminEvent.operation(OperationType.CREATE).resource(ResourceType.GROUP_MEMBERSHIP).representation(ModelToRepresentation.toRepresentation(group, true)).resourcePath(session.getContext().getUri()).success();
+            adminEvent.operation(OperationType.CREATE).resource(ResourceType.GROUP_MEMBERSHIP).representation(ModelToRepresentation.toRepresentation(group, true)).resourcePath(keycloakContext.getUri()).success();
         }
     }
 

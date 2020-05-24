@@ -90,8 +90,6 @@ public class RealmAdminResource {
     protected AdminPermissionEvaluator auth;
     protected RealmModel realm;
     @Context
-    protected KeycloakSession session;
-    @Context
     protected ClientConnection connection;
     @Context
     protected HttpHeaders headers;
@@ -232,7 +230,7 @@ public class RealmAdminResource {
         }
         realm.addDefaultClientScope(clientScope, defaultScope);
 
-        adminEvent.operation(OperationType.CREATE).resource(ResourceType.CLIENT_SCOPE).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.CREATE).resource(ResourceType.CLIENT_SCOPE).resourcePath(keycloakContext.getUri()).success();
     }
 
     @DELETE
@@ -247,7 +245,7 @@ public class RealmAdminResource {
         }
         realm.removeDefaultClientScope(clientScope);
 
-        adminEvent.operation(OperationType.DELETE).resource(ResourceType.CLIENT_SCOPE).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.DELETE).resource(ResourceType.CLIENT_SCOPE).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -315,7 +313,7 @@ public class RealmAdminResource {
      */
     @Path("roles")
     public RoleContainerResource getRoleContainerResource() {
-        return new RoleContainerResource(session.getContext().getUri(), realm, auth, realm, adminEvent);
+        return new RoleContainerResource(keycloakContext.getUri(), realm, auth, realm, adminEvent);
     }
 
     /**
@@ -489,7 +487,7 @@ public class RealmAdminResource {
 
     @Path("authentication")
     public AuthenticationManagementResource flows() {
-        AuthenticationManagementResource resource = new AuthenticationManagementResource(realm, session, auth, adminEvent);
+        AuthenticationManagementResource resource = new AuthenticationManagementResource(realm, auth, adminEvent);
         ResteasyProviderFactory.getInstance().injectProperties(resource);
         //resourceContext.initResource(resource);
         return resource;
@@ -517,10 +515,15 @@ public class RealmAdminResource {
     public GlobalRequestResult pushRevocation() {
         auth.realm().requireManageRealm();
 
-        GlobalRequestResult result = new ResourceAdminManager(session).pushRealmRevocationPolicy(realm);
-        adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).representation(result).success();
+        GlobalRequestResult result = new ResourceAdminManager().pushRealmRevocationPolicy(realm);
+        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).representation(result).success();
         return result;
     }
+
+    @Autowired
+    private KeycloakContext keycloakContext;
+    @Autowired
+    private UserSessionProvider userSessionProvider;
 
     /**
      * Removes all user sessions.  Any client that has an admin url will also be told to invalidate any sessions
@@ -531,18 +534,14 @@ public class RealmAdminResource {
     public GlobalRequestResult logoutAll() {
         auth.users().requireManage();
 
-        session.sessions().removeUserSessions(realm);
-        GlobalRequestResult result = new ResourceAdminManager(session).logoutAll(realm);
-        adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).representation(result).success();
+        userSessionProvider.removeUserSessions(realm);
+        GlobalRequestResult result = new ResourceAdminManager().logoutAll(realm);
+        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).representation(result).success();
         return result;
     }
 
     @Autowired
-    private UserSessionProvider userSessionProvider;
-    @Autowired
     private AuthenticationManager authenticationManager;
-    @Autowired
-    private KeycloakContext keycloakContext;
 
     /**
      * Remove a specific user session. Any client that has an admin url will also be told to invalidate this
@@ -579,7 +578,7 @@ public class RealmAdminResource {
 
         Map<String, Map<String, String>> data = new HashMap<>();
         {
-            Map<String, Long> activeCount = session.sessions().getActiveClientSessionStats(realm, false);
+            Map<String, Long> activeCount = userSessionProvider.getActiveClientSessionStats(realm, false);
             for (Map.Entry<String, Long> entry : activeCount.entrySet()) {
                 Map<String, String> map = new HashMap<>();
                 ClientModel client = realm.getClientById(entry.getKey());
@@ -593,7 +592,7 @@ public class RealmAdminResource {
             }
         }
         {
-            Map<String, Long> offlineCount = session.sessions().getActiveClientSessionStats(realm, true);
+            Map<String, Long> offlineCount = userSessionProvider.getActiveClientSessionStats(realm, true);
             for (Map.Entry<String, Long> entry : offlineCount.entrySet()) {
                 Map<String, String> map = data.get(entry.getKey());
                 if (map == null) {
@@ -657,7 +656,7 @@ public class RealmAdminResource {
         LOG.debug("updating realm events config: " + realm.getName());
         new RealmManager().updateRealmEventsConfig(rep, realm);
         adminEvent.operation(OperationType.UPDATE).resource(ResourceType.REALM).realm(realm)
-                .resourcePath(session.getContext().getUri()).representation(rep)
+                .resourcePath(keycloakContext.getUri()).representation(rep)
                 // refresh the builder to consider old and new config
                 .refreshRealmEventsConfig()
                 .success();
@@ -981,7 +980,7 @@ public class RealmAdminResource {
 
     @Path("identity-provider")
     public IdentityProvidersResource getIdentityProviderResource() {
-        return new IdentityProvidersResource(realm, session, this.auth, adminEvent);
+        return new IdentityProvidersResource(realm, this.auth, adminEvent);
     }
 
     /**
@@ -1015,7 +1014,7 @@ public class RealmAdminResource {
         }
         realm.addDefaultGroup(group);
 
-        adminEvent.operation(OperationType.CREATE).resource(ResourceType.GROUP).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.CREATE).resource(ResourceType.GROUP).resourcePath(keycloakContext.getUri()).success();
     }
 
     @DELETE
@@ -1030,13 +1029,13 @@ public class RealmAdminResource {
         }
         realm.removeDefaultGroup(group);
 
-        adminEvent.operation(OperationType.DELETE).resource(ResourceType.GROUP).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.DELETE).resource(ResourceType.GROUP).resourcePath(keycloakContext.getUri()).success();
     }
 
 
     @Path("groups")
     public GroupsResource getGroups() {
-        GroupsResource resource = new GroupsResource(realm, session, this.auth, adminEvent);
+        GroupsResource resource = new GroupsResource(realm, this.auth, adminEvent);
         ResteasyProviderFactory.getInstance().injectProperties(resource);
         return resource;
     }
@@ -1068,7 +1067,7 @@ public class RealmAdminResource {
     public Response partialImport(PartialImportRepresentation rep) {
         auth.realm().requireManageRealm();
 
-        PartialImportManager partialImport = new PartialImportManager(rep, session, realm, adminEvent);
+        PartialImportManager partialImport = new PartialImportManager(rep, realm, adminEvent);
         return partialImport.saveResources();
     }
 
@@ -1121,7 +1120,7 @@ public class RealmAdminResource {
             cacheRealmProvider.clear();
         }
 
-        adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -1136,7 +1135,7 @@ public class RealmAdminResource {
             userCache.clear();
         }
 
-        adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).success();
     }
 
     @Autowired(required = false)
@@ -1154,12 +1153,12 @@ public class RealmAdminResource {
             publicKeyStorageProvider.clearCache();
         }
 
-        adminEvent.operation(OperationType.ACTION).resourcePath(session.getContext().getUri()).success();
+        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).success();
     }
 
     @Path("keys")
     public KeyResource keys() {
-        KeyResource resource = new KeyResource(realm, session, this.auth);
+        KeyResource resource = new KeyResource(realm, this.auth);
         ResteasyProviderFactory.getInstance().injectProperties(resource);
         return resource;
     }
@@ -1170,11 +1169,13 @@ public class RealmAdminResource {
     @Produces(javax.ws.rs.core.MediaType.APPLICATION_JSON)
     public List<String> getCredentialRegistrators() {
         auth.realm().requireViewRealm();
-        return session.getContext().getRealm().getRequiredActionProviders().stream()
+        return keycloakContext.getRealm().getRequiredActionProviders().stream()
                 .filter(ra -> ra.isEnabled())
                 .map(RequiredActionProviderModel::getProviderId)
-                .filter(providerId -> session.getProvider(RequiredActionProvider.class, providerId) instanceof CredentialRegistrator)
+                .filter(providerId -> requiredActionProviders.get(providerId) instanceof CredentialRegistrator)
                 .collect(Collectors.toList());
     }
 
+    @Autowired
+    private Map<String, RequiredActionProvider> requiredActionProviders;
 }

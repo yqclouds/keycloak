@@ -35,6 +35,7 @@ import org.keycloak.storage.ldap.mappers.membership.*;
 import org.keycloak.storage.user.SynchronizationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 import java.util.function.Function;
@@ -180,12 +181,9 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
         try {
             // Update each existing group to be synced in its own inner transaction to prevent race condition when
             // the groups intended to be updated was already deleted via other channel in the meantime
-            KeycloakModelUtils.runJobInTransaction(ldapProvider.getSession().getSessionFactory(), session -> {
-                updateAttributesOfKCGroup(kcExistingGroup, groupEntry.getValue());
-                syncResult.increaseUpdated();
-                visitedGroupIds.add(kcExistingGroup.getId());
-            });
-
+            updateAttributesOfKCGroup(kcExistingGroup, groupEntry.getValue());
+            syncResult.increaseUpdated();
+            visitedGroupIds.add(kcExistingGroup.getId());
         } catch (ModelException me) {
             LOG.error(String.format("Failed to update attributes of LDAP group {}: ", groupName), me);
             syncResult.increaseFailed();
@@ -197,14 +195,12 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
         try {
             // Create each non-existing group to be synced in its own inner transaction to prevent race condition when
             // the roup intended to be created was already created via other channel in the meantime
-            KeycloakModelUtils.runJobInTransaction(ldapProvider.getSession().getSessionFactory(), session -> {
-                RealmModel innerTransactionRealm = session.realms().getRealm(realm.getId());
-                GroupModel kcGroup = innerTransactionRealm.createGroup(groupName);
-                updateAttributesOfKCGroup(kcGroup, groupEntry.getValue());
-                innerTransactionRealm.moveGroup(kcGroup, null);
-                syncResult.increaseAdded();
-                visitedGroupIds.add(kcGroup.getId());
-            });
+            RealmModel innerTransactionRealm = realmProvider.getRealm(realm.getId());
+            GroupModel kcGroup = innerTransactionRealm.createGroup(groupName);
+            updateAttributesOfKCGroup(kcGroup, groupEntry.getValue());
+            innerTransactionRealm.moveGroup(kcGroup, null);
+            syncResult.increaseAdded();
+            visitedGroupIds.add(kcGroup.getId());
         } catch (ModelException me) {
             LOG.error(String.format("Failed to sync group {} from LDAP: ", groupName), me);
             syncResult.increaseFailed();
@@ -231,6 +227,9 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
         }
     }
 
+    @Autowired
+    private RealmProvider realmProvider;
+
     private void syncFlatGroupStructure(RealmModel realm, SynchronizationResult syncResult, Map<String, LDAPObject> ldapGroupsMap) {
         Set<String> visitedGroupIds = new HashSet<>();
 
@@ -239,33 +238,29 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
         final int groupsPerTransaction = ldapConfig.getBatchSizeForSync();
         Set<Map.Entry<String, LDAPObject>> entries = ldapGroupsMap.entrySet();
         for (Iterator<Map.Entry<String, LDAPObject>> it = entries.iterator(); it.hasNext(); ) {
+// KEYCLOAK-8253 The retrieval of the current realm to operate at, was intentionally left
+            // outside the following for loop! This prevents the scenario, when LDAP group sync time
+            // initially improves, but during the time (after ~20K groups are synced) degrades again
+            // due to the realm cache being bloated with huge amount of (temporary) realm entities
+            RealmModel currentRealm = realmProvider.getRealm(realm.getId());
 
-            KeycloakModelUtils.runJobInTransaction(ldapProvider.getSession().getSessionFactory(), session -> {
+            // List of top-level groups known to the whole transaction
+            Map<String, GroupModel> transactionTopLevelGroups = currentRealm.getTopLevelGroups()
+                    .stream()
+                    .collect(Collectors.toMap(GroupModel::getName, Function.identity()));
 
-                // KEYCLOAK-8253 The retrieval of the current realm to operate at, was intentionally left
-                // outside the following for loop! This prevents the scenario, when LDAP group sync time
-                // initially improves, but during the time (after ~20K groups are synced) degrades again
-                // due to the realm cache being bloated with huge amount of (temporary) realm entities
-                RealmModel currentRealm = session.realms().getRealm(realm.getId());
+            for (int i = 0; i < groupsPerTransaction && it.hasNext(); i++) {
+                Map.Entry<String, LDAPObject> groupEntry = it.next();
 
-                // List of top-level groups known to the whole transaction
-                Map<String, GroupModel> transactionTopLevelGroups = currentRealm.getTopLevelGroups()
-                        .stream()
-                        .collect(Collectors.toMap(GroupModel::getName, Function.identity()));
+                String groupName = groupEntry.getKey();
+                GroupModel kcExistingGroup = transactionTopLevelGroups.get(groupName);
 
-                for (int i = 0; i < groupsPerTransaction && it.hasNext(); i++) {
-                    Map.Entry<String, LDAPObject> groupEntry = it.next();
-
-                    String groupName = groupEntry.getKey();
-                    GroupModel kcExistingGroup = transactionTopLevelGroups.get(groupName);
-
-                    if (kcExistingGroup != null) {
-                        syncExistingGroup(kcExistingGroup, groupEntry, syncResult, visitedGroupIds, groupName);
-                    } else {
-                        syncNonExistingGroup(realm, groupEntry, syncResult, visitedGroupIds, groupName);
-                    }
+                if (kcExistingGroup != null) {
+                    syncExistingGroup(kcExistingGroup, groupEntry, syncResult, visitedGroupIds, groupName);
+                } else {
+                    syncNonExistingGroup(realm, groupEntry, syncResult, visitedGroupIds, groupName);
                 }
-            });
+            }
         }
 
         // Possibly remove keycloak groups, which doesn't exists in LDAP

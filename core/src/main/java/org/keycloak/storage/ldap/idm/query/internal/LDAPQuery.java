@@ -192,8 +192,7 @@ public class LDAPQuery implements AutoCloseable {
     }
 
     public LDAPQuery initPagination() throws NamingException {
-        this.ldapContextManager = LDAPContextManager.create(ldapFedProvider.getSession(),
-                ldapFedProvider.getLdapIdentityStore().getConfig());
+        this.ldapContextManager = LDAPContextManager.create(ldapFedProvider.getLdapIdentityStore().getConfig());
         this.paginationContext = new PaginationContext(ldapContextManager.getLdapContext());
         return this;
     }

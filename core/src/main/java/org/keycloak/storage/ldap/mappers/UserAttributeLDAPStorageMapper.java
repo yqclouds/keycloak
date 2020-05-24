@@ -68,7 +68,7 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
             // we have java property on UserModel
             String ldapAttrValue = ldapUser.getAttributeAsString(ldapAttrName);
 
-            checkDuplicateEmail(userModelAttrName, ldapAttrValue, realm, ldapProvider.getSession(), user);
+            checkDuplicateEmail(userModelAttrName, ldapAttrValue, realm, user);
 
             setPropertyOnUserModel(userModelProperty, user, ldapAttrValue);
         } else {
@@ -126,6 +126,8 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
         }
     }
 
+    private UserProvider userProvider;
+
     // throw ModelDuplicateException if there is different user in model with same email
     protected void checkDuplicateEmail(String userModelAttrName, String email, RealmModel realm, UserModel user) {
         if (email == null || realm.isDuplicateEmailsAllowed()) return;
@@ -133,9 +135,8 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
             // lowercase before search
             email = KeycloakModelUtils.toLowerCaseSafe(email);
 
-            UserModel that = session.userLocalStorage().getUserByEmail(email, realm);
+            UserModel that = userProvider.getUserByEmail(email, realm);
             if (that != null && !that.getId().equals(user.getId())) {
-                session.getTransactionManager().setRollbackOnly();
                 String exceptionMessage = String.format("Can't import user '%s' from LDAP because email '%s' already exists in Keycloak. Existing user with this email is '%s'", user.getUsername(), email, that.getUsername());
                 throw new ModelDuplicateException(exceptionMessage, UserModel.EMAIL);
             }
@@ -150,7 +151,7 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
             }
             boolean usernameChanged = !username.equals(user.getUsername());
             if (realm.isEditUsernameAllowed() && usernameChanged) {
-                UserModel that = session.users().getUserByUsername(username, realm);
+                UserModel that = userProvider.getUserByUsername(username, realm);
                 if (that != null && !that.getId().equals(user.getId())) {
                     throw new ModelDuplicateException(
                             String.format("Cannot change the username to '%s' because the username already exists in keycloak", username),
@@ -198,7 +199,7 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
 
                 @Override
                 public void setUsername(String username) {
-                    checkDuplicateUsername(userModelAttrName, username, realm, ldapProvider.getSession(), this);
+                    checkDuplicateUsername(userModelAttrName, username, realm, this);
                     setLDAPAttribute(UserModel.USERNAME, username);
                     super.setUsername(username);
                 }
@@ -241,7 +242,7 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
 
                 @Override
                 public void setEmail(String email) {
-                    checkDuplicateEmail(userModelAttrName, email, realm, ldapProvider.getSession(), this);
+                    checkDuplicateEmail(userModelAttrName, email, realm, this);
 
                     setLDAPAttribute(UserModel.EMAIL, email);
                     super.setEmail(email);
