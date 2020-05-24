@@ -23,9 +23,9 @@ import com.hsbc.unified.iam.entity.*;
 import com.hsbc.unified.iam.entity.events.IdentityProviderRemovedEvent;
 import com.hsbc.unified.iam.entity.events.IdentityProviderUpdatedEvent;
 import com.hsbc.unified.iam.facade.model.JpaModel;
-import com.hsbc.unified.iam.facade.spi.RealmFacade;
 import com.hsbc.unified.iam.repository.*;
 import com.hsbc.unified.iam.service.spi.RealmService;
+import org.apache.commons.collections4.CollectionUtils;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.*;
@@ -34,6 +34,7 @@ import org.keycloak.models.utils.KeycloakModelUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.util.Assert;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -90,9 +91,6 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm>, ApplicationEve
     private IdentityProviderMapperRepository identityProviderMapperRepository;
     @Autowired
     private RequiredActionProviderRepository requiredActionProviderRepository;
-
-    @Autowired
-    private RealmFacade realmFacade;
 
     @Autowired
     private RealmProvider realmProvider;
@@ -597,22 +595,80 @@ public class RealmAdapter implements RealmModel, JpaModel<Realm>, ApplicationEve
 
     @Override
     public void addRequiredCredential(String type) {
-        realmFacade.addRequiredCredential(realm, type);
+        RealmRequiredCredential entity = newRealmRequiredCredential(type);
+
+        this.realmService.createRequiredCredential(realm, entity);
+    }
+
+    private RealmRequiredCredential newRealmRequiredCredential(String type) {
+        RequiredCredentialModel model = RequiredCredentialModel.BUILT_IN.get(type);
+        Assert.notNull(model, "Unknown credential type " + type);
+
+        RealmRequiredCredential entity = new RealmRequiredCredential();
+        entity.setInput(model.isInput());
+        entity.setSecret(model.isSecret());
+        entity.setType(model.getType());
+        entity.setFormLabel(model.getFormLabel());
+
+        return entity;
     }
 
     @Override
     public void updateRequiredCredentials(Set<String> credentials) {
-        realmFacade.updateRequiredCredentials(realm, credentials);
+        Collection<RealmRequiredCredential> relationships = realm.getRequiredCredentials();
+
+        Set<String> already = new HashSet<>();
+
+        List<RealmRequiredCredential> added = new ArrayList<>();
+        List<RealmRequiredCredential> removed = new ArrayList<>();
+
+        for (RealmRequiredCredential rel : relationships) {
+            if (!credentials.contains(rel.getType())) {
+                removed.add(rel);
+            } else {
+                already.add(rel.getType());
+            }
+        }
+
+        for (String cred : credentials) {
+            if (!already.contains(cred)) {
+                added.add(newRealmRequiredCredential(cred));
+            }
+        }
+
+        this.realmService.updateRequiredCredentials(realm, added, removed);
     }
 
     @Override
     public List<RequiredCredentialModel> getRequiredCredentials() {
-        return realmFacade.getRequiredCredentials(realm);
+        Collection<RealmRequiredCredential> entities = realm.getRequiredCredentials();
+
+        List<RequiredCredentialModel> results = new LinkedList<>();
+        for (RealmRequiredCredential entity : entities) {
+            RequiredCredentialModel model = new RequiredCredentialModel();
+            model.setFormLabel(entity.getFormLabel());
+            model.setType(entity.getType());
+            model.setSecret(entity.isSecret());
+            model.setInput(entity.isInput());
+            results.add(model);
+        }
+
+        return Collections.unmodifiableList(results);
     }
 
     @Override
     public List<String> getDefaultRoles() {
-        return realmFacade.getDefaultRoles(realm);
+        Collection<Role> entities = realm.getDefaultRoles();
+        if (CollectionUtils.isEmpty(entities)) {
+            return Collections.emptyList();
+        }
+
+        List<String> roles = new LinkedList<>();
+        for (Role entity : entities) {
+            roles.add(entity.getName());
+        }
+
+        return Collections.unmodifiableList(roles);
     }
 
     @Override
