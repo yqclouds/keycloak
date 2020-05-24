@@ -41,7 +41,7 @@ public class GroupSynchronizer implements Synchronizer<GroupRemovedEvent> {
     private AuthorizationProvider authorizationProvider;
 
     @Override
-    public void synchronize(GroupRemovedEvent event, KeycloakSessionFactory factory) {
+    public void synchronize(GroupRemovedEvent event) {
         StoreFactory storeFactory = authorizationProvider.getStoreFactory();
         PolicyStore policyStore = storeFactory.getPolicyStore();
         GroupModel group = (GroupModel) event.getSource();

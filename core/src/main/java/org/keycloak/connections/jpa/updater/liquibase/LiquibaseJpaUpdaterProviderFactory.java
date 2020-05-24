@@ -20,7 +20,6 @@ package org.keycloak.connections.jpa.updater.liquibase;
 import org.keycloak.Config;
 import org.keycloak.connections.jpa.updater.JpaUpdaterProvider;
 import org.keycloak.connections.jpa.updater.JpaUpdaterProviderFactory;
-import org.keycloak.models.KeycloakSessionFactory;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -37,7 +36,7 @@ public class LiquibaseJpaUpdaterProviderFactory implements JpaUpdaterProviderFac
     }
 
     @Override
-    public void postInit(KeycloakSessionFactory factory) {
+    public void postInit() {
 
     }
 

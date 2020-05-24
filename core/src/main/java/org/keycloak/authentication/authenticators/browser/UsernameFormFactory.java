@@ -24,7 +24,6 @@ import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.authentication.DisplayTypeAuthenticatorFactory;
 import org.keycloak.authentication.authenticators.console.ConsoleUsernameAuthenticator;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.PasswordCredentialModel;
 import org.keycloak.provider.ProviderConfigProperty;
 
@@ -60,7 +59,7 @@ public class UsernameFormFactory implements AuthenticatorFactory, DisplayTypeAut
     }
 
     @Override
-    public void postInit(KeycloakSessionFactory factory) {
+    public void postInit() {
 
     }
 

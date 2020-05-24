@@ -52,6 +52,9 @@ public class UserPolicyProviderFactory implements PolicyProviderFactory<UserPoli
 
     private UserPolicyProvider provider = new UserPolicyProvider(this::toRepresentation);
 
+    @Autowired
+    private KeycloakSessionFactory sessionFactory;
+
     @Override
     public String getName() {
         return "User";
@@ -174,8 +177,8 @@ public class UserPolicyProviderFactory implements PolicyProviderFactory<UserPoli
     private AuthorizationProvider authorizationProvider;
 
     @Override
-    public void postInit(KeycloakSessionFactory factory) {
-        factory.register(event -> {
+    public void postInit() {
+        sessionFactory.register(event -> {
             if (event instanceof UserRemovedEvent) {
                 StoreFactory storeFactory = authorizationProvider.getStoreFactory();
                 PolicyStore policyStore = storeFactory.getPolicyStore();

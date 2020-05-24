@@ -24,7 +24,6 @@ import org.keycloak.authorization.policy.evaluation.PolicyEvaluator;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.*;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.cache.authorization.CachedStoreFactoryProvider;
 import org.keycloak.models.utils.RepresentationToModel;
@@ -77,9 +76,6 @@ public final class AuthorizationProvider implements Provider {
     private CachedStoreFactoryProvider cachedStoreFactoryProvider;
     @Autowired
     private StoreFactory localStoreFactory;
-
-    @Autowired
-    private KeycloakSessionFactory sessionFactory;
 
     public AuthorizationProvider(RealmModel realm) {
         this.realm = realm;

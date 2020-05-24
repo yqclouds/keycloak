@@ -17,7 +17,6 @@
 package org.keycloak.provider;
 
 import org.keycloak.Config;
-import org.keycloak.models.KeycloakSessionFactory;
 
 /**
  * Use to unwrap exceptions specifically if there is an exception at JTA commit
@@ -46,7 +45,7 @@ public interface ExceptionConverter extends Provider, ProviderFactory<ExceptionC
     }
 
     @Override
-    default void postInit(KeycloakSessionFactory factory) {
+    default void postInit() {
 
     }
 

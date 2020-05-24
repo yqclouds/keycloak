@@ -26,7 +26,6 @@ import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.ResourceServerStore;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.representations.idm.authorization.ClientPolicyRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -43,7 +42,7 @@ public class ClientApplicationSynchronizer implements Synchronizer<ClientRemoved
     private AuthorizationProvider authorizationProvider;
 
     @Override
-    public void synchronize(ClientRemovedEvent event, KeycloakSessionFactory factory) {
+    public void synchronize(ClientRemovedEvent event) {
         removeFromClientPolicies(event);
     }
 

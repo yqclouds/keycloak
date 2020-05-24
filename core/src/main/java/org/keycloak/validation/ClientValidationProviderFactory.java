@@ -17,7 +17,6 @@
 package org.keycloak.validation;
 
 import org.keycloak.Config;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderFactory;
 
 public interface ClientValidationProviderFactory extends ProviderFactory<ClientValidationProvider> {
@@ -27,7 +26,7 @@ public interface ClientValidationProviderFactory extends ProviderFactory<ClientV
     }
 
     @Override
-    default void postInit(KeycloakSessionFactory factory) {
+    default void postInit() {
     }
 
     @Override

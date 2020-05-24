@@ -22,7 +22,6 @@ import com.hsbc.unified.iam.entity.events.RealmRemovedEvent;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.store.StoreFactory;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -34,7 +33,7 @@ public class RealmSynchronizer implements Synchronizer<RealmRemovedEvent> {
     private AuthorizationProvider authorizationProvider;
 
     @Override
-    public void synchronize(RealmRemovedEvent event, KeycloakSessionFactory factory) {
+    public void synchronize(RealmRemovedEvent event) {
         StoreFactory storeFactory = authorizationProvider.getStoreFactory();
         ((RealmModel) event.getSource()).getClients().forEach(clientModel -> {
             ResourceServerModel resourceServer = storeFactory.getResourceServerStore().findById(clientModel.getId());

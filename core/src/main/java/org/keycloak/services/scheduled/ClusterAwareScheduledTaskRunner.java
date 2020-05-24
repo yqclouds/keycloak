@@ -18,14 +18,10 @@
 package org.keycloak.services.scheduled;
 
 import org.keycloak.cluster.ClusterProvider;
-import org.keycloak.cluster.ExecutionResult;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.timer.ScheduledTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.concurrent.Callable;
 
 /**
  * Ensures that there are not concurrent executions of same task (either on this host or any other cluster host)

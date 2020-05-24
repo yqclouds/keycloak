@@ -21,7 +21,6 @@ import org.keycloak.Config;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderConfigProperty;
 
@@ -57,7 +56,7 @@ public interface ClientStorageProviderFactory<T extends ClientStorageProvider> e
     }
 
     @Override
-    default void postInit(KeycloakSessionFactory factory) {
+    default void postInit() {
 
     }
 

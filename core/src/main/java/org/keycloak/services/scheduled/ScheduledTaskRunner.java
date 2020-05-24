@@ -17,7 +17,6 @@
 
 package org.keycloak.services.scheduled;
 
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.timer.ScheduledTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +28,6 @@ public class ScheduledTaskRunner implements Runnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(ScheduledTaskRunner.class);
 
-    protected KeycloakSessionFactory sessionFactory;
     protected final ScheduledTask task;
 
     public ScheduledTaskRunner(ScheduledTask task) {

@@ -20,7 +20,6 @@ package org.keycloak.storage.ldap.mappers;
 import org.keycloak.Config;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.storage.ldap.LDAPStorageProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +63,7 @@ public abstract class AbstractLDAPStorageMapperFactory implements LDAPStorageMap
     protected abstract AbstractLDAPStorageMapper createMapper(ComponentModel mapperModel, LDAPStorageProvider federationProvider);
 
     @Override
-    public void postInit(KeycloakSessionFactory factory) {
+    public void postInit() {
     }
 
     @Override

@@ -1,7 +1,6 @@
 package org.keycloak.theme;
 
 import org.keycloak.Config;
-import org.keycloak.models.KeycloakSessionFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -66,7 +65,7 @@ public class ClasspathThemeResourceProviderFactory implements ThemeResourceProvi
     }
 
     @Override
-    public void postInit(KeycloakSessionFactory factory) {
+    public void postInit() {
     }
 
     @Override

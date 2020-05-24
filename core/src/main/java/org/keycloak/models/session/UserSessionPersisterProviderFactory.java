@@ -17,9 +17,6 @@
 
 package org.keycloak.models.session;
 
-import com.hsbc.unified.iam.entity.events.UserRemovedEvent;
-import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.jpa.session.JpaUserSessionPersisterProvider;
 import org.keycloak.provider.ProviderFactory;
 
 /**
@@ -28,15 +25,7 @@ import org.keycloak.provider.ProviderFactory;
 public interface UserSessionPersisterProviderFactory extends ProviderFactory<UserSessionPersisterProvider> {
 
     @Override
-    default void postInit(KeycloakSessionFactory factory) {
-        factory.register(event -> {
-            if (event instanceof UserRemovedEvent) {
-                UserRemovedEvent userRemovedEvent = (UserRemovedEvent) event;
-
-                UserSessionPersisterProvider provider = new JpaUserSessionPersisterProvider();
-                provider.onUserRemoved(userRemovedEvent.getRealm(), userRemovedEvent.getUser());
-            }
-        });
+    default void postInit() {
     }
 
 }

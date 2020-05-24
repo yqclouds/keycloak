@@ -21,7 +21,6 @@ import org.keycloak.Config;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.crypto.KeyUse;
-import org.keycloak.models.KeycloakSessionFactory;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -39,7 +38,7 @@ public interface KeyProviderFactory<T extends KeyProvider> extends ComponentFact
     }
 
     @Override
-    default void postInit(KeycloakSessionFactory factory) {
+    default void postInit() {
     }
 
     @Override

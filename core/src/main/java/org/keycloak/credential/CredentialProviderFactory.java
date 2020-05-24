@@ -18,7 +18,6 @@
 package org.keycloak.credential;
 
 import org.keycloak.Config;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderFactory;
 
 /**
@@ -40,7 +39,7 @@ public interface CredentialProviderFactory<T extends CredentialProvider> extends
     }
 
     @Override
-    default void postInit(KeycloakSessionFactory factory) {
+    default void postInit() {
 
     }
 

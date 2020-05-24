@@ -27,7 +27,8 @@ import java.util.stream.Collectors;
 @Component("ClientPolicyProviderFactory")
 @ProviderFactory(id = "client", providerClasses = PolicyProvider.class)
 public class ClientPolicyProviderFactory implements PolicyProviderFactory<ClientPolicyRepresentation> {
-
+    @Autowired
+    private KeycloakSessionFactory sessionFactory;
     private ClientPolicyProvider provider = new ClientPolicyProvider(this::toRepresentation);
 
     @Override
@@ -101,8 +102,8 @@ public class ClientPolicyProviderFactory implements PolicyProviderFactory<Client
     private AuthorizationProvider authorizationProvider;
 
     @Override
-    public void postInit(KeycloakSessionFactory factory) {
-        factory.register(event -> {
+    public void postInit() {
+        sessionFactory.register(event -> {
             if (event instanceof ClientRemovedEvent) {
                 StoreFactory storeFactory = authorizationProvider.getStoreFactory();
                 PolicyStore policyStore = storeFactory.getPolicyStore();

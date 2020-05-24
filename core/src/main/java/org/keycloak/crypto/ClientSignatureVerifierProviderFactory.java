@@ -18,7 +18,6 @@
 package org.keycloak.crypto;
 
 import org.keycloak.Config;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderFactory;
 
 public interface ClientSignatureVerifierProviderFactory extends ProviderFactory<ClientSignatureVerifierProvider> {
@@ -28,7 +27,7 @@ public interface ClientSignatureVerifierProviderFactory extends ProviderFactory<
     }
 
     @Override
-    default void postInit(KeycloakSessionFactory factory) {
+    default void postInit() {
     }
 
     @Override

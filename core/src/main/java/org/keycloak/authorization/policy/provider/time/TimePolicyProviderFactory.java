@@ -5,7 +5,6 @@ import org.keycloak.Config;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.representations.idm.authorization.TimePolicyRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
@@ -100,7 +99,7 @@ public class TimePolicyProviderFactory implements PolicyProviderFactory<TimePoli
     }
 
     @Override
-    public void postInit(KeycloakSessionFactory factory) {
+    public void postInit() {
 
     }
 

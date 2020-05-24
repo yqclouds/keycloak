@@ -17,7 +17,6 @@
 package org.keycloak.crypto;
 
 import org.keycloak.Config;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderFactory;
 
 public interface SignatureProviderFactory extends ProviderFactory<SignatureProvider> {
@@ -27,7 +26,7 @@ public interface SignatureProviderFactory extends ProviderFactory<SignatureProvi
     }
 
     @Override
-    default void postInit(KeycloakSessionFactory factory) {
+    default void postInit() {
     }
 
     @Override

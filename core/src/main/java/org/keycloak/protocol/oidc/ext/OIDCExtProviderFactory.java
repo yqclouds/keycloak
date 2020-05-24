@@ -1,7 +1,6 @@
 package org.keycloak.protocol.oidc.ext;
 
 import org.keycloak.Config;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderFactory;
 
 public interface OIDCExtProviderFactory extends ProviderFactory<OIDCExtProvider> {
@@ -12,7 +11,7 @@ public interface OIDCExtProviderFactory extends ProviderFactory<OIDCExtProvider>
     }
 
     @Override
-    default void postInit(KeycloakSessionFactory factory) {
+    default void postInit() {
 
     }
 

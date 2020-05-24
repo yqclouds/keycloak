@@ -24,7 +24,6 @@ import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.models.GroupModel;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.authorization.GroupPolicyRepresentation;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
@@ -139,9 +138,7 @@ public class GroupPolicyProviderFactory implements PolicyProviderFactory<GroupPo
     }
 
     @Override
-    public void postInit(KeycloakSessionFactory factory) {
-        factory.register(event -> {
-        });
+    public void postInit() {
     }
 
     @Override

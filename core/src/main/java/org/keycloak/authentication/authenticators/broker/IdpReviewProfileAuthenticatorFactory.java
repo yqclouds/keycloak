@@ -21,7 +21,6 @@ import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import org.keycloak.Config;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.idm.IdentityProviderRepresentation;
 import org.keycloak.stereotype.ProviderFactory;
@@ -71,8 +70,7 @@ public class IdpReviewProfileAuthenticatorFactory implements AuthenticatorFactor
     }
 
     @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
+    public void postInit() {
     }
 
     @Override

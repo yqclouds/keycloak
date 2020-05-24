@@ -19,7 +19,6 @@ package org.keycloak.connections.jpa;
 
 import org.keycloak.ServerStartupError;
 import org.keycloak.connections.jpa.updater.JpaUpdaterProvider;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.dblock.DBLockManager;
 import org.keycloak.models.dblock.DBLockProvider;
 import org.keycloak.provider.ServerInfoAwareProviderFactory;
@@ -57,9 +56,6 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
     private int globalStatsInterval = -1;
     private String migrationExport = "keycloak-database-update.sql";
     private String migrationStrategy = "UPDATE";
-
-    @Autowired
-    private KeycloakSessionFactory sessionFactory;
 
     @Autowired
     private DataSource dataSource;

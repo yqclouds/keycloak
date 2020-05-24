@@ -386,14 +386,17 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
     public void preRemove(RealmModel realm, ComponentModel model) {
     }
 
+    @Autowired
+    private KeycloakSessionFactory sessionFactory;
+
     @Override
-    public SynchronizationResult sync(KeycloakSessionFactory sessionFactory, String realmId, UserStorageProviderModel model) {
-        syncMappers(sessionFactory, realmId, model);
+    public SynchronizationResult sync(String realmId, UserStorageProviderModel model) {
+        syncMappers(realmId, model);
 
         LOG.info("Sync all users from LDAP to local store: realm: {}, federation provider: {}", realmId, model.getName());
 
-        try (LDAPQuery userQuery = createQuery(sessionFactory, realmId, model)) {
-            SynchronizationResult syncResult = syncImpl(sessionFactory, userQuery, realmId, model);
+        try (LDAPQuery userQuery = createQuery(realmId, model)) {
+            SynchronizationResult syncResult = syncImpl(userQuery, realmId, model);
 
             // TODO: Remove all existing keycloak users, which have federation links, but are not in LDAP. Perhaps don't check users, which were just added or updated during this sync?
 
@@ -403,8 +406,8 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
     }
 
     @Override
-    public SynchronizationResult syncSince(Date lastSync, KeycloakSessionFactory sessionFactory, String realmId, UserStorageProviderModel model) {
-        syncMappers(sessionFactory, realmId, model);
+    public SynchronizationResult syncSince(Date lastSync, String realmId, UserStorageProviderModel model) {
+        syncMappers(realmId, model);
 
         LOG.info("Sync changed users from LDAP to local store: realm: {}, federation provider: {}, last sync time: " + lastSync, realmId, model.getName());
 
@@ -414,9 +417,9 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
         Condition modifyCondition = conditionsBuilder.greaterThanOrEqualTo(LDAPConstants.MODIFY_TIMESTAMP, lastSync);
         Condition orCondition = conditionsBuilder.orCondition(createCondition, modifyCondition);
 
-        try (LDAPQuery userQuery = createQuery(sessionFactory, realmId, model)) {
+        try (LDAPQuery userQuery = createQuery(realmId, model)) {
             userQuery.addWhereCondition(orCondition);
-            SynchronizationResult result = syncImpl(sessionFactory, userQuery, realmId, model);
+            SynchronizationResult result = syncImpl(userQuery, realmId, model);
 
             LOG.info("Sync changed users finished: {}", result.getStatus());
             return result;
@@ -430,7 +433,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
     @Autowired
     private Map<ComponentModel, LDAPStorageProvider> ldapStorageProviders;
 
-    protected void syncMappers(KeycloakSessionFactory sessionFactory, final String realmId, final ComponentModel model) {
+    protected void syncMappers(final String realmId, final ComponentModel model) {
         RealmModel realm = realmProvider.getRealm(realmId);
         keycloakContext.setRealm(realm);
         List<ComponentModel> mappers = realm.getComponents(model.getId(), LDAPStorageMapper.class.getName());
@@ -443,7 +446,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
         }
     }
 
-    protected SynchronizationResult syncImpl(KeycloakSessionFactory sessionFactory, LDAPQuery userQuery, final String realmId, final ComponentModel fedModel) {
+    protected SynchronizationResult syncImpl(LDAPQuery userQuery, final String realmId, final ComponentModel fedModel) {
 
         final SynchronizationResult syncResult = new SynchronizationResult();
 
@@ -457,13 +460,13 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
                 userQuery.setLimit(pageSize);
                 final List<LDAPObject> users = userQuery.getResultList();
                 nextPage = userQuery.getPaginationContext().hasNextPage();
-                SynchronizationResult currentPageSync = importLdapUsers(sessionFactory, realmId, fedModel, users);
+                SynchronizationResult currentPageSync = importLdapUsers(realmId, fedModel, users);
                 syncResult.add(currentPageSync);
             }
         } else {
             // LDAP pagination not available. Do everything in single transaction
             final List<LDAPObject> users = userQuery.getResultList();
-            SynchronizationResult currentSync = importLdapUsers(sessionFactory, realmId, fedModel, users);
+            SynchronizationResult currentSync = importLdapUsers(realmId, fedModel, users);
             syncResult.add(currentSync);
         }
 
@@ -473,12 +476,11 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
     /**
      * !! This function must be called from try-with-resources block, otherwise Vault secrets may be leaked !!
      *
-     * @param sessionFactory
      * @param realmId
      * @param model
      * @return
      */
-    private LDAPQuery createQuery(KeycloakSessionFactory sessionFactory, final String realmId, final ComponentModel model) {
+    private LDAPQuery createQuery(final String realmId, final ComponentModel model) {
         class QueryHolder {
             LDAPQuery query;
         }
@@ -498,7 +500,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
     @Autowired
     private UserProvider userProvider;
 
-    protected SynchronizationResult importLdapUsers(KeycloakSessionFactory sessionFactory, final String realmId, final ComponentModel fedModel, List<LDAPObject> ldapUsers) {
+    protected SynchronizationResult importLdapUsers(final String realmId, final ComponentModel fedModel, List<LDAPObject> ldapUsers) {
         final SynchronizationResult syncResult = new SynchronizationResult();
 
         class BooleanHolder {

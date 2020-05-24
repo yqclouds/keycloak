@@ -48,6 +48,9 @@ public class RolePolicyProviderFactory implements PolicyProviderFactory<RolePoli
 
     private RolePolicyProvider provider = new RolePolicyProvider(this::toRepresentation);
 
+    @Autowired
+    private KeycloakSessionFactory sessionFactory;
+
     @Override
     public String getName() {
         return "Role";
@@ -199,8 +202,8 @@ public class RolePolicyProviderFactory implements PolicyProviderFactory<RolePoli
     private AuthorizationProvider authorizationProvider;
 
     @Override
-    public void postInit(KeycloakSessionFactory factory) {
-        factory.register(event -> {
+    public void postInit() {
+        sessionFactory.register(event -> {
             if (event instanceof RoleRemovedEvent) {
                 StoreFactory storeFactory = authorizationProvider.getStoreFactory();
                 PolicyStore policyStore = storeFactory.getPolicyStore();

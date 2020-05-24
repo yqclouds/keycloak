@@ -24,7 +24,6 @@ import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.*;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.representations.idm.authorization.UserPolicyRepresentation;
@@ -44,7 +43,7 @@ public class UserSynchronizer implements Synchronizer<UserRemovedEvent> {
     private AuthorizationProvider authorizationProvider;
 
     @Override
-    public void synchronize(UserRemovedEvent event, KeycloakSessionFactory factory) {
+    public void synchronize(UserRemovedEvent event) {
         removeFromUserPermissionTickets(event);
         removeUserResources(event);
         removeFromUserPolicies(event);

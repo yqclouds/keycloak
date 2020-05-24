@@ -21,7 +21,6 @@ import org.keycloak.Config;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.storage.user.ImportSynchronization;
@@ -41,7 +40,6 @@ public interface UserStorageProviderFactory<T extends UserStorageProvider> exten
     /**
      * called per Keycloak transaction.
      *
-     * @param session
      * @param model
      * @return
      */
@@ -61,7 +59,7 @@ public interface UserStorageProviderFactory<T extends UserStorageProvider> exten
     }
 
     @Override
-    default void postInit(KeycloakSessionFactory factory) {
+    default void postInit() {
 
     }
 

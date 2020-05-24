@@ -18,7 +18,6 @@
 package org.keycloak.provider;
 
 import org.keycloak.Config;
-import org.keycloak.models.KeycloakSessionFactory;
 
 /**
  * At boot time, keycloak discovers all factories.  For each discovered factory, the init() method is called.  After
@@ -44,7 +43,7 @@ public interface ProviderFactory<T extends Provider> {
      * Called after all provider factories have been initialized
      */
     @Deprecated
-    default void postInit(KeycloakSessionFactory factory) {
+    default void postInit() {
     }
 
     /**

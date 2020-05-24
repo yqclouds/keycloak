@@ -18,11 +18,13 @@
 package org.keycloak.services.clientregistration.policy.impl;
 
 import org.keycloak.component.ComponentModel;
+import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.services.clientregistration.policy.AbstractClientRegistrationPolicyFactory;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import java.util.LinkedList;
@@ -38,6 +40,9 @@ public class ProtocolMappersClientRegistrationPolicyFactory extends AbstractClie
     public static final String PROVIDER_ID = "allowed-protocol-mappers";
     public static final String ALLOWED_PROTOCOL_MAPPER_TYPES = "allowed-protocol-mapper-types";
     private List<ProviderConfigProperty> configProperties = new LinkedList<>();
+
+    @Autowired
+    private KeycloakSessionFactory sessionFactory;
 
     @Override
     public ClientRegistrationPolicy create(ComponentModel model) {
@@ -58,11 +63,7 @@ public class ProtocolMappersClientRegistrationPolicyFactory extends AbstractClie
 
     private List<String> getProtocolMapperFactoryIds() {
         List<ProviderFactory> protocolMapperFactories = sessionFactory.getProviderFactories(ProtocolMapper.class);
-        return protocolMapperFactories.stream().map((ProviderFactory factory) -> {
-
-            return factory.getId();
-
-        }).collect(Collectors.toList());
+        return protocolMapperFactories.stream().map((ProviderFactory factory) -> factory.getId()).collect(Collectors.toList());
     }
 
     @Override

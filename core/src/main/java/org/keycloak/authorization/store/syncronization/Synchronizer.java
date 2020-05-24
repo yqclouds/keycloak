@@ -18,7 +18,6 @@
 
 package org.keycloak.authorization.store.syncronization;
 
-import org.keycloak.models.KeycloakSessionFactory;
 import org.springframework.context.ApplicationEvent;
 
 /**
@@ -26,6 +25,6 @@ import org.springframework.context.ApplicationEvent;
  */
 public interface Synchronizer<E extends ApplicationEvent> {
 
-    void synchronize(E event, KeycloakSessionFactory factory);
+    void synchronize(E event);
 
 }

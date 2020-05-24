@@ -18,7 +18,6 @@
 package org.keycloak.crypto;
 
 import org.keycloak.Config;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderFactory;
 
 /**
@@ -31,7 +30,7 @@ public interface HashProviderFactory extends ProviderFactory<HashProvider> {
     }
 
     @Override
-    default void postInit(KeycloakSessionFactory factory) {
+    default void postInit() {
     }
 
     @Override

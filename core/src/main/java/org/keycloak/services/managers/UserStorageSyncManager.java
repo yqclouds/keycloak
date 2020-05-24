@@ -21,7 +21,6 @@ import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterListener;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.cluster.ExecutionResult;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RealmProvider;
 import org.keycloak.storage.UserStorageProvider;
@@ -68,11 +67,8 @@ public class UserStorageSyncManager {
             }
         }
 
-        clusterProvider.registerListener(USER_STORAGE_TASK_KEY, new UserStorageClusterListener(sessionFactory));
+        clusterProvider.registerListener(USER_STORAGE_TASK_KEY, new UserStorageClusterListener());
     }
-
-    @Autowired
-    private KeycloakSessionFactory sessionFactory;
 
     public SynchronizationResult syncAllUsers(final String realmId, final UserStorageProviderModel provider) {
         UserStorageProviderFactory factory = userStorageProviderFactories.get(provider.getProviderId());
@@ -91,7 +87,7 @@ public class UserStorageSyncManager {
         int timeout = Math.max(30, provider.getFullSyncPeriod());
         holder.result = clusterProvider.executeIfNotExecuted(taskKey, timeout, () -> {
             updateLastSyncInterval(provider, realmId);
-            return ((ImportSynchronization) factory).sync(sessionFactory, realmId, provider);
+            return ((ImportSynchronization) factory).sync(realmId, provider);
         });
 
         if (holder.result == null || !holder.result.isExecuted()) {
@@ -120,7 +116,7 @@ public class UserStorageSyncManager {
             // See when we did last sync.
             int oldLastSync = provider.getLastSync();
             updateLastSyncInterval(provider, realmId);
-            return ((ImportSynchronization) factory).syncSince(Time.toDate(oldLastSync), sessionFactory, realmId, provider);
+            return ((ImportSynchronization) factory).syncSince(Time.toDate(oldLastSync), realmId, provider);
         });
 
         if (holder.result == null || !holder.result.isExecuted()) {
@@ -282,13 +278,6 @@ public class UserStorageSyncManager {
     private TimerProvider timerProvider;
 
     private class UserStorageClusterListener implements ClusterListener {
-
-        private final KeycloakSessionFactory sessionFactory;
-
-        public UserStorageClusterListener(KeycloakSessionFactory sessionFactory) {
-            this.sessionFactory = sessionFactory;
-        }
-
         @Override
         public void eventReceived(ClusterEvent event) {
             final UserStorageProviderClusterEvent fedEvent = (UserStorageProviderClusterEvent) event;

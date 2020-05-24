@@ -17,7 +17,6 @@
 package org.keycloak.urls;
 
 import org.keycloak.Config;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderFactory;
 
 public interface HostnameProviderFactory extends ProviderFactory<HostnameProvider> {
@@ -31,7 +30,7 @@ public interface HostnameProviderFactory extends ProviderFactory<HostnameProvide
     }
 
     @Override
-    default void postInit(KeycloakSessionFactory factory) {
+    default void postInit() {
     }
 
     @Override

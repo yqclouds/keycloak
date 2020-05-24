@@ -16,7 +16,6 @@
  */
 package org.keycloak.storage.user;
 
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.storage.UserStorageProviderModel;
 
 import java.util.Date;
@@ -26,7 +25,7 @@ import java.util.Date;
  * @version $Revision: 1 $
  */
 public interface ImportSynchronization {
-    SynchronizationResult sync(KeycloakSessionFactory sessionFactory, String realmId, UserStorageProviderModel model);
+    SynchronizationResult sync(String realmId, UserStorageProviderModel model);
 
-    SynchronizationResult syncSince(Date lastSync, KeycloakSessionFactory sessionFactory, String realmId, UserStorageProviderModel model);
+    SynchronizationResult syncSince(Date lastSync, String realmId, UserStorageProviderModel model);
 }

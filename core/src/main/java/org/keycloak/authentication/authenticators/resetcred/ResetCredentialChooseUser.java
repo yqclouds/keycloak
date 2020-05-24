@@ -29,7 +29,6 @@ import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAu
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserProvider;
@@ -202,7 +201,7 @@ public class ResetCredentialChooseUser implements Authenticator, AuthenticatorFa
     }
 
     @Override
-    public void postInit(KeycloakSessionFactory factory) {
+    public void postInit() {
 
     }
 

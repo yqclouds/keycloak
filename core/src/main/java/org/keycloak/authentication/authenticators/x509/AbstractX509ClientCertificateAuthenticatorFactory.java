@@ -20,7 +20,6 @@ package org.keycloak.authentication.authenticators.x509;
 
 import org.keycloak.Config;
 import org.keycloak.authentication.AuthenticatorFactory;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderConfigProperty;
 
 import java.util.Collections;
@@ -221,7 +220,7 @@ public abstract class AbstractX509ClientCertificateAuthenticatorFactory implemen
     }
 
     @Override
-    public void postInit(KeycloakSessionFactory factory) {
+    public void postInit() {
     }
 
     @Override

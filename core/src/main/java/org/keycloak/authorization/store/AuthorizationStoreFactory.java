@@ -18,46 +18,13 @@
 
 package org.keycloak.authorization.store;
 
-import com.hsbc.unified.iam.entity.events.ClientRemovedEvent;
-import com.hsbc.unified.iam.entity.events.GroupRemovedEvent;
-import com.hsbc.unified.iam.entity.events.RealmRemovedEvent;
-import com.hsbc.unified.iam.entity.events.UserRemovedEvent;
-import org.keycloak.authorization.store.syncronization.*;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderFactory;
-import org.springframework.context.ApplicationEvent;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
 public interface AuthorizationStoreFactory extends ProviderFactory<StoreFactory> {
-
     @Override
-    default void postInit(KeycloakSessionFactory factory) {
-        registerSynchronizationListeners(factory);
-    }
-
-    default void registerSynchronizationListeners(KeycloakSessionFactory factory) {
-        Map<Class<? extends ApplicationEvent>, Synchronizer> synchronizers = new HashMap<>();
-
-        synchronizers.put(ClientRemovedEvent.class, new ClientApplicationSynchronizer());
-        synchronizers.put(RealmRemovedEvent.class, new RealmSynchronizer());
-        synchronizers.put(UserRemovedEvent.class, new UserSynchronizer());
-        synchronizers.put(GroupRemovedEvent.class, new GroupSynchronizer());
-
-        factory.register(event -> {
-            try {
-                synchronizers.forEach((eventType, synchronizer) -> {
-                    if (eventType.isInstance(event)) {
-                        synchronizer.synchronize(event, factory);
-                    }
-                });
-            } catch (Exception e) {
-                throw new RuntimeException("Error synchronizing authorization data.", e);
-            }
-        });
+    default void postInit() {
     }
 }

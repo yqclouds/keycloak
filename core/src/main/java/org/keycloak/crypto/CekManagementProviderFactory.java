@@ -18,7 +18,6 @@
 package org.keycloak.crypto;
 
 import org.keycloak.Config;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderFactory;
 
 public interface CekManagementProviderFactory extends ProviderFactory<CekManagementProvider> {
@@ -28,7 +27,7 @@ public interface CekManagementProviderFactory extends ProviderFactory<CekManagem
     }
 
     @Override
-    default void postInit(KeycloakSessionFactory factory) {
+    default void postInit() {
     }
 
     @Override

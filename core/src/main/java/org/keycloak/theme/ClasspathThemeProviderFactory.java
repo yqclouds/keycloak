@@ -19,7 +19,6 @@ package org.keycloak.theme;
 
 import com.hsbc.unified.iam.core.util.JsonSerialization;
 import org.keycloak.Config;
-import org.keycloak.models.KeycloakSessionFactory;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -54,7 +53,7 @@ public class ClasspathThemeProviderFactory implements ThemeProviderFactory {
     }
 
     @Override
-    public void postInit(KeycloakSessionFactory factory) {
+    public void postInit() {
     }
 
     @Override

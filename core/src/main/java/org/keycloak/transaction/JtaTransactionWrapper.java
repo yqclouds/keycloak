@@ -16,17 +16,18 @@
  */
 package org.keycloak.transaction;
 
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.KeycloakTransaction;
 import org.keycloak.provider.ExceptionConverter;
 import org.keycloak.provider.ProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import java.util.List;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -38,11 +39,9 @@ public class JtaTransactionWrapper implements KeycloakTransaction {
     protected Transaction ut;
     protected Transaction suspended;
     protected Exception ended;
-    protected KeycloakSessionFactory factory;
 
-    public JtaTransactionWrapper(KeycloakSessionFactory factory, TransactionManager tm) {
+    public JtaTransactionWrapper(TransactionManager tm) {
         this.tm = tm;
-        this.factory = factory;
         try {
 
             suspended = tm.suspend();
@@ -56,12 +55,15 @@ public class JtaTransactionWrapper implements KeycloakTransaction {
         }
     }
 
+    @Autowired
+    private List<ExceptionConverter> exceptionConverters;
+
     public void handleException(Throwable e) {
         if (e instanceof RollbackException) {
             e = e.getCause() != null ? e.getCause() : e;
         }
 
-        for (ProviderFactory factory : this.factory.getProviderFactories(ExceptionConverter.class)) {
+        for (ProviderFactory factory : exceptionConverters) {
             ExceptionConverter converter = (ExceptionConverter) factory;
             Throwable throwable = converter.convert(e);
             if (throwable == null) continue;

@@ -17,14 +17,13 @@
 
 package org.keycloak.authentication.authenticators.browser;
 
+import com.hsbc.unified.iam.core.constants.OAuth2Constants;
 import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import org.keycloak.Config;
-import com.hsbc.unified.iam.core.constants.OAuth2Constants;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.authentication.DisplayTypeAuthenticatorFactory;
 import org.keycloak.authentication.authenticators.console.ConsolePasswordAuthenticator;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.PasswordCredentialModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.stereotype.ProviderFactory;
@@ -61,8 +60,7 @@ public class PasswordFormFactory implements AuthenticatorFactory, DisplayTypeAut
     }
 
     @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
+    public void postInit() {
     }
 
     @Override
