@@ -31,7 +31,6 @@ import java.util.List;
  * @author rodrigo.sasaki@icarros.com.br
  */
 public class BearerAuthFilter implements ClientRequestFilter, ClientResponseFilter {
-
     public static final String AUTH_HEADER_PREFIX = "Bearer ";
     private final String tokenString;
     private final TokenManager tokenManager;
@@ -45,7 +44,6 @@ public class BearerAuthFilter implements ClientRequestFilter, ClientResponseFilt
         this.tokenManager = tokenManager;
         this.tokenString = null;
     }
-
 
     @Override
     public void filter(ClientRequestContext requestContext) throws IOException {

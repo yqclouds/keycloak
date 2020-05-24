@@ -28,7 +28,6 @@ import java.io.IOException;
  * @author rodrigo.sasaki@icarros.com.br
  */
 public class BasicAuthFilter implements ClientRequestFilter {
-
     private final String username;
     private final String password;
 
@@ -43,6 +42,4 @@ public class BasicAuthFilter implements ClientRequestFilter {
         String authHeader = "Basic " + Base64.encodeBytes(pair.getBytes());
         requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION, authHeader);
     }
-
-
 }
