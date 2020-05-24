@@ -17,16 +17,13 @@
 
 package org.keycloak.storage.ldap;
 
+import com.hsbc.unified.iam.core.credential.CredentialInput;
+import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.CredentialAuthentication;
-import com.hsbc.unified.iam.core.credential.CredentialInput;
 import org.keycloak.credential.CredentialInputUpdater;
 import org.keycloak.credential.CredentialInputValidator;
 import org.keycloak.models.*;
-import org.keycloak.models.cache.CachedUserModel;
-import org.keycloak.models.cache.UserCache;
-import org.keycloak.models.PasswordCredentialModel;
-import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
 import org.keycloak.models.utils.DefaultRoles;
 import org.keycloak.models.utils.ReadOnlyUserModelDelegate;
 import org.keycloak.policy.PasswordPolicyManagerProvider;
@@ -145,16 +142,6 @@ public class LDAPStorageProvider implements UserStorageProvider,
             return existing;
         }
 
-        // We need to avoid having CachedUserModel as cache is upper-layer then LDAP. Hence having CachedUserModel here may cause StackOverflowError
-        if (local instanceof CachedUserModel) {
-            local = session.userStorageManager().getUserById(local.getId(), realm);
-
-            existing = userManager.getManagedProxiedUser(local.getId());
-            if (existing != null) {
-                return existing;
-            }
-        }
-
         UserModel proxied = local;
 
         checkDNChanged(realm, local, ldapObject);
@@ -192,11 +179,6 @@ public class LDAPStorageProvider implements UserStorageProvider,
         if (!ldapDn.equals(dnFromDB)) {
             LOG.debug("Updated LDAP DN of user '{}' to '{}'", local.getUsername(), ldapDn);
             local.setSingleAttribute(LDAPConstants.LDAP_ENTRY_DN, ldapDn);
-
-            UserCache userCache = session.userCache();
-            if (userCache != null) {
-                userCache.evict(realm, local);
-            }
         }
     }
 

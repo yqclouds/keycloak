@@ -21,9 +21,6 @@ import org.keycloak.common.util.reflections.Types;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.*;
-import org.keycloak.models.cache.CachedUserModel;
-import org.keycloak.models.cache.OnUserCache;
-import org.keycloak.models.cache.UserCache;
 import org.keycloak.models.utils.ComponentUtil;
 import org.keycloak.models.utils.ReadOnlyUserModelDelegate;
 import org.keycloak.services.managers.UserStorageSyncManager;
@@ -41,7 +38,7 @@ import java.util.*;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class UserStorageManager implements UserProvider, OnUserCache, OnCreateComponent, OnUpdateComponent {
+public class UserStorageManager implements UserProvider, OnCreateComponent, OnUpdateComponent {
     private static final Logger LOG = LoggerFactory.getLogger(UserStorageManager.class);
 
     private HttpSession httpSession;
@@ -310,16 +307,11 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
     }
 
     @Autowired
-    private UserCache userCache;
-    @Autowired
     private RealmProvider realmProvider;
 
     protected void deleteInvalidUser(final RealmModel realm, final UserModel user) {
         String userId = user.getId();
         String userName = user.getUsername();
-        if (userCache != null) {
-            userCache.evict(realm, user);
-        }
 
         RealmModel realmModel = realmProvider.getRealm(realm.getId());
         if (realmModel == null) return;
@@ -724,20 +716,6 @@ public class UserStorageManager implements UserProvider, OnUserCache, OnCreateCo
     @Override
     public void unlinkUsers(RealmModel realm, String storageProviderId) {
         localStorage().unlinkUsers(realm, storageProviderId);
-    }
-
-    @Override
-    public void onCache(RealmModel realm, CachedUserModel user, UserModel delegate) {
-        if (StorageId.isLocalStorage(user)) {
-            if (userProvider instanceof OnUserCache) {
-                ((OnUserCache) userProvider).onCache(realm, user, delegate);
-            }
-        } else {
-            Object provider = getStorageProvider(realm, StorageId.resolveProviderId(user));
-            if (provider instanceof OnUserCache) {
-                ((OnUserCache) provider).onCache(realm, user, delegate);
-            }
-        }
     }
 
     @Override

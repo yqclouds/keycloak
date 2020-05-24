@@ -20,7 +20,6 @@ package org.keycloak.storage.ldap;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
 import org.keycloak.models.*;
-import org.keycloak.models.cache.UserCache;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
@@ -496,8 +495,6 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
     }
 
     @Autowired
-    private UserCache userCache;
-    @Autowired
     private UserProvider userProvider;
 
     protected SynchronizationResult importLdapUsers(final String realmId, final ComponentModel fedModel, List<LDAPObject> ldapUsers) {
@@ -537,9 +534,6 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
                             LDAPStorageMapper ldapMapper = ldapFedProvider.getMapperManager().getMapper(mapperModel);
                             ldapMapper.onImportUserFromLDAP(ldapUser, currentUser, currentRealm, false);
                         }
-                        if (userCache != null) {
-                            userCache.evict(currentRealm, currentUser);
-                        }
                         LOG.debug("Updated user from LDAP: {}", currentUser.getUsername());
                         syncResult.increaseUpdated();
                     } else {
@@ -566,9 +560,6 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
                     if (username != null) {
                         UserModel existing = userProvider.getUserByUsername(username, currentRealm);
                         if (existing != null) {
-                            if (userCache != null) {
-                                userCache.evict(currentRealm, existing);
-                            }
                             userProvider.removeUser(currentRealm, existing);
                         }
                     }

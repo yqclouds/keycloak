@@ -36,7 +36,7 @@ import java.nio.charset.StandardCharsets;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class OTPCredentialProvider implements CredentialProvider<OTPCredentialModel>, CredentialInputValidator/*, OnUserCache*/ {
+public class OTPCredentialProvider implements CredentialProvider<OTPCredentialModel>, CredentialInputValidator {
     private static final Logger LOG = LoggerFactory.getLogger(OTPCredentialProvider.class);
 
     @Autowired

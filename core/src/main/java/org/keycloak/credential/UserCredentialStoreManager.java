@@ -19,9 +19,6 @@ package org.keycloak.credential;
 import com.hsbc.unified.iam.core.credential.CredentialInput;
 import org.keycloak.common.util.reflections.Types;
 import org.keycloak.models.*;
-import org.keycloak.models.cache.CachedUserModel;
-import org.keycloak.models.cache.OnUserCache;
-import org.keycloak.models.cache.UserCache;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.storage.StorageId;
 import org.keycloak.storage.UserStorageManager;
@@ -36,13 +33,11 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class UserCredentialStoreManager implements UserCredentialManager, OnUserCache {
+public class UserCredentialStoreManager implements UserCredentialManager {
     @Autowired
     private UserStorageManager userStorageManager;
     @Autowired
     private UserFederatedUserCredentialStore userFederatedUserCredentialStore;
-    @Autowired
-    private UserCache userCache;
 
     @Autowired
     private List<CredentialProviderFactory> credentialProviderFactories;
@@ -81,9 +76,7 @@ public class UserCredentialStoreManager implements UserCredentialManager, OnUser
     @Override
     public boolean removeStoredCredential(RealmModel realm, UserModel user, String id) {
         throwExceptionIfInvalidUser(user);
-        boolean removalResult = getStoreForUser(user).removeStoredCredential(realm, user, id);
-        userCache.evict(realm, user);
-        return removalResult;
+        return getStoreForUser(user).removeStoredCredential(realm, user, id);
     }
 
     @Override
@@ -137,9 +130,6 @@ public class UserCredentialStoreManager implements UserCredentialManager, OnUser
         CredentialModel credential = getStoredCredentialById(realm, user, credentialId);
         credential.setUserLabel(userLabel);
         getStoreForUser(user).updateCredential(realm, user, credential);
-        if (userCache != null) {
-            userCache.evict(realm, user);
-        }
     }
 
     @Override
@@ -366,14 +356,6 @@ public class UserCredentialStoreManager implements UserCredentialManager, OnUser
         }
 
         return null;
-    }
-
-    @Override
-    public void onCache(RealmModel realm, CachedUserModel user, UserModel delegate) {
-        List<OnUserCache> credentialProviders = getCredentialProviders(realm, OnUserCache.class);
-        for (OnUserCache validator : credentialProviders) {
-            validator.onCache(realm, user, delegate);
-        }
     }
 
     @Override

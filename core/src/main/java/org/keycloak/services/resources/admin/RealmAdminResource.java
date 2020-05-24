@@ -42,8 +42,6 @@ import org.keycloak.exportimport.util.ExportOptions;
 import org.keycloak.exportimport.util.ExportUtils;
 import org.keycloak.keys.PublicKeyStorageProvider;
 import org.keycloak.models.*;
-import org.keycloak.models.cache.CacheRealmProvider;
-import org.keycloak.models.cache.UserCache;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
@@ -345,8 +343,6 @@ public class RealmAdminResource {
         }
     }
 
-    @Autowired(required = false)
-    private UserCache userCache;
     @Autowired
     private RepresentationToModel representationToModel;
 
@@ -403,10 +399,6 @@ public class RealmAdminResource {
             }
 
             adminEvent.operation(OperationType.UPDATE).representation(StripSecretsUtils.strip(rep)).success();
-
-            if (rep.isDuplicateEmailsAllowed() != null && rep.isDuplicateEmailsAllowed() != wasDuplicateEmailsAllowed) {
-                if (userCache != null) userCache.clear();
-            }
 
             return Response.noContent().build();
         } catch (ModelDuplicateException e) {
@@ -1106,9 +1098,6 @@ public class RealmAdminResource {
         return stripSecretsUtils.stripForExport(rep);
     }
 
-    @Autowired(required = false)
-    private CacheRealmProvider cacheRealmProvider;
-
     /**
      * Clear realm cache
      */
@@ -1116,10 +1105,6 @@ public class RealmAdminResource {
     @POST
     public void clearRealmCache() {
         auth.realm().requireManageRealm();
-        if (cacheRealmProvider != null) {
-            cacheRealmProvider.clear();
-        }
-
         adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).success();
     }
 
@@ -1130,10 +1115,6 @@ public class RealmAdminResource {
     @POST
     public void clearUserCache() {
         auth.realm().requireManageRealm();
-
-        if (userCache != null) {
-            userCache.clear();
-        }
 
         adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).success();
     }

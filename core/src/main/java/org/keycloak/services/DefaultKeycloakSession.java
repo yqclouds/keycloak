@@ -22,8 +22,6 @@ import org.keycloak.credential.UserCredentialStoreManager;
 import org.keycloak.jose.jws.DefaultTokenManager;
 import org.keycloak.keys.DefaultKeyManager;
 import org.keycloak.models.*;
-import org.keycloak.models.cache.CacheRealmProvider;
-import org.keycloak.models.cache.UserCache;
 import org.keycloak.provider.Provider;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.sessions.AuthenticationSessionProvider;
@@ -42,7 +40,6 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class DefaultKeycloakSession implements KeycloakSession {
-
     private final DefaultKeycloakSessionFactory factory;
     private final Map<Integer, Provider> providers = new HashMap<>();
     private final List<Provider> closable = new LinkedList<>();
@@ -78,27 +75,11 @@ public class DefaultKeycloakSession implements KeycloakSession {
         return context;
     }
 
-    @Autowired(required = false)
-    private CacheRealmProvider cacheRealmProvider;
-
     @Autowired
     private RealmProviderFactory realmProviderFactory;
 
     private RealmProvider getRealmProvider() {
-        CacheRealmProvider cache = this.cacheRealmProvider;
-        if (cache != null) {
-            return cache;
-        } else {
-            return realmProviderFactory.create();
-        }
-    }
-
-    @Autowired(required = false)
-    private UserCache userCache;
-
-    @Override
-    public UserCache userCache() {
-        return this.userCache;
+        return realmProviderFactory.create();
     }
 
     @Override
@@ -179,12 +160,7 @@ public class DefaultKeycloakSession implements KeycloakSession {
 
     @Override
     public UserProvider users() {
-        UserCache cache = this.userCache;
-        if (cache != null) {
-            return cache;
-        } else {
-            return userStorageManager();
-        }
+        return userStorageManager();
     }
 
     @Override

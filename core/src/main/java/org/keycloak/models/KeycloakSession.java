@@ -18,7 +18,6 @@
 package org.keycloak.models;
 
 import org.keycloak.component.ComponentModel;
-import org.keycloak.models.cache.UserCache;
 import org.keycloak.provider.Provider;
 import org.keycloak.sessions.AuthenticationSessionProvider;
 import org.keycloak.storage.federated.UserFederatedStorageProvider;
@@ -120,13 +119,6 @@ public interface KeycloakSession {
 
 
     void close();
-
-    /**
-     * The user cache
-     *
-     * @return may be null if cache is disabled
-     */
-    UserCache userCache();
 
     /**
      * A cached view of all users in system including  users loaded by UserStorageProviders

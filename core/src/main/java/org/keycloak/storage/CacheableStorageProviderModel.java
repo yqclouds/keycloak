@@ -19,7 +19,6 @@ package org.keycloak.storage;
 import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.PrioritizedComponentModel;
-import org.keycloak.models.cache.CachedObject;
 
 import java.util.Calendar;
 
@@ -67,19 +66,6 @@ public class CacheableStorageProviderModel extends PrioritizedComponentModel {
         return cal.getTimeInMillis();
     }
 
-    public static long dailyEvictionBoundary(int hour, int minute) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(Time.currentTimeMillis());
-        cal.set(Calendar.HOUR_OF_DAY, hour);
-        cal.set(Calendar.MINUTE, minute);
-        if (cal.getTimeInMillis() > Time.currentTimeMillis()) {
-            // if daily evict for today hasn't happened yet set boundary
-            // to yesterday's time of eviction
-            cal.add(Calendar.DAY_OF_YEAR, -1);
-        }
-        return cal.getTimeInMillis();
-    }
-
     public static long weeklyTimeout(int day, int hour, int minute) {
         Calendar cal = Calendar.getInstance();
         Calendar cal2 = Calendar.getInstance();
@@ -105,16 +91,6 @@ public class CacheableStorageProviderModel extends PrioritizedComponentModel {
         return cachePolicy;
     }
 
-    public void setCachePolicy(CachePolicy cachePolicy) {
-        this.cachePolicy = cachePolicy;
-        if (cachePolicy == null) {
-            getConfig().remove(CACHE_POLICY);
-
-        } else {
-            getConfig().putSingle(CACHE_POLICY, cachePolicy.name());
-        }
-    }
-
     public long getMaxLifespan() {
         if (maxLifespan < 0) {
             String str = getConfig().getFirst(MAX_LIFESPAN);
@@ -122,11 +98,6 @@ public class CacheableStorageProviderModel extends PrioritizedComponentModel {
             maxLifespan = Long.valueOf(str);
         }
         return maxLifespan;
-    }
-
-    public void setMaxLifespan(long maxLifespan) {
-        this.maxLifespan = maxLifespan;
-        getConfig().putSingle(MAX_LIFESPAN, Long.toString(maxLifespan));
     }
 
     public int getEvictionHour() {
@@ -138,12 +109,6 @@ public class CacheableStorageProviderModel extends PrioritizedComponentModel {
         return evictionHour;
     }
 
-    public void setEvictionHour(int evictionHour) {
-        if (evictionHour > 23 || evictionHour < 0) throw new IllegalArgumentException("Must be between 0 and 23");
-        this.evictionHour = evictionHour;
-        getConfig().putSingle(EVICTION_HOUR, Integer.toString(evictionHour));
-    }
-
     public int getEvictionMinute() {
         if (evictionMinute < 0) {
             String str = getConfig().getFirst(EVICTION_MINUTE);
@@ -151,12 +116,6 @@ public class CacheableStorageProviderModel extends PrioritizedComponentModel {
             evictionMinute = Integer.valueOf(str);
         }
         return evictionMinute;
-    }
-
-    public void setEvictionMinute(int evictionMinute) {
-        if (evictionMinute > 59 || evictionMinute < 0) throw new IllegalArgumentException("Must be between 0 and 59");
-        this.evictionMinute = evictionMinute;
-        getConfig().putSingle(EVICTION_MINUTE, Integer.toString(evictionMinute));
     }
 
     public int getEvictionDay() {
@@ -168,12 +127,6 @@ public class CacheableStorageProviderModel extends PrioritizedComponentModel {
         return evictionDay;
     }
 
-    public void setEvictionDay(int evictionDay) {
-        if (evictionDay > 7 || evictionDay < 1) throw new IllegalArgumentException("Must be between 1 and 7");
-        this.evictionDay = evictionDay;
-        getConfig().putSingle(EVICTION_DAY, Integer.toString(evictionDay));
-    }
-
     public long getCacheInvalidBefore() {
         if (cacheInvalidBefore < 0) {
             String str = getConfig().getFirst(CACHE_INVALID_BEFORE);
@@ -181,11 +134,6 @@ public class CacheableStorageProviderModel extends PrioritizedComponentModel {
             cacheInvalidBefore = Long.valueOf(str);
         }
         return cacheInvalidBefore;
-    }
-
-    public void setCacheInvalidBefore(long cacheInvalidBefore) {
-        this.cacheInvalidBefore = cacheInvalidBefore;
-        getConfig().putSingle(CACHE_INVALID_BEFORE, Long.toString(cacheInvalidBefore));
     }
 
     public boolean isEnabled() {
@@ -224,43 +172,6 @@ public class CacheableStorageProviderModel extends PrioritizedComponentModel {
         }
         return lifespan;
     }
-
-    public boolean shouldInvalidate(CachedObject cached) {
-        boolean invalidate = false;
-        if (!isEnabled()) {
-            invalidate = true;
-        } else {
-            CacheableStorageProviderModel.CachePolicy policy = getCachePolicy();
-            if (policy != null) {
-                //String currentTime = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL).format(new Date(Time.currentTimeMillis()));
-                if (policy == CacheableStorageProviderModel.CachePolicy.NO_CACHE) {
-                    invalidate = true;
-                } else if (cached.getCacheTimestamp() < getCacheInvalidBefore()) {
-                    invalidate = true;
-                } else if (policy == CacheableStorageProviderModel.CachePolicy.MAX_LIFESPAN) {
-                    if (cached.getCacheTimestamp() + getMaxLifespan() < Time.currentTimeMillis()) {
-                        invalidate = true;
-                    }
-                } else if (policy == CacheableStorageProviderModel.CachePolicy.EVICT_DAILY) {
-                    long dailyBoundary = dailyEvictionBoundary(getEvictionHour(), getEvictionMinute());
-                    if (cached.getCacheTimestamp() <= dailyBoundary) {
-                        invalidate = true;
-                    }
-                } else if (policy == CacheableStorageProviderModel.CachePolicy.EVICT_WEEKLY) {
-                    int oneWeek = 7 * 24 * 60 * 60 * 1000;
-                    long weeklyTimeout = weeklyTimeout(getEvictionDay(), getEvictionHour(), getEvictionMinute());
-                    long lastTimeout = weeklyTimeout - oneWeek;
-                    //String timeout = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL).format(new Date(weeklyTimeout));
-                    //String stamp = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL).format(new Date(cached.getCacheTimestamp()));
-                    if (cached.getCacheTimestamp() <= lastTimeout) {
-                        invalidate = true;
-                    }
-                }
-            }
-        }
-        return invalidate;
-    }
-
 
     public enum CachePolicy {
         NO_CACHE,
