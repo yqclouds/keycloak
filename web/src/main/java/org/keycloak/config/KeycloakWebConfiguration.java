@@ -28,7 +28,6 @@ import org.keycloak.locale.LocaleUpdaterSPI;
 import org.keycloak.models.*;
 import org.keycloak.models.cache.CacheRealmProviderSpi;
 import org.keycloak.models.cache.CacheUserProviderSpi;
-import org.keycloak.models.cache.authorization.CachedStoreFactorySpi;
 import org.keycloak.models.dblock.DBLockSpi;
 import org.keycloak.models.session.UserSessionPersisterSpi;
 import org.keycloak.policy.PasswordPolicyManagerSpi;
@@ -116,7 +115,6 @@ public class KeycloakWebConfiguration {
         results.add(new AuthenticatorSpi());
         results.add(new AuthorizationSpi());
         results.add(new BruteForceProtectorSpi());
-        results.add(new CachedStoreFactorySpi());
         results.add(new CacheRealmProviderSpi());
         results.add(new CacheUserProviderSpi());
         results.add(new CekManagementSpi());

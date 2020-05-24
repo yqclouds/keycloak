@@ -24,9 +24,9 @@ import org.keycloak.provider.Provider;
  */
 public interface TimerProvider extends Provider {
 
-    public void schedule(Runnable runnable, long intervalMillis, String taskName);
+    void schedule(Runnable runnable, long intervalMillis, String taskName);
 
-    public void scheduleTask(ScheduledTask scheduledTask, long intervalMillis, String taskName);
+    void scheduleTask(ScheduledTask scheduledTask, long intervalMillis, String taskName);
 
 
     /**
@@ -35,7 +35,7 @@ public interface TimerProvider extends Provider {
      * @param taskName
      * @return existing task or null if task under this name doesn't exist
      */
-    public TimerTaskContext cancelTask(String taskName);
+    TimerTaskContext cancelTask(String taskName);
 
 
     interface TimerTaskContext {
