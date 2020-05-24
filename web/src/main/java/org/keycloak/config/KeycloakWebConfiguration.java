@@ -16,7 +16,6 @@ import org.keycloak.email.EmailSenderSpi;
 import org.keycloak.email.EmailTemplateSpi;
 import org.keycloak.events.EventListenerSpi;
 import org.keycloak.events.EventStoreSpi;
-import org.keycloak.executors.ExecutorsSpi;
 import org.keycloak.exportimport.ClientDescriptionConverterSpi;
 import org.keycloak.exportimport.ExportSpi;
 import org.keycloak.exportimport.ImportSpi;
@@ -138,7 +137,6 @@ public class KeycloakWebConfiguration {
         results.add(new EventListenerSpi());
         results.add(new EventStoreSpi());
         results.add(new ExceptionConverterSpi());
-        results.add(new ExecutorsSpi());
         results.add(new ExportSpi());
         results.add(new FormActionSpi());
         results.add(new FormAuthenticatorSpi());
