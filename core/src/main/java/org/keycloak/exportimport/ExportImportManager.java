@@ -17,27 +17,20 @@
 
 package org.keycloak.exportimport;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class ExportImportManager {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ExportImportManager.class);
     private final String realmName;
     @Autowired
     private ExportProvider exportProvider;
     @Autowired
     private ImportProvider importProvider;
-
-    @Autowired
-    private Map<String, ExportProvider> exportProviders;
 
     public ExportImportManager() {
         realmName = ExportImportConfig.getRealmName();
