@@ -59,7 +59,6 @@ import org.keycloak.theme.ThemeResourceSpi;
 import org.keycloak.theme.ThemeSelectorSpi;
 import org.keycloak.theme.ThemeSpi;
 import org.keycloak.timer.TimerSpi;
-import org.keycloak.transaction.TransactionManagerLookupSpi;
 import org.keycloak.truststore.TruststoreSpi;
 import org.keycloak.urls.HostnameSpi;
 import org.keycloak.validation.ClientValidationSPI;
@@ -176,7 +175,6 @@ public class KeycloakWebConfiguration {
         results.add(new ThemeSpi());
         results.add(new TimerSpi());
         results.add(new TokenIntrospectionSpi());
-        results.add(new TransactionManagerLookupSpi());
         results.add(new TruststoreSpi());
         results.add(new UserFederatedStorageProviderSpi());
         results.add(new UserSessionPersisterSpi());

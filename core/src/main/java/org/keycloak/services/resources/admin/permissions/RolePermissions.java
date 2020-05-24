@@ -16,12 +16,12 @@
  */
 package org.keycloak.services.resources.admin.permissions;
 
-import org.keycloak.Config;
-import org.keycloak.authorization.AuthorizationProvider;
 import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
+import org.keycloak.Config;
+import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.models.*;
 import org.keycloak.representations.idm.authorization.DecisionStrategy;
@@ -40,13 +40,11 @@ import java.util.Set;
  */
 class RolePermissions implements RolePermissionEvaluator, RolePermissionManagement {
     private static final Logger LOG = LoggerFactory.getLogger(RolePermissions.class);
-    protected final KeycloakSession session;
     protected final RealmModel realm;
     protected final AuthorizationProvider authz;
     protected final MgmtPermissions root;
 
     public RolePermissions(RealmModel realm, AuthorizationProvider authz, MgmtPermissions root) {
-        this.session = session;
         this.realm = realm;
         this.authz = authz;
         this.root = root;

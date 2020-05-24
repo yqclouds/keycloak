@@ -42,22 +42,24 @@ public class DefaultTokenManager implements TokenManager {
 
     private static String DEFAULT_ALGORITHM_NAME = Algorithm.RS256;
 
-    private final KeycloakSession session;
-
-    public DefaultTokenManager() {
-        this.session = session;
-    }
+    @Autowired
+    private Map<String, SignatureProvider> signatureProviders;
+    @Autowired
+    private KeycloakContext keycloakContext;
 
     @Override
     public String encode(Token token) {
         String signatureAlgorithm = signatureAlgorithm(token.getCategory());
 
-        SignatureProvider signatureProvider = session.getProvider(SignatureProvider.class, signatureAlgorithm);
+        SignatureProvider signatureProvider = signatureProviders.get(signatureAlgorithm);
         SignatureSignerContext signer = signatureProvider.signer();
 
         String encodedToken = new JWSBuilder().type("JWT").jsonContent(token).sign(signer);
         return encodedToken;
     }
+
+    @Autowired
+    private KeyManager keyManager;
 
     @Override
     public <T extends Token> T decode(String token, Class<T> clazz) {
@@ -70,7 +72,7 @@ public class DefaultTokenManager implements TokenManager {
 
             String signatureAlgorithm = jws.getHeader().getAlgorithm().name();
 
-            SignatureProvider signatureProvider = session.getProvider(SignatureProvider.class, signatureAlgorithm);
+            SignatureProvider signatureProvider = signatureProviders.get(signatureAlgorithm);
             if (signatureProvider == null) {
                 return null;
             }
@@ -79,7 +81,7 @@ public class DefaultTokenManager implements TokenManager {
             // Backwards compatibility. Old offline tokens and cookies didn't have KID in the header
             if (kid == null) {
                 LOG.debug("KID is null in token. Using the realm active key to verify token signature.");
-                kid = session.keys().getActiveKey(session.getContext().getRealm(), KeyUse.SIG, signatureAlgorithm).getKid();
+                kid = keyManager.getActiveKey(keycloakContext.getRealm(), KeyUse.SIG, signatureAlgorithm).getKid();
             }
 
             boolean valid = signatureProvider.verifier(kid).verify(jws.getEncodedSignatureInput().getBytes("UTF-8"), jws.getSignature());
@@ -89,6 +91,9 @@ public class DefaultTokenManager implements TokenManager {
             return null;
         }
     }
+
+    @Autowired
+    private Map<String, ClientSignatureVerifierProvider> clientSignatureVerifierProviders;
 
     @Override
     public <T> T decodeClientJWT(String token, ClientModel client, Class<T> clazz) {
@@ -100,7 +105,7 @@ public class DefaultTokenManager implements TokenManager {
 
             String signatureAlgorithm = jws.getHeader().getAlgorithm().name();
 
-            ClientSignatureVerifierProvider signatureProvider = session.getProvider(ClientSignatureVerifierProvider.class, signatureAlgorithm);
+            ClientSignatureVerifierProvider signatureProvider = clientSignatureVerifierProviders.get(signatureAlgorithm);
             if (signatureProvider == null) {
                 return null;
             }
@@ -132,8 +137,8 @@ public class DefaultTokenManager implements TokenManager {
     }
 
     private String getSignatureAlgorithm(String clientAttribute) {
-        RealmModel realm = session.getContext().getRealm();
-        ClientModel client = session.getContext().getClient();
+        RealmModel realm = keycloakContext.getRealm();
+        ClientModel client = keycloakContext.getClient();
 
         String algorithm = client != null && clientAttribute != null ? client.getAttribute(clientAttribute) : null;
         if (algorithm != null && !algorithm.equals("")) {
@@ -170,8 +175,6 @@ public class DefaultTokenManager implements TokenManager {
     private Map<String, ContentEncryptionProvider> contentEncryptionProviders;
     @Autowired
     private Map<String, CekManagementProvider> cekManagementProviders;
-    @Autowired
-    private KeycloakContext keycloakContext;
 
     private String getEncryptedToken(TokenCategory category, String encodedToken) {
         String encryptedToken = null;
@@ -213,7 +216,7 @@ public class DefaultTokenManager implements TokenManager {
     }
 
     private String getCekManagementAlgorithm(String clientAttribute) {
-        ClientModel client = session.getContext().getClient();
+        ClientModel client = keycloakContext.getClient();
         String algorithm = client != null && clientAttribute != null ? client.getAttribute(clientAttribute) : null;
         if (algorithm != null && !algorithm.equals("")) {
             return algorithm;
@@ -233,7 +236,7 @@ public class DefaultTokenManager implements TokenManager {
     }
 
     private String getEncryptAlgorithm(String clientAttribute) {
-        ClientModel client = session.getContext().getClient();
+        ClientModel client = keycloakContext.getClient();
         String algorithm = client != null && clientAttribute != null ? client.getAttribute(clientAttribute) : null;
         if (algorithm != null && !algorithm.equals("")) {
             return algorithm;

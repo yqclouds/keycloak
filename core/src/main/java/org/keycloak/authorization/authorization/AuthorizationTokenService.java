@@ -224,6 +224,9 @@ public class AuthorizationTokenService {
         }
     }
 
+    @Autowired
+    private KeycloakContext keycloakContext;
+
     private Response createSuccessfulResponse(Object response, KeycloakAuthorizationRequest request) {
         return Cors.add(request.getHttpRequest(), Response.status(Status.OK).type(MediaType.APPLICATION_JSON_TYPE).entity(response))
                 .allowedOrigins(keycloakContext.getClient())
@@ -631,16 +634,16 @@ public class AuthorizationTokenService {
         return !permissions.isEmpty();
     }
 
-    @Autowired
-    private KeycloakContext keycloakContext;
-
-    public class KeycloakAuthorizationRequest extends AuthorizationRequest {
+    public static class KeycloakAuthorizationRequest extends AuthorizationRequest {
 
         private final AuthorizationProvider authorization;
         private final TokenManager tokenManager;
         private final EventBuilder event;
         private final HttpRequest httpRequest;
         private final Cors cors;
+
+        @Autowired
+        private KeycloakContext keycloakContext;
 
         public KeycloakAuthorizationRequest(AuthorizationProvider authorization, TokenManager tokenManager, EventBuilder event, HttpRequest request, Cors cors) {
             this.authorization = authorization;
