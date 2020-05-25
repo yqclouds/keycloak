@@ -16,14 +16,12 @@
  */
 package org.keycloak.services;
 
-import org.keycloak.common.Version;
 import com.hsbc.unified.iam.core.constants.Constants;
+import com.hsbc.unified.iam.web.resources.RealmsResource;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.OIDCLoginProtocolService;
 import org.keycloak.services.resources.IdentityBrokerService;
 import org.keycloak.services.resources.LoginActionsService;
-import org.keycloak.services.resources.RealmsResource;
-import org.keycloak.services.resources.ThemeResource;
 import org.keycloak.services.resources.account.AccountFormService;
 import org.keycloak.services.resources.admin.AdminRoot;
 
@@ -249,23 +247,11 @@ public class Urls {
                 .build(realmName);
     }
 
-    public static String localeCookiePath(URI baseUri, String realmName) {
-        return realmBase(baseUri).path(realmName).build().getRawPath();
-    }
-
-    public static URI themeRoot(URI baseUri) {
-        return themeBase(baseUri).path(Version.RESOURCES_VERSION).build();
-    }
-
     private static UriBuilder loginActionsBase(URI baseUri) {
         return realmBase(baseUri).path(RealmsResource.class, "getLoginActionsService");
     }
 
     private static UriBuilder tokenBase(URI baseUri) {
         return realmBase(baseUri).path("{realm}/protocol/" + OIDCLoginProtocol.LOGIN_PROTOCOL);
-    }
-
-    private static UriBuilder themeBase(URI baseUri) {
-        return UriBuilder.fromUri(baseUri).path(ThemeResource.class);
     }
 }

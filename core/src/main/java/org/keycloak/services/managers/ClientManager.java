@@ -19,6 +19,7 @@ package org.keycloak.services.managers;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.hsbc.unified.iam.core.util.Time;
+import com.hsbc.unified.iam.facade.spi.impl.RealmFacadeImpl;
 import org.keycloak.authentication.ClientAuthenticatorFactory;
 import org.keycloak.common.constants.ServiceAccountConstants;
 import org.keycloak.models.*;
@@ -45,10 +46,10 @@ import java.util.*;
 public class ClientManager {
     private static final Logger LOG = LoggerFactory.getLogger(ClientManager.class);
 
-    protected RealmManager realmManager;
+    protected RealmFacadeImpl realmFacadeImpl;
 
-    public ClientManager(RealmManager realmManager) {
-        this.realmManager = realmManager;
+    public ClientManager(RealmFacadeImpl realmFacadeImpl) {
+        this.realmFacadeImpl = realmFacadeImpl;
     }
 
     public ClientManager() {

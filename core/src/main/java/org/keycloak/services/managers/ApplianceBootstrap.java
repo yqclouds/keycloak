@@ -19,6 +19,7 @@ package org.keycloak.services.managers;
 import com.hsbc.unified.iam.core.constants.Constants;
 import com.hsbc.unified.iam.entity.SslRequired;
 import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
+import com.hsbc.unified.iam.facade.spi.impl.RealmFacadeImpl;
 import org.keycloak.Config;
 import org.keycloak.common.Version;
 import org.keycloak.models.*;
@@ -61,7 +62,7 @@ public class ApplianceBootstrap {
         String adminRealmName = Config.getAdminRealm();
 //        ServicesLogger.LOGGER.initializingAdminRealm(adminRealmName);
 
-        RealmManager manager = new RealmManager();
+        RealmFacadeImpl manager = new RealmFacadeImpl();
         RealmModel realm = manager.createRealm(adminRealmName, adminRealmName);
         realm.setName(adminRealmName);
         realm.setDisplayName(Version.NAME);

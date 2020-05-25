@@ -17,6 +17,8 @@
 package org.keycloak.services.resources.admin;
 
 import com.hsbc.unified.iam.core.ClientConnection;
+import com.hsbc.unified.iam.facade.spi.impl.RealmFacadeImpl;
+import com.hsbc.unified.iam.web.admin.resources.RealmsResource;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.HttpResponse;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
@@ -31,18 +33,22 @@ import org.keycloak.representations.AccessToken;
 import org.keycloak.services.ForbiddenException;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.AuthenticationManager;
-import org.keycloak.services.managers.RealmManager;
 import org.keycloak.services.resources.Cors;
 import org.keycloak.services.resources.admin.info.ServerInfoAdminResource;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import org.keycloak.theme.Theme;
-import org.keycloak.urls.UrlType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.Properties;
@@ -139,49 +145,6 @@ public class AdminRoot {
         }
     }
 
-    /**
-     * Convenience path to master realm admin console
-     */
-    @GET
-    public Response masterRealmAdminConsoleRedirect() {
-        RealmModel master = new RealmManager().getKeycloakAdministrationRealm();
-        return Response.status(302).location(
-                keycloakContext.getUri(UrlType.ADMIN).getBaseUriBuilder().path(AdminRoot.class).path(AdminRoot.class, "getAdminConsole").path("/").build(master.getName())
-        ).build();
-    }
-
-    /**
-     * Convenience path to master realm admin console
-     */
-    @Path("index.{html:html}") // expression is actually "index.html" but this is a hack to get around jax-doclet bug
-    @GET
-    public Response masterRealmAdminConsoleRedirectHtml() {
-        return masterRealmAdminConsoleRedirect();
-    }
-
-    protected RealmModel locateRealm(String name, RealmManager realmManager) {
-        RealmModel realm = realmManager.getRealmByName(name);
-        if (realm == null) {
-            throw new NotFoundException("Realm not found.  Did you type in a bad URL?");
-        }
-        keycloakContext.setRealm(realm);
-        return realm;
-    }
-
-    /**
-     * path to realm admin console ui
-     *
-     * @param name Realm name (not id!)
-     */
-    @Path("{realm}/console")
-    public AdminConsole getAdminConsole(final @PathParam("realm") String name) {
-        RealmManager realmManager = new RealmManager();
-        RealmModel realm = locateRealm(name, realmManager);
-        AdminConsole service = new AdminConsole(realm);
-        ResteasyProviderFactory.getInstance().injectProperties(service);
-        return service;
-    }
-
     protected AdminAuth authenticateRealmAdminRequest(HttpHeaders headers) {
         String tokenString = authManager.extractAuthorizationHeaderToken(headers);
         if (tokenString == null) throw new NotAuthorizedException("Bearer");
@@ -193,8 +156,8 @@ public class AdminRoot {
             throw new NotAuthorizedException("Bearer token format error");
         }
         String realmName = token.getIssuer().substring(token.getIssuer().lastIndexOf('/') + 1);
-        RealmManager realmManager = new RealmManager();
-        RealmModel realm = realmManager.getRealmByName(realmName);
+        RealmFacadeImpl realmFacadeImpl = new RealmFacadeImpl();
+        RealmModel realm = realmFacadeImpl.getRealmByName(realmName);
         if (realm == null) {
             throw new NotAuthorizedException("Unknown realm in token");
         }
@@ -230,7 +193,7 @@ public class AdminRoot {
 
         Cors.add(request).allowedOrigins(auth.getToken()).allowedMethods("GET", "PUT", "POST", "DELETE").exposedHeaders("Location").auth().build(response);
 
-        RealmsAdminResource adminResource = new RealmsAdminResource(auth, tokenManager);
+        RealmsResource adminResource = new RealmsResource();
         ResteasyProviderFactory.getInstance().injectProperties(adminResource);
         return adminResource;
     }

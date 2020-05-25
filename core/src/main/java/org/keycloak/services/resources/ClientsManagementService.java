@@ -18,6 +18,7 @@ package org.keycloak.services.resources;
 
 import com.hsbc.unified.iam.core.ClientConnection;
 import com.hsbc.unified.iam.core.util.Time;
+import com.hsbc.unified.iam.web.resources.RealmsResource;
 import org.jboss.resteasy.spi.BadRequestException;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.OAuthErrorException;

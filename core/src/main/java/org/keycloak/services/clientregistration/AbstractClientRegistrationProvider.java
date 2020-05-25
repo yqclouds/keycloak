@@ -28,7 +28,7 @@ import org.keycloak.services.ForbiddenException;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicyManager;
 import org.keycloak.services.clientregistration.policy.RegistrationAuth;
 import org.keycloak.services.managers.ClientManager;
-import org.keycloak.services.managers.RealmManager;
+import com.hsbc.unified.iam.facade.spi.impl.RealmFacadeImpl;
 import org.keycloak.services.validation.ValidationMessages;
 import org.keycloak.validation.ClientValidationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,10 +77,10 @@ public abstract class AbstractClientRegistrationProvider implements ClientRegist
 
         try {
             RealmModel realm = keycloakContext.getRealm();
-            ClientModel clientModel = new ClientManager(new RealmManager()).createClient(realm, client, true);
+            ClientModel clientModel = new ClientManager(new RealmFacadeImpl()).createClient(realm, client, true);
 
             if (clientModel.isServiceAccountsEnabled()) {
-                new ClientManager(new RealmManager()).enableServiceAccount(clientModel);
+                new ClientManager(new RealmFacadeImpl()).enableServiceAccount(clientModel);
             }
 
             if (Boolean.TRUE.equals(client.getAuthorizationServicesEnabled())) {
@@ -179,7 +179,7 @@ public abstract class AbstractClientRegistrationProvider implements ClientRegist
         ClientModel client = keycloakContext.getRealm().getClientByClientId(clientId);
         auth.requireDelete(client);
 
-        if (new ClientManager(new RealmManager()).removeClient(keycloakContext.getRealm(), client)) {
+        if (new ClientManager(new RealmFacadeImpl()).removeClient(keycloakContext.getRealm(), client)) {
             event.client(client.getClientId()).success();
         } else {
             throw new ForbiddenException();

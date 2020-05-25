@@ -38,7 +38,7 @@ public interface AdminPermissionEvaluator {
     GroupPermissionEvaluator groups();
 
     /**
-     * Useful as a function pointer, i.e. RoleMapperResource is reused bewteen GroupResource and UserResource to manage role mappings.
+     * Useful as a function pointer, i.e. RealmRoleMapperResource is reused bewteen RealmGroupResource and RealmUserResource to manage role mappings.
      * We don't know what type of resource we're managing here (user or group), so we don't know how to query the policy engine to determine
      * if an action is allowed.
      */
@@ -47,7 +47,7 @@ public interface AdminPermissionEvaluator {
     }
 
     /**
-     * Useful as a function pointer, i.e. RoleMapperResource is reused bewteen GroupResource and UserResource to manage role mappings.
+     * Useful as a function pointer, i.e. RealmRoleMapperResource is reused bewteen RealmGroupResource and RealmUserResource to manage role mappings.
      * We don't know what type of resource we're managing here (user or group), so we don't know how to query the policy engine to determine
      * if an action is allowed.
      * <p>

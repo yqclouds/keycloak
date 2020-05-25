@@ -12,7 +12,7 @@ import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.services.managers.ApplianceBootstrap;
-import org.keycloak.services.managers.RealmManager;
+import com.hsbc.unified.iam.facade.spi.impl.RealmFacadeImpl;
 import org.keycloak.services.managers.UserStorageSyncManager;
 import org.keycloak.services.resources.KeycloakApplication;
 import org.keycloak.services.scheduled.*;
@@ -148,7 +148,7 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
     public void importRealm(RealmRepresentation rep, String from) {
         boolean exists = false;
         try {
-            RealmManager manager = new RealmManager();
+            RealmFacadeImpl manager = new RealmFacadeImpl();
 
             if (rep.getId() != null && manager.getRealm(rep.getId()) != null) {
 //                    ServicesLogger.LOGGER.realmExists(rep.getRealm(), from);
@@ -160,7 +160,7 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
                 exists = true;
             }
             if (!exists) {
-                RealmModel realm = manager.importRealm(rep);
+                RealmModel realm = manager.createRealm(rep);
 //                    ServicesLogger.LOGGER.importedRealm(realm.getName(), from);
             }
         } catch (Throwable t) {

@@ -11,7 +11,7 @@ import org.keycloak.models.KeycloakTransaction;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.ThemeManager;
 import org.keycloak.representations.idm.OAuth2ErrorRepresentation;
-import org.keycloak.services.managers.RealmManager;
+import com.hsbc.unified.iam.facade.spi.impl.RealmFacadeImpl;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.theme.FreeMarkerUtil;
 import org.keycloak.theme.Theme;
@@ -133,10 +133,10 @@ public class KeycloakErrorHandler implements ExceptionMapper<Throwable> {
             realmName = Config.getAdminRealm();
         }
 
-        RealmManager realmManager = new RealmManager();
-        RealmModel realm = realmManager.getRealmByName(realmName);
+        RealmFacadeImpl realmFacadeImpl = new RealmFacadeImpl();
+        RealmModel realm = realmFacadeImpl.getRealmByName(realmName);
         if (realm == null) {
-            realm = realmManager.getRealmByName(Config.getAdminRealm());
+            realm = realmFacadeImpl.getRealmByName(Config.getAdminRealm());
         }
 
         keycloakContext.setRealm(realm);

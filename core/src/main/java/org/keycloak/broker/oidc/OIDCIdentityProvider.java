@@ -47,7 +47,7 @@ import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.IdentityBrokerService;
-import org.keycloak.services.resources.RealmsResource;
+import com.hsbc.unified.iam.web.resources.RealmsResource;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.vault.VaultStringSecret;
 import org.keycloak.vault.VaultTranscriber;

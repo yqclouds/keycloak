@@ -24,7 +24,7 @@ import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.oidc.OIDCWellKnownProviderFactory;
 import org.keycloak.protocol.oidc.representations.OIDCConfigurationRepresentation;
-import org.keycloak.services.resources.RealmsResource;
+import com.hsbc.unified.iam.web.resources.RealmsResource;
 import org.keycloak.wellknown.WellKnownProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 

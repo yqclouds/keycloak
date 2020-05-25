@@ -38,7 +38,7 @@ import org.keycloak.protocol.oidc.ext.OIDCExtProvider;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.Cors;
-import org.keycloak.services.resources.RealmsResource;
+import com.hsbc.unified.iam.web.resources.RealmsResource;
 import org.keycloak.services.util.CacheControlUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 

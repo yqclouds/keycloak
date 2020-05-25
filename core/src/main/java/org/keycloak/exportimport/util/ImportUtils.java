@@ -30,7 +30,7 @@ import org.keycloak.models.RealmProvider;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.keycloak.services.managers.RealmManager;
+import com.hsbc.unified.iam.facade.spi.impl.RealmFacadeImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +69,7 @@ public class ImportUtils {
             for (RealmModel realm : realmProvider.getRealms()) {
                 if (realm.getMasterAdminClient() == null) {
                     LOG.info("Re-created management client in master realm for realm '{}'", realm.getName());
-                    new RealmManager().setupMasterAdminManagement(realm);
+                    new RealmFacadeImpl().setupMasterAdminManagement(realm);
                 }
             }
         }
@@ -107,8 +107,8 @@ public class ImportUtils {
             }
         }
 
-        RealmManager realmManager = new RealmManager();
-        realmManager.importRealm(rep, skipUserDependent);
+        RealmFacadeImpl realmFacadeImpl = new RealmFacadeImpl();
+        realmFacadeImpl.createRealm(rep, skipUserDependent);
 
         if (System.getProperty(ExportImportConfig.ACTION) != null) {
             LOG.info("Realm '{}' imported", realmName);

@@ -20,6 +20,7 @@ import com.hsbc.unified.iam.core.ClientConnection;
 import com.hsbc.unified.iam.core.constants.Constants;
 import com.hsbc.unified.iam.core.constants.OAuth2Constants;
 import com.hsbc.unified.iam.core.util.Time;
+import com.hsbc.unified.iam.web.resources.RealmsResource;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.TokenVerifier;
 import org.keycloak.authentication.*;

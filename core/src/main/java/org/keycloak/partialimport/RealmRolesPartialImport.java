@@ -20,7 +20,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleModel;
 import org.keycloak.representations.idm.PartialImportRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
-import org.keycloak.services.resources.admin.RoleResource;
+import com.hsbc.unified.iam.web.admin.resources.AbstractRoleResource;
 
 import java.util.List;
 import java.util.Set;
@@ -93,7 +93,7 @@ public class RealmRolesPartialImport extends AbstractPartialImport<RoleRepresent
         realm.addRole(getName(roleRep));
     }
 
-    public static class RoleHelper extends RoleResource {
+    public static class RoleHelper extends AbstractRoleResource {
         public RoleHelper(RealmModel realm) {
             super(realm);
         }

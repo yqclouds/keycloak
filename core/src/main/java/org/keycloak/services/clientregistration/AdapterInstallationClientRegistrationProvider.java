@@ -22,7 +22,7 @@ import org.keycloak.events.EventType;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.services.managers.ClientManager;
-import org.keycloak.services.managers.RealmManager;
+import com.hsbc.unified.iam.facade.spi.impl.RealmFacadeImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.GET;
@@ -52,7 +52,7 @@ public class AdapterInstallationClientRegistrationProvider implements ClientRegi
         ClientModel client = keycloakContext.getRealm().getClientByClientId(clientId);
         auth.requireView(client);
 
-        ClientManager clientManager = new ClientManager(new RealmManager());
+        ClientManager clientManager = new ClientManager(new RealmFacadeImpl());
         Object rep = clientManager.toInstallationRepresentation(keycloakContext.getRealm(), client, keycloakContext.getUri().getBaseUri());
 
         event.client(client.getClientId()).success();

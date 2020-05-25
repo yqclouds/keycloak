@@ -19,6 +19,7 @@ package org.keycloak.protocol.oidc.endpoints;
 
 import com.hsbc.unified.iam.core.ClientConnection;
 import com.hsbc.unified.iam.core.constants.OAuth2Constants;
+import com.hsbc.unified.iam.facade.spi.impl.RealmFacadeImpl;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.HttpResponse;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
@@ -614,7 +615,7 @@ public class TokenEndpoint {
         if (clientUser == null || client.getProtocolMapperByName(OIDCLoginProtocol.LOGIN_PROTOCOL, ServiceAccountConstants.CLIENT_ID_PROTOCOL_MAPPER) == null) {
             // May need to handle bootstrap here as well
             LOG.debug("Service account user for client '%s' not found or default protocol mapper for service account not found. Creating now", client.getClientId());
-            new ClientManager(new RealmManager()).enableServiceAccount(client);
+            new ClientManager(new RealmFacadeImpl()).enableServiceAccount(client);
             clientUser = session.users().getServiceAccount(client);
         }
 

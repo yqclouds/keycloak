@@ -16,9 +16,9 @@
  */
 package org.keycloak.services.resources;
 
+import com.hsbc.unified.iam.web.resources.RealmsResource;
 import org.keycloak.common.util.Resteasy;
 import org.keycloak.services.error.KeycloakErrorHandler;
-import org.keycloak.services.filters.KeycloakTransactionCommitter;
 import org.keycloak.services.resources.admin.AdminRoot;
 import org.keycloak.services.util.ObjectMapperResolver;
 import org.slf4j.Logger;
@@ -51,9 +51,6 @@ public class KeycloakApplication extends Application {
         singletons.add(new RealmsResource());
         singletons.add(new AdminRoot());
 
-        classes.add(ThemeResource.class);
-        classes.add(JsResource.class);
-        classes.add(KeycloakTransactionCommitter.class);
         classes.add(KeycloakErrorHandler.class);
 
         singletons.add(new ObjectMapperResolver(Boolean.parseBoolean(System.getProperty("keycloak.jsonPrettyPrint", "false"))));

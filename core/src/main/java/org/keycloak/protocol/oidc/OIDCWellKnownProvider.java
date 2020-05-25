@@ -35,7 +35,7 @@ import org.keycloak.representations.IDToken;
 import org.keycloak.services.Urls;
 import org.keycloak.services.clientregistration.ClientRegistrationService;
 import org.keycloak.services.clientregistration.oidc.OIDCClientRegistrationProviderFactory;
-import org.keycloak.services.resources.RealmsResource;
+import com.hsbc.unified.iam.web.resources.RealmsResource;
 import org.keycloak.urls.UrlType;
 import org.keycloak.wellknown.WellKnownProvider;
 import org.springframework.beans.factory.annotation.Autowired;

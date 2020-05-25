@@ -49,7 +49,7 @@ import org.keycloak.services.Urls;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.IdentityBrokerService;
 import org.keycloak.services.resources.LoginActionsService;
-import org.keycloak.services.resources.RealmsResource;
+import com.hsbc.unified.iam.web.resources.RealmsResource;
 import org.keycloak.services.util.CookieHelper;
 import org.keycloak.services.util.P3PHelper;
 import org.keycloak.sessions.AuthenticationSessionModel;

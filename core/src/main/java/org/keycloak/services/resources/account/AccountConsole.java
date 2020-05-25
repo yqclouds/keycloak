@@ -1,6 +1,7 @@
 package org.keycloak.services.resources.account;
 
 import com.hsbc.unified.iam.core.constants.Constants;
+import com.hsbc.unified.iam.web.resources.RealmsResource;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.common.Version;
 import org.keycloak.events.EventStoreProvider;
@@ -9,11 +10,9 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.protocol.oidc.utils.RedirectUtils;
-import org.keycloak.services.Urls;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.Auth;
 import org.keycloak.services.managers.AuthenticationManager;
-import org.keycloak.services.resources.RealmsResource;
 import org.keycloak.services.util.ResolveRelative;
 import org.keycloak.services.validation.Validation;
 import org.keycloak.theme.BrowserSecurityHeaderSetup;
@@ -88,7 +87,6 @@ public class AccountConsole {
             map.put("authUrl", authUrl.toString());
             map.put("baseUrl", uriInfo.getBaseUriBuilder().path(RealmsResource.class).path(realm.getName()).path(Constants.ACCOUNT_MANAGEMENT_CLIENT_ID).build(realm).toString());
             map.put("realm", realm);
-            map.put("resourceUrl", Urls.themeRoot(authUrl).getPath() + "/" + Constants.ACCOUNT_MANAGEMENT_CLIENT_ID + "/" + theme.getName());
             map.put("resourceVersion", Version.RESOURCES_VERSION);
 
             String[] referrer = getReferrer();

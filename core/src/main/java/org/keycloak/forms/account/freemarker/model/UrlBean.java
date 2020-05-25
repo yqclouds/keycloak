@@ -89,10 +89,4 @@ public class UrlBean {
     public String getResourceShare(String id) {
         return Urls.accountResourceShare(id, baseQueryURI, realm).toString();
     }
-
-    public String getResourcesPath() {
-        URI uri = Urls.themeRoot(baseURI);
-        return uri.getPath() + "/" + theme.getType().toString().toLowerCase() + "/" + theme.getName();
-    }
-
 }

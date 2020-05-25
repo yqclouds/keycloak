@@ -46,7 +46,7 @@ import org.keycloak.services.managers.*;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.AbstractSecuredLocalService;
 import org.keycloak.services.resources.AttributeFormDataProcessor;
-import org.keycloak.services.resources.RealmsResource;
+import com.hsbc.unified.iam.web.resources.RealmsResource;
 import org.keycloak.services.util.ResolveRelative;
 import org.keycloak.services.validation.Validation;
 import org.keycloak.sessions.AuthenticationSessionModel;

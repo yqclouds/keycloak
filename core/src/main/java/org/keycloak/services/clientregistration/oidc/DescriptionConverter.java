@@ -118,7 +118,7 @@ public class DescriptionConverter {
         // https://tools.ietf.org/html/draft-ietf-oauth-mtls-08#section-6.5
         Boolean tlsClientCertificateBoundAccessTokens = clientOIDC.getTlsClientCertificateBoundAccessTokens();
         if (tlsClientCertificateBoundAccessTokens != null) {
-            if (tlsClientCertificateBoundAccessTokens.booleanValue()) configWrapper.setUseMtlsHoKToken(true);
+            if (tlsClientCertificateBoundAccessTokens) configWrapper.setUseMtlsHoKToken(true);
             else configWrapper.setUseMtlsHoKToken(false);
         }
 

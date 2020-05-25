@@ -30,7 +30,7 @@ import org.keycloak.services.Urls;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.managers.ClientManager;
-import org.keycloak.services.managers.RealmManager;
+import com.hsbc.unified.iam.facade.spi.impl.RealmFacadeImpl;
 import org.keycloak.theme.BrowserSecurityHeaderSetup;
 import org.keycloak.theme.FreeMarkerException;
 import org.keycloak.theme.FreeMarkerUtil;
@@ -96,7 +96,7 @@ public class AdminConsole {
         if (consoleApp == null) {
             throw new NotFoundException("Could not find admin console client");
         }
-        return new ClientManager(new RealmManager()).toInstallationRepresentation(realm, consoleApp, session.getContext().getUri().getBaseUri());
+        return new ClientManager(new RealmFacadeImpl()).toInstallationRepresentation(realm, consoleApp, session.getContext().getUri().getBaseUri());
     }
 
     /**
@@ -110,7 +110,7 @@ public class AdminConsole {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public Response whoAmI(final @Context HttpHeaders headers) {
-        RealmManager realmManager = new RealmManager();
+        RealmFacadeImpl realmFacadeImpl = new RealmFacadeImpl();
         AuthenticationManager.AuthResult authResult = authManager.authenticateBearerToken(realm, session.getContext().getUri(), clientConnection, headers);
         if (authResult == null) {
             return Response.status(401).build();
@@ -126,7 +126,7 @@ public class AdminConsole {
             displayName = user.getUsername();
         }
 
-        RealmModel masterRealm = getAdminstrationRealm(realmManager);
+        RealmModel masterRealm = getAdminstrationRealm(realmFacadeImpl);
         Map<String, Set<String>> realmAccess = new HashMap<String, Set<String>>();
         if (masterRealm == null)
             throw new NotFoundException("No realm found");
@@ -144,8 +144,8 @@ public class AdminConsole {
     }
 
     private void addRealmAccess(RealmModel realm, UserModel user, Map<String, Set<String>> realmAdminAccess) {
-        RealmManager realmManager = new RealmManager();
-        ClientModel realmAdminApp = realm.getClientByClientId(realmManager.getRealmAdminClientId(realm));
+        RealmFacadeImpl realmFacadeImpl = new RealmFacadeImpl();
+        ClientModel realmAdminApp = realm.getClientByClientId(realmFacadeImpl.getRealmAdminClientId(realm));
         Set<RoleModel> roles = realmAdminApp.getRoles();
         for (RoleModel role : roles) {
             if (!user.hasRole(role)) continue;
@@ -188,8 +188,8 @@ public class AdminConsole {
         ).build();
     }
 
-    protected RealmModel getAdminstrationRealm(RealmManager realmManager) {
-        return realmManager.getKeycloakAdministrationRealm();
+    protected RealmModel getAdminstrationRealm(RealmFacadeImpl realmFacadeImpl) {
+        return realmFacadeImpl.getKeycloakAdministrationRealm();
     }
 
     @Autowired
@@ -226,7 +226,6 @@ public class AdminConsole {
             map.put("authServerUrl", authServerBaseUrl);
             map.put("authUrl", adminBaseUrl);
             map.put("consoleBaseUrl", Urls.adminConsoleRoot(adminBaseUri, realm.getName()).getPath());
-            map.put("resourceUrl", Urls.themeRoot(adminBaseUri).getPath() + "/admin/" + theme.getName());
             map.put("masterRealm", Config.getAdminRealm());
             map.put("resourceVersion", Version.RESOURCES_VERSION);
             map.put("properties", theme.getProperties());
