@@ -35,12 +35,13 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 import javax.servlet.DispatcherType;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -54,9 +55,9 @@ import java.util.TimeZone;
  */
 @Configuration
 @ConditionalOnWebApplication
-public class WebAutoConfiguration extends WebMvcConfigurerAdapter {
+public class WebAutoConfiguration implements WebMvcConfigurer {
     @Autowired
-    private WebMvcProperties mvcProperties = new WebMvcProperties();
+    private final WebMvcProperties mvcProperties = new WebMvcProperties();
 
     /**
      * {@inheritDoc}
@@ -76,8 +77,8 @@ public class WebAutoConfiguration extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public FilterRegistrationBean errorPageFilter() {
-        FilterRegistrationBean registration = new FilterRegistrationBean();
+    public FilterRegistrationBean<ErrorPageFilter> errorPageFilter() {
+        FilterRegistrationBean<ErrorPageFilter> registration = new FilterRegistrationBean<>();
         ErrorPageFilter errorPageFilter = new ErrorPageFilter();
         errorPageFilter.addErrorPages(new ErrorPage(MultipartException.class, "/error"));
         registration.setFilter(errorPageFilter);
@@ -94,11 +95,10 @@ public class WebAutoConfiguration extends WebMvcConfigurerAdapter {
      * TODO: Temporarily solution, waiting for upgrading to spring framework 4.3.1 or upper (new spring platform).
      *
      * @return ClientHttpRequestFactory
-     * @throws UnsupportedEncodingException
      */
-    private ClientHttpRequestFactory clientHttpRequestFactory() throws UnsupportedEncodingException {
+    private ClientHttpRequestFactory clientHttpRequestFactory() {
         // embedded user/password, for RestTemplate
-        final String token = Base64Utils.encodeToString(("user:password").getBytes("UTF-8"));
+        final String token = Base64Utils.encodeToString(("user:password").getBytes(StandardCharsets.UTF_8));
 
         final List<ClientHttpRequestInterceptor> interceptors = new ArrayList<>();
         interceptors.add(new HttpHeaderInterceptor("Authorization", "Basic " + token));
