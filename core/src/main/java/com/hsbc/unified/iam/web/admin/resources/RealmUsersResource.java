@@ -36,8 +36,11 @@ import org.keycloak.services.resources.admin.permissions.UserPermissionEvaluator
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpSession;
@@ -59,8 +62,26 @@ import java.util.*;
 )
 @PreAuthorize("hasPermission({'master', 'admin'})")
 public class RealmUsersResource {
-
     private static final Logger LOG = LoggerFactory.getLogger(RealmUsersResource.class);
+
+    @ResponseStatus(value = HttpStatus.CONFLICT, reason = "User exists with same username or email")
+    @ExceptionHandler(ModelDuplicateException.class)
+    public void handleModelDuplicateException(ModelDuplicateException e) {
+        LOG.error("User exists with same username or email", e);
+    }
+
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Password policy not met")
+    @ExceptionHandler(PasswordPolicyNotMetException.class)
+    public void handlePasswordPolicyNotMetException(PasswordPolicyNotMetException e) {
+        LOG.error("Password policy not met for user " + e.getUsername(), e);
+    }
+
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Could not create user")
+    @ExceptionHandler(ModelException.class)
+    public void handleModelException(ModelException e) {
+        LOG.error("Could not create user", e);
+    }
+
     private static final String SEARCH_ID_PARAMETER = "id:";
 
     protected RealmModel realm;
@@ -92,19 +113,16 @@ public class RealmUsersResource {
      * Create a new user
      * <p>
      * Username must be unique.
-     *
-     * @param rep
-     * @return
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response createUser(final UserRepresentation rep) {
-        auth.users().requireManage();
-
+    @PreAuthorize("hasPermission('manage-users')")
+    public Response createUser(final UserRepresentation rep) throws ModelDuplicateException {
         String username = rep.getUsername();
         if (realm.isRegistrationEmailAsUsername()) {
             username = rep.getEmail();
         }
+
         if (ObjectUtil.isBlank(username)) {
             return ErrorResponse.error("User name is missing", Response.Status.BAD_REQUEST);
         }
@@ -113,30 +131,23 @@ public class RealmUsersResource {
         if (userProvider.getUserByUsername(username, realm) != null) {
             return ErrorResponse.exists("User exists with same username");
         }
-        if (rep.getEmail() != null && !realm.isDuplicateEmailsAllowed() && userProvider.getUserByEmail(rep.getEmail(), realm) != null) {
+
+        if (rep.getEmail() != null && !realm.isDuplicateEmailsAllowed()
+                && userProvider.getUserByEmail(rep.getEmail(), realm) != null) {
             return ErrorResponse.exists("User exists with same email");
         }
 
-        try {
-            UserModel user = userProvider.addUser(realm, username);
-            Set<String> emptySet = Collections.emptySet();
+        UserModel user = userProvider.addUser(realm, username);
+        Set<String> emptySet = Collections.emptySet();
 
-            userResource.updateUserFromRep(user, rep, emptySet, realm, false);
-            representationToModel.createFederatedIdentities(rep, realm, user);
-            RepresentationToModel.createGroups(rep, realm, user);
+        userResource.updateUserFromRep(user, rep, emptySet, realm, false);
+        representationToModel.createFederatedIdentities(rep, realm, user);
+        RepresentationToModel.createGroups(rep, realm, user);
 
-            representationToModel.createCredentials(rep, realm, user, true);
-            adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri(), user.getId()).representation(rep).success();
+        representationToModel.createCredentials(rep, realm, user, true);
+        adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri(), user.getId()).representation(rep).success();
 
-            return Response.created(keycloakContext.getUri().getAbsolutePathBuilder().path(user.getId()).build()).build();
-        } catch (ModelDuplicateException e) {
-            return ErrorResponse.exists("User exists with same username or email");
-        } catch (PasswordPolicyNotMetException e) {
-            return ErrorResponse.error("Password policy not met", Response.Status.BAD_REQUEST);
-        } catch (ModelException me) {
-            LOG.warn("Could not create user", me);
-            return ErrorResponse.error("Could not create user", Response.Status.BAD_REQUEST);
-        }
+        return Response.created(keycloakContext.getUri().getAbsolutePathBuilder().path(user.getId()).build()).build();
     }
 
     /**
