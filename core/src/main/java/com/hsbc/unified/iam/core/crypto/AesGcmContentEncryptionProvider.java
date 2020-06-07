@@ -15,32 +15,23 @@
  * limitations under the License.
  */
 
-package org.keycloak.crypto;
+package com.hsbc.unified.iam.core.crypto;
 
-import org.keycloak.provider.Provider;
-import org.keycloak.provider.ProviderFactory;
-import org.keycloak.provider.Spi;
+import org.keycloak.crypto.ContentEncryptionProvider;
+import org.keycloak.jose.jwe.enc.AesGcmJWEEncryptionProvider;
+import org.keycloak.jose.jwe.enc.JWEEncryptionProvider;
 
-public class CekManagementSpi implements Spi {
+public class AesGcmContentEncryptionProvider implements ContentEncryptionProvider {
 
-    @Override
-    public boolean isInternal() {
-        return true;
+    private final String jweAlgorithmName;
+
+    public AesGcmContentEncryptionProvider(String jweAlgorithmName) {
+        this.jweAlgorithmName = jweAlgorithmName;
     }
 
     @Override
-    public String getName() {
-        return "cekmanagement";
-    }
-
-    @Override
-    public Class<? extends Provider> getProviderClass() {
-        return CekManagementProvider.class;
-    }
-
-    @Override
-    public Class<? extends ProviderFactory> getProviderFactoryClass() {
-        return CekManagementProviderFactory.class;
+    public JWEEncryptionProvider jweEncryptionProvider() {
+        return new AesGcmJWEEncryptionProvider(jweAlgorithmName);
     }
 
 }

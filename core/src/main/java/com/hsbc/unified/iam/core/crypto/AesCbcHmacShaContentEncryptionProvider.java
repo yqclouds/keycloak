@@ -15,24 +15,22 @@
  * limitations under the License.
  */
 
-package org.keycloak.crypto;
+package com.hsbc.unified.iam.core.crypto;
 
-import org.keycloak.jose.jwe.JWEConstants;
-import org.keycloak.stereotype.ProviderFactory;
-import org.springframework.stereotype.Component;
+import org.keycloak.crypto.ContentEncryptionProvider;
+import org.keycloak.jose.jwe.enc.AesCbcHmacShaJWEEncryptionProvider;
+import org.keycloak.jose.jwe.enc.JWEEncryptionProvider;
 
-@Component("Aes128CbcHmacSha256ContentEncryptionProviderFactory")
-@ProviderFactory(id = JWEConstants.A128CBC_HS256, providerClasses = ContentEncryptionProvider.class)
-public class Aes128CbcHmacSha256ContentEncryptionProviderFactory implements ContentEncryptionProviderFactory {
-    public static final String ID = JWEConstants.A128CBC_HS256;
+public class AesCbcHmacShaContentEncryptionProvider implements ContentEncryptionProvider {
 
-    @Override
-    public String getId() {
-        return ID;
+    private final String jweAlgorithmName;
+
+    public AesCbcHmacShaContentEncryptionProvider(String jweAlgorithmName) {
+        this.jweAlgorithmName = jweAlgorithmName;
     }
 
     @Override
-    public ContentEncryptionProvider create() {
-        return new AesCbcHmacShaContentEncryptionProvider(ID);
+    public JWEEncryptionProvider jweEncryptionProvider() {
+        return new AesCbcHmacShaJWEEncryptionProvider(jweAlgorithmName);
     }
 }

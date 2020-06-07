@@ -112,7 +112,6 @@ public class KeycloakWebConfiguration {
         results.add(new AuthenticatorSpi());
         results.add(new AuthorizationSpi());
         results.add(new BruteForceProtectorSpi());
-        results.add(new CekManagementSpi());
         results.add(new ClientAuthenticatorSpi());
         results.add(new ClientInstallationSpi());
         results.add(new ClientRegistrationPolicySpi());
@@ -121,7 +120,6 @@ public class KeycloakWebConfiguration {
         results.add(new ClientStorageProviderSpi());
         results.add(new ClientValidationSPI());
         results.add(new CodeToTokenStoreSpi());
-        results.add(new ContentEncryptionSpi());
         results.add(new CredentialSpi());
         results.add(new DBLockSpi());
         results.add(new EmailSenderSpi());

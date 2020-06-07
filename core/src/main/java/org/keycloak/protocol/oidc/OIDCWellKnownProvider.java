@@ -18,10 +18,11 @@
 package org.keycloak.protocol.oidc;
 
 import com.hsbc.unified.iam.core.constants.OAuth2Constants;
+import com.hsbc.unified.iam.web.resources.RealmsResource;
 import org.keycloak.authentication.ClientAuthenticatorFactory;
-import org.keycloak.crypto.CekManagementProviderFactory;
+import org.keycloak.crypto.CekManagementProvider;
 import org.keycloak.crypto.ClientSignatureVerifierProviderFactory;
-import org.keycloak.crypto.ContentEncryptionProviderFactory;
+import org.keycloak.crypto.ContentEncryptionProvider;
 import org.keycloak.crypto.SignatureProviderFactory;
 import org.keycloak.jose.jws.Algorithm;
 import org.keycloak.models.ClientScopeModel;
@@ -35,7 +36,6 @@ import org.keycloak.representations.IDToken;
 import org.keycloak.services.Urls;
 import org.keycloak.services.clientregistration.ClientRegistrationService;
 import org.keycloak.services.clientregistration.oidc.OIDCClientRegistrationProviderFactory;
-import com.hsbc.unified.iam.web.resources.RealmsResource;
 import org.keycloak.urls.UrlType;
 import org.keycloak.wellknown.WellKnownProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -184,27 +184,22 @@ public class OIDCWellKnownProvider implements WellKnownProvider {
     }
 
     @Autowired
-    private List<CekManagementProviderFactory> cekManagementProviderFactories;
+    private Map<String, CekManagementProvider> cekManagementProviders;
 
     private List<String> getSupportedIdTokenEncryptionAlg(boolean includeNone) {
-        List<String> result = new LinkedList<>();
-        for (ProviderFactory s : cekManagementProviderFactories) {
-            result.add(s.getId());
-        }
+        List<String> result = new LinkedList<>(cekManagementProviders.keySet());
         if (includeNone) {
             result.add("none");
         }
+
         return result;
     }
 
     @Autowired
-    private List<ContentEncryptionProviderFactory> contentEncryptionProviderFactories;
+    private Map<String, ContentEncryptionProvider> contentEncryptionProviders;
 
     private List<String> getSupportedIdTokenEncryptionEnc(boolean includeNone) {
-        List<String> result = new LinkedList<>();
-        for (ProviderFactory s : contentEncryptionProviderFactories) {
-            result.add(s.getId());
-        }
+        List<String> result = new LinkedList<>(contentEncryptionProviders.keySet());
         if (includeNone) {
             result.add("none");
         }
