@@ -20,14 +20,12 @@ import org.keycloak.Config;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.*;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
-import org.keycloak.theme.DefaultThemeManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEvent;
 
 import java.util.*;
@@ -42,9 +40,6 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, In
     private Set<Spi> spis = new HashSet<>();
     private volatile Map<Class<? extends Provider>, Map<String, ProviderFactory>> providerFactories = new HashMap<>();
     private Map<Class<? extends Provider>, String> providers = new HashMap<>();
-
-    @Autowired
-    private DefaultThemeManagerFactory themeManagerFactory;
 
     private ProviderManager providerManager;
 
@@ -80,10 +75,6 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, In
         for (ProviderEventListener listener : listeners) {
             listener.onEvent(event);
         }
-    }
-
-    protected DefaultThemeManagerFactory getThemeManagerFactory() {
-        return themeManagerFactory;
     }
 
     private boolean isEnabled(ProviderFactory factory, Config.Scope scope) {
@@ -212,10 +203,6 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, In
     @Override
     public long getServerStartupTimestamp() {
         return serverStartupTimestamp;
-    }
-
-    public void setThemeManagerFactory(DefaultThemeManagerFactory themeManagerFactory) {
-        this.themeManagerFactory = themeManagerFactory;
     }
 
     public void setProviderManager(ProviderManager providerManager) {

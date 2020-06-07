@@ -17,11 +17,6 @@
 
 package org.keycloak.provider;
 
-import org.keycloak.theme.ClasspathThemeProviderFactory;
-import org.keycloak.theme.ClasspathThemeResourceProviderFactory;
-import org.keycloak.theme.ThemeResourceSpi;
-import org.keycloak.theme.ThemeSpi;
-
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,16 +55,6 @@ public class DefaultProviderLoader implements ProviderLoader {
             for (ProviderFactory f : ServiceLoader.load(spi.getProviderFactoryClass(), classLoader)) {
                 list.add(f);
             }
-        }
-
-        if (spi.getClass().equals(ThemeResourceSpi.class) && info.hasThemeResources()) {
-            ClasspathThemeResourceProviderFactory resourceProviderFactory = new ClasspathThemeResourceProviderFactory(info.getName(), classLoader);
-            list.add(resourceProviderFactory);
-        }
-
-        if (spi.getClass().equals(ThemeSpi.class) && info.hasThemes()) {
-            ClasspathThemeProviderFactory themeProviderFactory = new ClasspathThemeProviderFactory(info.getName(), classLoader);
-            list.add(themeProviderFactory);
         }
 
         return list;

@@ -23,22 +23,18 @@ import org.keycloak.events.EventBuilder;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
-import org.keycloak.models.ThemeManager;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.Auth;
 import org.keycloak.services.managers.AuthenticationManager;
-import org.keycloak.theme.Theme;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.HttpMethod;
-import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -65,9 +61,6 @@ public class AccountLoader {
         MediaType content = headers.getMediaType();
         List<MediaType> accepts = headers.getAcceptableMediaTypes();
 
-        Theme theme = getTheme();
-        boolean deprecatedAccount = isDeprecatedFormsAccountConsole(theme);
-
         if (request.getHttpMethod().equals(HttpMethod.OPTIONS)) {
             return new CorsPreflightService(request);
         } else if ((accepts.contains(MediaType.APPLICATION_JSON_TYPE) || MediaType.APPLICATION_JSON_TYPE.equals(content)) && !request.getUri().getPath().endsWith("keycloak.json")) {
@@ -85,37 +78,10 @@ public class AccountLoader {
             ResteasyProviderFactory.getInstance().injectProperties(accountRestService);
             return accountRestService;
         } else {
-            if (deprecatedAccount) {
-                AccountFormService accountFormService = new AccountFormService(realm, client, event);
-                ResteasyProviderFactory.getInstance().injectProperties(accountFormService);
-                accountFormService.init();
-                return accountFormService;
-            } else {
-                AccountConsole console = new AccountConsole(realm, client, theme);
-                ResteasyProviderFactory.getInstance().injectProperties(console);
-                console.init();
-                return console;
-            }
+            AccountConsole console = new AccountConsole(realm, client);
+            ResteasyProviderFactory.getInstance().injectProperties(console);
+            console.init();
+            return console;
         }
     }
-
-    @Autowired
-    private ThemeManager themeManager;
-
-    private Theme getTheme() {
-        try {
-            return themeManager.getTheme(Theme.Type.ACCOUNT);
-        } catch (IOException e) {
-            throw new InternalServerErrorException(e);
-        }
-    }
-
-    private boolean isDeprecatedFormsAccountConsole(Theme theme) {
-        try {
-            return Boolean.parseBoolean(theme.getProperties().getProperty("deprecatedMode", "true"));
-        } catch (IOException e) {
-            throw new InternalServerErrorException(e);
-        }
-    }
-
 }

@@ -20,14 +20,12 @@ package org.keycloak.services.resources.admin.info;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.broker.provider.IdentityProvider;
 import org.keycloak.broker.provider.IdentityProviderFactory;
-import org.keycloak.common.Profile;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.events.EventType;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.ThemeManager;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.policy.PasswordPolicyProvider;
 import org.keycloak.policy.PasswordPolicyProviderFactory;
@@ -41,14 +39,11 @@ import org.keycloak.representations.idm.PasswordPolicyTypeRepresentation;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import org.keycloak.representations.idm.ProtocolMapperTypeRepresentation;
 import org.keycloak.representations.info.*;
-import org.keycloak.theme.Theme;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -91,7 +86,6 @@ public class ServerInfoAdminResource {
         info.setProfileInfo(ProfileInfoRepresentation.create());
 
         setIdentityProviders(info);
-        setThemes(info);
         setProviders(info);
         setProtocolMapperTypes(info);
         setBuiltinProtocolMappers(info);
@@ -145,43 +139,6 @@ public class ServerInfoAdminResource {
             spiReps.put(spi.getName(), spiRep);
         }
         info.setProviders(spiReps);
-    }
-
-    @Autowired
-    private ThemeManager themeManager;
-
-    private void setThemes(ServerInfoRepresentation info) {
-        info.setThemes(new HashMap<>());
-
-        for (Theme.Type type : Theme.Type.values()) {
-            List<String> themeNames = new LinkedList<>(themeManager.nameSet(type));
-            Collections.sort(themeNames);
-
-            if (!Profile.isFeatureEnabled(Profile.Feature.ACCOUNT2)) {
-                themeNames.remove("keycloak-preview");
-                themeNames.remove("rh-sso-preview");
-            }
-
-            List<ThemeInfoRepresentation> themes = new LinkedList<>();
-            info.getThemes().put(type.toString().toLowerCase(), themes);
-
-            for (String name : themeNames) {
-                try {
-                    Theme theme = themeManager.getTheme(name, type);
-                    ThemeInfoRepresentation ti = new ThemeInfoRepresentation();
-                    ti.setName(name);
-
-                    String locales = theme.getProperties().getProperty("locales");
-                    if (locales != null) {
-                        ti.setLocales(locales.replaceAll(" ", "").split(","));
-                    }
-
-                    themes.add(ti);
-                } catch (IOException e) {
-                    throw new WebApplicationException("Failed to load themes", e);
-                }
-            }
-        }
     }
 
     private void setIdentityProviders(ServerInfoRepresentation info) {

@@ -27,21 +27,17 @@ import org.keycloak.email.freemarker.beans.ProfileBean;
 import org.keycloak.events.EventModel;
 import org.keycloak.events.EventType;
 import org.keycloak.forms.login.freemarker.model.UrlBean;
-import org.keycloak.models.*;
+import org.keycloak.models.KeycloakContext;
+import org.keycloak.models.KeycloakUriInfo;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.sessions.AuthenticationSessionModel;
-import org.keycloak.theme.FreeMarkerException;
-import org.keycloak.theme.FreeMarkerUtil;
-import org.keycloak.theme.Theme;
-import org.keycloak.theme.beans.LinkExpirationFormatterMethod;
-import org.keycloak.theme.beans.MessageFormatterMethod;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.net.URI;
-import java.text.MessageFormat;
 import java.util.*;
 
 /**
@@ -57,13 +53,8 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
      * etc.)!
      */
     protected AuthenticationSessionModel authenticationSession;
-    protected FreeMarkerUtil freeMarker;
     protected RealmModel realm;
     protected UserModel user;
-
-    public FreeMarkerEmailTemplateProvider(FreeMarkerUtil freeMarker) {
-        this.freeMarker = freeMarker;
-    }
 
     @Override
     public EmailTemplateProvider setRealm(RealmModel realm) {
@@ -186,13 +177,8 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
         attributes.put("linkExpiration", expirationInMinutes);
         KeycloakUriInfo uriInfo = keycloakContext.getUri();
         URI baseUri = uriInfo.getBaseUri();
-        try {
-            Locale locale = keycloakContext.resolveLocale(user);
-            attributes.put("linkExpirationFormatter", new LinkExpirationFormatterMethod(getTheme().getMessages(locale), locale));
-            attributes.put("url", new UrlBean(realm, getTheme(), baseUri, null));
-        } catch (IOException e) {
-            throw new EmailException("Failed to template email", e);
-        }
+        Locale locale = keycloakContext.resolveLocale(user);
+        attributes.put("url", new UrlBean(realm, baseUri, null));
     }
 
     @Override
@@ -201,40 +187,7 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
     }
 
     protected EmailTemplate processTemplate(String subjectKey, List<Object> subjectAttributes, String template, Map<String, Object> attributes) throws EmailException {
-        try {
-            Theme theme = getTheme();
-            Locale locale = keycloakContext.resolveLocale(user);
-            attributes.put("locale", locale);
-            Properties rb = theme.getMessages(locale);
-            attributes.put("msg", new MessageFormatterMethod(locale, rb));
-            attributes.put("properties", theme.getProperties());
-            String subject = new MessageFormat(rb.getProperty(subjectKey, subjectKey), locale).format(subjectAttributes.toArray());
-            String textTemplate = String.format("text/{}", template);
-            String textBody;
-            try {
-                textBody = freeMarker.processTemplate(attributes, textTemplate, theme);
-            } catch (final FreeMarkerException e) {
-                throw new EmailException("Failed to template plain text email.", e);
-            }
-            String htmlTemplate = String.format("html/%s", template);
-            String htmlBody;
-            try {
-                htmlBody = freeMarker.processTemplate(attributes, htmlTemplate, theme);
-            } catch (final FreeMarkerException e) {
-                throw new EmailException("Failed to template html email.", e);
-            }
-
-            return new EmailTemplate(subject, textBody, htmlBody);
-        } catch (Exception e) {
-            throw new EmailException("Failed to template email", e);
-        }
-    }
-
-    @Autowired
-    private ThemeManager themeManager;
-
-    protected Theme getTheme() throws IOException {
-        return themeManager.getTheme(Theme.Type.EMAIL);
+        return null;
     }
 
     @Override

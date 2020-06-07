@@ -54,7 +54,6 @@ public class KeycloakApplication extends Application {
         classes.add(KeycloakErrorHandler.class);
 
         singletons.add(new ObjectMapperResolver(Boolean.parseBoolean(System.getProperty("keycloak.jsonPrettyPrint", "false"))));
-        singletons.add(new WelcomeResource());
     }
 
     @Override

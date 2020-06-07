@@ -18,7 +18,6 @@ package org.keycloak.forms.login.freemarker.model;
 
 import org.keycloak.models.RealmModel;
 import org.keycloak.services.Urls;
-import org.keycloak.theme.Theme;
 
 import java.net.URI;
 
@@ -29,12 +28,10 @@ public class UrlBean {
 
     private final URI actionuri;
     private URI baseURI;
-    private Theme theme;
     private String realm;
 
-    public UrlBean(RealmModel realm, Theme theme, URI baseURI, URI actionUri) {
+    public UrlBean(RealmModel realm, URI baseURI, URI actionUri) {
         this.realm = realm != null ? realm.getName() : null;
-        this.theme = theme;
         this.baseURI = baseURI;
         this.actionuri = actionUri;
     }

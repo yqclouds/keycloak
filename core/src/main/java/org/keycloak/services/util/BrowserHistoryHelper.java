@@ -20,7 +20,6 @@ package org.keycloak.services.util;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.sessions.AuthenticationSessionModel;
-import org.keycloak.theme.BrowserSecurityHeaderSetup;
 import org.keycloak.utils.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -184,7 +183,6 @@ public abstract class BrowserHistoryHelper {
                 }
 
                 Response.ResponseBuilder builder = Response.status(200).type(MediaType.TEXT_HTML_UTF_8).entity(savedResponse);
-                BrowserSecurityHeaderSetup.headers(builder, keycloakContext.getRealm()); // TODO rather all the headers from the saved response should be added here.
                 return builder.build();
             }
 

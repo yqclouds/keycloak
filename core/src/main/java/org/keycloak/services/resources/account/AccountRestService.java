@@ -16,11 +16,11 @@
  */
 package org.keycloak.services.resources.account;
 
+import com.hsbc.unified.iam.core.ClientConnection;
+import com.hsbc.unified.iam.core.util.StringPropertyReplacer;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.HttpRequest;
-import com.hsbc.unified.iam.core.ClientConnection;
 import org.keycloak.common.Profile;
-import com.hsbc.unified.iam.core.util.StringPropertyReplacer;
 import org.keycloak.events.Details;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventStoreProvider;
@@ -36,7 +36,6 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.Cors;
 import org.keycloak.services.resources.account.resources.ResourcesService;
 import org.keycloak.storage.ReadOnlyException;
-import org.keycloak.theme.Theme;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
@@ -44,7 +43,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -71,7 +69,7 @@ public class AccountRestService {
     @Autowired
     private KeycloakContext keycloakContext;
 
-    public AccountRestService( Auth auth, ClientModel client, EventBuilder event) {
+    public AccountRestService(Auth auth, ClientModel client, EventBuilder event) {
         this.auth = auth;
         this.realm = auth.getRealm();
         this.user = auth.getUser();
@@ -285,15 +283,8 @@ public class AccountRestService {
         return new ConsentRepresentation(grantedScopes, model.getCreatedDate(), model.getLastUpdatedDate());
     }
 
-    @Autowired
-    private ThemeManager themeManager;
-
     private Properties getProperties() {
-        try {
-            return themeManager.getTheme(Theme.Type.ACCOUNT).getMessages(locale);
-        } catch (IOException e) {
-            return null;
-        }
+        return null;
     }
 
     /**

@@ -176,13 +176,6 @@ public interface KeycloakSession {
     KeyManager keys();
 
     /**
-     * Theme manager
-     *
-     * @return
-     */
-    ThemeManager theme();
-
-    /**
      * Token manager
      *
      * @return

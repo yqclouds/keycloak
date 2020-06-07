@@ -58,7 +58,6 @@ public class DefaultKeycloakSession implements KeycloakSession {
     private UserFederatedStorageProvider userFederatedStorageProvider;
     private KeycloakContext context;
     private KeyManager keyManager;
-    private ThemeManager themeManager;
     private TokenManager tokenManager;
 
     @Autowired
@@ -266,14 +265,6 @@ public class DefaultKeycloakSession implements KeycloakSession {
             keyManager = new DefaultKeyManager();
         }
         return keyManager;
-    }
-
-    @Override
-    public ThemeManager theme() {
-        if (themeManager == null) {
-            themeManager = factory.getThemeManagerFactory().create();
-        }
-        return themeManager;
     }
 
     @Override

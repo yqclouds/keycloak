@@ -27,7 +27,6 @@ import org.keycloak.jose.jws.JWSInputException;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
-import org.keycloak.models.ThemeManager;
 import org.keycloak.protocol.oidc.TokenManager;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.services.ForbiddenException;
@@ -36,10 +35,8 @@ import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.resources.Cors;
 import org.keycloak.services.resources.admin.info.ServerInfoAdminResource;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
-import org.keycloak.theme.Theme;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.NotAuthorizedException;
@@ -49,8 +46,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
-import java.util.Locale;
 import java.util.Properties;
 
 /**
@@ -107,22 +102,8 @@ public class AdminRoot {
         return adminBaseUrl(base).path(AdminRoot.class, "getRealmsAdmin");
     }
 
-    @Autowired
-    private ThemeManager themeManager;
-
-    public Theme getTheme(RealmModel realm) throws IOException {
-        return themeManager.getTheme(Theme.Type.ADMIN);
-    }
-
     public Properties getMessages(RealmModel realm, String lang) {
-        try {
-            Theme theme = getTheme(realm);
-            Locale locale = lang != null ? Locale.forLanguageTag(lang) : Locale.ENGLISH;
-            return theme.getMessages(locale);
-        } catch (IOException e) {
-            LOG.error("Failed to load messages from theme", e);
-            return new Properties();
-        }
+        return null;
     }
 
     public Properties getMessages(RealmModel realm, String lang, String... bundles) {
@@ -135,14 +116,7 @@ public class AdminRoot {
     }
 
     private Properties getMessages(RealmModel realm, String lang, String bundle) {
-        try {
-            Theme theme = getTheme(realm);
-            Locale locale = lang != null ? Locale.forLanguageTag(lang) : Locale.ENGLISH;
-            return theme.getMessages(bundle, locale);
-        } catch (IOException e) {
-            LOG.error("Failed to load messages from theme", e);
-            return new Properties();
-        }
+        return null;
     }
 
     protected AdminAuth authenticateRealmAdminRequest(HttpHeaders headers) {
