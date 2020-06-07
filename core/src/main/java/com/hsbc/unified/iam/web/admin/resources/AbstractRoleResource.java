@@ -22,10 +22,8 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleModel;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.UriInfo;
 import java.util.*;
 
 /**
@@ -68,13 +66,13 @@ public abstract class AbstractRoleResource {
         }
     }
 
-    protected void addComposites(AdminPermissionEvaluator auth, List<RoleRepresentation> roles, RoleModel role) {
+    protected void addComposites(List<RoleRepresentation> roles, RoleModel role) {
         for (RoleRepresentation rep : roles) {
             RoleModel composite = realm.getRoleById(rep.getId());
             if (composite == null) {
                 throw new NotFoundException("Could not find composite role");
             }
-            auth.roles().requireMapComposite(composite);
+//            auth.roles().requireMapComposite(composite);
             role.addCompositeRole(composite);
         }
     }

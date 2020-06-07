@@ -25,7 +25,6 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.services.ErrorResponse;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,11 +51,9 @@ public class RealmGroupsResource {
     private final RealmModel realm;
     @Autowired
     private KeycloakContext keycloakContext;
-    private final AdminPermissionEvaluator auth;
 
-    public RealmGroupsResource(RealmModel realm, AdminPermissionEvaluator auth) {
+    public RealmGroupsResource(RealmModel realm) {
         this.realm = realm;
-        this.auth = auth;
     }
 
     /**
@@ -69,8 +66,6 @@ public class RealmGroupsResource {
                                                @QueryParam("first") Integer firstResult,
                                                @QueryParam("max") Integer maxResults,
                                                @QueryParam("briefRepresentation") @DefaultValue("true") boolean briefRepresentation) {
-        auth.groups().requireList();
-
         List<GroupRepresentation> results;
 
         if (Objects.nonNull(search)) {
@@ -93,7 +88,7 @@ public class RealmGroupsResource {
         if (group == null) {
             throw new NotFoundException("Could not find group by id");
         }
-        RealmGroupResource resource = new RealmGroupResource(realm, group, this.auth);
+        RealmGroupResource resource = new RealmGroupResource(realm, group);
         ResteasyProviderFactory.getInstance().injectProperties(resource);
         return resource;
     }
@@ -125,8 +120,6 @@ public class RealmGroupsResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addTopLevelGroup(GroupRepresentation rep) {
-        auth.groups().requireManage();
-
         GroupModel child;
         Response.ResponseBuilder builder = Response.status(204);
         try {

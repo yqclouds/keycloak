@@ -37,8 +37,6 @@ import org.keycloak.representations.idm.authorization.ResourceOwnerRepresentatio
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
 import org.keycloak.representations.idm.authorization.ScopeRepresentation;
 import org.keycloak.services.ErrorResponseException;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
@@ -55,7 +53,6 @@ import java.util.stream.Collectors;
 public class ResourceSetService {
 
     private final AuthorizationProvider authorization;
-    private final AdminPermissionEvaluator auth;
     private final ResourceServerModel resourceServer;
 
     @Autowired
@@ -64,10 +61,10 @@ public class ResourceSetService {
     @Autowired
     private ModelToRepresentation modelToRepresentation;
 
-    public ResourceSetService(ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth) {
+    public ResourceSetService(ResourceServerModel resourceServer,
+                              AuthorizationProvider authorization) {
         this.resourceServer = resourceServer;
         this.authorization = authorization;
-        this.auth = auth;
     }
 
     @POST
@@ -85,7 +82,6 @@ public class ResourceSetService {
     }
 
     public ResourceRepresentation create(ResourceRepresentation resource) {
-        requireManage();
         StoreFactory storeFactory = this.authorization.getStoreFactory();
         ResourceOwnerRepresentation owner = resource.getOwner();
 
@@ -115,7 +111,6 @@ public class ResourceSetService {
     @Consumes("application/json")
     @Produces("application/json")
     public Response update(@PathParam("id") String id, ResourceRepresentation resource) {
-        requireManage();
         resource.setId(id);
         StoreFactory storeFactory = this.authorization.getStoreFactory();
         ResourceStore resourceStore = storeFactory.getResourceStore();
@@ -133,7 +128,6 @@ public class ResourceSetService {
     @Path("{id}")
     @DELETE
     public Response delete(@PathParam("id") String id) {
-        requireManage();
         StoreFactory storeFactory = authorization.getStoreFactory();
         ResourceModel resource = storeFactory.getResourceStore().findById(id, resourceServer.getId());
 
@@ -155,7 +149,6 @@ public class ResourceSetService {
     }
 
     public Response findById(String id, Function<ResourceModel, ? extends ResourceRepresentation> toRepresentation) {
-        requireView();
         StoreFactory storeFactory = authorization.getStoreFactory();
         ResourceModel model = storeFactory.getResourceStore().findById(id, resourceServer.getId());
 
@@ -171,7 +164,6 @@ public class ResourceSetService {
     @NoCache
     @Produces("application/json")
     public Response getScopes(@PathParam("id") String id) {
-        requireView();
         StoreFactory storeFactory = authorization.getStoreFactory();
         ResourceModel model = storeFactory.getResourceStore().findById(id, resourceServer.getId());
 
@@ -214,7 +206,6 @@ public class ResourceSetService {
     @NoCache
     @Produces("application/json")
     public Response getPermissions(@PathParam("id") String id) {
-        requireView();
         StoreFactory storeFactory = authorization.getStoreFactory();
         ResourceStore resourceStore = storeFactory.getResourceStore();
         ResourceModel model = resourceStore.findById(id, resourceServer.getId());
@@ -267,7 +258,6 @@ public class ResourceSetService {
     @NoCache
     @Produces("application/json")
     public Response getAttributes(@PathParam("id") String id) {
-        requireView();
         StoreFactory storeFactory = authorization.getStoreFactory();
         ResourceModel model = storeFactory.getResourceStore().findById(id, resourceServer.getId());
 
@@ -283,7 +273,6 @@ public class ResourceSetService {
     @NoCache
     @Produces("application/json")
     public Response find(@QueryParam("name") String name) {
-        this.auth.realm().requireViewAuthorization();
         StoreFactory storeFactory = authorization.getStoreFactory();
 
         if (name == null) {
@@ -333,8 +322,6 @@ public class ResourceSetService {
                          @QueryParam("first") Integer firstResult,
                          @QueryParam("max") Integer maxResult,
                          BiFunction<ResourceModel, Boolean, ?> toRepresentation) {
-        requireView();
-
         StoreFactory storeFactory = authorization.getStoreFactory();
 
         if (deep == null) {
@@ -435,17 +422,5 @@ public class ResourceSetService {
                         .map(resource -> toRepresentation.apply(resource, finalDeep))
                         .collect(Collectors.toList()))
                 .build();
-    }
-
-    private void requireView() {
-        if (this.auth != null) {
-            this.auth.realm().requireViewAuthorization();
-        }
-    }
-
-    private void requireManage() {
-        if (this.auth != null) {
-            this.auth.realm().requireManageAuthorization();
-        }
     }
 }

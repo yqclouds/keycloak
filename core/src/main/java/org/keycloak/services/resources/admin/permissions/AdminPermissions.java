@@ -31,8 +31,6 @@ import org.keycloak.services.resources.admin.AdminAuth;
  * @version $Revision: 1 $
  */
 public class AdminPermissions {
-
-
     public static AdminPermissionEvaluator evaluator(RealmModel realm, AdminAuth auth) {
         return new MgmtPermissions(realm, auth);
     }

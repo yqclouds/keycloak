@@ -11,7 +11,6 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.EventRepresentation;
 import org.keycloak.representations.idm.RealmEventsConfigRepresentation;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,13 +36,11 @@ import java.util.List;
 public class RealmEventsResource {
     private static final Logger LOG = LoggerFactory.getLogger(RealmEventsResource.class);
 
-    protected AdminPermissionEvaluator auth;
     protected RealmModel realm;
     @Autowired
     private EventStoreProvider eventStoreProvider;
 
-    public RealmEventsResource(AdminPermissionEvaluator auth, RealmModel realm) {
-        this.auth = auth;
+    public RealmEventsResource(RealmModel realm) {
         this.realm = realm;
     }
 
@@ -69,8 +66,6 @@ public class RealmEventsResource {
                                                @QueryParam("user") String user, @QueryParam("dateFrom") String dateFrom, @QueryParam("dateTo") String dateTo,
                                                @QueryParam("ipAddress") String ipAddress, @QueryParam("first") Integer firstResult,
                                                @QueryParam("max") Integer maxResults) {
-        auth.realm().requireViewEvents();
-
         EventQuery query = eventStoreProvider.createQuery().realm(realm.getId());
         if (client != null) {
             query.client(client);
@@ -143,8 +138,6 @@ public class RealmEventsResource {
     @Path("events/config")
     @Produces(javax.ws.rs.core.MediaType.APPLICATION_JSON)
     public RealmEventsConfigRepresentation getRealmEventsConfig() {
-        auth.realm().requireViewEvents();
-
         RealmEventsConfigRepresentation config = ModelToRepresentation.toEventsConfigReprensetation(realm);
         if (config.getEnabledEventTypes() == null || config.getEnabledEventTypes().isEmpty()) {
             config.setEnabledEventTypes(new LinkedList<>());
@@ -166,8 +159,6 @@ public class RealmEventsResource {
     @Path("events/config")
     @Consumes(javax.ws.rs.core.MediaType.APPLICATION_JSON)
     public void updateRealmEventsConfig(final RealmEventsConfigRepresentation rep) {
-        auth.realm().requireManageEvents();
-
         LOG.debug("updating realm events config: " + realm.getName());
         new RealmFacadeImpl().updateRealmEventsConfig(rep, realm);
     }
@@ -178,8 +169,6 @@ public class RealmEventsResource {
     @Path("events")
     @DELETE
     public void clearEvents() {
-        auth.realm().requireManageEvents();
-
         eventStoreProvider.clear(realm.getId());
     }
 }

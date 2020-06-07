@@ -34,7 +34,6 @@ import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.representations.KeyStoreConfig;
 import org.keycloak.representations.idm.CertificateRepresentation;
 import org.keycloak.services.ErrorResponseException;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.util.CertificateInfoHelper;
 import org.keycloak.util.JWKSUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,11 +69,9 @@ public class RealmClientAttributeCertificateResource {
     @Context
     protected KeycloakContext keycloakContext;
     protected String attributePrefix;
-    private AdminPermissionEvaluator auth;
 
-    public RealmClientAttributeCertificateResource(RealmModel realm, AdminPermissionEvaluator auth, ClientModel client, String attributePrefix) {
+    public RealmClientAttributeCertificateResource(RealmModel realm, ClientModel client, String attributePrefix) {
         this.realm = realm;
-        this.auth = auth;
         this.client = client;
         this.attributePrefix = attributePrefix;
     }
@@ -86,8 +83,6 @@ public class RealmClientAttributeCertificateResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public CertificateRepresentation getKeyInfo() {
-        auth.clients().requireView(client);
-
         return CertificateInfoHelper.getCertificateFromClient(client, attributePrefix);
     }
 
@@ -99,8 +94,6 @@ public class RealmClientAttributeCertificateResource {
     @Path("generate")
     @Produces(MediaType.APPLICATION_JSON)
     public CertificateRepresentation generate() {
-        auth.clients().requireConfigure(client);
-
         CertificateRepresentation info = KeycloakModelUtils.generateKeyPairCertificate(client.getClientId());
 
         CertificateInfoHelper.updateClientModelCertificateInfo(client, info, attributePrefix);
@@ -116,8 +109,6 @@ public class RealmClientAttributeCertificateResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public CertificateRepresentation uploadJks(MultipartFormDataInput input) throws IOException {
-        auth.clients().requireConfigure(client);
-
         try {
             CertificateRepresentation info = getCertFromRequest(input);
             CertificateInfoHelper.updateClientModelCertificateInfo(client, info, attributePrefix);
@@ -136,8 +127,6 @@ public class RealmClientAttributeCertificateResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public CertificateRepresentation uploadJksCertificate(MultipartFormDataInput input) throws IOException {
-        auth.clients().requireConfigure(client);
-
         try {
             CertificateRepresentation info = getCertFromRequest(input);
             info.setPrivateKey(null);
@@ -150,7 +139,6 @@ public class RealmClientAttributeCertificateResource {
     }
 
     private CertificateRepresentation getCertFromRequest(MultipartFormDataInput input) throws IOException {
-        auth.clients().requireManage(client);
         CertificateRepresentation info = new CertificateRepresentation();
         Map<String, List<InputPart>> uploadForm = input.getFormDataMap();
         List<InputPart> keystoreFormatPart = uploadForm.get("keystoreFormat");
@@ -241,8 +229,6 @@ public class RealmClientAttributeCertificateResource {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @Consumes(MediaType.APPLICATION_JSON)
     public byte[] getKeystore(final KeyStoreConfig config) {
-        auth.clients().requireView(client);
-
         if (config.getFormat() != null && !config.getFormat().equals("JKS") && !config.getFormat().equals("PKCS12")) {
             throw new NotAcceptableException("Only support jks or pkcs12 format.");
         }
@@ -278,8 +264,6 @@ public class RealmClientAttributeCertificateResource {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @Consumes(MediaType.APPLICATION_JSON)
     public byte[] generateAndGetKeystore(final KeyStoreConfig config) {
-        auth.clients().requireConfigure(client);
-
         if (config.getFormat() != null && !config.getFormat().equals("JKS") && !config.getFormat().equals("PKCS12")) {
             throw new NotAcceptableException("Only support jks or pkcs12 format.");
         }

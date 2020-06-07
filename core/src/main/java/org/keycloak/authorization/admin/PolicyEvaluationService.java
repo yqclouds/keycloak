@@ -42,7 +42,6 @@ import org.keycloak.representations.idm.authorization.*;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.Urls;
 import org.keycloak.services.managers.AuthenticationManager;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.AuthenticationSessionProvider;
 import org.slf4j.Logger;
@@ -67,13 +66,11 @@ public class PolicyEvaluationService {
     private static final Logger LOG = LoggerFactory.getLogger(PolicyEvaluationService.class);
 
     private final AuthorizationProvider authorization;
-    private final AdminPermissionEvaluator auth;
     private final ResourceServerModel resourceServer;
 
-    PolicyEvaluationService(ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth) {
+    PolicyEvaluationService(ResourceServerModel resourceServer, AuthorizationProvider authorization) {
         this.resourceServer = resourceServer;
         this.authorization = authorization;
-        this.auth = auth;
     }
 
     @Autowired
@@ -83,7 +80,6 @@ public class PolicyEvaluationService {
     @Consumes("application/json")
     @Produces("application/json")
     public Response evaluate(PolicyEvaluationRequest evaluationRequest) {
-        this.auth.realm().requireViewAuthorization();
         CloseableKeycloakIdentity identity = createIdentity(evaluationRequest);
         try {
             AuthorizationRequest request = new AuthorizationRequest();
@@ -158,7 +154,7 @@ public class PolicyEvaluationService {
 
             if (resource.getId() != null) {
                 ResourceModel resourceModel = storeFactory.getResourceStore().findById(resource.getId(), resourceServer.getId());
-                return new ArrayList<>(Arrays.asList(Permissions.createResourcePermissions(resourceModel, scopes, authorization, request))).stream();
+                return new ArrayList<>(Collections.singletonList(Permissions.createResourcePermissions(resourceModel, scopes, authorization, request))).stream();
             } else if (resource.getType() != null) {
                 return storeFactory.getResourceStore().findByType(resource.getType(), resourceServer.getId()).stream().map(resource1 -> Permissions.createResourcePermissions(resource1, scopes, authorization, request));
             } else {
@@ -169,7 +165,7 @@ public class PolicyEvaluationService {
                 List<ResourceModel> resources = storeFactory.getResourceStore().findByScope(scopes.stream().map(ScopeModel::getId).collect(Collectors.toList()), resourceServer.getId());
 
                 if (resources.isEmpty()) {
-                    return scopes.stream().map(scope -> new ResourcePermission(null, new ArrayList<>(Arrays.asList(scope)), resourceServer));
+                    return scopes.stream().map(scope -> new ResourcePermission(null, new ArrayList<>(Collections.singletonList(scope)), resourceServer));
                 }
 
 
@@ -294,8 +290,7 @@ public class PolicyEvaluationService {
         }
     }
 
-    public class EvaluationDecisionCollector extends DecisionPermissionCollector {
-
+    public static class EvaluationDecisionCollector extends DecisionPermissionCollector {
         public EvaluationDecisionCollector(AuthorizationProvider authorizationProvider, ResourceServerModel resourceServer, AuthorizationRequest request) {
             super(authorizationProvider, resourceServer, request);
         }

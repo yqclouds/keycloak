@@ -19,13 +19,10 @@ package com.hsbc.unified.iam.web.admin.resources;
 import com.hsbc.unified.iam.core.ClientConnection;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.events.admin.OperationType;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserProvider;
 import org.keycloak.services.managers.UserStorageSyncManager;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.UserStorageProviderModel;
 import org.keycloak.storage.ldap.mappers.LDAPStorageMapper;
@@ -56,10 +53,6 @@ public class RealmUserStorageProviderResource {
 
     protected RealmModel realm;
 
-    protected AdminPermissionEvaluator auth;
-
-    protected AdminEventBuilder adminEvent;
-
     @Context
     protected ClientConnection clientConnection;
 
@@ -69,10 +62,8 @@ public class RealmUserStorageProviderResource {
     @Context
     protected HttpHeaders headers;
 
-    public RealmUserStorageProviderResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
-        this.auth = auth;
+    public RealmUserStorageProviderResource(RealmModel realm) {
         this.realm = realm;
-        this.adminEvent = adminEvent;
     }
 
     /**
@@ -85,8 +76,6 @@ public class RealmUserStorageProviderResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, String> getSimpleName(@PathParam("id") String id) {
-        auth.users().requireQuery();
-
         ComponentModel model = realm.getComponent(id);
         if (model == null) {
             throw new NotFoundException("Could not find component");
@@ -113,8 +102,6 @@ public class RealmUserStorageProviderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public SynchronizationResult syncUsers(@PathParam("id") String id,
                                            @QueryParam("action") String action) {
-        auth.users().requireManage();
-
         ComponentModel model = realm.getComponent(id);
         if (model == null) {
             throw new NotFoundException("Could not find component");
@@ -145,7 +132,6 @@ public class RealmUserStorageProviderResource {
         Map<String, Object> eventRep = new HashMap<>();
         eventRep.put("action", action);
         eventRep.put("result", syncResult);
-        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).representation(eventRep).success();
 
         return syncResult;
     }
@@ -157,8 +143,6 @@ public class RealmUserStorageProviderResource {
     @Path("{id}/remove-imported-users")
     @NoCache
     public void removeImportedUsers(@PathParam("id") String id) {
-        auth.users().requireManage();
-
         ComponentModel model = realm.getComponent(id);
         if (model == null) {
             throw new NotFoundException("Could not find component");
@@ -177,8 +161,6 @@ public class RealmUserStorageProviderResource {
     @Path("{id}/unlink-users")
     @NoCache
     public void unlinkUsers(@PathParam("id") String id) {
-        auth.users().requireManage();
-
         ComponentModel model = realm.getComponent(id);
         if (model == null) {
             throw new NotFoundException("Could not find component");
@@ -206,8 +188,6 @@ public class RealmUserStorageProviderResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public SynchronizationResult syncMapperData(@PathParam("parentId") String parentId, @PathParam("id") String mapperId, @QueryParam("direction") String direction) {
-        auth.users().requireManage();
-
         ComponentModel parentModel = realm.getComponent(parentId);
         if (parentModel == null) throw new NotFoundException("Parent model not found");
         ComponentModel mapperModel = realm.getComponent(mapperId);
@@ -227,7 +207,6 @@ public class RealmUserStorageProviderResource {
         Map<String, Object> eventRep = new HashMap<>();
         eventRep.put("action", direction);
         eventRep.put("result", syncResult);
-        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).representation(eventRep).success();
         return syncResult;
     }
 }

@@ -23,7 +23,6 @@ import org.keycloak.crypto.KeyWrapper;
 import org.keycloak.models.KeyManager;
 import org.keycloak.models.RealmModel;
 import org.keycloak.representations.idm.KeysMetadataRepresentation;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,19 +46,15 @@ public class RealmKeyResource {
     private RealmModel realm;
     @Autowired
     private KeyManager keyManager;
-    private AdminPermissionEvaluator auth;
 
-    public RealmKeyResource(RealmModel realm, AdminPermissionEvaluator auth) {
+    public RealmKeyResource(RealmModel realm) {
         this.realm = realm;
-        this.auth = auth;
     }
 
     @GET
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public KeysMetadataRepresentation getKeyMetadata() {
-        auth.realm().requireViewRealm();
-
         KeysMetadataRepresentation keys = new KeysMetadataRepresentation();
         keys.setKeys(new LinkedList<>());
         keys.setActive(new HashMap<>());
@@ -85,5 +80,4 @@ public class RealmKeyResource {
 
         return keys;
     }
-
 }

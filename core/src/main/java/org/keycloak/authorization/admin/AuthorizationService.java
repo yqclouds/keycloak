@@ -22,8 +22,6 @@ import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.models.ClientModel;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -34,16 +32,14 @@ import javax.ws.rs.Path;
  */
 public class AuthorizationService {
 
-    private final AdminPermissionEvaluator auth;
     private final ClientModel client;
 
     @Autowired
     private AuthorizationProvider authorizationProvider;
     private ResourceServerModel resourceServer;
 
-    public AuthorizationService(ClientModel client, AdminPermissionEvaluator auth) {
+    public AuthorizationService(ClientModel client) {
         this.client = client;
-        this.auth = auth;
     }
 
     @PostConstruct
@@ -54,7 +50,7 @@ public class AuthorizationService {
     @Path("/resource-server")
     public ResourceServerService resourceServer() {
         ResourceServerService resource = new ResourceServerService(
-                this.authorizationProvider, this.resourceServer, this.client, this.auth
+                this.authorizationProvider, this.resourceServer, this.client
         );
 
         ResteasyProviderFactory.getInstance().injectProperties(resource);

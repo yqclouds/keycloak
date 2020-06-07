@@ -44,8 +44,8 @@ import org.keycloak.services.managers.BruteForceProtector;
 import org.keycloak.services.managers.UserSessionManager;
 import org.keycloak.services.resources.LoginActionsService;
 import org.keycloak.services.resources.account.AccountFormService;
+import org.keycloak.services.resources.admin.AdminAuth;
 import org.keycloak.services.resources.admin.AdminRoot;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.validation.Validation;
 import org.keycloak.storage.ReadOnlyException;
 import org.keycloak.utils.ProfileHelper;
@@ -80,7 +80,6 @@ public class RealmUserResource {
     protected ClientConnection clientConnection;
     @Context
     protected HttpHeaders headers;
-    private AdminPermissionEvaluator auth;
     private UserModel user;
 
     @Autowired
@@ -89,8 +88,7 @@ public class RealmUserResource {
     @Autowired
     private Map<String, RequiredActionFactory> requiredActionFactories;
 
-    public RealmUserResource(RealmModel realm, UserModel user, AdminPermissionEvaluator auth) {
-        this.auth = auth;
+    public RealmUserResource(RealmModel realm, UserModel user) {
         this.realm = realm;
         this.user = user;
     }
@@ -161,8 +159,6 @@ public class RealmUserResource {
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     public Response updateUser(final UserRepresentation rep) {
-
-        auth.users().requireManage(user);
         try {
             Set<String> attrsToRemove;
             if (rep.getAttributes() != null) {
@@ -208,8 +204,6 @@ public class RealmUserResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public UserRepresentation getUser() {
-        auth.users().requireView(user);
-
         UserRepresentation rep = modelToRepresentation.toRepresentation(realm, user);
 
         if (realm.isIdentityFederationEnabled()) {
@@ -220,7 +214,7 @@ public class RealmUserResource {
         if (bruteForceProtector.isTemporarilyDisabled(realm, user)) {
             rep.setEnabled(false);
         }
-        rep.setAccess(auth.users().getAccess(user));
+//        rep.setAccess(auth.users().getAccess(user));
 
         return rep;
     }
@@ -229,6 +223,9 @@ public class RealmUserResource {
     private AuthenticationManager authenticationManager;
     @Autowired
     private KeycloakContext keycloakContext;
+
+    @Autowired
+    private AdminAuth adminAuth;
 
     /**
      * Impersonate the user
@@ -240,13 +237,12 @@ public class RealmUserResource {
     public Map<String, Object> impersonate() {
         ProfileHelper.requireFeature(Profile.Feature.IMPERSONATION);
 
-        auth.users().requireImpersonate(user);
-        RealmModel authenticatedRealm = auth.adminAuth().getRealm();
+        RealmModel authenticatedRealm = adminAuth.getRealm();
         // if same realm logout before impersonation
         boolean sameRealm = false;
         if (authenticatedRealm.getId().equals(realm.getId())) {
             sameRealm = true;
-            UserSessionModel userSession = userSessionProvider.getUserSession(authenticatedRealm, auth.adminAuth().getToken().getSessionState());
+            UserSessionModel userSession = userSessionProvider.getUserSession(authenticatedRealm, adminAuth.getToken().getSessionState());
             AuthenticationManager.expireIdentityCookie(realm, keycloakContext.getUri(), clientConnection);
             AuthenticationManager.expireRememberMeCookie(realm, keycloakContext.getUri(), clientConnection);
             authenticationManager.backchannelLogout(authenticatedRealm, userSession, keycloakContext.getUri(), clientConnection, headers, true);
@@ -255,7 +251,7 @@ public class RealmUserResource {
 
         UserSessionModel userSession = userSessionProvider.createUserSession(realm, user, user.getUsername(), clientConnection.getRemoteAddr(), "impersonate", false, null, null);
 
-        UserModel adminUser = auth.adminAuth().getUser();
+        UserModel adminUser = null; // auth.adminAuth().getUser();
         String impersonatorId = adminUser.getId();
         String impersonator = adminUser.getUsername();
         userSession.setNote(IMPERSONATOR_ID.toString(), impersonatorId);
@@ -284,7 +280,6 @@ public class RealmUserResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public List<UserSessionRepresentation> getSessions() {
-        auth.users().requireView(user);
         List<UserSessionModel> sessions = userSessionProvider.getUserSessions(realm, user);
         List<UserSessionRepresentation> reps = new ArrayList<>();
         for (UserSessionModel session : sessions) {
@@ -302,7 +297,6 @@ public class RealmUserResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public List<UserSessionRepresentation> getOfflineSessions(final @PathParam("clientId") String clientId) {
-        auth.users().requireView(user);
         ClientModel client = realm.getClientById(clientId);
         if (client == null) {
             throw new NotFoundException("Client not found");
@@ -338,8 +332,6 @@ public class RealmUserResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public List<FederatedIdentityRepresentation> getFederatedIdentity() {
-        auth.users().requireView(user);
-
         return getFederatedIdentities(user);
     }
 
@@ -367,7 +359,6 @@ public class RealmUserResource {
     @POST
     @NoCache
     public Response addFederatedIdentity(final @PathParam("provider") String provider, FederatedIdentityRepresentation rep) {
-        auth.users().requireManage(user);
         if (userProvider.getFederatedIdentity(user, provider, realm) != null) {
             return ErrorResponse.exists("User is already linked with provider");
         }
@@ -386,7 +377,6 @@ public class RealmUserResource {
     @DELETE
     @NoCache
     public void removeFederatedIdentity(final @PathParam("provider") String provider) {
-        auth.users().requireManage(user);
         if (!userProvider.removeFederatedIdentity(realm, user, provider)) {
             throw new NotFoundException("Link not found");
         }
@@ -400,7 +390,6 @@ public class RealmUserResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public List<Map<String, Object>> getConsents() {
-        auth.users().requireView(user);
         List<Map<String, Object>> result = new LinkedList<>();
 
         Set<ClientModel> offlineClients = new UserSessionManager().findClientsWithOfflineToken(realm, user);
@@ -447,8 +436,6 @@ public class RealmUserResource {
     @DELETE
     @NoCache
     public void revokeConsent(final @PathParam("client") String clientId) {
-        auth.users().requireManage(user);
-
         ClientModel client = realm.getClientByClientId(clientId);
         if (client == null) {
             throw new NotFoundException("Client not found");
@@ -474,8 +461,6 @@ public class RealmUserResource {
     @Path("logout")
     @POST
     public void logout() {
-        auth.users().requireManage(user);
-
         userProvider.setNotBeforeForUser(realm, user, Time.currentTime());
 
         List<UserSessionModel> userSessions = userSessionProvider.getUserSessions(realm, user);
@@ -490,8 +475,6 @@ public class RealmUserResource {
     @DELETE
     @NoCache
     public Response deleteUser() {
-        auth.users().requireManage(user);
-
         boolean removed = new UserManager().removeUser(realm, user);
         if (removed) {
             return Response.noContent().build();
@@ -502,9 +485,7 @@ public class RealmUserResource {
 
     @Path("role-mappings")
     public RealmRoleMapperResource getRoleMappings() {
-        AdminPermissionEvaluator.RequirePermissionCheck manageCheck = () -> auth.users().requireMapRoles(user);
-        AdminPermissionEvaluator.RequirePermissionCheck viewCheck = () -> auth.users().requireView(user);
-        RealmRoleMapperResource resource = new RealmRoleMapperResource(realm, auth, user, manageCheck, viewCheck);
+        RealmRoleMapperResource resource = new RealmRoleMapperResource(realm, user);
         ResteasyProviderFactory.getInstance().injectProperties(resource);
         return resource;
 
@@ -517,7 +498,6 @@ public class RealmUserResource {
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     public void disableCredentialType(List<String> credentialTypes) {
-        auth.users().requireManage(user);
         if (credentialTypes == null) return;
         for (String type : credentialTypes) {
             userCredentialManager.disableCredentialType(realm, user, type);
@@ -536,7 +516,6 @@ public class RealmUserResource {
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     public void resetPassword(CredentialRepresentation cred) {
-        auth.users().requireManage(user);
         if (cred == null || cred.getValue() == null) {
             throw new BadRequestException("No password provided");
         }
@@ -551,7 +530,7 @@ public class RealmUserResource {
         } catch (ReadOnlyException mre) {
             throw new BadRequestException("Can't reset password as account is read only");
         } catch (ModelException e) {
-            Properties messages = adminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
+            Properties messages = adminRoot.getMessages(realm, adminAuth.getToken().getLocale());
             throw new ErrorResponseException(e.getMessage(), MessageFormat.format(messages.getProperty(e.getMessage(), e.getMessage()), e.getParameters()),
                     Status.BAD_REQUEST);
         }
@@ -565,12 +544,10 @@ public class RealmUserResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public List<CredentialRepresentation> credentials() {
-        auth.users().requireManage(user);
         List<CredentialModel> models = userCredentialManager.getStoredCredentials(realm, user);
         models.forEach(c -> c.setSecretData(null));
         return models.stream().map(ModelToRepresentation::toRepresentation).collect(Collectors.toList());
     }
-
 
     /**
      * Return credential types, which are provided by the user storage where user is stored. Returned values can contain for example "password", "otp" etc.
@@ -583,7 +560,6 @@ public class RealmUserResource {
     public List<String> getConfiguredUserStorageCredentialTypes() {
         // This has "requireManage" due the compatibility with "credentials()" endpoint. Strictly said, it is reading endpoint, not writing,
         // so may be revisited if to rather use "requireView" here in the future.
-        auth.users().requireManage(user);
         return userCredentialManager.getConfiguredUserStorageCredentialTypes(realm, user);
     }
 
@@ -595,7 +571,6 @@ public class RealmUserResource {
     @DELETE
     @NoCache
     public void removeCredential(final @PathParam("credentialId") String credentialId) {
-        auth.users().requireManage(user);
         userCredentialManager.removeStoredCredential(realm, user, credentialId);
     }
 
@@ -606,12 +581,9 @@ public class RealmUserResource {
     @Consumes(javax.ws.rs.core.MediaType.TEXT_PLAIN)
     @Path("credentials/{credentialId}/userLabel")
     public void setCredentialUserLabel(final @PathParam("credentialId") String credentialId, String userLabel) {
-        auth.users().requireManage(user);
         CredentialModel credential = userCredentialManager.getStoredCredentialById(realm, user, credentialId);
         if (credential == null) {
-            // we do this to make sure somebody can't phish ids
-            if (auth.users().canQuery()) throw new NotFoundException("User not found");
-            else throw new ForbiddenException();
+            throw new NotFoundException("User not found");
         }
         userCredentialManager.updateCredentialLabel(realm, user, credentialId, userLabel);
     }
@@ -636,12 +608,9 @@ public class RealmUserResource {
     @Path("credentials/{credentialId}/moveAfter/{newPreviousCredentialId}")
     @POST
     public void moveCredentialAfter(final @PathParam("credentialId") String credentialId, final @PathParam("newPreviousCredentialId") String newPreviousCredentialId) {
-        auth.users().requireManage(user);
         CredentialModel credential = userCredentialManager.getStoredCredentialById(realm, user, credentialId);
         if (credential == null) {
-            // we do this to make sure somebody can't phish ids
-            if (auth.users().canQuery()) throw new NotFoundException("User not found");
-            else throw new ForbiddenException();
+            throw new NotFoundException("User not found");
         }
         userCredentialManager.moveCredentialTo(realm, user, credentialId, newPreviousCredentialId);
     }
@@ -693,8 +662,6 @@ public class RealmUserResource {
                                         @QueryParam(OIDCLoginProtocol.CLIENT_ID_PARAM) String clientId,
                                         @QueryParam("lifespan") Integer lifespan,
                                         List<String> actions) {
-        auth.users().requireManage(user);
-
         if (user.getEmail() == null) {
             return ErrorResponse.error("User email missing", Status.BAD_REQUEST);
         }
@@ -784,7 +751,6 @@ public class RealmUserResource {
                                                      @QueryParam("first") Integer firstResult,
                                                      @QueryParam("max") Integer maxResults,
                                                      @QueryParam("briefRepresentation") @DefaultValue("true") boolean briefRepresentation) {
-        auth.users().requireView(user);
         List<GroupRepresentation> results;
 
         if (Objects.nonNull(search) && Objects.nonNull(firstResult) && Objects.nonNull(maxResults)) {
@@ -803,7 +769,6 @@ public class RealmUserResource {
     @Path("groups/count")
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, Long> getGroupMembershipCount(@QueryParam("search") String search) {
-        auth.users().requireView(user);
         Long results;
 
         if (Objects.nonNull(search)) {
@@ -823,20 +788,16 @@ public class RealmUserResource {
     @Path("groups/{groupId}")
     @NoCache
     public void removeMembership(@PathParam("groupId") String groupId) {
-        auth.users().requireManageGroupMembership(user);
-
         GroupModel group = realmProvider.getGroupById(groupId, realm);
         if (group == null) {
             throw new NotFoundException("Group not found");
         }
-        auth.groups().requireManageMembership(group);
-
         try {
             if (user.isMemberOf(group)) {
                 user.leaveGroup(group);
             }
         } catch (ModelException me) {
-            Properties messages = adminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
+            Properties messages = adminRoot.getMessages(realm, adminAuth.getToken().getLocale());
             throw new ErrorResponseException(me.getMessage(), MessageFormat.format(messages.getProperty(me.getMessage(), me.getMessage()), me.getParameters()),
                     Status.BAD_REQUEST);
         }
@@ -846,12 +807,10 @@ public class RealmUserResource {
     @Path("groups/{groupId}")
     @NoCache
     public void joinGroup(@PathParam("groupId") String groupId) {
-        auth.users().requireManageGroupMembership(user);
         GroupModel group = realmProvider.getGroupById(groupId, realm);
         if (group == null) {
             throw new NotFoundException("Group not found");
         }
-        auth.groups().requireManageMembership(group);
         if (!user.isMemberOf(group)) {
             user.joinGroup(group);
         }

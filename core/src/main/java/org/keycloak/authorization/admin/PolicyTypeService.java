@@ -25,7 +25,6 @@ import org.keycloak.authorization.policy.provider.PolicyProviderAdminService;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.Path;
@@ -40,8 +39,10 @@ public class PolicyTypeService extends PolicyService {
 
     private final String type;
 
-    public PolicyTypeService(String type, ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth) {
-        super(resourceServer, authorization, auth);
+    public PolicyTypeService(String type,
+                             ResourceServerModel resourceServer,
+                             AuthorizationProvider authorization) {
+        super(resourceServer, authorization);
         this.type = type;
     }
 
@@ -60,7 +61,7 @@ public class PolicyTypeService extends PolicyService {
 
     @Override
     protected Object doCreatePolicyResource(PolicyModel policy) {
-        return new PolicyTypeResourceService(policy, resourceServer, authorization, auth);
+        return new PolicyTypeResourceService(policy, resourceServer, authorization);
     }
 
     @Override

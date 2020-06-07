@@ -25,7 +25,6 @@ import org.keycloak.models.ScopeContainerModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -41,24 +40,15 @@ import java.util.Set;
  */
 public class RealmScopeMappedClientResource {
     protected RealmModel realm;
-    protected AdminPermissionEvaluator auth;
-    protected AdminPermissionEvaluator.RequirePermissionCheck managePermission;
-    protected AdminPermissionEvaluator.RequirePermissionCheck viewPermission;
     protected ScopeContainerModel scopeContainer;
     protected ClientModel scopedClient;
 
     public RealmScopeMappedClientResource(RealmModel realm,
-                                          AdminPermissionEvaluator auth,
                                           ScopeContainerModel scopeContainer,
-                                          ClientModel scopedClient,
-                                          AdminPermissionEvaluator.RequirePermissionCheck managePermission,
-                                          AdminPermissionEvaluator.RequirePermissionCheck viewPermission) {
+                                          ClientModel scopedClient) {
         this.realm = realm;
-        this.auth = auth;
         this.scopeContainer = scopeContainer;
         this.scopedClient = scopedClient;
-        this.managePermission = managePermission;
-        this.viewPermission = viewPermission;
     }
 
     /**
@@ -70,8 +60,6 @@ public class RealmScopeMappedClientResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RoleRepresentation> getClientScopeMappings() {
-        viewPermission.require();
-
         Set<RoleModel> mappings = KeycloakModelUtils.getClientScopeMappings(scopedClient, scopeContainer);
         List<RoleRepresentation> mapRep = new ArrayList<>();
         for (RoleModel roleModel : mappings) {
@@ -91,10 +79,8 @@ public class RealmScopeMappedClientResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RoleRepresentation> getAvailableClientScopeMappings() {
-        viewPermission.require();
-
         Set<RoleModel> roles = scopedClient.getRoles();
-        return RealmScopeMappedResource.getAvailable(auth, scopeContainer, roles);
+        return RealmScopeMappedResource.getAvailable(scopeContainer, roles);
     }
 
     /**
@@ -107,8 +93,6 @@ public class RealmScopeMappedClientResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RoleRepresentation> getCompositeClientScopeMappings() {
-        viewPermission.require();
-
         Set<RoleModel> roles = scopedClient.getRoles();
         return RealmScopeMappedResource.getComposite(scopeContainer, roles);
     }
@@ -119,8 +103,6 @@ public class RealmScopeMappedClientResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public void addClientScopeMapping(List<RoleRepresentation> roles) {
-        managePermission.require();
-
         for (RoleRepresentation role : roles) {
             RoleModel roleModel = scopedClient.getRole(role.getName());
             if (roleModel == null) {
@@ -136,8 +118,6 @@ public class RealmScopeMappedClientResource {
     @DELETE
     @Consumes(MediaType.APPLICATION_JSON)
     public void deleteClientScopeMapping(List<RoleRepresentation> roles) {
-        managePermission.require();
-
         if (roles == null) {
             Set<RoleModel> roleModels = KeycloakModelUtils.getClientScopeMappings(scopedClient, scopeContainer);//scopedClient.getClientScopeMappings(client);
             roles = new LinkedList<>();

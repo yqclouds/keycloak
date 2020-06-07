@@ -28,7 +28,6 @@ import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.ManagementPermissionReference;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.services.ErrorResponse;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionManagement;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,12 +44,10 @@ import java.util.*;
 public class RealmGroupResource {
 
     private final RealmModel realm;
-    private final AdminPermissionEvaluator auth;
     private final GroupModel group;
 
-    public RealmGroupResource(RealmModel realm, GroupModel group, AdminPermissionEvaluator auth) {
+    public RealmGroupResource(RealmModel realm, GroupModel group) {
         this.realm = realm;
-        this.auth = auth;
         this.group = group;
     }
 
@@ -82,11 +79,9 @@ public class RealmGroupResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public GroupRepresentation getGroup() {
-        this.auth.groups().requireView(group);
-
         GroupRepresentation rep = ModelToRepresentation.toGroupHierarchy(group, true);
 
-        rep.setAccess(auth.groups().getAccess(group));
+//        rep.setAccess(auth.groups().getAccess(group));
 
         return rep;
     }
@@ -97,8 +92,6 @@ public class RealmGroupResource {
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     public Response updateGroup(GroupRepresentation rep) {
-        this.auth.groups().requireManage(group);
-
         for (GroupModel sibling : siblings()) {
             if (Objects.equals(sibling.getId(), group.getId())) continue;
             if (sibling.getName().equals(rep.getName())) {
@@ -121,8 +114,6 @@ public class RealmGroupResource {
 
     @DELETE
     public void deleteGroup() {
-        this.auth.groups().requireManage(group);
-
         realm.removeGroup(group);
     }
 
@@ -136,8 +127,6 @@ public class RealmGroupResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addChild(GroupRepresentation rep) {
-        this.auth.groups().requireManage(group);
-
         for (GroupModel group : group.getSubGroups()) {
             if (group.getName().equals(rep.getName())) {
                 return ErrorResponse.exists("Parent already contains subgroup named '" + rep.getName() + "'");
@@ -163,9 +152,7 @@ public class RealmGroupResource {
 
     @Path("role-mappings")
     public RealmRoleMapperResource getRoleMappings() {
-        AdminPermissionEvaluator.RequirePermissionCheck manageCheck = () -> auth.groups().requireManage(group);
-        AdminPermissionEvaluator.RequirePermissionCheck viewCheck = () -> auth.groups().requireView(group);
-        RealmRoleMapperResource resource = new RealmRoleMapperResource(realm, auth, group, manageCheck, viewCheck);
+        RealmRoleMapperResource resource = new RealmRoleMapperResource(realm, group);
         ResteasyProviderFactory.getInstance().injectProperties(resource);
         return resource;
     }
@@ -193,8 +180,6 @@ public class RealmGroupResource {
     public List<UserRepresentation> getMembers(@QueryParam("first") Integer firstResult,
                                                @QueryParam("max") Integer maxResults,
                                                @QueryParam("briefRepresentation") Boolean briefRepresentation) {
-        this.auth.groups().requireViewMembers(group);
-
         firstResult = firstResult != null ? firstResult : 0;
         maxResults = maxResults != null ? maxResults : Constants.DEFAULT_MAX_RESULTS;
         boolean briefRepresentationB = briefRepresentation != null && briefRepresentation;
@@ -220,8 +205,6 @@ public class RealmGroupResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public ManagementPermissionReference getManagementPermissions() {
-        auth.groups().requireView(group);
-
         AdminPermissionManagement permissions = AdminPermissions.management(realm);
         if (!permissions.groups().isPermissionsEnabled(group)) {
             return new ManagementPermissionReference();
@@ -240,7 +223,6 @@ public class RealmGroupResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @NoCache
     public ManagementPermissionReference setManagementPermissionsEnabled(ManagementPermissionReference ref) {
-        auth.groups().requireManage(group);
         AdminPermissionManagement permissions = AdminPermissions.management(realm);
         permissions.groups().setPermissionsEnabled(group, ref.isEnabled());
         if (ref.isEnabled()) {

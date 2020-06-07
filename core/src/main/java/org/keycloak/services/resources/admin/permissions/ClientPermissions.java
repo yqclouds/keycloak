@@ -177,7 +177,6 @@ class ClientPermissions implements ClientPermissionEvaluator, ClientPermissionMa
         deletePolicy(getConfigurePermissionName(client), server);
         deletePolicy(getExchangeToPermissionName(client), server);
         ResourceModel resource = authz.getStoreFactory().getResourceStore().findByName(getResourceName(client), server.getId());
-        ;
         if (resource != null) authz.getStoreFactory().getResourceStore().delete(resource.getId());
     }
 
@@ -284,9 +283,7 @@ class ClientPermissions implements ClientPermissionEvaluator, ClientPermissionMa
     public ResourceModel resource(ClientModel client) {
         ResourceServerModel server = resourceServer(client);
         if (server == null) return null;
-        ResourceModel resource = authz.getStoreFactory().getResourceStore().findByName(getResourceName(client), server.getId());
-        if (resource == null) return null;
-        return resource;
+        return authz.getStoreFactory().getResourceStore().findByName(getResourceName(client), server.getId());
     }
 
     @Override
@@ -342,7 +339,7 @@ class ClientPermissions implements ClientPermissionEvaluator, ClientPermissionMa
                 @Override
                 public Map<String, Collection<String>> getBaseAttributes() {
                     Map<String, Collection<String>> attributes = super.getBaseAttributes();
-                    attributes.put("kc.client.id", Arrays.asList(authorizedClient.getClientId()));
+                    attributes.put("kc.client.id", Collections.singletonList(authorizedClient.getClientId()));
                     return attributes;
                 }
 

@@ -19,8 +19,6 @@ package com.hsbc.unified.iam.web.admin.resources;
 import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.authentication.*;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
@@ -28,8 +26,6 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.idm.*;
 import org.keycloak.services.ErrorResponse;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.utils.CredentialHelper;
 import org.keycloak.utils.ReservedCharValidator;
 import org.slf4j.Logger;
@@ -55,14 +51,12 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 )
 @PreAuthorize("hasPermission({'master', 'admin'})")
 public class RealmAuthenticationManagementResource {
-
     protected static final Logger LOG = LoggerFactory.getLogger(RealmAuthenticationManagementResource.class);
-    private final RealmModel realm;
-    private AdminPermissionEvaluator auth;
 
-    public RealmAuthenticationManagementResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    private final RealmModel realm;
+
+    public RealmAuthenticationManagementResource(RealmModel realm) {
         this.realm = realm;
-        this.auth = auth;
     }
 
     public static AuthenticationFlowModel copyFlow(RealmModel realm, AuthenticationFlowModel flow, String newName) {
@@ -119,8 +113,6 @@ public class RealmAuthenticationManagementResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public List<Map<String, Object>> getFormProviders() {
-        auth.realm().requireViewRealm();
-
         return buildProviderMetadata(formAuthenticatorFactories);
     }
 
@@ -137,8 +129,6 @@ public class RealmAuthenticationManagementResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public List<Map<String, Object>> getAuthenticatorProviders() {
-        auth.realm().requireViewRealm();
-
         return buildProviderMetadata(authenticatorFactories);
     }
 
@@ -155,8 +145,6 @@ public class RealmAuthenticationManagementResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public List<Map<String, Object>> getClientAuthenticatorProviders() {
-        auth.realm().requireViewClientAuthenticatorProviders();
-
         return buildProviderMetadata(clientAuthenticatorFactories);
     }
 
@@ -187,8 +175,6 @@ public class RealmAuthenticationManagementResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public List<Map<String, Object>> getFormActionProviders() {
-        auth.realm().requireViewRealm();
-
         return buildProviderMetadata(formActionFactories);
     }
 
@@ -205,8 +191,6 @@ public class RealmAuthenticationManagementResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public List<AuthenticationFlowRepresentation> getFlows() {
-        auth.realm().requireViewAuthenticationFlows();
-
         List<AuthenticationFlowRepresentation> flows = new LinkedList<>();
         for (AuthenticationFlowModel flow : realm.getAuthenticationFlows()) {
             // KEYCLOAK-3517, we need a better way to filter non-configurable internal flows
@@ -230,8 +214,6 @@ public class RealmAuthenticationManagementResource {
     @NoCache
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createFlow(AuthenticationFlowRepresentation flow) {
-        auth.realm().requireManageRealm();
-
         if (flow.getAlias() == null || flow.getAlias().isEmpty()) {
             return ErrorResponse.exists("Failed to create flow with empty alias name");
         }
@@ -258,8 +240,6 @@ public class RealmAuthenticationManagementResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public AuthenticationFlowRepresentation getFlow(@PathParam("id") String id) {
-        auth.realm().requireViewRealm();
-
         AuthenticationFlowModel flow = realm.getAuthenticationFlowById(id);
         if (flow == null) {
             throw new NotFoundException("Could not find flow with id");
@@ -271,15 +251,12 @@ public class RealmAuthenticationManagementResource {
      * Update an authentication flow
      *
      * @param flow Authentication flow representation
-     * @return
      */
     @Path("/flows/{id}")
     @PUT
     @NoCache
     @Consumes(MediaType.APPLICATION_JSON)
     public Response updateFlow(@PathParam("id") String id, AuthenticationFlowRepresentation flow) {
-        auth.realm().requireManageRealm();
-
         AuthenticationFlowRepresentation existingFlow = getFlow(id);
 
         if (flow.getAlias() == null || flow.getAlias().isEmpty()) {
@@ -301,8 +278,6 @@ public class RealmAuthenticationManagementResource {
     @DELETE
     @NoCache
     public void deleteFlow(@PathParam("id") String id) {
-        auth.realm().requireManageRealm();
-
         deleteFlow(id, true);
     }
 
@@ -337,8 +312,6 @@ public class RealmAuthenticationManagementResource {
     @NoCache
     @Consumes(MediaType.APPLICATION_JSON)
     public Response copy(@PathParam("flowAlias") String flowAlias, Map<String, String> data) {
-        auth.realm().requireManageRealm();
-
         String newName = data.get("newName");
         if (realm.getFlowByAlias(newName) != null) {
             return ErrorResponse.exists("New flow alias name already exists");
@@ -368,8 +341,6 @@ public class RealmAuthenticationManagementResource {
     @NoCache
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addExecutionFlow(@PathParam("flowAlias") String flowAlias, Map<String, String> data) {
-        auth.realm().requireManageRealm();
-
         AuthenticationFlowModel parentFlow = realm.getFlowByAlias(flowAlias);
         if (parentFlow == null) {
             return ErrorResponse.error("Parent flow doesn't exists", Response.Status.BAD_REQUEST);
@@ -423,8 +394,6 @@ public class RealmAuthenticationManagementResource {
     @NoCache
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addExecutionToFlow(@PathParam("flowAlias") String flowAlias, Map<String, String> data) {
-        auth.realm().requireManageRealm();
-
         AuthenticationFlowModel parentFlow = realm.getFlowByAlias(flowAlias);
         if (parentFlow == null) {
             throw new BadRequestException("Parent flow doesn't exists");
@@ -478,8 +447,6 @@ public class RealmAuthenticationManagementResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public Response getExecutions(@PathParam("flowAlias") String flowAlias) {
-        auth.realm().requireViewRealm();
-
         AuthenticationFlowModel flow = realm.getFlowByAlias(flowAlias);
         if (flow == null) {
             LOG.debug("flow not found: " + flowAlias);
@@ -560,15 +527,12 @@ public class RealmAuthenticationManagementResource {
      * Update authentication executions of a flow
      *
      * @param flowAlias Flow alias
-     * @param rep
      */
     @Path("/flows/{flowAlias}/executions")
     @PUT
     @NoCache
     @Consumes(MediaType.APPLICATION_JSON)
     public void updateExecutions(@PathParam("flowAlias") String flowAlias, AuthenticationExecutionInfoRepresentation rep) {
-        auth.realm().requireManageRealm();
-
         AuthenticationFlowModel flow = realm.getFlowByAlias(flowAlias);
         if (flow == null) {
             LOG.debug("flow not found: " + flowAlias);
@@ -594,9 +558,6 @@ public class RealmAuthenticationManagementResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public Response getExecution(final @PathParam("executionId") String executionId) {
-        //http://localhost:8080/auth/admin/realms/master/authentication/executions/cf26211b-9e68-4788-b754-1afd02e59d7f
-        auth.realm().requireManageRealm();
-
         final Optional<AuthenticationExecutionModel> model = Optional.ofNullable(realm.getAuthenticationExecutionById(executionId));
         if (!model.isPresent()) {
             LOG.debug("Could not find execution by Id: {}", executionId);
@@ -616,8 +577,6 @@ public class RealmAuthenticationManagementResource {
     @NoCache
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addExecution(AuthenticationExecutionRepresentation execution) {
-        auth.realm().requireManageRealm();
-
         AuthenticationExecutionModel model = RepresentationToModel.toModel(realm, execution);
         AuthenticationFlowModel parentFlow = getParentFlow(model);
         if (parentFlow.isBuiltIn()) {
@@ -650,8 +609,6 @@ public class RealmAuthenticationManagementResource {
     @POST
     @NoCache
     public void raisePriority(@PathParam("executionId") String execution) {
-        auth.realm().requireManageRealm();
-
         AuthenticationExecutionModel model = realm.getAuthenticationExecutionById(execution);
         if (model == null) {
             throw new NotFoundException("Illegal execution");
@@ -680,7 +637,7 @@ public class RealmAuthenticationManagementResource {
 
     public List<AuthenticationExecutionModel> getSortedExecutions(AuthenticationFlowModel parentFlow) {
         List<AuthenticationExecutionModel> executions = new LinkedList<>(realm.getAuthenticationExecutions(parentFlow.getId()));
-        Collections.sort(executions, AuthenticationExecutionModel.ExecutionComparator.SINGLETON);
+        executions.sort(AuthenticationExecutionModel.ExecutionComparator.SINGLETON);
         return executions;
     }
 
@@ -693,8 +650,6 @@ public class RealmAuthenticationManagementResource {
     @POST
     @NoCache
     public void lowerPriority(@PathParam("executionId") String execution) {
-        auth.realm().requireManageRealm();
-
         AuthenticationExecutionModel model = realm.getAuthenticationExecutionById(execution);
         if (model == null) {
             throw new NotFoundException("Illegal execution");
@@ -729,8 +684,6 @@ public class RealmAuthenticationManagementResource {
     @DELETE
     @NoCache
     public void removeExecution(@PathParam("executionId") String execution) {
-        auth.realm().requireManageRealm();
-
         AuthenticationExecutionModel model = realm.getAuthenticationExecutionById(execution);
         if (model == null) {
             throw new NotFoundException("Illegal execution");
@@ -754,15 +707,12 @@ public class RealmAuthenticationManagementResource {
      *
      * @param execution Execution id
      * @param json      JSON with new configuration
-     * @return
      */
     @Path("/executions/{executionId}/config")
     @POST
     @NoCache
     @Consumes(MediaType.APPLICATION_JSON)
     public Response newExecutionConfig(@PathParam("executionId") String execution, AuthenticatorConfigRepresentation json) {
-        auth.realm().requireManageRealm();
-
         ReservedCharValidator.validate(json.getAlias());
 
         AuthenticationExecutionModel model = realm.getAuthenticationExecutionById(execution);
@@ -794,8 +744,6 @@ public class RealmAuthenticationManagementResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public AuthenticatorConfigRepresentation getAuthenticatorConfig(@PathParam("executionId") String execution, @PathParam("id") String id) {
-        auth.realm().requireViewRealm();
-
         AuthenticatorConfigModel config = realm.getAuthenticatorConfigById(id);
         if (config == null) {
             throw new NotFoundException("Could not find authenticator config");
@@ -814,8 +762,6 @@ public class RealmAuthenticationManagementResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<Map<String, String>> getUnregisteredRequiredActions() {
-        auth.realm().requireViewRealm();
-
         List<ProviderFactory> factories = sessionFactory.getProviderFactories(RequiredActionProvider.class);
         List<Map<String, String>> unregisteredList = new LinkedList<>();
         for (ProviderFactory factory : factories) {
@@ -848,8 +794,6 @@ public class RealmAuthenticationManagementResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @NoCache
     public void registerRequiredAction(Map<String, String> data) {
-        auth.realm().requireManageRealm();
-
         String providerId = data.get("providerId");
         String name = data.get("name");
         RequiredActionProviderModel requiredAction = new RequiredActionProviderModel();
@@ -879,8 +823,6 @@ public class RealmAuthenticationManagementResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RequiredActionProviderRepresentation> getRequiredActions() {
-        auth.realm().requireViewRequiredActions();
-
         List<RequiredActionProviderRepresentation> list = new LinkedList<>();
         for (RequiredActionProviderModel model : realm.getRequiredActionProviders()) {
             RequiredActionProviderRepresentation rep = toRepresentation(model);
@@ -899,8 +841,6 @@ public class RealmAuthenticationManagementResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public RequiredActionProviderRepresentation getRequiredAction(@PathParam("alias") String alias) {
-        auth.realm().requireViewRealm();
-
         RequiredActionProviderModel model = realm.getRequiredActionProviderByAlias(alias);
         if (model == null) {
             throw new NotFoundException("Failed to find required action");
@@ -919,8 +859,6 @@ public class RealmAuthenticationManagementResource {
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     public void updateRequiredAction(@PathParam("alias") String alias, RequiredActionProviderRepresentation rep) {
-        auth.realm().requireManageRealm();
-
         RequiredActionProviderModel model = realm.getRequiredActionProviderByAlias(alias);
         if (model == null) {
             throw new NotFoundException("Failed to find required action");
@@ -945,8 +883,6 @@ public class RealmAuthenticationManagementResource {
     @Path("required-actions/{alias}")
     @DELETE
     public void removeRequiredAction(@PathParam("alias") String alias) {
-        auth.realm().requireManageRealm();
-
         RequiredActionProviderModel model = realm.getRequiredActionProviderByAlias(alias);
         if (model == null) {
             throw new NotFoundException("Failed to find required action.");
@@ -963,8 +899,6 @@ public class RealmAuthenticationManagementResource {
     @POST
     @NoCache
     public void raiseRequiredActionPriority(@PathParam("alias") String alias) {
-        auth.realm().requireManageRealm();
-
         RequiredActionProviderModel model = realm.getRequiredActionProviderByAlias(alias);
         if (model == null) {
             throw new NotFoundException("Failed to find required action.");
@@ -995,8 +929,6 @@ public class RealmAuthenticationManagementResource {
     @POST
     @NoCache
     public void lowerRequiredActionPriority(@PathParam("alias") String alias) {
-        auth.realm().requireManageRealm();
-
         RequiredActionProviderModel model = realm.getRequiredActionProviderByAlias(alias);
         if (model == null) {
             throw new NotFoundException("Failed to find required action.");
@@ -1029,8 +961,6 @@ public class RealmAuthenticationManagementResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public AuthenticatorConfigInfoRepresentation getAuthenticatorConfigDescription(@PathParam("providerId") String providerId) {
-        auth.realm().requireViewRealm();
-
         ConfigurableAuthenticatorFactory factory = credentialHelper.getConfigurableAuthenticatorFactory(providerId);
         if (factory == null) {
             throw new NotFoundException("Could not find authenticator provider");
@@ -1060,8 +990,6 @@ public class RealmAuthenticationManagementResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public Map<String, List<ConfigPropertyRepresentation>> getPerClientConfigDescription() {
-        auth.realm().requireViewClientAuthenticatorProviders();
-
         List<ProviderFactory> factories = sessionFactory.getProviderFactories(ClientAuthenticator.class);
 
         Map<String, List<ConfigPropertyRepresentation>> toReturn = new HashMap<>();
@@ -1093,8 +1021,6 @@ public class RealmAuthenticationManagementResource {
     @NoCache
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createAuthenticatorConfig(AuthenticatorConfigRepresentation rep) {
-        auth.realm().requireManageRealm();
-
         ReservedCharValidator.validate(rep.getAlias());
 
         AuthenticatorConfigModel config = realm.addAuthenticatorConfig(RepresentationToModel.toModel(rep));
@@ -1111,8 +1037,6 @@ public class RealmAuthenticationManagementResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public AuthenticatorConfigRepresentation getAuthenticatorConfig(@PathParam("id") String id) {
-        auth.realm().requireViewRealm();
-
         AuthenticatorConfigModel config = realm.getAuthenticatorConfigById(id);
         if (config == null) {
             throw new NotFoundException("Could not find authenticator config");
@@ -1130,8 +1054,6 @@ public class RealmAuthenticationManagementResource {
     @DELETE
     @NoCache
     public void removeAuthenticatorConfig(@PathParam("id") String id) {
-        auth.realm().requireManageRealm();
-
         AuthenticatorConfigModel config = realm.getAuthenticatorConfigById(id);
         if (config == null) {
             throw new NotFoundException("Could not find authenticator config");
@@ -1160,8 +1082,6 @@ public class RealmAuthenticationManagementResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @NoCache
     public void updateAuthenticatorConfig(@PathParam("id") String id, AuthenticatorConfigRepresentation rep) {
-        auth.realm().requireManageRealm();
-
         ReservedCharValidator.validate(rep.getAlias());
         AuthenticatorConfigModel exists = realm.getAuthenticatorConfigById(id);
         if (exists == null) {

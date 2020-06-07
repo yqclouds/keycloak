@@ -25,7 +25,6 @@ import org.keycloak.representations.idm.MappingsRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.resources.admin.AdminRoot;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +36,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Base resource for managing users
@@ -52,8 +50,6 @@ public class RealmRoleMapperResource {
     protected static final Logger LOG = LoggerFactory.getLogger(RealmRoleMapperResource.class);
 
     protected RealmModel realm;
-    protected AdminPermissionEvaluator.RequirePermissionCheck managePermission;
-    protected AdminPermissionEvaluator.RequirePermissionCheck viewPermission;
     @Context
     protected ClientConnection clientConnection;
     @Context
@@ -61,19 +57,11 @@ public class RealmRoleMapperResource {
     @Context
     protected HttpHeaders headers;
     private RoleMapperModel roleMapper;
-    private AdminPermissionEvaluator auth;
 
     public RealmRoleMapperResource(RealmModel realm,
-                                   AdminPermissionEvaluator auth,
-                                   RoleMapperModel roleMapper,
-                                   AdminPermissionEvaluator.RequirePermissionCheck manageCheck,
-                                   AdminPermissionEvaluator.RequirePermissionCheck viewCheck) {
-        this.auth = auth;
+                                   RoleMapperModel roleMapper) {
         this.realm = realm;
         this.roleMapper = roleMapper;
-        this.managePermission = manageCheck;
-        this.viewPermission = viewCheck;
-
     }
 
     /**
@@ -83,8 +71,6 @@ public class RealmRoleMapperResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public MappingsRepresentation getRoleMappings() {
-        viewPermission.require();
-
         List<RoleRepresentation> realmRolesRepresentation = new ArrayList<>();
         Map<String, ClientMappingsRepresentation> appMappings = new HashMap<>();
 
@@ -123,8 +109,6 @@ public class RealmRoleMapperResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RoleRepresentation> getRealmRoleMappings() {
-        viewPermission.require();
-
         Set<RoleModel> realmMappings = roleMapper.getRealmRoleMappings();
         List<RoleRepresentation> realmMappingsRep = new ArrayList<>();
         for (RoleModel roleModel : realmMappings) {
@@ -143,8 +127,6 @@ public class RealmRoleMapperResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RoleRepresentation> getCompositeRealmRoleMappings() {
-        viewPermission.require();
-
         Set<RoleModel> roles = realm.getRoles();
         List<RoleRepresentation> realmMappingsRep = new ArrayList<>();
         for (RoleModel roleModel : roles) {
@@ -164,10 +146,8 @@ public class RealmRoleMapperResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RoleRepresentation> getAvailableRealmRoleMappings() {
-        viewPermission.require();
-
         Set<RoleModel> available = realm.getRoles();
-        Set<RoleModel> set = available.stream().filter(this::canMapRole).collect(Collectors.toSet());
+        Set<RoleModel> set = new HashSet<>(available);
         return RealmClientRoleMappingsResource.getAvailableRoles(roleMapper, set);
     }
 
@@ -180,8 +160,6 @@ public class RealmRoleMapperResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public void addRealmRoleMappings(List<RoleRepresentation> roles) {
-        managePermission.require();
-
         LOG.debug("** addRealmRoleMappings: {}", roles);
 
         for (RoleRepresentation role : roles) {
@@ -189,7 +167,6 @@ public class RealmRoleMapperResource {
             if (roleModel == null || !roleModel.getId().equals(role.getId())) {
                 throw new NotFoundException("Role not found");
             }
-            auth.roles().requireMapRole(roleModel);
             roleMapper.grantRole(roleModel);
         }
     }
@@ -201,15 +178,12 @@ public class RealmRoleMapperResource {
     @DELETE
     @Consumes(MediaType.APPLICATION_JSON)
     public void deleteRealmRoleMappings(List<RoleRepresentation> roles) {
-        managePermission.require();
-
         LOG.debug("deleteRealmRoleMappings");
         if (roles == null) {
             Set<RoleModel> roleModels = roleMapper.getRealmRoleMappings();
             roles = new LinkedList<>();
 
             for (RoleModel roleModel : roleModels) {
-                auth.roles().requireMapRole(roleModel);
                 roleMapper.deleteRoleMapping(roleModel);
                 roles.add(ModelToRepresentation.toBriefRepresentation(roleModel));
             }
@@ -220,21 +194,16 @@ public class RealmRoleMapperResource {
                 if (roleModel == null || !roleModel.getId().equals(role.getId())) {
                     throw new NotFoundException("Role not found");
                 }
-                auth.roles().requireMapRole(roleModel);
                 try {
                     roleMapper.deleteRoleMapping(roleModel);
                 } catch (ModelException me) {
-                    Properties messages = adminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
+                    Properties messages = adminRoot.getMessages(realm, Locale.getDefault().getLanguage());
                     throw new ErrorResponseException(me.getMessage(), MessageFormat.format(messages.getProperty(me.getMessage(), me.getMessage()), me.getParameters()),
                             Response.Status.BAD_REQUEST);
                 }
             }
 
         }
-    }
-
-    private boolean canMapRole(RoleModel roleModel) {
-        return auth.roles().canMapRole(roleModel);
     }
 
     @Path("clients/{client}")
@@ -244,7 +213,7 @@ public class RealmRoleMapperResource {
             throw new NotFoundException("Client not found");
         }
 
-        return new RealmClientRoleMappingsResource(realm, auth, roleMapper, clientModel, managePermission, viewPermission);
+        return new RealmClientRoleMappingsResource(realm, roleMapper, clientModel);
     }
 
     @Autowired

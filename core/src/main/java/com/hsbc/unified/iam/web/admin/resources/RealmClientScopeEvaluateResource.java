@@ -28,7 +28,6 @@ import org.keycloak.representations.AccessToken;
 import org.keycloak.services.Urls;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.managers.AuthenticationSessionManager;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
 import org.slf4j.Logger;
@@ -51,7 +50,6 @@ public class RealmClientScopeEvaluateResource {
 
     private final RealmModel realm;
     private final ClientModel client;
-    private final AdminPermissionEvaluator auth;
 
     private final UriInfo uriInfo;
     private final ClientConnection clientConnection;
@@ -59,12 +57,13 @@ public class RealmClientScopeEvaluateResource {
     @Autowired
     private ProtocolMapperUtils protocolMapperUtils;
 
-    public RealmClientScopeEvaluateResource(UriInfo uriInfo, RealmModel realm, AdminPermissionEvaluator auth,
-                                            ClientModel client, ClientConnection clientConnection) {
+    public RealmClientScopeEvaluateResource(UriInfo uriInfo,
+                                            RealmModel realm,
+                                            ClientModel client,
+                                            ClientConnection clientConnection) {
         this.uriInfo = uriInfo;
         this.realm = realm;
         this.client = client;
-        this.auth = auth;
         this.clientConnection = clientConnection;
     }
 
@@ -74,8 +73,6 @@ public class RealmClientScopeEvaluateResource {
      */
     @Path("scope-mappings/{roleContainerId}")
     public RealmClientScopeEvaluateScopeMappingsResource scopeMappings(@QueryParam("scope") String scopeParam, @PathParam("roleContainerId") String roleContainerId) {
-        auth.clients().requireView(client);
-
         if (roleContainerId == null) {
             throw new NotFoundException("No roleContainerId provided");
         }
@@ -85,7 +82,7 @@ public class RealmClientScopeEvaluateResource {
             throw new NotFoundException("Role Container not found");
         }
 
-        return new RealmClientScopeEvaluateScopeMappingsResource(roleContainer, auth, client, scopeParam);
+        return new RealmClientScopeEvaluateScopeMappingsResource(roleContainer, client, scopeParam);
     }
 
 
@@ -98,8 +95,6 @@ public class RealmClientScopeEvaluateResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public List<ProtocolMapperEvaluationRepresentation> getGrantedProtocolMappers(@QueryParam("scope") String scopeParam) {
-        auth.clients().requireView(client);
-
         List<ProtocolMapperEvaluationRepresentation> protocolMappers = new LinkedList<>();
 
         Set<ClientScopeModel> clientScopes = TokenManager.getRequestedClientScopes(scopeParam, client);
@@ -143,8 +138,6 @@ public class RealmClientScopeEvaluateResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public AccessToken generateExampleAccessToken(@QueryParam("scope") String scopeParam, @QueryParam("userId") String userId) {
-        auth.clients().requireView(client);
-
         if (userId == null) {
             throw new NotFoundException("No userId provided");
         }

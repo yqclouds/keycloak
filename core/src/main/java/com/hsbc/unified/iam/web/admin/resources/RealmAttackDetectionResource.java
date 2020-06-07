@@ -5,7 +5,6 @@ import com.hsbc.unified.iam.core.util.Time;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.models.*;
 import org.keycloak.services.managers.BruteForceProtector;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +32,6 @@ import java.util.Map;
 public class RealmAttackDetectionResource {
     protected static final Logger LOG = LoggerFactory.getLogger(RealmAttackDetectionResource.class);
 
-    protected AdminPermissionEvaluator auth;
     protected RealmModel realm;
     @Context
     protected KeycloakContext keycloakContext;
@@ -46,8 +44,7 @@ public class RealmAttackDetectionResource {
     @Context
     protected HttpHeaders headers;
 
-    public RealmAttackDetectionResource(AdminPermissionEvaluator auth, RealmModel realm) {
-        this.auth = auth;
+    public RealmAttackDetectionResource(RealmModel realm) {
         this.realm = realm;
     }
 
@@ -64,12 +61,6 @@ public class RealmAttackDetectionResource {
     @Produces(javax.ws.rs.core.MediaType.APPLICATION_JSON)
     public Map<String, Object> bruteForceUserStatus(@PathParam("userId") String userId) {
         UserModel user = userProvider.getUserById(userId, realm);
-        if (user == null) {
-            auth.users().requireView();
-        } else {
-            auth.users().requireView(user);
-        }
-
         Map<String, Object> data = new HashMap<>();
         data.put("disabled", false);
         data.put("numFailures", 0);
@@ -105,12 +96,6 @@ public class RealmAttackDetectionResource {
     @Path("brute-force/users/{userId}")
     @DELETE
     public void clearBruteForceForUser(@PathParam("userId") String userId) {
-        UserModel user = userProvider.getUserById(userId, realm);
-        if (user == null) {
-            auth.users().requireManage();
-        } else {
-            auth.users().requireManage(user);
-        }
         UserLoginFailureModel model = userSessionProvider.getUserLoginFailure(realm, userId);
         if (model != null) {
             userSessionProvider.removeUserLoginFailure(realm, userId);
@@ -125,8 +110,6 @@ public class RealmAttackDetectionResource {
     @Path("brute-force/users")
     @DELETE
     public void clearAllBruteForce() {
-        auth.users().requireManage();
-
         userSessionProvider.removeAllUserLoginFailures(realm);
     }
 }

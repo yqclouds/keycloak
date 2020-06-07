@@ -30,7 +30,6 @@ import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentati
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
 import org.keycloak.representations.idm.authorization.ScopeRepresentation;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
@@ -47,17 +46,14 @@ public class PolicyResourceService {
 
     protected final ResourceServerModel resourceServer;
     protected final AuthorizationProvider authorization;
-    protected final AdminPermissionEvaluator auth;
     private final PolicyModel policy;
 
     public PolicyResourceService(PolicyModel policy,
                                  ResourceServerModel resourceServer,
-                                 AuthorizationProvider authorization,
-                                 AdminPermissionEvaluator auth) {
+                                 AuthorizationProvider authorization) {
         this.policy = policy;
         this.resourceServer = resourceServer;
         this.authorization = authorization;
-        this.auth = auth;
     }
 
     @PUT
@@ -65,10 +61,6 @@ public class PolicyResourceService {
     @Produces("application/json")
     @NoCache
     public Response update(String payload) {
-        if (auth != null) {
-            this.auth.realm().requireManageAuthorization();
-        }
-
         AbstractPolicyRepresentation representation = doCreateRepresentation(payload);
 
         if (policy == null) {
@@ -84,10 +76,6 @@ public class PolicyResourceService {
 
     @DELETE
     public Response delete() {
-        if (auth != null) {
-            this.auth.realm().requireManageAuthorization();
-        }
-
         if (policy == null) {
             return Response.status(Status.NOT_FOUND).build();
         }
@@ -109,19 +97,11 @@ public class PolicyResourceService {
     @Produces("application/json")
     @NoCache
     public Response findById(@QueryParam("fields") String fields) {
-        if (auth != null) {
-            this.auth.realm().requireViewAuthorization();
-        }
-
         if (policy == null) {
             return Response.status(Status.NOT_FOUND).build();
         }
 
         return Response.ok(toRepresentation(policy, fields, authorization)).build();
-    }
-
-    private AbstractPolicyRepresentation toRepresentation(PolicyModel policy, AuthorizationProvider authorization) {
-        return toRepresentation(policy, null, authorization);
     }
 
     @Autowired
@@ -136,10 +116,6 @@ public class PolicyResourceService {
     @Produces("application/json")
     @NoCache
     public Response getDependentPolicies() {
-        if (auth != null) {
-            this.auth.realm().requireViewAuthorization();
-        }
-
         if (policy == null) {
             return Response.status(Status.NOT_FOUND).build();
         }
@@ -162,10 +138,6 @@ public class PolicyResourceService {
     @Produces("application/json")
     @NoCache
     public Response getScopes() {
-        if (auth != null) {
-            this.auth.realm().requireViewAuthorization();
-        }
-
         if (policy == null) {
             return Response.status(Status.NOT_FOUND).build();
         }
@@ -185,10 +157,6 @@ public class PolicyResourceService {
     @Produces("application/json")
     @NoCache
     public Response getResources() {
-        if (auth != null) {
-            this.auth.realm().requireViewAuthorization();
-        }
-
         if (policy == null) {
             return Response.status(Status.NOT_FOUND).build();
         }
@@ -208,10 +176,6 @@ public class PolicyResourceService {
     @Produces("application/json")
     @NoCache
     public Response getAssociatedPolicies() {
-        if (auth != null) {
-            this.auth.realm().requireViewAuthorization();
-        }
-
         if (policy == null) {
             return Response.status(Status.NOT_FOUND).build();
         }

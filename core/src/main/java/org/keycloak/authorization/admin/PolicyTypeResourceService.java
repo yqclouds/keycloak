@@ -22,8 +22,6 @@ import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
@@ -33,8 +31,10 @@ import java.io.IOException;
  */
 public class PolicyTypeResourceService extends PolicyResourceService {
 
-    public PolicyTypeResourceService(PolicyModel policy, ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth) {
-        super(policy, resourceServer, authorization, auth);
+    public PolicyTypeResourceService(PolicyModel policy,
+                                     ResourceServerModel resourceServer,
+                                     AuthorizationProvider authorization) {
+        super(policy, resourceServer, authorization);
     }
 
     @Override

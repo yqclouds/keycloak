@@ -34,7 +34,6 @@ import org.keycloak.representations.idm.ComponentTypeRepresentation;
 import org.keycloak.representations.idm.ConfigPropertyRepresentation;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.resources.admin.AdminRoot;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,15 +69,13 @@ public class RealmComponentsResource {
     private KeycloakContext keycloakContext;
     @Context
     protected HttpHeaders headers;
-    private AdminPermissionEvaluator auth;
 
     @Autowired
     private ModelToRepresentation modelToRepresentation;
     @Autowired
     private RepresentationToModel representationToModel;
 
-    public RealmComponentsResource(RealmModel realm, AdminPermissionEvaluator auth) {
-        this.auth = auth;
+    public RealmComponentsResource(RealmModel realm) {
         this.realm = realm;
     }
 
@@ -88,7 +85,6 @@ public class RealmComponentsResource {
     public List<ComponentRepresentation> getComponents(@QueryParam("parent") String parent,
                                                        @QueryParam("type") String type,
                                                        @QueryParam("name") String name) {
-        auth.realm().requireViewRealm();
         List<ComponentModel> components;
         if (parent == null && type == null) {
             components = realm.getComponents();
@@ -117,7 +113,6 @@ public class RealmComponentsResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(ComponentRepresentation rep) {
-        auth.realm().requireManageRealm();
         try {
             ComponentModel model = representationToModel.toModel(rep);
             if (model.getParentId() == null) model.setParentId(realm.getId());
@@ -137,7 +132,6 @@ public class RealmComponentsResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public ComponentRepresentation getComponent(@PathParam("id") String id) {
-        auth.realm().requireViewRealm();
         ComponentModel model = realm.getComponent(id);
         if (model == null) {
             throw new NotFoundException("Could not find component");
@@ -152,7 +146,6 @@ public class RealmComponentsResource {
     @Path("{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response updateComponent(@PathParam("id") String id, ComponentRepresentation rep) {
-        auth.realm().requireManageRealm();
         try {
             ComponentModel model = realm.getComponent(id);
             if (model == null) {
@@ -171,7 +164,6 @@ public class RealmComponentsResource {
     @DELETE
     @Path("{id}")
     public void removeComponent(@PathParam("id") String id) {
-        auth.realm().requireManageRealm();
         ComponentModel model = realm.getComponent(id);
         if (model == null) {
             throw new NotFoundException("Could not find component");
@@ -183,9 +175,9 @@ public class RealmComponentsResource {
     private AdminRoot adminRoot;
 
     private Response localizedErrorResponse(ComponentValidationException cve) {
-        Properties messages = adminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale(), "admin-messages", "messages");
+        Properties messages = adminRoot.getMessages(realm, Locale.getDefault().getLanguage(), "admin-messages", "messages");
 
-        Object[] localizedParameters = cve.getParameters() == null ? null : Arrays.asList(cve.getParameters()).stream().map((Object parameter) -> {
+        Object[] localizedParameters = cve.getParameters() == null ? null : Arrays.stream(cve.getParameters()).map((Object parameter) -> {
 
             if (parameter instanceof String) {
                 String paramStr = (String) parameter;
@@ -211,7 +203,6 @@ public class RealmComponentsResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<ComponentTypeRepresentation> getSubcomponentConfig(@PathParam("id") String parentId, @QueryParam("type") String subtype) {
-        auth.realm().requireViewRealm();
         ComponentModel parent = realm.getComponent(parentId);
         if (parent == null) {
             throw new NotFoundException("Could not find parent component");

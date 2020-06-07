@@ -37,7 +37,6 @@ import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentati
 import org.keycloak.representations.idm.authorization.PolicyProviderRepresentation;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.services.ErrorResponseException;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
@@ -58,12 +57,10 @@ public class PolicyService {
 
     protected final ResourceServerModel resourceServer;
     protected final AuthorizationProvider authorization;
-    protected final AdminPermissionEvaluator auth;
 
-    public PolicyService(ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth) {
+    public PolicyService(ResourceServerModel resourceServer, AuthorizationProvider authorization) {
         this.resourceServer = resourceServer;
         this.authorization = authorization;
-        this.auth = auth;
     }
 
     @Path("{type}")
@@ -80,11 +77,11 @@ public class PolicyService {
     }
 
     protected PolicyTypeService doCreatePolicyTypeResource(String type) {
-        return new PolicyTypeService(type, resourceServer, authorization, auth);
+        return new PolicyTypeService(type, resourceServer, authorization);
     }
 
     protected Object doCreatePolicyResource(PolicyModel policy) {
-        return new PolicyResourceService(policy, resourceServer, authorization, auth);
+        return new PolicyResourceService(policy, resourceServer, authorization);
     }
 
     @POST
@@ -92,10 +89,6 @@ public class PolicyService {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public Response create(String payload) {
-        if (auth != null) {
-            this.auth.realm().requireManageAuthorization();
-        }
-
         AbstractPolicyRepresentation representation = doCreateRepresentation(payload);
         PolicyModel policy = create(representation);
 
@@ -132,10 +125,6 @@ public class PolicyService {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public Response findByName(@QueryParam("name") String name, @QueryParam("fields") String fields) {
-        if (auth != null) {
-            this.auth.realm().requireViewAuthorization();
-        }
-
         StoreFactory storeFactory = authorization.getStoreFactory();
 
         if (name == null) {
@@ -164,10 +153,6 @@ public class PolicyService {
                             @QueryParam("fields") String fields,
                             @QueryParam("first") Integer firstResult,
                             @QueryParam("max") Integer maxResult) {
-        if (auth != null) {
-            this.auth.realm().requireViewAuthorization();
-        }
-
         Map<String, String[]> search = new HashMap<>();
 
         if (id != null && !"".equals(id.trim())) {
@@ -228,7 +213,7 @@ public class PolicyService {
                     return Response.ok().build();
                 }
 
-                search.put("scope", scopes.toArray(new String[scopes.size()]));
+                search.put("scope", scopes.toArray(new String[0]));
             } else {
                 search.put("scope", new String[]{scopeModel.getId()});
             }
@@ -262,10 +247,6 @@ public class PolicyService {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public Response findPolicyProviders() {
-        if (auth != null) {
-            this.auth.realm().requireViewAuthorization();
-        }
-
         return Response.ok(
                 authorization.getProviderFactories().stream()
                         .filter(factory -> !factory.isInternal())
@@ -284,11 +265,7 @@ public class PolicyService {
 
     @Path("evaluate")
     public PolicyEvaluationService getPolicyEvaluateResource() {
-        if (auth != null) {
-            this.auth.realm().requireViewAuthorization();
-        }
-
-        PolicyEvaluationService resource = new PolicyEvaluationService(this.resourceServer, this.authorization, this.auth);
+        PolicyEvaluationService resource = new PolicyEvaluationService(this.resourceServer, this.authorization);
 
         ResteasyProviderFactory.getInstance().injectProperties(resource);
 

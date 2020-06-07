@@ -26,7 +26,6 @@ import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.ClientScopeRepresentation;
 import org.keycloak.services.ErrorResponse;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,19 +46,15 @@ public class RealmClientScopeResource {
     protected static final Logger LOG = LoggerFactory.getLogger(RealmClientScopeResource.class);
     protected RealmModel realm;
     protected ClientScopeModel clientScope;
-    private AdminPermissionEvaluator auth;
 
-    public RealmClientScopeResource(RealmModel realm, AdminPermissionEvaluator auth, ClientScopeModel clientScope) {
+    public RealmClientScopeResource(RealmModel realm, ClientScopeModel clientScope) {
         this.realm = realm;
-        this.auth = auth;
         this.clientScope = clientScope;
     }
 
     @Path("protocol-mappers")
     public RealmProtocolMappersResource getProtocolMappers() {
-        AdminPermissionEvaluator.RequirePermissionCheck manageCheck = () -> auth.clients().requireManage(clientScope);
-        AdminPermissionEvaluator.RequirePermissionCheck viewCheck = () -> auth.clients().requireView(clientScope);
-        RealmProtocolMappersResource mappers = new RealmProtocolMappersResource(realm, clientScope, auth, manageCheck, viewCheck);
+        RealmProtocolMappersResource mappers = new RealmProtocolMappersResource(realm, clientScope);
         ResteasyProviderFactory.getInstance().injectProperties(mappers);
         return mappers;
     }
@@ -69,9 +64,7 @@ public class RealmClientScopeResource {
      */
     @Path("scope-mappings")
     public RealmScopeMappedResource getScopeMappedResource() {
-        AdminPermissionEvaluator.RequirePermissionCheck manageCheck = () -> auth.clients().requireManage(clientScope);
-        AdminPermissionEvaluator.RequirePermissionCheck viewCheck = () -> auth.clients().requireView(clientScope);
-        return new RealmScopeMappedResource(realm, auth, clientScope, manageCheck, viewCheck);
+        return new RealmScopeMappedResource(realm, clientScope);
     }
 
     /**
@@ -80,8 +73,6 @@ public class RealmClientScopeResource {
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     public Response update(final ClientScopeRepresentation rep) {
-        auth.clients().requireManageClientScopes();
-
         try {
             RepresentationToModel.updateClientScope(rep, clientScope);
             return Response.noContent().build();
@@ -100,9 +91,6 @@ public class RealmClientScopeResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public ClientScopeRepresentation getClientScope() {
-        auth.clients().requireView(clientScope);
-
-
         return modelToRepresentation.toRepresentation(clientScope);
     }
 
@@ -112,7 +100,6 @@ public class RealmClientScopeResource {
     @DELETE
     @NoCache
     public Response deleteClientScope() {
-        auth.clients().requireManage(clientScope);
         try {
             realm.removeClientScope(clientScope.getId());
             return Response.noContent().build();

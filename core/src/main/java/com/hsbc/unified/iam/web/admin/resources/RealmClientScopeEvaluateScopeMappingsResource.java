@@ -22,7 +22,6 @@ import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.protocol.oidc.TokenManager;
 import org.keycloak.representations.idm.RoleRepresentation;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -39,16 +38,13 @@ import java.util.stream.Collectors;
 public class RealmClientScopeEvaluateScopeMappingsResource {
 
     private final RoleContainerModel roleContainer;
-    private final AdminPermissionEvaluator auth;
     private final ClientModel client;
     private final String scopeParam;
 
     public RealmClientScopeEvaluateScopeMappingsResource(RoleContainerModel roleContainer,
-                                                         AdminPermissionEvaluator auth,
                                                          ClientModel client,
                                                          String scopeParam) {
         this.roleContainer = roleContainer;
-        this.auth = auth;
         this.client = client;
         this.scopeParam = scopeParam;
     }
@@ -93,8 +89,6 @@ public class RealmClientScopeEvaluateScopeMappingsResource {
         List<RoleModel> result = new LinkedList<>();
 
         for (RoleModel role : roleContainer.getRoles()) {
-            if (!auth.roles().canView(role)) continue;
-
             for (ScopeContainerModel scopeContainer : clientScopes) {
                 if (scopeContainer.hasScope(role)) {
                     result.add(role);

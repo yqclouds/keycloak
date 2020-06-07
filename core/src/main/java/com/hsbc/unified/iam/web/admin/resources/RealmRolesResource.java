@@ -26,7 +26,6 @@ import org.keycloak.representations.idm.ManagementPermissionReference;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.services.ErrorResponse;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionManagement;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import org.keycloak.utils.ReservedCharValidator;
@@ -57,7 +56,6 @@ import java.util.stream.Collectors;
 @PreAuthorize("hasPermission({'master', 'admin'})")
 public class RealmRolesResource extends AbstractRoleResource {
     private final RealmModel realm;
-    protected AdminPermissionEvaluator auth;
 
     protected RoleContainerModel roleContainer;
     private UriInfo uriInfo;
@@ -72,12 +70,10 @@ public class RealmRolesResource extends AbstractRoleResource {
 
     public RealmRolesResource(UriInfo uriInfo,
                               RealmModel realm,
-                              AdminPermissionEvaluator auth,
                               RoleContainerModel roleContainer) {
         super(realm);
         this.uriInfo = uriInfo;
         this.realm = realm;
-        this.auth = auth;
         this.roleContainer = roleContainer;
     }
 
@@ -91,8 +87,6 @@ public class RealmRolesResource extends AbstractRoleResource {
                                              @QueryParam("first") Integer firstResult,
                                              @QueryParam("max") Integer maxResults,
                                              @QueryParam("briefRepresentation") @DefaultValue("true") boolean briefRepresentation) {
-        auth.roles().requireList(roleContainer);
-
         Set<RoleModel> roleModels;
 
         if (search != null && search.trim().length() > 0) {
@@ -120,8 +114,6 @@ public class RealmRolesResource extends AbstractRoleResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createRole(final RoleRepresentation rep) {
-        auth.roles().requireManage(roleContainer);
-
         if (rep.getName() == null) {
             throw new BadRequestException();
         }
@@ -150,8 +142,6 @@ public class RealmRolesResource extends AbstractRoleResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public RoleRepresentation getRole(final @PathParam("role-name") String roleName) {
-        auth.roles().requireView(roleContainer);
-
         RoleModel roleModel = roleContainer.getRole(roleName);
         if (roleModel == null) {
             throw new NotFoundException("Could not find role");
@@ -169,7 +159,6 @@ public class RealmRolesResource extends AbstractRoleResource {
     @DELETE
     @NoCache
     public void deleteRole(final @PathParam("role-name") String roleName) {
-        auth.roles().requireManage(roleContainer);
         RoleModel role = roleContainer.getRole(roleName);
         if (role == null) {
             throw new NotFoundException("Could not find role");
@@ -186,7 +175,6 @@ public class RealmRolesResource extends AbstractRoleResource {
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     public Response updateRole(final @PathParam("role-name") String roleName, final RoleRepresentation rep) {
-        auth.roles().requireManage(roleContainer);
         RoleModel role = roleContainer.getRole(roleName);
         if (role == null) {
             throw new NotFoundException("Could not find role");
@@ -209,12 +197,11 @@ public class RealmRolesResource extends AbstractRoleResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public void addComposites(final @PathParam("role-name") String roleName, List<RoleRepresentation> roles) {
-        auth.roles().requireManage(roleContainer);
         RoleModel role = roleContainer.getRole(roleName);
         if (role == null) {
             throw new NotFoundException("Could not find role");
         }
-        addComposites(auth, roles, role);
+        addComposites(roles, role);
     }
 
     /**
@@ -227,7 +214,6 @@ public class RealmRolesResource extends AbstractRoleResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public Set<RoleRepresentation> getRoleComposites(final @PathParam("role-name") String roleName) {
-        auth.roles().requireView(roleContainer);
         RoleModel role = roleContainer.getRole(roleName);
         if (role == null) {
             throw new NotFoundException("Could not find role");
@@ -245,7 +231,6 @@ public class RealmRolesResource extends AbstractRoleResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public Set<RoleRepresentation> getRealmRoleComposites(final @PathParam("role-name") String roleName) {
-        auth.roles().requireView(roleContainer);
         RoleModel role = roleContainer.getRole(roleName);
         if (role == null) {
             throw new NotFoundException("Could not find role");
@@ -264,7 +249,6 @@ public class RealmRolesResource extends AbstractRoleResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Set<RoleRepresentation> getClientRoleComposites(final @PathParam("role-name") String roleName,
                                                            final @PathParam("client") String client) {
-        auth.roles().requireView(roleContainer);
         RoleModel role = roleContainer.getRole(roleName);
         if (role == null) {
             throw new NotFoundException("Could not find role");
@@ -287,11 +271,7 @@ public class RealmRolesResource extends AbstractRoleResource {
     @Path("{role-name}/composites")
     @DELETE
     @Consumes(MediaType.APPLICATION_JSON)
-    public void deleteComposites(
-            final @PathParam("role-name") String roleName,
-            List<RoleRepresentation> roles) {
-
-        auth.roles().requireManage(roleContainer);
+    public void deleteComposites(final @PathParam("role-name") String roleName, List<RoleRepresentation> roles) {
         RoleModel role = roleContainer.getRole(roleName);
         if (role == null) {
             throw new NotFoundException("Could not find role");
@@ -307,7 +287,6 @@ public class RealmRolesResource extends AbstractRoleResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public ManagementPermissionReference getManagementPermissions(final @PathParam("role-name") String roleName) {
-        auth.roles().requireView(roleContainer);
         RoleModel role = roleContainer.getRole(roleName);
         if (role == null) {
             throw new NotFoundException("Could not find role");
@@ -330,8 +309,8 @@ public class RealmRolesResource extends AbstractRoleResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @NoCache
-    public ManagementPermissionReference setManagementPermissionsEnabled(final @PathParam("role-name") String roleName, ManagementPermissionReference ref) {
-        auth.roles().requireManage(roleContainer);
+    public ManagementPermissionReference setManagementPermissionsEnabled(final @PathParam("role-name") String roleName,
+                                                                         ManagementPermissionReference ref) {
         RoleModel role = roleContainer.getRole(roleName);
         if (role == null) {
             throw new NotFoundException("Could not find role");
@@ -358,8 +337,6 @@ public class RealmRolesResource extends AbstractRoleResource {
     public List<UserRepresentation> getUsersInRole(final @PathParam("role-name") String roleName,
                                                    @QueryParam("first") Integer firstResult,
                                                    @QueryParam("max") Integer maxResults) {
-
-        auth.roles().requireView(roleContainer);
         firstResult = firstResult != null ? firstResult : 0;
         maxResults = maxResults != null ? maxResults : Constants.DEFAULT_MAX_RESULTS;
 
@@ -392,8 +369,6 @@ public class RealmRolesResource extends AbstractRoleResource {
                                                      @QueryParam("first") Integer firstResult,
                                                      @QueryParam("max") Integer maxResults,
                                                      @QueryParam("briefRepresentation") @DefaultValue("true") boolean briefRepresentation) {
-
-        auth.roles().requireView(roleContainer);
         firstResult = firstResult != null ? firstResult : 0;
         maxResults = maxResults != null ? maxResults : Constants.DEFAULT_MAX_RESULTS;
 

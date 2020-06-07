@@ -29,7 +29,6 @@ import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.managers.LDAPConnectionTestManager;
 import org.keycloak.services.managers.ResourceAdminManager;
 import org.keycloak.services.managers.UserStorageSyncManager;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.storage.UserStorageProviderModel;
 import org.keycloak.utils.ReservedCharValidator;
 import org.slf4j.Logger;
@@ -110,7 +109,6 @@ public class RealmResource {
         return result;
     }
 
-    protected AdminPermissionEvaluator auth;
     protected RealmModel realm;
     @Context
     protected ClientConnection connection;
@@ -130,8 +128,7 @@ public class RealmResource {
     @Autowired
     private Map<String, RequiredActionProvider> requiredActionProviders;
 
-    public RealmResource(AdminPermissionEvaluator auth, RealmModel realm) {
-        this.auth = auth;
+    public RealmResource(RealmModel realm) {
         this.realm = realm;
     }
 
@@ -142,22 +139,7 @@ public class RealmResource {
      */
     @RequestMapping(method = RequestMethod.GET)
     public RealmRepresentation getRealm() {
-        if (auth.realm().canViewRealm()) {
-            return ModelToRepresentation.toRepresentation(realm, false);
-        } else {
-            auth.realm().requireViewRealmNameList();
-
-            RealmRepresentation rep = new RealmRepresentation();
-            rep.setRealm(realm.getName());
-
-            if (auth.realm().canViewIdentityProviders()) {
-                RealmRepresentation r = ModelToRepresentation.toRepresentation(realm, false);
-                rep.setIdentityProviders(r.getIdentityProviders());
-                rep.setIdentityProviderMappers(r.getIdentityProviderMappers());
-            }
-
-            return rep;
-        }
+        return ModelToRepresentation.toRepresentation(realm, false);
     }
 
     /**
@@ -168,8 +150,6 @@ public class RealmResource {
      */
     @RequestMapping(method = RequestMethod.PUT)
     public Response updateRealm(final RealmRepresentation rep) {
-        auth.realm().requireManageRealm();
-
         LOG.debug("updating realm: " + realm.getName());
 
         if (Config.getAdminRealm().equals(realm.getName()) && (rep.getRealm() != null && !rep.getRealm().equals(Config.getAdminRealm()))) {
@@ -223,8 +203,6 @@ public class RealmResource {
      */
     @RequestMapping(method = RequestMethod.DELETE)
     public void deleteRealm() {
-        auth.realm().requireManageRealm();
-
         if (!new RealmFacadeImpl().removeRealm(realm)) {
             throw new NotFoundException("Realm doesn't exist");
         }
@@ -236,8 +214,6 @@ public class RealmResource {
     @Path("push-revocation")
     @POST
     public GlobalRequestResult pushRevocation() {
-        auth.realm().requireManageRealm();
-
         return new ResourceAdminManager().pushRealmRevocationPolicy(realm);
     }
 
@@ -248,8 +224,6 @@ public class RealmResource {
     @Path("logout-all")
     @POST
     public GlobalRequestResult logoutAll() {
-        auth.users().requireManage();
-
         userSessionProvider.removeUserSessions(realm);
         return new ResourceAdminManager().logoutAll(realm);
     }
@@ -261,8 +235,6 @@ public class RealmResource {
     @Path("sessions/{session}")
     @DELETE
     public void deleteSession(@PathParam("session") String sessionId) {
-        auth.users().requireManage();
-
         UserSessionModel userSession = userSessionProvider.getUserSession(realm, sessionId);
         if (userSession == null) throw new NotFoundException("Sesssion not found");
         authenticationManager.backchannelLogout(realm, userSession, keycloakContext.getUri(), connection, headers, true);
@@ -279,8 +251,6 @@ public class RealmResource {
     @NoCache
     @Produces(javax.ws.rs.core.MediaType.APPLICATION_JSON)
     public List<Map<String, String>> getClientSessionStats() {
-        auth.realm().requireViewRealm();
-
         Map<String, Map<String, String>> data = new HashMap<>();
         {
             Map<String, Long> activeCount = userSessionProvider.getActiveClientSessionStats(realm, false);
@@ -333,8 +303,6 @@ public class RealmResource {
                                        @FormParam("connectionTimeout") String connectionTimeout,
                                        @FormParam("componentId") String componentId,
                                        @FormParam("startTls") String startTls) {
-        auth.realm().requireManageRealm();
-
         if (componentId != null && bindCredential.equals(ComponentRepresentation.SECRET_VALUE)) {
             bindCredential = realm.getComponent(componentId).getConfig().getFirst(LDAPConstants.BIND_CREDENTIAL);
         }
@@ -387,7 +355,7 @@ public class RealmResource {
     @Consumes(javax.ws.rs.core.MediaType.APPLICATION_JSON)
     public Response testSMTPConnection(Map<String, String> settings) {
         try {
-            UserModel user = auth.adminAuth().getUser();
+            UserModel user = null; // auth.adminAuth().getUser();
             if (user.getEmail() == null) {
                 return ErrorResponse.error("Logged in user does not have an e-mail.", Response.Status.INTERNAL_SERVER_ERROR);
             }
@@ -412,8 +380,6 @@ public class RealmResource {
     @Produces(javax.ws.rs.core.MediaType.APPLICATION_JSON)
     @Path("default-groups")
     public List<GroupRepresentation> getDefaultGroups() {
-        auth.realm().requireViewRealm();
-
         List<GroupRepresentation> defaults = new LinkedList<>();
         for (GroupModel group : realm.getDefaultGroups()) {
             defaults.add(ModelToRepresentation.toRepresentation(group, false));
@@ -425,8 +391,6 @@ public class RealmResource {
     @NoCache
     @Path("default-groups/{groupId}")
     public void addDefaultGroup(@PathParam("groupId") String groupId) {
-        auth.realm().requireManageRealm();
-
         GroupModel group = realm.getGroupById(groupId);
         if (group == null) {
             throw new NotFoundException("Group not found");
@@ -438,8 +402,6 @@ public class RealmResource {
     @NoCache
     @Path("default-groups/{groupId}")
     public void removeDefaultGroup(@PathParam("groupId") String groupId) {
-        auth.realm().requireManageRealm();
-
         GroupModel group = realm.getGroupById(groupId);
         if (group == null) {
             throw new NotFoundException("Group not found");
@@ -457,7 +419,6 @@ public class RealmResource {
             throw new NotFoundException("Group path does not exist");
 
         }
-        auth.groups().requireView(found);
         return ModelToRepresentation.toGroupHierarchy(found, true);
     }
 
@@ -468,8 +429,6 @@ public class RealmResource {
     @POST
     @Consumes(javax.ws.rs.core.MediaType.APPLICATION_JSON)
     public Response partialImport(PartialImportRepresentation rep) {
-        auth.realm().requireManageRealm();
-
         PartialImportManager partialImport = new PartialImportManager(rep, realm);
         return partialImport.saveResources();
     }
@@ -485,17 +444,8 @@ public class RealmResource {
     @Produces(javax.ws.rs.core.MediaType.APPLICATION_JSON)
     public RealmRepresentation partialExport(@QueryParam("exportGroupsAndRoles") Boolean exportGroupsAndRoles,
                                              @QueryParam("exportClients") Boolean exportClients) {
-        auth.realm().requireViewRealm();
-
         boolean groupsAndRolesExported = exportGroupsAndRoles != null && exportGroupsAndRoles;
         boolean clientsExported = exportClients != null && exportClients;
-
-        if (groupsAndRolesExported) {
-            auth.groups().requireList();
-        }
-        if (clientsExported) {
-            auth.clients().requireView();
-        }
 
         // service accounts are exported if the clients are exported
         // this means that if clients is true but groups/roles is false the service account is exported without roles
@@ -503,24 +453,6 @@ public class RealmResource {
         ExportOptions options = new ExportOptions(false, clientsExported, groupsAndRolesExported, clientsExported);
         RealmRepresentation rep = exportUtils.exportRealm(realm, options, false);
         return stripSecretsUtils.stripForExport(rep);
-    }
-
-    /**
-     * Clear realm cache
-     */
-    @Path("clear-realm-cache")
-    @POST
-    public void clearRealmCache() {
-        auth.realm().requireManageRealm();
-    }
-
-    /**
-     * Clear user cache
-     */
-    @Path("clear-user-cache")
-    @POST
-    public void clearUserCache() {
-        auth.realm().requireManageRealm();
     }
 
     @Autowired(required = false)
@@ -532,8 +464,6 @@ public class RealmResource {
     @Path("clear-keys-cache")
     @POST
     public void clearKeysCache() {
-        auth.realm().requireManageRealm();
-
         if (publicKeyStorageProvider != null) {
             publicKeyStorageProvider.clearCache();
         }
@@ -544,7 +474,6 @@ public class RealmResource {
     @NoCache
     @Produces(javax.ws.rs.core.MediaType.APPLICATION_JSON)
     public List<String> getCredentialRegistrators() {
-        auth.realm().requireViewRealm();
         return keycloakContext.getRealm().getRequiredActionProviders().stream()
                 .filter(RequiredActionProviderModel::isEnabled)
                 .map(RequiredActionProviderModel::getProviderId)

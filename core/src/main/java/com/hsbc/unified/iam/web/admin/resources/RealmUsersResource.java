@@ -21,18 +21,12 @@ import com.hsbc.unified.iam.core.constants.Constants;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.common.util.ObjectUtil;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.policy.PasswordPolicyNotMetException;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.services.ErrorResponse;
-import org.keycloak.services.ForbiddenException;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
-import org.keycloak.services.resources.admin.permissions.UserPermissionEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,15 +83,11 @@ public class RealmUsersResource {
     protected ClientConnection clientConnection;
     @Context
     protected HttpHeaders headers;
-    private AdminPermissionEvaluator auth;
-    private AdminEventBuilder adminEvent;
     @Autowired
     private ModelToRepresentation modelToRepresentation;
 
-    public RealmUsersResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
-        this.auth = auth;
+    public RealmUsersResource(RealmModel realm) {
         this.realm = realm;
-        this.adminEvent = adminEvent.resource(ResourceType.USER);
     }
 
     @Autowired
@@ -145,8 +135,6 @@ public class RealmUsersResource {
         RepresentationToModel.createGroups(rep, realm, user);
 
         representationToModel.createCredentials(rep, realm, user, true);
-        adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri(), user.getId()).representation(rep).success();
-
         return Response.created(keycloakContext.getUri().getAbsolutePathBuilder().path(user.getId()).build()).build();
     }
 
@@ -154,17 +142,14 @@ public class RealmUsersResource {
      * Get representation of the user
      *
      * @param id User id
-     * @return
      */
     @Path("{id}")
     public RealmUserResource user(final @PathParam("id") String id) {
         UserModel user = userProvider.getUserById(id, realm);
         if (user == null) {
-            // we do this to make sure somebody can't phish ids
-            if (auth.users().canQuery()) throw new NotFoundException("User not found");
-            else throw new ForbiddenException();
+            throw new NotFoundException("User not found");
         }
-        RealmUserResource resource = new RealmUserResource(realm, user, auth);
+        RealmUserResource resource = new RealmUserResource(realm, user);
         ResteasyProviderFactory.getInstance().injectProperties(resource);
         //resourceContext.initResource(users);
         return resource;
@@ -175,14 +160,7 @@ public class RealmUsersResource {
      * <p>
      * Returns a list of users, filtered according to query parameters
      *
-     * @param search     A String contained in username, first or last name, or email
-     * @param last
-     * @param first
-     * @param email
-     * @param username
-     * @param first      Pagination offset
-     * @param maxResults Maximum results size (defaults to 100)
-     * @return
+     * @param search A String contained in username, first or last name, or email
      */
     @GET
     @NoCache
@@ -195,10 +173,6 @@ public class RealmUsersResource {
                                              @QueryParam("first") Integer firstResult,
                                              @QueryParam("max") Integer maxResults,
                                              @QueryParam("briefRepresentation") Boolean briefRepresentation) {
-        UserPermissionEvaluator userPermissionEvaluator = auth.users();
-
-        userPermissionEvaluator.requireQuery();
-
         firstResult = firstResult != null ? firstResult : -1;
         maxResults = maxResults != null ? maxResults : Constants.DEFAULT_MAX_RESULTS;
 
@@ -207,12 +181,12 @@ public class RealmUsersResource {
             if (search.startsWith(SEARCH_ID_PARAMETER)) {
                 UserModel userModel = userProvider.getUserById(search.substring(SEARCH_ID_PARAMETER.length()).trim(), realm);
                 if (userModel != null) {
-                    userModels = Arrays.asList(userModel);
+                    userModels = Collections.singletonList(userModel);
                 }
             } else {
                 Map<String, String> attributes = new HashMap<>();
                 attributes.put(UserModel.SEARCH, search.trim());
-                return searchForUser(attributes, realm, userPermissionEvaluator, briefRepresentation, firstResult, maxResults, false);
+                return searchForUser(attributes, realm, briefRepresentation, firstResult, maxResults, false);
             }
         } else if (last != null || first != null || email != null || username != null) {
             Map<String, String> attributes = new HashMap<>();
@@ -228,12 +202,12 @@ public class RealmUsersResource {
             if (username != null) {
                 attributes.put(UserModel.USERNAME, username);
             }
-            return searchForUser(attributes, realm, userPermissionEvaluator, briefRepresentation, firstResult, maxResults, true);
+            return searchForUser(attributes, realm, briefRepresentation, firstResult, maxResults, true);
         } else {
-            return searchForUser(new HashMap<>(), realm, userPermissionEvaluator, briefRepresentation, firstResult, maxResults, false);
+            return searchForUser(new HashMap<>(), realm, briefRepresentation, firstResult, maxResults, false);
         }
 
-        return toRepresentation(realm, userPermissionEvaluator, briefRepresentation, userModels);
+        return toRepresentation(realm, briefRepresentation, userModels);
     }
 
     /**
@@ -267,18 +241,8 @@ public class RealmUsersResource {
                                  @QueryParam("firstName") String first,
                                  @QueryParam("email") String email,
                                  @QueryParam("username") String username) {
-        UserPermissionEvaluator userPermissionEvaluator = auth.users();
-        userPermissionEvaluator.requireQuery();
-
         if (search != null) {
-            if (search.startsWith(SEARCH_ID_PARAMETER)) {
-                UserModel userModel = userProvider.getUserById(search.substring(SEARCH_ID_PARAMETER.length()).trim(), realm);
-                return userModel != null && userPermissionEvaluator.canView(userModel) ? 1 : 0;
-            } else if (userPermissionEvaluator.canView()) {
-                return userProvider.getUsersCount(search.trim(), realm);
-            } else {
-                return userProvider.getUsersCount(search.trim(), realm, auth.groups().getGroupsWithViewPermission());
-            }
+            return userProvider.getUsersCount(search.trim(), realm);
         } else if (last != null || first != null || email != null || username != null) {
             Map<String, String> parameters = new HashMap<>();
             if (last != null) {
@@ -293,53 +257,31 @@ public class RealmUsersResource {
             if (username != null) {
                 parameters.put(UserModel.USERNAME, username);
             }
-            if (userPermissionEvaluator.canView()) {
-                return userProvider.getUsersCount(parameters, realm);
-            } else {
-                return userProvider.getUsersCount(parameters, realm, auth.groups().getGroupsWithViewPermission());
-            }
-        } else if (userPermissionEvaluator.canView()) {
-            return userProvider.getUsersCount(realm);
+            return userProvider.getUsersCount(parameters, realm);
         } else {
-            return userProvider.getUsersCount(realm, auth.groups().getGroupsWithViewPermission());
+            return userProvider.getUsersCount(realm);
         }
     }
 
-    private HttpSession httpSession;
+    private HttpSession httpSession = null;
 
-    private List<UserRepresentation> searchForUser(Map<String, String> attributes, RealmModel realm, UserPermissionEvaluator usersEvaluator, Boolean briefRepresentation, Integer firstResult, Integer maxResults, Boolean includeServiceAccounts) {
+    private List<UserRepresentation> searchForUser(Map<String, String> attributes, RealmModel realm, Boolean briefRepresentation, Integer firstResult, Integer maxResults, Boolean includeServiceAccounts) {
         httpSession.setAttribute(UserModel.INCLUDE_SERVICE_ACCOUNT, includeServiceAccounts);
-
-        if (!auth.users().canView()) {
-            Set<String> groupModels = auth.groups().getGroupsWithViewPermission();
-
-            if (!groupModels.isEmpty()) {
-                httpSession.setAttribute(UserModel.GROUPS, groupModels);
-            }
-        }
 
         List<UserModel> userModels = userProvider.searchForUser(attributes, realm, firstResult, maxResults);
 
-        return toRepresentation(realm, usersEvaluator, briefRepresentation, userModels);
+        return toRepresentation(realm, briefRepresentation, userModels);
     }
 
-    private List<UserRepresentation> toRepresentation(RealmModel realm, UserPermissionEvaluator usersEvaluator, Boolean briefRepresentation, List<UserModel> userModels) {
+    private List<UserRepresentation> toRepresentation(RealmModel realm, Boolean briefRepresentation, List<UserModel> userModels) {
         boolean briefRepresentationB = briefRepresentation != null && briefRepresentation;
         List<UserRepresentation> results = new ArrayList<>();
-        boolean canViewGlobal = usersEvaluator.canView();
-
-        usersEvaluator.grantIfNoPermission(httpSession.getAttribute(UserModel.GROUPS) != null);
 
         for (UserModel user : userModels) {
-            if (!canViewGlobal) {
-                if (!usersEvaluator.canView(user)) {
-                    continue;
-                }
-            }
             UserRepresentation userRep = briefRepresentationB
                     ? ModelToRepresentation.toBriefRepresentation(user)
                     : modelToRepresentation.toRepresentation(realm, user);
-            userRep.setAccess(usersEvaluator.getAccess(user));
+//            userRep.setAccess(usersEvaluator.getAccess(user));
             results.add(userRep);
         }
         return results;

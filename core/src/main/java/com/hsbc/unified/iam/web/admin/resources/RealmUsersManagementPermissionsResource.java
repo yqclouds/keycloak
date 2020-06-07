@@ -2,7 +2,6 @@ package com.hsbc.unified.iam.web.admin.resources;
 
 import org.keycloak.models.RealmModel;
 import org.keycloak.representations.idm.ManagementPermissionReference;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionManagement;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,14 +21,10 @@ import java.util.Map;
 @PreAuthorize("hasPermission({'master', 'admin'})")
 public class RealmUsersManagementPermissionsResource {
     @Autowired
-    private AdminPermissionEvaluator auth;
-    @Autowired
     private RealmModel realm;
 
     @RequestMapping(method = RequestMethod.GET)
     public ManagementPermissionReference getUserMgmtPermissions() {
-        auth.realm().requireViewRealm();
-
         AdminPermissionManagement permissions = AdminPermissions.management(realm);
         if (permissions.users().isPermissionsEnabled()) {
             return toUsersMgmtRef(permissions);
@@ -40,8 +35,6 @@ public class RealmUsersManagementPermissionsResource {
 
     @RequestMapping(method = RequestMethod.PUT)
     public ManagementPermissionReference setUsersManagementPermissionsEnabled(ManagementPermissionReference ref) {
-        auth.realm().requireManageRealm();
-
         AdminPermissionManagement permissions = AdminPermissions.management(realm);
         permissions.users().setPermissionsEnabled(ref.isEnabled());
         if (ref.isEnabled()) {

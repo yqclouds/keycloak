@@ -27,7 +27,6 @@ import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.resources.admin.AdminRoot;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +38,7 @@ import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 
 /**
@@ -55,10 +55,6 @@ public class RealmProtocolMappersResource {
 
     protected ProtocolMapperContainerModel client;
 
-    protected AdminPermissionEvaluator auth;
-    protected AdminPermissionEvaluator.RequirePermissionCheck managePermission;
-    protected AdminPermissionEvaluator.RequirePermissionCheck viewPermission;
-
     @Context
     protected KeycloakSession session;
     @Autowired
@@ -68,15 +64,9 @@ public class RealmProtocolMappersResource {
     private AdminRoot adminRoot;
 
     public RealmProtocolMappersResource(RealmModel realm,
-                                        ProtocolMapperContainerModel client,
-                                        AdminPermissionEvaluator auth,
-                                        AdminPermissionEvaluator.RequirePermissionCheck managePermission,
-                                        AdminPermissionEvaluator.RequirePermissionCheck viewPermission) {
+                                        ProtocolMapperContainerModel client) {
         this.realm = realm;
-        this.auth = auth;
         this.client = client;
-        this.managePermission = managePermission;
-        this.viewPermission = viewPermission;
     }
 
     /**
@@ -87,8 +77,6 @@ public class RealmProtocolMappersResource {
     @Path("protocol/{protocol}")
     @Produces(MediaType.APPLICATION_JSON)
     public List<ProtocolMapperRepresentation> getMappersPerProtocol(@PathParam("protocol") String protocol) {
-        viewPermission.require();
-
         List<ProtocolMapperRepresentation> mappers = new LinkedList<>();
         for (ProtocolMapperModel mapper : client.getProtocolMappers()) {
             if (protocolMapperUtils.isEnabled(mapper) && mapper.getProtocol().equals(protocol))
@@ -105,8 +93,6 @@ public class RealmProtocolMappersResource {
     @NoCache
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createMapper(ProtocolMapperRepresentation rep) {
-        managePermission.require();
-
         ProtocolMapperModel model;
         try {
             model = RepresentationToModel.toModel(rep);
@@ -127,8 +113,6 @@ public class RealmProtocolMappersResource {
     @NoCache
     @Consumes(MediaType.APPLICATION_JSON)
     public void createMapper(List<ProtocolMapperRepresentation> reps) {
-        managePermission.require();
-
         ProtocolMapperModel model;
         for (ProtocolMapperRepresentation rep : reps) {
             model = RepresentationToModel.toModel(rep);
@@ -145,8 +129,6 @@ public class RealmProtocolMappersResource {
     @Path("models")
     @Produces(MediaType.APPLICATION_JSON)
     public List<ProtocolMapperRepresentation> getMappers() {
-        viewPermission.require();
-
         List<ProtocolMapperRepresentation> mappers = new LinkedList<>();
         for (ProtocolMapperModel mapper : client.getProtocolMappers()) {
             if (protocolMapperUtils.isEnabled(mapper)) {
@@ -166,8 +148,6 @@ public class RealmProtocolMappersResource {
     @Path("models/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public ProtocolMapperRepresentation getMapperById(@PathParam("id") String id) {
-        viewPermission.require();
-
         ProtocolMapperModel model = client.getProtocolMapperById(id);
         if (model == null) throw new NotFoundException("Model not found");
         return ModelToRepresentation.toRepresentation(model);
@@ -183,8 +163,6 @@ public class RealmProtocolMappersResource {
     @Path("models/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     public void update(@PathParam("id") String id, ProtocolMapperRepresentation rep) {
-        managePermission.require();
-
         ProtocolMapperModel model = client.getProtocolMapperById(id);
         if (model == null) throw new NotFoundException("Model not found");
         model = RepresentationToModel.toModel(rep);
@@ -203,8 +181,6 @@ public class RealmProtocolMappersResource {
     @NoCache
     @Path("models/{id}")
     public void delete(@PathParam("id") String id) {
-        managePermission.require();
-
         ProtocolMapperModel model = client.getProtocolMapperById(id);
         if (model == null) throw new NotFoundException("Model not found");
         client.removeProtocolMapper(model);
@@ -220,7 +196,7 @@ public class RealmProtocolMappersResource {
             }
         } catch (ProtocolMapperConfigException ex) {
             LOG.error(ex.getMessage());
-            Properties messages = adminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
+            Properties messages = adminRoot.getMessages(realm, Locale.getDefault().getLanguage());
             throw new ErrorResponseException(ex.getMessage(), MessageFormat.format(messages.getProperty(ex.getMessageKey(), ex.getMessage()), ex.getParameters()),
                     Response.Status.BAD_REQUEST);
         }

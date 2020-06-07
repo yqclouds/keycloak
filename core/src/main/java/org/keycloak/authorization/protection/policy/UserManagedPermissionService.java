@@ -17,6 +17,11 @@
  */
 package org.keycloak.authorization.protection.policy;
 
+import com.hsbc.unified.iam.core.util.JsonSerialization;
+import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
+import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
+import com.hsbc.unified.iam.facade.model.authorization.ScopeModel;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.OAuthErrorException;
@@ -25,15 +30,10 @@ import org.keycloak.authorization.admin.PermissionService;
 import org.keycloak.authorization.admin.PolicyTypeResourceService;
 import org.keycloak.authorization.common.KeycloakIdentity;
 import org.keycloak.authorization.identity.Identity;
-import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
-import com.hsbc.unified.iam.facade.model.authorization.ResourceModel;
-import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.common.Profile;
 import org.keycloak.representations.idm.authorization.UmaPermissionRepresentation;
 import org.keycloak.services.ErrorResponseException;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
-import com.hsbc.unified.iam.core.util.JsonSerialization;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
@@ -56,7 +56,7 @@ public class UserManagedPermissionService {
         this.identity = identity;
         this.resourceServer = resourceServer;
         this.authorization = authorization;
-        delegate = new PermissionService(resourceServer, authorization, null);
+        delegate = new PermissionService(resourceServer, authorization);
         ResteasyProviderFactory.getInstance().injectProperties(delegate);
     }
 
@@ -92,14 +92,14 @@ public class UserManagedPermissionService {
 
         checkRequest(getAssociatedResourceId(policyId), representation);
 
-        return PolicyTypeResourceService.class.cast(delegate.getResource(policyId)).update(payload);
+        return ((PolicyTypeResourceService) delegate.getResource(policyId)).update(payload);
     }
 
     @Path("{policyId}")
     @DELETE
     public Response delete(@PathParam("policyId") String policyId) {
         checkRequest(getAssociatedResourceId(policyId), null);
-        PolicyTypeResourceService.class.cast(delegate.getResource(policyId)).delete();
+        ((PolicyTypeResourceService) delegate.getResource(policyId)).delete();
         return Response.noContent().build();
     }
 
@@ -108,7 +108,7 @@ public class UserManagedPermissionService {
     @Produces("application/json")
     public Response findById(@PathParam("policyId") String policyId) {
         checkRequest(getAssociatedResourceId(policyId), null);
-        return PolicyTypeResourceService.class.cast(delegate.getResource(policyId)).findById(null);
+        return ((PolicyTypeResourceService) delegate.getResource(policyId)).findById(null);
     }
 
     @GET
@@ -153,7 +153,7 @@ public class UserManagedPermissionService {
         }
 
         if (representation != null) {
-            Set<String> resourceScopes = resource.getScopes().stream().map(scope -> scope.getName()).collect(Collectors.toSet());
+            Set<String> resourceScopes = resource.getScopes().stream().map(ScopeModel::getName).collect(Collectors.toSet());
             Set<String> scopes = representation.getScopes();
 
             if (scopes == null || scopes.isEmpty()) {

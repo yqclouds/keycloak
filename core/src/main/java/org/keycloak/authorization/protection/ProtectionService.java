@@ -56,7 +56,7 @@ public class ProtectionService {
     public Object resource() {
         KeycloakIdentity identity = createIdentity(true);
         ResourceServerModel resourceServer = getResourceServer(identity);
-        ResourceSetService resourceManager = new ResourceSetService(resourceServer, this.authorization, null);
+        ResourceSetService resourceManager = new ResourceSetService(resourceServer, this.authorization);
 
         ResteasyProviderFactory.getInstance().injectProperties(resourceManager);
 

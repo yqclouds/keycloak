@@ -20,8 +20,6 @@ import com.hsbc.unified.iam.core.ClientConnection;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.RealmModel;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.storage.client.ClientStorageProvider;
 
 import javax.ws.rs.*;
@@ -39,20 +37,14 @@ import java.util.Map;
 public class RealmClientStorageProviderResource {
     protected RealmModel realm;
 
-    protected AdminPermissionEvaluator auth;
-
-    protected AdminEventBuilder adminEvent;
-
     @Context
     protected ClientConnection clientConnection;
 
     @Context
     protected HttpHeaders headers;
 
-    public RealmClientStorageProviderResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
-        this.auth = auth;
+    public RealmClientStorageProviderResource(RealmModel realm) {
         this.realm = realm;
-        this.adminEvent = adminEvent;
     }
 
     /**
@@ -65,8 +57,6 @@ public class RealmClientStorageProviderResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, String> getSimpleName(@PathParam("id") String id) {
-        auth.clients().requireList();
-
         ComponentModel model = realm.getComponent(id);
         if (model == null) {
             throw new NotFoundException("Could not find component");

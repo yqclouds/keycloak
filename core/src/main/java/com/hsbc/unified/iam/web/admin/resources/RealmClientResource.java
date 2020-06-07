@@ -41,7 +41,6 @@ import org.keycloak.services.managers.ClientManager;
 import org.keycloak.services.managers.ResourceAdminManager;
 import org.keycloak.services.resources.KeycloakApplication;
 import org.keycloak.services.resources.admin.AdminRoot;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionManagement;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import org.keycloak.services.validation.ClientValidator;
@@ -77,11 +76,9 @@ public class RealmClientResource {
     protected KeycloakApplication keycloak;
     @Context
     protected ClientConnection clientConnection;
-    private AdminPermissionEvaluator auth;
 
-    public RealmClientResource(RealmModel realm, AdminPermissionEvaluator auth, ClientModel clientModel) {
+    public RealmClientResource(RealmModel realm, ClientModel clientModel) {
         this.realm = realm;
-        this.auth = auth;
         this.client = clientModel;
     }
 
@@ -99,9 +96,7 @@ public class RealmClientResource {
 
     @Path("protocol-mappers")
     public RealmProtocolMappersResource getProtocolMappers() {
-        AdminPermissionEvaluator.RequirePermissionCheck manageCheck = () -> auth.clients().requireManage(client);
-        AdminPermissionEvaluator.RequirePermissionCheck viewCheck = () -> auth.clients().requireView(client);
-        RealmProtocolMappersResource mappers = new RealmProtocolMappersResource(realm, client, auth, manageCheck, viewCheck);
+        RealmProtocolMappersResource mappers = new RealmProtocolMappersResource(realm, client);
         ResteasyProviderFactory.getInstance().injectProperties(mappers);
         return mappers;
     }
@@ -119,11 +114,9 @@ public class RealmClientResource {
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     public Response update(final ClientRepresentation rep) {
-        auth.clients().requireConfigure(client);
-
         ValidationMessages validationMessages = new ValidationMessages();
         if (!ClientValidator.validate(rep, validationMessages) || !pairwiseClientValidator.validate(rep, validationMessages)) {
-            Properties messages = adminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
+            Properties messages = adminRoot.getMessages(realm, Locale.getDefault().getLanguage());
             throw new ErrorResponseException(
                     validationMessages.getStringMessages(),
                     validationMessages.getStringMessages(messages),
@@ -154,11 +147,9 @@ public class RealmClientResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public ClientRepresentation getClient() {
-        auth.clients().requireView(client);
-
         ClientRepresentation representation = modelToRepresentation.toRepresentation(client);
 
-        representation.setAccess(auth.clients().getAccess(client));
+        // representation.setAccess(auth.clients().getAccess(client));
 
         return representation;
     }
@@ -168,7 +159,7 @@ public class RealmClientResource {
      */
     @Path("certificates/{attr}")
     public RealmClientAttributeCertificateResource getCertficateResource(@PathParam("attr") String attributePrefix) {
-        return new RealmClientAttributeCertificateResource(realm, auth, client, attributePrefix);
+        return new RealmClientAttributeCertificateResource(realm, client, attributePrefix);
     }
 
     @Autowired
@@ -178,8 +169,6 @@ public class RealmClientResource {
     @NoCache
     @Path("installation/providers/{providerId}")
     public Response getInstallationProvider(@PathParam("providerId") String providerId) {
-        auth.clients().requireView(client);
-
         ClientInstallationProvider provider = clientInstallationProviders.get(providerId);
         if (provider == null) throw new NotFoundException("Unknown Provider");
         return provider.generateInstallation(realm, client, keycloakContext.getUri().getBaseUri());
@@ -191,8 +180,6 @@ public class RealmClientResource {
     @DELETE
     @NoCache
     public void deleteClient() {
-        auth.clients().requireManage(client);
-
         if (client == null) {
             throw new NotFoundException("Could not find client");
         }
@@ -208,8 +195,6 @@ public class RealmClientResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public CredentialRepresentation regenerateSecret() {
-        auth.clients().requireConfigure(client);
-
         LOG.debug("regenerateSecret");
         UserCredentialModel cred = KeycloakModelUtils.generateSecret(client);
         return ModelToRepresentation.toRepresentation(cred);
@@ -226,8 +211,6 @@ public class RealmClientResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public ClientRepresentation regenerateRegistrationAccessToken() {
-        auth.clients().requireManage(client);
-
         String token = clientRegistrationTokenUtils.updateRegistrationAccessToken(realm, client, RegistrationAuth.AUTHENTICATED);
 
         ClientRepresentation rep = modelToRepresentation.toRepresentation(client);
@@ -243,8 +226,6 @@ public class RealmClientResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public CredentialRepresentation getClientSecret() {
-        auth.clients().requireView(client);
-
         LOG.debug("getClientSecret");
         UserCredentialModel model = UserCredentialModel.secret(client.getSecret());
         return ModelToRepresentation.toRepresentation(model);
@@ -255,9 +236,7 @@ public class RealmClientResource {
      */
     @Path("scope-mappings")
     public RealmScopeMappedResource getScopeMappedResource() {
-        AdminPermissionEvaluator.RequirePermissionCheck manageCheck = () -> auth.clients().requireManage(client);
-        AdminPermissionEvaluator.RequirePermissionCheck viewCheck = () -> auth.clients().requireView(client);
-        return new RealmScopeMappedResource(realm, auth, client, manageCheck, viewCheck);
+        return new RealmScopeMappedResource(realm, client);
     }
 
     @Autowired
@@ -265,7 +244,7 @@ public class RealmClientResource {
 
     @Path("roles")
     public RealmRolesResource getRoleContainerResource() {
-        return new RealmRolesResource(keycloakContext.getUri(), realm, auth, client);
+        return new RealmRolesResource(keycloakContext.getUri(), realm, client);
     }
 
     /**
@@ -280,8 +259,6 @@ public class RealmClientResource {
     }
 
     private List<ClientScopeRepresentation> getDefaultClientScopes(boolean defaultScope) {
-        auth.clients().requireView(client);
-
         List<ClientScopeRepresentation> defaults = new LinkedList<>();
         for (ClientScopeModel clientScope : client.getClientScopes(defaultScope, true).values()) {
             ClientScopeRepresentation rep = new ClientScopeRepresentation();
@@ -300,8 +277,6 @@ public class RealmClientResource {
     }
 
     private void addDefaultClientScope(String clientScopeId, boolean defaultScope) {
-        auth.clients().requireManage(client);
-
         ClientScopeModel clientScope = realm.getClientScopeById(clientScopeId);
         if (clientScope == null) {
             throw new javax.ws.rs.NotFoundException("Client scope not found");
@@ -313,8 +288,6 @@ public class RealmClientResource {
     @NoCache
     @Path("default-client-scopes/{clientScopeId}")
     public void removeDefaultClientScope(@PathParam("clientScopeId") String clientScopeId) {
-        auth.clients().requireManage(client);
-
         ClientScopeModel clientScope = realm.getClientScopeById(clientScopeId);
         if (clientScope == null) {
             throw new javax.ws.rs.NotFoundException("Client scope not found");
@@ -349,7 +322,7 @@ public class RealmClientResource {
 
     @Path("evaluate-scopes")
     public RealmClientScopeEvaluateResource clientScopeEvaluateResource() {
-        return new RealmClientScopeEvaluateResource(keycloakContext.getUri(), realm, auth, client, clientConnection);
+        return new RealmClientScopeEvaluateResource(keycloakContext.getUri(), realm, client, clientConnection);
     }
 
     /**
@@ -360,8 +333,6 @@ public class RealmClientResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public UserRepresentation getServiceAccountUser() {
-        auth.clients().requireView(client);
-
         UserModel user = userProvider.getServiceAccount(client);
         if (user == null) {
             if (client.isServiceAccountsEnabled()) {
@@ -384,8 +355,6 @@ public class RealmClientResource {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public GlobalRequestResult pushRevocation() {
-        auth.clients().requireConfigure(client);
-
         return new ResourceAdminManager().pushClientRevocationPolicy(realm, client);
     }
 
@@ -403,8 +372,6 @@ public class RealmClientResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, Long> getApplicationSessionCount() {
-        auth.clients().requireView(client);
-
         Map<String, Long> map = new HashMap<>();
         map.put("count", userSessionProvider.getActiveUserSessions(client.getRealm(), client));
         return map;
@@ -424,8 +391,6 @@ public class RealmClientResource {
     @Produces(MediaType.APPLICATION_JSON)
     public List<UserSessionRepresentation> getUserSessions(@QueryParam("first") Integer firstResult,
                                                            @QueryParam("max") Integer maxResults) {
-        auth.clients().requireView(client);
-
         firstResult = firstResult != null ? firstResult : -1;
         maxResults = maxResults != null ? maxResults : Constants.DEFAULT_MAX_RESULTS;
         List<UserSessionRepresentation> sessions = new ArrayList<>();
@@ -450,8 +415,6 @@ public class RealmClientResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, Long> getOfflineSessionCount() {
-        auth.clients().requireView(client);
-
         Map<String, Long> map = new HashMap<>();
         map.put("count", userSessionProvider.getOfflineSessionsCount(client.getRealm(), client));
         return map;
@@ -473,8 +436,6 @@ public class RealmClientResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public List<UserSessionRepresentation> getOfflineUserSessions(@QueryParam("first") Integer firstResult, @QueryParam("max") Integer maxResults) {
-        auth.clients().requireView(client);
-
         firstResult = firstResult != null ? firstResult : -1;
         maxResults = maxResults != null ? maxResults : Constants.DEFAULT_MAX_RESULTS;
         List<UserSessionRepresentation> sessions = new ArrayList<UserSessionRepresentation>();
@@ -508,8 +469,6 @@ public class RealmClientResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public void registerNode(Map<String, String> formParams) {
-        auth.clients().requireConfigure(client);
-
         String node = formParams.get("node");
         if (node == null) {
             throw new BadRequestException("Node not found in params");
@@ -528,8 +487,6 @@ public class RealmClientResource {
     @DELETE
     @NoCache
     public void unregisterNode(final @PathParam("node") String node) {
-        auth.clients().requireConfigure(client);
-
         if (LOG.isDebugEnabled()) LOG.debug("Unregister node: " + node);
 
         Integer time = client.getRegisteredNodes().get(node);
@@ -549,15 +506,13 @@ public class RealmClientResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public GlobalRequestResult testNodesAvailable() {
-        auth.clients().requireConfigure(client);
-
         LOG.debug("Test availability of cluster nodes");
         return new ResourceAdminManager().testNodesAvailability(realm, client);
     }
 
     @Path("/authz")
     public AuthorizationService authorization() {
-        AuthorizationService resource = new AuthorizationService(this.client, this.auth);
+        AuthorizationService resource = new AuthorizationService(this.client);
 
         ResteasyProviderFactory.getInstance().injectProperties(resource);
 
@@ -572,8 +527,6 @@ public class RealmClientResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public ManagementPermissionReference getManagementPermissions() {
-        auth.roles().requireView(client);
-
         AdminPermissionManagement permissions = AdminPermissions.management(realm);
         if (!permissions.clients().isPermissionsEnabled(client)) {
             return new ManagementPermissionReference();
@@ -592,7 +545,6 @@ public class RealmClientResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @NoCache
     public ManagementPermissionReference setManagementPermissionsEnabled(ManagementPermissionReference ref) {
-        auth.clients().requireManage(client);
         AdminPermissionManagement permissions = AdminPermissions.management(realm);
         permissions.clients().setPermissionsEnabled(client, ref.isEnabled());
         if (ref.isEnabled()) {
@@ -619,10 +571,6 @@ public class RealmClientResource {
 
         if (rep.getClientId() != null && !rep.getClientId().equals(client.getClientId())) {
             new ClientManager(new RealmFacadeImpl()).clientIdChanged(client, rep.getClientId());
-        }
-
-        if (rep.isFullScopeAllowed() != null && rep.isFullScopeAllowed() != client.isFullScopeAllowed()) {
-            auth.clients().requireManage(client);
         }
 
         if ((rep.isBearerOnly() != null && rep.isBearerOnly()) || (rep.isPublicClient() != null && rep.isPublicClient())) {

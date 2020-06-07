@@ -9,7 +9,6 @@ import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.AdminEventRepresentation;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,8 +32,6 @@ import java.util.List;
 @PreAuthorize("hasPermission({'master', 'admin'})")
 public class RealmAdminEventsResource {
     @Autowired
-    private AdminPermissionEvaluator auth;
-    @Autowired
     private RealmModel realm;
     @Autowired
     private EventStoreProvider eventStoreProvider;
@@ -56,8 +53,6 @@ public class RealmAdminEventsResource {
                                                     @QueryParam("first") Integer firstResult,
                                                     @QueryParam("max") Integer maxResults,
                                                     @QueryParam("resourceTypes") List<String> resourceTypes) {
-        auth.realm().requireViewEvents();
-
         AdminEventQuery query = eventStoreProvider.createAdminQuery().realm(realm.getId());
 
         if (authRealm != null) {
@@ -99,7 +94,7 @@ public class RealmAdminEventsResource {
 
         if (dateFrom != null) {
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-            Date from = null;
+            Date from;
             try {
                 from = df.parse(dateFrom);
             } catch (ParseException e) {
@@ -110,7 +105,7 @@ public class RealmAdminEventsResource {
 
         if (dateTo != null) {
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-            Date to = null;
+            Date to;
             try {
                 to = df.parse(dateTo);
             } catch (ParseException e) {
@@ -145,8 +140,6 @@ public class RealmAdminEventsResource {
      */
     @RequestMapping(method = RequestMethod.DELETE)
     public void clearAdminEvents() {
-        auth.realm().requireManageEvents();
-
         eventStoreProvider.clearAdmin(realm.getId());
     }
 }

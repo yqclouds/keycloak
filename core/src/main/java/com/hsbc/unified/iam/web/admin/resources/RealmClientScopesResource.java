@@ -25,7 +25,6 @@ import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.ClientScopeRepresentation;
 import org.keycloak.services.ErrorResponse;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,11 +53,9 @@ import java.util.List;
 public class RealmClientScopesResource {
     protected static final Logger LOG = LoggerFactory.getLogger(RealmClientScopesResource.class);
     protected RealmModel realm;
-    private AdminPermissionEvaluator auth;
 
-    public RealmClientScopesResource(RealmModel realm, AdminPermissionEvaluator auth) {
+    public RealmClientScopesResource(RealmModel realm) {
         this.realm = realm;
-        this.auth = auth;
     }
 
     @Autowired
@@ -76,20 +73,11 @@ public class RealmClientScopesResource {
      */
     @RequestMapping(value = "/client-scopes", method = RequestMethod.GET)
     public List<ClientScopeRepresentation> getClientScopes() {
-        auth.clients().requireListClientScopes();
-
         List<ClientScopeRepresentation> rep = new ArrayList<>();
         List<ClientScopeModel> clientModels = realm.getClientScopes();
 
-        boolean viewable = auth.clients().canViewClientScopes();
         for (ClientScopeModel clientModel : clientModels) {
-            if (viewable) rep.add(modelToRepresentation.toRepresentation(clientModel));
-            else {
-                ClientScopeRepresentation tempRep = new ClientScopeRepresentation();
-                tempRep.setName(clientModel.getName());
-                tempRep.setId(clientModel.getId());
-                tempRep.setProtocol(clientModel.getProtocol());
-            }
+            rep.add(modelToRepresentation.toRepresentation(clientModel));
         }
         return rep;
     }
@@ -101,8 +89,6 @@ public class RealmClientScopesResource {
      */
     @RequestMapping(value = "/client-scopes", method = RequestMethod.POST)
     public Response createClientScope(ClientScopeRepresentation rep) {
-        auth.clients().requireManageClientScopes();
-
         try {
             ClientScopeModel clientModel = representationToModel.createClientScope(realm, rep);
 
@@ -117,12 +103,11 @@ public class RealmClientScopesResource {
      */
     @RequestMapping(value = "/client-scopes/{id}", method = RequestMethod.GET)
     public RealmClientScopeResource getClientScope(final @PathParam("id") String id) {
-        auth.clients().requireListClientScopes();
         ClientScopeModel clientModel = realm.getClientScopeById(id);
         if (clientModel == null) {
             throw new NotFoundException("Could not find client scope");
         }
-        RealmClientScopeResource clientResource = new RealmClientScopeResource(realm, auth, clientModel);
+        RealmClientScopeResource clientResource = new RealmClientScopeResource(realm, clientModel);
         ResteasyProviderFactory.getInstance().injectProperties(clientResource);
         return clientResource;
     }
@@ -136,8 +121,6 @@ public class RealmClientScopesResource {
     }
 
     private List<ClientScopeRepresentation> getDefaultClientScopes(boolean defaultScope) {
-        auth.clients().requireViewClientScopes();
-
         List<ClientScopeRepresentation> defaults = new LinkedList<>();
         for (ClientScopeModel clientScope : realm.getDefaultClientScopes(defaultScope)) {
             ClientScopeRepresentation rep = new ClientScopeRepresentation();
@@ -154,8 +137,6 @@ public class RealmClientScopesResource {
     }
 
     private void addDefaultClientScope(String clientScopeId, boolean defaultScope) {
-        auth.clients().requireManageClientScopes();
-
         ClientScopeModel clientScope = realm.getClientScopeById(clientScopeId);
         if (clientScope == null) {
             throw new NotFoundException("Client scope not found");
@@ -165,8 +146,6 @@ public class RealmClientScopesResource {
 
     @RequestMapping(value = "/default-default-client-scopes/{clientScopeId}", method = RequestMethod.DELETE)
     public void removeDefaultDefaultClientScope(@PathParam("clientScopeId") String clientScopeId) {
-        auth.clients().requireManageClientScopes();
-
         ClientScopeModel clientScope = realm.getClientScopeById(clientScopeId);
         if (clientScope == null) {
             throw new NotFoundException("Client scope not found");

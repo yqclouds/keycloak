@@ -26,7 +26,6 @@ import org.keycloak.models.UserModel;
 import org.keycloak.models.UserProvider;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.authorization.*;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.HttpSession;
@@ -44,18 +43,15 @@ import static org.keycloak.models.utils.ModelToRepresentation.toRepresentation;
 public class ResourceServerService {
 
     private final AuthorizationProvider authorizationProvider;
-    private final AdminPermissionEvaluator auth;
     private final ClientModel client;
     private ResourceServerModel resourceServer;
 
     public ResourceServerService(AuthorizationProvider authorization,
                                  ResourceServerModel resourceServer,
-                                 ClientModel client,
-                                 AdminPermissionEvaluator auth) {
+                                 ClientModel client) {
         this.authorizationProvider = authorization;
         this.client = client;
         this.resourceServer = resourceServer;
-        this.auth = auth;
     }
 
     @Autowired
@@ -64,8 +60,6 @@ public class ResourceServerService {
     private UserProvider userProvider;
 
     public ResourceServerModel create(boolean newClient) {
-        this.auth.realm().requireManageAuthorization();
-
         UserModel serviceAccount = userProvider.getServiceAccount(client);
 
         if (serviceAccount == null) {
@@ -84,7 +78,6 @@ public class ResourceServerService {
     @Consumes("application/json")
     @Produces("application/json")
     public Response update(ResourceServerRepresentation server) {
-        this.auth.realm().requireManageAuthorization();
         this.resourceServer.setAllowRemoteResourceManagement(server.isAllowRemoteResourceManagement());
         this.resourceServer.setPolicyEnforcementMode(server.getPolicyEnforcementMode());
         this.resourceServer.setDecisionStrategy(server.getDecisionStrategy());
@@ -92,14 +85,12 @@ public class ResourceServerService {
     }
 
     public void delete() {
-        this.auth.realm().requireManageAuthorization();
         authorizationProvider.getStoreFactory().getResourceServerStore().delete(resourceServer.getId());
     }
 
     @GET
     @Produces("application/json")
     public Response findById() {
-        this.auth.realm().requireViewAuthorization();
         return Response.ok(toRepresentation(this.resourceServer, this.client)).build();
     }
 
@@ -110,7 +101,6 @@ public class ResourceServerService {
     @GET
     @Produces("application/json")
     public Response exportSettings() {
-        this.auth.realm().requireManageAuthorization();
         return Response.ok(exportUtils.exportAuthorizationSettings(client)).build();
     }
 
@@ -118,8 +108,6 @@ public class ResourceServerService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response importSettings(ResourceServerRepresentation rep) {
-        this.auth.realm().requireManageAuthorization();
-
         rep.setClientId(client.getId());
 
         representationToModel.toModel(rep, authorizationProvider);
@@ -129,8 +117,7 @@ public class ResourceServerService {
 
     @Path("/resource")
     public ResourceSetService getResourceSetResource() {
-        ResourceSetService resource = new ResourceSetService(
-                this.resourceServer, this.authorizationProvider, this.auth);
+        ResourceSetService resource = new ResourceSetService(this.resourceServer, this.authorizationProvider);
 
         ResteasyProviderFactory.getInstance().injectProperties(resource);
 
@@ -139,7 +126,7 @@ public class ResourceServerService {
 
     @Path("/scope")
     public ScopeService getScopeResource() {
-        ScopeService resource = new ScopeService(this.resourceServer, this.authorizationProvider, this.auth);
+        ScopeService resource = new ScopeService(this.resourceServer, this.authorizationProvider);
 
         ResteasyProviderFactory.getInstance().injectProperties(resource);
 
@@ -148,7 +135,7 @@ public class ResourceServerService {
 
     @Path("/policy")
     public PolicyService getPolicyResource() {
-        PolicyService resource = new PolicyService(this.resourceServer, this.authorizationProvider, this.auth);
+        PolicyService resource = new PolicyService(this.resourceServer, this.authorizationProvider);
 
         ResteasyProviderFactory.getInstance().injectProperties(resource);
 
@@ -157,8 +144,7 @@ public class ResourceServerService {
 
     @Path("/permission")
     public Object getPermissionTypeResource() {
-        this.auth.realm().requireViewAuthorization();
-        PermissionService resource = new PermissionService(this.resourceServer, this.authorizationProvider, this.auth);
+        PermissionService resource = new PermissionService(this.resourceServer, this.authorizationProvider);
 
         ResteasyProviderFactory.getInstance().injectProperties(resource);
 

@@ -16,13 +16,11 @@
  */
 package org.keycloak.authorization.admin;
 
-import org.keycloak.authorization.AuthorizationProvider;
 import com.hsbc.unified.iam.facade.model.authorization.PolicyModel;
 import com.hsbc.unified.iam.facade.model.authorization.ResourceServerModel;
+import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -33,18 +31,19 @@ import java.util.Map;
  */
 public class PermissionService extends PolicyService {
 
-    public PermissionService(ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth) {
-        super(resourceServer, authorization, auth);
+    public PermissionService(ResourceServerModel resourceServer,
+                             AuthorizationProvider authorization) {
+        super(resourceServer, authorization);
     }
 
     @Override
     protected PolicyResourceService doCreatePolicyResource(PolicyModel policy) {
-        return new PolicyTypeResourceService(policy, resourceServer, authorization, auth);
+        return new PolicyTypeResourceService(policy, resourceServer, authorization);
     }
 
     @Override
     protected PolicyTypeService doCreatePolicyTypeResource(String type) {
-        return new PolicyTypeService(type, resourceServer, authorization, auth) {
+        return new PolicyTypeService(type, resourceServer, authorization) {
             @Override
             protected List<Object> doSearch(Integer firstResult, Integer maxResult, String fields, Map<String, String[]> filters) {
                 filters.put("permission", new String[]{Boolean.TRUE.toString()});

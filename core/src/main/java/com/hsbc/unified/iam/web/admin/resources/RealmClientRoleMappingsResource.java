@@ -22,7 +22,6 @@ import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.resources.admin.AdminRoot;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +31,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -44,37 +42,28 @@ public class RealmClientRoleMappingsResource {
 
     protected KeycloakSession session;
     protected RealmModel realm;
-    protected AdminPermissionEvaluator auth;
     protected RoleMapperModel user;
     protected ClientModel client;
-    protected AdminPermissionEvaluator.RequirePermissionCheck managePermission;
-    protected AdminPermissionEvaluator.RequirePermissionCheck viewPermission;
 
     @Autowired
     private AdminRoot adminRoot;
 
     public RealmClientRoleMappingsResource(RealmModel realm,
-                                           AdminPermissionEvaluator auth,
                                            RoleMapperModel user,
-                                           ClientModel client,
-                                           AdminPermissionEvaluator.RequirePermissionCheck manageCheck,
-                                           AdminPermissionEvaluator.RequirePermissionCheck viewCheck) {
+                                           ClientModel client) {
         this.realm = realm;
-        this.auth = auth;
         this.user = user;
         this.client = client;
-        this.managePermission = manageCheck;
-        this.viewPermission = viewCheck;
     }
 
     public static List<RoleRepresentation> getAvailableRoles(RoleMapperModel mapper, Set<RoleModel> available) {
-        Set<RoleModel> roles = new HashSet<RoleModel>();
+        Set<RoleModel> roles = new HashSet<>();
         for (RoleModel roleModel : available) {
             if (mapper.hasRole(roleModel)) continue;
             roles.add(roleModel);
         }
 
-        List<RoleRepresentation> mappings = new ArrayList<RoleRepresentation>();
+        List<RoleRepresentation> mappings = new ArrayList<>();
         for (RoleModel roleModel : roles) {
             mappings.add(ModelToRepresentation.toBriefRepresentation(roleModel));
         }
@@ -83,17 +72,13 @@ public class RealmClientRoleMappingsResource {
 
     /**
      * Get client-level role mappings for the user, and the app
-     *
-     * @return
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RoleRepresentation> getClientRoleMappings() {
-        viewPermission.require();
-
         Set<RoleModel> mappings = user.getClientRoleMappings(client);
-        List<RoleRepresentation> mapRep = new ArrayList<RoleRepresentation>();
+        List<RoleRepresentation> mapRep = new ArrayList<>();
         for (RoleModel roleModel : mappings) {
             mapRep.add(ModelToRepresentation.toBriefRepresentation(roleModel));
         }
@@ -104,19 +89,14 @@ public class RealmClientRoleMappingsResource {
      * Get effective client-level role mappings
      * <p>
      * This recurses any composite roles
-     *
-     * @return
      */
     @Path("composite")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RoleRepresentation> getCompositeClientRoleMappings() {
-        viewPermission.require();
-
-
         Set<RoleModel> roles = client.getRoles();
-        List<RoleRepresentation> mapRep = new ArrayList<RoleRepresentation>();
+        List<RoleRepresentation> mapRep = new ArrayList<>();
         for (RoleModel roleModel : roles) {
             if (user.hasRole(roleModel)) mapRep.add(ModelToRepresentation.toBriefRepresentation(roleModel));
         }
@@ -125,39 +105,28 @@ public class RealmClientRoleMappingsResource {
 
     /**
      * Get available client-level roles that can be mapped to the user
-     *
-     * @return
      */
     @Path("available")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RoleRepresentation> getAvailableClientRoleMappings() {
-        viewPermission.require();
-
         Set<RoleModel> available = client.getRoles();
-        available = available.stream().filter(r ->
-                auth.roles().canMapRole(r)
-        ).collect(Collectors.toSet());
+        available = new HashSet<>(available);
         return getAvailableRoles(user, available);
     }
 
     /**
      * Add client-level roles to the user role mapping
-     *
-     * @param roles
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public void addClientRoleMapping(List<RoleRepresentation> roles) {
-        managePermission.require();
-
         for (RoleRepresentation role : roles) {
             RoleModel roleModel = client.getRole(role.getName());
             if (roleModel == null || !roleModel.getId().equals(role.getId())) {
                 throw new NotFoundException("Role not found");
             }
-            auth.roles().requireMapRole(roleModel);
             user.grantRole(roleModel);
         }
     }
@@ -168,8 +137,6 @@ public class RealmClientRoleMappingsResource {
     @DELETE
     @Consumes(MediaType.APPLICATION_JSON)
     public void deleteClientRoleMapping(List<RoleRepresentation> roles) {
-        managePermission.require();
-
         if (roles == null) {
             Set<RoleModel> roleModels = user.getClientRoleMappings(client);
             roles = new LinkedList<>();
@@ -179,7 +146,6 @@ public class RealmClientRoleMappingsResource {
                     ClientModel client = (ClientModel) roleModel.getContainer();
                     if (!client.getId().equals(this.client.getId())) continue;
                 }
-                auth.roles().requireMapRole(roleModel);
                 user.deleteRoleMapping(roleModel);
                 roles.add(ModelToRepresentation.toBriefRepresentation(roleModel));
             }
@@ -190,12 +156,10 @@ public class RealmClientRoleMappingsResource {
                 if (roleModel == null || !roleModel.getId().equals(role.getId())) {
                     throw new NotFoundException("Role not found");
                 }
-
-                auth.roles().requireMapRole(roleModel);
                 try {
                     user.deleteRoleMapping(roleModel);
                 } catch (ModelException me) {
-                    Properties messages = adminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
+                    Properties messages = adminRoot.getMessages(realm, Locale.getDefault().getLanguage());
                     throw new ErrorResponseException(me.getMessage(), MessageFormat.format(messages.getProperty(me.getMessage(), me.getMessage()), me.getParameters()),
                             Response.Status.BAD_REQUEST);
                 }

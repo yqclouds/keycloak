@@ -27,10 +27,8 @@ import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.authorization.ResourceServerRepresentation;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.ErrorResponseException;
-import org.keycloak.services.ForbiddenException;
 import org.keycloak.services.managers.ClientManager;
 import org.keycloak.services.resources.admin.AdminRoot;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.validation.ClientValidator;
 import org.keycloak.services.validation.PairwiseClientValidator;
 import org.keycloak.services.validation.ValidationMessages;
@@ -46,10 +44,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 import static java.lang.Boolean.TRUE;
 
@@ -69,11 +64,9 @@ public class RealmClientsResource {
     protected RealmModel realm;
     @Context
     protected KeycloakSession session;
-    private AdminPermissionEvaluator auth;
 
-    public RealmClientsResource(RealmModel realm, AdminPermissionEvaluator auth) {
+    public RealmClientsResource(RealmModel realm) {
         this.realm = realm;
-        this.auth = auth;
     }
 
     @Autowired
@@ -102,20 +95,10 @@ public class RealmClientsResource {
 
         if (clientId == null || clientId.trim().equals("")) {
             List<ClientModel> clientModels = realm.getClients(firstResult, maxResults);
-            auth.clients().requireList();
-            boolean view = auth.clients().canView();
             for (ClientModel clientModel : clientModels) {
-                if (view || auth.clients().canView(clientModel)) {
-                    ClientRepresentation representation = modelToRepresentation.toRepresentation(clientModel);
-                    rep.add(representation);
-                    representation.setAccess(auth.clients().getAccess(clientModel));
-                } else if (!viewableOnly && auth.clients().canView(clientModel)) {
-                    ClientRepresentation client = new ClientRepresentation();
-                    client.setId(clientModel.getId());
-                    client.setClientId(clientModel.getClientId());
-                    client.setDescription(clientModel.getDescription());
-                    rep.add(client);
-                }
+                ClientRepresentation representation = modelToRepresentation.toRepresentation(clientModel);
+                rep.add(representation);
+//                representation.setAccess(auth.clients().getAccess(clientModel));
             }
         } else {
             List<ClientModel> clientModels = Collections.emptyList();
@@ -129,17 +112,9 @@ public class RealmClientsResource {
             }
             if (clientModels != null) {
                 for (ClientModel clientModel : clientModels) {
-                    if (auth.clients().canView(clientModel)) {
-                        ClientRepresentation representation = modelToRepresentation.toRepresentation(clientModel);
-                        representation.setAccess(auth.clients().getAccess(clientModel));
-                        rep.add(representation);
-                    } else if (!viewableOnly && auth.clients().canView(clientModel)) {
-                        ClientRepresentation client = new ClientRepresentation();
-                        client.setId(clientModel.getId());
-                        client.setClientId(clientModel.getClientId());
-                        client.setDescription(clientModel.getDescription());
-                        rep.add(client);
-                    }
+                    ClientRepresentation representation = modelToRepresentation.toRepresentation(clientModel);
+//                    representation.setAccess(auth.clients().getAccess(clientModel));
+                    rep.add(representation);
                 }
             }
         }
@@ -147,7 +122,7 @@ public class RealmClientsResource {
     }
 
     private AuthorizationService getAuthorizationService(ClientModel clientModel) {
-        return new AuthorizationService(clientModel, auth);
+        return new AuthorizationService(clientModel);
     }
 
     @Autowired
@@ -167,11 +142,9 @@ public class RealmClientsResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createClient(final ClientRepresentation rep) {
-        auth.clients().requireManage();
-
         ValidationMessages validationMessages = new ValidationMessages();
         if (!ClientValidator.validate(rep, validationMessages) || !pairwiseClientValidator.validate(rep, validationMessages)) {
-            Properties messages = adminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
+            Properties messages = adminRoot.getMessages(realm, Locale.getDefault().getLanguage());
             throw new ErrorResponseException(
                     validationMessages.getStringMessages(),
                     validationMessages.getStringMessages(messages),
@@ -222,14 +195,12 @@ public class RealmClientsResource {
     public RealmClientResource getClient(final @PathParam("id") String id) {
         ClientModel clientModel = realm.getClientById(id);
         if (clientModel == null) {
-            // we do this to make sure somebody can't phish ids
-            if (auth.clients().canList()) throw new NotFoundException("Could not find client");
-            else throw new ForbiddenException();
+            throw new NotFoundException("Could not find client");
         }
 
         session.getContext().setClient(clientModel);
 
-        RealmClientResource clientResource = new RealmClientResource(realm, auth, clientModel);
+        RealmClientResource clientResource = new RealmClientResource(realm, clientModel);
         ResteasyProviderFactory.getInstance().injectProperties(clientResource);
         return clientResource;
     }

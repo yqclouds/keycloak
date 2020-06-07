@@ -24,7 +24,6 @@ import org.keycloak.models.RealmProvider;
 import org.keycloak.representations.idm.ClientInitialAccessCreatePresentation;
 import org.keycloak.representations.idm.ClientInitialAccessPresentation;
 import org.keycloak.services.clientregistration.ClientRegistrationTokenUtils;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,7 +50,6 @@ import java.util.List;
 @PreAuthorize("hasPermission({'master', 'admin'})")
 public class RealmClientInitialAccessResource {
 
-    private final AdminPermissionEvaluator auth;
     private final RealmModel realm;
 
     @Context
@@ -61,8 +59,7 @@ public class RealmClientInitialAccessResource {
     @Autowired
     private ClientRegistrationTokenUtils clientRegistrationTokenUtils;
 
-    public RealmClientInitialAccessResource(RealmModel realm, AdminPermissionEvaluator auth) {
-        this.auth = auth;
+    public RealmClientInitialAccessResource(RealmModel realm) {
         this.realm = realm;
     }
 
@@ -73,8 +70,6 @@ public class RealmClientInitialAccessResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ClientInitialAccessPresentation create(ClientInitialAccessCreatePresentation config, @Context final HttpServletResponse response) {
-        auth.clients().requireManage();
-
         int expiration = config.getExpiration() != null ? config.getExpiration() : 0;
         int count = config.getCount() != null ? config.getCount() : 1;
 
@@ -94,8 +89,6 @@ public class RealmClientInitialAccessResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<ClientInitialAccessPresentation> list() {
-        auth.clients().requireView();
-
         List<ClientInitialAccessModel> models = realmProvider.listClientInitialAccess(realm);
         List<ClientInitialAccessPresentation> reps = new LinkedList<>();
         for (ClientInitialAccessModel m : models) {
@@ -108,8 +101,6 @@ public class RealmClientInitialAccessResource {
     @DELETE
     @Path("{id}")
     public void delete(final @PathParam("id") String id) {
-        auth.clients().requireManage();
-
         realmProvider.removeClientInitialAccessModel(realm, id);
     }
 

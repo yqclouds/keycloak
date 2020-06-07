@@ -33,7 +33,6 @@ import org.keycloak.models.utils.StripSecretsUtils;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.idm.IdentityProviderRepresentation;
 import org.keycloak.services.ErrorResponse;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.utils.ReservedCharValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -63,11 +62,9 @@ public class RealmIdentityProvidersResource {
     private final RealmModel realm;
     @Autowired
     private KeycloakContext keycloakContext;
-    private AdminPermissionEvaluator auth;
 
-    public RealmIdentityProvidersResource(RealmModel realm, AdminPermissionEvaluator auth) {
+    public RealmIdentityProvidersResource(RealmModel realm) {
         this.realm = realm;
-        this.auth = auth;
     }
 
     /**
@@ -78,7 +75,6 @@ public class RealmIdentityProvidersResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public Response getIdentityProviders(@PathParam("provider_id") String providerId) {
-        this.auth.realm().requireViewIdentityProviders();
         IdentityProviderFactory providerFactory = getProviderFactorytById(providerId);
         if (providerFactory != null) {
             return Response.ok(providerFactory).build();
@@ -94,7 +90,6 @@ public class RealmIdentityProvidersResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, String> importFrom(MultipartFormDataInput input) throws IOException {
-        this.auth.realm().requireManageIdentityProviders();
         Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
         if (!(formDataMap.containsKey("providerId") && formDataMap.containsKey("file"))) {
             throw new BadRequestException();
@@ -119,7 +114,6 @@ public class RealmIdentityProvidersResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, String> importFrom(Map<String, Object> data) throws IOException {
-        this.auth.realm().requireManageIdentityProviders();
         if (!(data.containsKey("providerId") && data.containsKey("fromUrl"))) {
             throw new BadRequestException();
         }
@@ -150,8 +144,6 @@ public class RealmIdentityProvidersResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public List<IdentityProviderRepresentation> getIdentityProviders() {
-        this.auth.realm().requireViewIdentityProviders();
-
         List<IdentityProviderRepresentation> representations = new ArrayList<IdentityProviderRepresentation>();
 
         for (IdentityProviderModel identityProviderModel : realm.getIdentityProviders()) {
@@ -172,8 +164,6 @@ public class RealmIdentityProvidersResource {
     @Path("instances")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(IdentityProviderRepresentation representation) {
-        this.auth.realm().requireManageIdentityProviders();
-
         ReservedCharValidator.validate(representation.getAlias());
 
         try {
@@ -192,7 +182,6 @@ public class RealmIdentityProvidersResource {
 
     @Path("instances/{alias}")
     public RealmIdentityProviderResource getIdentityProvider(@PathParam("alias") String alias) {
-        this.auth.realm().requireViewIdentityProviders();
         IdentityProviderModel identityProviderModel = null;
 
         for (IdentityProviderModel storedIdentityProvider : this.realm.getIdentityProviders()) {
@@ -202,7 +191,7 @@ public class RealmIdentityProvidersResource {
             }
         }
 
-        RealmIdentityProviderResource identityProviderResource = new RealmIdentityProviderResource(this.auth, realm, identityProviderModel);
+        RealmIdentityProviderResource identityProviderResource = new RealmIdentityProviderResource(realm, identityProviderModel);
         ResteasyProviderFactory.getInstance().injectProperties(identityProviderResource);
 
         return identityProviderResource;
