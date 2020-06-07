@@ -30,7 +30,10 @@ public abstract class AbstractActionTokenHandler<T extends JsonWebToken> impleme
     private final EventType defaultEventType;
     private final String defaultEventError;
 
-    public AbstractActionTokenHandler(Class<T> tokenClass, String defaultErrorMessage, EventType defaultEventType, String defaultEventError) {
+    public AbstractActionTokenHandler(Class<T> tokenClass,
+                                      String defaultErrorMessage,
+                                      EventType defaultEventType,
+                                      String defaultEventError) {
         this.tokenClass = tokenClass;
         this.defaultErrorMessage = defaultErrorMessage;
         this.defaultEventType = defaultEventType;

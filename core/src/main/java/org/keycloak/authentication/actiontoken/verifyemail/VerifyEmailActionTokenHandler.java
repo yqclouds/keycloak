@@ -59,7 +59,10 @@ public class VerifyEmailActionTokenHandler extends AbstractActionTokenHandler<Ve
     @Getter
     private String id;
 
-    public VerifyEmailActionTokenHandler() {
+    public VerifyEmailActionTokenHandler(Class<VerifyEmailActionToken> tokenClass,
+                                         String defaultErrorMessage,
+                                         EventType defaultEventType,
+                                         String defaultEventError) {
         super(
                 VerifyEmailActionToken.class,
                 Messages.STALE_VERIFY_EMAIL_LINK,

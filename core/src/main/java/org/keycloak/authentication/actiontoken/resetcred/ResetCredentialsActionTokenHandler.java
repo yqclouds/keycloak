@@ -51,12 +51,15 @@ public class ResetCredentialsActionTokenHandler extends AbstractActionTokenHandl
     @Getter
     private String id;
 
-    public ResetCredentialsActionTokenHandler() {
+    public ResetCredentialsActionTokenHandler(Class<ResetCredentialsActionToken> tokenClass,
+                                              String defaultErrorMessage,
+                                              EventType defaultEventType,
+                                              String defaultEventError) {
         super(
-                ResetCredentialsActionToken.class,
-                Messages.RESET_CREDENTIAL_NOT_ALLOWED,
-                EventType.RESET_PASSWORD,
-                Errors.NOT_ALLOWED
+                tokenClass,
+                defaultErrorMessage,
+                defaultEventType,
+                defaultEventError
         );
     }
 

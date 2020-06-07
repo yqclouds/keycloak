@@ -2,7 +2,6 @@ package org.keycloak.config;
 
 import org.keycloak.Config;
 import org.keycloak.authentication.*;
-import org.keycloak.authentication.actiontoken.ActionTokenHandlerSpi;
 import org.keycloak.authorization.AuthorizationSpi;
 import org.keycloak.authorization.policy.provider.PolicySpi;
 import org.keycloak.authorization.store.StoreFactorySpi;
@@ -103,7 +102,6 @@ public class KeycloakWebConfiguration {
     @Bean(name = "keycloakSpis")
     public Set<Spi> keycloakSpis() {
         Set<Spi> results = new HashSet<>();
-        results.add(new ActionTokenHandlerSpi());
         results.add(new ActionTokenStoreSpi());
         results.add(new AuthenticationSessionSpi());
         results.add(new AuthenticatorSpi());

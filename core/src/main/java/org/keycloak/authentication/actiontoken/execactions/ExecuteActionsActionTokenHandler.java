@@ -58,13 +58,11 @@ public class ExecuteActionsActionTokenHandler extends AbstractActionTokenHandler
     @Getter
     private String id;
 
-    public ExecuteActionsActionTokenHandler() {
-        super(
-                ExecuteActionsActionToken.class,
-                Messages.INVALID_CODE,
-                EventType.EXECUTE_ACTIONS,
-                Errors.NOT_ALLOWED
-        );
+    public ExecuteActionsActionTokenHandler(Class<ExecuteActionsActionToken> tokenClass,
+                                            String defaultErrorMessage,
+                                            EventType defaultEventType,
+                                            String defaultEventError) {
+        super(tokenClass, defaultErrorMessage, defaultEventType, defaultEventError);
     }
 
     @Autowired

@@ -61,7 +61,10 @@ public class IdpVerifyAccountLinkActionTokenHandler extends AbstractActionTokenH
     @Getter
     private String id;
 
-    public IdpVerifyAccountLinkActionTokenHandler() {
+    public IdpVerifyAccountLinkActionTokenHandler(Class<IdpVerifyAccountLinkActionToken> tokenClass,
+                                                  String defaultErrorMessage,
+                                                  EventType defaultEventType,
+                                                  String defaultEventError) {
         super(
                 IdpVerifyAccountLinkActionToken.class,
                 Messages.STALE_CODE,
