@@ -17,13 +17,13 @@
 
 package com.hsbc.unified.iam.web.admin.resources;
 
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.*;
+import org.keycloak.models.ClientInitialAccessModel;
+import org.keycloak.models.KeycloakContext;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.RealmProvider;
 import org.keycloak.representations.idm.ClientInitialAccessCreatePresentation;
 import org.keycloak.representations.idm.ClientInitialAccessPresentation;
 import org.keycloak.services.clientregistration.ClientRegistrationTokenUtils;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -53,31 +53,21 @@ public class RealmClientInitialAccessResource {
 
     private final AdminPermissionEvaluator auth;
     private final RealmModel realm;
-    private final AdminEventBuilder adminEvent;
 
     @Context
     protected KeycloakContext keycloakContext;
-    @Autowired
-    private UserSessionProvider userSessionProvider;
-    @Autowired
-    private UserProvider userProvider;
     @Autowired
     private RealmProvider realmProvider;
     @Autowired
     private ClientRegistrationTokenUtils clientRegistrationTokenUtils;
 
-    public RealmClientInitialAccessResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public RealmClientInitialAccessResource(RealmModel realm, AdminPermissionEvaluator auth) {
         this.auth = auth;
         this.realm = realm;
-        this.adminEvent = adminEvent.resource(ResourceType.CLIENT_INITIAL_ACCESS_MODEL);
-
     }
 
     /**
      * Create a new initial access token.
-     *
-     * @param config
-     * @return
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -89,8 +79,6 @@ public class RealmClientInitialAccessResource {
         int count = config.getCount() != null ? config.getCount() : 1;
 
         ClientInitialAccessModel clientInitialAccessModel = realmProvider.createClientInitialAccessModel(realm, expiration, count);
-
-        adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri(), clientInitialAccessModel.getId()).representation(config).success();
 
         ClientInitialAccessPresentation rep = wrap(clientInitialAccessModel);
 
@@ -123,7 +111,6 @@ public class RealmClientInitialAccessResource {
         auth.clients().requireManage();
 
         realmProvider.removeClientInitialAccessModel(realm, id);
-        adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
     }
 
     private ClientInitialAccessPresentation wrap(ClientInitialAccessModel model) {
@@ -135,5 +122,4 @@ public class RealmClientInitialAccessResource {
         rep.setRemainingCount(model.getRemainingCount());
         return rep;
     }
-
 }

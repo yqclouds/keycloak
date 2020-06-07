@@ -20,13 +20,12 @@ import com.hsbc.unified.iam.core.ClientConnection;
 import com.hsbc.unified.iam.core.constants.Constants;
 import com.hsbc.unified.iam.core.util.Time;
 import com.hsbc.unified.iam.facade.model.credential.UserCredentialModel;
+import com.hsbc.unified.iam.facade.spi.impl.RealmFacadeImpl;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.BadRequestException;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authorization.admin.AuthorizationService;
 import org.keycloak.events.Errors;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.ModelToRepresentation;
@@ -39,10 +38,9 @@ import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.clientregistration.ClientRegistrationTokenUtils;
 import org.keycloak.services.clientregistration.policy.RegistrationAuth;
 import org.keycloak.services.managers.ClientManager;
-import com.hsbc.unified.iam.facade.spi.impl.RealmFacadeImpl;
 import org.keycloak.services.managers.ResourceAdminManager;
 import org.keycloak.services.resources.KeycloakApplication;
-import org.keycloak.services.resources.admin.*;
+import org.keycloak.services.resources.admin.AdminRoot;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionManagement;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
@@ -80,13 +78,11 @@ public class RealmClientResource {
     @Context
     protected ClientConnection clientConnection;
     private AdminPermissionEvaluator auth;
-    private AdminEventBuilder adminEvent;
 
-    public RealmClientResource(RealmModel realm, AdminPermissionEvaluator auth, ClientModel clientModel, AdminEventBuilder adminEvent) {
+    public RealmClientResource(RealmModel realm, AdminPermissionEvaluator auth, ClientModel clientModel) {
         this.realm = realm;
         this.auth = auth;
         this.client = clientModel;
-        this.adminEvent = adminEvent.resource(ResourceType.CLIENT);
     }
 
     public static ManagementPermissionReference toMgmtRef(ClientModel client, AdminPermissionManagement permissions) {
@@ -105,7 +101,7 @@ public class RealmClientResource {
     public RealmProtocolMappersResource getProtocolMappers() {
         AdminPermissionEvaluator.RequirePermissionCheck manageCheck = () -> auth.clients().requireManage(client);
         AdminPermissionEvaluator.RequirePermissionCheck viewCheck = () -> auth.clients().requireView(client);
-        RealmProtocolMappersResource mappers = new RealmProtocolMappersResource(realm, client, auth, adminEvent, manageCheck, viewCheck);
+        RealmProtocolMappersResource mappers = new RealmProtocolMappersResource(realm, client, auth, manageCheck, viewCheck);
         ResteasyProviderFactory.getInstance().injectProperties(mappers);
         return mappers;
     }
@@ -119,9 +115,6 @@ public class RealmClientResource {
 
     /**
      * Update the client
-     *
-     * @param rep
-     * @return
      */
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
@@ -145,7 +138,6 @@ public class RealmClientResource {
                 throw new ErrorResponseException(Errors.INVALID_INPUT, c.getError(), Response.Status.BAD_REQUEST);
             });
 
-            adminEvent.operation(OperationType.UPDATE).resourcePath(keycloakContext.getUri()).representation(rep).success();
             return Response.noContent().build();
         } catch (ModelDuplicateException e) {
             return ErrorResponse.exists("Client already exists");
@@ -157,8 +149,6 @@ public class RealmClientResource {
 
     /**
      * Get representation of the client
-     *
-     * @return
      */
     @GET
     @NoCache
@@ -175,13 +165,10 @@ public class RealmClientResource {
 
     /**
      * Get representation of certificate resource
-     *
-     * @param attributePrefix
-     * @return
      */
     @Path("certificates/{attr}")
     public RealmClientAttributeCertificateResource getCertficateResource(@PathParam("attr") String attributePrefix) {
-        return new RealmClientAttributeCertificateResource(realm, auth, client, attributePrefix, adminEvent);
+        return new RealmClientAttributeCertificateResource(realm, auth, client, attributePrefix);
     }
 
     @Autowired
@@ -211,13 +198,10 @@ public class RealmClientResource {
         }
 
         new ClientManager(new RealmFacadeImpl()).removeClient(realm, client);
-        adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
      * Generate a new secret for the client
-     *
-     * @return
      */
     @Path("client-secret")
     @POST
@@ -228,9 +212,7 @@ public class RealmClientResource {
 
         LOG.debug("regenerateSecret");
         UserCredentialModel cred = KeycloakModelUtils.generateSecret(client);
-        CredentialRepresentation rep = ModelToRepresentation.toRepresentation(cred);
-        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).representation(rep).success();
-        return rep;
+        return ModelToRepresentation.toRepresentation(cred);
     }
 
     @Autowired
@@ -238,8 +220,6 @@ public class RealmClientResource {
 
     /**
      * Generate a new registration access token for the client
-     *
-     * @return
      */
     @Path("registration-access-token")
     @POST
@@ -252,15 +232,11 @@ public class RealmClientResource {
 
         ClientRepresentation rep = modelToRepresentation.toRepresentation(client);
         rep.setRegistrationAccessToken(token);
-
-        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).representation(rep).success();
         return rep;
     }
 
     /**
      * Get the client secret
-     *
-     * @return
      */
     @Path("client-secret")
     @GET
@@ -271,20 +247,17 @@ public class RealmClientResource {
 
         LOG.debug("getClientSecret");
         UserCredentialModel model = UserCredentialModel.secret(client.getSecret());
-        if (model == null) throw new NotFoundException("Client does not have a secret");
         return ModelToRepresentation.toRepresentation(model);
     }
 
     /**
      * Base path for managing the scope mappings for the client
-     *
-     * @return
      */
     @Path("scope-mappings")
     public RealmScopeMappedResource getScopeMappedResource() {
         AdminPermissionEvaluator.RequirePermissionCheck manageCheck = () -> auth.clients().requireManage(client);
         AdminPermissionEvaluator.RequirePermissionCheck viewCheck = () -> auth.clients().requireView(client);
-        return new RealmScopeMappedResource(realm, auth, client, adminEvent, manageCheck, viewCheck);
+        return new RealmScopeMappedResource(realm, auth, client, manageCheck, viewCheck);
     }
 
     @Autowired
@@ -292,13 +265,11 @@ public class RealmClientResource {
 
     @Path("roles")
     public RealmRolesResource getRoleContainerResource() {
-        return new RealmRolesResource(keycloakContext.getUri(), realm, auth, client, adminEvent);
+        return new RealmRolesResource(keycloakContext.getUri(), realm, auth, client);
     }
 
     /**
      * Get default client scopes.  Only name and ids are returned.
-     *
-     * @return
      */
     @GET
     @NoCache
@@ -336,8 +307,6 @@ public class RealmClientResource {
             throw new javax.ws.rs.NotFoundException("Client scope not found");
         }
         client.addClientScope(clientScope, defaultScope);
-
-        adminEvent.operation(OperationType.CREATE).resource(ResourceType.CLIENT).resourcePath(keycloakContext.getUri()).success();
     }
 
     @DELETE
@@ -351,14 +320,10 @@ public class RealmClientResource {
             throw new javax.ws.rs.NotFoundException("Client scope not found");
         }
         client.removeClientScope(clientScope);
-
-        adminEvent.operation(OperationType.DELETE).resource(ResourceType.CLIENT).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
      * Get optional client scopes.  Only name and ids are returned.
-     *
-     * @return
      */
     @GET
     @NoCache
@@ -389,8 +354,6 @@ public class RealmClientResource {
 
     /**
      * Get a user dedicated to the service account
-     *
-     * @return
      */
     @Path("service-account-user")
     @GET
@@ -423,9 +386,7 @@ public class RealmClientResource {
     public GlobalRequestResult pushRevocation() {
         auth.clients().requireConfigure(client);
 
-        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).resource(ResourceType.CLIENT).success();
         return new ResourceAdminManager().pushClientRevocationPolicy(realm, client);
-
     }
 
     /**
@@ -436,8 +397,6 @@ public class RealmClientResource {
      * {
      * "count": number
      * }
-     *
-     * @return
      */
     @Path("session-count")
     @GET
@@ -458,18 +417,18 @@ public class RealmClientResource {
      *
      * @param firstResult Paging offset
      * @param maxResults  Maximum results size (defaults to 100)
-     * @return
      */
     @Path("user-sessions")
     @GET
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
-    public List<UserSessionRepresentation> getUserSessions(@QueryParam("first") Integer firstResult, @QueryParam("max") Integer maxResults) {
+    public List<UserSessionRepresentation> getUserSessions(@QueryParam("first") Integer firstResult,
+                                                           @QueryParam("max") Integer maxResults) {
         auth.clients().requireView(client);
 
         firstResult = firstResult != null ? firstResult : -1;
         maxResults = maxResults != null ? maxResults : Constants.DEFAULT_MAX_RESULTS;
-        List<UserSessionRepresentation> sessions = new ArrayList<UserSessionRepresentation>();
+        List<UserSessionRepresentation> sessions = new ArrayList<>();
         for (UserSessionModel userSession : userSessionProvider.getUserSessions(client.getRealm(), client, firstResult, maxResults)) {
             UserSessionRepresentation rep = ModelToRepresentation.toRepresentation(userSession);
             sessions.add(rep);
@@ -485,8 +444,6 @@ public class RealmClientResource {
      * {
      * "count": number
      * }
-     *
-     * @return
      */
     @Path("offline-session-count")
     @GET
@@ -510,7 +467,6 @@ public class RealmClientResource {
      *
      * @param firstResult Paging offset
      * @param maxResults  Maximum results size (defaults to 100)
-     * @return
      */
     @Path("offline-sessions")
     @GET
@@ -547,8 +503,6 @@ public class RealmClientResource {
      * <p>
      * Manually register cluster node to this client - usually it's not needed to call this directly as adapter should handle
      * by sending registration request to Keycloak
-     *
-     * @param formParams
      */
     @Path("nodes")
     @POST
@@ -565,13 +519,10 @@ public class RealmClientResource {
 
         if (LOG.isDebugEnabled()) LOG.debug("Register node: " + node);
         client.registerNode(node, Time.currentTime());
-        adminEvent.operation(OperationType.CREATE).resource(ResourceType.CLUSTER_NODE).resourcePath(keycloakContext.getUri(), node).success();
     }
 
     /**
      * Unregister a cluster node from the client
-     *
-     * @param node
      */
     @Path("nodes/{node}")
     @DELETE
@@ -586,15 +537,12 @@ public class RealmClientResource {
             throw new NotFoundException("Client does not have node ");
         }
         client.unregisterNode(node);
-        adminEvent.operation(OperationType.DELETE).resource(ResourceType.CLUSTER_NODE).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
      * Test if registered cluster nodes are available
      * <p>
      * Tests availability by sending 'ping' request to all cluster nodes.
-     *
-     * @return
      */
     @Path("test-nodes-available")
     @GET
@@ -604,14 +552,12 @@ public class RealmClientResource {
         auth.clients().requireConfigure(client);
 
         LOG.debug("Test availability of cluster nodes");
-        GlobalRequestResult result = new ResourceAdminManager().testNodesAvailability(realm, client);
-        adminEvent.operation(OperationType.ACTION).resource(ResourceType.CLUSTER_NODE).resourcePath(keycloakContext.getUri()).representation(result).success();
-        return result;
+        return new ResourceAdminManager().testNodesAvailability(realm, client);
     }
 
     @Path("/authz")
     public AuthorizationService authorization() {
-        AuthorizationService resource = new AuthorizationService(this.client, this.auth, adminEvent);
+        AuthorizationService resource = new AuthorizationService(this.client, this.auth);
 
         ResteasyProviderFactory.getInstance().injectProperties(resource);
 
@@ -620,8 +566,6 @@ public class RealmClientResource {
 
     /**
      * Return object stating whether client Authorization permissions have been initialized or not and a reference
-     *
-     * @return
      */
     @Path("management/permissions")
     @GET

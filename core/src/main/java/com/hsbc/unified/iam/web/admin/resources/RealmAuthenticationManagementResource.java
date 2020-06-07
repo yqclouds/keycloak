@@ -59,12 +59,10 @@ public class RealmAuthenticationManagementResource {
     protected static final Logger LOG = LoggerFactory.getLogger(RealmAuthenticationManagementResource.class);
     private final RealmModel realm;
     private AdminPermissionEvaluator auth;
-    private AdminEventBuilder adminEvent;
 
     public RealmAuthenticationManagementResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
         this.realm = realm;
         this.auth = auth;
-        this.adminEvent = adminEvent.resource(ResourceType.AUTH_FLOW);
     }
 
     public static AuthenticationFlowModel copyFlow(RealmModel realm, AuthenticationFlowModel flow, String newName) {
@@ -247,7 +245,6 @@ public class RealmAuthenticationManagementResource {
         AuthenticationFlowModel createdModel = realm.addAuthenticationFlow(RepresentationToModel.toModel(flow));
 
         flow.setId(createdModel.getId());
-        adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri(), createdModel.getId()).representation(flow).success();
         return Response.created(keycloakContext.getUri().getAbsolutePathBuilder().path(flow.getId()).build()).build();
     }
 
@@ -291,7 +288,6 @@ public class RealmAuthenticationManagementResource {
 
         flow.setId(existingFlow.getId());
         realm.updateAuthenticationFlow(RepresentationToModel.toModel(flow));
-        adminEvent.operation(OperationType.UPDATE).resourcePath(keycloakContext.getUri()).representation(flow).success();
 
         return Response.accepted(flow).build();
     }
@@ -326,10 +322,6 @@ public class RealmAuthenticationManagementResource {
             }
         }
         realm.removeAuthenticationFlow(flow);
-
-        // Use just one event for top-level flow. Using separate events won't work properly for flows of depth 2 or bigger
-        if (isTopMostLevel)
-            adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -360,7 +352,6 @@ public class RealmAuthenticationManagementResource {
         AuthenticationFlowModel copy = copyFlow(realm, flow, newName);
 
         data.put("id", copy.getId());
-        adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri()).representation(data).success();
 
         return Response.status(Response.Status.CREATED).build();
 
@@ -408,7 +399,6 @@ public class RealmAuthenticationManagementResource {
         execution = realm.addAuthenticatorExecution(execution);
 
         data.put("id", execution.getId());
-        adminEvent.operation(OperationType.CREATE).resource(ResourceType.AUTH_EXECUTION_FLOW).resourcePath(keycloakContext.getUri()).representation(data).success();
 
         String addExecutionPathSegment = UriBuilder.fromMethod(RealmAuthenticationManagementResource.class, "addExecutionFlow").build(parentFlow.getAlias()).getPath();
         return Response.created(keycloakContext.getUri().getBaseUriBuilder().path(keycloakContext.getUri().getPath().replace(addExecutionPathSegment, "")).path("flows").path(newFlow.getId()).build()).build();
@@ -473,7 +463,6 @@ public class RealmAuthenticationManagementResource {
         execution = realm.addAuthenticatorExecution(execution);
 
         data.put("id", execution.getId());
-        adminEvent.operation(OperationType.CREATE).resource(ResourceType.AUTH_EXECUTION).resourcePath(keycloakContext.getUri()).representation(data).success();
 
         String addExecutionPathSegment = UriBuilder.fromMethod(RealmAuthenticationManagementResource.class, "addExecutionToFlow").build(parentFlow.getAlias()).getPath();
         return Response.created(keycloakContext.getUri().getBaseUriBuilder().path(keycloakContext.getUri().getPath().replace(addExecutionPathSegment, "")).path("executions").path(execution.getId()).build()).build();
@@ -594,7 +583,6 @@ public class RealmAuthenticationManagementResource {
         if (!model.getRequirement().name().equals(rep.getRequirement())) {
             model.setRequirement(AuthenticationExecutionRequirement.valueOf(rep.getRequirement()));
             realm.updateAuthenticatorExecution(model);
-            adminEvent.operation(OperationType.UPDATE).resource(ResourceType.AUTH_EXECUTION).resourcePath(keycloakContext.getUri()).representation(rep).success();
         }
     }
 
@@ -638,7 +626,6 @@ public class RealmAuthenticationManagementResource {
         model.setPriority(getNextPriority(parentFlow));
         model = realm.addAuthenticatorExecution(model);
 
-        adminEvent.operation(OperationType.CREATE).resource(ResourceType.AUTH_EXECUTION).resourcePath(keycloakContext.getUri(), model.getId()).representation(execution).success();
         return Response.created(keycloakContext.getUri().getAbsolutePathBuilder().path(model.getId()).build()).build();
     }
 
@@ -689,8 +676,6 @@ public class RealmAuthenticationManagementResource {
         realm.updateAuthenticatorExecution(previous);
         model.setPriority(tmp);
         realm.updateAuthenticatorExecution(model);
-
-        adminEvent.operation(OperationType.UPDATE).resource(ResourceType.AUTH_EXECUTION).resourcePath(keycloakContext.getUri()).success();
     }
 
     public List<AuthenticationExecutionModel> getSortedExecutions(AuthenticationFlowModel parentFlow) {
@@ -733,8 +718,6 @@ public class RealmAuthenticationManagementResource {
         realm.updateAuthenticatorExecution(model);
         next.setPriority(tmp);
         realm.updateAuthenticatorExecution(next);
-
-        adminEvent.operation(OperationType.UPDATE).resource(ResourceType.AUTH_EXECUTION).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -764,8 +747,6 @@ public class RealmAuthenticationManagementResource {
         }
 
         realm.removeAuthenticatorExecution(model);
-
-        adminEvent.operation(OperationType.DELETE).resource(ResourceType.AUTH_EXECUTION).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -798,7 +779,6 @@ public class RealmAuthenticationManagementResource {
         realm.updateAuthenticatorExecution(model);
 
         json.setId(config.getId());
-        adminEvent.operation(OperationType.CREATE).resource(ResourceType.AUTH_EXECUTION).resourcePath(keycloakContext.getUri()).representation(json).success();
         return Response.created(keycloakContext.getUri().getAbsolutePathBuilder().path(config.getId()).build()).build();
     }
 
@@ -882,7 +862,6 @@ public class RealmAuthenticationManagementResource {
         requiredAction = realm.addRequiredActionProvider(requiredAction);
 
         data.put("id", requiredAction.getId());
-        adminEvent.operation(OperationType.CREATE).resource(ResourceType.REQUIRED_ACTION).resourcePath(keycloakContext.getUri()).representation(data).success();
     }
 
     private int getNextRequiredActionPriority() {
@@ -956,8 +935,6 @@ public class RealmAuthenticationManagementResource {
         update.setEnabled(rep.isEnabled());
         update.setConfig(rep.getConfig());
         realm.updateRequiredActionProvider(update);
-
-        adminEvent.operation(OperationType.UPDATE).resource(ResourceType.REQUIRED_ACTION).resourcePath(keycloakContext.getUri()).representation(rep).success();
     }
 
     /**
@@ -975,8 +952,6 @@ public class RealmAuthenticationManagementResource {
             throw new NotFoundException("Failed to find required action.");
         }
         realm.removeRequiredActionProvider(model);
-
-        adminEvent.operation(OperationType.DELETE).resource(ResourceType.REQUIRED_ACTION).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -1009,8 +984,6 @@ public class RealmAuthenticationManagementResource {
         realm.updateRequiredActionProvider(previous);
         model.setPriority(tmp);
         realm.updateRequiredActionProvider(model);
-
-        adminEvent.operation(OperationType.UPDATE).resource(ResourceType.REQUIRED_ACTION).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -1043,8 +1016,6 @@ public class RealmAuthenticationManagementResource {
         realm.updateRequiredActionProvider(model);
         next.setPriority(tmp);
         realm.updateRequiredActionProvider(next);
-
-        adminEvent.operation(OperationType.UPDATE).resource(ResourceType.REQUIRED_ACTION).resourcePath(keycloakContext.getUri()).success();
     }
 
     @Autowired
@@ -1127,7 +1098,6 @@ public class RealmAuthenticationManagementResource {
         ReservedCharValidator.validate(rep.getAlias());
 
         AuthenticatorConfigModel config = realm.addAuthenticatorConfig(RepresentationToModel.toModel(rep));
-        adminEvent.operation(OperationType.CREATE).resource(ResourceType.AUTHENTICATOR_CONFIG).resourcePath(keycloakContext.getUri(), config.getId()).representation(rep).success();
         return Response.created(keycloakContext.getUri().getAbsolutePathBuilder().path(config.getId()).build()).build();
     }
 
@@ -1177,8 +1147,6 @@ public class RealmAuthenticationManagementResource {
         }
 
         realm.removeAuthenticatorConfig(config);
-
-        adminEvent.operation(OperationType.DELETE).resource(ResourceType.AUTHENTICATOR_CONFIG).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -1203,6 +1171,5 @@ public class RealmAuthenticationManagementResource {
         exists.setAlias(rep.getAlias());
         exists.setConfig(RepresentationToModel.removeEmptyString(rep.getConfig()));
         realm.updateAuthenticatorConfig(exists);
-        adminEvent.operation(OperationType.UPDATE).resource(ResourceType.AUTHENTICATOR_CONFIG).resourcePath(keycloakContext.getUri()).representation(rep).success();
     }
 }

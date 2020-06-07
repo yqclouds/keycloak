@@ -23,8 +23,6 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.storage.client.ClientStorageProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -39,8 +37,6 @@ import java.util.Map;
  * @resource User Storage Provider
  */
 public class RealmClientStorageProviderResource {
-    private static final Logger LOG = LoggerFactory.getLogger(RealmClientStorageProviderResource.class);
-
     protected RealmModel realm;
 
     protected AdminPermissionEvaluator auth;
@@ -63,9 +59,6 @@ public class RealmClientStorageProviderResource {
      * Need this for admin console to display simple name of provider when displaying client detail
      * <p>
      * KEYCLOAK-4328
-     *
-     * @param id
-     * @return
      */
     @GET
     @Path("{id}/name")

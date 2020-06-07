@@ -17,8 +17,6 @@
 package com.hsbc.unified.iam.web.admin.resources;
 
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.ModelDuplicateException;
@@ -27,7 +25,6 @@ import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.ClientScopeRepresentation;
 import org.keycloak.services.ErrorResponse;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,12 +55,10 @@ public class RealmClientScopesResource {
     protected static final Logger LOG = LoggerFactory.getLogger(RealmClientScopesResource.class);
     protected RealmModel realm;
     private AdminPermissionEvaluator auth;
-    private AdminEventBuilder adminEvent;
 
-    public RealmClientScopesResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public RealmClientScopesResource(RealmModel realm, AdminPermissionEvaluator auth) {
         this.realm = realm;
         this.auth = auth;
-        this.adminEvent = adminEvent.resource(ResourceType.CLIENT_SCOPE);
     }
 
     @Autowired
@@ -111,8 +106,6 @@ public class RealmClientScopesResource {
         try {
             ClientScopeModel clientModel = representationToModel.createClientScope(realm, rep);
 
-            adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri(), clientModel.getId()).representation(rep).success();
-
             return Response.created(keycloakContext.getUri().getAbsolutePathBuilder().path(clientModel.getId()).build()).build();
         } catch (ModelDuplicateException e) {
             return ErrorResponse.exists("Client ScopeModel " + rep.getName() + " already exists");
@@ -129,7 +122,7 @@ public class RealmClientScopesResource {
         if (clientModel == null) {
             throw new NotFoundException("Could not find client scope");
         }
-        RealmClientScopeResource clientResource = new RealmClientScopeResource(realm, auth, clientModel, adminEvent);
+        RealmClientScopeResource clientResource = new RealmClientScopeResource(realm, auth, clientModel);
         ResteasyProviderFactory.getInstance().injectProperties(clientResource);
         return clientResource;
     }
@@ -168,8 +161,6 @@ public class RealmClientScopesResource {
             throw new NotFoundException("Client scope not found");
         }
         realm.addDefaultClientScope(clientScope, defaultScope);
-
-        adminEvent.operation(OperationType.CREATE).resource(ResourceType.CLIENT_SCOPE).resourcePath(keycloakContext.getUri()).success();
     }
 
     @RequestMapping(value = "/default-default-client-scopes/{clientScopeId}", method = RequestMethod.DELETE)
@@ -181,9 +172,6 @@ public class RealmClientScopesResource {
             throw new NotFoundException("Client scope not found");
         }
         realm.removeDefaultClientScope(clientScope);
-
-        adminEvent.operation(OperationType.DELETE).resource(ResourceType.CLIENT_SCOPE)
-                .resourcePath(keycloakContext.getUri()).success();
     }
 
     /**

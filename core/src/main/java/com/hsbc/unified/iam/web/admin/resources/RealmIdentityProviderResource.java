@@ -19,8 +19,6 @@ package com.hsbc.unified.iam.web.admin.resources;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.broker.provider.IdentityProviderFactory;
 import org.keycloak.broker.provider.IdentityProviderMapper;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
@@ -28,7 +26,6 @@ import org.keycloak.models.utils.StripSecretsUtils;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.idm.*;
 import org.keycloak.services.ErrorResponse;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionManagement;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
@@ -48,22 +45,19 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
  * @resource Identity Providers
  */
 public class RealmIdentityProviderResource {
-
     protected static final Logger LOG = LoggerFactory.getLogger(RealmIdentityProviderResource.class);
 
     private final AdminPermissionEvaluator auth;
     private final RealmModel realm;
     private final IdentityProviderModel identityProviderModel;
-    private final AdminEventBuilder adminEvent;
 
     @Autowired
     private KeycloakContext keycloakContext;
 
-    public RealmIdentityProviderResource(AdminPermissionEvaluator auth, RealmModel realm, IdentityProviderModel identityProviderModel, AdminEventBuilder adminEvent) {
+    public RealmIdentityProviderResource(AdminPermissionEvaluator auth, RealmModel realm, IdentityProviderModel identityProviderModel) {
         this.realm = realm;
         this.identityProviderModel = identityProviderModel;
         this.auth = auth;
-        this.adminEvent = adminEvent.resource(ResourceType.IDENTITY_PROVIDER);
     }
 
     // return ID of IdentityProvider from realm based on internalId of this provider
@@ -115,8 +109,6 @@ public class RealmIdentityProviderResource {
 
     /**
      * Get the identity provider
-     *
-     * @return
      */
     @GET
     @NoCache
@@ -134,8 +126,6 @@ public class RealmIdentityProviderResource {
 
     /**
      * Delete the identity provider
-     *
-     * @return
      */
     @DELETE
     @NoCache
@@ -154,16 +144,11 @@ public class RealmIdentityProviderResource {
             this.realm.removeIdentityProviderMapper(mapper);
         }
 
-        adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
-
         return Response.noContent().build();
     }
 
     /**
      * Update the identity provider
-     *
-     * @param providerRep
-     * @return
      */
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
@@ -177,8 +162,6 @@ public class RealmIdentityProviderResource {
 
         try {
             updateIdpFromRep(providerRep, realm);
-
-            adminEvent.operation(OperationType.UPDATE).resourcePath(keycloakContext.getUri()).representation(providerRep).success();
 
             return Response.noContent().build();
         } catch (IllegalArgumentException e) {
@@ -230,7 +213,6 @@ public class RealmIdentityProviderResource {
      * Export public broker configuration for identity provider
      *
      * @param format Format to use
-     * @return
      */
     @GET
     @Path("export")
@@ -311,9 +293,6 @@ public class RealmIdentityProviderResource {
 
     /**
      * Add a mapper to identity provider
-     *
-     * @param mapper
-     * @return
      */
     @POST
     @Path("mappers")
@@ -332,18 +311,11 @@ public class RealmIdentityProviderResource {
             return ErrorResponse.error("Failed to add mapper '" + model.getName() + "' to identity provider [" + identityProviderModel.getProviderId() + "].", Response.Status.BAD_REQUEST);
         }
 
-        adminEvent.operation(OperationType.CREATE).resource(ResourceType.IDENTITY_PROVIDER_MAPPER).resourcePath(keycloakContext.getUri(), model.getId())
-                .representation(mapper).success();
-
         return Response.created(keycloakContext.getUri().getAbsolutePathBuilder().path(model.getId()).build()).build();
-
     }
 
     /**
      * Get mapper by id for the identity provider
-     *
-     * @param id
-     * @return
      */
     @GET
     @NoCache
@@ -364,8 +336,7 @@ public class RealmIdentityProviderResource {
     /**
      * Update a mapper for the identity provider
      *
-     * @param id  Mapper id
-     * @param rep
+     * @param id Mapper id
      */
     @PUT
     @NoCache
@@ -382,8 +353,6 @@ public class RealmIdentityProviderResource {
         if (model == null) throw new NotFoundException("Model not found");
         model = RepresentationToModel.toModel(rep);
         realm.updateIdentityProviderMapper(model);
-        adminEvent.operation(OperationType.UPDATE).resource(ResourceType.IDENTITY_PROVIDER_MAPPER).resourcePath(keycloakContext.getUri()).representation(rep).success();
-
     }
 
     /**
@@ -404,14 +373,10 @@ public class RealmIdentityProviderResource {
         IdentityProviderMapperModel model = realm.getIdentityProviderMapperById(id);
         if (model == null) throw new NotFoundException("Model not found");
         realm.removeIdentityProviderMapper(model);
-        adminEvent.operation(OperationType.DELETE).resource(ResourceType.IDENTITY_PROVIDER_MAPPER).resourcePath(keycloakContext.getUri()).success();
-
     }
 
     /**
      * Return object stating whether client Authorization permissions have been initialized or not and a reference
-     *
-     * @return
      */
     @Path("management/permissions")
     @GET
@@ -447,6 +412,4 @@ public class RealmIdentityProviderResource {
             return new ManagementPermissionReference();
         }
     }
-
-
 }

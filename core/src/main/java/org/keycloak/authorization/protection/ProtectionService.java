@@ -56,7 +56,7 @@ public class ProtectionService {
     public Object resource() {
         KeycloakIdentity identity = createIdentity(true);
         ResourceServerModel resourceServer = getResourceServer(identity);
-        ResourceSetService resourceManager = new ResourceSetService(resourceServer, this.authorization, null, createAdminEventBuilder(identity, resourceServer));
+        ResourceSetService resourceManager = new ResourceSetService(resourceServer, this.authorization, null);
 
         ResteasyProviderFactory.getInstance().injectProperties(resourceManager);
 
@@ -104,7 +104,7 @@ public class ProtectionService {
     public Object policy() {
         KeycloakIdentity identity = createIdentity(false);
 
-        UserManagedPermissionService resource = new UserManagedPermissionService(identity, getResourceServer(identity), this.authorization, createAdminEventBuilder(identity, getResourceServer(identity)));
+        UserManagedPermissionService resource = new UserManagedPermissionService(identity, getResourceServer(identity), this.authorization);
 
         ResteasyProviderFactory.getInstance().injectProperties(resource);
 

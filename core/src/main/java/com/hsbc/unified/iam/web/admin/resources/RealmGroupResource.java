@@ -19,15 +19,15 @@ package com.hsbc.unified.iam.web.admin.resources;
 import com.hsbc.unified.iam.core.constants.Constants;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.*;
+import org.keycloak.models.GroupModel;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
+import org.keycloak.models.UserProvider;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.ManagementPermissionReference;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.services.ErrorResponse;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionManagement;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
@@ -36,7 +36,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.net.URI;
 import java.util.*;
 
 /**
@@ -47,15 +46,11 @@ public class RealmGroupResource {
 
     private final RealmModel realm;
     private final AdminPermissionEvaluator auth;
-    private final AdminEventBuilder adminEvent;
     private final GroupModel group;
 
-    private KeycloakContext keycloakContext;
-
-    public RealmGroupResource(RealmModel realm, GroupModel group, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public RealmGroupResource(RealmModel realm, GroupModel group, AdminPermissionEvaluator auth) {
         this.realm = realm;
         this.auth = auth;
-        this.adminEvent = adminEvent.resource(ResourceType.GROUP);
         this.group = group;
     }
 
@@ -83,9 +78,6 @@ public class RealmGroupResource {
         return ref;
     }
 
-    /**
-     * @return
-     */
     @GET
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
@@ -101,8 +93,6 @@ public class RealmGroupResource {
 
     /**
      * Update group, ignores subgroups.
-     *
-     * @param rep
      */
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
@@ -117,7 +107,6 @@ public class RealmGroupResource {
         }
 
         updateGroup(rep, group);
-        adminEvent.operation(OperationType.UPDATE).resourcePath(keycloakContext.getUri()).representation(rep).success();
 
         return Response.noContent().build();
     }
@@ -126,7 +115,7 @@ public class RealmGroupResource {
         if (group.getParentId() == null) {
             return realm.getTopLevelGroups();
         } else {
-            return new ArrayList(group.getParent().getSubGroups());
+            return new ArrayList<>(group.getParent().getSubGroups());
         }
     }
 
@@ -135,14 +124,11 @@ public class RealmGroupResource {
         this.auth.groups().requireManage(group);
 
         realm.removeGroup(group);
-        adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
      * Set or create child.  This will just set the parent if it exists.  Create it and set the parent
      * if the group doesn't exist.
-     *
-     * @param rep
      */
     @POST
     @Path("children")
@@ -159,25 +145,17 @@ public class RealmGroupResource {
         }
 
         Response.ResponseBuilder builder = Response.status(204);
-        GroupModel child = null;
+        GroupModel child;
         if (rep.getId() != null) {
             child = realm.getGroupById(rep.getId());
             if (child == null) {
                 throw new NotFoundException("Could not find child by id");
             }
-            adminEvent.operation(OperationType.UPDATE);
         } else {
             child = realm.createGroup(rep.getName(), group);
             updateGroup(rep, child);
-            URI uri = keycloakContext.getUri().getBaseUriBuilder()
-                    .path(keycloakContext.getUri().getMatchedURIs().get(2))
-                    .path(child.getId()).build();
-            builder.status(201).location(uri);
             rep.setId(child.getId());
-            adminEvent.operation(OperationType.CREATE);
-
         }
-        adminEvent.resourcePath(keycloakContext.getUri()).representation(rep).success();
 
         GroupRepresentation childRep = ModelToRepresentation.toGroupHierarchy(child, true);
         return builder.type(MediaType.APPLICATION_JSON_TYPE).entity(childRep).build();
@@ -187,10 +165,9 @@ public class RealmGroupResource {
     public RealmRoleMapperResource getRoleMappings() {
         AdminPermissionEvaluator.RequirePermissionCheck manageCheck = () -> auth.groups().requireManage(group);
         AdminPermissionEvaluator.RequirePermissionCheck viewCheck = () -> auth.groups().requireView(group);
-        RealmRoleMapperResource resource = new RealmRoleMapperResource(realm, auth, group, adminEvent, manageCheck, viewCheck);
+        RealmRoleMapperResource resource = new RealmRoleMapperResource(realm, auth, group, manageCheck, viewCheck);
         ResteasyProviderFactory.getInstance().injectProperties(resource);
         return resource;
-
     }
 
     @Autowired
@@ -208,7 +185,6 @@ public class RealmGroupResource {
      * @param briefRepresentation Only return basic information (only guaranteed to return id, username, created, first and last name,
      *                            email, enabled state, email verification state, federation link, and access.
      *                            Note that it means that namely user attributes, required actions, and not before are not returned.)
-     * @return
      */
     @GET
     @NoCache
@@ -238,8 +214,6 @@ public class RealmGroupResource {
 
     /**
      * Return object stating whether client Authorization permissions have been initialized or not and a reference
-     *
-     * @return
      */
     @Path("management/permissions")
     @GET

@@ -3,11 +3,8 @@ package com.hsbc.unified.iam.web.admin.resources;
 import com.hsbc.unified.iam.core.ClientConnection;
 import com.hsbc.unified.iam.core.util.Time;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.*;
 import org.keycloak.services.managers.BruteForceProtector;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,12 +45,10 @@ public class RealmAttackDetectionResource {
     protected ClientConnection connection;
     @Context
     protected HttpHeaders headers;
-    private AdminEventBuilder adminEvent;
 
-    public RealmAttackDetectionResource(AdminPermissionEvaluator auth, RealmModel realm, AdminEventBuilder adminEvent) {
+    public RealmAttackDetectionResource(AdminPermissionEvaluator auth, RealmModel realm) {
         this.auth = auth;
         this.realm = realm;
-        this.adminEvent = adminEvent.realm(realm).resource(ResourceType.USER_LOGIN_FAILURE);
     }
 
     @Autowired
@@ -119,7 +114,6 @@ public class RealmAttackDetectionResource {
         UserLoginFailureModel model = userSessionProvider.getUserLoginFailure(realm, userId);
         if (model != null) {
             userSessionProvider.removeUserLoginFailure(realm, userId);
-            adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
         }
     }
 
@@ -134,6 +128,5 @@ public class RealmAttackDetectionResource {
         auth.users().requireManage();
 
         userSessionProvider.removeAllUserLoginFailures(realm);
-        adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
     }
 }

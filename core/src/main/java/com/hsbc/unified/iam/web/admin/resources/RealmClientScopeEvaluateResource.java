@@ -70,9 +70,7 @@ public class RealmClientScopeEvaluateResource {
 
 
     /**
-     * @param scopeParam
      * @param roleContainerId either realm name OR client UUID
-     * @return
      */
     @Path("scope-mappings/{roleContainerId}")
     public RealmClientScopeEvaluateScopeMappingsResource scopeMappings(@QueryParam("scope") String scopeParam, @PathParam("roleContainerId") String roleContainerId) {
@@ -94,8 +92,6 @@ public class RealmClientScopeEvaluateResource {
     /**
      * Return list of all protocol mappers, which will be used when generating tokens issued for particular client. This means
      * protocol mappers assigned to this client directly and protocol mappers assigned to all client scopes of this client.
-     *
-     * @return
      */
     @GET
     @Path("protocol-mappers")
@@ -123,9 +119,8 @@ public class RealmClientScopeEvaluateResource {
                         rep.setContainerName("");
                         rep.setContainerType("client");
                     } else {
-                        ClientScopeModel clientScope = (ClientScopeModel) mapperContainer;
-                        rep.setContainerId(clientScope.getId());
-                        rep.setContainerName(clientScope.getName());
+                        rep.setContainerId(mapperContainer.getId());
+                        rep.setContainerName(mapperContainer.getName());
                         rep.setContainerType("client-scope");
                     }
 
@@ -142,8 +137,6 @@ public class RealmClientScopeEvaluateResource {
 
     /**
      * Create JSON with payload of example access token
-     *
-     * @return
      */
     @GET
     @Path("generate-example-access-token")
@@ -163,8 +156,7 @@ public class RealmClientScopeEvaluateResource {
 
         LOG.debug("generateExampleAccessToken invoked. User: {}, ScopeModel param: {}", user.getUsername(), scopeParam);
 
-        AccessToken token = generateToken(user, scopeParam);
-        return token;
+        return generateToken(user, scopeParam);
     }
 
     @Autowired

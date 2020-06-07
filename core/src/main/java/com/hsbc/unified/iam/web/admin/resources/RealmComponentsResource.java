@@ -22,8 +22,6 @@ import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
 import org.keycloak.component.SubComponentFactory;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.ModelToRepresentation;
@@ -35,7 +33,6 @@ import org.keycloak.representations.idm.ComponentRepresentation;
 import org.keycloak.representations.idm.ComponentTypeRepresentation;
 import org.keycloak.representations.idm.ConfigPropertyRepresentation;
 import org.keycloak.services.ErrorResponse;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.AdminRoot;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.slf4j.Logger;
@@ -74,17 +71,15 @@ public class RealmComponentsResource {
     @Context
     protected HttpHeaders headers;
     private AdminPermissionEvaluator auth;
-    private AdminEventBuilder adminEvent;
 
     @Autowired
     private ModelToRepresentation modelToRepresentation;
     @Autowired
     private RepresentationToModel representationToModel;
 
-    public RealmComponentsResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public RealmComponentsResource(RealmModel realm, AdminPermissionEvaluator auth) {
         this.auth = auth;
         this.realm = realm;
-        this.adminEvent = adminEvent.resource(ResourceType.COMPONENT);
     }
 
     @GET
@@ -94,10 +89,9 @@ public class RealmComponentsResource {
                                                        @QueryParam("type") String type,
                                                        @QueryParam("name") String name) {
         auth.realm().requireViewRealm();
-        List<ComponentModel> components = Collections.EMPTY_LIST;
+        List<ComponentModel> components;
         if (parent == null && type == null) {
             components = realm.getComponents();
-
         } else if (type == null) {
             components = realm.getComponents(parent);
         } else if (parent == null) {
@@ -130,7 +124,6 @@ public class RealmComponentsResource {
 
             model = realm.addComponentModel(model);
 
-            adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri(), model.getId()).representation(stripSecretsUtils.strip(rep)).success();
             return Response.created(keycloakContext.getUri().getAbsolutePathBuilder().path(model.getId()).build()).build();
         } catch (ComponentValidationException e) {
             return localizedErrorResponse(e);
@@ -166,7 +159,6 @@ public class RealmComponentsResource {
                 throw new NotFoundException("Could not find component");
             }
             representationToModel.updateComponent(rep, model, false);
-            adminEvent.operation(OperationType.UPDATE).resourcePath(keycloakContext.getUri()).representation(stripSecretsUtils.strip(rep)).success();
             realm.updateComponent(model);
             return Response.noContent().build();
         } catch (ComponentValidationException e) {
@@ -184,9 +176,7 @@ public class RealmComponentsResource {
         if (model == null) {
             throw new NotFoundException("Could not find component");
         }
-        adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
         realm.removeComponent(model);
-
     }
 
     @Autowired
@@ -215,10 +205,6 @@ public class RealmComponentsResource {
 
     /**
      * List of subcomponent types that are available to configure for a particular parent component.
-     *
-     * @param parentId
-     * @param subtype
-     * @return
      */
     @GET
     @Path("{id}/sub-component-types")
@@ -263,6 +249,4 @@ public class RealmComponentsResource {
         }
         return subcomponents;
     }
-
-
 }

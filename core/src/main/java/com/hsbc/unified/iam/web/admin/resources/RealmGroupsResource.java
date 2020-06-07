@@ -18,8 +18,6 @@ package com.hsbc.unified.iam.web.admin.resources;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.GroupModel;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.ModelDuplicateException;
@@ -27,7 +25,6 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.services.ErrorResponse;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -56,18 +53,14 @@ public class RealmGroupsResource {
     @Autowired
     private KeycloakContext keycloakContext;
     private final AdminPermissionEvaluator auth;
-    private final AdminEventBuilder adminEvent;
 
-    public RealmGroupsResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public RealmGroupsResource(RealmModel realm, AdminPermissionEvaluator auth) {
         this.realm = realm;
         this.auth = auth;
-        this.adminEvent = adminEvent.resource(ResourceType.GROUP);
     }
 
     /**
      * Get group hierarchy.  Only name and ids are returned.
-     *
-     * @return
      */
     @GET
     @NoCache
@@ -93,9 +86,6 @@ public class RealmGroupsResource {
 
     /**
      * Does not expand hierarchy.  Subgroups will not be set.
-     *
-     * @param id
-     * @return
      */
     @Path("{id}")
     public RealmGroupResource getGroupById(@PathParam("id") String id) {
@@ -103,15 +93,13 @@ public class RealmGroupsResource {
         if (group == null) {
             throw new NotFoundException("Could not find group by id");
         }
-        RealmGroupResource resource = new RealmGroupResource(realm, group, this.auth, adminEvent);
+        RealmGroupResource resource = new RealmGroupResource(realm, group, this.auth);
         ResteasyProviderFactory.getInstance().injectProperties(resource);
         return resource;
     }
 
     /**
      * Returns the groups counts.
-     *
-     * @return
      */
     @GET
     @NoCache
@@ -133,8 +121,6 @@ public class RealmGroupsResource {
     /**
      * create or add a top level realm groupSet or create child.  This will update the group and set the parent if it exists.  Create it and set the parent
      * if the group doesn't exist.
-     *
-     * @param rep
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -149,7 +135,6 @@ public class RealmGroupsResource {
                 if (child == null) {
                     throw new NotFoundException("Could not find child by id");
                 }
-                adminEvent.operation(OperationType.UPDATE).resourcePath(keycloakContext.getUri());
             } else {
                 child = realm.createGroup(rep.getName());
                 RealmGroupResource.updateGroup(rep, child);
@@ -158,13 +143,11 @@ public class RealmGroupsResource {
                 builder.status(201).location(uri);
 
                 rep.setId(child.getId());
-                adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri(), child.getId());
             }
         } catch (ModelDuplicateException mde) {
             return ErrorResponse.exists("Top level group named '" + rep.getName() + "' already exists.");
         }
 
-        adminEvent.representation(rep).success();
         return builder.build();
     }
 }

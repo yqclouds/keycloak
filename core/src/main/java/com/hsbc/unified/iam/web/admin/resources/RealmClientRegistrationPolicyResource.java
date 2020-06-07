@@ -18,16 +18,11 @@
 package com.hsbc.unified.iam.web.admin.resources;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.KeycloakContext;
-import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.idm.ComponentTypeRepresentation;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicyFactory;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,7 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,27 +43,11 @@ import java.util.stream.Collectors;
 )
 @PreAuthorize("hasPermission({'master', 'admin'})")
 public class RealmClientRegistrationPolicyResource {
-
-    private final AdminPermissionEvaluator auth;
-    private final RealmModel realm;
-    private final AdminEventBuilder adminEvent;
-
-    @Context
-    protected KeycloakContext keycloakContext;
-
     @Autowired
     private List<ClientRegistrationPolicyFactory> clientRegistrationPolicyFactories;
 
-    public RealmClientRegistrationPolicyResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
-        this.auth = auth;
-        this.realm = realm;
-        this.adminEvent = adminEvent.resource(ResourceType.CLIENT_INITIAL_ACCESS_MODEL);
-    }
-
     /**
      * Base path for retrieve providers with the configProperties properly filled
-     *
-     * @return
      */
     @Path("providers")
     @GET
@@ -77,7 +55,6 @@ public class RealmClientRegistrationPolicyResource {
     @Produces(MediaType.APPLICATION_JSON)
     public List<ComponentTypeRepresentation> getProviders() {
         return clientRegistrationPolicyFactories.stream().map((ProviderFactory factory) -> {
-
             ClientRegistrationPolicyFactory clientRegFactory = (ClientRegistrationPolicyFactory) factory;
             List<ProviderConfigProperty> configProps = clientRegFactory.getConfigProperties();
 
@@ -89,6 +66,4 @@ public class RealmClientRegistrationPolicyResource {
 
         }).collect(Collectors.toList());
     }
-
-
 }

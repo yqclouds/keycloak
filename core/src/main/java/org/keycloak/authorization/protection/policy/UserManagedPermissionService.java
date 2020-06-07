@@ -52,11 +52,11 @@ public class UserManagedPermissionService {
     private final AuthorizationProvider authorization;
     private final PermissionService delegate;
 
-    public UserManagedPermissionService(KeycloakIdentity identity, ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminEventBuilder eventBuilder) {
+    public UserManagedPermissionService(KeycloakIdentity identity, ResourceServerModel resourceServer, AuthorizationProvider authorization) {
         this.identity = identity;
         this.resourceServer = resourceServer;
         this.authorization = authorization;
-        delegate = new PermissionService(resourceServer, authorization, null, eventBuilder);
+        delegate = new PermissionService(resourceServer, authorization, null);
         ResteasyProviderFactory.getInstance().injectProperties(delegate);
     }
 

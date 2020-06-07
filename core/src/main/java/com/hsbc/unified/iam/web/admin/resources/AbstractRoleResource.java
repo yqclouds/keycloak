@@ -17,14 +17,11 @@
 
 package com.hsbc.unified.iam.web.admin.resources;
 
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleModel;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 
 import javax.ws.rs.NotFoundException;
@@ -71,7 +68,7 @@ public abstract class AbstractRoleResource {
         }
     }
 
-    protected void addComposites(AdminPermissionEvaluator auth, AdminEventBuilder adminEvent, UriInfo uriInfo, List<RoleRepresentation> roles, RoleModel role) {
+    protected void addComposites(AdminPermissionEvaluator auth, List<RoleRepresentation> roles, RoleModel role) {
         for (RoleRepresentation rep : roles) {
             RoleModel composite = realm.getRoleById(rep.getId());
             if (composite == null) {
@@ -80,20 +77,12 @@ public abstract class AbstractRoleResource {
             auth.roles().requireMapComposite(composite);
             role.addCompositeRole(composite);
         }
-
-        if (role.isClientRole()) {
-            adminEvent.resource(ResourceType.CLIENT_ROLE);
-        } else {
-            adminEvent.resource(ResourceType.REALM_ROLE);
-        }
-
-        adminEvent.operation(OperationType.CREATE).resourcePath(uriInfo).representation(roles).success();
     }
 
     protected Set<RoleRepresentation> getRoleComposites(RoleModel role) {
         if (!role.isComposite() || role.getComposites().size() == 0) return Collections.emptySet();
 
-        Set<RoleRepresentation> composites = new HashSet<RoleRepresentation>(role.getComposites().size());
+        Set<RoleRepresentation> composites = new HashSet<>(role.getComposites().size());
         for (RoleModel composite : role.getComposites()) {
             composites.add(ModelToRepresentation.toBriefRepresentation(composite));
         }
@@ -103,7 +92,7 @@ public abstract class AbstractRoleResource {
     protected Set<RoleRepresentation> getRealmRoleComposites(RoleModel role) {
         if (!role.isComposite() || role.getComposites().size() == 0) return Collections.emptySet();
 
-        Set<RoleRepresentation> composites = new HashSet<RoleRepresentation>(role.getComposites().size());
+        Set<RoleRepresentation> composites = new HashSet<>(role.getComposites().size());
         for (RoleModel composite : role.getComposites()) {
             if (composite.getContainer() instanceof RealmModel)
                 composites.add(ModelToRepresentation.toBriefRepresentation(composite));
@@ -114,7 +103,7 @@ public abstract class AbstractRoleResource {
     protected Set<RoleRepresentation> getClientRoleComposites(ClientModel app, RoleModel role) {
         if (!role.isComposite() || role.getComposites().size() == 0) return Collections.emptySet();
 
-        Set<RoleRepresentation> composites = new HashSet<RoleRepresentation>(role.getComposites().size());
+        Set<RoleRepresentation> composites = new HashSet<>(role.getComposites().size());
         for (RoleModel composite : role.getComposites()) {
             if (composite.getContainer().equals(app))
                 composites.add(ModelToRepresentation.toBriefRepresentation(composite));
@@ -122,7 +111,7 @@ public abstract class AbstractRoleResource {
         return composites;
     }
 
-    protected void deleteComposites(AdminEventBuilder adminEvent, UriInfo uriInfo, List<RoleRepresentation> roles, RoleModel role) {
+    protected void deleteComposites(List<RoleRepresentation> roles, RoleModel role) {
         for (RoleRepresentation rep : roles) {
             RoleModel composite = realm.getRoleById(rep.getId());
             if (composite == null) {
@@ -130,13 +119,5 @@ public abstract class AbstractRoleResource {
             }
             role.removeCompositeRole(composite);
         }
-
-        if (role.isClientRole()) {
-            adminEvent.resource(ResourceType.CLIENT_ROLE);
-        } else {
-            adminEvent.resource(ResourceType.REALM_ROLE);
-        }
-
-        adminEvent.operation(OperationType.DELETE).resourcePath(uriInfo).representation(roles).success();
     }
 }

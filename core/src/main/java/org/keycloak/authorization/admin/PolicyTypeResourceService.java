@@ -33,8 +33,8 @@ import java.io.IOException;
  */
 public class PolicyTypeResourceService extends PolicyResourceService {
 
-    public PolicyTypeResourceService(PolicyModel policy, ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
-        super(policy, resourceServer, authorization, auth, adminEvent);
+    public PolicyTypeResourceService(PolicyModel policy, ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth) {
+        super(policy, resourceServer, authorization, auth);
     }
 
     @Override

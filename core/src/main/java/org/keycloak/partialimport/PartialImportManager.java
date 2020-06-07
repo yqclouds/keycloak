@@ -17,10 +17,8 @@
 
 package org.keycloak.partialimport;
 
-import org.keycloak.events.admin.OperationType;
 import org.keycloak.models.RealmModel;
 import org.keycloak.representations.idm.PartialImportRepresentation;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
 
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
@@ -36,13 +34,10 @@ public class PartialImportManager {
 
     private final PartialImportRepresentation rep;
     private final RealmModel realm;
-    private final AdminEventBuilder adminEvent;
 
-    public PartialImportManager(PartialImportRepresentation rep, RealmModel realm, AdminEventBuilder adminEvent) {
+    public PartialImportManager(PartialImportRepresentation rep, RealmModel realm) {
         this.rep = rep;
         this.realm = realm;
-        this.adminEvent = adminEvent;
-
         // Do not change the order of these!!!
         partialImports.add(new ClientsPartialImport());
         partialImports.add(new RolesPartialImport());
@@ -72,34 +67,6 @@ public class PartialImportManager {
             }
         }
 
-        for (PartialImportResult result : results.getResults()) {
-            switch (result.getAction()) {
-                case ADDED:
-                    fireCreatedEvent(result);
-                    break;
-                case OVERWRITTEN:
-                    fireUpdateEvent(result);
-                    break;
-            }
-        }
-
         return Response.ok(results).build();
     }
-
-    private void fireCreatedEvent(PartialImportResult result) {
-        adminEvent.operation(OperationType.CREATE)
-                .resourcePath(result.getResourceType().getPath(), result.getId())
-                .representation(result.getRepresentation())
-                .success();
-    }
-
-    ;
-
-    private void fireUpdateEvent(PartialImportResult result) {
-        adminEvent.operation(OperationType.UPDATE)
-                .resourcePath(result.getResourceType().getPath(), result.getId())
-                .representation(result.getRepresentation())
-                .success();
-    }
-
 }

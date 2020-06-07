@@ -74,8 +74,6 @@ public class ResourceService {
 
         ResourceRepresentation newResource = resourceManager.create(resource);
 
-        resourceManager.audit(resource, resource.getId(), OperationType.CREATE);
-
         return Response.status(Status.CREATED).entity(new UmaResourceRepresentation(newResource)).build();
     }
 

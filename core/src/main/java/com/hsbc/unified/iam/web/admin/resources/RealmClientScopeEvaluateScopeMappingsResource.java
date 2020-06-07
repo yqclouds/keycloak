@@ -43,7 +43,9 @@ public class RealmClientScopeEvaluateScopeMappingsResource {
     private final ClientModel client;
     private final String scopeParam;
 
-    public RealmClientScopeEvaluateScopeMappingsResource(RoleContainerModel roleContainer, AdminPermissionEvaluator auth, ClientModel client,
+    public RealmClientScopeEvaluateScopeMappingsResource(RoleContainerModel roleContainer,
+                                                         AdminPermissionEvaluator auth,
+                                                         ClientModel client,
                                                          String scopeParam) {
         this.roleContainer = roleContainer;
         this.auth = auth;
@@ -51,33 +53,23 @@ public class RealmClientScopeEvaluateScopeMappingsResource {
         this.scopeParam = scopeParam;
     }
 
-
     /**
      * Get effective scope mapping of all roles of particular role container, which this client is defacto allowed to have in the accessToken issued for him.
      * <p>
      * This contains scope mappings, which this client has directly, as well as scope mappings, which are granted to all client scopes,
      * which are linked with this client.
-     *
-     * @return
      */
     @Path("/granted")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RoleRepresentation> getGrantedScopeMappings() {
-        return getGrantedRoles().stream().map((RoleModel role) -> {
-
-            return ModelToRepresentation.toBriefRepresentation(role);
-
-        }).collect(Collectors.toList());
+        return getGrantedRoles().stream().map(ModelToRepresentation::toBriefRepresentation).collect(Collectors.toList());
     }
-
 
     /**
      * Get roles, which this client doesn't have scope for and can't have them in the accessToken issued for him. Defacto all the
      * other roles of particular role container, which are not in {@link #getGrantedScopeMappings()}
-     *
-     * @return
      */
     @Path("/not-granted")
     @GET
@@ -85,18 +77,11 @@ public class RealmClientScopeEvaluateScopeMappingsResource {
     @NoCache
     public List<RoleRepresentation> getNotGrantedScopeMappings() {
         List<RoleModel> grantedRoles = getGrantedRoles();
-
-        return roleContainer.getRoles().stream().filter((RoleModel role) -> {
-
-            return !grantedRoles.contains(role);
-
-        }).map((RoleModel role) -> {
-
-            return ModelToRepresentation.toBriefRepresentation(role);
-
-        }).collect(Collectors.toList());
+        return roleContainer.getRoles().stream()
+                .filter((RoleModel role) -> !grantedRoles.contains(role))
+                .map(ModelToRepresentation::toBriefRepresentation)
+                .collect(Collectors.toList());
     }
-
 
     private List<RoleModel> getGrantedRoles() {
         if (client.isFullScopeAllowed()) {
@@ -120,5 +105,4 @@ public class RealmClientScopeEvaluateScopeMappingsResource {
 
         return result;
     }
-
 }

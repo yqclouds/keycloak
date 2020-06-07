@@ -26,22 +26,18 @@ import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.authorization.store.StoreFactory;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.KeycloakContext;
+import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
 import org.keycloak.representations.idm.authorization.ScopeRepresentation;
 import org.keycloak.services.ErrorResponse;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,14 +53,12 @@ public class ScopeService {
 
     private final AuthorizationProvider authorization;
     private final AdminPermissionEvaluator auth;
-    private final AdminEventBuilder adminEvent;
     private ResourceServerModel resourceServer;
 
-    public ScopeService(ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public ScopeService(ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth) {
         this.resourceServer = resourceServer;
         this.authorization = authorization;
         this.auth = auth;
-        this.adminEvent = adminEvent.resource(ResourceType.AUTHORIZATION_SCOPE);
     }
 
     @POST
@@ -76,8 +70,6 @@ public class ScopeService {
         ScopeModel model = toModel(scope, this.resourceServer, authorization);
 
         scope.setId(model.getId());
-
-        audit(scope, scope.getId(), OperationType.CREATE);
 
         return Response.status(Status.CREATED).entity(scope).build();
     }
@@ -98,8 +90,6 @@ public class ScopeService {
 
         toModel(scope, resourceServer, authorization);
 
-        audit(scope, OperationType.UPDATE);
-
         return Response.noContent().build();
     }
 
@@ -108,7 +98,7 @@ public class ScopeService {
     public Response delete(@PathParam("id") String id) {
         this.auth.realm().requireManageAuthorization();
         StoreFactory storeFactory = authorization.getStoreFactory();
-        List<ResourceModel> resources = storeFactory.getResourceStore().findByScope(Arrays.asList(id), resourceServer.getId());
+        List<ResourceModel> resources = storeFactory.getResourceStore().findByScope(Collections.singletonList(id), resourceServer.getId());
 
         if (!resources.isEmpty()) {
             return ErrorResponse.error("Scopes can not be removed while associated with resources.", Status.BAD_REQUEST);
@@ -121,7 +111,7 @@ public class ScopeService {
         }
 
         PolicyStore policyStore = storeFactory.getPolicyStore();
-        List<PolicyModel> policies = policyStore.findByScopeIds(Arrays.asList(scope.getId()), resourceServer.getId());
+        List<PolicyModel> policies = policyStore.findByScopeIds(Collections.singletonList(scope.getId()), resourceServer.getId());
 
         for (PolicyModel policyModel : policies) {
             if (policyModel.getScopes().size() == 1) {
@@ -132,8 +122,6 @@ public class ScopeService {
         }
 
         storeFactory.getScopeStore().delete(id);
-
-        audit(toRepresentation(scope), OperationType.DELETE);
 
         return Response.noContent().build();
     }
@@ -166,7 +154,7 @@ public class ScopeService {
             return Response.status(Status.NOT_FOUND).build();
         }
 
-        return Response.ok(storeFactory.getResourceStore().findByScope(Arrays.asList(model.getId()), resourceServer.getId()).stream().map(resource -> {
+        return Response.ok(storeFactory.getResourceStore().findByScope(Collections.singletonList(model.getId()), resourceServer.getId()).stream().map(resource -> {
             ResourceRepresentation representation = new ResourceRepresentation();
 
             representation.setId(resource.getId());
@@ -191,7 +179,7 @@ public class ScopeService {
 
         PolicyStore policyStore = storeFactory.getPolicyStore();
 
-        return Response.ok(policyStore.findByScopeIds(Arrays.asList(model.getId()), resourceServer.getId()).stream().map(policy -> {
+        return Response.ok(policyStore.findByScopeIds(Collections.singletonList(model.getId()), resourceServer.getId()).stream().map(policy -> {
             PolicyRepresentation representation = new PolicyRepresentation();
 
             representation.setId(policy.getId());
@@ -244,23 +232,8 @@ public class ScopeService {
 
         return Response.ok(
                 this.authorization.getStoreFactory().getScopeStore().findByResourceServer(search, this.resourceServer.getId(), firstResult != null ? firstResult : -1, maxResult != null ? maxResult : Constants.DEFAULT_MAX_RESULTS).stream()
-                        .map(scope -> toRepresentation(scope))
+                        .map(ModelToRepresentation::toRepresentation)
                         .collect(Collectors.toList()))
                 .build();
-    }
-
-    private void audit(ScopeRepresentation resource, OperationType operation) {
-        audit(resource, null, operation);
-    }
-
-    @Autowired
-    private KeycloakContext keycloakContext;
-
-    private void audit(ScopeRepresentation resource, String id, OperationType operation) {
-        if (id != null) {
-            adminEvent.operation(operation).resourcePath(keycloakContext.getUri(), id).representation(resource).success();
-        } else {
-            adminEvent.operation(operation).resourcePath(keycloakContext.getUri()).representation(resource).success();
-        }
     }
 }

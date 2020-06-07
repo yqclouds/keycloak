@@ -24,16 +24,12 @@ import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.authorization.store.StoreFactory;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
 import org.keycloak.representations.idm.authorization.ScopeRepresentation;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -53,14 +49,15 @@ public class PolicyResourceService {
     protected final AuthorizationProvider authorization;
     protected final AdminPermissionEvaluator auth;
     private final PolicyModel policy;
-    private final AdminEventBuilder adminEvent;
 
-    public PolicyResourceService(PolicyModel policy, ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public PolicyResourceService(PolicyModel policy,
+                                 ResourceServerModel resourceServer,
+                                 AuthorizationProvider authorization,
+                                 AdminPermissionEvaluator auth) {
         this.policy = policy;
         this.resourceServer = resourceServer;
         this.authorization = authorization;
         this.auth = auth;
-        this.adminEvent = adminEvent.resource(ResourceType.AUTHORIZATION_POLICY);
     }
 
     @PUT
@@ -81,9 +78,6 @@ public class PolicyResourceService {
         representation.setId(policy.getId());
 
         RepresentationToModel.toModel(representation, authorization, policy);
-
-
-        audit(representation, OperationType.UPDATE);
 
         return Response.status(Status.CREATED).build();
     }
@@ -107,8 +101,6 @@ public class PolicyResourceService {
         }
 
         policyStore.delete(policy.getId());
-
-        audit(toRepresentation(policy, authorization), OperationType.DELETE);
 
         return Response.noContent().build();
     }
@@ -254,12 +246,5 @@ public class PolicyResourceService {
 
     protected PolicyModel getPolicy() {
         return policy;
-    }
-
-    @Autowired
-    private KeycloakContext keycloakContext;
-
-    private void audit(AbstractPolicyRepresentation policy, OperationType operation) {
-        adminEvent.operation(operation).resourcePath(keycloakContext.getUri()).representation(policy).success();
     }
 }

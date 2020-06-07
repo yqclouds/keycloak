@@ -13,8 +13,6 @@ import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.common.VerificationException;
 import org.keycloak.common.util.PemUtils;
 import org.keycloak.email.EmailTemplateProvider;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
 import org.keycloak.exportimport.util.ExportOptions;
 import org.keycloak.exportimport.util.ExportUtils;
 import org.keycloak.keys.PublicKeyStorageProvider;
@@ -31,7 +29,6 @@ import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.managers.LDAPConnectionTestManager;
 import org.keycloak.services.managers.ResourceAdminManager;
 import org.keycloak.services.managers.UserStorageSyncManager;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.storage.UserStorageProviderModel;
 import org.keycloak.utils.ReservedCharValidator;
@@ -119,7 +116,6 @@ public class RealmResource {
     protected ClientConnection connection;
     @Context
     protected HttpHeaders headers;
-    private AdminEventBuilder adminEvent;
 
     @Autowired
     private StripSecretsUtils stripSecretsUtils;
@@ -134,10 +130,9 @@ public class RealmResource {
     @Autowired
     private Map<String, RequiredActionProvider> requiredActionProviders;
 
-    public RealmResource(AdminPermissionEvaluator auth, RealmModel realm, AdminEventBuilder adminEvent) {
+    public RealmResource(AdminPermissionEvaluator auth, RealmModel realm) {
         this.auth = auth;
         this.realm = realm;
-        this.adminEvent = adminEvent.realm(realm).resource(ResourceType.REALM);
     }
 
     /**
@@ -212,8 +207,6 @@ public class RealmResource {
                 usersSyncManager.notifyToRefreshPeriodicSync(realm, fedProvider, false);
             }
 
-            adminEvent.operation(OperationType.UPDATE).representation(StripSecretsUtils.strip(rep)).success();
-
             return Response.noContent().build();
         } catch (ModelDuplicateException e) {
             return ErrorResponse.exists("Realm with same name exists");
@@ -245,9 +238,7 @@ public class RealmResource {
     public GlobalRequestResult pushRevocation() {
         auth.realm().requireManageRealm();
 
-        GlobalRequestResult result = new ResourceAdminManager().pushRealmRevocationPolicy(realm);
-        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).representation(result).success();
-        return result;
+        return new ResourceAdminManager().pushRealmRevocationPolicy(realm);
     }
 
     /**
@@ -260,16 +251,12 @@ public class RealmResource {
         auth.users().requireManage();
 
         userSessionProvider.removeUserSessions(realm);
-        GlobalRequestResult result = new ResourceAdminManager().logoutAll(realm);
-        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).representation(result).success();
-        return result;
+        return new ResourceAdminManager().logoutAll(realm);
     }
 
     /**
      * Remove a specific user session. Any client that has an admin url will also be told to invalidate this
      * particular session.
-     *
-     * @param sessionId
      */
     @Path("sessions/{session}")
     @DELETE
@@ -279,7 +266,6 @@ public class RealmResource {
         UserSessionModel userSession = userSessionProvider.getUserSession(realm, sessionId);
         if (userSession == null) throw new NotFoundException("Sesssion not found");
         authenticationManager.backchannelLogout(realm, userSession, keycloakContext.getUri(), connection, headers, true);
-        adminEvent.operation(OperationType.DELETE).resource(ResourceType.USER_SESSION).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -287,8 +273,6 @@ public class RealmResource {
      * <p>
      * Returns a JSON map.  The key is the client id, the value is the number of sessions that currently are active
      * with that client.  Only clients that actually have a session associated with them will be in this map.
-     *
-     * @return
      */
     @Path("client-session-stats")
     @GET
@@ -329,30 +313,26 @@ public class RealmResource {
                 map.put("offline", entry.getValue().toString());
             }
         }
-        List<Map<String, String>> result = new LinkedList<>();
-        for (Map<String, String> item : data.values())
-            result.add(item);
-        return result;
+
+        return new LinkedList<>(data.values());
     }
 
     /**
      * Test LDAP connection
-     *
-     * @param action
-     * @param connectionUrl
-     * @param bindDn
-     * @param bindCredential
-     * @return
      */
     @Path("testLDAPConnection")
     @POST
     @NoCache
     @Consumes(javax.ws.rs.core.MediaType.APPLICATION_FORM_URLENCODED)
     @Deprecated
-    public Response testLDAPConnection(@FormParam("action") String action, @FormParam("connectionUrl") String connectionUrl,
-                                       @FormParam("bindDn") String bindDn, @FormParam("bindCredential") String bindCredential,
-                                       @FormParam("useTruststoreSpi") String useTruststoreSpi, @FormParam("connectionTimeout") String connectionTimeout,
-                                       @FormParam("componentId") String componentId, @FormParam("startTls") String startTls) {
+    public Response testLDAPConnection(@FormParam("action") String action,
+                                       @FormParam("connectionUrl") String connectionUrl,
+                                       @FormParam("bindDn") String bindDn,
+                                       @FormParam("bindCredential") String bindCredential,
+                                       @FormParam("useTruststoreSpi") String useTruststoreSpi,
+                                       @FormParam("connectionTimeout") String connectionTimeout,
+                                       @FormParam("componentId") String componentId,
+                                       @FormParam("startTls") String startTls) {
         auth.realm().requireManageRealm();
 
         if (componentId != null && bindCredential.equals(ComponentRepresentation.SECRET_VALUE)) {
@@ -365,8 +345,6 @@ public class RealmResource {
 
     /**
      * Test LDAP connection
-     *
-     * @return
      */
     @Path("testLDAPConnection")
     @POST
@@ -388,8 +366,6 @@ public class RealmResource {
      * Test SMTP connection with current logged in user
      *
      * @param config SMTP server configuration
-     * @return
-     * @throws Exception
      */
     @Path("testSMTPConnection")
     @POST
@@ -409,7 +385,7 @@ public class RealmResource {
     @POST
     @NoCache
     @Consumes(javax.ws.rs.core.MediaType.APPLICATION_JSON)
-    public Response testSMTPConnection(Map<String, String> settings) throws Exception {
+    public Response testSMTPConnection(Map<String, String> settings) {
         try {
             UserModel user = auth.adminAuth().getUser();
             if (user.getEmail() == null) {
@@ -421,7 +397,7 @@ public class RealmResource {
             emailTemplateProvider.sendSmtpTestEmail(settings, user);
         } catch (Exception e) {
             e.printStackTrace();
-            LOG.error("Failed to send email \n {}", e.getCause());
+            LOG.error("Failed to send email {0}", e.getCause());
             return ErrorResponse.error("Failed to send email", Response.Status.INTERNAL_SERVER_ERROR);
         }
 
@@ -456,8 +432,6 @@ public class RealmResource {
             throw new NotFoundException("Group not found");
         }
         realm.addDefaultGroup(group);
-
-        adminEvent.operation(OperationType.CREATE).resource(ResourceType.GROUP).resourcePath(keycloakContext.getUri()).success();
     }
 
     @DELETE
@@ -471,8 +445,6 @@ public class RealmResource {
             throw new NotFoundException("Group not found");
         }
         realm.removeDefaultGroup(group);
-
-        adminEvent.operation(OperationType.DELETE).resource(ResourceType.GROUP).resourcePath(keycloakContext.getUri()).success();
     }
 
     @GET
@@ -491,9 +463,6 @@ public class RealmResource {
 
     /**
      * Partial import from a JSON file to an existing realm.
-     *
-     * @param rep
-     * @return
      */
     @Path("partialImport")
     @POST
@@ -501,7 +470,7 @@ public class RealmResource {
     public Response partialImport(PartialImportRepresentation rep) {
         auth.realm().requireManageRealm();
 
-        PartialImportManager partialImport = new PartialImportManager(rep, realm, adminEvent);
+        PartialImportManager partialImport = new PartialImportManager(rep, realm);
         return partialImport.saveResources();
     }
 
@@ -543,7 +512,6 @@ public class RealmResource {
     @POST
     public void clearRealmCache() {
         auth.realm().requireManageRealm();
-        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -553,8 +521,6 @@ public class RealmResource {
     @POST
     public void clearUserCache() {
         auth.realm().requireManageRealm();
-
-        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).success();
     }
 
     @Autowired(required = false)
@@ -571,8 +537,6 @@ public class RealmResource {
         if (publicKeyStorageProvider != null) {
             publicKeyStorageProvider.clearCache();
         }
-
-        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).success();
     }
 
     @GET
@@ -582,7 +546,7 @@ public class RealmResource {
     public List<String> getCredentialRegistrators() {
         auth.realm().requireViewRealm();
         return keycloakContext.getRealm().getRequiredActionProviders().stream()
-                .filter(ra -> ra.isEnabled())
+                .filter(RequiredActionProviderModel::isEnabled)
                 .map(RequiredActionProviderModel::getProviderId)
                 .filter(providerId -> requiredActionProviders.get(providerId) instanceof CredentialRegistrator)
                 .collect(Collectors.toList());

@@ -16,7 +16,7 @@
  */
 package com.hsbc.unified.iam.web.admin.resources;
 
-import com.hsbc.unified.iam.facade.spi.impl.RealmFacadeImpl;
+import com.hsbc.unified.iam.facade.spi.RealmFacade;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.ModelDuplicateException;
 import org.keycloak.models.RealmModel;
@@ -49,7 +49,7 @@ public class RealmsResource {
     private static final Logger LOG = LoggerFactory.getLogger(RealmsResource.class);
 
     @Autowired
-    private RealmFacadeImpl realmFacade;
+    private RealmFacade realmFacade;
 
     @Autowired
     @Deprecated

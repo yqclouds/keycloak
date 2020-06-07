@@ -39,12 +39,10 @@ public class AuthorizationService {
 
     @Autowired
     private AuthorizationProvider authorizationProvider;
-    private final AdminEventBuilder adminEvent;
     private ResourceServerModel resourceServer;
 
-    public AuthorizationService(ClientModel client, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public AuthorizationService(ClientModel client, AdminPermissionEvaluator auth) {
         this.client = client;
-        this.adminEvent = adminEvent;
         this.auth = auth;
     }
 
@@ -55,7 +53,9 @@ public class AuthorizationService {
 
     @Path("/resource-server")
     public ResourceServerService resourceServer() {
-        ResourceServerService resource = new ResourceServerService(this.authorizationProvider, this.resourceServer, this.client, this.auth, adminEvent);
+        ResourceServerService resource = new ResourceServerService(
+                this.authorizationProvider, this.resourceServer, this.client, this.auth
+        );
 
         ResteasyProviderFactory.getInstance().injectProperties(resource);
 

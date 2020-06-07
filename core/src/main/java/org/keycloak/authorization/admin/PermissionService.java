@@ -33,18 +33,18 @@ import java.util.Map;
  */
 public class PermissionService extends PolicyService {
 
-    public PermissionService(ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
-        super(resourceServer, authorization, auth, adminEvent);
+    public PermissionService(ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth) {
+        super(resourceServer, authorization, auth);
     }
 
     @Override
     protected PolicyResourceService doCreatePolicyResource(PolicyModel policy) {
-        return new PolicyTypeResourceService(policy, resourceServer, authorization, auth, adminEvent);
+        return new PolicyTypeResourceService(policy, resourceServer, authorization, auth);
     }
 
     @Override
     protected PolicyTypeService doCreatePolicyTypeResource(String type) {
-        return new PolicyTypeService(type, resourceServer, authorization, auth, adminEvent) {
+        return new PolicyTypeService(type, resourceServer, authorization, auth) {
             @Override
             protected List<Object> doSearch(Integer firstResult, Integer maxResult, String fields, Map<String, String[]> filters) {
                 filters.put("permission", new String[]{Boolean.TRUE.toString()});

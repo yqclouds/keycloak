@@ -21,7 +21,6 @@ import com.hsbc.unified.iam.security.core.*;
 import com.hsbc.unified.iam.security.core.audit.interceptor.AuditAttribute;
 import com.hsbc.unified.iam.security.core.audit.interceptor.AuditAttributeSource;
 import com.hsbc.unified.iam.security.core.audit.repository.SecurityAuditRepository;
-import com.yqboots.security.core.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;

@@ -157,7 +157,7 @@ public class KeycloakOIDCClientInstallation implements ClientInstallationProvide
     }
 
     private void configureAuthorizationSettings(ClientModel client, ClientManager.InstallationAdapterConfig rep) {
-        if (new AuthorizationService(client, null, null).isEnabled()) {
+        if (new AuthorizationService(client, null).isEnabled()) {
             PolicyEnforcerConfig enforcerConfig = new PolicyEnforcerConfig();
 
             enforcerConfig.setEnforcementMode(null);

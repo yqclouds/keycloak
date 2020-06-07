@@ -30,8 +30,6 @@ import org.keycloak.email.EmailTemplateProvider;
 import org.keycloak.events.Details;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
@@ -46,7 +44,6 @@ import org.keycloak.services.managers.BruteForceProtector;
 import org.keycloak.services.managers.UserSessionManager;
 import org.keycloak.services.resources.LoginActionsService;
 import org.keycloak.services.resources.account.AccountFormService;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.AdminRoot;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.validation.Validation;
@@ -82,21 +79,20 @@ public class RealmUserResource {
     @Context
     protected ClientConnection clientConnection;
     @Context
-    protected KeycloakSession session;
-    @Context
     protected HttpHeaders headers;
     private AdminPermissionEvaluator auth;
-    private AdminEventBuilder adminEvent;
     private UserModel user;
+
+    @Autowired
+    private UserCredentialManager userCredentialManager;
 
     @Autowired
     private Map<String, RequiredActionFactory> requiredActionFactories;
 
-    public RealmUserResource(RealmModel realm, UserModel user, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public RealmUserResource(RealmModel realm, UserModel user, AdminPermissionEvaluator auth) {
         this.auth = auth;
         this.realm = realm;
         this.user = user;
-        this.adminEvent = adminEvent.resource(ResourceType.USER);
     }
 
     public void updateUserFromRep(UserModel user, UserRepresentation rep, Set<String> attrsToRemove, RealmModel realm, boolean removeMissingRequiredActions) {
@@ -110,7 +106,7 @@ public class RealmUserResource {
                 user.setUsername(email);
             }
         }
-        if (rep.getEmail() == "") user.setEmail(null);
+        if (rep.getEmail().equals("")) user.setEmail(null);
         if (rep.getFirstName() != null) user.setFirstName(rep.getFirstName());
         if (rep.getLastName() != null) user.setLastName(rep.getLastName());
 
@@ -156,11 +152,11 @@ public class RealmUserResource {
         }
     }
 
+    @Autowired
+    private UserSessionProvider userSessionProvider;
+
     /**
      * Update the user
-     *
-     * @param rep
-     * @return
      */
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
@@ -177,7 +173,7 @@ public class RealmUserResource {
             }
 
             if (rep.isEnabled() != null && rep.isEnabled()) {
-                UserLoginFailureModel failureModel = session.sessions().getUserLoginFailure(realm, user.getId());
+                UserLoginFailureModel failureModel = userSessionProvider.getUserLoginFailure(realm, user.getId());
                 if (failureModel != null) {
                     failureModel.clearFailures();
                 }
@@ -185,23 +181,15 @@ public class RealmUserResource {
 
             updateUserFromRep(user, rep, attrsToRemove, realm, true);
             representationToModel.createCredentials(rep, realm, user, true);
-            adminEvent.operation(OperationType.UPDATE).resourcePath(keycloakContext.getUri()).representation(rep).success();
-
-            if (session.getTransactionManager().isActive()) {
-                session.getTransactionManager().commit();
-            }
             return Response.noContent().build();
         } catch (ModelDuplicateException e) {
             return ErrorResponse.exists("User exists with same username or email");
         } catch (ReadOnlyException re) {
             return ErrorResponse.exists("User is read only!");
-        } catch (ModelException me) {
-            LOG.warn("Could not update user!", me);
-            return ErrorResponse.exists("Could not update user!");
         } catch (ForbiddenException fe) {
             throw fe;
-        } catch (Exception me) { // JPA
-            LOG.warn("Could not update user!", me);// may be committed by JTA which can't
+        } catch (Exception me) {
+            LOG.warn("Could not update user!", me);
             return ErrorResponse.exists("Could not update user!");
         }
     }
@@ -215,8 +203,6 @@ public class RealmUserResource {
 
     /**
      * Get representation of the user
-     *
-     * @return
      */
     @GET
     @NoCache
@@ -246,8 +232,6 @@ public class RealmUserResource {
 
     /**
      * Impersonate the user
-     *
-     * @return
      */
     @Path("impersonation")
     @POST
@@ -262,14 +246,14 @@ public class RealmUserResource {
         boolean sameRealm = false;
         if (authenticatedRealm.getId().equals(realm.getId())) {
             sameRealm = true;
-            UserSessionModel userSession = session.sessions().getUserSession(authenticatedRealm, auth.adminAuth().getToken().getSessionState());
+            UserSessionModel userSession = userSessionProvider.getUserSession(authenticatedRealm, auth.adminAuth().getToken().getSessionState());
             AuthenticationManager.expireIdentityCookie(realm, keycloakContext.getUri(), clientConnection);
             AuthenticationManager.expireRememberMeCookie(realm, keycloakContext.getUri(), clientConnection);
             authenticationManager.backchannelLogout(authenticatedRealm, userSession, keycloakContext.getUri(), clientConnection, headers, true);
         }
         EventBuilder event = new EventBuilder(realm, clientConnection);
 
-        UserSessionModel userSession = session.sessions().createUserSession(realm, user, user.getUsername(), clientConnection.getRemoteAddr(), "impersonate", false, null, null);
+        UserSessionModel userSession = userSessionProvider.createUserSession(realm, user, user.getUsername(), clientConnection.getRemoteAddr(), "impersonate", false, null, null);
 
         UserModel adminUser = auth.adminAuth().getUser();
         String impersonatorId = adminUser.getId();
@@ -294,8 +278,6 @@ public class RealmUserResource {
 
     /**
      * Get sessions associated with the user
-     *
-     * @return
      */
     @Path("sessions")
     @GET
@@ -303,8 +285,8 @@ public class RealmUserResource {
     @Produces(MediaType.APPLICATION_JSON)
     public List<UserSessionRepresentation> getSessions() {
         auth.users().requireView(user);
-        List<UserSessionModel> sessions = session.sessions().getUserSessions(realm, user);
-        List<UserSessionRepresentation> reps = new ArrayList<UserSessionRepresentation>();
+        List<UserSessionModel> sessions = userSessionProvider.getUserSessions(realm, user);
+        List<UserSessionRepresentation> reps = new ArrayList<>();
         for (UserSessionModel session : sessions) {
             UserSessionRepresentation rep = ModelToRepresentation.toRepresentation(session);
             reps.add(rep);
@@ -314,8 +296,6 @@ public class RealmUserResource {
 
     /**
      * Get offline sessions associated with the user and client
-     *
-     * @return
      */
     @Path("offline-sessions/{clientId}")
     @GET
@@ -328,7 +308,7 @@ public class RealmUserResource {
             throw new NotFoundException("Client not found");
         }
         List<UserSessionModel> sessions = new UserSessionManager().findOfflineSessions(realm, user);
-        List<UserSessionRepresentation> reps = new ArrayList<UserSessionRepresentation>();
+        List<UserSessionRepresentation> reps = new ArrayList<>();
         for (UserSessionModel session : sessions) {
             UserSessionRepresentation rep = ModelToRepresentation.toRepresentation(session);
 
@@ -347,10 +327,11 @@ public class RealmUserResource {
         return reps;
     }
 
+    @Autowired
+    private UserProvider userProvider;
+
     /**
      * Get social logins associated with the user
-     *
-     * @return
      */
     @Path("federated-identity")
     @GET
@@ -363,8 +344,8 @@ public class RealmUserResource {
     }
 
     private List<FederatedIdentityRepresentation> getFederatedIdentities(UserModel user) {
-        Set<FederatedIdentityModel> identities = session.users().getFederatedIdentities(user, realm);
-        List<FederatedIdentityRepresentation> result = new ArrayList<FederatedIdentityRepresentation>();
+        Set<FederatedIdentityModel> identities = userProvider.getFederatedIdentities(user, realm);
+        List<FederatedIdentityRepresentation> result = new ArrayList<>();
 
         for (FederatedIdentityModel identity : identities) {
             for (IdentityProviderModel identityProviderModel : realm.getIdentityProviders()) {
@@ -381,21 +362,18 @@ public class RealmUserResource {
      * Add a social login provider to the user
      *
      * @param provider Social login provider id
-     * @param rep
-     * @return
      */
     @Path("federated-identity/{provider}")
     @POST
     @NoCache
     public Response addFederatedIdentity(final @PathParam("provider") String provider, FederatedIdentityRepresentation rep) {
         auth.users().requireManage(user);
-        if (session.users().getFederatedIdentity(user, provider, realm) != null) {
+        if (userProvider.getFederatedIdentity(user, provider, realm) != null) {
             return ErrorResponse.exists("User is already linked with provider");
         }
 
         FederatedIdentityModel socialLink = new FederatedIdentityModel(provider, rep.getUserId(), rep.getUserName());
-        session.users().addFederatedIdentity(realm, user, socialLink);
-        adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri()).representation(rep).success();
+        userProvider.addFederatedIdentity(realm, user, socialLink);
         return Response.noContent().build();
     }
 
@@ -409,16 +387,13 @@ public class RealmUserResource {
     @NoCache
     public void removeFederatedIdentity(final @PathParam("provider") String provider) {
         auth.users().requireManage(user);
-        if (!session.users().removeFederatedIdentity(realm, user, provider)) {
+        if (!userProvider.removeFederatedIdentity(realm, user, provider)) {
             throw new NotFoundException("Link not found");
         }
-        adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
      * Get consents granted by the user
-     *
-     * @return
      */
     @Path("consents")
     @GET
@@ -431,7 +406,7 @@ public class RealmUserResource {
         Set<ClientModel> offlineClients = new UserSessionManager().findClientsWithOfflineToken(realm, user);
 
         for (ClientModel client : realm.getClients()) {
-            UserConsentModel consent = session.users().getConsentByClient(realm, user.getId(), client.getId());
+            UserConsentModel consent = userProvider.getConsentByClient(realm, user.getId(), client.getId());
             boolean hasOfflineToken = offlineClients.contains(client);
 
             if (consent == null && !hasOfflineToken) {
@@ -478,7 +453,7 @@ public class RealmUserResource {
         if (client == null) {
             throw new NotFoundException("Client not found");
         }
-        boolean revokedConsent = session.users().revokeConsentForClient(realm, user.getId(), client.getId());
+        boolean revokedConsent = userProvider.revokeConsentForClient(realm, user.getId(), client.getId());
         boolean revokedOfflineToken = new UserSessionManager().revokeOfflineToken(user, client);
 
         if (revokedConsent) {
@@ -489,7 +464,6 @@ public class RealmUserResource {
         if (!revokedConsent && !revokedOfflineToken) {
             throw new NotFoundException("Consent nor offline token not found");
         }
-        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -502,13 +476,12 @@ public class RealmUserResource {
     public void logout() {
         auth.users().requireManage(user);
 
-        session.users().setNotBeforeForUser(realm, user, Time.currentTime());
+        userProvider.setNotBeforeForUser(realm, user, Time.currentTime());
 
-        List<UserSessionModel> userSessions = session.sessions().getUserSessions(realm, user);
+        List<UserSessionModel> userSessions = userSessionProvider.getUserSessions(realm, user);
         for (UserSessionModel userSession : userSessions) {
             authenticationManager.backchannelLogout(realm, userSession, keycloakContext.getUri(), clientConnection, headers, true);
         }
-        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
@@ -521,7 +494,6 @@ public class RealmUserResource {
 
         boolean removed = new UserManager().removeUser(realm, user);
         if (removed) {
-            adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
             return Response.noContent().build();
         } else {
             return ErrorResponse.error("User couldn't be deleted", Status.BAD_REQUEST);
@@ -532,7 +504,7 @@ public class RealmUserResource {
     public RealmRoleMapperResource getRoleMappings() {
         AdminPermissionEvaluator.RequirePermissionCheck manageCheck = () -> auth.users().requireMapRoles(user);
         AdminPermissionEvaluator.RequirePermissionCheck viewCheck = () -> auth.users().requireView(user);
-        RealmRoleMapperResource resource = new RealmRoleMapperResource(realm, auth, user, adminEvent, manageCheck, viewCheck);
+        RealmRoleMapperResource resource = new RealmRoleMapperResource(realm, auth, user, manageCheck, viewCheck);
         ResteasyProviderFactory.getInstance().injectProperties(resource);
         return resource;
 
@@ -540,8 +512,6 @@ public class RealmUserResource {
 
     /**
      * Disable all credentials for a user of a specific type
-     *
-     * @param credentialTypes
      */
     @Path("disable-credential-types")
     @PUT
@@ -550,8 +520,7 @@ public class RealmUserResource {
         auth.users().requireManage(user);
         if (credentialTypes == null) return;
         for (String type : credentialTypes) {
-            session.userCredentialManager().disableCredentialType(realm, user, type);
-
+            userCredentialManager.disableCredentialType(realm, user, type);
         }
     }
 
@@ -576,7 +545,7 @@ public class RealmUserResource {
         }
 
         try {
-            session.userCredentialManager().updateCredential(realm, user, UserCredentialModel.password(cred.getValue(), false));
+            userCredentialManager.updateCredential(realm, user, UserCredentialModel.password(cred.getValue(), false));
         } catch (IllegalStateException ise) {
             throw new BadRequestException("Resetting to N old passwords is not allowed.");
         } catch (ReadOnlyException mre) {
@@ -588,8 +557,6 @@ public class RealmUserResource {
         }
         if (cred.isTemporary() != null && cred.isTemporary())
             user.addRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD);
-
-        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).success();
     }
 
 
@@ -599,7 +566,7 @@ public class RealmUserResource {
     @Produces(MediaType.APPLICATION_JSON)
     public List<CredentialRepresentation> credentials() {
         auth.users().requireManage(user);
-        List<CredentialModel> models = session.userCredentialManager().getStoredCredentials(realm, user);
+        List<CredentialModel> models = userCredentialManager.getStoredCredentials(realm, user);
         models.forEach(c -> c.setSecretData(null));
         return models.stream().map(ModelToRepresentation::toRepresentation).collect(Collectors.toList());
     }
@@ -608,8 +575,6 @@ public class RealmUserResource {
     /**
      * Return credential types, which are provided by the user storage where user is stored. Returned values can contain for example "password", "otp" etc.
      * This will always return empty list for "local" users, which are not backed by any user storage
-     *
-     * @return
      */
     @GET
     @Path("configured-user-storage-credential-types")
@@ -619,7 +584,7 @@ public class RealmUserResource {
         // This has "requireManage" due the compatibility with "credentials()" endpoint. Strictly said, it is reading endpoint, not writing,
         // so may be revisited if to rather use "requireView" here in the future.
         auth.users().requireManage(user);
-        return session.userCredentialManager().getConfiguredUserStorageCredentialTypes(realm, user);
+        return userCredentialManager.getConfiguredUserStorageCredentialTypes(realm, user);
     }
 
 
@@ -631,8 +596,7 @@ public class RealmUserResource {
     @NoCache
     public void removeCredential(final @PathParam("credentialId") String credentialId) {
         auth.users().requireManage(user);
-        session.userCredentialManager().removeStoredCredential(realm, user, credentialId);
-        adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).success();
+        userCredentialManager.removeStoredCredential(realm, user, credentialId);
     }
 
     /**
@@ -643,13 +607,13 @@ public class RealmUserResource {
     @Path("credentials/{credentialId}/userLabel")
     public void setCredentialUserLabel(final @PathParam("credentialId") String credentialId, String userLabel) {
         auth.users().requireManage(user);
-        CredentialModel credential = session.userCredentialManager().getStoredCredentialById(realm, user, credentialId);
+        CredentialModel credential = userCredentialManager.getStoredCredentialById(realm, user, credentialId);
         if (credential == null) {
             // we do this to make sure somebody can't phish ids
             if (auth.users().canQuery()) throw new NotFoundException("User not found");
             else throw new ForbiddenException();
         }
-        session.userCredentialManager().updateCredentialLabel(realm, user, credentialId, userLabel);
+        userCredentialManager.updateCredentialLabel(realm, user, credentialId, userLabel);
     }
 
     /**
@@ -673,13 +637,13 @@ public class RealmUserResource {
     @POST
     public void moveCredentialAfter(final @PathParam("credentialId") String credentialId, final @PathParam("newPreviousCredentialId") String newPreviousCredentialId) {
         auth.users().requireManage(user);
-        CredentialModel credential = session.userCredentialManager().getStoredCredentialById(realm, user, credentialId);
+        CredentialModel credential = userCredentialManager.getStoredCredentialById(realm, user, credentialId);
         if (credential == null) {
             // we do this to make sure somebody can't phish ids
             if (auth.users().canQuery()) throw new NotFoundException("User not found");
             else throw new ForbiddenException();
         }
-        session.userCredentialManager().moveCredentialTo(realm, user, credentialId, newPreviousCredentialId);
+        userCredentialManager.moveCredentialTo(realm, user, credentialId, newPreviousCredentialId);
     }
 
     /**
@@ -692,7 +656,6 @@ public class RealmUserResource {
      *
      * @param redirectUri redirect uri
      * @param clientId    client id
-     * @return
      */
     @Deprecated
     @Path("reset-password-email")
@@ -722,7 +685,6 @@ public class RealmUserResource {
      * @param clientId    Client id
      * @param lifespan    Number of seconds after which the generated token expires
      * @param actions     required actions the user needs to complete
-     * @return
      */
     @Path("execute-actions-email")
     @PUT
@@ -788,11 +750,6 @@ public class RealmUserResource {
                     .setRealm(realm)
                     .setUser(user)
                     .sendExecuteActions(link, TimeUnit.SECONDS.toMinutes(lifespan));
-
-            //audit.user(user).detail(Details.EMAIL, user.getEmail()).detail(Details.CODE_ID, accessCode.getCodeId()).success();
-
-            adminEvent.operation(OperationType.ACTION).resourcePath(keycloakContext.getUri()).success();
-
             return Response.ok().build();
         } catch (EmailException e) {
 //            ServicesLogger.LOGGER.failedToSendActionsEmail(e);
@@ -809,7 +766,6 @@ public class RealmUserResource {
      *
      * @param redirectUri Redirect uri
      * @param clientId    Client id
-     * @return
      */
     @Path("send-verify-email")
     @PUT
@@ -860,13 +816,16 @@ public class RealmUserResource {
         return map;
     }
 
+    @Autowired
+    private RealmProvider realmProvider;
+
     @DELETE
     @Path("groups/{groupId}")
     @NoCache
     public void removeMembership(@PathParam("groupId") String groupId) {
         auth.users().requireManageGroupMembership(user);
 
-        GroupModel group = session.realms().getGroupById(groupId, realm);
+        GroupModel group = realmProvider.getGroupById(groupId, realm);
         if (group == null) {
             throw new NotFoundException("Group not found");
         }
@@ -875,7 +834,6 @@ public class RealmUserResource {
         try {
             if (user.isMemberOf(group)) {
                 user.leaveGroup(group);
-                adminEvent.operation(OperationType.DELETE).resource(ResourceType.GROUP_MEMBERSHIP).representation(ModelToRepresentation.toRepresentation(group, true)).resourcePath(keycloakContext.getUri()).success();
             }
         } catch (ModelException me) {
             Properties messages = adminRoot.getMessages(realm, auth.adminAuth().getToken().getLocale());
@@ -889,15 +847,13 @@ public class RealmUserResource {
     @NoCache
     public void joinGroup(@PathParam("groupId") String groupId) {
         auth.users().requireManageGroupMembership(user);
-        GroupModel group = session.realms().getGroupById(groupId, realm);
+        GroupModel group = realmProvider.getGroupById(groupId, realm);
         if (group == null) {
             throw new NotFoundException("Group not found");
         }
         auth.groups().requireManageMembership(group);
         if (!user.isMemberOf(group)) {
             user.joinGroup(group);
-            adminEvent.operation(OperationType.CREATE).resource(ResourceType.GROUP_MEMBERSHIP).representation(ModelToRepresentation.toRepresentation(group, true)).resourcePath(keycloakContext.getUri()).success();
         }
     }
-
 }

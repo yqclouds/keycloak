@@ -18,14 +18,14 @@ package com.hsbc.unified.iam.web.admin.resources;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.*;
+import org.keycloak.models.ClientScopeModel;
+import org.keycloak.models.ModelDuplicateException;
+import org.keycloak.models.ModelException;
+import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.ClientScopeRepresentation;
 import org.keycloak.services.ErrorResponse;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,20 +48,18 @@ public class RealmClientScopeResource {
     protected RealmModel realm;
     protected ClientScopeModel clientScope;
     private AdminPermissionEvaluator auth;
-    private AdminEventBuilder adminEvent;
 
-    public RealmClientScopeResource(RealmModel realm, AdminPermissionEvaluator auth, ClientScopeModel clientScope, AdminEventBuilder adminEvent) {
+    public RealmClientScopeResource(RealmModel realm, AdminPermissionEvaluator auth, ClientScopeModel clientScope) {
         this.realm = realm;
         this.auth = auth;
         this.clientScope = clientScope;
-        this.adminEvent = adminEvent.resource(ResourceType.CLIENT_SCOPE);
     }
 
     @Path("protocol-mappers")
     public RealmProtocolMappersResource getProtocolMappers() {
         AdminPermissionEvaluator.RequirePermissionCheck manageCheck = () -> auth.clients().requireManage(clientScope);
         AdminPermissionEvaluator.RequirePermissionCheck viewCheck = () -> auth.clients().requireView(clientScope);
-        RealmProtocolMappersResource mappers = new RealmProtocolMappersResource(realm, clientScope, auth, adminEvent, manageCheck, viewCheck);
+        RealmProtocolMappersResource mappers = new RealmProtocolMappersResource(realm, clientScope, auth, manageCheck, viewCheck);
         ResteasyProviderFactory.getInstance().injectProperties(mappers);
         return mappers;
     }
@@ -73,11 +71,8 @@ public class RealmClientScopeResource {
     public RealmScopeMappedResource getScopeMappedResource() {
         AdminPermissionEvaluator.RequirePermissionCheck manageCheck = () -> auth.clients().requireManage(clientScope);
         AdminPermissionEvaluator.RequirePermissionCheck viewCheck = () -> auth.clients().requireView(clientScope);
-        return new RealmScopeMappedResource(realm, auth, clientScope, adminEvent, manageCheck, viewCheck);
+        return new RealmScopeMappedResource(realm, auth, clientScope, manageCheck, viewCheck);
     }
-
-    @Autowired
-    private KeycloakContext keycloakContext;
 
     /**
      * Update the client scope
@@ -89,7 +84,6 @@ public class RealmClientScopeResource {
 
         try {
             RepresentationToModel.updateClientScope(rep, clientScope);
-            adminEvent.operation(OperationType.UPDATE).resourcePath(keycloakContext.getUri()).representation(rep).success();
             return Response.noContent().build();
         } catch (ModelDuplicateException e) {
             return ErrorResponse.exists("Client ScopeModel " + rep.getName() + " already exists");
@@ -98,7 +92,6 @@ public class RealmClientScopeResource {
 
     @Autowired
     private ModelToRepresentation modelToRepresentation;
-
 
     /**
      * Get representation of the client scope
@@ -120,15 +113,11 @@ public class RealmClientScopeResource {
     @NoCache
     public Response deleteClientScope() {
         auth.clients().requireManage(clientScope);
-
         try {
             realm.removeClientScope(clientScope.getId());
-            adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
             return Response.noContent().build();
         } catch (ModelException me) {
             return ErrorResponse.error(me.getMessage(), Response.Status.BAD_REQUEST);
         }
     }
-
-
 }

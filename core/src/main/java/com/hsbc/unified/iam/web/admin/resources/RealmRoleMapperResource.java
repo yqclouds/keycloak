@@ -18,15 +18,12 @@ package com.hsbc.unified.iam.web.admin.resources;
 
 import com.hsbc.unified.iam.core.ClientConnection;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.ClientMappingsRepresentation;
 import org.keycloak.representations.idm.MappingsRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.services.ErrorResponseException;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.AdminRoot;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.slf4j.Logger;
@@ -64,18 +61,15 @@ public class RealmRoleMapperResource {
     @Context
     protected HttpHeaders headers;
     private RoleMapperModel roleMapper;
-    private AdminEventBuilder adminEvent;
     private AdminPermissionEvaluator auth;
 
     public RealmRoleMapperResource(RealmModel realm,
                                    AdminPermissionEvaluator auth,
                                    RoleMapperModel roleMapper,
-                                   AdminEventBuilder adminEvent,
                                    AdminPermissionEvaluator.RequirePermissionCheck manageCheck,
                                    AdminPermissionEvaluator.RequirePermissionCheck viewCheck) {
         this.auth = auth;
         this.realm = realm;
-        this.adminEvent = adminEvent.resource(ResourceType.REALM_ROLE_MAPPING);
         this.roleMapper = roleMapper;
         this.managePermission = manageCheck;
         this.viewPermission = viewCheck;
@@ -84,8 +78,6 @@ public class RealmRoleMapperResource {
 
     /**
      * Get role mappings
-     *
-     * @return
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -125,8 +117,6 @@ public class RealmRoleMapperResource {
 
     /**
      * Get realm-level role mappings
-     *
-     * @return
      */
     @Path("realm")
     @GET
@@ -136,7 +126,7 @@ public class RealmRoleMapperResource {
         viewPermission.require();
 
         Set<RoleModel> realmMappings = roleMapper.getRealmRoleMappings();
-        List<RoleRepresentation> realmMappingsRep = new ArrayList<RoleRepresentation>();
+        List<RoleRepresentation> realmMappingsRep = new ArrayList<>();
         for (RoleModel roleModel : realmMappings) {
             realmMappingsRep.add(ModelToRepresentation.toBriefRepresentation(roleModel));
         }
@@ -147,8 +137,6 @@ public class RealmRoleMapperResource {
      * Get effective realm-level role mappings
      * <p>
      * This will recurse all composite roles to get the result.
-     *
-     * @return
      */
     @Path("realm/composite")
     @GET
@@ -158,19 +146,18 @@ public class RealmRoleMapperResource {
         viewPermission.require();
 
         Set<RoleModel> roles = realm.getRoles();
-        List<RoleRepresentation> realmMappingsRep = new ArrayList<RoleRepresentation>();
+        List<RoleRepresentation> realmMappingsRep = new ArrayList<>();
         for (RoleModel roleModel : roles) {
             if (roleMapper.hasRole(roleModel)) {
                 realmMappingsRep.add(ModelToRepresentation.toBriefRepresentation(roleModel));
             }
         }
+
         return realmMappingsRep;
     }
 
     /**
      * Get realm-level roles that can be mapped
-     *
-     * @return
      */
     @Path("realm/available")
     @GET
@@ -180,9 +167,7 @@ public class RealmRoleMapperResource {
         viewPermission.require();
 
         Set<RoleModel> available = realm.getRoles();
-        Set<RoleModel> set = available.stream().filter(r ->
-                canMapRole(r)
-        ).collect(Collectors.toSet());
+        Set<RoleModel> set = available.stream().filter(this::canMapRole).collect(Collectors.toSet());
         return RealmClientRoleMappingsResource.getAvailableRoles(roleMapper, set);
     }
 
@@ -207,14 +192,10 @@ public class RealmRoleMapperResource {
             auth.roles().requireMapRole(roleModel);
             roleMapper.grantRole(roleModel);
         }
-
-        adminEvent.operation(OperationType.CREATE).resourcePath(session.getContext().getUri()).representation(roles).success();
     }
 
     /**
      * Delete realm-level role mappings
-     *
-     * @param roles
      */
     @Path("realm")
     @DELETE
@@ -250,9 +231,6 @@ public class RealmRoleMapperResource {
             }
 
         }
-
-        adminEvent.operation(OperationType.DELETE).resourcePath(session.getContext().getUri()).representation(roles).success();
-
     }
 
     private boolean canMapRole(RoleModel roleModel) {
@@ -265,14 +243,10 @@ public class RealmRoleMapperResource {
         if (clientModel == null) {
             throw new NotFoundException("Client not found");
         }
-        return new RealmClientRoleMappingsResource(keycloakContext.getUri(), realm, auth, roleMapper,
-                clientModel, adminEvent,
-                managePermission, viewPermission);
 
+        return new RealmClientRoleMappingsResource(realm, auth, roleMapper, clientModel, managePermission, viewPermission);
     }
 
-    @Autowired
-    private KeycloakContext keycloakContext;
     @Autowired
     private AdminRoot adminRoot;
 }

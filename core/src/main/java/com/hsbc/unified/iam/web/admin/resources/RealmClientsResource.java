@@ -21,8 +21,6 @@ import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authorization.admin.AuthorizationService;
 import org.keycloak.events.Errors;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.ClientRepresentation;
@@ -31,7 +29,6 @@ import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.ForbiddenException;
 import org.keycloak.services.managers.ClientManager;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.AdminRoot;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.validation.ClientValidator;
@@ -73,12 +70,10 @@ public class RealmClientsResource {
     @Context
     protected KeycloakSession session;
     private AdminPermissionEvaluator auth;
-    private AdminEventBuilder adminEvent;
 
-    public RealmClientsResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public RealmClientsResource(RealmModel realm, AdminPermissionEvaluator auth) {
         this.realm = realm;
         this.auth = auth;
-        this.adminEvent = adminEvent.resource(ResourceType.CLIENT);
     }
 
     @Autowired
@@ -152,7 +147,7 @@ public class RealmClientsResource {
     }
 
     private AuthorizationService getAuthorizationService(ClientModel clientModel) {
-        return new AuthorizationService(clientModel, auth, adminEvent);
+        return new AuthorizationService(clientModel, auth);
     }
 
     @Autowired
@@ -168,9 +163,6 @@ public class RealmClientsResource {
      * Create a new client
      * <p>
      * Client's client_id must be unique!
-     *
-     * @param rep
-     * @return
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -197,8 +189,6 @@ public class RealmClientsResource {
                     new ClientManager(new RealmFacadeImpl()).enableServiceAccount(clientModel);
                 }
             }
-
-            adminEvent.operation(OperationType.CREATE).resourcePath(session.getContext().getUri(), clientModel.getId()).representation(rep).success();
 
             if (TRUE.equals(rep.getAuthorizationServicesEnabled())) {
                 AuthorizationService authorizationService = getAuthorizationService(clientModel);
@@ -227,11 +217,9 @@ public class RealmClientsResource {
      * Base path for managing a specific client.
      *
      * @param id id of client (not client-id)
-     * @return
      */
     @Path("{id}")
     public RealmClientResource getClient(final @PathParam("id") String id) {
-
         ClientModel clientModel = realm.getClientById(id);
         if (clientModel == null) {
             // we do this to make sure somebody can't phish ids
@@ -241,9 +229,8 @@ public class RealmClientsResource {
 
         session.getContext().setClient(clientModel);
 
-        RealmClientResource clientResource = new RealmClientResource(realm, auth, clientModel, adminEvent);
+        RealmClientResource clientResource = new RealmClientResource(realm, auth, clientModel);
         ResteasyProviderFactory.getInstance().injectProperties(clientResource);
         return clientResource;
     }
-
 }

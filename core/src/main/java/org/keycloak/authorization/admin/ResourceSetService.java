@@ -29,8 +29,6 @@ import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.common.util.PathMatcher;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
@@ -58,7 +56,6 @@ public class ResourceSetService {
 
     private final AuthorizationProvider authorization;
     private final AdminPermissionEvaluator auth;
-    private final AdminEventBuilder adminEvent;
     private final ResourceServerModel resourceServer;
 
     @Autowired
@@ -67,11 +64,10 @@ public class ResourceSetService {
     @Autowired
     private ModelToRepresentation modelToRepresentation;
 
-    public ResourceSetService(ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public ResourceSetService(ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth) {
         this.resourceServer = resourceServer;
         this.authorization = authorization;
         this.auth = auth;
-        this.adminEvent = adminEvent.resource(ResourceType.AUTHORIZATION_RESOURCE);
     }
 
     @POST
@@ -84,8 +80,6 @@ public class ResourceSetService {
         }
 
         ResourceRepresentation newResource = create(resource);
-
-        audit(resource, resource.getId(), OperationType.CREATE);
 
         return Response.status(Status.CREATED).entity(newResource).build();
     }
@@ -133,8 +127,6 @@ public class ResourceSetService {
 
         representationToModel.toModel(resource, resourceServer, authorization);
 
-        audit(resource, OperationType.UPDATE);
-
         return Response.noContent().build();
     }
 
@@ -150,8 +142,6 @@ public class ResourceSetService {
         }
 
         storeFactory.getResourceStore().delete(id);
-
-        audit(modelToRepresentation.toRepresentation(resource, resourceServer, authorization), OperationType.DELETE);
 
         return Response.noContent().build();
     }
@@ -456,21 +446,6 @@ public class ResourceSetService {
     private void requireManage() {
         if (this.auth != null) {
             this.auth.realm().requireManageAuthorization();
-        }
-    }
-
-    private void audit(ResourceRepresentation resource, OperationType operation) {
-        audit(resource, null, operation);
-    }
-
-    @Autowired
-    private KeycloakContext context;
-
-    public void audit(ResourceRepresentation resource, String id, OperationType operation) {
-        if (id != null) {
-            adminEvent.operation(operation).resourcePath(context.getUri(), id).representation(resource).success();
-        } else {
-            adminEvent.operation(operation).resourcePath(context.getUri()).representation(resource).success();
         }
     }
 }

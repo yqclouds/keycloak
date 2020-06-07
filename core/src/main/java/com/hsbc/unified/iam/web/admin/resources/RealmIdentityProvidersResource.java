@@ -23,8 +23,6 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.broker.provider.IdentityProviderFactory;
 import org.keycloak.connections.httpclient.HttpClientProvider;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.ModelDuplicateException;
@@ -35,7 +33,6 @@ import org.keycloak.models.utils.StripSecretsUtils;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.idm.IdentityProviderRepresentation;
 import org.keycloak.services.ErrorResponse;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.utils.ReservedCharValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,12 +64,10 @@ public class RealmIdentityProvidersResource {
     @Autowired
     private KeycloakContext keycloakContext;
     private AdminPermissionEvaluator auth;
-    private AdminEventBuilder adminEvent;
 
-    public RealmIdentityProvidersResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public RealmIdentityProvidersResource(RealmModel realm, AdminPermissionEvaluator auth) {
         this.realm = realm;
         this.auth = auth;
-        this.adminEvent = adminEvent.resource(ResourceType.IDENTITY_PROVIDER);
     }
 
     /**
@@ -93,10 +88,6 @@ public class RealmIdentityProvidersResource {
 
     /**
      * Import identity provider from uploaded JSON file
-     *
-     * @param input
-     * @return
-     * @throws IOException
      */
     @POST
     @Path("import-config")
@@ -122,8 +113,6 @@ public class RealmIdentityProvidersResource {
      * Import identity provider from JSON body
      *
      * @param data JSON body
-     * @return
-     * @throws IOException
      */
     @POST
     @Path("import-config")
@@ -155,8 +144,6 @@ public class RealmIdentityProvidersResource {
 
     /**
      * Get identity providers
-     *
-     * @return
      */
     @GET
     @Path("instances")
@@ -180,7 +167,6 @@ public class RealmIdentityProvidersResource {
      * Create a new identity provider
      *
      * @param representation JSON body
-     * @return
      */
     @POST
     @Path("instances")
@@ -195,8 +181,6 @@ public class RealmIdentityProvidersResource {
             this.realm.addIdentityProvider(identityProvider);
 
             representation.setInternalId(identityProvider.getInternalId());
-            adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri(), identityProvider.getAlias())
-                    .representation(StripSecretsUtils.strip(representation)).success();
 
             return Response.created(keycloakContext.getUri().getAbsolutePathBuilder().path(representation.getAlias()).build()).build();
         } catch (IllegalArgumentException e) {
@@ -218,7 +202,7 @@ public class RealmIdentityProvidersResource {
             }
         }
 
-        RealmIdentityProviderResource identityProviderResource = new RealmIdentityProviderResource(this.auth, realm, identityProviderModel, adminEvent);
+        RealmIdentityProviderResource identityProviderResource = new RealmIdentityProviderResource(this.auth, realm, identityProviderModel);
         ResteasyProviderFactory.getInstance().injectProperties(identityProviderResource);
 
         return identityProviderResource;

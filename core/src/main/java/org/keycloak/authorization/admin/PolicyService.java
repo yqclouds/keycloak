@@ -32,15 +32,11 @@ import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.authorization.store.ScopeStore;
 import org.keycloak.authorization.store.StoreFactory;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
 import org.keycloak.representations.idm.authorization.PolicyProviderRepresentation;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.services.ErrorResponseException;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,13 +59,11 @@ public class PolicyService {
     protected final ResourceServerModel resourceServer;
     protected final AuthorizationProvider authorization;
     protected final AdminPermissionEvaluator auth;
-    protected final AdminEventBuilder adminEvent;
 
-    public PolicyService(ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public PolicyService(ResourceServerModel resourceServer, AuthorizationProvider authorization, AdminPermissionEvaluator auth) {
         this.resourceServer = resourceServer;
         this.authorization = authorization;
         this.auth = auth;
-        this.adminEvent = adminEvent.resource(ResourceType.AUTHORIZATION_POLICY);
     }
 
     @Path("{type}")
@@ -86,11 +80,11 @@ public class PolicyService {
     }
 
     protected PolicyTypeService doCreatePolicyTypeResource(String type) {
-        return new PolicyTypeService(type, resourceServer, authorization, auth, adminEvent);
+        return new PolicyTypeService(type, resourceServer, authorization, auth);
     }
 
     protected Object doCreatePolicyResource(PolicyModel policy) {
-        return new PolicyResourceService(policy, resourceServer, authorization, auth, adminEvent);
+        return new PolicyResourceService(policy, resourceServer, authorization, auth);
     }
 
     @POST
@@ -106,8 +100,6 @@ public class PolicyService {
         PolicyModel policy = create(representation);
 
         representation.setId(policy.getId());
-
-        audit(representation, representation.getId(), OperationType.CREATE);
 
         return Response.status(Status.CREATED).entity(representation).build();
     }
@@ -215,7 +207,7 @@ public class PolicyService {
                     return Response.ok().build();
                 }
 
-                search.put("resource", resources.toArray(new String[resources.size()]));
+                search.put("resource", resources.toArray(new String[0]));
             } else {
                 search.put("resource", new String[]{resourceModel.getId()});
             }
@@ -309,16 +301,5 @@ public class PolicyService {
 
     protected PolicyProviderFactory getPolicyProviderFactory(String policyType) {
         return authorization.getProviderFactory(policyType);
-    }
-
-    @Autowired
-    private KeycloakContext keycloakContext;
-
-    private void audit(AbstractPolicyRepresentation resource, String id, OperationType operation) {
-        if (id != null) {
-            adminEvent.operation(operation).resourcePath(keycloakContext.getUri(), id).representation(resource).success();
-        } else {
-            adminEvent.operation(operation).resourcePath(keycloakContext.getUri()).representation(resource).success();
-        }
     }
 }

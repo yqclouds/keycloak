@@ -18,15 +18,14 @@
 package com.hsbc.unified.iam.web.admin.resources;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.*;
+import org.keycloak.models.ClientModel;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.RoleModel;
+import org.keycloak.models.ScopeContainerModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -47,19 +46,17 @@ public class RealmScopeMappedClientResource {
     protected AdminPermissionEvaluator.RequirePermissionCheck viewPermission;
     protected ScopeContainerModel scopeContainer;
     protected ClientModel scopedClient;
-    protected AdminEventBuilder adminEvent;
 
-    @Autowired
-    private KeycloakContext keycloakContext;
-
-    public RealmScopeMappedClientResource(RealmModel realm, AdminPermissionEvaluator auth, ScopeContainerModel scopeContainer, ClientModel scopedClient, AdminEventBuilder adminEvent,
+    public RealmScopeMappedClientResource(RealmModel realm,
+                                          AdminPermissionEvaluator auth,
+                                          ScopeContainerModel scopeContainer,
+                                          ClientModel scopedClient,
                                           AdminPermissionEvaluator.RequirePermissionCheck managePermission,
                                           AdminPermissionEvaluator.RequirePermissionCheck viewPermission) {
         this.realm = realm;
         this.auth = auth;
         this.scopeContainer = scopeContainer;
         this.scopedClient = scopedClient;
-        this.adminEvent = adminEvent.resource(ResourceType.CLIENT_SCOPE_MAPPING);
         this.managePermission = managePermission;
         this.viewPermission = viewPermission;
     }
@@ -68,8 +65,6 @@ public class RealmScopeMappedClientResource {
      * Get the roles associated with a client's scope
      * <p>
      * Returns roles for the client.
-     *
-     * @return
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -77,11 +72,12 @@ public class RealmScopeMappedClientResource {
     public List<RoleRepresentation> getClientScopeMappings() {
         viewPermission.require();
 
-        Set<RoleModel> mappings = KeycloakModelUtils.getClientScopeMappings(scopedClient, scopeContainer); //scopedClient.getClientScopeMappings(client);
-        List<RoleRepresentation> mapRep = new ArrayList<RoleRepresentation>();
+        Set<RoleModel> mappings = KeycloakModelUtils.getClientScopeMappings(scopedClient, scopeContainer);
+        List<RoleRepresentation> mapRep = new ArrayList<>();
         for (RoleModel roleModel : mappings) {
             mapRep.add(ModelToRepresentation.toBriefRepresentation(roleModel));
         }
+
         return mapRep;
     }
 
@@ -89,8 +85,6 @@ public class RealmScopeMappedClientResource {
      * The available client-level roles
      * <p>
      * Returns the roles for the client that can be associated with the client's scope
-     *
-     * @return
      */
     @Path("available")
     @GET
@@ -107,8 +101,6 @@ public class RealmScopeMappedClientResource {
      * Get effective client roles
      * <p>
      * Returns the roles for the client that are associated with the client's scope.
-     *
-     * @return
      */
     @Path("composite")
     @GET
@@ -123,8 +115,6 @@ public class RealmScopeMappedClientResource {
 
     /**
      * Add client-level roles to the client's scope
-     *
-     * @param roles
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -138,14 +128,10 @@ public class RealmScopeMappedClientResource {
             }
             scopeContainer.addScopeMapping(roleModel);
         }
-
-        adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri()).representation(roles).success();
     }
 
     /**
      * Remove client-level roles from the client's scope.
-     *
-     * @param roles
      */
     @DELETE
     @Consumes(MediaType.APPLICATION_JSON)
@@ -170,7 +156,5 @@ public class RealmScopeMappedClientResource {
                 scopeContainer.deleteScopeMapping(roleModel);
             }
         }
-
-        adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).representation(roles).success();
     }
 }

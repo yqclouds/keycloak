@@ -18,17 +18,16 @@
 package com.hsbc.unified.iam.web.admin.resources;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.*;
+import org.keycloak.models.ClientModel;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.RoleModel;
+import org.keycloak.models.ScopeContainerModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.ClientMappingsRepresentation;
 import org.keycloak.representations.idm.MappingsRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -48,25 +47,21 @@ public class RealmScopeMappedResource {
     protected AdminPermissionEvaluator.RequirePermissionCheck viewPermission;
 
     protected ScopeContainerModel scopeContainer;
-    protected AdminEventBuilder adminEvent;
 
-    @Autowired
-    private KeycloakContext keycloakContext;
-
-    public RealmScopeMappedResource(RealmModel realm, AdminPermissionEvaluator auth, ScopeContainerModel scopeContainer,
-                                    AdminEventBuilder adminEvent,
+    public RealmScopeMappedResource(RealmModel realm,
+                                    AdminPermissionEvaluator auth,
+                                    ScopeContainerModel scopeContainer,
                                     AdminPermissionEvaluator.RequirePermissionCheck managePermission,
                                     AdminPermissionEvaluator.RequirePermissionCheck viewPermission) {
         this.realm = realm;
         this.auth = auth;
         this.scopeContainer = scopeContainer;
-        this.adminEvent = adminEvent.resource(ResourceType.REALM_SCOPE_MAPPING);
         this.managePermission = managePermission;
         this.viewPermission = viewPermission;
     }
 
     public static List<RoleRepresentation> getAvailable(AdminPermissionEvaluator auth, ScopeContainerModel client, Set<RoleModel> roles) {
-        List<RoleRepresentation> available = new ArrayList<RoleRepresentation>();
+        List<RoleRepresentation> available = new ArrayList<>();
         for (RoleModel roleModel : roles) {
             if (client.hasScope(roleModel)) continue;
             if (!auth.roles().canMapClientScope(roleModel)) continue;
@@ -76,7 +71,7 @@ public class RealmScopeMappedResource {
     }
 
     public static List<RoleRepresentation> getComposite(ScopeContainerModel client, Set<RoleModel> roles) {
-        List<RoleRepresentation> composite = new ArrayList<RoleRepresentation>();
+        List<RoleRepresentation> composite = new ArrayList<>();
         for (RoleModel roleModel : roles) {
             if (client.hasScope(roleModel)) composite.add(ModelToRepresentation.toBriefRepresentation(roleModel));
         }
@@ -85,8 +80,6 @@ public class RealmScopeMappedResource {
 
     /**
      * Get all scope mappings for the client
-     *
-     * @return
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -101,7 +94,7 @@ public class RealmScopeMappedResource {
         MappingsRepresentation all = new MappingsRepresentation();
         Set<RoleModel> realmMappings = scopeContainer.getRealmScopeMappings();
         if (realmMappings.size() > 0) {
-            List<RoleRepresentation> realmRep = new ArrayList<RoleRepresentation>();
+            List<RoleRepresentation> realmRep = new ArrayList<>();
             for (RoleModel roleModel : realmMappings) {
                 realmRep.add(ModelToRepresentation.toBriefRepresentation(roleModel));
             }
@@ -110,14 +103,14 @@ public class RealmScopeMappedResource {
 
         List<ClientModel> clients = realm.getClients();
         if (clients.size() > 0) {
-            Map<String, ClientMappingsRepresentation> clientMappings = new HashMap<String, ClientMappingsRepresentation>();
+            Map<String, ClientMappingsRepresentation> clientMappings = new HashMap<>();
             for (ClientModel client : clients) {
-                Set<RoleModel> roleMappings = KeycloakModelUtils.getClientScopeMappings(client, this.scopeContainer); //client.getClientScopeMappings(this.client);
+                Set<RoleModel> roleMappings = KeycloakModelUtils.getClientScopeMappings(client, this.scopeContainer);
                 if (roleMappings.size() > 0) {
                     ClientMappingsRepresentation mappings = new ClientMappingsRepresentation();
                     mappings.setId(client.getId());
                     mappings.setClient(client.getClientId());
-                    List<RoleRepresentation> roles = new ArrayList<RoleRepresentation>();
+                    List<RoleRepresentation> roles = new ArrayList<>();
                     mappings.setMappings(roles);
                     for (RoleModel role : roleMappings) {
                         roles.add(ModelToRepresentation.toBriefRepresentation(role));
@@ -132,8 +125,6 @@ public class RealmScopeMappedResource {
 
     /**
      * Get realm-level roles associated with the client's scope
-     *
-     * @return
      */
     @Path("realm")
     @GET
@@ -147,7 +138,7 @@ public class RealmScopeMappedResource {
         }
 
         Set<RoleModel> realmMappings = scopeContainer.getRealmScopeMappings();
-        List<RoleRepresentation> realmMappingsRep = new ArrayList<RoleRepresentation>();
+        List<RoleRepresentation> realmMappingsRep = new ArrayList<>();
         for (RoleModel roleModel : realmMappings) {
             realmMappingsRep.add(ModelToRepresentation.toBriefRepresentation(roleModel));
         }
@@ -156,8 +147,6 @@ public class RealmScopeMappedResource {
 
     /**
      * Get realm-level roles that are available to attach to this client's scope
-     *
-     * @return
      */
     @Path("realm/available")
     @GET
@@ -180,8 +169,6 @@ public class RealmScopeMappedResource {
      * What this does is recurse
      * any composite roles associated with the client's scope and adds the roles to this lists.  The method is really
      * to show a comprehensive total view of realm-level roles associated with the client.
-     *
-     * @return
      */
     @Path("realm/composite")
     @GET
@@ -200,8 +187,6 @@ public class RealmScopeMappedResource {
 
     /**
      * Add a set of realm-level roles to the client's scope
-     *
-     * @param roles
      */
     @Path("realm")
     @POST
@@ -220,14 +205,10 @@ public class RealmScopeMappedResource {
             }
             scopeContainer.addScopeMapping(roleModel);
         }
-
-        adminEvent.operation(OperationType.CREATE).resourcePath(keycloakContext.getUri()).representation(roles).success();
     }
 
     /**
      * Remove a set of realm-level roles from the client's scope
-     *
-     * @param roles
      */
     @Path("realm")
     @DELETE
@@ -257,9 +238,6 @@ public class RealmScopeMappedResource {
                 scopeContainer.deleteScopeMapping(roleModel);
             }
         }
-
-        adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).representation(roles).success();
-
     }
 
     @Path("clients/{client}")
@@ -268,6 +246,6 @@ public class RealmScopeMappedResource {
         if (clientModel == null) {
             throw new NotFoundException("Could not find client");
         }
-        return new RealmScopeMappedClientResource(realm, auth, this.scopeContainer, clientModel, adminEvent, managePermission, viewPermission);
+        return new RealmScopeMappedClientResource(realm, auth, this.scopeContainer, clientModel, managePermission, viewPermission);
     }
 }

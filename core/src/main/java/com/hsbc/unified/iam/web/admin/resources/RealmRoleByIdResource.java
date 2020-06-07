@@ -17,15 +17,12 @@
 package com.hsbc.unified.iam.web.admin.resources;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleModel;
 import org.keycloak.representations.idm.ManagementPermissionReference;
 import org.keycloak.representations.idm.RoleRepresentation;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionManagement;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
@@ -58,17 +55,15 @@ public class RealmRoleByIdResource extends AbstractRoleResource {
     protected static final Logger LOG = LoggerFactory.getLogger(RealmRoleByIdResource.class);
     private final RealmModel realm;
     private AdminPermissionEvaluator auth;
-    private AdminEventBuilder adminEvent;
 
     @Autowired
     private KeycloakContext keycloakContext;
 
-    public RealmRoleByIdResource(RealmModel realm, AdminPermissionEvaluator auth, AdminEventBuilder adminEvent) {
+    public RealmRoleByIdResource(RealmModel realm, AdminPermissionEvaluator auth) {
         super(realm);
 
         this.realm = realm;
         this.auth = auth;
-        this.adminEvent = adminEvent;
     }
 
     public static ManagementPermissionReference toMgmtRef(RoleModel role, AdminPermissionManagement permissions) {
@@ -83,7 +78,6 @@ public class RealmRoleByIdResource extends AbstractRoleResource {
      * Get a specific role's representation
      *
      * @param id id of role
-     * @return
      */
     @Path("{role-id}")
     @GET
@@ -116,21 +110,12 @@ public class RealmRoleByIdResource extends AbstractRoleResource {
         RoleModel role = getRoleModel(id);
         auth.roles().requireManage(role);
         deleteRole(role);
-
-        if (role.isClientRole()) {
-            adminEvent.resource(ResourceType.CLIENT_ROLE);
-        } else {
-            adminEvent.resource(ResourceType.REALM_ROLE);
-        }
-
-        adminEvent.operation(OperationType.DELETE).resourcePath(keycloakContext.getUri()).success();
     }
 
     /**
      * Update the role
      *
-     * @param id  id of role
-     * @param rep
+     * @param id id of role
      */
     @Path("{role-id}")
     @PUT
@@ -139,21 +124,10 @@ public class RealmRoleByIdResource extends AbstractRoleResource {
         RoleModel role = getRoleModel(id);
         auth.roles().requireManage(role);
         updateRole(rep, role);
-
-        if (role.isClientRole()) {
-            adminEvent.resource(ResourceType.CLIENT_ROLE);
-        } else {
-            adminEvent.resource(ResourceType.REALM_ROLE);
-        }
-
-        adminEvent.operation(OperationType.UPDATE).resourcePath(keycloakContext.getUri()).representation(rep).success();
     }
 
     /**
      * Make the role a composite role by associating some child roles
-     *
-     * @param id
-     * @param roles
      */
     @Path("{role-id}/composites")
     @POST
@@ -161,16 +135,13 @@ public class RealmRoleByIdResource extends AbstractRoleResource {
     public void addComposites(final @PathParam("role-id") String id, List<RoleRepresentation> roles) {
         RoleModel role = getRoleModel(id);
         auth.roles().requireManage(role);
-        addComposites(auth, adminEvent, keycloakContext.getUri(), roles, role);
+        addComposites(auth, roles, role);
     }
 
     /**
      * Get role's children
      * <p>
      * Returns a set of role's children provided the role is a composite.
-     *
-     * @param id
-     * @return
      */
     @Path("{role-id}/composites")
     @GET
@@ -186,9 +157,6 @@ public class RealmRoleByIdResource extends AbstractRoleResource {
 
     /**
      * Get realm-level roles that are in the role's composite
-     *
-     * @param id
-     * @return
      */
     @Path("{role-id}/composites/realm")
     @GET
@@ -203,10 +171,6 @@ public class RealmRoleByIdResource extends AbstractRoleResource {
 
     /**
      * Get client-level roles for the client that are in the role's composite
-     *
-     * @param id
-     * @param client
-     * @return
      */
     @Path("{role-id}/composites/clients/{client}")
     @GET
@@ -236,14 +200,11 @@ public class RealmRoleByIdResource extends AbstractRoleResource {
     public void deleteComposites(final @PathParam("role-id") String id, List<RoleRepresentation> roles) {
         RoleModel role = getRoleModel(id);
         auth.roles().requireManage(role);
-        deleteComposites(adminEvent, keycloakContext.getUri(), roles, role);
+        deleteComposites(roles, role);
     }
 
     /**
      * Return object stating whether role Authoirzation permissions have been initialized or not and a reference
-     *
-     * @param id
-     * @return
      */
     @Path("{role-id}/management/permissions")
     @GET
@@ -263,7 +224,6 @@ public class RealmRoleByIdResource extends AbstractRoleResource {
     /**
      * Return object stating whether role Authoirzation permissions have been initialized or not and a reference
      *
-     * @param id
      * @return initialized manage permissions reference
      */
     @Path("{role-id}/management/permissions")
@@ -283,5 +243,4 @@ public class RealmRoleByIdResource extends AbstractRoleResource {
             return new ManagementPermissionReference();
         }
     }
-
 }

@@ -17,13 +17,10 @@
 package com.hsbc.unified.iam.web.admin.resources;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.keycloak.events.admin.OperationType;
-import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.services.ErrorResponseException;
-import org.keycloak.services.resources.admin.AdminEventBuilder;
 import org.keycloak.services.resources.admin.AdminRoot;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.slf4j.Logger;
@@ -33,7 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,24 +47,24 @@ public class RealmClientRoleMappingsResource {
     protected AdminPermissionEvaluator auth;
     protected RoleMapperModel user;
     protected ClientModel client;
-    protected AdminEventBuilder adminEvent;
     protected AdminPermissionEvaluator.RequirePermissionCheck managePermission;
     protected AdminPermissionEvaluator.RequirePermissionCheck viewPermission;
-    private UriInfo uriInfo;
 
+    @Autowired
+    private AdminRoot adminRoot;
 
-    public RealmClientRoleMappingsResource(UriInfo uriInfo, RealmModel realm, AdminPermissionEvaluator auth,
-                                           RoleMapperModel user, ClientModel client, AdminEventBuilder adminEvent,
-                                           AdminPermissionEvaluator.RequirePermissionCheck manageCheck, AdminPermissionEvaluator.RequirePermissionCheck viewCheck) {
-        this.uriInfo = uriInfo;
-        this.session = session;
+    public RealmClientRoleMappingsResource(RealmModel realm,
+                                           AdminPermissionEvaluator auth,
+                                           RoleMapperModel user,
+                                           ClientModel client,
+                                           AdminPermissionEvaluator.RequirePermissionCheck manageCheck,
+                                           AdminPermissionEvaluator.RequirePermissionCheck viewCheck) {
         this.realm = realm;
         this.auth = auth;
         this.user = user;
         this.client = client;
         this.managePermission = manageCheck;
         this.viewPermission = viewCheck;
-        this.adminEvent = adminEvent.resource(ResourceType.CLIENT_ROLE_MAPPING);
     }
 
     public static List<RoleRepresentation> getAvailableRoles(RoleMapperModel mapper, Set<RoleModel> available) {
@@ -164,14 +160,10 @@ public class RealmClientRoleMappingsResource {
             auth.roles().requireMapRole(roleModel);
             user.grantRole(roleModel);
         }
-        adminEvent.operation(OperationType.CREATE).resourcePath(uriInfo).representation(roles).success();
-
     }
 
     /**
      * Delete client-level roles from user role mapping
-     *
-     * @param roles
      */
     @DELETE
     @Consumes(MediaType.APPLICATION_JSON)
@@ -209,10 +201,5 @@ public class RealmClientRoleMappingsResource {
                 }
             }
         }
-
-        adminEvent.operation(OperationType.DELETE).resourcePath(uriInfo).representation(roles).success();
     }
-
-    @Autowired
-    private AdminRoot adminRoot;
 }
