@@ -29,7 +29,6 @@ import java.util.Map;
  * @author hmlnarik
  */
 public interface ActionTokenStoreProvider extends Provider {
-
     /**
      * Adds a given token to token store.
      *

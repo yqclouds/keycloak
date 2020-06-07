@@ -102,7 +102,6 @@ public class KeycloakWebConfiguration {
     @Bean(name = "keycloakSpis")
     public Set<Spi> keycloakSpis() {
         Set<Spi> results = new HashSet<>();
-        results.add(new ActionTokenStoreSpi());
         results.add(new AuthenticationSessionSpi());
         results.add(new AuthenticatorSpi());
         results.add(new AuthorizationSpi());
