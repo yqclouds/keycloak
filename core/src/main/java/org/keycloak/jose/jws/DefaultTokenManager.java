@@ -17,6 +17,7 @@
 package org.keycloak.jose.jws;
 
 import com.hsbc.unified.iam.core.crypto.Algorithm;
+import com.hsbc.unified.iam.core.crypto.SignatureProvider;
 import org.keycloak.Token;
 import org.keycloak.TokenCategory;
 import org.keycloak.crypto.*;

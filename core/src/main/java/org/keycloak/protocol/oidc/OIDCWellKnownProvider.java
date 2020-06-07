@@ -23,7 +23,7 @@ import org.keycloak.authentication.ClientAuthenticatorFactory;
 import org.keycloak.crypto.CekManagementProvider;
 import org.keycloak.crypto.ClientSignatureVerifierProviderFactory;
 import org.keycloak.crypto.ContentEncryptionProvider;
-import org.keycloak.crypto.SignatureProviderFactory;
+import com.hsbc.unified.iam.core.crypto.SignatureProvider;
 import org.keycloak.jose.jws.Algorithm;
 import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.KeycloakContext;
@@ -156,13 +156,10 @@ public class OIDCWellKnownProvider implements WellKnownProvider {
     }
 
     @Autowired
-    private List<SignatureProviderFactory> signatureProviderFactories;
+    private Map<String, SignatureProvider> signatureProviders;
 
     private List<String> getSupportedSigningAlgorithms(boolean includeNone) {
-        List<String> result = new LinkedList<>();
-        for (ProviderFactory s : signatureProviderFactories) {
-            result.add(s.getId());
-        }
+        List<String> result = new LinkedList<>(signatureProviders.keySet());
         if (includeNone) {
             result.add("none");
         }

@@ -152,7 +152,6 @@ public class KeycloakWebConfiguration {
         results.add(new RealmSpi());
         results.add(new RequiredActionSpi());
         results.add(new ScriptingSpi());
-        results.add(new SignatureSpi());
         results.add(new SingleUseTokenStoreSpi());
         results.add(new StickySessionEncoderSpi());
         results.add(new StoreFactorySpi());

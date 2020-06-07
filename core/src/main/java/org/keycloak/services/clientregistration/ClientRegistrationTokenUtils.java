@@ -21,7 +21,7 @@ import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.TokenCategory;
 import org.keycloak.TokenVerifier;
 import org.keycloak.common.VerificationException;
-import org.keycloak.crypto.SignatureProvider;
+import com.hsbc.unified.iam.core.crypto.SignatureProvider;
 import org.keycloak.crypto.SignatureSignerContext;
 import org.keycloak.crypto.SignatureVerifierContext;
 import org.keycloak.jose.jws.JWSBuilder;

@@ -25,7 +25,7 @@ import com.hsbc.unified.iam.core.util.Time;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.broker.provider.*;
 import org.keycloak.broker.provider.util.SimpleHttp;
-import org.keycloak.crypto.AsymmetricSignatureProvider;
+import com.hsbc.unified.iam.core.crypto.AsymmetricSignatureProvider;
 import org.keycloak.crypto.KeyWrapper;
 import org.keycloak.crypto.MacSignatureSignerContext;
 import org.keycloak.crypto.SignatureSignerContext;

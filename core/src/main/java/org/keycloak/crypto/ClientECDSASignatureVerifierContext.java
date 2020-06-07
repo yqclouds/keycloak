@@ -1,5 +1,6 @@
 package org.keycloak.crypto;
 
+import com.hsbc.unified.iam.core.crypto.ECDSASignatureProvider;
 import org.keycloak.common.VerificationException;
 import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.keys.loader.PublicKeyStorageManager;

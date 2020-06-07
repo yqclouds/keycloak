@@ -26,7 +26,7 @@ import org.keycloak.TokenCategory;
 import org.keycloak.TokenVerifier;
 import org.keycloak.common.VerificationException;
 import org.keycloak.crypto.HashProvider;
-import org.keycloak.crypto.SignatureProvider;
+import com.hsbc.unified.iam.core.crypto.SignatureProvider;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;

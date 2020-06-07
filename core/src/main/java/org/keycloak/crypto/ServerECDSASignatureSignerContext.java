@@ -1,5 +1,7 @@
 package org.keycloak.crypto;
 
+import com.hsbc.unified.iam.core.crypto.ECDSASignatureProvider;
+
 public class ServerECDSASignatureSignerContext extends AsymmetricSignatureSignerContext {
     private ServerAsymmetricSignatureSignerContext serverAsymmetricSignatureSignerContext;
     private String algorithm;

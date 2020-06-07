@@ -14,26 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.crypto;
+package com.hsbc.unified.iam.core.crypto;
 
-import com.hsbc.unified.iam.core.crypto.Algorithm;
-import org.keycloak.stereotype.ProviderFactory;
-import org.springframework.stereotype.Component;
+import org.keycloak.common.VerificationException;
+import org.keycloak.crypto.SignatureException;
+import org.keycloak.crypto.SignatureSignerContext;
+import org.keycloak.crypto.SignatureVerifierContext;
+import org.keycloak.provider.Provider;
 
-@Component("RS256SignatureProviderFactory")
-@ProviderFactory(id = Algorithm.RS256, providerClasses = SignatureProvider.class)
-public class RS256SignatureProviderFactory implements SignatureProviderFactory {
+public interface SignatureProvider extends Provider {
 
-    public static final String ID = Algorithm.RS256;
+    SignatureSignerContext signer() throws SignatureException;
 
-    @Override
-    public String getId() {
-        return ID;
-    }
+    SignatureVerifierContext verifier(String kid) throws VerificationException;
 
     @Override
-    public SignatureProvider create() {
-        return new AsymmetricSignatureProvider(Algorithm.RS256);
+    default void close() {
     }
 
 }

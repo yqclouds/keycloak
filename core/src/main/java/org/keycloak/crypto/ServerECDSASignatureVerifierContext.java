@@ -1,5 +1,6 @@
 package org.keycloak.crypto;
 
+import com.hsbc.unified.iam.core.crypto.ECDSASignatureProvider;
 import org.keycloak.common.VerificationException;
 import org.springframework.beans.factory.annotation.Autowired;
 

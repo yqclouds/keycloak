@@ -1,8 +1,9 @@
-package org.keycloak.crypto;
+package com.hsbc.unified.iam.core.crypto;
 
 import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.x9.X9IntegerConverter;
 import org.keycloak.common.VerificationException;
+import org.keycloak.crypto.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
