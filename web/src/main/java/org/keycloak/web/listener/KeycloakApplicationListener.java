@@ -2,7 +2,7 @@ package org.keycloak.web.listener;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.hsbc.unified.iam.core.util.JsonSerialization;
-import org.keycloak.Config;
+import com.hsbc.unified.iam.facade.spi.impl.RealmFacadeImpl;
 import org.keycloak.common.util.Resteasy;
 import org.keycloak.exportimport.ExportImportManager;
 import org.keycloak.models.*;
@@ -12,11 +12,7 @@ import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.services.managers.ApplianceBootstrap;
-import com.hsbc.unified.iam.facade.spi.impl.RealmFacadeImpl;
-import org.keycloak.services.managers.UserStorageSyncManager;
 import org.keycloak.services.resources.KeycloakApplication;
-import org.keycloak.services.scheduled.*;
-import org.keycloak.timer.TimerProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,8 +69,6 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
         });
 
         sessionFactory.publish(new PostMigrationEvent(this));
-
-        setupScheduledTasks(sessionFactory);
     }
 
     // Migrate model, bootstrap master realm, import realms and create admin user. This is done with acquired dbLock
@@ -114,18 +108,6 @@ public class KeycloakApplicationListener implements ApplicationListener<ContextR
         if (sessionFactory != null) {
             sessionFactory.close();
         }
-    }
-
-    @Autowired
-    private TimerProvider timerProvider;
-
-    public void setupScheduledTasks(final KeycloakSessionFactory sessionFactory) {
-        long interval = Config.scope("scheduled").getLong("interval", 60L) * 1000;
-
-        timerProvider.schedule(new ClusterAwareScheduledTaskRunner(new ClearExpiredEvents(), interval), interval, "ClearExpiredEvents");
-        timerProvider.schedule(new ClusterAwareScheduledTaskRunner(new ClearExpiredClientInitialAccessTokens(), interval), interval, "ClearExpiredClientInitialAccessTokens");
-        timerProvider.schedule(new ScheduledTaskRunner(new ClearExpiredUserSessions()), interval, ClearExpiredUserSessions.TASK_NAME);
-        new UserStorageSyncManager().bootstrapPeriodic(timerProvider);
     }
 
     public void importRealms() {

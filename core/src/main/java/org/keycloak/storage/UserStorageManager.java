@@ -23,7 +23,6 @@ import org.keycloak.component.ComponentModel;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.ComponentUtil;
 import org.keycloak.models.utils.ReadOnlyUserModelDelegate;
-import org.keycloak.services.managers.UserStorageSyncManager;
 import org.keycloak.storage.client.ClientStorageProvider;
 import org.keycloak.storage.federated.UserFederatedStorageProvider;
 import org.keycloak.storage.user.*;
@@ -704,8 +703,6 @@ public class UserStorageManager implements UserProvider, OnCreateComponent, OnUp
         if (!component.getProviderType().equals(UserStorageProvider.class.getName())) return;
         localStorage().preRemove(realm, component);
         if (getFederatedStorage() != null) getFederatedStorage().preRemove(realm, component);
-        new UserStorageSyncManager().notifyToRefreshPeriodicSync(realm, new UserStorageProviderModel(component), true);
-
     }
 
     @Override
@@ -726,8 +723,6 @@ public class UserStorageManager implements UserProvider, OnCreateComponent, OnUp
     public void onCreate(RealmModel realm, ComponentModel model) {
         ComponentFactory factory = componentUtil.getComponentFactory(model);
         if (!(factory instanceof UserStorageProviderFactory)) return;
-        new UserStorageSyncManager().notifyToRefreshPeriodicSync(realm, new UserStorageProviderModel(model), false);
-
     }
 
     @Autowired
@@ -739,11 +734,6 @@ public class UserStorageManager implements UserProvider, OnCreateComponent, OnUp
         if (!(factory instanceof UserStorageProviderFactory)) return;
         UserStorageProviderModel old = new UserStorageProviderModel(oldModel);
         UserStorageProviderModel newP = new UserStorageProviderModel(newModel);
-        if (old.getChangedSyncPeriod() != newP.getChangedSyncPeriod() || old.getFullSyncPeriod() != newP.getFullSyncPeriod()
-                || old.isImportEnabled() != newP.isImportEnabled()) {
-            new UserStorageSyncManager().notifyToRefreshPeriodicSync(realm, new UserStorageProviderModel(newModel), false);
-        }
-
     }
 
     @FunctionalInterface

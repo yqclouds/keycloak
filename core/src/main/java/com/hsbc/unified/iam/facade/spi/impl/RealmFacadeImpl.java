@@ -33,11 +33,9 @@ import org.keycloak.representations.idm.*;
 import org.keycloak.services.ForbiddenException;
 import org.keycloak.services.clientregistration.policy.DefaultClientRegistrationPolicies;
 import org.keycloak.services.managers.ClientManager;
-import org.keycloak.services.managers.UserStorageSyncManager;
 import org.keycloak.services.resources.admin.AdminAuth;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import org.keycloak.sessions.AuthenticationSessionProvider;
-import org.keycloak.storage.UserStorageProviderModel;
 import org.keycloak.utils.ReservedCharValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -306,13 +304,6 @@ public class RealmFacadeImpl implements RealmFacade, ApplicationEventPublisherAw
 
             if (authenticationSessionProvider != null) {
                 authenticationSessionProvider.onRealmRemoved(realm);
-            }
-
-            // Refresh periodic sync tasks for configured storageProviders
-            List<UserStorageProviderModel> storageProviders = realm.getUserStorageProviders();
-            UserStorageSyncManager storageSync = new UserStorageSyncManager();
-            for (UserStorageProviderModel provider : storageProviders) {
-                storageSync.notifyToRefreshPeriodicSync(realm, provider, true);
             }
         }
         return removed;
@@ -639,14 +630,6 @@ public class RealmFacadeImpl implements RealmFacade, ApplicationEventPublisherAw
 
         setupAuthenticationFlows(realm);
         setupRequiredActions(realm);
-
-        // Refresh periodic sync tasks for configured storageProviders
-        List<UserStorageProviderModel> storageProviders = realm.getUserStorageProviders();
-        UserStorageSyncManager storageSync = new UserStorageSyncManager();
-        for (UserStorageProviderModel provider : storageProviders) {
-            storageSync.notifyToRefreshPeriodicSync(realm, provider, false);
-        }
-
         setupAuthorizationServices(realm);
         setupClientRegistrations(realm);
 

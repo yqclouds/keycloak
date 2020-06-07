@@ -22,9 +22,7 @@ import org.keycloak.component.ComponentModel;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserProvider;
-import org.keycloak.services.managers.UserStorageSyncManager;
 import org.keycloak.storage.UserStorageProvider;
-import org.keycloak.storage.UserStorageProviderModel;
 import org.keycloak.storage.ldap.mappers.LDAPStorageMapper;
 import org.keycloak.storage.user.SynchronizationResult;
 import org.slf4j.Logger;
@@ -110,30 +108,15 @@ public class RealmUserStorageProviderResource {
             throw new NotFoundException("found, but not a UserStorageProvider");
         }
 
-        UserStorageProviderModel providerModel = new UserStorageProviderModel(model);
-
-
         LOG.debug("Syncing users");
 
-        UserStorageSyncManager syncManager = new UserStorageSyncManager();
-        SynchronizationResult syncResult;
-        if ("triggerFullSync".equals(action)) {
-            syncResult = syncManager.syncAllUsers(realm.getId(), providerModel);
-        } else if ("triggerChangedUsersSync".equals(action)) {
-            syncResult = syncManager.syncChangedUsers(realm.getId(), providerModel);
-        } else if (action == null || action.equals("")) {
+        if (action == null || action.equals("")) {
             LOG.debug("Missing action");
             throw new BadRequestException("Missing action");
         } else {
             LOG.debug("Unknown action: " + action);
             throw new BadRequestException("Unknown action: " + action);
         }
-
-        Map<String, Object> eventRep = new HashMap<>();
-        eventRep.put("action", action);
-        eventRep.put("result", syncResult);
-
-        return syncResult;
     }
 
     /**

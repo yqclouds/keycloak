@@ -28,8 +28,6 @@ import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.managers.LDAPConnectionTestManager;
 import org.keycloak.services.managers.ResourceAdminManager;
-import org.keycloak.services.managers.UserStorageSyncManager;
-import org.keycloak.storage.UserStorageProviderModel;
 import org.keycloak.utils.ReservedCharValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -179,13 +177,6 @@ public class RealmResource {
             }
 
             representationToModel.updateRealm(rep, realm);
-
-            // Refresh periodic sync tasks for configured federationProviders
-            List<UserStorageProviderModel> federationProviders = realm.getUserStorageProviders();
-            UserStorageSyncManager usersSyncManager = new UserStorageSyncManager();
-            for (final UserStorageProviderModel fedProvider : federationProviders) {
-                usersSyncManager.notifyToRefreshPeriodicSync(realm, fedProvider, false);
-            }
 
             return Response.noContent().build();
         } catch (ModelDuplicateException e) {

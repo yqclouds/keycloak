@@ -17,13 +17,11 @@
 
 package org.keycloak.connections.jpa;
 
-import org.keycloak.ServerStartupError;
 import org.keycloak.connections.jpa.updater.JpaUpdaterProvider;
 import org.keycloak.models.dblock.DBLockManager;
 import org.keycloak.models.dblock.DBLockProvider;
 import org.keycloak.provider.ServerInfoAwareProviderFactory;
 import org.keycloak.stereotype.ProviderFactory;
-import org.keycloak.timer.TimerProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,8 +59,6 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
     private EntityManagerFactory entityManagerFactory;
     @Autowired
     private JpaUpdaterProvider jpaUpdaterProvider;
-    @Autowired
-    private TimerProvider timerProvider;
 
     @Override
     public JpaConnectionProvider create() {
@@ -75,97 +71,6 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
     public void destroy() throws Exception {
         if (entityManagerFactory != null) {
             entityManagerFactory.close();
-        }
-    }
-
-    private File getDatabaseUpdateFile() {
-        return new File(migrationExport);
-    }
-
-    protected void prepareOperationalInfo(Connection connection) {
-        try {
-            operationalInfo = new LinkedHashMap<>();
-            DatabaseMetaData md = connection.getMetaData();
-            operationalInfo.put("databaseUrl", md.getURL());
-            operationalInfo.put("databaseUser", md.getUserName());
-            operationalInfo.put("databaseProduct", md.getDatabaseProductName() + " " + md.getDatabaseProductVersion());
-            operationalInfo.put("databaseDriver", md.getDriverName() + " " + md.getDriverVersion());
-
-            LOG.debug("Database info: {}", operationalInfo.toString());
-        } catch (SQLException e) {
-            LOG.warn("Unable to prepare operational info due database exception: " + e.getMessage());
-        }
-    }
-
-    protected String detectDialect(Connection connection) {
-        try {
-            String dbProductName = connection.getMetaData().getDatabaseProductName();
-            String dbProductVersion = connection.getMetaData().getDatabaseProductVersion();
-
-            // For MSSQL2014, we may need to fix the autodetected dialect by hibernate
-            if (dbProductName.equals("Microsoft SQL Server")) {
-                String topVersionStr = dbProductVersion.split("\\.")[0];
-                boolean shouldSet2012Dialect = true;
-                try {
-                    int topVersion = Integer.parseInt(topVersionStr);
-                    if (topVersion < 12) {
-                        shouldSet2012Dialect = false;
-                    }
-                } catch (NumberFormatException nfe) {
-                }
-                if (shouldSet2012Dialect) {
-                    String sql2012Dialect = "org.hibernate.dialect.SQLServer2012Dialect";
-                    LOG.debug("Manually override hibernate dialect to {}", sql2012Dialect);
-                    return sql2012Dialect;
-                }
-            }
-            // For Oracle19c, we may need to set dialect explicitly to workaround https://hibernate.atlassian.net/browse/HHH-13184
-            if (dbProductName.equals("Oracle") && connection.getMetaData().getDatabaseMajorVersion() > 12) {
-                LOG.debug("Manually specify dialect for Oracle to org.hibernate.dialect.Oracle12cDialect");
-                return "org.hibernate.dialect.Oracle12cDialect";
-            }
-        } catch (SQLException e) {
-            LOG.warn("Unable to detect hibernate dialect due database exception : {}", e.getMessage());
-        }
-
-        return null;
-    }
-
-    protected void startGlobalStats(int globalStatsIntervalSecs) {
-        LOG.debug("Started Hibernate statistics with the interval {} seconds", globalStatsIntervalSecs);
-        timerProvider.scheduleTask(new HibernateStatsReporter(entityManagerFactory), globalStatsIntervalSecs * 1000, "ReportHibernateGlobalStats");
-    }
-
-    void migration(MigrationStrategy strategy, boolean initializeEmpty, String schema, File databaseUpdateFile, Connection connection) {
-        JpaUpdaterProvider.Status status = jpaUpdaterProvider.validate(connection, schema);
-        if (status == JpaUpdaterProvider.Status.VALID) {
-            LOG.debug("Database is up-to-date");
-        } else if (status == JpaUpdaterProvider.Status.EMPTY) {
-            if (initializeEmpty) {
-                update(connection, schema, jpaUpdaterProvider);
-            } else {
-                switch (strategy) {
-                    case UPDATE:
-                        update(connection, schema, jpaUpdaterProvider);
-                        break;
-                    case MANUAL:
-                        export(connection, schema, databaseUpdateFile, jpaUpdaterProvider);
-                        throw new ServerStartupError("Database not initialized, please initialize database with " + databaseUpdateFile.getAbsolutePath(), false);
-                    case VALIDATE:
-                        throw new ServerStartupError("Database not initialized, please enable database initialization", false);
-                }
-            }
-        } else {
-            switch (strategy) {
-                case UPDATE:
-                    update(connection, schema, jpaUpdaterProvider);
-                    break;
-                case MANUAL:
-                    export(connection, schema, databaseUpdateFile, jpaUpdaterProvider);
-                    throw new ServerStartupError("Database not up-to-date, please migrate database with " + databaseUpdateFile.getAbsolutePath(), false);
-                case VALIDATE:
-                    throw new ServerStartupError("Database not up-to-date, please enable database migration", false);
-            }
         }
     }
 
