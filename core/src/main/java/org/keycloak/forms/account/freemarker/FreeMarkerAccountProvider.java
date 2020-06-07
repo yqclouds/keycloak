@@ -74,8 +74,6 @@ public class FreeMarkerAccountProvider implements AccountProvider {
     private boolean authorizationSupported;
     @Autowired
     protected FreeMarkerUtil freeMarker;
-    @Autowired
-    private KeycloakSessionFactory sessionFactory;
 
     public FreeMarkerAccountProvider() {
     }

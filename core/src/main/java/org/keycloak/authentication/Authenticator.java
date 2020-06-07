@@ -50,32 +50,21 @@ public interface Authenticator extends Provider {
      * pertains to the AuthenticationExecutionModel.getId() value obtained from AuthenticationFlowContext.getExecution().
      * <p>
      * The action URL will invoke the action() method described below.
-     *
-     * @param context
      */
     void authenticate(AuthenticationFlowContext context);
 
     /**
      * Called from a form action invocation.
-     *
-     * @param context
      */
     void action(AuthenticationFlowContext context);
 
-
     /**
      * Does this authenticator require that the user has already been identified?  That AuthenticatorContext.getUser() is not null?
-     *
-     * @return
      */
     boolean requiresUser();
 
     /**
      * Is this authenticator configured for this user.
-     *
-     * @param realm
-     * @param user
-     * @return
      */
     boolean configuredFor(RealmModel realm, UserModel user);
 
@@ -86,8 +75,6 @@ public interface Authenticator extends Provider {
 
     /**
      * Overwrite this if the authenticator is associated with
-     *
-     * @return
      */
     default List<RequiredActionFactory> getRequiredActions() {
         return Collections.emptyList();
@@ -95,8 +82,6 @@ public interface Authenticator extends Provider {
 
     /**
      * Checks if all required actions are configured in the realm and are enabled
-     *
-     * @return
      */
     default boolean areRequiredActionsEnabled(RealmModel realm) {
         for (RequiredActionFactory raf : getRequiredActions()) {

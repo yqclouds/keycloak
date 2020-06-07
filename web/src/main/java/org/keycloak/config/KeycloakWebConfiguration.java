@@ -11,14 +11,12 @@ import org.keycloak.broker.provider.IdentityProviderSpi;
 import org.keycloak.connections.httpclient.HttpClientSpi;
 import org.keycloak.credential.CredentialSpi;
 import org.keycloak.credential.hash.PasswordHashSpi;
-import org.keycloak.crypto.*;
 import org.keycloak.email.EmailSenderSpi;
 import org.keycloak.email.EmailTemplateSpi;
 import org.keycloak.events.EventListenerSpi;
 import org.keycloak.events.EventStoreSpi;
 import org.keycloak.exportimport.ExportSpi;
 import org.keycloak.exportimport.ImportSpi;
-import org.keycloak.forms.account.AccountSpi;
 import org.keycloak.forms.login.LoginFormsSpi;
 import org.keycloak.keys.KeySpi;
 import org.keycloak.keys.PublicKeyStorageSpi;
@@ -105,7 +103,6 @@ public class KeycloakWebConfiguration {
     @Bean(name = "keycloakSpis")
     public Set<Spi> keycloakSpis() {
         Set<Spi> results = new HashSet<>();
-        results.add(new AccountSpi());
         results.add(new ActionTokenHandlerSpi());
         results.add(new ActionTokenStoreSpi());
         results.add(new AuthenticationSessionSpi());

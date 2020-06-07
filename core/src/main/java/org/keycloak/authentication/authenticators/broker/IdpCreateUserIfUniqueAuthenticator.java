@@ -45,14 +45,18 @@ public class IdpCreateUserIfUniqueAuthenticator extends AbstractIdpAuthenticator
 
 
     @Override
-    protected void actionImpl(AuthenticationFlowContext context, SerializedBrokeredIdentityContext serializedCtx, BrokeredIdentityContext brokerContext) {
+    protected void actionImpl(AuthenticationFlowContext context,
+                              SerializedBrokeredIdentityContext serializedCtx,
+                              BrokeredIdentityContext brokerContext) {
     }
 
     @Autowired
     private UserProvider userProvider;
 
     @Override
-    protected void authenticateImpl(AuthenticationFlowContext context, SerializedBrokeredIdentityContext serializedCtx, BrokeredIdentityContext brokerContext) {
+    protected void authenticateImpl(AuthenticationFlowContext context,
+                                    SerializedBrokeredIdentityContext serializedCtx,
+                                    BrokeredIdentityContext brokerContext) {
         RealmModel realm = context.getRealm();
 
         if (context.getAuthenticationSession().getAuthNote(EXISTING_USER_INFO) != null) {
@@ -119,8 +123,9 @@ public class IdpCreateUserIfUniqueAuthenticator extends AbstractIdpAuthenticator
         }
     }
 
-    // Could be overriden to detect duplication based on other criterias (firstName, lastName, ...)
-    protected ExistingUserInfo checkExistingUser(AuthenticationFlowContext context, String username, SerializedBrokeredIdentityContext serializedCtx, BrokeredIdentityContext brokerContext) {
+    protected ExistingUserInfo checkExistingUser(AuthenticationFlowContext context,
+                                                 String username, SerializedBrokeredIdentityContext serializedCtx,
+                                                 BrokeredIdentityContext brokerContext) {
         if (brokerContext.getEmail() != null && !context.getRealm().isDuplicateEmailsAllowed()) {
             UserModel existingUser = userProvider.getUserByEmail(brokerContext.getEmail(), context.getRealm());
             if (existingUser != null) {
@@ -144,7 +149,6 @@ public class IdpCreateUserIfUniqueAuthenticator extends AbstractIdpAuthenticator
 
     // Empty method by default. This exists, so subclass can override and add callback after new user is registered through social
     protected void userRegisteredSuccess(AuthenticationFlowContext context, UserModel registeredUser, SerializedBrokeredIdentityContext serializedCtx, BrokeredIdentityContext brokerContext) {
-
     }
 
 
@@ -157,5 +161,4 @@ public class IdpCreateUserIfUniqueAuthenticator extends AbstractIdpAuthenticator
     public boolean configuredFor(RealmModel realm, UserModel user) {
         return true;
     }
-
 }
