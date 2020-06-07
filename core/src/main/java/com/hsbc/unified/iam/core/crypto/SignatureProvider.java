@@ -17,9 +17,6 @@
 package com.hsbc.unified.iam.core.crypto;
 
 import org.keycloak.common.VerificationException;
-import org.keycloak.crypto.SignatureException;
-import org.keycloak.crypto.SignatureSignerContext;
-import org.keycloak.crypto.SignatureVerifierContext;
 import org.keycloak.provider.Provider;
 
 public interface SignatureProvider extends Provider {

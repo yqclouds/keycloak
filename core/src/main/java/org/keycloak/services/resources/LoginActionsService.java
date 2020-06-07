@@ -36,7 +36,7 @@ import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAu
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.common.VerificationException;
 import com.hsbc.unified.iam.core.crypto.SignatureProvider;
-import org.keycloak.crypto.SignatureVerifierContext;
+import com.hsbc.unified.iam.core.crypto.SignatureVerifierContext;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;

@@ -17,7 +17,7 @@
 
 package org.keycloak.keys;
 
-import org.keycloak.crypto.KeyStatus;
+import com.hsbc.unified.iam.core.crypto.KeyStatus;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>

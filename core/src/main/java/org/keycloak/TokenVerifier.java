@@ -18,7 +18,7 @@
 package org.keycloak;
 
 import org.keycloak.common.VerificationException;
-import org.keycloak.crypto.SignatureVerifierContext;
+import com.hsbc.unified.iam.core.crypto.SignatureVerifierContext;
 import org.keycloak.exceptions.TokenNotActiveException;
 import org.keycloak.exceptions.TokenSignatureInvalidException;
 import org.keycloak.jose.jws.AlgorithmType;

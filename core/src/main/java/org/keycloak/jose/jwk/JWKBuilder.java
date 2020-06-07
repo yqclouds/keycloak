@@ -21,8 +21,8 @@ import org.keycloak.common.util.Base64Url;
 import org.keycloak.common.util.KeyUtils;
 import org.keycloak.common.util.PemUtils;
 import com.hsbc.unified.iam.core.crypto.Algorithm;
-import org.keycloak.crypto.KeyType;
-import org.keycloak.crypto.KeyUse;
+import com.hsbc.unified.iam.core.crypto.KeyType;
+import com.hsbc.unified.iam.core.crypto.KeyUse;
 
 import java.math.BigInteger;
 import java.security.Key;

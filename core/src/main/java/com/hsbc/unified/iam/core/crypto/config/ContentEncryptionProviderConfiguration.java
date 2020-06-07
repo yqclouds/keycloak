@@ -2,7 +2,7 @@ package com.hsbc.unified.iam.core.crypto.config;
 
 import com.hsbc.unified.iam.core.crypto.AesCbcHmacShaContentEncryptionProvider;
 import com.hsbc.unified.iam.core.crypto.AesGcmContentEncryptionProvider;
-import org.keycloak.crypto.ContentEncryptionProvider;
+import com.hsbc.unified.iam.core.crypto.ContentEncryptionProvider;
 import org.keycloak.jose.jwe.JWEConstants;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

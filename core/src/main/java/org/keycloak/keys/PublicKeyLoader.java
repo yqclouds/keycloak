@@ -17,7 +17,7 @@
 
 package org.keycloak.keys;
 
-import org.keycloak.crypto.KeyWrapper;
+import com.hsbc.unified.iam.core.crypto.KeyWrapper;
 
 import java.util.Map;
 

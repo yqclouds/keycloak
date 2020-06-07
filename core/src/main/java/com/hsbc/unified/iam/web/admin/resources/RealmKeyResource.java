@@ -19,7 +19,7 @@ package com.hsbc.unified.iam.web.admin.resources;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.common.util.PemUtils;
-import org.keycloak.crypto.KeyWrapper;
+import com.hsbc.unified.iam.core.crypto.KeyWrapper;
 import org.keycloak.models.KeyManager;
 import org.keycloak.models.RealmModel;
 import org.keycloak.representations.idm.KeysMetadataRepresentation;

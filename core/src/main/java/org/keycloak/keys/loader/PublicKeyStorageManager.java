@@ -18,7 +18,7 @@
 package org.keycloak.keys.loader;
 
 import org.keycloak.broker.oidc.OIDCIdentityProviderConfig;
-import org.keycloak.crypto.KeyWrapper;
+import com.hsbc.unified.iam.core.crypto.KeyWrapper;
 import org.keycloak.jose.jwk.JWK;
 import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.keys.PublicKeyLoader;

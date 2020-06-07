@@ -19,8 +19,8 @@ package org.keycloak.keys;
 
 import org.keycloak.component.ComponentModel;
 import com.hsbc.unified.iam.core.crypto.Algorithm;
-import org.keycloak.crypto.KeyType;
-import org.keycloak.crypto.KeyUse;
+import com.hsbc.unified.iam.core.crypto.KeyType;
+import com.hsbc.unified.iam.core.crypto.KeyUse;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>

@@ -21,7 +21,7 @@ import com.hsbc.unified.iam.core.util.Base64;
 import com.hsbc.unified.iam.core.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
-import org.keycloak.crypto.KeyUse;
+import com.hsbc.unified.iam.core.crypto.KeyUse;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ConfigurationValidationHelper;

@@ -20,7 +20,7 @@ package org.keycloak.keys;
 import org.keycloak.common.util.CertificateUtils;
 import org.keycloak.common.util.KeyUtils;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.crypto.KeyWrapper;
+import com.hsbc.unified.iam.core.crypto.KeyWrapper;
 import org.keycloak.models.RealmModel;
 
 import java.io.FileInputStream;

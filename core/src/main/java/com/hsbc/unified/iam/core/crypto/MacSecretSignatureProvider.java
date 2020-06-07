@@ -17,7 +17,6 @@
 package com.hsbc.unified.iam.core.crypto;
 
 import org.keycloak.common.VerificationException;
-import org.keycloak.crypto.*;
 
 public class MacSecretSignatureProvider implements SignatureProvider {
 

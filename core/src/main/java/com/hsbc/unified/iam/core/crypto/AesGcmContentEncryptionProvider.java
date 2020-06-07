@@ -17,7 +17,6 @@
 
 package com.hsbc.unified.iam.core.crypto;
 
-import org.keycloak.crypto.ContentEncryptionProvider;
 import org.keycloak.jose.jwe.enc.AesGcmJWEEncryptionProvider;
 import org.keycloak.jose.jwe.enc.JWEEncryptionProvider;
 

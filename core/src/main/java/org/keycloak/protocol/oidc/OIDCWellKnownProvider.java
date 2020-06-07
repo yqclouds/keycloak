@@ -18,12 +18,12 @@
 package org.keycloak.protocol.oidc;
 
 import com.hsbc.unified.iam.core.constants.OAuth2Constants;
+import com.hsbc.unified.iam.core.crypto.SignatureProvider;
 import com.hsbc.unified.iam.web.resources.RealmsResource;
 import org.keycloak.authentication.ClientAuthenticatorFactory;
-import org.keycloak.crypto.CekManagementProvider;
-import org.keycloak.crypto.ClientSignatureVerifierProviderFactory;
-import org.keycloak.crypto.ContentEncryptionProvider;
-import com.hsbc.unified.iam.core.crypto.SignatureProvider;
+import com.hsbc.unified.iam.core.crypto.CekManagementProvider;
+import com.hsbc.unified.iam.core.crypto.ClientSignatureVerifierProvider;
+import com.hsbc.unified.iam.core.crypto.ContentEncryptionProvider;
 import org.keycloak.jose.jws.Algorithm;
 import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.KeycloakContext;
@@ -31,7 +31,6 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.oidc.endpoints.TokenEndpoint;
 import org.keycloak.protocol.oidc.representations.OIDCConfigurationRepresentation;
 import org.keycloak.protocol.oidc.utils.OIDCResponseType;
-import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.IDToken;
 import org.keycloak.services.Urls;
 import org.keycloak.services.clientregistration.ClientRegistrationService;
@@ -167,13 +166,10 @@ public class OIDCWellKnownProvider implements WellKnownProvider {
     }
 
     @Autowired
-    private List<ClientSignatureVerifierProviderFactory> clientSignatureVerifierProviderFactories;
+    private Map<String, ClientSignatureVerifierProvider> clientSignatureVerifierProviders;
 
     private List<String> getSupportedClientSigningAlgorithms(boolean includeNone) {
-        List<String> result = new LinkedList<>();
-        for (ProviderFactory s : clientSignatureVerifierProviderFactories) {
-            result.add(s.getId());
-        }
+        List<String> result = new LinkedList<>(clientSignatureVerifierProviders.keySet());
         if (includeNone) {
             result.add("none");
         }

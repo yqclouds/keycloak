@@ -21,7 +21,7 @@ import org.keycloak.adapters.AdapterUtils;
 import org.keycloak.adapters.KeycloakDeployment;
 import com.hsbc.unified.iam.core.util.Time;
 import com.hsbc.unified.iam.core.crypto.Algorithm;
-import org.keycloak.crypto.JavaAlgorithm;
+import com.hsbc.unified.iam.core.crypto.JavaAlgorithm;
 import org.keycloak.jose.jws.JWSBuilder;
 import org.keycloak.representations.JsonWebToken;
 

@@ -18,8 +18,8 @@
 package org.keycloak.jose.jws.crypto;
 
 import org.keycloak.common.util.Base64Url;
-import org.keycloak.crypto.HashException;
-import org.keycloak.crypto.JavaAlgorithm;
+import com.hsbc.unified.iam.core.crypto.HashException;
+import com.hsbc.unified.iam.core.crypto.JavaAlgorithm;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

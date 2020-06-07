@@ -20,10 +20,10 @@ package org.keycloak.keys;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.common.util.KeyUtils;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.crypto.JavaAlgorithm;
-import org.keycloak.crypto.KeyStatus;
-import org.keycloak.crypto.KeyUse;
-import org.keycloak.crypto.KeyWrapper;
+import com.hsbc.unified.iam.core.crypto.JavaAlgorithm;
+import com.hsbc.unified.iam.core.crypto.KeyStatus;
+import com.hsbc.unified.iam.core.crypto.KeyUse;
+import com.hsbc.unified.iam.core.crypto.KeyWrapper;
 
 import javax.crypto.SecretKey;
 import java.util.Collections;

@@ -1,7 +1,7 @@
 package com.hsbc.unified.iam.core.crypto.config;
 
-import org.keycloak.crypto.CekManagementProvider;
-import org.keycloak.crypto.RsaCekManagementProvider;
+import com.hsbc.unified.iam.core.crypto.CekManagementProvider;
+import com.hsbc.unified.iam.core.crypto.RsaCekManagementProvider;
 import org.keycloak.jose.jwe.JWEConstants;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -20,7 +20,7 @@ package org.keycloak.keys;
 import org.keycloak.Config;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.crypto.KeyUse;
+import com.hsbc.unified.iam.core.crypto.KeyUse;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>

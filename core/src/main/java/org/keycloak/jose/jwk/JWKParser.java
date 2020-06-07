@@ -21,7 +21,7 @@ import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.keycloak.common.util.Base64Url;
-import org.keycloak.crypto.KeyType;
+import com.hsbc.unified.iam.core.crypto.KeyType;
 import com.hsbc.unified.iam.core.util.JsonSerialization;
 
 import java.math.BigInteger;

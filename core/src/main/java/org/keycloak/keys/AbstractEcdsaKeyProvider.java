@@ -18,10 +18,10 @@ package org.keycloak.keys;
 
 import org.keycloak.common.util.KeyUtils;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.crypto.KeyStatus;
-import org.keycloak.crypto.KeyType;
-import org.keycloak.crypto.KeyUse;
-import org.keycloak.crypto.KeyWrapper;
+import com.hsbc.unified.iam.core.crypto.KeyStatus;
+import com.hsbc.unified.iam.core.crypto.KeyType;
+import com.hsbc.unified.iam.core.crypto.KeyUse;
+import com.hsbc.unified.iam.core.crypto.KeyWrapper;
 import org.keycloak.models.RealmModel;
 
 import java.security.KeyPair;

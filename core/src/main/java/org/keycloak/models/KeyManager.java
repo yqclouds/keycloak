@@ -17,8 +17,8 @@
 
 package org.keycloak.models;
 
-import org.keycloak.crypto.KeyUse;
-import org.keycloak.crypto.KeyWrapper;
+import com.hsbc.unified.iam.core.crypto.KeyUse;
+import com.hsbc.unified.iam.core.crypto.KeyWrapper;
 import org.keycloak.keys.RsaKeyMetadata;
 import org.keycloak.keys.SecretKeyMetadata;
 

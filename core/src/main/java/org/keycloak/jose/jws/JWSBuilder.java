@@ -18,7 +18,7 @@
 package org.keycloak.jose.jws;
 
 import org.keycloak.common.util.Base64Url;
-import org.keycloak.crypto.SignatureSignerContext;
+import com.hsbc.unified.iam.core.crypto.SignatureSignerContext;
 import org.keycloak.jose.jws.crypto.HMACProvider;
 import org.keycloak.jose.jws.crypto.RSAProvider;
 import com.hsbc.unified.iam.core.util.JsonSerialization;

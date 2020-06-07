@@ -23,7 +23,7 @@ import org.keycloak.OAuthErrorException;
 import org.keycloak.TokenVerifier;
 import org.keycloak.common.VerificationException;
 import com.hsbc.unified.iam.core.crypto.SignatureProvider;
-import org.keycloak.crypto.SignatureVerifierContext;
+import com.hsbc.unified.iam.core.crypto.SignatureVerifierContext;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
 import org.keycloak.representations.AccessToken;
