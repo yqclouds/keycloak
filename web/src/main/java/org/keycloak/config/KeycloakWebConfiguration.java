@@ -32,7 +32,6 @@ import org.keycloak.protocol.ProtocolMapperSpi;
 import org.keycloak.protocol.oidc.TokenIntrospectionSpi;
 import org.keycloak.protocol.oidc.ext.OIDCExtSPI;
 import org.keycloak.provider.*;
-import org.keycloak.scripting.ScriptingSpi;
 import org.keycloak.services.DefaultKeycloakSessionFactory;
 import org.keycloak.services.clientregistration.ClientRegistrationSpi;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicySpi;
@@ -40,7 +39,6 @@ import org.keycloak.services.managers.BruteForceProtectorSpi;
 import org.keycloak.services.resource.RealmResourceSPI;
 import org.keycloak.services.util.JsonConfigProviderFactory;
 import org.keycloak.services.x509.X509ClientCertificateLookupSpi;
-import org.keycloak.sessions.AuthenticationSessionSpi;
 import org.keycloak.sessions.StickySessionEncoderSpi;
 import org.keycloak.storage.UserStorageProviderSpi;
 import org.keycloak.storage.client.ClientStorageProviderSpi;
@@ -102,7 +100,6 @@ public class KeycloakWebConfiguration {
     @Bean(name = "keycloakSpis")
     public Set<Spi> keycloakSpis() {
         Set<Spi> results = new HashSet<>();
-        results.add(new AuthenticationSessionSpi());
         results.add(new AuthenticatorSpi());
         results.add(new AuthorizationSpi());
         results.add(new BruteForceProtectorSpi());
@@ -143,7 +140,6 @@ public class KeycloakWebConfiguration {
         results.add(new RealmResourceSPI());
         results.add(new RealmSpi());
         results.add(new RequiredActionSpi());
-        results.add(new ScriptingSpi());
         results.add(new SingleUseTokenStoreSpi());
         results.add(new StickySessionEncoderSpi());
         results.add(new StoreFactorySpi());

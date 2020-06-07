@@ -50,8 +50,6 @@ public interface RequiredActionProvider extends Provider {
     /**
      * Called every time a user authenticates.  This checks to see if this required action should be triggered.
      * The implementation of this method is responsible for setting the required action on the UserModel.
-     * <p>
-     * For example, the UpdatePassword required actions checks the password policies to see if the password has expired.
      *
      * @param context
      */

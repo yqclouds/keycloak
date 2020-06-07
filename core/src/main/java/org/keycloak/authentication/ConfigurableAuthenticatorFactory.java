@@ -33,8 +33,6 @@ public interface ConfigurableAuthenticatorFactory extends ConfiguredProvider {
 
     /**
      * Friendly name for the authenticator
-     *
-     * @return
      */
     String getDisplayType();
 
@@ -47,23 +45,17 @@ public interface ConfigurableAuthenticatorFactory extends ConfiguredProvider {
 
     /**
      * Is this authenticator configurable?
-     *
-     * @return
      */
     boolean isConfigurable();
 
     /**
      * What requirement settings are allowed.
-     *
-     * @return
      */
     AuthenticationExecutionRequirement[] getRequirementChoices();
 
     /**
      * Does this authenticator have required actions that can set if the user does not have
      * this authenticator set up?
-     *
-     * @return
      */
     boolean isUserSetupAllowed();
 

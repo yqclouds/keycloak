@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Used for UpdateTotp required action
  *
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */

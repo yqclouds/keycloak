@@ -17,13 +17,11 @@
 
 package org.keycloak.authentication.authenticators.browser;
 
-import com.hsbc.unified.iam.core.constants.OAuth2Constants;
 import com.hsbc.unified.iam.entity.AuthenticationExecutionRequirement;
 import org.keycloak.Config;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.authentication.DisplayTypeAuthenticatorFactory;
-import org.keycloak.authentication.authenticators.console.ConsoleUsernameAuthenticator;
 import org.keycloak.models.PasswordCredentialModel;
 import org.keycloak.provider.ProviderConfigProperty;
 
@@ -49,8 +47,7 @@ public class UsernameFormFactory implements AuthenticatorFactory, DisplayTypeAut
     @Override
     public Authenticator createDisplay(String displayType) {
         if (displayType == null) return SINGLETON;
-        if (!OAuth2Constants.DISPLAY_CONSOLE.equalsIgnoreCase(displayType)) return null;
-        return ConsoleUsernameAuthenticator.SINGLETON;
+        return null;
     }
 
     @Override
