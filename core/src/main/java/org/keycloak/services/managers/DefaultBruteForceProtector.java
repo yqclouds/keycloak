@@ -46,16 +46,11 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
     public static final int TRANSACTION_SIZE = 20;
     protected volatile boolean run = true;
     protected int maxDeltaTimeSeconds = 60 * 60 * 12; // 12 hours
-    protected KeycloakSessionFactory factory;
     protected CountDownLatch shutdownLatch = new CountDownLatch(1);
     protected volatile long failures;
     protected volatile long lastFailure;
     protected volatile long totalTime;
-    protected LinkedBlockingQueue<LoginEvent> queue = new LinkedBlockingQueue<LoginEvent>();
-
-    public DefaultBruteForceProtector(@Autowired KeycloakSessionFactory factory) {
-        this.factory = factory;
-    }
+    protected LinkedBlockingQueue<LoginEvent> queue = new LinkedBlockingQueue<>();
 
     @PostConstruct
     public void afterPropertiesSet() throws Exception {

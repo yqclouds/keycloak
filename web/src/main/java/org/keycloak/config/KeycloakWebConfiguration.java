@@ -1,8 +1,9 @@
 package org.keycloak.config;
 
 import org.keycloak.Config;
-import org.keycloak.authentication.*;
-import org.keycloak.authorization.AuthorizationSpi;
+import org.keycloak.authentication.FormActionSpi;
+import org.keycloak.authentication.FormAuthenticatorSpi;
+import org.keycloak.authentication.RequiredActionSpi;
 import org.keycloak.authorization.policy.provider.PolicySpi;
 import org.keycloak.authorization.store.StoreFactorySpi;
 import org.keycloak.broker.provider.IdentityProviderMapperSpi;
@@ -26,7 +27,6 @@ import org.keycloak.models.dblock.DBLockSpi;
 import org.keycloak.models.session.UserSessionPersisterSpi;
 import org.keycloak.policy.PasswordPolicyManagerSpi;
 import org.keycloak.policy.PasswordPolicySpi;
-import org.keycloak.protocol.ClientInstallationSpi;
 import org.keycloak.protocol.LoginProtocolSpi;
 import org.keycloak.protocol.ProtocolMapperSpi;
 import org.keycloak.protocol.oidc.TokenIntrospectionSpi;
@@ -35,7 +35,6 @@ import org.keycloak.provider.*;
 import org.keycloak.services.DefaultKeycloakSessionFactory;
 import org.keycloak.services.clientregistration.ClientRegistrationSpi;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicySpi;
-import org.keycloak.services.managers.BruteForceProtectorSpi;
 import org.keycloak.services.resource.RealmResourceSPI;
 import org.keycloak.services.util.JsonConfigProviderFactory;
 import org.keycloak.services.x509.X509ClientCertificateLookupSpi;
@@ -43,11 +42,6 @@ import org.keycloak.sessions.StickySessionEncoderSpi;
 import org.keycloak.storage.UserStorageProviderSpi;
 import org.keycloak.storage.client.ClientStorageProviderSpi;
 import org.keycloak.storage.federated.UserFederatedStorageProviderSpi;
-import org.keycloak.theme.DefaultThemeManagerFactory;
-import org.keycloak.theme.ThemeResourceSpi;
-import org.keycloak.theme.ThemeSelectorSpi;
-import org.keycloak.theme.ThemeSpi;
-import org.keycloak.timer.TimerSpi;
 import org.keycloak.truststore.TruststoreSpi;
 import org.keycloak.urls.HostnameSpi;
 import org.keycloak.validation.ClientValidationSPI;
@@ -71,15 +65,10 @@ public class KeycloakWebConfiguration {
     @Bean
     public KeycloakSessionFactory keycloakSessionFactory() {
         DefaultKeycloakSessionFactory factory = new DefaultKeycloakSessionFactory();
-        factory.setThemeManagerFactory(keycloakThemeManagerFactory());
         factory.setProviderManager(keycloakProviderManager());
         factory.setSpis(keycloakSpis());
         factory.afterPropertiesSet();
         return factory;
-    }
-
-    private DefaultThemeManagerFactory keycloakThemeManagerFactory() {
-        return new DefaultThemeManagerFactory();
     }
 
     @Bean
@@ -100,11 +89,6 @@ public class KeycloakWebConfiguration {
     @Bean(name = "keycloakSpis")
     public Set<Spi> keycloakSpis() {
         Set<Spi> results = new HashSet<>();
-        results.add(new AuthenticatorSpi());
-        results.add(new AuthorizationSpi());
-        results.add(new BruteForceProtectorSpi());
-        results.add(new ClientAuthenticatorSpi());
-        results.add(new ClientInstallationSpi());
         results.add(new ClientRegistrationPolicySpi());
         results.add(new ClientRegistrationSpi());
         results.add(new ClientStorageProviderSpi());
@@ -143,10 +127,6 @@ public class KeycloakWebConfiguration {
         results.add(new SingleUseTokenStoreSpi());
         results.add(new StickySessionEncoderSpi());
         results.add(new StoreFactorySpi());
-        results.add(new ThemeResourceSpi());
-        results.add(new ThemeSelectorSpi());
-        results.add(new ThemeSpi());
-        results.add(new TimerSpi());
         results.add(new TokenIntrospectionSpi());
         results.add(new TruststoreSpi());
         results.add(new UserFederatedStorageProviderSpi());
